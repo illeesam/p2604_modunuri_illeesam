@@ -29,7 +29,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* 정산 지급 목록조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {

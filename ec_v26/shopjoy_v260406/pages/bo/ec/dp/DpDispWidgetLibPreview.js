@@ -454,7 +454,7 @@ window.DpDispWidgetLibPreview = {
     /* -- 대시보드: 자유 배치 + 크기 조절 -- */
     const dashCanvas = ref(null);
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
-    
+
     /* onDashDragOver */
     const onDashDragOver = (e) => { e.preventDefault(); uiState.dashDragOver = true; };
 

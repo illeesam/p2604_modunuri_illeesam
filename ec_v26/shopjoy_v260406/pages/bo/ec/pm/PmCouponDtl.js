@@ -80,7 +80,6 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const form = reactive({
       couponId: null, couponTypeCd: '상품할인쿠폰', couponCd: '', couponNm: '',
       discountType: 'amount', discountVal: 0, discountRate: null, discountAmt: null, minOrderAmt: 0, maxDiscountAmt: 0,

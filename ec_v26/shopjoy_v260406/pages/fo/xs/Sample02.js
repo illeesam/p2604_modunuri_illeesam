@@ -24,7 +24,6 @@ window.XsSample02 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const api = window.axiosApi || window.adminApi;
     const API = 'api/base/sy/zz-sample1';
     const CD_GRP = 'S02_PRODUCT';
@@ -44,7 +43,7 @@ window.XsSample02 = {
     const searchParamOrg = reactive({ searchValue: '', category: '', status: '' });
 
     /* -- CRUD Grid -- */
-    
+
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const allData    = reactive([]);
     const gridRows   = reactive([]);
@@ -233,7 +232,6 @@ window.XsSample02 = {
 
     /* rowBg */
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
-
 
     // -- return ---------------------------------------------------------------
 

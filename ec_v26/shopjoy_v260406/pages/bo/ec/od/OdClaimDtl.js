@@ -32,7 +32,6 @@ window.OdClaimDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const form = reactive({
       claimId: '', memberId: '', memberNm: '', orderId: '', prodNm: '',
       claimTypeCd: '취소', claimStatusCd: '신청', reasonCd: '', reasonDetail: '',

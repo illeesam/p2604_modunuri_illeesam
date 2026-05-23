@@ -123,9 +123,8 @@ window.SyDeptMng = {
     /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    
-    const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
 
+    const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
 
     /* -- 트리 정렬 -- */
     const buildTreeRows = (items) => {
@@ -153,7 +152,6 @@ window.SyDeptMng = {
       _row_org: { deptCode: d.deptCode, deptNm: d.deptNm, parentDeptId: d.parentDeptId,
                deptTypeCd: d.deptTypeCd, sortOrd: d.sortOrd, useYn: d.useYn, deptRemark: d.deptRemark },
     });
-
 
     /* 부서 목록조회 */
     const onSearch = async () => {

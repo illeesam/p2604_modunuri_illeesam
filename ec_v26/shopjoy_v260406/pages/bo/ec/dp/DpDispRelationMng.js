@@ -29,7 +29,6 @@ window.DpDispRelationMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const displays = reactive([]);
 
     /* 목록조회 */
@@ -65,7 +64,7 @@ window.DpDispRelationMng = {
       console.error('[catch-info]', err);
     }
   };
-  
+
     /* onReset */
     const onReset = () => {
     Object.assign(searchParam, _initSearchParam());

@@ -19,7 +19,6 @@ window.SyCodeDtl = {
     const pageCodes = reactive({ use_yn: [] });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
 
-
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const form = reactive({
@@ -64,7 +63,6 @@ window.SyCodeDtl = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
-
 
     // ★ onMounted — 코드 로드 + 상세 조회
     onMounted(async () => {

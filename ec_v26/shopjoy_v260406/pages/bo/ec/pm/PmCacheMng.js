@@ -22,7 +22,6 @@ window.PmCacheMng = {
       date_range_opts: [],
     });
 
-
     // ===== 공통코드 로딩 ===================================================
     /* 캐시(충전금) fnLoadCodes */
     const fnLoadCodes = () => {
@@ -37,7 +36,6 @@ window.PmCacheMng = {
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ===== 사이트명 / 페이저 / 하단 상세 상태 ==============================
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());

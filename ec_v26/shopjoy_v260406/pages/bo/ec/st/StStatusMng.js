@@ -19,7 +19,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
-
     /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -35,7 +34,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // -- watch ----------------------------------------------------------------
 

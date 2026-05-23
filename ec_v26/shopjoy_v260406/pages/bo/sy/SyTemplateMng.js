@@ -81,10 +81,8 @@ window.SyTemplateMng = {
     /* 템플릿 pathLabel */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-
     /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
-
 
     /* 템플릿 fnLoadCodes */
     const fnLoadCodes = () => {
@@ -95,7 +93,6 @@ window.SyTemplateMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {
@@ -161,7 +158,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 템플릿 closeSend */
     const closeSend = () => { sendModal.show = false; };
 
-
     /* 템플릿 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
@@ -209,9 +205,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 템플릿 exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(templates, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateNm'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-
-
-
 
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',

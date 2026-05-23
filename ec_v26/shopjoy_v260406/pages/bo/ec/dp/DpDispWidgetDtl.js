@@ -202,7 +202,6 @@ window.DpDispWidgetDtl = {
       handleInitNewForm();
     });
 
-
     /* 정책: 수정 클릭 시 항상 상세 API 호출.
      * 부모 Mng 가 reloadTrigger 를 ++ 하면 (같은 id 재클릭 / 다른 id 클릭 모두 포함) form 초기화 후 새 데이터 로드 */
     watch(() => props.reloadTrigger, async (n, o) => {

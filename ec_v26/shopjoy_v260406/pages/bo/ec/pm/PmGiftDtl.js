@@ -70,7 +70,6 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const _today = new Date();
 
     /* 사은품 _pad */

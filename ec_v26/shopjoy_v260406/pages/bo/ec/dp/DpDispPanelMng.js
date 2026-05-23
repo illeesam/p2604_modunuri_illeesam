@@ -287,7 +287,7 @@ window.DpDispPanelMng = {
       pager.pageNo = 1;
       handleSearchData({});
     };
-  
+
     /* setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
 

@@ -63,10 +63,8 @@ window.SyVendorMng = {
     /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장. 변경 추적만 보존 */
     const onPathChange = (row) => { if (row && row._row_status === 'N') row._row_status = 'U'; };
 
-
     /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
-
 
     /* 업체(판매자) fnLoadCodes */
     const fnLoadCodes = () => {
@@ -77,7 +75,6 @@ window.SyVendorMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {
@@ -168,7 +165,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* 업체(판매자) exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceoNm'},{label:'사업자번호',key:'vendorNo'},{label:'전화',key:'vendorPhone'},{label:'상태',key:'vendorStatusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-
 
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',

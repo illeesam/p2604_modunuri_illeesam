@@ -30,7 +30,6 @@ window.OdDlivDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const cfIsNew = computed(() => !props.dtlId);
 
         watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });

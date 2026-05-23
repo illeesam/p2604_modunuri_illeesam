@@ -92,7 +92,6 @@ window.SyBbsMng = {
     /* 게시판 게시물 pathLabel */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-
     /* -- 좌측 표시경로 트리 -- */
         const expanded = reactive(new Set(['']));
 
@@ -110,7 +109,6 @@ window.SyBbsMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
 
-
     /* 게시판 게시물 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -120,7 +118,6 @@ window.SyBbsMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {

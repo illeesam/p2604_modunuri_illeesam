@@ -72,11 +72,10 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     /* 프로모션 플랜 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      
+
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     const _today = new Date();
 
@@ -84,7 +83,6 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END = `${_today.getFullYear()+1}-12-31`;
-
 
     const VISIBILITY_OPTIONS = [
       { value: 'PUBLIC',    label: '전체공개' },

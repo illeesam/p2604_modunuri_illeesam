@@ -18,7 +18,6 @@ window.PmCouponMng = {
       date_range_opts: [],
     });
 
-
     /* 쿠폰 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -32,8 +31,6 @@ window.PmCouponMng = {
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });

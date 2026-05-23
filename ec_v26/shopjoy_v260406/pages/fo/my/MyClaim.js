@@ -22,7 +22,6 @@ window.MyClaim = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const myStore = window.useFoMyStore();
     const { claims, claimFilter, cfFilteredClaims, orders } = Pinia.storeToRefs(myStore);
     const filteredClaims = cfFilteredClaims;

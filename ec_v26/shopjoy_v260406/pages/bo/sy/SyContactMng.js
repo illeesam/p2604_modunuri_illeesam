@@ -61,7 +61,6 @@ window.SyContactMng = {
       }
     };
 
-
     /* 문의 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -71,7 +70,6 @@ window.SyContactMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {

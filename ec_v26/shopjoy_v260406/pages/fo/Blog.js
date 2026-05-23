@@ -22,7 +22,6 @@ window.Blog = {
 
     const posts = reactive([]);
 
-    
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* fnBuildPagerNums */
@@ -59,7 +58,6 @@ window.Blog = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* 목록조회 */
     const onSearch = async () => { await Object.assign(pager.pageCond, searchParam); handleSearchList('DEFAULT'); };
 
@@ -68,7 +66,6 @@ window.Blog = {
       Object.assign(searchParam, searchParamOrg);
       onSearch();
     };
-
 
     const thumbBgs = [
       'linear-gradient(135deg, #f5f0e8 0%, #e8d5b7 100%)',

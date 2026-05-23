@@ -33,7 +33,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
             const dateEnd   = ref('');
 
     /* handleDateRangeChange */

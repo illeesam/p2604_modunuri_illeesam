@@ -42,7 +42,6 @@ window.SyBbmMng = {
     /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList(); };
 
-
     /* 게시판 마스터 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -52,7 +51,6 @@ window.SyBbmMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {

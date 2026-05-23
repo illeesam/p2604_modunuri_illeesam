@@ -30,7 +30,6 @@ window.Order = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* -- 유틸 -- */
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;
 

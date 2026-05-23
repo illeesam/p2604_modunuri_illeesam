@@ -81,7 +81,6 @@ window.SySiteMng = {
     /* 사이트 pathLabel */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-
     /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
@@ -193,8 +192,6 @@ const detailModal = reactive({
     /* 사이트 exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(sites, [{label:'ID',key:'siteId'},{label:'사이트코드',key:'siteCode'},{label:'사이트명',key:'siteNm'},{label:'도메인',key:'domain'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '사이트목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
-
-
 
     // ★ onMounted
     onMounted(() => {

@@ -63,7 +63,6 @@ window.SyRoleMng = {
     /* 역할(권한) pathLabel */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-
     /* -- 좌측 표시경로 트리 -- */
         const expanded = reactive(new Set(['']));
 
@@ -110,7 +109,6 @@ window.SyRoleMng = {
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
 
-
     /* 역할(권한) fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -119,7 +117,6 @@ window.SyRoleMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {
@@ -189,7 +186,6 @@ window.SyRoleMng = {
     /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-        
 
     const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentRoleId', 'roleTypeCd', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'roleRemark'];
 
@@ -228,7 +224,6 @@ window.SyRoleMng = {
                  roleCat: JSON.stringify(cat), roleRemark: r.roleRemark },
       };
     };
-
 
     /* 역할(권한) 목록조회 */
     const onSearch = async () => {
@@ -556,7 +551,6 @@ window.SyRoleMng = {
 
     /* 역할(권한) onTreeCatChange */
     const onTreeCatChange = () => { handleSearchList(); };
-
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
         const baseSearchColumns = [

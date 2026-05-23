@@ -42,7 +42,6 @@ window.SyMenuMng = {
     /* 좌측 메뉴 트리 */
     const selectNode = (id) => { uiState.selectedTreeId = id; handleSearchList(); };
 
-
     /* 메뉴 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -52,7 +51,6 @@ window.SyMenuMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {
@@ -65,13 +63,9 @@ window.SyMenuMng = {
       return coUtil.cofCollectDescendantIds(menus, 'menuId', 'parentMenuId', uiState.selectedTreeId);
     });
 
-
-
-
     /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    
 
     const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentMenuId', 'menuUrl', 'menuTypeCd', 'sortOrd', 'useYn', 'menuRemark'];
 
@@ -101,7 +95,6 @@ window.SyMenuMng = {
       _row_org: { menuCode: m.menuCode, menuNm: m.menuNm, parentMenuId: m.parentMenuId,
                menuUrl: m.menuUrl, menuTypeCd: m.menuTypeCd, sortOrd: m.sortOrd, useYn: m.useYn, menuRemark: m.menuRemark },
     });
-
 
     /* 메뉴 목록조회 */
     const onSearch = async () => {

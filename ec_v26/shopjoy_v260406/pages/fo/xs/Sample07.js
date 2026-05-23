@@ -17,7 +17,6 @@ window.XsSample07 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);
 

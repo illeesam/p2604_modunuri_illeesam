@@ -22,7 +22,6 @@ window.XsSample04 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* -- 회원 데이터 -- */
     const members = reactive([]);
 

@@ -27,7 +27,6 @@ window.CmNoticeDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
 
     /* fnToday */

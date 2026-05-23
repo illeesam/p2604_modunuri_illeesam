@@ -66,7 +66,6 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const form = reactive({
       voucherId: null, voucherNm: '', voucherAmt: 0, salePrice: 0,
       issueQty: 0, soldQty: 0, voucherStatus: '활성', startDate: '', endDate: '',

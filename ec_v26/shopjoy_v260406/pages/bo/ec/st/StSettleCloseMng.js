@@ -16,7 +16,6 @@ window.StSettleCloseMng = {
       settle_close_statuses: [],
     });
 
-
     /* 정산 마감 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -29,8 +28,6 @@ window.StSettleCloseMng = {
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-
 
     const orders  = reactive([]);
     const claims  = reactive([]);

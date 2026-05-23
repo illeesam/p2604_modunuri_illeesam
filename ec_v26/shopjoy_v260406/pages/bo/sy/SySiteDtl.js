@@ -19,7 +19,6 @@ window.SySiteDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ site_oper_statuses: [], site_types: ['이커머스','숙박공유','전문가연결','IT매칭','부동산','교육','중고거래','영화예매','음식배달','가격비교','시각화','홈페이지','기타'] });
 
-
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
 
     const form = reactive({
@@ -69,7 +68,6 @@ window.SySiteDtl = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
-
 
     // ★ onMounted — 코드 로드 + 상세 조회
     onMounted(async () => {

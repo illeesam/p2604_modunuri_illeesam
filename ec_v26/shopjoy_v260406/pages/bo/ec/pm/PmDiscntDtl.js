@@ -66,7 +66,6 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const _today = new Date();
 
     /* 할인 _pad */

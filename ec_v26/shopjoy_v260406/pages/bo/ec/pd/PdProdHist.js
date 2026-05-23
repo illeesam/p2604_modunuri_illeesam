@@ -29,7 +29,6 @@ window.PdProdHist = {
 
     watch(() => uiState.tabMode2, v => { window._ecProdHistState.tabMode = v; });
 
-
     /* 상품 fnLoadCodes */
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);

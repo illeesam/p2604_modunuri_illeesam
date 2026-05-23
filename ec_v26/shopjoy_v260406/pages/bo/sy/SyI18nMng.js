@@ -61,7 +61,6 @@ window.SyI18nMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const selectedId  = ref(null);
 
     const LANGS       = ['ko','en','ja','in'];

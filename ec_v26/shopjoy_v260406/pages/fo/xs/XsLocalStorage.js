@@ -22,10 +22,9 @@ window.XsLocalStorage = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const storageData = reactive([]);
                     const uiState = reactive({ isResizing: false });
-        
+
     /* loadStorageData */
     const loadStorageData = () => {
       const data = [];

@@ -75,7 +75,6 @@ window.OdClaimMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-
     /* 클레임(취소/반품/교환) handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -103,7 +102,6 @@ window.OdClaimMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {

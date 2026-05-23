@@ -31,7 +31,6 @@ window.Home03 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     function fnCategoryLabel(p) {
       if (!p) return '';
       const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];

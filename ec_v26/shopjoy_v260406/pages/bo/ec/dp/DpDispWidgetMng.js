@@ -143,7 +143,6 @@ window.DpDispWidgetMng = {
       pager.pageNo = 1;
       handleSearchData('DEFAULT');
     };
-  
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 

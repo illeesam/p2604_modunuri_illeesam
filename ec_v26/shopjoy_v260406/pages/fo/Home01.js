@@ -30,7 +30,6 @@ window.Home01 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     function fnCategoryLabel(p) {
       if (!p) return '';
       const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
@@ -57,7 +56,7 @@ window.Home01 = {
     );
 
     /* -- 빠른보기 모달 -- */
-    
+
     /* -- 홈 그리드 반응형 CSS 주입 -- */
     /* max-width 컨테이너가 최대 열 수를 자연 제한:
        카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열

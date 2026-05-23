@@ -21,7 +21,6 @@ window.MyCache = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const myStore = window.useFoMyStore();
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
 

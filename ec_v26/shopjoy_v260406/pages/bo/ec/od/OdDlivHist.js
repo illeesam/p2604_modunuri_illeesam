@@ -52,7 +52,6 @@ window.OdDlivHist = {
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
     const botTab = Vue.toRef(uiState, 'botTab');
 
-
     onMounted(() => {
       handleSearchList();
     });

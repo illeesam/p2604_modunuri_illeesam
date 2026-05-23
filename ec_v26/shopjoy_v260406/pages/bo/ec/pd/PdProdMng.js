@@ -62,7 +62,6 @@ window.PdProdMng = {
       }
     };
 
-
     /* -- 검색 파라미터 -- */
     const _initSearchParam = () => {
       const today = new Date();
@@ -94,7 +93,6 @@ window.PdProdMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {
@@ -199,7 +197,6 @@ window.PdProdMng = {
 
     /* 상품 exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(products, [{label:'ID',key:'prodId'},{label:'상품명',key:'prodNm'},{label:'카테고리',key:'cateNm'},{label:'가격',key:'listPrice'},{label:'재고',key:'prodStock'},{label:'브랜드',key:'brandNm'},{label:'상태',key:'prodStatusCdNm'},{label:'등록일',key:'regDate'}], '상품목록.csv');
-
 
     const selectedId = computed(() => uiStateDetail.selectedId);
 

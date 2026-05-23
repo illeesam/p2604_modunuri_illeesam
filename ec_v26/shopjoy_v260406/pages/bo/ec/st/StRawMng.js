@@ -16,7 +16,6 @@ window.StRawMng = {
       date_range_opts: [],
     });
 
-
     /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -36,7 +35,6 @@ window.StRawMng = {
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // -- watch ----------------------------------------------------------------
 
@@ -89,7 +87,6 @@ const rawList = reactive([]);
         handleSearchList('DEFAULT');
       }
     });
-
 
     /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };

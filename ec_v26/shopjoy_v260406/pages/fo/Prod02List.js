@@ -33,7 +33,6 @@ window.Prod02List = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* -- 상품 이미지 자동 할당 -- */
     const IMG_BASE = 'assets/cdn/prod/img/shop/product';
 

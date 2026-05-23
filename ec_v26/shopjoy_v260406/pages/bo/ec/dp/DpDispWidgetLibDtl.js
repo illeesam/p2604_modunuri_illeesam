@@ -196,7 +196,6 @@ window.DpDispWidgetLibDtl = {
       handleInitNewForm();
     });
 
-
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) return;

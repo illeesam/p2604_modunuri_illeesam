@@ -19,7 +19,6 @@ window.Location = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const LAT  = 37.4407;
     const LNG  = 127.1468;
     const ADDR = '경기도 성남시 중원구 성남대로 997번길 49-14';

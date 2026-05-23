@@ -464,7 +464,6 @@ window.SyCodeMng = {
       }
     };
 
-
     /* openGrpSetting */
     const openGrpSetting = (g, e) => {
       e.stopPropagation();

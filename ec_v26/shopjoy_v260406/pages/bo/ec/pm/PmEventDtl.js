@@ -78,7 +78,6 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const _today = new Date();
 
     /* 이벤트 _pad */

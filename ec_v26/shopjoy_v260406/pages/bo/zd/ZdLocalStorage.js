@@ -16,7 +16,7 @@ window.ZdLocalStorage = {
 
     const storageData = reactive([]);
                     const uiState = reactive({ isResizing: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
-        
+
     /* loadStorageData */
     const loadStorageData = () => {
       const data = [];

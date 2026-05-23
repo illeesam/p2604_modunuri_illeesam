@@ -33,7 +33,6 @@ window.PdCategoryMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* -- 검색 파라미터 -- (siteId는 필수, 기본값 우선순위: boCommonFilter > boAppStore.svBoSiteId > _boCmSites[0] > '2604010000000001') */
     const _initSearchParam = () => ({
       siteId: (window.boCommonFilter && window.boCommonFilter.siteId)
@@ -104,7 +103,6 @@ window.PdCategoryMng = {
 
     watch(() => uiState.selectedCatId, () => handleGridSearch());
 
-
     /* -- 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
@@ -136,7 +134,6 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       ...c, _depth: c._depth || 0, _row_status: 'N', _row_check: false,
       _row_org: { categoryNm: c.categoryNm, parentCategoryId: c.parentCategoryId, sortOrd: c.sortOrd, categoryDesc: c.categoryDesc, categoryStatusCd: c.categoryStatusCd },
     });
-
 
     /* 상품 카테고리 fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((c-1)*pager.pageSize,c*pager.pageSize); };

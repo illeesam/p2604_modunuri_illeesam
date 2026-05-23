@@ -72,7 +72,6 @@ window.PmCacheDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // ===== 폼 / 에러 / Yup 스키마 ==========================================
     const form = reactive({
       cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '충전', cacheAmt: 0, balanceAmt: 0, cacheDesc: '',

@@ -34,12 +34,11 @@ window.SyBbsDtl = {
 
     // ── watch ────────────────────────────────────────────────────────────────
 
-
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* ── 선택된 게시판 정보 ── */
-    
+
     /* ── 폼 ── */
     const form = reactive({
       bbsId: null, bbmId: null, bbsTitle: '', authorNm: '', bbsStatusCd: '게시',

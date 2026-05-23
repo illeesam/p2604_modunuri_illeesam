@@ -36,7 +36,6 @@ window.PdSetMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -70,7 +69,6 @@ window.PdSetMng = {
     });
 
 const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
 
     /* -- 신규등록 폼 -- */
     const newForm = reactive({
@@ -393,7 +391,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
-
 
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));

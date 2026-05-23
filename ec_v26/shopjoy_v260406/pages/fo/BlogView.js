@@ -34,7 +34,6 @@ window.BlogView = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const cfPostId = computed(() => props.dtlId);
     /* 백엔드 CmBlogDto.Item → 화면 표준 형태로 정규화 (replies/tags/files 연관정보 포함) */
     const cfPost   = computed(() => {

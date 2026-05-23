@@ -86,10 +86,8 @@ window.SyAlarmMng = {
     /* 알람 pathLabel */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-
     /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
-
 
     /* 알람 fnLoadCodes */
     const fnLoadCodes = () => {
@@ -100,7 +98,6 @@ window.SyAlarmMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {

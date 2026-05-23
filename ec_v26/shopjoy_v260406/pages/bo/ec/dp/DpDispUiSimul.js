@@ -51,7 +51,6 @@ window.DpDispUiSimul = {
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
     const tab = Vue.toRef(uiState, 'tab');
 
-
     /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -65,7 +64,6 @@ window.DpDispUiSimul = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
     // ── watch ────────────────────────────────────────────────────────────────
-
 
     /* ── 검색/필터 조건 ── */
     const _initSearchParam = () => ({ previewDate: today, previewTime: new Date().toTimeString().slice(0, 5), status: '활성', visibility: '', structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: '' });
@@ -308,7 +306,7 @@ window.DpDispUiSimul = {
     /* ─────────────────────────────────────────
        Tab3: 소스 구조
     ───────────────────────────────────────── */
-    
+
     const WIDGET_EXTRA_ATTRS = {
       image_banner:    ['imageUrl','linkUrl','altText'],
       product_slider:  ['productIds','displayCnt','autoPlay'],

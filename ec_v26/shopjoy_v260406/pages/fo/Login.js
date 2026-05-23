@@ -22,7 +22,6 @@ window.Login = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
@@ -197,7 +196,7 @@ window.Login = {
       birthdate: '', gender: '',
     });
     const sf       = _initSf();
-         
+
     /* 이메일 인증 */
     const sendEmailCode = () => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sf.email)) { uiState.signupErr = '올바른 이메일을 입력하세요.'; return; }
@@ -258,7 +257,7 @@ window.Login = {
 
     /* -- SNS 회원가입 제출 -- */
         const snsPhone    = ref('');
-             
+
     /* providerLabel */
     const providerLabel = p => ({ google: 'Google', kakao: '카카오', naver: '네이버' }[p] || p);
 

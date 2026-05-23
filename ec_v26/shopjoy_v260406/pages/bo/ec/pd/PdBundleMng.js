@@ -38,7 +38,6 @@ window.PdBundleMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -140,7 +139,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     let _seq = 1;
 
     /* -- 구성품 추가 피커 / 드래그 상태는 uiState에서 관리 -- */
-    
+
     /* -- helpers -- */
     const getProd     = id => (products || []).find(p => p.productId === id);
 
@@ -426,7 +425,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         if (showToast) showToast(errMsg, 'error', 0);
       }
     };
-
 
     /* 묶음상품 목록 그리드 컬럼 (모든 셀 커스텀 → #cell 슬롯, 헤더만 정의) */
         const baseSearchColumns = [

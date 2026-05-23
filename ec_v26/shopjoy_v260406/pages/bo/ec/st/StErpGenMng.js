@@ -16,7 +16,6 @@ window.StErpGenMng = {
       erp_voucher_types: [],
     });
 
-
     /* fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -29,8 +28,6 @@ window.StErpGenMng = {
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-
 
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');

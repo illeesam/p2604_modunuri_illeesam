@@ -24,7 +24,6 @@ window.MyOrder = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const myStore = window.useFoMyStore();
     const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
     const claimsByOrderId = cfClaimsByOrderId;

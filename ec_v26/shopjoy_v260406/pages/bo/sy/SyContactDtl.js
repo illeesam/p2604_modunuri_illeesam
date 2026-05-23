@@ -40,7 +40,6 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const form = reactive({
       contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
       contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',

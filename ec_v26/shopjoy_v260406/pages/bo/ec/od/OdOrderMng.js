@@ -78,7 +78,6 @@ window.OdOrderMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-
     /* 주문 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -104,7 +103,6 @@ window.OdOrderMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {
@@ -172,7 +170,7 @@ window.OdOrderMng = {
       pager.pageNo = 1;
       await handleSearchData();
     };
-  
+
     /* 주문 setPage */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
 

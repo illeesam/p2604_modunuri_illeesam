@@ -21,7 +21,6 @@ window.SyPropMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
 
     /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장 (@change=onCellChange) */

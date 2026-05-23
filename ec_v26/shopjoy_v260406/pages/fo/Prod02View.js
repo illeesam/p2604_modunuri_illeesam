@@ -158,7 +158,6 @@ window.Prod02View = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* -- 탭 -- */
     const TABS = [
       { id: 'detail', label: '상세정보' },

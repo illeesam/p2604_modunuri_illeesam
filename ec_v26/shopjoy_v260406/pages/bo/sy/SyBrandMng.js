@@ -55,9 +55,8 @@ window.SyBrandMng = {
     /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장. 변경 추적만 보존 */
     const onPathChange = (row) => { if (row && row._row_status === 'N') row._row_status = 'U'; };
 
-
     /* 트리 선택 path (loadGrid 보다 먼저 선언) */
-    
+
     /* -- 검색 -- */
     const _initSearchParam = () => {
       const today = new Date();
@@ -78,7 +77,6 @@ window.SyBrandMng = {
     /* -- CRUD 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-    
 
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'brandRemark'];
 
@@ -92,7 +90,6 @@ window.SyBrandMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* 브랜드 makeRow */
     const makeRow = (b) => ({
       ...b,
@@ -100,7 +97,6 @@ window.SyBrandMng = {
       _row_check:  false,
       _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
-
 
     /* 브랜드 목록조회 */
     const onSearch = async () => {
@@ -265,7 +261,6 @@ window.SyBrandMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList('DEFAULT');
     });
-
 
     // -- return ---------------------------------------------------------------
 

@@ -66,7 +66,6 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     const _today = new Date();
 
     /* 적립금 _pad */

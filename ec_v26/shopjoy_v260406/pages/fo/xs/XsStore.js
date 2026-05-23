@@ -23,7 +23,6 @@ window.XsStore = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
             const openStores = reactive([]);
         const editedStoreInfo = reactive({});
 

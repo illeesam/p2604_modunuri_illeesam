@@ -53,10 +53,8 @@ window.SyBatchMng = {
     /* 배치 pathLabel */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-
     /* -- 좌측 표시경로 트리 -- */
     const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
-
 
     /* 배치 fnLoadCodes */
     const fnLoadCodes = () => {
@@ -68,7 +66,6 @@ window.SyBatchMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {
@@ -104,7 +101,6 @@ window.SyBatchMng = {
       _row_status: 'N', _row_check: false,
       _row_org: { batchNm: b.batchNm, batchCode: b.batchCode, cronExpr: b.cronExpr, batchStatusCd: b.batchStatusCd, batchDesc: b.batchDesc },
     });
-
 
     /* 배치 목록조회 */
     const onSearch = async () => {
@@ -276,7 +272,6 @@ window.SyBatchMng = {
     const fnStatusClass  = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfSiteNm     = computed(() => boUtil.bofGetSiteNm());
 
-
     /* 배치 exportExcel */
     const exportExcel = () => coUtil.cofExportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
@@ -284,8 +279,6 @@ window.SyBatchMng = {
       '배치목록.csv'
     );
     /* 트리 path 변경 시 자동 fetch */
-
-
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
         const baseSearchColumns = [

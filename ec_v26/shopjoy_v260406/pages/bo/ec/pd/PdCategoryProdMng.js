@@ -20,7 +20,6 @@ window.PdCategoryProdMng = {
       disp_yn_opts: [{ codeValue: 'Y', codeLabel: '전시' }, { codeValue: 'N', codeLabel: '비전시' }],
     });
 
-
     /* 카테고리-상품 매핑 fnLoadCodes */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -33,10 +32,8 @@ window.PdCategoryProdMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     /* 선택된 카테고리 (watch 이전에 선언 필수) */
     const cfSelectedCatId = ref(null);
-
 
     /* 선택 카테고리 + 직속 자식 카테고리 ID 목록 (서버 IN 조회용 — 자식 포함 표시 보존) */
     const fnCatIdsWithChildren = (catId) => {
@@ -80,7 +77,7 @@ window.PdCategoryProdMng = {
       { cd: 'BANNER',    nm: '배너상품' },
       { cd: 'HOT_DEAL',  nm: '핫딜상품' },
     ];
-    
+
     /* -- 강조 옵션 -- */
     const EMPHASIS_OPTS = [
       { cd: 'BOLD',       nm: '볼드',      icon: 'B' },
@@ -141,7 +138,7 @@ window.PdCategoryProdMng = {
       Object.assign(pager.pageCond, searchParam);
       handleSearchList('DEFAULT');
     };
-  
+
     /* 카테고리-상품 매핑 onReset */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());

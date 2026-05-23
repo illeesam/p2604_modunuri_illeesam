@@ -27,7 +27,6 @@ window.PdCategoryDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // onMounted에서 API 로드
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;

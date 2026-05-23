@@ -39,7 +39,6 @@ window.PdDlivTmpltMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // ===== 검색 파라미터 ===================================================
     /* 배송 템플릿 _initSearchParam */
     const _initSearchParam = () => ({ method: '', use: '' });

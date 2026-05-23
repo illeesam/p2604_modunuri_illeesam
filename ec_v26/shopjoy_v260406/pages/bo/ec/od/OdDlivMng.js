@@ -73,7 +73,6 @@ window.OdDlivMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-
     /* 배송 handleDateRangeChange */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -101,7 +100,6 @@ window.OdDlivMng = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
 
     // ★ onMounted
     onMounted(() => {

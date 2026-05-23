@@ -48,7 +48,6 @@ window.PdProdDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // -- 탭별 페이징 상태
     const tabPage = reactive({
       images:  { pageNo: 1, pageSize: 10, totalCount: 0 },

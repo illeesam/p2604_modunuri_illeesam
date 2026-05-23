@@ -457,7 +457,7 @@ window.SyPostman = {
     const history      = reactive([]);
     const histSelIdx   = ref(null);
     const histModal    = ref(null);
-    
+
     const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
 
     /* selectHistory */
@@ -481,7 +481,7 @@ window.SyPostman = {
     const histResStatus   = ref(null);
     const histResTime     = ref(null);
     const histResTs       = ref('');
-    
+
     /* resendHist */
     const resendHist = async () => {
       if (!cfActiveTab.value) return;

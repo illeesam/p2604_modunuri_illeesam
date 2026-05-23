@@ -39,7 +39,6 @@ window.PmSaveMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // ===== 정렬 처리 =======================================================
     // onMounted에서 API 로드
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };

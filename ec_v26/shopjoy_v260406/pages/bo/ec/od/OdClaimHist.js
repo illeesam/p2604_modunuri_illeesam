@@ -16,7 +16,6 @@ window.OdClaimHist = {
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
-
     const codes = reactive({ refund_methods: [] });
 
     /* 클레임(취소/반품/교환) fnLoadCodes */
@@ -33,7 +32,6 @@ window.OdClaimHist = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ── watch ────────────────────────────────────────────────────────────────
-
 
         watch(botTab, v => { window._odClaimHistState.tab = v; });
         const cfCodes = Vue.computed(() => window.sfGetBoCodeStore()?.svCodes || []);

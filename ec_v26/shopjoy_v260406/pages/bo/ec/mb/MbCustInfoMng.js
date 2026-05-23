@@ -108,7 +108,6 @@
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     // onMounted에서 API 로드
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -192,7 +191,7 @@
       });
 
       /* -- 현재 고객 -- */
-      
+
       /* 날짜 필터 헬퍼
          - filtered: 기간 필터는 서버(API)가 처리하므로 클라이언트 재필터 없이 그대로 통과.
          - filteredLocal: 캐쉬는 잔액 정확성 위해 전체 로드 → 목록만 클라이언트 기간 필터. */

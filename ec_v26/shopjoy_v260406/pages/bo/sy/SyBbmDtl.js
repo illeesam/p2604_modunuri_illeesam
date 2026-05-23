@@ -41,7 +41,6 @@ window.SyBbmDtl = {
 
     // ── watch ────────────────────────────────────────────────────────────────
 
-
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const form = reactive({

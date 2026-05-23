@@ -23,7 +23,6 @@ window.SyDashboardMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
     });
