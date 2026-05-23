@@ -165,12 +165,14 @@ window.SyBbsDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbsId }}</span></div>
+  <div class="page-title">
+    {{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbsId }}</span>
+  </div>
   <div class="card">
     <!-- 사이트명 (BoFormArea 자동 렌더) -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
       :cols="4" :show-actions="false" />
-
     <!-- ── 게시판 선택 ─────────────────────────────────────────────────────── -->
     <div class="form-group">
       <label class="form-label">게시판 <span v-if="!cfDtlMode" class="req">*</span></label>
@@ -185,7 +187,6 @@ window.SyBbsDtl = {
           <button class="btn btn-secondary btn-sm" type="button" disabled style="opacity:.5;cursor:not-allowed;">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
-
         <!-- ── 선택된 게시판 표시 ─────────────────────────────────────────────── -->
         <span v-if="selectedBbm" style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <b style="color:#1a1a2e;">{{ selectedBbm.bbmNm }}</b>
@@ -196,11 +197,9 @@ window.SyBbsDtl = {
       </div>
       <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
     </div>
-
     <!-- 기본 정보 (BoFormArea 자동 렌더) -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="4" :show-actions="false" />
-
     <!-- ── 내용 입력 (contentType 에 따라 렌더링) ───────────────────────────────── -->
     <div v-if="!selectedBbm" class="form-group">
       <label class="form-label">내용</label>
@@ -219,13 +218,14 @@ window.SyBbsDtl = {
       <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
       <base-html-editor v-else v-model="form.contentHtml" height="320px" />
     </div>
-
     <!-- ── 첨부파일 ───────────────────────────────────────────────────────── -->
     <div v-if="selectedBbm && cfAttachMaxCount > 0" class="form-group">
       <label class="form-label">
         첨부파일
         <span style="font-size:11px;font-weight:400;color:#bbb;margin-left:4px;">({{ cfAllowAttach }})</span>
-        <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">첨부그룹ID: {{ form.attachGrpId }}</span>
+        <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">
+          첨부그룹ID: {{ form.attachGrpId }}
+        </span>
       </label>
       <base-attach-grp
         :model-value="form.attachGrpId"
@@ -236,13 +236,12 @@ window.SyBbsDtl = {
         :max-count="cfAttachMaxCount"
         :max-size-mb="10"
         allow-ext="*"
-      />
+        />
     </div>
     <div v-else-if="selectedBbm && cfAllowAttach==='불가'" class="form-group">
       <label class="form-label">첨부파일</label>
       <div style="color:#bbb;font-size:13px;padding:4px 0;">이 게시판은 첨부파일을 지원하지 않습니다.</div>
     </div>
-
     <div class="form-actions" v-if="!cfDtlMode">
       <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
@@ -254,26 +253,33 @@ window.SyBbsDtl = {
       </template>
     </div>
   </div>
-
   <!-- ── 게시판 선택 팝업 ────────────────────────────────────────────────────── -->
   <bbm-select-modal
     v-if="showBbmModal" @select="onBbmSelect"
     @close="showBbmModal=false"
-  />
-
+    />
   <!-- ── 게시판 상세보기 팝업 ──────────────────────────────────────────────────── -->
   <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
-            width="420px" @close="showBbmDetail=false">
+    width="420px" @close="showBbmDetail=false">
     <div class="detail-row"><span class="detail-label">게시판ID</span><span class="detail-value">{{ selectedBbm.bbmId }}</span></div>
-    <div class="detail-row"><span class="detail-label">게시판코드</span><span class="detail-value"><code style="font-size:12px;">{{ selectedBbm.bbmCode }}</code></span></div>
+    <div class="detail-row">
+      <span class="detail-label">게시판코드</span>
+      <span class="detail-value"><code style="font-size:12px;">{{ selectedBbm.bbmCode }}</code></span>
+    </div>
     <div class="detail-row"><span class="detail-label">게시판명</span><span class="detail-value">{{ selectedBbm.bbmNm }}</span></div>
     <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value">{{ selectedBbm.bbmType }}</span></div>
     <div class="detail-row"><span class="detail-label">댓글허용</span><span class="detail-value">{{ selectedBbm.allowComment }}</span></div>
     <div class="detail-row"><span class="detail-label">첨부허용</span><span class="detail-value">{{ selectedBbm.allowAttach }}</span></div>
     <div class="detail-row"><span class="detail-label">내용입력</span><span class="detail-value">{{ selectedBbm.contentTypeCd }}</span></div>
     <div class="detail-row"><span class="detail-label">공개범위</span><span class="detail-value">{{ selectedBbm.scopeType }}</span></div>
-    <div class="detail-row"><span class="detail-label">좋아요허용</span><span class="detail-value">{{ selectedBbm.allowLike==='Y'?'허용':'불가' }}</span></div>
-    <div class="detail-row"><span class="detail-label">사용여부</span><span class="detail-value">{{ selectedBbm.useYn==='Y'?'사용':'미사용' }}</span></div>
+    <div class="detail-row">
+      <span class="detail-label">좋아요허용</span>
+      <span class="detail-value">{{ selectedBbm.allowLike==='Y'?'허용':'불가' }}</span>
+    </div>
+    <div class="detail-row">
+      <span class="detail-label">사용여부</span>
+      <span class="detail-value">{{ selectedBbm.useYn==='Y'?'사용':'미사용' }}</span>
+    </div>
     <template #footer>
       <button class="btn btn-secondary" @click="showBbmDetail=false">닫기</button>
     </template>

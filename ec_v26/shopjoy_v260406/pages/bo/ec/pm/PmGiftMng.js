@@ -243,13 +243,21 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   <div class="card">
     <!-- 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 -->
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>사은품목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        사은품목록
+        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+      </span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
           <button @click="tabMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 리스트</button>
+            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+            ☰ 리스트
+          </button>
           <button @click="tabMode='card'" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 카드</button>
+            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+            ⊞ 카드
+          </button>
         </div>
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -270,7 +278,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         </div>
       </template>
     </bo-grid>
-
     <!-- 카드 뷰 -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="gifts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
@@ -279,13 +286,18 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         @click="handleLoadDetail(g.giftId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">사은품 #{{ g.giftId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?{color:'#e8587a'}:{}">{{ g.giftNm }}<span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?{color:'#e8587a'}:{}">
+            {{ g.giftNm }}
+            <span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:4px;">▼</span>
+          </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnTypeBadge(g.giftTypeCd)" style="font-size:11px;">{{ g.giftTypeCd }}</span>
             <span class="badge" :class="fnStatusBadge(g.giftStatusCd)" style="font-size:11px;">{{ g.giftStatusCd }}</span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>🎯 {{ g.giftTypeCd === '금액조건' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === '수량조건' ? (g.minOrderQty||0) + '개↑' : '-' }}</div>
+            <div>
+              🎯 {{ g.giftTypeCd === '금액조건' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === '수량조건' ? (g.minOrderQty||0) + '개↑' : '-' }}
+            </div>
             <div>📅 {{ g.startDate }} ~ {{ g.endDate }}</div>
             <div style="color:#999;margin-top:4px;">재고 {{ (g.giftStock||0).toLocaleString() }}개</div>
           </div>
@@ -297,11 +309,9 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         </div>
       </div>
     </div>
-
     <!-- 페이지네이션 -->
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-
   <!-- 하단 상세영역: PmGiftDtl 인라인 임베드 -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -315,11 +325,10 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    
-    
+      
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
-  />
+      />
   </div>
 </div>
 `

@@ -520,176 +520,212 @@ window.DpDispPanelMng = {
   </div>
   <!-- -- 본문: 좌측 트리 + 우측 목록 ---------------------------------------------- -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
-  <!-- -- 좌측 표시경로 -------------------------------------------------------- -->
-  <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
-    <div class="toolbar" style="margin-bottom:6px;">
-      <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_panel</span></span>
-      <span v-if="uiState.selectedPath != null" @click="selectPathNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-    </div>
-    <div style="max-height:55vh;overflow:auto;">
-      <bo-path-tree biz-cd="ec_disp_panel" :selected="uiState.selectedPath" @select="selectPathNode" />
-    </div>
-  </div>
-
-  <!-- -- 우측 목록 ---------------------------------------------------------- -->
-  <div style="flex:1;min-width:0;">
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">전시패널 목록 <span class="list-count">{{ cfFiltered.length }}건</span><span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">#{{ uiState.selectedPath }}</span></span>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    <!-- -- 좌측 표시경로 -------------------------------------------------------- -->
+    <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
+      <div class="toolbar" style="margin-bottom:6px;">
+        <span class="list-title" style="font-size:13px;">
+          📂 표시경로
+          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_panel</span>
+        </span>
+        <span v-if="uiState.selectedPath != null" @click="selectPathNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">
+          전체보기
+        </span>
+      </div>
+      <div style="max-height:55vh;overflow:auto;">
+        <bo-path-tree biz-cd="ec_disp_panel" :selected="uiState.selectedPath" @select="selectPathNode" />
       </div>
     </div>
-    <table class="bo-table">
-      <thead>
-        <tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th style="width:24px;"></th>
-          <th style="width:28px;"></th>
-          <th style="width:44px;">ID</th>
-          <th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">패널 정보 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span></th>
-          <th style="width:240px;text-align:right;">관리</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="!pager.pageList?.length"><td colspan="6" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td></tr>
-        <template v-else v-for="(d, pageIdx) in pager.pageList" :key="d?.dispId">
-          <tr draggable="true"
-            @dragstart="onPanelDragStart($event, pageIdx)"
-            @dragover="onPanelDragOver($event, pageIdx)"
-            @dragleave="onPanelDragLeave"
-            @drop="onPanelDrop($event, pageIdx)"
-            @dragend="onPanelDragEnd"
-            :style="(uiStateDetail.selectedId===d.dispId?'background:#fff8f9;':'') + (uiState.panelDragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
-            <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + pageIdx + 1 }}</td>
-            <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">⠿</td>
-            <td style="text-align:center;padding:0;">
-              <button @click="toggleExpand(d.dispId)"
-                style="background:none;border:none;cursor:pointer;font-size:11px;color:#999;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
-                {{ isExpanded(d.dispId) ? '▼' : '▶' }}
-              </button>
-            </td>
-            <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">{{ d.dispId }}</td>
-            <td style="padding:10px 12px;">
-              <!-- -- 패널명 ------------------------------------------------ -->
-              <div style="margin-bottom:6px;">
-                <span class="title-link" @click="handleLoadDetail(d.dispId)"
-                  :style="'font-size:14px;font-weight:700;'+(uiStateDetail.selectedId===d.dispId?'color:#e8587a;':'color:#222;')">
-                  {{ d.name }}
-                  <span v-if="uiStateDetail.selectedId===d.dispId" style="font-size:10px;margin-left:3px;">▼</span>
-                </span>
-                <span class="badge" :class="fnStatusBadge(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
-              </div>
-              <!-- -- label:value 라인 ------------------------------------- -->
-              <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
-                <span><b style="color:#888;">표시경로:</b>
-                  <template v-if="fnPathLabel(d.pathId) || d.displayPath">
-                    <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ fnPathLabel(d.pathId) || d.displayPath }}</span>
-                  </template>
-                  <template v-else>
-                    <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;margin-left:3px;font-weight:600;white-space:nowrap;">(패널)</span>
-                    <span style="background:#e8f0fe;color:#0277bd;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ (d.area||'').split('_')[0] }}</span>
-                    <span style="color:#ccc;margin:0 3px;">·</span>
-                    <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">{{ fnAreaLabel(d.area) }}</span>
-                  </template>
-                </span>
-                <span><b style="color:#888;">화면영역:</b>
-                  <code style="font-size:10px;background:#f0f2f5;padding:1px 5px;border-radius:3px;margin:0 3px;">{{ d.area }}</code>
-                  {{ fnAreaLabel(d.area) }}
-                </span>
-                <span><b style="color:#888;">표시:</b>
-                  {{ (d.layoutType||'grid')==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (d.gridCols||1) + '열' }}
-                </span>
-                <span><b style="color:#888;">순서:</b> {{ d.sortOrder != null ? d.sortOrder : '-' }}</span>
-                <span><b style="color:#888;">타이틀:</b>
-                  {{ d.titleYn==='Y' ? (d.title || '표시') : '미표시' }}
-                </span>
-                <span><b style="color:#888;">노출조건:</b>
-                  <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ d.condition || '항상 표시' }}</span>
-                </span>
-                <span v-if="d.authRequired"><b style="color:#888;">인증:</b>
-                  <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">필요</span>
-                  <span v-if="d.authGrade" style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ d.authGrade }}↑</span>
-                </span>
-                <span><b style="color:#888;">전시기간:</b>
-                  <template v-if="d.dispStartDt || d.dispEndDt">
-                    {{ d.dispStartDt || '∞' }} ~ {{ d.dispEndDt || '∞' }}
-                  </template>
-                  <span v-else style="color:#ccc;">없음</span>
-                </span>
-                <span><b style="color:#888;">등록일:</b> {{ d.regDate || '-' }}</span>
-                <span><b style="color:#888;">사이트:</b>
-                  <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">{{ cfSiteNm }}</span>
-                </span>
-              </div>
-            </td>
-            <td style="vertical-align:top;padding-top:10px;">
-              <div class="actions" style="justify-content:flex-end;">
-                <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.dispId)">수정</button>
-                <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
-              </div>
-            </td>
-          </tr>
-          <!-- -- 위젯 펼치기 서브 행 -------------------------------------------- -->
-          <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
-            <td colspan="5" style="padding:0;background:#f8f9fb;border-top:none;">
-              <div style="padding:10px 16px 12px 44px;">
-                <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">📌 연결된 항목 ({{ (d.rows||[]).length }}개)</div>
-                <table style="width:100%;border-collapse:collapse;font-size:11px;">
-                  <thead>
-                    <tr style="background:#eef0f3;color:#666;">
-                      <th style="padding:4px 4px;text-align:center;width:24px;font-weight:600;"></th>
-                      <th style="padding:4px 8px;text-align:center;width:48px;font-weight:600;">순서</th>
-                      <th style="padding:4px 8px;font-weight:600;">전시항목명</th>
-                      <th style="padding:4px 8px;text-align:center;width:120px;font-weight:600;">유형</th>
-                      <th style="padding:4px 8px;text-align:center;width:100px;font-weight:600;">클릭동작</th>
-                      <th style="padding:4px 8px;text-align:center;width:60px;font-weight:600;">사용여부</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template v-if="d.rows && d.rows.length">
-                      <tr v-for="(w, wi) in d.rows" :key="wi"
-                        draggable="true"
-                        @dragstart="onWidgetDragStart($event, d.dispId, wi)"
-                        @dragover="onWidgetDragOver($event, d.dispId, wi)"
-                        @dragleave="onWidgetDragLeave"
-                        @drop="onWidgetDrop($event, d.dispId, wi)"
-                        @dragend="onWidgetDragEnd"
-                        :style="'border-bottom:1px solid #e8eaed;' + (wi % 2 === 1 ? 'background:#fff;' : '') + (uiState.widgetDragOverWi===wi && uiState.widgetDragPanel===d.dispId ? 'outline:2px solid #1d4ed8;background:#e3f2fd;' : '')">
-                        <td style="padding:4px 4px;text-align:center;cursor:grab;color:#bbb;font-size:14px;user-select:none;">⠿</td>
-                        <td style="padding:4px 8px;text-align:center;color:#aaa;">{{ w.sortOrder || (wi+1) }}</td>
-                        <td style="padding:4px 8px;color:#444;">
-                          <span style="font-size:10px;background:#e8f4f8;color:#0277bd;border-radius:8px;padding:2px 8px;font-weight:600;margin-right:6px;white-space:nowrap;">아이템</span>
-                          {{ w.widgetNm || ('전시항목 ' + (wi+1)) }}
-                        </td>
-                        <td style="padding:4px 8px;text-align:center;">
-                          <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 7px;font-size:10px;">{{ fnWLabel(w.widgetType) }}</span>
-                        </td>
-                        <td style="padding:4px 8px;text-align:center;color:#888;">{{ w.clickAction || '-' }}</td>
-                        <td style="padding:4px 8px;text-align:center;">
-                          <span v-if="w.useYn === 'Y'" class="badge badge-green" style="font-size:11px;">사용</span>
-                          <span v-else class="badge badge-gray" style="font-size:11px;">미사용</span>
-                        </td>
-                      </tr>
-                    </template>
-                    <tr v-else>
-                      <td colspan="6" style="padding:8px;text-align:center;color:#bbb;">등록된 전시항목이 없습니다. (수정 후 저장하면 전시항목 정보가 표시됩니다)</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <!-- -- 우측 목록 ---------------------------------------------------------- -->
+    <div style="flex:1;min-width:0;">
+      <div class="card">
+        <div class="toolbar">
+          <span class="list-title">
+            전시패널 목록
+            <span class="list-count">{{ cfFiltered.length }}건</span>
+            <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">
+              #{{ uiState.selectedPath }}
+            </span>
+          </span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+            <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+          </div>
+        </div>
+        <table class="bo-table">
+          <thead>
+            <tr>
+              <th style="width:36px;text-align:center;">번호</th>
+              <th style="width:24px;"></th>
+              <th style="width:28px;"></th>
+              <th style="width:44px;">ID</th>
+              <th @click="onSort('nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">
+                패널 정보
+                <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">{{ sortIcon('nm') }}</span>
+              </th>
+              <th style="width:240px;text-align:right;">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!pager.pageList?.length">
+              <td colspan="6" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</td>
+            </tr>
+            <template v-else v-for="(d, pageIdx) in pager.pageList" :key="d?.dispId">
+              <tr draggable="true"
+                @dragstart="onPanelDragStart($event, pageIdx)"
+                @dragover="onPanelDragOver($event, pageIdx)"
+                @dragleave="onPanelDragLeave"
+                @drop="onPanelDrop($event, pageIdx)"
+                @dragend="onPanelDragEnd"
+                :style="(uiStateDetail.selectedId===d.dispId?'background:#fff8f9;':'') + (uiState.panelDragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
+                <td style="text-align:center;font-size:11px;color:#999;">{{ (pager.pageNo - 1) * pager.pageSize + pageIdx + 1 }}</td>
+                <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">⠿</td>
+                <td style="text-align:center;padding:0;">
+                  <button @click="toggleExpand(d.dispId)"
+                    style="background:none;border:none;cursor:pointer;font-size:11px;color:#999;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
+                    {{ isExpanded(d.dispId) ? '▼' : '▶' }}
+                  </button>
+                </td>
+                <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">{{ d.dispId }}</td>
+                <td style="padding:10px 12px;">
+                  <!-- -- 패널명 ------------------------------------------------ -->
+                  <div style="margin-bottom:6px;">
+                    <span class="title-link" @click="handleLoadDetail(d.dispId)"
+                      :style="'font-size:14px;font-weight:700;'+(uiStateDetail.selectedId===d.dispId?'color:#e8587a;':'color:#222;')">
+                      {{ d.name }}
+                      <span v-if="uiStateDetail.selectedId===d.dispId" style="font-size:10px;margin-left:3px;">▼</span>
+                    </span>
+                    <span class="badge" :class="fnStatusBadge(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
+                  </div>
+                  <!-- -- label:value 라인 ------------------------------------- -->
+                  <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
+                    <span>
+                      <b style="color:#888;">표시경로:</b>
+                      <template v-if="fnPathLabel(d.pathId) || d.displayPath">
+                        <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">
+                          {{ fnPathLabel(d.pathId) || d.displayPath }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;margin-left:3px;font-weight:600;white-space:nowrap;">
+                          (패널)
+                        </span>
+                        <span style="background:#e8f0fe;color:#0277bd;border-radius:8px;padding:1px 7px;margin-left:3px;">
+                          {{ (d.area||'').split('_')[0] }}
+                        </span>
+                        <span style="color:#ccc;margin:0 3px;">·</span>
+                        <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">{{ fnAreaLabel(d.area) }}</span>
+                      </template>
+                    </span>
+                    <span>
+                      <b style="color:#888;">화면영역:</b>
+                      <code style="font-size:10px;background:#f0f2f5;padding:1px 5px;border-radius:3px;margin:0 3px;">{{ d.area }}</code>
+                      {{ fnAreaLabel(d.area) }}
+                    </span>
+                    <span>
+                      <b style="color:#888;">표시:</b>
+                      {{ (d.layoutType||'grid')==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (d.gridCols||1) + '열' }}
+                    </span>
+                    <span><b style="color:#888;">순서:</b> {{ d.sortOrder != null ? d.sortOrder : '-' }}</span>
+                    <span><b style="color:#888;">타이틀:</b> {{ d.titleYn==='Y' ? (d.title || '표시') : '미표시' }}</span>
+                    <span>
+                      <b style="color:#888;">노출조건:</b>
+                      <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">
+                        {{ d.condition || '항상 표시' }}
+                      </span>
+                    </span>
+                    <span v-if="d.authRequired">
+                      <b style="color:#888;">인증:</b>
+                      <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">필요</span>
+                      <span v-if="d.authGrade" style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;">
+                        {{ d.authGrade }}↑
+                      </span>
+                    </span>
+                    <span>
+                      <b style="color:#888;">전시기간:</b>
+                      <template v-if="d.dispStartDt || d.dispEndDt">{{ d.dispStartDt || '∞' }} ~ {{ d.dispEndDt || '∞' }}</template>
+                      <span v-else style="color:#ccc;">없음</span>
+                    </span>
+                    <span><b style="color:#888;">등록일:</b> {{ d.regDate || '-' }}</span>
+                    <span>
+                      <b style="color:#888;">사이트:</b>
+                      <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">
+                        {{ cfSiteNm }}
+                      </span>
+                    </span>
+                  </div>
+                </td>
+                <td style="vertical-align:top;padding-top:10px;">
+                  <div class="actions" style="justify-content:flex-end;">
+                    <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.dispId)">수정</button>
+                    <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
+                  </div>
+                </td>
+              </tr>
+              <!-- -- 위젯 펼치기 서브 행 -------------------------------------------- -->
+              <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
+                <td colspan="5" style="padding:0;background:#f8f9fb;border-top:none;">
+                  <div style="padding:10px 16px 12px 44px;">
+                    <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">
+                      📌 연결된 항목 ({{ (d.rows||[]).length }}개)
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                      <thead>
+                        <tr style="background:#eef0f3;color:#666;">
+                          <th style="padding:4px 4px;text-align:center;width:24px;font-weight:600;"></th>
+                          <th style="padding:4px 8px;text-align:center;width:48px;font-weight:600;">순서</th>
+                          <th style="padding:4px 8px;font-weight:600;">전시항목명</th>
+                          <th style="padding:4px 8px;text-align:center;width:120px;font-weight:600;">유형</th>
+                          <th style="padding:4px 8px;text-align:center;width:100px;font-weight:600;">클릭동작</th>
+                          <th style="padding:4px 8px;text-align:center;width:60px;font-weight:600;">사용여부</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template v-if="d.rows && d.rows.length">
+                          <tr v-for="(w, wi) in d.rows" :key="wi"
+                            draggable="true"
+                            @dragstart="onWidgetDragStart($event, d.dispId, wi)"
+                            @dragover="onWidgetDragOver($event, d.dispId, wi)"
+                            @dragleave="onWidgetDragLeave"
+                            @drop="onWidgetDrop($event, d.dispId, wi)"
+                            @dragend="onWidgetDragEnd"
+                            :style="'border-bottom:1px solid #e8eaed;' + (wi % 2 === 1 ? 'background:#fff;' : '') + (uiState.widgetDragOverWi===wi && uiState.widgetDragPanel===d.dispId ? 'outline:2px solid #1d4ed8;background:#e3f2fd;' : '')">
+                            <td style="padding:4px 4px;text-align:center;cursor:grab;color:#bbb;font-size:14px;user-select:none;">⠿</td>
+                            <td style="padding:4px 8px;text-align:center;color:#aaa;">{{ w.sortOrder || (wi+1) }}</td>
+                            <td style="padding:4px 8px;color:#444;">
+                              <span style="font-size:10px;background:#e8f4f8;color:#0277bd;border-radius:8px;padding:2px 8px;font-weight:600;margin-right:6px;white-space:nowrap;">
+                                아이템
+                              </span>
+                              {{ w.widgetNm || ('전시항목 ' + (wi+1)) }}
+                            </td>
+                            <td style="padding:4px 8px;text-align:center;">
+                              <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 7px;font-size:10px;">
+                                {{ fnWLabel(w.widgetType) }}
+                              </span>
+                            </td>
+                            <td style="padding:4px 8px;text-align:center;color:#888;">{{ w.clickAction || '-' }}</td>
+                            <td style="padding:4px 8px;text-align:center;">
+                              <span v-if="w.useYn === 'Y'" class="badge badge-green" style="font-size:11px;">사용</span>
+                              <span v-else class="badge badge-gray" style="font-size:11px;">미사용</span>
+                            </td>
+                          </tr>
+                        </template>
+                        <tr v-else>
+                          <td colspan="6" style="padding:8px;text-align:center;color:#bbb;">등록된 전시항목이 없습니다. (수정 후 저장하면 전시항목 정보가 표시됩니다)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+      </div>
+    </div>
+    <!-- -- /우측 목록 ----------------------------------------------------------- -->
   </div>
-
-  </div><!-- -- /우측 목록 ----------------------------------------------------------- -->
-  </div><!-- -- /본문 flex --------------------------------------------------------- -->
-
+  <!-- -- /본문 flex --------------------------------------------------------- -->
   <!-- -- 하단 상세: DispDtl 임베드 --------------------------------------------- -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -706,9 +742,8 @@ window.DpDispPanelMng = {
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchData"
-    />
+      />
   </div>
-
   <!-- -- 패널미리보기 오버레이 ---------------------------------------------------- -->
   <div v-if="uiState.cardPreviewItem"
     @click.self="closeCardPreview"
@@ -717,23 +752,37 @@ window.DpDispPanelMng = {
       <!-- -- 헤더 --------------------------------------------------------- -->
       <div style="background:linear-gradient(135deg,#e8587a,#c0395e);color:#fff;padding:15px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:14px;font-weight:700;">🖼 패널미리보기</span>
-        <button @click="closeCardPreview" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:0.85;line-height:1;padding:0;">×</button>
+        <button @click="closeCardPreview" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:0.85;line-height:1;padding:0;">
+          ×
+        </button>
       </div>
       <!-- -- 카드 본문 ------------------------------------------------------ -->
       <div style="padding:24px;">
         <!-- -- 영역 + 상태 배지 ----------------------------------------------- -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
-          <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">{{ uiState.cardPreviewItem.area }}</code>
-          <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">{{ fnAreaLabel(uiState.cardPreviewItem.area) }}</span>
-          <span class="badge" :class="uiState.cardPreviewItem.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">{{ uiState.cardPreviewItem.status }}</span>
+          <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">
+            {{ uiState.cardPreviewItem.area }}
+          </code>
+          <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">
+            {{ fnAreaLabel(uiState.cardPreviewItem.area) }}
+          </span>
+          <span class="badge" :class="uiState.cardPreviewItem.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">
+            {{ uiState.cardPreviewItem.status }}
+          </span>
         </div>
         <!-- -- 패널명 ------------------------------------------------------ -->
         <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">{{ uiState.cardPreviewItem.name }}</div>
         <!-- -- 노출조건 / 인증 배지 --------------------------------------------- -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:4px 12px;">{{ uiState.cardPreviewItem.condition || '항상 표시' }}</span>
-          <span v-if="uiState.cardPreviewItem.authRequired" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:12px;padding:4px 12px;">인증 필요</span>
-          <span v-if="uiState.cardPreviewItem.authRequired && uiState.cardPreviewItem.authGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:12px;padding:4px 12px;">{{ uiState.cardPreviewItem.authGrade }} 이상</span>
+          <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:4px 12px;">
+            {{ uiState.cardPreviewItem.condition || '항상 표시' }}
+          </span>
+          <span v-if="uiState.cardPreviewItem.authRequired" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:12px;padding:4px 12px;">
+            인증 필요
+          </span>
+          <span v-if="uiState.cardPreviewItem.authRequired && uiState.cardPreviewItem.authGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:12px;padding:4px 12px;">
+            {{ uiState.cardPreviewItem.authGrade }} 이상
+          </span>
         </div>
         <!-- -- 전시 기간 ---------------------------------------------------- -->
         <div v-if="uiState.cardPreviewItem.dispStartDt || uiState.cardPreviewItem.dispEndDt"
@@ -753,7 +802,9 @@ window.DpDispPanelMng = {
               <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">{{ r.sortOrder || i+1 }}</span>
               <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ fnWLabel(r.widgetType) }}</span>
               <span v-if="r.clickAction && r.clickAction !== 'none'"
-                style="font-size:10px;color:#888;background:#f0f0f0;border-radius:8px;padding:2px 8px;">{{ r.clickAction }}</span>
+                style="font-size:10px;color:#888;background:#f0f0f0;border-radius:8px;padding:2px 8px;">
+                {{ r.clickAction }}
+              </span>
             </div>
           </template>
           <div v-else style="font-size:12px;color:#bbb;padding:12px;text-align:center;background:#f9f9f9;border-radius:8px;">
@@ -763,9 +814,13 @@ window.DpDispPanelMng = {
       </div>
       <!-- -- 푸터 --------------------------------------------------------- -->
       <div style="padding:12px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:11px;color:#aaa;">ID: {{ uiState.cardPreviewItem.dispId }} · 등록일: {{ uiState.cardPreviewItem.regDate }}</span>
+        <span style="font-size:11px;color:#aaa;">
+          ID: {{ uiState.cardPreviewItem.dispId }} · 등록일: {{ uiState.cardPreviewItem.regDate }}
+        </span>
         <div style="display:flex;gap:8px;">
-          <button @click="previewDisp(uiState.cardPreviewItem); closeCardPreview();" class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;">👁 내용미리보기</button>
+          <button @click="previewDisp(uiState.cardPreviewItem); closeCardPreview();" class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;">
+            👁 내용미리보기
+          </button>
           <button @click="closeCardPreview" class="btn btn-secondary btn-sm">닫기</button>
         </div>
       </div>

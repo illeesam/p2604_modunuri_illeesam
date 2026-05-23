@@ -179,9 +179,10 @@ window.XsStore = {
       <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">Store 정보 관리</h1>
       <p style="margin: 0; font-size: 13px; color: #666;">Pinia 스토어 상태 조회 및 편집</p>
     </div>
-    <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">🔄 재로드</button>
+    <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
+      🔄 재로드
+    </button>
   </div>
-
   <!-- -- Store 선택 탭 + 뷰모드 버튼 -------------------------------------------- -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px; overflow: hidden;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
@@ -189,111 +190,121 @@ window.XsStore = {
         <button v-for="store in cfStoreList" :key="store.name"
           @click="selectStore(store.name)"
           :style="{
-            padding: '8px 14px',
-            background: uiState.selectedStore === store.name ? '#fff0f4' : 'transparent',
-            border: 'none',
-            borderBottom: uiState.selectedStore === store.name ? '3px solid #ff6b9d' : '3px solid transparent',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: uiState.selectedStore === store.name ? '600' : '500',
-            color: uiState.selectedStore === store.name ? '#ff6b9d' : '#666',
-            whiteSpace: 'nowrap',
-            transition: 'all 0.2s'
+          padding: '8px 14px',
+          background: uiState.selectedStore === store.name ? '#fff0f4' : 'transparent',
+          border: 'none',
+          borderBottom: uiState.selectedStore === store.name ? '3px solid #ff6b9d' : '3px solid transparent',
+          cursor: 'pointer',
+          fontSize: '13px',
+          fontWeight: uiState.selectedStore === store.name ? '600' : '500',
+          color: uiState.selectedStore === store.name ? '#ff6b9d' : '#666',
+          whiteSpace: 'nowrap',
+          transition: 'all 0.2s'
           }">
           {{ store.label }}
         </button>
       </div>
-
       <!-- -- 뷰모드 버튼 (탭바 우측) --------------------------------------------- -->
       <div style="display: flex; gap: 4px; padding-left: 16px; flex-shrink: 0;">
         <button
           @click="uiState.tabMode = 'tab'"
           :style="{
-            padding: '6px 10px',
-            fontSize: '13px',
-            border: uiState.tabMode === 'tab' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.tabMode === 'tab' ? '#fff0f4' : 'white',
-            color: uiState.tabMode === 'tab' ? '#ff6b9d' : '#666',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            fontWeight: uiState.tabMode === 'tab' ? '600' : '500',
-            transition: 'all 0.2s'
+          padding: '6px 10px',
+          fontSize: '13px',
+          border: uiState.tabMode === 'tab' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+          background: uiState.tabMode === 'tab' ? '#fff0f4' : 'white',
+          color: uiState.tabMode === 'tab' ? '#ff6b9d' : '#666',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          fontWeight: uiState.tabMode === 'tab' ? '600' : '500',
+          transition: 'all 0.2s'
           }"
-          title="탭 뷰">📑</button>
+          title="탭 뷰">
+          📑
+        </button>
         <button
           @click="uiState.tabMode = 'col1'"
           :style="{
-            padding: '6px 10px',
-            fontSize: '13px',
-            border: uiState.tabMode === 'col1' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.tabMode === 'col1' ? '#fff0f4' : 'white',
-            color: uiState.tabMode === 'col1' ? '#ff6b9d' : '#666',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            fontWeight: uiState.tabMode === 'col1' ? '600' : '500',
-            transition: 'all 0.2s'
+          padding: '6px 10px',
+          fontSize: '13px',
+          border: uiState.tabMode === 'col1' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+          background: uiState.tabMode === 'col1' ? '#fff0f4' : 'white',
+          color: uiState.tabMode === 'col1' ? '#ff6b9d' : '#666',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          fontWeight: uiState.tabMode === 'col1' ? '600' : '500',
+          transition: 'all 0.2s'
           }"
-          title="1열 보기">1</button>
+          title="1열 보기">
+          1
+        </button>
         <button
           @click="uiState.tabMode = 'col2'"
           :style="{
-            padding: '6px 10px',
-            fontSize: '13px',
-            border: uiState.tabMode === 'col2' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.tabMode === 'col2' ? '#fff0f4' : 'white',
-            color: uiState.tabMode === 'col2' ? '#ff6b9d' : '#666',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            fontWeight: uiState.tabMode === 'col2' ? '600' : '500',
-            transition: 'all 0.2s'
+          padding: '6px 10px',
+          fontSize: '13px',
+          border: uiState.tabMode === 'col2' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+          background: uiState.tabMode === 'col2' ? '#fff0f4' : 'white',
+          color: uiState.tabMode === 'col2' ? '#ff6b9d' : '#666',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          fontWeight: uiState.tabMode === 'col2' ? '600' : '500',
+          transition: 'all 0.2s'
           }"
-          title="2열 보기">2</button>
+          title="2열 보기">
+          2
+        </button>
         <button
           @click="uiState.tabMode = 'col3'"
           :style="{
-            padding: '6px 10px',
-            fontSize: '13px',
-            border: uiState.tabMode === 'col3' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.tabMode === 'col3' ? '#fff0f4' : 'white',
-            color: uiState.tabMode === 'col3' ? '#ff6b9d' : '#666',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            fontWeight: uiState.tabMode === 'col3' ? '600' : '500',
-            transition: 'all 0.2s'
+          padding: '6px 10px',
+          fontSize: '13px',
+          border: uiState.tabMode === 'col3' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+          background: uiState.tabMode === 'col3' ? '#fff0f4' : 'white',
+          color: uiState.tabMode === 'col3' ? '#ff6b9d' : '#666',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          fontWeight: uiState.tabMode === 'col3' ? '600' : '500',
+          transition: 'all 0.2s'
           }"
-          title="3열 보기">3</button>
+          title="3열 보기">
+          3
+        </button>
         <button
           @click="uiState.tabMode = 'col4'"
           :style="{
-            padding: '6px 10px',
-            fontSize: '13px',
-            border: uiState.tabMode === 'col4' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.tabMode === 'col4' ? '#fff0f4' : 'white',
-            color: uiState.tabMode === 'col4' ? '#ff6b9d' : '#666',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            fontWeight: uiState.tabMode === 'col4' ? '600' : '500',
-            transition: 'all 0.2s'
+          padding: '6px 10px',
+          fontSize: '13px',
+          border: uiState.tabMode === 'col4' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+          background: uiState.tabMode === 'col4' ? '#fff0f4' : 'white',
+          color: uiState.tabMode === 'col4' ? '#ff6b9d' : '#666',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          fontWeight: uiState.tabMode === 'col4' ? '600' : '500',
+          transition: 'all 0.2s'
           }"
-          title="4열 보기">4</button>
+          title="4열 보기">
+          4
+        </button>
         <button
           @click="uiState.tabMode = 'col5'"
           :style="{
-            padding: '6px 10px',
-            fontSize: '13px',
-            border: uiState.tabMode === 'col5' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
-            background: uiState.tabMode === 'col5' ? '#fff0f4' : 'white',
-            color: uiState.tabMode === 'col5' ? '#ff6b9d' : '#666',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            fontWeight: uiState.tabMode === 'col5' ? '600' : '500',
-            transition: 'all 0.2s'
+          padding: '6px 10px',
+          fontSize: '13px',
+          border: uiState.tabMode === 'col5' ? '1.5px solid #ff6b9d' : '1px solid #ddd',
+          background: uiState.tabMode === 'col5' ? '#fff0f4' : 'white',
+          color: uiState.tabMode === 'col5' ? '#ff6b9d' : '#666',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          fontWeight: uiState.tabMode === 'col5' ? '600' : '500',
+          transition: 'all 0.2s'
           }"
-          title="5열 보기">5</button>
+          title="5열 보기">
+          5
+        </button>
       </div>
     </div>
   </div>
-
   <!-- -- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) --------------------------------------- -->
   <div :style="{
     display: 'grid',
@@ -301,14 +312,13 @@ window.XsStore = {
     gap: '4px',
     padding: '0',
     marginTop: '0'
-  }">
-
+    }">
     <div v-for="store in cfStoreList" :key="store.name"
       v-show="uiState.tabMode === 'tab' ? uiState.selectedStore === store.name : true"
       style="display: flex; flex-direction: column; height: 100%; background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-
-      <div v-if="uiState.tabMode !== 'tab'" style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; background: #fafafa; font-weight: 600; font-size: 12px; color: #333;">{{ store.label }}</div>
-
+      <div v-if="uiState.tabMode !== 'tab'" style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; background: #fafafa; font-weight: 600; font-size: 12px; color: #333;">
+        {{ store.label }}
+      </div>
       <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 320px;">
         <label style="display: block; padding: 8px 12px 4px; font-weight: 600; font-size: 11px; color: #666;">Store State (JSON)</label>
         <textarea
@@ -317,13 +327,16 @@ window.XsStore = {
           style="flex: 1; margin: 0 8px 8px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 10px; background: #f9f9f9; resize: none; color: #333; line-height: 1.6;">
         </textarea>
       </div>
-
       <div style="display: flex; gap: 4px; padding: 8px 12px; border-top: 1px solid #e5e7eb; background: #fafafa;">
-        <button v-if="store.api" @click="refreshStoreData(store.name)" style="flex: 1; padding: 6px 10px; font-size: 11px; border: 1px solid #d0e8f2; background: #f0f8fc; color: #0369a1; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">조회</button>
-        <button @click="uiState.selectedStore = store.name; saveStore()" style="flex: 1; padding: 6px 10px; font-size: 11px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">저장</button>
+        <button v-if="store.api" @click="refreshStoreData(store.name)" style="flex: 1; padding: 6px 10px; font-size: 11px; border: 1px solid #d0e8f2; background: #f0f8fc; color: #0369a1; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+          조회
+        </button>
+        <button @click="uiState.selectedStore = store.name; saveStore()" style="flex: 1; padding: 6px 10px; font-size: 11px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
+          저장
+        </button>
       </div>
     </div>
   </div>
 </div>
-  `
+`
 };

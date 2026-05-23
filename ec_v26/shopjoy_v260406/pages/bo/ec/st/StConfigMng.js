@@ -202,16 +202,17 @@ window.StConfigMng = {
   <div class="page-desc-bar">
     <span class="page-desc-summary">사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 정산 주기: 월정산 / 주정산 / 건별정산
-• 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다.
-• 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다.
-• 설정 변경은 변경 이후 수집분부터 적용됩니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 정산 주기: 월정산 / 주정산 / 건별정산 • 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다. • 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다. • 설정 변경은 변경 이후 수집분부터 적용됩니다.
+    </div>
   </div>
   <div class="card">
     <div class="toolbar">
       <span class="list-title">정산기준 목록</span>
       <span class="list-count">총 {{ configs.length }}건</span>
-      <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기준 추가</button></div>
+      <div style="margin-left:auto">
+        <button class="btn btn-primary" @click="openNew">+ 기준 추가</button>
+      </div>
     </div>
     <bo-grid
       :columns="baseGridColumns" :rows="configs" row-key="settleConfigId"
@@ -224,7 +225,6 @@ window.StConfigMng = {
       </template>
     </bo-grid>
   </div>
-
   <!-- 편집 폼 (BoFormArea 자동 렌더) -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>

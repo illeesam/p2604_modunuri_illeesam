@@ -64,7 +64,6 @@ window.DispUi01 = {
     </div>
     <span style="font-size:13px;opacity:.8;">패널 {{ cfTotalPanels }}개</span>
   </div>
-
   <!-- -- 본문: DispUi 컴포넌트 ------------------------------------------------ -->
   <disp-x01-ui :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" />
 </div>

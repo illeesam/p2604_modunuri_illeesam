@@ -215,12 +215,10 @@ const rawList = reactive([]);
   <div class="page-desc-bar">
     <span class="page-desc-summary">주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다.
-• 수집 단위: od_order_item / od_claim_item (상품 행 단위)
-• [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다.
-• 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다. • 수집 단위: od_order_item / od_claim_item (상품 행 단위) • [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다. • 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)
+    </div>
   </div>
-
   <!-- -- 검색 카드 -- -->
   <div class="card">
     <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'" @search="onSearch" @reset="onReset">
@@ -234,7 +232,8 @@ const rawList = reactive([]);
         <span style="line-height:32px">~</span>
         <input type="date" v-model="uiState.dateEnd" style="width:140px" />
         <select v-model="searchParam.type" style="width:100px">
-          <option value="">유형 전체</option><option v-for="c in codes.raw_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">유형 전체</option>
+          <option v-for="c in codes.raw_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
         </select>
         <select v-model="searchParam.status" style="width:110px">
           <option value="">수집상태 전체</option>
@@ -243,11 +242,11 @@ const rawList = reactive([]);
         <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
-            { value: 'rawId',    label: '원장ID' },
-            { value: 'srcId',    label: '소스ID' },
-            { value: 'vendorNm', label: '업체명' },
-            { value: 'prodNm',   label: '상품명' },
-            { value: 'brandNm',  label: '브랜드' },
+          { value: 'rawId',    label: '원장ID' },
+          { value: 'srcId',    label: '소스ID' },
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'prodNm',   label: '상품명' },
+          { value: 'brandNm',  label: '브랜드' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
@@ -296,7 +295,6 @@ const rawList = reactive([]);
       </template>
     </bo-search-area>
   </div>
-
   <!-- -- 집계 카드 -- -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
@@ -317,7 +315,9 @@ const rawList = reactive([]);
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f8f9fa;margin-bottom:0">
       <div style="font-size:11px;color:#888">수집금액 합계</div>
-      <div style="font-size:15px;font-weight:700" :style="cfSummary.totalAmt>=0?'color:#333':'color:#e74c3c'">{{ fmtW(cfSummary.totalAmt) }}</div>
+      <div style="font-size:15px;font-weight:700" :style="cfSummary.totalAmt>=0?'color:#333':'color:#e74c3c'">
+        {{ fmtW(cfSummary.totalAmt) }}
+      </div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#fff0f0;margin-bottom:0">
       <div style="font-size:11px;color:#888">수수료 합계</div>
@@ -328,7 +328,6 @@ const rawList = reactive([]);
       <div style="font-size:15px;font-weight:700;color:#2980b9">{{ fmtW(cfSummary.settleAmt) }}</div>
     </div>
   </div>
-
   <!-- -- 목록 카드 -- -->
   <bo-grid
     :columns="rawGridColumns"
@@ -342,78 +341,165 @@ const rawList = reactive([]);
     @size-change="onSizeChange"
     @row-click="(r) => toggleRow(r.settleRawId)">
     <template #toolbar-actions>
-      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▼ 전체펼치기</button>
-      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">▲ 전체접기</button>
+      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
+        ▼ 전체펼치기
+      </button>
+      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
+        ▲ 전체접기
+      </button>
       <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
     </template>
     <template #row-expand="{ row: r, colspan }">
-            <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
-              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
-                <!-- -- 주문정보 --------------------------------------------- -->
-                <div>
-                  <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">주문 정보</div>
-                  <table style="width:100%;border-collapse:collapse">
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문ID</td><td style="padding:2px 0">{{ r.orderId }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">거래일자</td><td>{{ r.orderDate }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문상태</td><td>{{ orderStatusLabel(r.orderItemStatusCd) }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">결제수단</td><td>{{ r.payMethodCd }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">구매확정</td><td>
-                      <span class="badge" :class="r.buyConfirmYn==='Y'?'badge-green':'badge-gray'">{{ r.buyConfirmYn==='Y'?'확정':'미확정' }}</span>
-                      <span v-if="r.buyConfirmDate" style="color:#888;margin-left:4px">{{ r.buyConfirmDate }}</span>
-                    </td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산기간</td><td>{{ r.settlePeriod }}</td></tr>
-                  </table>
-                </div>
-                <!-- -- 상품/가격 정보 ----------------------------------------- -->
-                <div>
-                  <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">상품 · 가격</div>
-                  <table style="width:100%;border-collapse:collapse">
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">상품명</td><td>{{ r.prodNm }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">브랜드</td><td>{{ r.brandNm }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">SKU ID</td><td style="font-size:11px;color:#888">{{ r.skuId }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정상가</td><td>{{ fmtW(r.normalPrice) }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">단가</td><td>{{ fmtW(r.unitPrice) }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수량</td><td>{{ (r.orderQty||0).toLocaleString() }}개</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">소계</td><td style="font-weight:600">{{ fmtW(r.itemPrice) }}</td></tr>
-                  </table>
-                </div>
-                <!-- -- 할인/혜택 -------------------------------------------- -->
-                <div>
-                  <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">할인 · 혜택</div>
-                  <table style="width:100%;border-collapse:collapse">
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">직접할인</td><td style="color:#e74c3c">{{ r.discntAmt ? '- ' + fmtW(r.discntAmt) : '-' }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">쿠폰할인</td><td style="color:#e74c3c">{{ r.couponDiscntAmt ? '- ' + fmtW(r.couponDiscntAmt) : '-' }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">프로모션할인</td><td style="color:#e74c3c">{{ r.promoDiscntAmt ? '- ' + fmtW(r.promoDiscntAmt) : '-' }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">캐쉬사용</td><td style="color:#e74c3c">{{ r.cacheUseAmt ? '- ' + fmtW(r.cacheUseAmt) : '-' }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">마일리지</td><td style="color:#e74c3c">{{ r.mileageUseAmt ? '- ' + fmtW(r.mileageUseAmt) : '-' }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">상품권</td><td style="color:#e74c3c">{{ r.voucherUseAmt ? '- ' + fmtW(r.voucherUseAmt) : '-' }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">사은품원가</td><td style="color:#e74c3c">{{ r.giftAmt ? '- ' + fmtW(r.giftAmt) : '-' }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">적립예정</td><td style="color:#27ae60">{{ r.saveSchdAmt ? fmtW(r.saveSchdAmt) : '-' }}</td></tr>
-                  </table>
-                </div>
-                <!-- -- 정산/마감/ERP ---------------------------------------- -->
-                <div>
-                  <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">정산 · 마감 · ERP</div>
-                  <table style="width:100%;border-collapse:collapse">
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산대상금액</td><td style="font-weight:600">{{ fmtW(r.settleTargetAmt) }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수수료율</td><td>{{ fmtPct(r.settleFeeRate) }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수수료금액</td><td style="color:#e74c3c">{{ fmtW(r.settleFeeAmt) }}</td></tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산금액</td><td style="font-weight:700;color:#2980b9">{{ fmtW(r.settleAmt) }}</td></tr>
-                    <tr style="border-top:1px dashed #ddd">
-                      <td style="color:#888;padding:4px 4px 2px 0;white-space:nowrap">마감여부</td>
-                      <td style="padding-top:4px">
-                        <span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">{{ r.closeYn==='Y'?'마감완료':'미마감' }}</span>
-                        <span v-if="r.closeDate" style="color:#888;font-size:11px;margin-left:4px">{{ r.closeDate }}</span>
-                      </td>
-                    </tr>
-                    <tr><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">ERP전송</td><td>
-                      <span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송완료':'미전송' }}</span>
-                    </td></tr>
-                    <tr v-if="r.remark"><td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">비고</td><td style="color:#888">{{ r.remark }}</td></tr>
-                  </table>
-                </div>
-              </div>
-            </td>
+      <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
+          <!-- -- 주문정보 --------------------------------------------- -->
+          <div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">주문 정보</div>
+            <table style="width:100%;border-collapse:collapse">
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문ID</td>
+                <td style="padding:2px 0">{{ r.orderId }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">거래일자</td>
+                <td>{{ r.orderDate }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문상태</td>
+                <td>{{ orderStatusLabel(r.orderItemStatusCd) }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">결제수단</td>
+                <td>{{ r.payMethodCd }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">구매확정</td>
+                <td>
+                  <span class="badge" :class="r.buyConfirmYn==='Y'?'badge-green':'badge-gray'">{{ r.buyConfirmYn==='Y'?'확정':'미확정' }}</span>
+                  <span v-if="r.buyConfirmDate" style="color:#888;margin-left:4px">{{ r.buyConfirmDate }}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산기간</td>
+                <td>{{ r.settlePeriod }}</td>
+              </tr>
+            </table>
+          </div>
+          <!-- -- 상품/가격 정보 ----------------------------------------- -->
+          <div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">상품 · 가격</div>
+            <table style="width:100%;border-collapse:collapse">
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">상품명</td>
+                <td>{{ r.prodNm }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">브랜드</td>
+                <td>{{ r.brandNm }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">SKU ID</td>
+                <td style="font-size:11px;color:#888">{{ r.skuId }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정상가</td>
+                <td>{{ fmtW(r.normalPrice) }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">단가</td>
+                <td>{{ fmtW(r.unitPrice) }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수량</td>
+                <td>{{ (r.orderQty||0).toLocaleString() }}개</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">소계</td>
+                <td style="font-weight:600">{{ fmtW(r.itemPrice) }}</td>
+              </tr>
+            </table>
+          </div>
+          <!-- -- 할인/혜택 -------------------------------------------- -->
+          <div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">할인 · 혜택</div>
+            <table style="width:100%;border-collapse:collapse">
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">직접할인</td>
+                <td style="color:#e74c3c">{{ r.discntAmt ? '- ' + fmtW(r.discntAmt) : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">쿠폰할인</td>
+                <td style="color:#e74c3c">{{ r.couponDiscntAmt ? '- ' + fmtW(r.couponDiscntAmt) : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">프로모션할인</td>
+                <td style="color:#e74c3c">{{ r.promoDiscntAmt ? '- ' + fmtW(r.promoDiscntAmt) : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">캐쉬사용</td>
+                <td style="color:#e74c3c">{{ r.cacheUseAmt ? '- ' + fmtW(r.cacheUseAmt) : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">마일리지</td>
+                <td style="color:#e74c3c">{{ r.mileageUseAmt ? '- ' + fmtW(r.mileageUseAmt) : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">상품권</td>
+                <td style="color:#e74c3c">{{ r.voucherUseAmt ? '- ' + fmtW(r.voucherUseAmt) : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">사은품원가</td>
+                <td style="color:#e74c3c">{{ r.giftAmt ? '- ' + fmtW(r.giftAmt) : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">적립예정</td>
+                <td style="color:#27ae60">{{ r.saveSchdAmt ? fmtW(r.saveSchdAmt) : '-' }}</td>
+              </tr>
+            </table>
+          </div>
+          <!-- -- 정산/마감/ERP ---------------------------------------- -->
+          <div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">
+              정산 · 마감 · ERP
+            </div>
+            <table style="width:100%;border-collapse:collapse">
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산대상금액</td>
+                <td style="font-weight:600">{{ fmtW(r.settleTargetAmt) }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수수료율</td>
+                <td>{{ fmtPct(r.settleFeeRate) }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수수료금액</td>
+                <td style="color:#e74c3c">{{ fmtW(r.settleFeeAmt) }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산금액</td>
+                <td style="font-weight:700;color:#2980b9">{{ fmtW(r.settleAmt) }}</td>
+              </tr>
+              <tr style="border-top:1px dashed #ddd">
+                <td style="color:#888;padding:4px 4px 2px 0;white-space:nowrap">마감여부</td>
+                <td style="padding-top:4px">
+                  <span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">{{ r.closeYn==='Y'?'마감완료':'미마감' }}</span>
+                  <span v-if="r.closeDate" style="color:#888;font-size:11px;margin-left:4px">{{ r.closeDate }}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">ERP전송</td>
+                <td>
+                  <span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송완료':'미전송' }}</span>
+                </td>
+              </tr>
+              <tr v-if="r.remark">
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">비고</td>
+                <td style="color:#888">{{ r.remark }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </td>
     </template>
   </bo-grid>
 </div>

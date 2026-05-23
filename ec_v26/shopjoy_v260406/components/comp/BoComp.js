@@ -145,7 +145,8 @@ window.BoPathTree = {
     :node="tree" :expanded="expanded" :selected="selected"
     :on-toggle="toggleNode" :on-select="selectNode"
     :depth="0" :show-biz-cd="showBizCd" />
-</div>`,
+</div>
+`,
 };
 
 /* ── BoPathTreeNode 재귀 노드 ──────────────────────────────────────────────
@@ -179,25 +180,32 @@ window.BoPathTreeNode = {
 <div>
   <div @click="onSelect(node.pathId)"
     :style="{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 6px', cursor:'pointer', borderRadius:'4px',
-              paddingLeft: (8 + depth*14) + 'px',
-              background: selected===node.pathId ? '#fff0f4' : 'transparent',
-              color:      selected===node.pathId ? '#e8587a' : '#444',
-              fontWeight: selected===node.pathId ? 700 : 400 }"
+    paddingLeft: (8 + depth*14) + 'px',
+    background: selected===node.pathId ? '#fff0f4' : 'transparent',
+    color:      selected===node.pathId ? '#e8587a' : '#444',
+    fontWeight: selected===node.pathId ? 700 : 400 }"
     @mouseover="onNodeHover($event)"
     @mouseout="onNodeLeave($event)">
     <span v-if="(node.children||[]).length>0" style="width:14px;font-size:10px;color:#999;flex-shrink:0"
-          @click.stop="onToggle(node.pathId)">{{ expanded.has(node.pathId) ? '▼' : '▶' }}</span>
+      @click.stop="onToggle(node.pathId)">
+      {{ expanded.has(node.pathId) ? '▼' : '▶' }}
+    </span>
     <span v-else style="width:14px;flex-shrink:0"></span>
     <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ node.pathLabel || '(이름없음)' }}</span>
-    <span v-if="showBizCd && node.bizCd" style="font-size:9px;color:#aaa;font-family:monospace;flex-shrink:0;margin-left:2px;">#{{ node.bizCd }}</span>
-    <span v-if="node.count != null" style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:8px;flex-shrink:0;">{{ node.count }}</span>
+    <span v-if="showBizCd && node.bizCd" style="font-size:9px;color:#aaa;font-family:monospace;flex-shrink:0;margin-left:2px;">
+      #{{ node.bizCd }}
+    </span>
+    <span v-if="node.count != null" style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:8px;flex-shrink:0;">
+      {{ node.count }}
+    </span>
   </div>
   <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
     <bo-path-tree-node v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" :show-biz-cd="showBizCd" />
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoCategoryTree — 카테고리 트리 패널 & 피커 모달 ────────────────────────
@@ -340,31 +348,35 @@ window.BoCategoryTree = {
     </div>
     <!-- 전체 루트 항목 -->
     <div style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;margin-bottom:2px"
-         :style="{ background: selected===null ? '#fce4ec' : 'transparent',
-                   color:      selected===null ? '#e8587a' : '#555',
-                   fontWeight: selected===null ? 700 : 500,
-                   borderLeft: selected===null ? '3px solid #e8587a' : '3px solid transparent' }"
-         @click="onSelect(null)">
+      :style="{ background: selected===null ? '#fce4ec' : 'transparent',
+      color:      selected===null ? '#e8587a' : '#555',
+      fontWeight: selected===null ? 700 : 500,
+      borderLeft: selected===null ? '3px solid #e8587a' : '3px solid transparent' }"
+      @click="onSelect(null)">
       <span style="width:14px;flex-shrink:0"></span>
       <span style="font-size:11px;font-weight:700;color:#e8587a;margin-right:4px">★</span>
       <span style="font-size:12px">전체</span>
     </div>
     <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
-         style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
-         :style="{ paddingLeft:(cat._depth*14+6)+'px',
-                   background: selected===cat.categoryId ? '#fce4ec' : 'transparent',
-                   color:      selected===cat.categoryId ? '#e8587a' : '#333',
-                   fontWeight: selected===cat.categoryId ? 600 : 400,
-                   borderLeft: selected===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
-         @click="onSelect(cat.categoryId)">
+      style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
+      :style="{ paddingLeft:(cat._depth*14+6)+'px',
+      background: selected===cat.categoryId ? '#fce4ec' : 'transparent',
+      color:      selected===cat.categoryId ? '#e8587a' : '#333',
+      fontWeight: selected===cat.categoryId ? 600 : 400,
+      borderLeft: selected===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
+      @click="onSelect(cat.categoryId)">
       <span v-if="cat._hasChildren"
-            style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
-            @click.stop="toggleNode(cat.categoryId)">{{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}</span>
+        style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
+        @click.stop="toggleNode(cat.categoryId)">
+        {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
+      </span>
       <span v-else style="width:14px;flex-shrink:0"></span>
-      <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">{{ DEPTH_BULLET(cat._depth) }}</span>
+      <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">
+        {{ DEPTH_BULLET(cat._depth) }}
+      </span>
       <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
       <span v-if="showCount && showCount(cat.categoryId) > 0"
-            style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
+        style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
         {{ showCount(cat.categoryId) }}
       </span>
       <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
@@ -392,18 +404,22 @@ window.BoCategoryTree = {
               <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
             </div>
             <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
-                 style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
-                 :style="{ paddingLeft:(cat._depth*14+6)+'px',
-                           opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
-                           pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
-                 @mouseover="$event.currentTarget.style.background='#fce4ec'"
-                 @mouseout="$event.currentTarget.style.background=''"
-                 @click="onPickerSelect(cat)">
+              style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
+              :style="{ paddingLeft:(cat._depth*14+6)+'px',
+              opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
+              pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
+              @mouseover="$event.currentTarget.style.background='#fce4ec'"
+              @mouseout="$event.currentTarget.style.background=''"
+              @click="onPickerSelect(cat)">
               <span v-if="cat._hasChildren"
-                    style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
-                    @click.stop="toggleNode(cat.categoryId)">{{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}</span>
+                style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
+                @click.stop="toggleNode(cat.categoryId)">
+                {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
+              </span>
               <span v-else style="width:14px;flex-shrink:0"></span>
-              <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">{{ DEPTH_BULLET(cat._depth) }}</span>
+              <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">
+                {{ DEPTH_BULLET(cat._depth) }}
+              </span>
               <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
               <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
             </div>
@@ -414,13 +430,15 @@ window.BoCategoryTree = {
         <template v-else>
           <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
           <div v-for="cat in cfPickerList" :key="cat.categoryId"
-               @click="onPickerSelect(cat)"
-               style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;"
-               :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
-                         pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
-               @mouseover="$event.currentTarget.style.background='#fce4ec'"
-               @mouseout="$event.currentTarget.style.background=''">
-            <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">{{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}</span>
+            @click="onPickerSelect(cat)"
+            style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;"
+            :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
+            pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
+            @mouseover="$event.currentTarget.style.background='#fce4ec'"
+            @mouseout="$event.currentTarget.style.background=''">
+            <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">
+              {{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}
+            </span>
             <span style="font-size:12px">{{ cat.categoryNm }}</span>
             <span style="font-size:10px;color:#bbb;margin-left:auto">{{ ['','대','중','소'][cat.categoryDepth||1]||'' }}</span>
           </div>
@@ -428,7 +446,8 @@ window.BoCategoryTree = {
       </div>
     </div>
   </div>
-</teleport>`,
+</teleport>
+`,
 };
 
 /* ── BoPager — 관리자 공통 페이지네이션 ────────────────────────────────────
@@ -461,7 +480,8 @@ window.BoPager = {
       <option v-for="s in (pager.pageSizes||[])" :key="s" :value="s">{{ s }}개</option>
     </select>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoPathParentSelector 재귀 노드 ────────────────────────────────────── */
@@ -472,11 +492,13 @@ window.BoPathParentSelector = {
 <div>
   <div @click="onSelect(node.pathId)"
     :style="{ display:'flex', alignItems:'center', gap:'4px', padding:'6px 8px', cursor:'pointer', borderRadius:'4px',
-              paddingLeft: (12 + depth*14) + 'px' }"
+    paddingLeft: (12 + depth*14) + 'px' }"
     @mouseover="$event.currentTarget.style.background='#f0f2f5'"
     @mouseout="$event.currentTarget.style.background='transparent'">
     <span v-if="(node.children||[]).length>0" style="width:16px;font-size:11px;color:#666;font-weight:700"
-          @click.stop="onToggle(node.pathId)">{{ expanded.has(node.pathId) ? '▼' : '▶' }}</span>
+      @click.stop="onToggle(node.pathId)">
+      {{ expanded.has(node.pathId) ? '▼' : '▶' }}
+    </span>
     <span v-else style="width:16px"></span>
     <span style="flex:1;font-size:13px;">{{ node.pathLabel || '(이름없음)' }}</span>
   </div>
@@ -484,7 +506,8 @@ window.BoPathParentSelector = {
     <bo-path-parent-selector v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoMultiCheckSelect ──────────────────────────────────────────────────
@@ -619,25 +642,26 @@ window.BoMultiCheckSelect = {
   template: /* html */`
 <div ref="rootRef" class="multi-check-select" :style="'position:relative;display:inline-block;min-width:'+minWidth">
   <div @click="onToggle"
-       :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
+    :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
     {{ cfDisplay }}
     <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">▼</span>
   </div>
   <div v-if="open"
-       style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:280px;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:4px 0;">
+    style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:280px;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:4px 0;">
     <label v-if="showAll" style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-weight:600;white-space:nowrap;">
       <input type="checkbox" :checked="cfIsAll" @change="onClickAll" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
       <span style="white-space:nowrap;">{{ allLabel }}</span>
     </label>
     <label v-for="o in cfNorm" :key="o.value"
-           style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;white-space:nowrap;"
-           @mouseenter="$event.currentTarget.style.background='#f9fafb'"
-           @mouseleave="$event.currentTarget.style.background='transparent'">
+      style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;white-space:nowrap;"
+      @mouseenter="$event.currentTarget.style.background='#f9fafb'"
+      @mouseleave="$event.currentTarget.style.background='transparent'">
       <input type="checkbox" :checked="cfSelected.has(o.value)" @change="onClickOption(o.value)" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
       <span style="white-space:nowrap;">{{ o.label }}</span>
     </label>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoDateTimePicker — 일자 + 시분 선택 공통 컴포넌트 ─────────────────────
@@ -744,18 +768,25 @@ window.BoDateTimePicker = {
   template: /* html */`
 <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;">
   <input type="date" :class="inputClass" :value="cfParts.date"
-         :disabled="readonly" @change="onDateChange"
-         :style="cfBaseStyle+'width:'+dateWidth+';margin:0;flex-shrink:0;'" />
+    :disabled="readonly" @change="onDateChange"
+    :style="cfBaseStyle+'width:'+dateWidth+';margin:0;flex-shrink:0;'" />
   <input type="time" :class="inputClass" :value="cfParts.time"
-         :disabled="readonly" @change="onTimeChange"
-         :style="cfBaseStyle+'width:'+timeWidth+';margin:0;flex-shrink:0;'" />
+    :disabled="readonly" @change="onTimeChange"
+    :style="cfBaseStyle+'width:'+timeWidth+';margin:0;flex-shrink:0;'" />
   <span v-if="placeholderDate && !cfParts.date && !cfParts.time"
-        style="font-size:11px;color:#aaa;white-space:nowrap;">{{ placeholderDate }}</span>
+    style="font-size:11px;color:#aaa;white-space:nowrap;">
+    {{ placeholderDate }}
+  </span>
   <button v-if="showNow && !readonly" type="button" @click="onNow"
-          style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">🕐 현재</button>
+    style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
+    🕐 현재
+  </button>
   <button v-if="showClear && !readonly && (cfParts.date || cfParts.time)" type="button" @click="onClear"
-          style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">✕ 지움</button>
-</div>`,
+    style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
+    ✕ 지움
+  </button>
+</div>
+`,
 };
 
 /* ── BoPathPickField — 표시경로(sy_path) 선택 필드 (PathPickModal 내장) ───────
@@ -816,20 +847,23 @@ window.BoPathPickField = {
   template: /* html */`
 <component :is="bare ? 'div' : 'td'">
   <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',
-                background:'#f5f5f7',
-                color: cfHasVal ? '#374151' : '#9ca3af',
-                fontWeight: cfHasVal ? 600 : 400,
-                display:'flex',alignItems:'center',gap:'6px'}">
+    background:'#f5f5f7',
+    color: cfHasVal ? '#374151' : '#9ca3af',
+    fontWeight: cfHasVal ? 600 : 400,
+    display:'flex',alignItems:'center',gap:'6px'}">
     <span style="flex:1;">{{ cfLabel || placeholder }}</span>
     <button type="button" :disabled="disabled"
       @click.stop="onOpen" @dblclick.stop="onOpen"
       :title="modalTitle"
       :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
-      @mouseover="onHover($event)" @mouseout="onLeave($event)">🔍</button>
+      @mouseover="onHover($event)" @mouseout="onLeave($event)">
+      🔍
+    </button>
   </div>
   <path-pick-modal v-if="show" :biz-cd="bizCd"
     :value="row ? row[pathField] : null"
     :title="modalTitle"
     @select="onPicked" @close="onClose" />
-</component>`,
+</component>
+`,
 };

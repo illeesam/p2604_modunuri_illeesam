@@ -163,7 +163,9 @@ window.BoSearchArea = {
   <template v-if="columns && param">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
       <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
-      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" class="search-label">{{ col.label }}</label>
+      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" class="search-label">
+        {{ col.label }}
+      </label>
       <!-- 라벨 텍스트 -->
       <label v-if="col.type==='label'" class="search-label">{{ col.label }}</label>
       <!-- 슬롯 탈출구 -->
@@ -177,7 +179,9 @@ window.BoSearchArea = {
         <button class="btn btn-secondary btn-sm" @click="col.onOpen(po(col))">{{ col.openLabel || '검색' }}</button>
         <button v-if="po(col)[col.key]" class="btn btn-sm"
           style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;"
-          @click="col.onClear(po(col))">✕</button>
+          @click="col.onClear(po(col))">
+          ✕
+        </button>
       </template>
       <!-- 다중선택 (검색대상) -->
       <bo-multi-check-select v-else-if="col.type==='multiCheck'"
@@ -228,7 +232,8 @@ window.BoSearchArea = {
     <button class="btn btn-secondary btn-sm" @click="onReset">{{ resetLabel }}</button>
     <slot name="actions-after"></slot>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── 공통 헬퍼 (세 그리드 공유) ──────────────────────────────────────────── */
@@ -419,13 +424,15 @@ window.BoGrid = {
   template: /* html */`
 <div :class="bare ? '' : 'card'">
   <div v-if="!bare" class="toolbar">
-    <span class="list-title">{{ listTitle }} <span class="list-count">{{ countText != null ? countText : ('총 ' + cfTotal + '건') }}</span></span>
+    <span class="list-title">
+      {{ listTitle }}
+      <span class="list-count">{{ countText != null ? countText : ('총 ' + cfTotal + '건') }}</span>
+    </span>
     <div style="margin-left:auto;display:flex;gap:6px;">
       <slot name="toolbar-actions"></slot>
       <button v-if="showSave" class="btn btn-primary btn-sm" @click="onSave">{{ saveLabel }}</button>
     </div>
   </div>
-
   <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
     <thead>
       <tr>
@@ -436,23 +443,27 @@ window.BoGrid = {
         <th style="width:36px;text-align:center;">번호</th>
         <slot name="head">
           <th v-for="col in columns" :key="col.key" :class="col.cls"
-              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
-              @click="onSort(col)">
+            :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
+            @click="onSort(col)">
             {{ col.noHead ? '' : col.label }}
             <span v-if="col.sortKey"
-                  :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">{{ sortIcon(col) }}</span>
+              :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
+              {{ sortIcon(col) }}
+            </span>
           </th>
         </slot>
-        <th v-if="rowActions" style="width:40px;text-align:center;"><slot name="head-actions">관리</slot></th>
+        <th v-if="rowActions" style="width:40px;text-align:center;">
+          <slot name="head-actions">관리</slot>
+        </th>
         <slot v-else name="head-actions"></slot>
       </tr>
     </thead>
     <tbody>
       <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
         <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
-            :draggable="draggable"
-            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd"
-            @click="rowClickable ? onRowClick(row) : null">
+          :draggable="draggable"
+          @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd"
+          @click="rowClickable ? onRowClick(row) : null">
           <td v-if="selectable" style="text-align:center;" @click.stop>
             <input type="checkbox" :checked="fnRowChecked(row)" @change="onToggleCheck(row)" />
           </td>
@@ -463,17 +474,17 @@ window.BoGrid = {
               <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                 <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                 <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
-                       :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
-                       @click.stop @input="$emit('cell-change', row, col)" />
+                  :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
+                  @click.stop @input="$emit('cell-change', row, col)" />
                 <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
-                       style="padding:2px 6px;font-size:12px;width:80px;text-align:right;"
-                       @click.stop @input="$emit('cell-change', row, col)" />
+                  style="padding:2px 6px;font-size:12px;width:80px;text-align:right;"
+                  @click.stop @input="$emit('cell-change', row, col)" />
                 <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
-                       style="padding:2px 4px;font-size:11px;width:130px;text-align:center;"
-                       @click.stop @input="$emit('cell-change', row, col)" />
+                  style="padding:2px 4px;font-size:11px;width:130px;text-align:center;"
+                  @click.stop @input="$emit('cell-change', row, col)" />
                 <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
-                        style="padding:2px 4px;font-size:12px;"
-                        @click.stop @change="$emit('cell-change', row, col)">
+                  style="padding:2px 4px;font-size:12px;"
+                  @click.stop @change="$emit('cell-change', row, col)">
                   <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
@@ -481,31 +492,35 @@ window.BoGrid = {
                 <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="$emit('cell-change', row, col)" />
                 <!-- 모달 인터셉트 select (col.selectIntercept: { valueKey | value:fn(row), options, onChange:fn(row,newVal,$event), nullable, nullLabel, disabled:fn(row) }) — v-model 미사용 -->
                 <select v-else-if="col.selectIntercept" class="form-control grid-select" style="font-size:11px;padding:2px 4px;"
-                        :value="typeof col.selectIntercept.value==='function' ? col.selectIntercept.value(row) : row[col.selectIntercept.valueKey]"
-                        :disabled="typeof col.selectIntercept.disabled==='function' ? col.selectIntercept.disabled(row) : false"
-                        @click.stop @change="col.selectIntercept.onChange(row, $event.target.value, $event)">
+                  :value="typeof col.selectIntercept.value==='function' ? col.selectIntercept.value(row) : row[col.selectIntercept.valueKey]"
+                  :disabled="typeof col.selectIntercept.disabled==='function' ? col.selectIntercept.disabled(row) : false"
+                  @click.stop @change="col.selectIntercept.onChange(row, $event.target.value, $event)">
                   <option v-if="col.selectIntercept.nullable" value="">{{ col.selectIntercept.nullLabel || '-' }}</option>
                   <option v-for="o in U.normOptions(col.selectIntercept.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <!-- 외부 setter 인터셉트 input (col.editIntercept: { type:'text'|'number'|'date', placeholder, onInput:fn(row,newVal,idx,$event) }) — v-model 미사용 -->
                 <input v-else-if="col.editIntercept" class="form-control" :type="col.editIntercept.type || 'text'"
-                       :value="row[col.key]" :placeholder="col.editIntercept.placeholder" style="margin:0;padding:2px 6px;font-size:12px;"
-                       @click.stop @input="col.editIntercept.onInput(row, $event.target.value, idx, $event)" />
+                  :value="row[col.key]" :placeholder="col.editIntercept.placeholder" style="margin:0;padding:2px 6px;font-size:12px;"
+                  @click.stop @input="col.editIntercept.onInput(row, $event.target.value, idx, $event)" />
                 <!-- 풀폭 버튼 picker (col.linkButton: { label:fn(row)=>string, onClick:fn(row), suffix:string, btnClass:string }) -->
                 <button v-else-if="col.linkButton" type="button"
-                        :class="col.linkButton.btnClass || 'btn btn-secondary btn-xs'"
-                        style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                        @click.stop="col.linkButton.onClick(row)">{{ col.linkButton.label(row) }}{{ col.linkButton.suffix != null ? ' ' + col.linkButton.suffix : ' ▼' }}</button>
+                  :class="col.linkButton.btnClass || 'btn btn-secondary btn-xs'"
+                  style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                  @click.stop="col.linkButton.onClick(row)">
+                  {{ col.linkButton.label(row) }}{{ col.linkButton.suffix != null ? ' ' + col.linkButton.suffix : ' ▼' }}
+                </button>
                 <!-- 셀별 토글 링크 (col.linkToggle: { active:fn(row)=>bool, activeStyle, baseStyle, title, onClick:fn(row) }) -->
                 <span v-else-if="col.linkToggle" class="title-link" @click.stop="col.linkToggle.onClick(row)"
-                      :title="col.linkToggle.title || null"
-                      :style="col.linkToggle.active(row) ? (col.linkToggle.activeStyle || 'color:#e8587a;font-weight:700;') : (col.linkToggle.baseStyle || 'color:#1e88e5;font-weight:500;')">{{ U.cellText(col, row) }}</span>
+                  :title="col.linkToggle.title || null"
+                  :style="col.linkToggle.active(row) ? (col.linkToggle.activeStyle || 'color:#e8587a;font-weight:700;') : (col.linkToggle.baseStyle || 'color:#1e88e5;font-weight:500;')">
+                  {{ U.cellText(col, row) }}
+                </span>
                 <!-- 택배 추적 박스 그룹 (col.trackBoxes: { items:fn(row)=>[{label,courier,trackingNo,colorVariant}], onTrack:fn(courier,trackingNo) }) -->
                 <template v-else-if="col.trackBoxes">
                   <div v-if="col.trackBoxes.items(row).length" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
                     <span v-for="(it, ix) in col.trackBoxes.items(row)" :key="ix" @click.stop="col.trackBoxes.onTrack(it.courier, it.trackingNo)"
-                          :style="'cursor:pointer;padding:1px 6px;border-radius:4px;font-weight:700;'
-                                 +(it.colorVariant==='orange'?'border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;':'border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;')">
+                      :style="'cursor:pointer;padding:1px 6px;border-radius:4px;font-weight:700;'
+                      +(it.colorVariant==='orange'?'border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;':'border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;')">
                       {{ it.label ? it.label + ' ' : '' }}{{ it.courier }} · {{ it.trackingNo || '-' }} 🔍
                     </span>
                   </div>
@@ -520,16 +535,26 @@ window.BoGrid = {
                   :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'" />
                 <!-- 인라인 path-button (라벨 + 🔍 버튼 + onOpen 콜백) -->
                 <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
-                  <span style="flex:1;">{{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}</span>
-                  <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">🔍</button>
+                  <span style="flex:1;">
+                    {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
+                  </span>
+                  <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+                    🔍
+                  </button>
                 </div>
                 <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) -->
                 <span v-else-if="col.link" class="title-link" @click.stop="onRowClick(row)"
-                      :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">{{ U.cellText(col, row) }}</span>
-                <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="onRefClick(row, col)">{{ U.cellText(col, row) }}</a>
+                  :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
+                  {{ U.cellText(col, row) }}
+                </span>
+                <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="onRefClick(row, col)">
+                  {{ U.cellText(col, row) }}
+                </a>
                 <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
                 <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
-                      :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">{{ U.cellText(col, row) }}</span>
+                  :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
+                  {{ U.cellText(col, row) }}
+                </span>
                 <template v-else>{{ U.cellText(col, row) }}</template>
               </td>
             </slot>
@@ -549,20 +574,22 @@ window.BoGrid = {
       </template>
       <tr v-if="!rows.length">
         <td :colspan="cfColspan"
-            style="text-align:center;padding:30px;color:#aaa">{{ emptyText }}</td>
+          style="text-align:center;padding:30px;color:#aaa">
+          {{ emptyText }}
+        </td>
       </tr>
     </tbody>
     <tfoot v-if="cfShowTfoot">
       <slot name="tfoot" :rows="rows" :colspan="cfColspan"></slot>
     </tfoot>
   </table>
-
   <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 (margin-top 좁힘, nowrap 보장) -->
   <div v-if="pager && !bare" style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
     <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg"
       style="margin-top:0;min-height:34px;" />
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoGridCrud — 유형③ CRUD 그리드(전체 로드 / 행상태 N·I·U·D) ──────────── */
@@ -706,10 +733,7 @@ window.BoGridCrud = {
   template: /* html */`
 <div class="card">
   <div class="toolbar">
-    <span class="list-title">
-      {{ listTitle }}
-      <span class="list-count">{{ cfVisibleCount }}건</span>
-    </span>
+    <span class="list-title">{{ listTitle }} <span class="list-count">{{ cfVisibleCount }}건</span></span>
     <div style="display:flex;gap:6px;margin-left:auto;">
       <slot name="toolbar-actions"></slot>
       <button v-if="showExport" class="btn btn-green btn-sm" @click="onExport">📥 엑셀</button>
@@ -719,7 +743,6 @@ window.BoGridCrud = {
       <button v-if="showSave" class="btn btn-primary btn-sm" @click="onSave">저장</button>
     </div>
   </div>
-
   <div :style="'max-height:' + maxHeight + ';overflow-y:auto;'">
     <table class="bo-table crud-grid">
       <thead>
@@ -733,11 +756,13 @@ window.BoGridCrud = {
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
-                :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
-                :title="fnColTitle(col)" @click="onSort(col)">
+              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
+              :title="fnColTitle(col)" @click="onSort(col)">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
-                    :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">{{ sortIcon(col) }}</span>
+                :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
+                {{ sortIcon(col) }}
+              </span>
             </th>
           </slot>
           <th class="col-act"></th>
@@ -748,11 +773,11 @@ window.BoGridCrud = {
           <td :colspan="cfEmptyColspan" style="text-align:center;color:#999;padding:30px;">{{ emptyText }}</td>
         </tr>
         <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)"
-            class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]"
-            :draggable="cfShowDrag"
-            @click="onSetFocused(idx)"
-            @dblclick="$emit('row-dblclick', fnRow(item), idx)"
-            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+          class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]"
+          :draggable="cfShowDrag"
+          @click="onSetFocused(idx)"
+          @dblclick="$emit('row-dblclick', fnRow(item), idx)"
+          @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
           <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td v-if="cfShowNo" style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td v-if="cfShowId" class="col-id-val">{{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}</td>
@@ -767,44 +792,56 @@ window.BoGridCrud = {
               <td :style="U.tdStyle(col, fnRow(item))" :class="U.cellClass(col, fnRow(item))" :title="U.cellTitle(col, fnRow(item))">
                 <div v-if="col.edit==='text' && col.treeDepth" style="display:flex;align-items:center;">
                   <span :style="{ marginLeft:(fnRow(item)._depth*14)+'px', marginRight:'6px', fontWeight:'700',
-                                  fontSize: fnRow(item)._depth===0 ? '7px' : '12px', flexShrink:0,
-                                  color: (typeof col.treeColor==='function' ? col.treeColor(fnRow(item)._depth) : '#888') }">{{ typeof col.treeBullet==='function' ? col.treeBullet(fnRow(item)._depth) : '●' }}</span>
+                    fontSize: fnRow(item)._depth===0 ? '7px' : '12px', flexShrink:0,
+                    color: (typeof col.treeColor==='function' ? col.treeColor(fnRow(item)._depth) : '#888') }">
+                    {{ typeof col.treeBullet==='function' ? col.treeBullet(fnRow(item)._depth) : '●' }}
+                  </span>
                   <input class="grid-input" :class="{ 'grid-mono': col.mono }"
-                         v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                         :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" style="flex:1;" />
+                    v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                    :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" style="flex:1;" />
                 </div>
                 <input v-else-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
-                       v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                       :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" />
+                  v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                  :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" />
                 <input v-else-if="col.edit==='number'" type="number" class="grid-input grid-num"
-                       v-model.number="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                       @input="onCellChange(fnRow(item))" />
+                  v-model.number="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                  @input="onCellChange(fnRow(item))" />
                 <input v-else-if="col.edit==='date'" type="date" class="grid-input"
-                       v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                       @input="onCellChange(fnRow(item))" />
+                  v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                  @input="onCellChange(fnRow(item))" />
                 <select v-else-if="col.edit==='select'" class="grid-select"
-                        v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                        @change="onCellChange(fnRow(item))">
+                  v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
+                  @change="onCellChange(fnRow(item))">
                   <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="onCellChange(fnRow(item))" />
                 <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
-                  <span style="flex:1;">{{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}</span>
-                  <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">🔍</button>
+                  <span style="flex:1;">
+                    {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
+                  </span>
+                  <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+                    🔍
+                  </button>
                 </div>
                 <div v-else-if="col.parentPick" style="display:flex;align-items:center;gap:5px;">
                   <span v-if="fnRow(item)[col.key]"
                     style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                    :title="col.parentPick.label(fnRow(item)[col.key])">{{ col.parentPick.label(fnRow(item)[col.key]) }}</span>
+                    :title="col.parentPick.label(fnRow(item)[col.key])">
+                    {{ col.parentPick.label(fnRow(item)[col.key]) }}
+                  </span>
                   <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">{{ col.parentPick.placeholder || '최상위' }}</span>
                   <button v-if="fnRow(item)._row_status!=='D'" class="btn btn-secondary btn-xs"
                     style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" :title="col.parentPick.title || '상위 선택'"
-                    @click.stop="col.parentPick.open(fnRow(item))">🔍</button>
+                    @click.stop="col.parentPick.open(fnRow(item))">
+                    🔍
+                  </button>
                 </div>
                 <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>
                 <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
-                      :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>
+                  :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">
+                  {{ U.cellText(col, fnRow(item)) }}
+                </span>
                 <template v-else>{{ U.cellText(col, fnRow(item)) }}</template>
               </td>
             </slot>
@@ -818,7 +855,8 @@ window.BoGridCrud = {
       </tbody>
     </table>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoPathTreeCard — 좌측 트리 카드 래퍼 (BoPathTree 내장) ──────────────────
@@ -856,7 +894,8 @@ window.BoPathTreeCard = {
   template: /* html */`
 <div class="card" :style="'padding:' + pad + ';'">
   <div class="toolbar" style="margin-bottom:6px;">
-    <span class="list-title" style="font-size:13px;">📂 {{ title }}
+    <span class="list-title" style="font-size:13px;">
+      📂 {{ title }}
       <span v-if="showBizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#{{ bizCd }}</span>
     </span>
     <span v-if="cfHasSel" @click="onSelect(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">{{ allLabel }}</span>
@@ -864,7 +903,8 @@ window.BoPathTreeCard = {
   <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
     <bo-path-tree :biz-cd="bizCd" :show-biz-cd="showBizCd" :selected="selected" @select="onSelect" />
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoLocalTreeCard — 로컬 데이터 트리 카드 (BoPathTreeNode 사용) ────────────
@@ -918,7 +958,8 @@ window.BoLocalTreeCard = {
   template: /* html */`
 <div class="card" :style="cfCardStyle">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <span style="font-size:13px;font-weight:600;color:#555">📂 {{ title }}
+    <span style="font-size:13px;font-weight:600;color:#555">
+      📂 {{ title }}
       <span v-if="bizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#{{ bizCd }}</span>
     </span>
     <div v-if="cfHasSel" style="font-size:11px;color:#1677ff;cursor:pointer" @click="onSelect(null)">{{ allLabel }}</div>
@@ -932,7 +973,8 @@ window.BoLocalTreeCard = {
     <bo-path-tree-node :node="node" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="0" />
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── BoModal — 공통 모달 껍데기 래퍼 ────────────────────────────────────────
@@ -1023,7 +1065,9 @@ window.BoModal = {
       </div>
       <div :style="cfBodyOuterStyle">
         <div :style="cfBodyInnerStyle">
-          <slot name="body"><slot></slot></slot>
+          <slot name="body">
+            <slot></slot>
+          </slot>
         </div>
       </div>
       <div v-if="$slots.footer" class="modal-footer" style="flex-shrink:0;display:flex;justify-content:flex-end;gap:8px;padding:12px 0 0;border-top:1px solid #f0f0f0;margin-top:14px;">
@@ -1031,7 +1075,8 @@ window.BoModal = {
       </div>
     </div>
   </div>
-</teleport>`,
+</teleport>
+`,
 };
 
 /* ── BoCronModal — Cron 표현식 편집 모달 (BoModal 기반) ──────────────────────
@@ -1143,8 +1188,8 @@ window.BoCronModal = {
       <button v-for="p in PRESETS" :key="p.value"
         class="btn btn-sm"
         :style="st.preview === p.value
-          ? 'border:1.5px solid #e8587a;color:#e8587a;background:#fff5f7;font-weight:600;'
-          : 'border:1px solid #d9d9d9;color:#555;background:#fff;'"
+        ? 'border:1.5px solid #e8587a;color:#e8587a;background:#fff5f7;font-weight:600;'
+        : 'border:1px solid #d9d9d9;color:#555;background:#fff;'"
         style="font-size:11px;padding:5px 10px;text-align:left;line-height:1.5;"
         @click="applyPreset(p.value)">
         <div>{{ p.label }}</div>
@@ -1174,7 +1219,8 @@ window.BoCronModal = {
     <button class="btn btn-secondary" @click="onClose">취소</button>
     <button class="btn btn-primary" @click="onApply">적용</button>
   </template>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── BoTreeSelectorModal — 트리 노드 선택 모달 (BoModal 기반) ────────────────
@@ -1212,11 +1258,14 @@ window.BoTreeSelectorModal = {
 <bo-modal :show="show" :title="title" width="420px" max-height="70vh" body-pad="0" @close="onClose">
   <div style="border:1px solid #eee;border-radius:8px;overflow:hidden;">
     <div v-if="rootLabel" style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff;"
-         @click="onSelect(null)">{{ rootLabel }}</div>
+      @click="onSelect(null)">
+      {{ rootLabel }}
+    </div>
     <bo-path-parent-selector :node="node" :expanded="expanded"
       :on-toggle="onToggle" :on-select="onSelect" :depth="0" />
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── BoRoleSelectModal — 역할 트리 + 메뉴권한 선택 모달 (BoModal 기반) ───────
@@ -1251,7 +1300,9 @@ window.BoRoleSelectModal = {
   },
   template: /* html */`
 <bo-modal :show="show" :title="title" width="1000px" height="720px" body-pad="0" @close="onClose">
-  <template #header-extra><slot name="header-extra"></slot></template>
+  <template #header-extra>
+    <slot name="header-extra"></slot>
+  </template>
   <div style="display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;height:100%;">
     <div style="border-right:1px solid #eee;overflow-y:auto;padding:12px;">
       <slot name="tree"></slot>
@@ -1261,11 +1312,14 @@ window.BoRoleSelectModal = {
     </div>
   </div>
   <template #footer>
-    <span style="margin-right:auto;"><slot name="footer-extra"></slot></span>
+    <span style="margin-right:auto;">
+      <slot name="footer-extra"></slot>
+    </span>
     <button class="btn btn-secondary" @click="onClose">취소</button>
     <button class="btn btn-primary" :disabled="confirmDisabled" @click="onConfirm">✔ {{ confirmLabel }}</button>
   </template>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── BoRowCancelDelete — CRUD 그리드 #row-actions 표준 취소/삭제 버튼 묶음 ─────
@@ -1308,7 +1362,8 @@ window.BoRowCancelDelete = {
 <span>
   <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="onCancel">{{ cancelLabel }}</button>
   <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="onDelete">{{ deleteLabel }}</button>
-</span>`,
+</span>
+`,
 };
 
 /* ── BoFormArea ────────────────────────────────────────────────────────────
@@ -1377,83 +1432,82 @@ window.BoFormArea = {
 <div class="bo-form-area">
   <div v-for="(row, ri) in cfRows" :key="ri" class="form-row">
     <div v-for="col in row" :key="col.key"
-         class="form-group"
-         :style="(col.colSpan && col.colSpan>1 ? ('flex:' + col.colSpan) : '')">
+      class="form-group"
+      :style="(col.colSpan && col.colSpan>1 ? ('flex:' + col.colSpan) : '')">
       <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지) -->
       <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
         {{ col.label }}
-        <span v-if="col.required && !readonly" class="req">*</span>
+        <span v-if="col.required && !readonly" class="req">
+          *
+        </span>
       </label>
-      <label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" style="visibility:hidden;">·</label>
-
+      <label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" style="visibility:hidden;">
+        ·
+      </label>
       <!-- readonly 표시 -->
       <div v-if="col.type === 'readonly'" class="readonly-field">{{ dispVal(col) }}</div>
-
       <!-- text / password -->
       <input v-else-if="col.type === 'text' || col.type === 'password'"
-             class="form-control" :type="col.type === 'password' ? 'password' : 'text'"
-             v-model="form[col.key]" :placeholder="col.placeholder"
-             :readonly="readonly || col.readonly"
-             :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
-             :class="errors[col.key] ? 'is-invalid' : ''"
-             @input="onChange(col, $event)" />
-
+        class="form-control" :type="col.type === 'password' ? 'password' : 'text'"
+        v-model="form[col.key]" :placeholder="col.placeholder"
+        :readonly="readonly || col.readonly"
+        :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="onChange(col, $event)" />
       <!-- number -->
       <input v-else-if="col.type === 'number'" class="form-control" type="number"
-             v-model.number="form[col.key]" :placeholder="col.placeholder"
-             :readonly="readonly || col.readonly" :min="col.min" :max="col.max"
-             :style="col.readonly ? 'background:#f5f5f5;' : ''"
-             :class="errors[col.key] ? 'is-invalid' : ''"
-             @input="onChange(col, $event)" />
-
+        v-model.number="form[col.key]" :placeholder="col.placeholder"
+        :readonly="readonly || col.readonly" :min="col.min" :max="col.max"
+        :style="col.readonly ? 'background:#f5f5f5;' : ''"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="onChange(col, $event)" />
       <!-- date -->
       <input v-else-if="col.type === 'date'" class="form-control" type="date"
-             v-model="form[col.key]" :readonly="readonly"
-             :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
-
+        v-model="form[col.key]" :readonly="readonly"
+        :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
       <!-- checkbox (Y/N 토글) -->
       <label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;">
         <input type="checkbox"
-               :checked="form[col.key] === (col.checkedValue || 'Y')"
-               :disabled="readonly"
-               @change="form[col.key] = $event.target.checked ? (col.checkedValue || 'Y') : (col.uncheckedValue || 'N')" />
+          :checked="form[col.key] === (col.checkedValue || 'Y')"
+          :disabled="readonly"
+          @change="form[col.key] = $event.target.checked ? (col.checkedValue || 'Y') : (col.uncheckedValue || 'N')" />
         <span>{{ col.checkboxLabel || col.label }}</span>
       </label>
-
       <!-- textarea -->
       <textarea v-else-if="col.type === 'textarea'" class="form-control"
-                v-model="form[col.key]" :placeholder="col.placeholder"
-                :readonly="readonly" :rows="col.rows || 3"
-                :class="errors[col.key] ? 'is-invalid' : ''"
-                @input="onChange(col, $event)"></textarea>
-
+        v-model="form[col.key]" :placeholder="col.placeholder"
+        :readonly="readonly" :rows="col.rows || 3"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="onChange(col, $event)"></textarea>
       <!-- select -->
       <select v-else-if="col.type === 'select'" class="form-control"
-              v-model="form[col.key]" :disabled="readonly"
-              :class="errors[col.key] ? 'is-invalid' : ''"
-              @change="onChange(col, $event)">
-        <option v-if="col.nullable !== false && col.nullLabel" value="">{{ col.nullLabel }}</option>
+        v-model="form[col.key]" :disabled="readonly"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @change="onChange(col, $event)">
+        <option v-if="col.nullable !== false && col.nullLabel" value="">
+          {{ col.nullLabel }}
+        </option>
         <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
-
       <!-- pathPick (표시경로 선택 박스) -->
       <div v-else-if="col.type === 'pathPick'" style="display:flex;align-items:center;gap:8px;">
         <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
           {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}
         </div>
-        <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="col.onOpen && col.onOpen(form)">🔍 선택</button>
-        <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="form[col.key]=null" style="color:#999;">✕</button>
+        <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="col.onOpen && col.onOpen(form)">
+          🔍 선택
+        </button>
+        <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="form[col.key]=null" style="color:#999;">
+          ✕
+        </button>
       </div>
-
       <!-- slot 탈출구 -->
       <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col" :readonly="readonly"></slot>
-
       <!-- 에러 메시지 / 힌트 -->
       <span v-if="errors[col.key]" class="field-error">{{ errors[col.key] }}</span>
       <span v-else-if="col.hint" class="form-hint" style="font-size:11px;color:#888;">{{ col.hint }}</span>
     </div>
   </div>
-
   <!-- 폼 액션 버튼 -->
   <div v-if="showActions" class="form-actions">
     <slot name="actions-before"></slot>
@@ -1467,5 +1521,6 @@ window.BoFormArea = {
     </template>
     <slot name="actions-after"></slot>
   </div>
-</div>`,
+</div>
+`,
 };

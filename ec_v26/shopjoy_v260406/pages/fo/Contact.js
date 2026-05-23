@@ -90,11 +90,11 @@ window.Contact = {
       <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">고객센터</h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
         <span style="cursor:pointer;" @click="navigate('home')">홈</span>
-        <span>/</span><span style="color:#333;">고객센터</span>
+        <span>/</span>
+        <span style="color:#333;">고객센터</span>
       </div>
     </div>
   </div>
-
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(14px,2.5vw,28px);align-items:start;" class="contact-grid">
     <!-- -- 문의 폼 --------------------------------------------------------- -->
     <div class="card" style="padding:clamp(16px,4vw,32px);">
@@ -102,21 +102,42 @@ window.Contact = {
       <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
       <div style="margin-bottom:22px;">
         <label class="form-label">첨부파일 (준비중)</label>
-        <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#666;font-size:0.9rem;">
-          파일 업로드 기능은 별도로 구현 예정입니다.
-        </div>
+        <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#666;font-size:0.9rem;">파일 업로드 기능은 별도로 구현 예정입니다.</div>
       </div>
       <button class="btn-blue" @click="handleSubmit" style="width:100%;padding:13px;">문의 접수하기</button>
     </div>
-
     <!-- -- 연락처 + 미니 FAQ ------------------------------------------------- -->
     <div style="display:flex;flex-direction:column;gap:18px;">
       <div class="card" style="padding:24px;">
         <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:16px;color:var(--text-primary);">📋 연락처</h3>
-        <div class="info-row"><span class="info-icon">📞</span><div><div class="info-label">전화</div><div class="info-val">{{ config.tel }}</div></div></div>
-        <div class="info-row"><span class="info-icon">📧</span><div><div class="info-label">이메일</div><div class="info-val">{{ config.email }}</div></div></div>
-        <div class="info-row"><span class="info-icon">🕘</span><div><div class="info-label">운영 시간</div><div class="info-val">평일 09:00 – 18:00</div></div></div>
-        <div class="info-row"><span class="info-icon">🚚</span><div><div class="info-label">배송 안내</div><div class="info-val">결제 확인 후 1~2 영업일 출고</div></div></div>
+        <div class="info-row">
+          <span class="info-icon">📞</span>
+          <div>
+            <div class="info-label">전화</div>
+            <div class="info-val">{{ config.tel }}</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-icon">📧</span>
+          <div>
+            <div class="info-label">이메일</div>
+            <div class="info-val">{{ config.email }}</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-icon">🕘</span>
+          <div>
+            <div class="info-label">운영 시간</div>
+            <div class="info-val">평일 09:00 – 18:00</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-icon">🚚</span>
+          <div>
+            <div class="info-label">배송 안내</div>
+            <div class="info-val">결제 확인 후 1~2 영업일 출고</div>
+          </div>
+        </div>
       </div>
       <div class="card" style="padding:24px;">
         <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:4px;color:var(--text-primary);">❓ 자주 묻는 질문</h3>
@@ -132,5 +153,5 @@ window.Contact = {
     </div>
   </div>
 </div>
-  `
+`
 };

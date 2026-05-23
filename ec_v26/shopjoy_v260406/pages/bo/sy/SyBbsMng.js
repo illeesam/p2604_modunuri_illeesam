@@ -262,32 +262,31 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <div class="page-title">게시글관리</div>  <div class="card">
+  <div class="page-title">게시글관리</div>
+  <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  
-
-
-
   <bo-grid
     :columns="baseGridColumns" :rows="bbss" :pager="pager" row-key="bbsId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건' + (uiState.selectedPath != null ? '  #' + uiState.selectedPath : '')"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.bbsId)">
-
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </template>
-    <template #head-actions><th style="text-align:right">관리</th></template>
-
+    <template #head-actions>
+      <th style="text-align:right">관리</th>
+    </template>
     <template #row-actions="{ row }">
-      <td><div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.bbsId)">수정</button>
-        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-      </div></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.bbsId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+        </div>
+      </td>
     </template>
   </bo-grid>
   <div v-if="detailModal.show" style="margin-top:4px;">

@@ -346,11 +346,9 @@ window.SyDeptMng = {
   template: /* html */`
 <div>
   <div class="page-title">부서관리</div>
-
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 부서</span></div>
@@ -363,28 +361,25 @@ window.SyDeptMng = {
       </div>
     </div>
     <div>
-
-  <bo-grid-crud
-    :columns="baseGridColumns" :rows="gridRows" row-key="deptId"
-    list-title="부서목록" :show-export="true" :draggable="false"
-    v-model:focusedIdx="uiState.focusedIdx"
-    v-model:checkAll="uiState.checkAll"
-    @add="addRow" @save="handleSave"
-    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-    @cell-change="onCellChange" @export="exportExcel">
-
-
-
-    <template #row-actions="{ row, idx }">
-      <bo-row-cancel-delete :row="row" :allow-delete-null="true"
-        @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
-    </template>
-  </bo-grid-crud>
-
-  <dept-tree-modal
-    v-if="deptTreeModal && deptTreeModal.show" :exclude-id="deptTreeModal.targetRow && deptTreeModal.targetRow.deptId > 0 ? deptTreeModal.targetRow.deptId : null"
-    @select="onParentSelect"
-    @close="deptTreeModal.show=false" />
+      <bo-grid-crud
+        :columns="baseGridColumns" :rows="gridRows" row-key="deptId"
+        list-title="부서목록" :show-export="true" :draggable="false"
+        v-model:focusedIdx="uiState.focusedIdx"
+        v-model:checkAll="uiState.checkAll"
+        @add="addRow" @save="handleSave"
+        @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+        @cell-change="onCellChange" @export="exportExcel">
+        <template #row-actions="{ row, idx }">
+          <bo-row-cancel-delete :row="row" :allow-delete-null="true"
+            @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
+        </template>
+      </bo-grid-crud>
+      <dept-tree-modal
+        v-if="deptTreeModal && deptTreeModal.show" :exclude-id="deptTreeModal.targetRow && deptTreeModal.targetRow.deptId > 0 ? deptTreeModal.targetRow.deptId : null"
+        @select="onParentSelect"
+        @close="deptTreeModal.show=false" />
+    </div>
+  </div>
 </div>
 `,
 };
@@ -404,14 +399,14 @@ window.DeptTreeNode = {
   template: `
 <div>
   <div :style="{ paddingLeft: (depth * 14) + 'px', display:'flex', alignItems:'center',
-                 cursor:'pointer', padding:'4px 6px 4px ' + (depth*14+6) + 'px',
-                 borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
-                 fontWeight: selected === node.deptId ? '600' : 'normal',
-                 color: selected === node.deptId ? '#e8587a' : '#333' }"
-       @click.stop="onSelect(node.deptId)">
+    cursor:'pointer', padding:'4px 6px 4px ' + (depth*14+6) + 'px',
+    borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
+    fontWeight: selected === node.deptId ? '600' : 'normal',
+    color: selected === node.deptId ? '#e8587a' : '#333' }"
+    @click.stop="onSelect(node.deptId)">
     <span v-if="node.children && node.children.length"
-          @click.stop="onToggle(node.deptId)"
-          style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
+      @click.stop="onToggle(node.deptId)"
+      style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
       {{ expanded.has(node.deptId) ? '▼' : '▶' }}
     </span>
     <span v-else style="margin-right:4px;width:14px;flex-shrink:0;"></span>

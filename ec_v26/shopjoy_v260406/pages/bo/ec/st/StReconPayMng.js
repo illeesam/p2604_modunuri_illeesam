@@ -135,25 +135,36 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="page-desc-bar">
     <span class="page-desc-summary">결제 승인·취소 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• PG사 결제금액(pg_amt) vs 정산 수집금액(settle_amt) 차이를 자동 비교합니다.
-• 결제수단: 무통장/가상계좌/토스/카카오/네이버/핸드폰
-• 차이 발생 시 PG사 정산 리포트와 대조 후 조정 처리합니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • PG사 결제금액(pg_amt) vs 정산 수집금액(settle_amt) 차이를 자동 비교합니다. • 결제수단: 무통장/가상계좌/토스/카카오/네이버/핸드폰 • 차이 발생 시 PG사 정산 리포트와 대조 후 조정 처리합니다.
+    </div>
   </div>
   <div class="card">
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:10px;background:#f0fff4"><div style="font-size:11px;color:#888">일치</div><div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">결제과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">결제부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#f8f9fa"><div style="font-size:11px;color:#888">차이금액 합계</div><div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
+        <div style="font-size:11px;color:#888">일치</div>
+        <div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div>
+      </div>
+      <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
+        <div style="font-size:11px;color:#888">결제과다</div>
+        <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div>
+      </div>
+      <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
+        <div style="font-size:11px;color:#888">결제부족</div>
+        <div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div>
+      </div>
+      <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
+        <div style="font-size:11px;color:#888">차이금액 합계</div>
+        <div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div>
+      </div>
     </div>
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      @set-page="setPage" @size-change="onSizeChange">
-    </bo-grid>
+      @set-page="setPage" @size-change="onSizeChange"></bo-grid>
   </div>
 </div>
 `,

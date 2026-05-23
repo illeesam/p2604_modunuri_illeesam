@@ -150,7 +150,7 @@ window.ZdLocalStorage = {
     <div style="display: flex; gap: 16px; margin-bottom: 16px;">
       <div style="flex: 1;">
         <label style="display: block; margin-bottom: 8px; font-weight: 600;">키 검색</label>
-        <input 
+        <input
           v-model="uiState.filterKey"
           type="text"
           placeholder="키로 검색..."
@@ -161,7 +161,6 @@ window.ZdLocalStorage = {
         <button @click="clearAllStorage" class="btn btn-danger" style="padding: 8px 16px;">전체 삭제</button>
       </div>
     </div>
-
     <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: isResizing ? 'col-resize' : 'auto' }">
       <table class="bo-table" style="width: 100%;">
         <thead>
@@ -194,12 +193,18 @@ window.ZdLocalStorage = {
                 </div>
               </template>
               <template v-else>
-                <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 8px; border-radius: 3px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; border: 1px solid #eee;">{{ parseValue(item.value) }}</div>
+                <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 8px; border-radius: 3px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; border: 1px solid #eee;">
+                  {{ parseValue(item.value) }}
+                </div>
               </template>
             </td>
             <td style="padding: 12px; text-align: center; white-space: nowrap;">
-              <button @click="copyValue(item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">복사</button>
-              <button v-if="uiState.editingKey !== item.key" @click="startEdit(item.key, item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">수정</button>
+              <button @click="copyValue(item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                복사
+              </button>
+              <button v-if="uiState.editingKey !== item.key" @click="startEdit(item.key, item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                수정
+              </button>
               <button @click="deleteItem(item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">삭제</button>
             </td>
           </tr>
@@ -212,5 +217,5 @@ window.ZdLocalStorage = {
     <div style="margin-top: 12px; font-size: 12px; color: #666;">총 {{ filteredData.length }}개 항목</div>
   </div>
 </div>
-  `
+`
 };

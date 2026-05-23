@@ -394,15 +394,12 @@ window.PdCategoryProdMng = {
   template: `
 <div>
   <div class="page-title">카테고리상품관리</div>
-
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <!-- -- 좌 트리 + 우 상품목록 -------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
-
     <!-- -- 좌측 카테고리 트리 --------------------------------------------------- -->
     <div class="card" style="padding:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -411,16 +408,13 @@ window.PdCategoryProdMng = {
       </div>
       <bo-category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="selectNode" />
     </div>
-
     <!-- -- 우측 상품 목록 ----------------------------------------------------- -->
     <div class="card">
-
       <!-- -- 선택 전 안내 ---------------------------------------------------- -->
       <div v-if="!cfSelectedCatId" style="text-align:center;padding:60px;color:#aaa">
         <div style="font-size:32px;margin-bottom:12px">📂</div>
         <div>좌측에서 카테고리를 선택하세요.</div>
       </div>
-
       <template v-else>
         <!-- -- 카테고리명 + 저장/추가 버튼 ----------------------------------------- -->
         <div class="toolbar" style="margin-bottom:0">
@@ -436,30 +430,35 @@ window.PdCategoryProdMng = {
             <button class="btn btn-primary btn-sm" @click="onSave">저장</button>
           </div>
         </div>
-
         <!-- -- 탭바 + 뷰모드 버튼 ---------------------------------------------- -->
         <div class="tab-bar-row" style="margin:12px 0 0">
           <div class="tab-nav" style="flex:1;flex-wrap:wrap">
             <button v-for="tab in TYPE_TABS" :key="(tab && tab.cd)"
-                    class="tab-btn" :class="{ active: uiState.activeTypeCd===tab.cd }"
-                    @click="uiState.activeTypeCd=tab.cd">
+              class="tab-btn" :class="{ active: uiState.activeTypeCd===tab.cd }"
+              @click="uiState.activeTypeCd=tab.cd">
               {{ tab.nm }}
               <span v-if="cfTypeCountMap[tab.cd]" class="tab-count">{{ cfTypeCountMap[tab.cd] }}</span>
             </button>
           </div>
           <div class="tab-modes">
-            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='tab' }"  @click="uiState.tabMode='tab'"  title="탭으로 보기">📑</button>
-            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='1col' }" @click="uiState.tabMode='1col'" title="1열로 보기">1▭</button>
-            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='2col' }" @click="uiState.tabMode='2col'" title="2열로 보기">2▭</button>
-            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='3col' }" @click="uiState.tabMode='3col'" title="3열로 보기">3▭</button>
-            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='4col' }" @click="uiState.tabMode='4col'" title="4열로 보기">4▭</button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='tab' }"  @click="uiState.tabMode='tab'"  title="탭으로 보기">
+              📑
+            </button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='1col' }" @click="uiState.tabMode='1col'" title="1열로 보기">
+              1▭
+            </button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='2col' }" @click="uiState.tabMode='2col'" title="2열로 보기">
+              2▭
+            </button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='3col' }" @click="uiState.tabMode='3col'" title="3열로 보기">
+              3▭
+            </button>
+            <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='4col' }" @click="uiState.tabMode='4col'" title="4열로 보기">
+              4▭
+            </button>
           </div>
         </div>
-
-        <div style="font-size:12px;color:#aaa;margin:8px 0 4px;padding:0 2px">
-          ≡ 드래그로 순서 변경 · 저장 후 반영됩니다.
-        </div>
-
+        <div style="font-size:12px;color:#aaa;margin:8px 0 4px;padding:0 2px">≡ 드래그로 순서 변경 · 저장 후 반영됩니다.</div>
         <!-- -- TABLE 뷰 (tab / 1col) ------------------------------------- -->
         <bo-grid v-if="uiState.tabMode==='tab'||uiState.tabMode==='1col'"
           bare :columns="cfCatProdGridColumns" :rows="categoryProds" row-key="_id"
@@ -474,11 +473,11 @@ window.PdCategoryProdMng = {
               </div>
               <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
                 <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)"
-                        @click="toggleEmphasis(row, opt.cd)"
-                        style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
-                        :style="hasEmphasis(row.emphasisCd, opt.cd)
-                          ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700'
-                          : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+                  @click="toggleEmphasis(row, opt.cd)"
+                  style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
+                  :style="hasEmphasis(row.emphasisCd, opt.cd)
+                  ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700'
+                  : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
                   {{ opt.icon }} {{ opt.nm }}
                 </button>
               </div>
@@ -488,10 +487,10 @@ window.PdCategoryProdMng = {
             <td>
               <div style="display:flex;align-items:center;gap:2px;justify-content:center">
                 <input type="date" class="form-control" v-model="row.dispStartDate"
-                       style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
+                  style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
                 <span style="color:#aaa;font-size:11px;flex-shrink:0">~</span>
                 <input type="date" class="form-control" v-model="row.dispEndDate"
-                       style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
+                  style="width:100px;padding:2px 4px;font-size:11px;text-align:center" />
               </div>
             </td>
           </template>
@@ -501,23 +500,22 @@ window.PdCategoryProdMng = {
             </td>
           </template>
         </bo-grid>
-
         <!-- -- CARD GRID 뷰 (2col / 3col / 4col) ------------------------- -->
         <div v-else
-             :style="{
-               display:'grid',
-               gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
-               gap:'10px',
-             }">
+          :style="{
+          display:'grid',
+          gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
+          gap:'10px',
+          }">
           <div v-for="(row, idx) in categoryProds" :key="(row && row._id)"
-               draggable="true"
-               @dragstart="onDragStart(idx)"
-               @dragover.prevent="onDragOver(idx)"
-               @drop="onDrop()"
-               style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff"
-               :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe'
-                       : row._isNew ? 'border-color:#52c41a'
-                       : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
+            draggable="true"
+            @dragstart="onDragStart(idx)"
+            @dragover.prevent="onDragOver(idx)"
+            @drop="onDrop()"
+            style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff"
+            :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe'
+            : row._isNew ? 'border-color:#52c41a'
+            : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
             <!-- -- 카드 헤더 ------------------------------------------------ -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <div style="display:flex;align-items:center;gap:5px">
@@ -540,22 +538,24 @@ window.PdCategoryProdMng = {
               <span style="font-size:12px;font-weight:700;color:#e8587a">
                 {{ ((getProd(row.prodId)?.salePrice||0)).toLocaleString() }}원
               </span>
-              <span style="font-size:10px;color:#999">재고 {{ ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') }}</span>
+              <span style="font-size:10px;color:#999">
+                재고 {{ ((getProd(row.prodId) || {}).prodStock != null ? (getProd(row.prodId) || {}).prodStock : '-') }}
+              </span>
               <span :class="['badge',
-                     getProd(row.prodId)?.prodStatusCdNm==='판매중' ? 'badge-green' :
-                     getProd(row.prodId)?.prodStatusCdNm==='품절'   ? 'badge-red'   : 'badge-gray']"
-                    style="font-size:10px">
+                getProd(row.prodId)?.prodStatusCdNm==='판매중' ? 'badge-green' :
+                getProd(row.prodId)?.prodStatusCdNm==='품절'   ? 'badge-red'   : 'badge-gray']"
+                style="font-size:10px">
                 {{ getProd(row.prodId)?.prodStatusCdNm || '-' }}
               </span>
             </div>
             <!-- -- 강조옵션 chips ------------------------------------------- -->
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
               <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)"
-                      @click="toggleEmphasis(row, opt.cd)"
-                      style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
-                      :style="hasEmphasis(row.emphasisCd, opt.cd)
-                        ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700'
-                        : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+                @click="toggleEmphasis(row, opt.cd)"
+                style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5"
+                :style="hasEmphasis(row.emphasisCd, opt.cd)
+                ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700'
+                : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
                 {{ opt.icon }} {{ opt.nm }}
               </button>
             </div>
@@ -563,34 +563,32 @@ window.PdCategoryProdMng = {
             <template v-if="uiState.activeTypeCd!=='NORMAL'">
               <div style="display:flex;align-items:center;gap:2px;margin-bottom:4px">
                 <input type="date" class="form-control" v-model="row.dispStartDate"
-                       style="flex:1;padding:2px 4px;font-size:10px;min-width:0" />
+                  style="flex:1;padding:2px 4px;font-size:10px;min-width:0" />
                 <span style="color:#aaa;font-size:10px;flex-shrink:0">~</span>
                 <input type="date" class="form-control" v-model="row.dispEndDate"
-                       style="flex:1;padding:2px 4px;font-size:10px;min-width:0" />
+                  style="flex:1;padding:2px 4px;font-size:10px;min-width:0" />
               </div>
               <!-- -- 전시여부 ----------------------------------------------- -->
               <select class="form-control" v-model="row.dispYn"
-                      style="width:100%;padding:2px 6px;font-size:11px"
-                      :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
+                style="width:100%;padding:2px 6px;font-size:11px"
+                :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
                 <option v-for="c in codes.disp_yn_opts" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
             </template>
           </div>
           <div v-if="!categoryProds.length"
-               style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;border:1px dashed #eee;border-radius:8px">
+            style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;border:1px dashed #eee;border-radius:8px">
             등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.
           </div>
         </div>
-
       </template>
     </div>
   </div>
-
   <!-- -- 상품 추가 피커 모달 ---------------------------------------------------- -->
   <teleport to="body">
     <div v-if="pickerOpen"
-         style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="pickerOpen=false">
+      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
+      @click.self="pickerOpen=false">
       <div style="background:#fff;border-radius:14px;padding:24px;width:620px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <div>
@@ -604,16 +602,16 @@ window.PdCategoryProdMng = {
         <bo-multi-check-select
           v-model="pickerSearchType"
           :options="[
-            { value: 'prodNm', label: '상품명' },
-            { value: 'prodId', label: 'ID' },
+          { value: 'prodNm', label: '상품명' },
+          { value: 'prodId', label: 'ID' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
           min-width="100%" />
         <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
           <input class="form-control" v-model="pickerSearch"
-                 placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
-                 @keyup.enter="onPickerSearch">
+            placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
+            @keyup.enter="onPickerSearch">
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
@@ -627,5 +625,6 @@ window.PdCategoryProdMng = {
       </div>
     </div>
   </teleport>
-</div>`
+</div>
+`
 };

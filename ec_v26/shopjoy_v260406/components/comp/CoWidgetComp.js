@@ -107,35 +107,26 @@ window.CoBarcodeWidget = {
   <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
     <span style="font-size:11px;color:#888;">
-      {{ cfShowBarcode && showQr ? '🔖 바코드+QR' : cfShowBarcode ? '🔖 바코드' : '📱 QR코드' }}
-      {{ widget.name }}
+      {{ cfShowBarcode && showQr ? '🔖 바코드+QR' : cfShowBarcode ? '🔖 바코드' : '📱 QR코드' }} {{ widget.name }}
     </span>
   </div>
-
   <!-- 본문 -->
   <div style="padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:14px;">
-
     <template v-if="!widget.codeValue || !widget.codeValue.trim()">
       <div style="font-size:12px;color:#bbb;padding:16px 0;">코드 값을 입력하세요</div>
     </template>
-
     <template v-else>
       <!-- 바코드 -->
       <div v-if="cfShowBarcode" style="width:100%;display:flex;justify-content:center;overflow:hidden;">
         <svg ref="barcodeEl" style="max-width:100%;"></svg>
       </div>
-
       <!-- QR코드 -->
       <div v-if="showQr" style="display:flex;justify-content:center;">
         <div ref="qrcodeEl"></div>
       </div>
-
       <!-- 코드값 표시 -->
-      <div style="font-size:11px;color:#888;letter-spacing:.5px;font-family:monospace;">
-        {{ widget.codeValue }}
-      </div>
+      <div style="font-size:11px;color:#888;letter-spacing:.5px;font-family:monospace;">{{ widget.codeValue }}</div>
     </template>
-
   </div>
 </div>
 `,
@@ -193,23 +184,16 @@ window.CoCountdownWidget = {
   },
   template: /* html */`
 <div :style="{ background: bgColor, borderRadius: '10px', overflow: 'hidden', padding: '20px 16px', textAlign: 'center', color: cfTextColor }">
-
   <!-- 타이틀 -->
-  <div style="font-size:13px;opacity:.8;margin-bottom:14px;letter-spacing:.3px;">
-    ⏱ {{ widget.countdownTitle || '이벤트 종료까지' }}
-  </div>
-
+  <div style="font-size:13px;opacity:.8;margin-bottom:14px;letter-spacing:.3px;">⏱ {{ widget.countdownTitle || '이벤트 종료까지' }}</div>
   <!-- 종료 상태 -->
-  <div v-if="remaining.expired" style="font-size:15px;font-weight:700;opacity:.9;">
-    {{ widget.countdownExpiredMsg || '이벤트가 종료되었습니다.' }}
-  </div>
-
+  <div v-if="remaining.expired" style="font-size:15px;font-weight:700;opacity:.9;">{{ widget.countdownExpiredMsg || '이벤트가 종료되었습니다.' }}</div>
   <!-- 미입력 상태 -->
   <div v-else-if="remaining.invalid" style="font-size:12px;opacity:.5;">
-    목표 일시를 입력하세요<br/>
+    목표 일시를 입력하세요
+    <br/>
     <span style="font-size:10px;">예) 2026-12-31 23:59:59</span>
   </div>
-
   <!-- 카운트다운 -->
   <div v-else style="display:flex;justify-content:center;gap:8px;align-items:flex-start;">
     <div v-if="remaining.d > 0" style="display:flex;flex-direction:column;align-items:center;">
@@ -219,7 +203,6 @@ window.CoCountdownWidget = {
       <div style="font-size:10px;opacity:.7;margin-top:4px;">일</div>
     </div>
     <div v-if="remaining.d > 0" style="font-size:24px;font-weight:700;padding-top:4px;opacity:.6;">:</div>
-
     <div style="display:flex;flex-direction:column;align-items:center;">
       <div style="font-size:28px;font-weight:900;line-height:1;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 12px;min-width:48px;">
         {{ pad(remaining.h) }}
@@ -241,7 +224,6 @@ window.CoCountdownWidget = {
       <div style="font-size:10px;opacity:.7;margin-top:4px;">초</div>
     </div>
   </div>
-
 </div>
 `,
 };

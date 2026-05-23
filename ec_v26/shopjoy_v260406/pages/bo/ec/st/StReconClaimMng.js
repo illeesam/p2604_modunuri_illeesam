@@ -139,24 +139,32 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="page-desc-bar">
     <span class="page-desc-summary">클레임(취소·반품·교환) 환불 데이터와 정산 조정액 간 불일치를 검출하고 대사 처리합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 클레임 환불금액(refund_amt) vs 정산 차감 조정액(settle_adj) 차이를 자동 비교합니다.
-• 클레임 유형: 취소 / 반품 / 교환
-• 차이 발생 건은 조정(StSettleAdjMng) 또는 기타조정(StSettleEtcAdjMng)으로 보정합니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 클레임 환불금액(refund_amt) vs 정산 차감 조정액(settle_adj) 차이를 자동 비교합니다. • 클레임 유형: 취소 / 반품 / 교환 • 차이 발생 건은 조정(StSettleAdjMng) 또는 기타조정(StSettleEtcAdjMng)으로 보정합니다.
+    </div>
   </div>
   <div class="card">
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:10px;background:#f0fff4"><div style="font-size:11px;color:#888">일치</div><div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fff8f8"><div style="font-size:11px;color:#888">조정과다</div><div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div></div>
-      <div class="card" style="text-align:center;padding:10px;background:#fffbf0"><div style="font-size:11px;color:#888">조정부족</div><div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div></div>
+      <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
+        <div style="font-size:11px;color:#888">일치</div>
+        <div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div>
+      </div>
+      <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
+        <div style="font-size:11px;color:#888">조정과다</div>
+        <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div>
+      </div>
+      <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
+        <div style="font-size:11px;color:#888">조정부족</div>
+        <div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div>
+      </div>
     </div>
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="claimId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      @set-page="setPage" @size-change="onSizeChange">
-    </bo-grid>
+      @set-page="setPage" @size-change="onSizeChange"></bo-grid>
   </div>
 </div>
 `,

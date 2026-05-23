@@ -184,30 +184,29 @@ window.SyI18nMng = {
   template: `
 <div>
   <div class="page-title">다국어관리</div>
-    <div class="card">
-      <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
-    </div>
-    <bo-grid
-      :columns="baseGridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
-      list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
-      :row-style="fnRowStyle" row-clickable
-      @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail">
-
-    </bo-grid>
-    <!-- -- 번역 편집 패널 ----------------------------------------------------- -->
-    <div class="card" v-if="cfSelectedKey">
-      <div class="toolbar">
-        <span class="list-title">번역 편집 — <code style="font-size:13px;color:#7c3aed">{{ cfSelectedKey.i18nKey }}</code></span>
-        <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-blue btn-sm" @click="saveMsgs">저장</button>
-          <button class="btn btn-secondary btn-sm" @click="selectedId=null">닫기</button>
-        </div>
-      </div>
-      <!-- 언어별 번역 입력 (BoFormArea 자동 렌더) -->
-      <div style="padding:12px">
-        <bo-form-area :columns="msgFormColumns" :form="msgForm" :errors="{}"
-          :cols="2" :show-actions="false" />
+  <div class="card">
+    <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+  </div>
+  <bo-grid
+    :columns="baseGridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
+    list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
+    :row-style="fnRowStyle" row-clickable
+    @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail"></bo-grid>
+  <!-- -- 번역 편집 패널 ----------------------------------------------------- -->
+  <div class="card" v-if="cfSelectedKey">
+    <div class="toolbar">
+      <span class="list-title">번역 편집 — <code style="font-size:13px;color:#7c3aed">{{ cfSelectedKey.i18nKey }}</code></span>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-blue btn-sm" @click="saveMsgs">저장</button>
+        <button class="btn btn-secondary btn-sm" @click="selectedId=null">닫기</button>
       </div>
     </div>
-</div>`
+    <!-- 언어별 번역 입력 (BoFormArea 자동 렌더) -->
+    <div style="padding:12px">
+      <bo-form-area :columns="msgFormColumns" :form="msgForm" :errors="{}"
+        :cols="2" :show-actions="false" />
+    </div>
+  </div>
+</div>
+`
 };

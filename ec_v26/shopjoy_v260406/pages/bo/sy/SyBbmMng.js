@@ -200,12 +200,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <!-- -- 좌: 표시경로 트리 --------------------------------------------------- -->
     <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
-
     <!-- -- 우: 목록 + 상세 --------------------------------------------------- -->
     <div>
       <bo-grid
@@ -213,23 +211,24 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
         @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.bbmId)">
-
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
             <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
           </div>
         </template>
-        <template #head-actions><th style="text-align:right">관리</th></template>
-
+        <template #head-actions>
+          <th style="text-align:right">관리</th>
+        </template>
         <template #row-actions="{ row }">
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.bbmId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-          </div></td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.bbmId)">수정</button>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+            </div>
+          </td>
         </template>
       </bo-grid>
-
       <div v-if="detailModal.show" style="margin-top:4px;">
         <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
           <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
@@ -238,7 +237,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
           :reload-trigger="detailModal.reloadTrigger"
           :on-list-reload="handleSearchList"
-        />
+          />
       </div>
     </div>
   </div>

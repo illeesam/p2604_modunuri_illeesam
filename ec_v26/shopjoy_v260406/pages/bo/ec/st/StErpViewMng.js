@@ -146,10 +146,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="page-desc-bar">
     <span class="page-desc-summary">생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 전표 유형: 정산지급 / 수수료 / 조정 / 기타
-• 전송 상태: 미전송 / 전송완료 / 오류
-• [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다.
-• 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 전표 유형: 정산지급 / 수수료 / 조정 / 기타 • 전송 상태: 미전송 / 전송완료 / 오류 • [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다. • 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.
+    </div>
   </div>
   <div class="card">
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />

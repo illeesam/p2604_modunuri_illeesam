@@ -609,16 +609,22 @@ window.DpDispWidgetDtl = {
   <!-- -- 헤더 ------------------------------------------------------------- -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
     <div style="display:flex;align-items:center;gap:10px;">
-      <span style="font-size:15px;font-weight:700;color:#222;">
-        {{ cfIsNew ? '위젯 신규등록' : '위젯 수정' }}
+      <span style="font-size:15px;font-weight:700;color:#222;">{{ cfIsNew ? '위젯 신규등록' : '위젯 수정' }}</span>
+      <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">
+        #{{ String(form.widgetLibId).padStart(4,'0') }}
       </span>
-      <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">#{{ String(form.widgetLibId).padStart(4,'0') }}</span>
     </div>
     <div class="form-actions" v-if="!cfDtlMode" style="margin:0;gap:8px;">
-      <button @click="openLibPick('copy')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">📋 전시위젯Lib 내용복사</button>
-      <button @click="openLibPick('ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">🔗 전시위젯Lib 참조</button>
+      <button @click="openLibPick('copy')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
+        📋 전시위젯Lib 내용복사
+      </button>
+      <button @click="openLibPick('ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">
+        🔗 전시위젯Lib 참조
+      </button>
       <button @click="handleSave"   class="btn btn-primary" style="font-size:13px;">저장</button>
-      <button v-if="!cfIsNew" @click="handleDelete" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">삭제</button>
+      <button v-if="!cfIsNew" @click="handleDelete" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
+        삭제
+      </button>
       <button @click="$emit('close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </div>
     <!-- -- 위젯Lib 선택 팝업 -------------------------------------------------- -->
@@ -627,28 +633,35 @@ window.DpDispWidgetDtl = {
       @close="libPickOpen=false"
       @pick="onLibPicked" />
   </div>
-
   <div style="display:flex;gap:0;">
     <!-- -- 왼쪽: 폼 -------------------------------------------------------- -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
-
       <!-- -- 🔗 참조 정보 ---------------------------------------------------- -->
       <div v-if="form.refLibId"
         style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
           <button @click="form.refLibId=null; form.refLibCode=''; form.refLibName=''"
-            style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">참조 해제</button>
+            style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">
+            참조 해제
+          </button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
-          <span><b style="color:#888;">참조구분:</b>
+          <span>
+            <b style="color:#888;">참조구분:</b>
             <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">위젯Lib</span>
           </span>
-          <span v-if="form.refLibCode"><b style="color:#888;">참조항목Code:</b>
-            <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">{{ form.refLibCode }}</code>
+          <span v-if="form.refLibCode">
+            <b style="color:#888;">참조항목Code:</b>
+            <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">
+              {{ form.refLibCode }}
+            </code>
           </span>
-          <span><b style="color:#888;">참조항목ID:</b>
-            <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">#{{ String(form.refLibId).padStart(4,'0') }}</code>
+          <span>
+            <b style="color:#888;">참조항목ID:</b>
+            <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">
+              #{{ String(form.refLibId).padStart(4,'0') }}
+            </code>
           </span>
           <span v-if="form.refLibName"><b style="color:#888;">참조명:</b> {{ form.refLibName }}</span>
         </div>
@@ -660,7 +673,6 @@ window.DpDispWidgetDtl = {
             :widget-item="([]||[]).find(l => l.libId===form.refLibId) || {}" />
         </div>
       </div>
-
       <!-- -- ■ 설정 ------------------------------------------------------- -->
       <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
@@ -674,12 +686,12 @@ window.DpDispWidgetDtl = {
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
           <label v-for="opt in dispEnvOptions" :key="opt?.code"
             :style="{
-              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
-              border:'1px solid '+(hasDispEnv(opt.code)?'#7c3aed':'#ddd'),
-              background:hasDispEnv(opt.code)?'#f3e8ff':'#fafafa',
-              color:hasDispEnv(opt.code)?'#7c3aed':'#666',
-              fontSize:'12px',fontWeight:hasDispEnv(opt.code)?700:500,
-              cursor:'pointer',
+            display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
+            border:'1px solid '+(hasDispEnv(opt.code)?'#7c3aed':'#ddd'),
+            background:hasDispEnv(opt.code)?'#f3e8ff':'#fafafa',
+            color:hasDispEnv(opt.code)?'#7c3aed':'#666',
+            fontSize:'12px',fontWeight:hasDispEnv(opt.code)?700:500,
+            cursor:'pointer',
             }">
             <input type="checkbox" :checked="hasDispEnv(opt.code)"
               @change="toggleDispEnv(opt.code)"
@@ -688,19 +700,24 @@ window.DpDispWidgetDtl = {
           </label>
         </div>
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
-          표시경로 <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로</span>
+          표시경로
+          <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로</span>
         </div>
         <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
           <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
           <button type="button" @click="openPathPick()" title="표시경로 선택"
             :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
             @mouseover="$event.currentTarget.style.background='#eef2ff'"
-            @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+            @mouseout="$event.currentTarget.style.background='#fff'">
+            🔍
+          </button>
           <button v-if="form.pathId != null" type="button" @click="form.pathId=null"
-            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:11px;">✕</button>
+            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:11px;">
+            ✕
+          </button>
         </div>
-      </div><!-- -- /설정 -------------------------------------------------------------- -->
-
+      </div>
+      <!-- -- /설정 -------------------------------------------------------------- -->
       <!-- -- ■ 제목 ------------------------------------------------------- -->
       <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
@@ -709,10 +726,12 @@ window.DpDispWidgetDtl = {
           <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
             <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
             <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-              <input type="radio" v-model="form.titleYn" value="Y" /> 표시
+              <input type="radio" v-model="form.titleYn" value="Y" />
+              표시
             </label>
             <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-              <input type="radio" v-model="form.titleYn" value="N" /> 미표시
+              <input type="radio" v-model="form.titleYn" value="N" />
+              미표시
             </label>
           </span>
         </div>
@@ -720,8 +739,8 @@ window.DpDispWidgetDtl = {
           <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
           <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
         </div>
-      </div><!-- -- /제목 -------------------------------------------------------------- -->
-
+      </div>
+      <!-- -- /제목 -------------------------------------------------------------- -->
       <!-- -- ■ 내용 ------------------------------------------------------- -->
       <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
         <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
@@ -736,14 +755,12 @@ window.DpDispWidgetDtl = {
           </span>
         </div>
         <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
-
         <!-- 클릭 액션 (html_editor·file_list·embed 제외) - BoFormArea 자동 렌더 -->
         <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:12px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
           <bo-form-area :columns="clickActionFormColumns" :form="form" :errors="errors"
             :readonly="cfDtlMode" :cols="2" :show-actions="false" />
         </div>
-
         <!-- -- 공통 동적 행 -------------------------------------------------- -->
         <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">
           <div v-for="row in cfDisplayRows" :key="row?.key" class="form-group" style="margin:0;">
@@ -758,12 +775,10 @@ window.DpDispWidgetDtl = {
             </select>
           </div>
         </div>
-
         <!-- -- HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ----------- -->
         <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
           <base-html-editor v-model="form.htmlContent" height="320px" />
         </div>
-
         <!-- -- 파일목록 ----------------------------------------------------- -->
         <div v-else-if="cfIsFileList">
           <div v-for="(item, idx) in cfFileListItems" :key="Math.random()"
@@ -772,17 +787,16 @@ window.DpDispWidgetDtl = {
               class="form-control" placeholder="파일명" style="margin:0;flex:1;" />
             <input :value="item.url" @input="updateFileItem(idx,'url',$event.target.value)"
               class="form-control" placeholder="파일 URL" style="margin:0;flex:2;" />
-            <button @click="removeFileItem(idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;cursor:pointer;font-size:16px;">×</button>
+            <button @click="removeFileItem(idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;cursor:pointer;font-size:16px;">
+              ×
+            </button>
           </div>
           <button @click="addFileItem" class="btn btn-outline" style="font-size:12px;padding:4px 14px;">+ 파일 추가</button>
         </div>
-
-        <div v-else style="font-size:12px;color:#aaa;text-align:center;padding:10px;">
-          위젯 유형을 선택하면 입력 필드가 표시됩니다.
-        </div>
-      </div><!-- -- /내용 -------------------------------------------------------------- -->
+        <div v-else style="font-size:12px;color:#aaa;text-align:center;padding:10px;">위젯 유형을 선택하면 입력 필드가 표시됩니다.</div>
+      </div>
+      <!-- -- /내용 -------------------------------------------------------------- -->
     </div>
-
     <!-- -- 스플리터 --------------------------------------------------------- -->
     <div @mousedown="onSplitDrag"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
@@ -803,12 +817,14 @@ window.DpDispWidgetDtl = {
         <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="previewMode = m.value"
           :style="{
-            flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
-            background: previewMode===m.value ? '#fff' : 'transparent',
-            color: previewMode===m.value ? '#1565c0' : '#666',
-            fontWeight: previewMode===m.value ? 700 : 500,
-            boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-          }">{{ m.label }}</button>
+          flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
+          background: previewMode===m.value ? '#fff' : 'transparent',
+          color: previewMode===m.value ? '#1565c0' : '#666',
+          fontWeight: previewMode===m.value ? 700 : 500,
+          boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+          }">
+          {{ m.label }}
+        </button>
       </div>
       <!-- -- 디바이스 프레임 --------------------------------------------------- -->
       <div :style="{ width: cfPreviewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
@@ -816,14 +832,13 @@ window.DpDispWidgetDtl = {
           :params="{ }"
           :disp-opt="{ showBadges: true }"
           :widget-item="cfPreviewWidget"
-        />
+          />
       </div>
       <div style="margin-top:12px;font-size:11px;color:#aaa;line-height:1.6;">
         <div>유형: <b>{{ form.widgetType }}</b></div>
         <div v-if="form.tags">태그: {{ form.tags }}</div>
         <div v-if="!cfIsNew">ID: #{{ String(form.widgetLibId).padStart(4,'0') }}</div>
       </div>
-
       <!-- -- 샘플 JSON ---------------------------------------------------- -->
       <div style="margin-top:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -838,7 +853,6 @@ window.DpDispWidgetDtl = {
       </div>
     </div>
   </div>
-
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget"
     :value="form.pathId"
     title="위젯 표시경로 선택"

@@ -247,7 +247,9 @@ window.XsSample12 = {
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
         <input type="date" v-model="previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <input type="time" v-model="previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">현재</button>
+        <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
+          현재
+        </button>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <!-- -- 상태 --------------------------------------------------------- -->
@@ -299,8 +301,12 @@ window.XsSample12 = {
         <div v-if="showAreaDrop" @click="showAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
         <div v-if="showAreaDrop" style="position:absolute;right:0;top:calc(100% + 4px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:220px;max-height:300px;overflow-y:auto;padding:8px 0;">
           <div style="display:flex;gap:6px;padding:6px 12px;border-bottom:1px solid #f0f0f0;">
-            <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
-            <button @click.stop="clearAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
+            <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+              전체선택
+            </button>
+            <button @click.stop="clearAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
+              전체해제
+            </button>
           </div>
           <div v-for="a in cfAllAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;"
@@ -313,7 +319,9 @@ window.XsSample12 = {
             <span style="font-size:12px;">{{ a.codeLabel }}</span>
           </div>
           <div style="border-top:1px solid #f0f0f0;padding:6px 12px;">
-            <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">닫기</button>
+            <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">
+              닫기
+            </button>
           </div>
         </div>
       </div>
@@ -321,12 +329,18 @@ window.XsSample12 = {
     <!-- -- 현재 사용자 정보 ---------------------------------------------------- -->
     <div style="margin-top:8px;padding:7px 12px;background:#f8f9fa;border-radius:6px;border-left:3px solid #aaa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
-      <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">로그인</span>
+      <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">
+        로그인
+      </span>
       <span v-else style="font-size:11px;background:#f5f5f5;color:#999;border-radius:6px;padding:1px 7px;">비로그인</span>
       <span v-if="userNm" style="font-size:11px;color:#555;">{{ userNm }}</span>
-      <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">등급: {{ userGrade }}</span>
+      <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
+        등급: {{ userGrade }}
+      </span>
       <span style="font-size:11px;color:#aaa;">접근 가능 조건:</span>
-      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
+      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">
+        {{ c }}
+      </span>
     </div>
   </div>
   <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
@@ -335,13 +349,19 @@ window.XsSample12 = {
       <!-- -- 조작 바 ------------------------------------------------------- -->
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:12px;font-weight:600;color:#555;">패널</span>
-        <button @click="checkAll" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
-        <button @click="clearAll" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
+        <button @click="checkAll" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+          전체선택
+        </button>
+        <button @click="clearAll" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
+          전체해제
+        </button>
         <span style="font-size:11px;color:#aaa;">{{ checkedPanels.size }}개 선택됨</span>
         <span style="width:1px;height:18px;background:#e0e0e0;display:inline-block;"></span>
         <span style="font-size:12px;font-weight:600;color:#555;">위젯</span>
         <span style="font-size:11px;color:#aaa;">{{ checkedWidgets.size }}개 선택됨</span>
-        <button @click="initExpand" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;margin-left:auto;">전체 펼치기</button>
+        <button @click="initExpand" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;margin-left:auto;">
+          전체 펼치기
+        </button>
       </div>
       <!-- -- 트리 --------------------------------------------------------- -->
       <div v-if="cfStructAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">등록된 영역이 없습니다.</div>
@@ -353,7 +373,9 @@ window.XsSample12 = {
             :style="isAreaAllChecked(area)?'border-color:#f6ad55;background:#f6ad55;':'border-color:rgba(255,255,255,.4);background:transparent;'">
             <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:9px;">✓</span>
           </div>
-          <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:3px;padding:1px 5px;">영역</span>
+          <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:3px;padding:1px 5px;">
+            영역
+          </span>
           <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 7px;border-radius:4px;">{{ area.codeValue }}</code>
           <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
           <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ area.panels.length }}개</span>
@@ -374,10 +396,16 @@ window.XsSample12 = {
             <div style="flex:1;min-width:0;">
               <!-- -- 패널 정보 ---------------------------------------------- -->
               <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap;">
-                <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;">패널</span>
-                <code style="font-size:9px;background:#f5f5f5;padding:1px 4px;border-radius:3px;color:#666;">#{{ String(p.dispId).padStart(4,'0') }}</code>
+                <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;">
+                  패널
+                </span>
+                <code style="font-size:9px;background:#f5f5f5;padding:1px 4px;border-radius:3px;color:#666;">
+                  #{{ String(p.dispId).padStart(4,'0') }}
+                </code>
                 <span style="font-size:12px;font-weight:700;color:#222;">{{ p.name }}</span>
-                <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 6px;">{{ p.condition || '항상 표시' }}</span>
+                <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 6px;">
+                  {{ p.condition || '항상 표시' }}
+                </span>
               </div>
               <!-- -- 위젯 목록 ---------------------------------------------- -->
               <div style="display:flex;flex-direction:column;gap:2px;padding-left:2px;">
@@ -389,10 +417,14 @@ window.XsSample12 = {
                     :style="checkedWidgets.has(p.dispId + '_' + wi)?'border-color:#f59e0b;background:#f59e0b;':'border-color:#ccc;background:#fff;'">
                     <span v-if="checkedWidgets.has(p.dispId + '_' + wi)" style="color:#fff;font-size:8px;">✓</span>
                   </div>
-                  <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 3px;flex-shrink:0;">위젯</span>
+                  <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 3px;flex-shrink:0;">
+                    위젯
+                  </span>
                   <span style="font-size:10px;">{{ fnWIcon(w.widgetType) }}</span>
                   <span style="font-size:11px;color:#e65100;">{{ fnWLabel(w.widgetType) }}</span>
-                  <span v-if="w.widgetNm" style="font-size:10px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
+                  <span v-if="w.widgetNm" style="font-size:10px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    {{ w.widgetNm }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -408,15 +440,21 @@ window.XsSample12 = {
       </div>
       <div v-if="cfCheckedWidgetList.length===0"
         style="border:2px dashed #e0e0e0;border-radius:8px;padding:50px;text-align:center;color:#bbb;font-size:13px;">
-        좌측 트리에서 위젯을 선택하면<br>컨텐츠 미리보기가 표시됩니다.
+        좌측 트리에서 위젯을 선택하면
+        <br>
+        컨텐츠 미리보기가 표시됩니다.
       </div>
       <div v-else>
         <div v-for="(w, i) in cfCheckedWidgetList" :key="i"
           style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 14px;margin-bottom:8px;overflow:hidden;">
           <!-- -- 위젯 헤더 -------------------------------------------------- -->
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5f5f5;flex-wrap:wrap;">
-            <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">{{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}</span>
-            <span style="font-size:12px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
+            <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">
+              {{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}
+            </span>
+            <span style="font-size:12px;font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              {{ w.widgetNm }}
+            </span>
             <span style="font-size:10px;color:#bbb;white-space:nowrap;">{{ w._area }} › {{ w._panelNm }}</span>
           </div>
           <!-- -- image_banner ------------------------------------------- -->
@@ -424,13 +462,17 @@ window.XsSample12 = {
             style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:28px 16px;text-align:center;color:#fff;display:flex;flex-direction:column;align-items:center;gap:8px;">
             <div style="font-size:32px;">🖼</div>
             <div style="font-size:14px;font-weight:700;letter-spacing:.3px;">{{ w.widgetNm }}</div>
-            <div v-if="w.clickTarget" style="font-size:11px;opacity:.8;background:rgba(255,255,255,.2);border-radius:10px;padding:3px 12px;">→ {{ w.clickTarget }}</div>
+            <div v-if="w.clickTarget" style="font-size:11px;opacity:.8;background:rgba(255,255,255,.2);border-radius:10px;padding:3px 12px;">
+              → {{ w.clickTarget }}
+            </div>
           </div>
           <!-- -- product_slider ----------------------------------------- -->
           <div v-else-if="w.widgetType==='product_slider'">
             <div style="display:flex;gap:8px;overflow:hidden;">
               <div v-for="n in 4" :key="n" style="flex:0 0 110px;border:1px solid #ececec;border-radius:8px;overflow:hidden;">
-                <div style="height:80px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);display:flex;align-items:center;justify-content:center;font-size:26px;">📦</div>
+                <div style="height:80px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);display:flex;align-items:center;justify-content:center;font-size:26px;">
+                  📦
+                </div>
                 <div style="padding:7px 8px;">
                   <div style="font-size:10px;color:#555;margin-bottom:2px;">상품명</div>
                   <div style="font-size:12px;font-weight:700;color:#e8587a;">₩00,000</div>
@@ -441,7 +483,9 @@ window.XsSample12 = {
           </div>
           <!-- -- product ------------------------------------------------ -->
           <div v-else-if="w.widgetType==='product'" style="display:flex;gap:12px;align-items:flex-start;padding:4px 0;">
-            <div style="flex:0 0 88px;height:88px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px;">📦</div>
+            <div style="flex:0 0 88px;height:88px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:30px;">
+              📦
+            </div>
             <div style="flex:1;">
               <div style="font-size:11px;color:#aaa;margin-bottom:3px;">단품 상품</div>
               <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:5px;">상품명</div>
@@ -450,9 +494,13 @@ window.XsSample12 = {
           </div>
           <!-- -- cond_product ------------------------------------------- -->
           <div v-else-if="w.widgetType==='cond_product'">
-            <div style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 9px;margin-bottom:8px;display:inline-block;">🔍 조건 필터</div>
+            <div style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 9px;margin-bottom:8px;display:inline-block;">
+              🔍 조건 필터
+            </div>
             <div v-for="n in 3" :key="n" style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #f5f5f5;">
-              <div style="width:40px;height:40px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📦</div>
+              <div style="width:40px;height:40px;background:#f0f0f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">
+                📦
+              </div>
               <div style="flex:1;">
                 <div style="font-size:11px;color:#444;margin-bottom:2px;">상품명 {{ n }}</div>
                 <div style="font-size:12px;font-weight:700;color:#e8587a;">₩00,000</div>
@@ -547,13 +595,17 @@ window.XsSample12 = {
               <div style="font-size:14px;font-weight:800;color:#c2185b;margin-bottom:3px;">{{ w.widgetNm }}</div>
               <div style="font-size:11px;color:#e8587a;">쿠폰 발급 이벤트</div>
             </div>
-            <div style="background:#e8587a;color:#fff;border-radius:8px;padding:10px 14px;font-size:12px;font-weight:700;white-space:nowrap;">쿠폰 받기</div>
+            <div style="background:#e8587a;color:#fff;border-radius:8px;padding:10px 14px;font-size:12px;font-weight:700;white-space:nowrap;">
+              쿠폰 받기
+            </div>
           </div>
           <!-- -- html_editor -------------------------------------------- -->
           <div v-else-if="w.widgetType==='html_editor'"
             style="background:#1e1e2e;border-radius:8px;padding:14px;font-family:monospace;font-size:11px;color:#a9b7c6;line-height:1.8;">
-            <span style="color:#cc7832;">&lt;div&gt;</span><br>
-            <span style="padding-left:14px;color:#a9b7c6;">&nbsp;&nbsp;HTML 컨텐츠 영역 ({{ w.widgetNm }})</span><br>
+            <span style="color:#cc7832;">&lt;div&gt;</span>
+            <br>
+            <span style="padding-left:14px;color:#a9b7c6;">&nbsp;&nbsp;HTML 컨텐츠 영역 ({{ w.widgetNm }})</span>
+            <br>
             <span style="color:#cc7832;">&lt;/div&gt;</span>
           </div>
           <!-- -- event_banner ------------------------------------------- -->
@@ -561,7 +613,9 @@ window.XsSample12 = {
             style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:8px;padding:22px;text-align:center;color:#fff;">
             <div style="font-size:26px;margin-bottom:8px;">🎉</div>
             <div style="font-size:15px;font-weight:800;letter-spacing:.5px;margin-bottom:5px;">{{ w.widgetNm }}</div>
-            <div v-if="w.clickTarget" style="font-size:11px;opacity:.85;background:rgba(255,255,255,.2);border-radius:10px;padding:3px 12px;display:inline-block;">→ {{ w.clickTarget }}</div>
+            <div v-if="w.clickTarget" style="font-size:11px;opacity:.85;background:rgba(255,255,255,.2);border-radius:10px;padding:3px 12px;display:inline-block;">
+              → {{ w.clickTarget }}
+            </div>
           </div>
           <!-- -- cache_banner ------------------------------------------- -->
           <div v-else-if="w.widgetType==='cache_banner'"
@@ -591,5 +645,5 @@ window.XsSample12 = {
   <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->
   <category-select-modal :show="showCatModal" :selected-ids="[...selectedCatIds]" @close="showCatModal=false" @apply="onCatApply" />
 </div>
-  `,
+`,
 };

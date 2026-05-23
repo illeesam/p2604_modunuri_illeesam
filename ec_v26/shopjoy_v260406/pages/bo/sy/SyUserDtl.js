@@ -217,12 +217,14 @@ window.SyUserDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span></div>
+  <div class="page-title">
+    {{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span>
+  </div>
   <div class="card">
     <!-- 기본 정보 (BoFormArea 자동 렌더) -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
-
       <!-- 부서: picker -->
       <template #dept>
         <div v-if="cfDtlMode" class="readonly-field">{{ form.deptNm || '-' }}</div>
@@ -237,7 +239,6 @@ window.SyUserDtl = {
         </div>
       </template>
     </bo-form-area>
-
     <!-- 주소 영역 (BoFormArea 자동 렌더) -->
     <bo-form-area :columns="addrFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
@@ -246,7 +247,9 @@ window.SyUserDtl = {
           <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
             style="width:110px;flex-shrink:0;" readonly />
           <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
-            style="white-space:nowrap;">🔍 주소 검색</button>
+            style="white-space:nowrap;">
+            🔍 주소 검색
+          </button>
         </div>
         <input class="form-control" v-model="form.address"
           placeholder="기본주소 (주소 검색 후 자동 입력)" style="margin-bottom:6px;" readonly />
@@ -254,7 +257,6 @@ window.SyUserDtl = {
           placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
       </template>
     </bo-form-area>
-
     <!-- 프로필 이미지 (BoFormArea 자동 렌더) -->
     <bo-form-area :columns="profileFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
@@ -270,7 +272,6 @@ window.SyUserDtl = {
           :show-toast="showToast" />
       </template>
     </bo-form-area>
-
     <div class="form-actions" v-if="!cfDtlMode">
       <template v-if="cfDtlMode">
         <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
@@ -282,7 +283,6 @@ window.SyUserDtl = {
       </template>
     </div>
   </div>
-
   <!-- ── 적용 역할 목록 ─────────────────────────────────────────────────────── -->
   <div v-if="!cfIsNew" class="card">
     <div class="toolbar" style="margin-bottom:12px;">
@@ -293,10 +293,8 @@ window.SyUserDtl = {
       </span>
     </div>
     <bo-grid bare :columns="userRoleGridColumns" :rows="cfUserRoles" row-key="roleId"
-             empty-text="배정된 역할이 없습니다." />
-
+      empty-text="배정된 역할이 없습니다." />
   </div>
-
   <!-- ── 부서 선택 팝업 ─────────────────────────────────────────────────────── -->
   <dept-tree-modal
     v-if="deptModal && deptModal.show" :exclude-id="null"

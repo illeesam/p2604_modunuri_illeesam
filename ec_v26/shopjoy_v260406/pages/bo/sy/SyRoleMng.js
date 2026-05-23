@@ -621,16 +621,11 @@ window.SyRoleMng = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">역할관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
+  <div class="page-title">역할관리</div>
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
-  
-
-
-
-
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
     <bo-local-tree-card title="역할"
@@ -645,148 +640,146 @@ window.SyRoleMng = {
       </template>
     </bo-local-tree-card>
     <div>
-<!-- -- CRUD 그리드 --------------------------------------------------------- -->
-  <bo-grid-crud
-    :columns="baseGridColumns" :rows="gridRows" row-key="roleId"
-    list-title="역할목록" :show-export="true" :draggable="false"
-    v-model:focusedIdx="uiState.focusedIdx"
-    v-model:checkAll="uiState.checkAll"
-    @add="addRow" @save="handleSave"
-    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-    @cell-change="onCellChange" @export="exportExcel">
-
-
-
-
-    <template #row-actions="{ row, idx }">
-      <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)">
-      </bo-row-cancel-delete>
-      <button v-if="cfShowRoleSetting(row)"
-        class="btn btn-blue btn-xs"
-        :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
-                  outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
-        @click.stop="onOpenSetting(idx)"
-        title="하단 메뉴접근권한 / 대상사용자 설정">설정</button>
-    </template>
-  </bo-grid-crud>
-
-  <!-- -- 하단: 메뉴 배분 + 사용자 배분 --------------------------------------------- -->
-  <div id="role-config-panel" style="display:flex;gap:16px;align-items:flex-start;">
-
-    <!-- -- 좌: 메뉴목록 ------------------------------------------------------ -->
-    <div style="flex:1;">
-      <div class="card" style="margin-bottom:0;">
-        <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <b style="font-size:13px;">메뉴 접근권한</b>
-            <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ cfSelectedRoleNm }}</span>
-            <span v-else style="font-size:12px;color:#bbb;">위 목록에서 역할의 [설정] 버튼을 클릭하세요</span>
-          </div>
-          <div v-if="uiState.selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
-            <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
-              <input type="checkbox" :checked="cfMenuAllChecked" @change="e => toggleAllMenus(e.target.checked)" />
-              전체선택
-            </label>
-            <button v-for="p in codes.perm_levels" :key="p"
-              class="btn btn-xs"
-              :style="{ background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
-              @click="setAllMenuPerm(p)">{{ p }}</button>
-            <button class="btn btn-primary btn-sm" style="margin-left:8px;" @click="handleSaveRoleConfig">💾 설정 저장</button>
-          </div>
-        </div>
-
-        <!-- -- 메뉴 검색 ---------------------------------------------------- -->
-        <div v-if="uiState.selectedRoleId" style="padding:8px 0 6px;">
-          <input class="form-control" v-model="uiState.menuSearchValue" placeholder="메뉴명 또는 메뉴코드 검색"
-            style="font-size:12px;padding:5px 10px;" />
-        </div>
-
-        <!-- -- 메뉴 트리 목록 ------------------------------------------------- -->
-        <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
-          <div v-if="!cfMenuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
-          <div v-for="m in cfMenuTree" :key="m.menuId"
-            style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
-            :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
-            <!-- -- 블릿 트리 들여쓰기 ------------------------------------------- -->
-            <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
-                            fontSize: m._depth===0?'7px':'11px', flexShrink:0,
-                            color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
-              {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
-            </span>
-            <span style="font-size:13px;color:#333;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.menuNm }}</span>
-            <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin:0 8px;flex-shrink:0;">{{ m.menuCode }}</code>
-            <!-- -- 권한 레벨 토글 버튼 ------------------------------------------ -->
-            <div style="display:flex;gap:2px;flex-shrink:0;">
-              <button v-for="p in codes.perm_levels" :key="p"
-                style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
-                :style="getMenuPerm(m.menuId)===p
-                  ? { background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff' }
-                  : { background:'#f5f5f5', borderColor:'#e0e0e0', color:'#999' }"
-                @click="setMenuPerm(m.menuId, p)">{{ p }}</button>
+      <!-- -- CRUD 그리드 --------------------------------------------------------- -->
+      <bo-grid-crud
+        :columns="baseGridColumns" :rows="gridRows" row-key="roleId"
+        list-title="역할목록" :show-export="true" :draggable="false"
+        v-model:focusedIdx="uiState.focusedIdx"
+        v-model:checkAll="uiState.checkAll"
+        @add="addRow" @save="handleSave"
+        @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+        @cell-change="onCellChange" @export="exportExcel">
+        <template #row-actions="{ row, idx }">
+          <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)"></bo-row-cancel-delete>
+          <button v-if="cfShowRoleSetting(row)"
+            class="btn btn-blue btn-xs"
+            :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
+            outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
+            @click.stop="onOpenSetting(idx)"
+            title="하단 메뉴접근권한 / 대상사용자 설정">
+            설정
+          </button>
+        </template>
+      </bo-grid-crud>
+      <!-- -- 하단: 메뉴 배분 + 사용자 배분 --------------------------------------------- -->
+      <div id="role-config-panel" style="display:flex;gap:16px;align-items:flex-start;">
+        <!-- -- 좌: 메뉴목록 ------------------------------------------------------ -->
+        <div style="flex:1;">
+          <div class="card" style="margin-bottom:0;">
+            <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <b style="font-size:13px;">메뉴 접근권한</b>
+                <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;">— {{ cfSelectedRoleNm }}</span>
+                <span v-else style="font-size:12px;color:#bbb;">위 목록에서 역할의 [설정] 버튼을 클릭하세요</span>
+              </div>
+              <div v-if="uiState.selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
+                  <input type="checkbox" :checked="cfMenuAllChecked" @change="e => toggleAllMenus(e.target.checked)" />
+                  전체선택
+                </label>
+                <button v-for="p in codes.perm_levels" :key="p"
+                  class="btn btn-xs"
+                  :style="{ background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
+                  @click="setAllMenuPerm(p)">
+                  {{ p }}
+                </button>
+                <button class="btn btn-primary btn-sm" style="margin-left:8px;" @click="handleSaveRoleConfig">💾 설정 저장</button>
+              </div>
             </div>
+            <!-- -- 메뉴 검색 ---------------------------------------------------- -->
+            <div v-if="uiState.selectedRoleId" style="padding:8px 0 6px;">
+              <input class="form-control" v-model="uiState.menuSearchValue" placeholder="메뉴명 또는 메뉴코드 검색"
+                style="font-size:12px;padding:5px 10px;" />
+            </div>
+            <!-- -- 메뉴 트리 목록 ------------------------------------------------- -->
+            <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
+              <div v-if="!cfMenuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
+              <div v-for="m in cfMenuTree" :key="m.menuId"
+                style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
+                :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
+                <!-- -- 블릿 트리 들여쓰기 ------------------------------------------- -->
+                <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
+                  fontSize: m._depth===0?'7px':'11px', flexShrink:0,
+                  color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
+                  {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
+                </span>
+                <span style="font-size:13px;color:#333;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ m.menuNm }}
+                </span>
+                <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin:0 8px;flex-shrink:0;">
+                  {{ m.menuCode }}
+                </code>
+                <!-- -- 권한 레벨 토글 버튼 ------------------------------------------ -->
+                <div style="display:flex;gap:2px;flex-shrink:0;">
+                  <button v-for="p in codes.perm_levels" :key="p"
+                    style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
+                    :style="getMenuPerm(m.menuId)===p
+                    ? { background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff' }
+                    : { background:'#f5f5f5', borderColor:'#e0e0e0', color:'#999' }"
+                    @click="setMenuPerm(m.menuId, p)">
+                    {{ p }}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">위 목록에서 역할의 [설정] 버튼을 클릭하세요.</div>
           </div>
         </div>
-        <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
-          위 목록에서 역할의 [설정] 버튼을 클릭하세요.
+        <!-- -- 우: 대상사용자 ----------------------------------------------------- -->
+        <div style="flex:1;">
+          <div class="card" style="margin-bottom:0;">
+            <div class="toolbar">
+              <div>
+                <b style="font-size:13px;">대상사용자</b>
+                <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ cfSelectedRoleNm }}</span>
+                <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">위 목록에서 역할의 [설정] 버튼을 클릭하세요</span>
+              </div>
+              <button v-if="uiState.selectedRoleId" class="btn btn-primary btn-sm"
+                @click="uiState.userSelectOpen=true">
+                + 사용자 추가
+              </button>
+            </div>
+            <!-- -- 선택된 사용자 목록 ----------------------------------------------- -->
+            <div v-if="uiState.selectedRoleId">
+              <div v-if="!cfRoleUsersList.length"
+                style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
+                추가된 사용자가 없습니다.
+                <br>
+                <span style="font-size:12px;">[사용자 추가] 버튼으로 추가하세요.</span>
+              </div>
+              <div v-else style="display:flex;flex-direction:column;gap:6px;padding-top:4px;">
+                <div v-for="u in cfRoleUsersList" :key="u.boUserId"
+                  style="display:flex;align-items:center;padding:9px 14px;background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
+                  @mouseenter="$event.currentTarget.style.background='#fff0f4'"
+                  @mouseleave="$event.currentTarget.style.background='#fafafa'">
+                  <div style="width:32px;height:32px;border-radius:50%;background:#e8587a22;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:10px;">
+                    <span style="font-size:13px;font-weight:700;color:#e8587a;">{{ u.name.charAt(0) }}</span>
+                  </div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:13px;font-weight:600;color:#222;">{{ u.name }}</div>
+                    <div style="font-size:11px;color:#888;margin-top:1px;">{{ u.loginId }} · {{ u.dept || '-' }} · {{ u.role }}</div>
+                  </div>
+                  <span class="badge" :class="u.status==='활성'?'badge-green':'badge-gray'" style="font-size:10px;margin-right:8px;">
+                    {{ u.status }}
+                  </span>
+                  <button class="btn btn-danger btn-xs" @click="removeUser(u.boUserId)" title="제거">✕</button>
+                </div>
+              </div>
+            </div>
+            <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">위 목록에서 역할을 선택하세요.</div>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- -- 우: 대상사용자 ----------------------------------------------------- -->
-    <div style="flex:1;">
-      <div class="card" style="margin-bottom:0;">
-        <div class="toolbar">
-          <div>
-            <b style="font-size:13px;">대상사용자</b>
-            <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">— {{ cfSelectedRoleNm }}</span>
-            <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">위 목록에서 역할의 [설정] 버튼을 클릭하세요</span>
-          </div>
-          <button v-if="uiState.selectedRoleId" class="btn btn-primary btn-sm"
-            @click="uiState.userSelectOpen=true">+ 사용자 추가</button>
-        </div>
-
-        <!-- -- 선택된 사용자 목록 ----------------------------------------------- -->
-        <div v-if="uiState.selectedRoleId">
-          <div v-if="!cfRoleUsersList.length"
-            style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
-            추가된 사용자가 없습니다.<br>
-            <span style="font-size:12px;">[사용자 추가] 버튼으로 추가하세요.</span>
-          </div>
-          <div v-else style="display:flex;flex-direction:column;gap:6px;padding-top:4px;">
-            <div v-for="u in cfRoleUsersList" :key="u.boUserId"
-              style="display:flex;align-items:center;padding:9px 14px;background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
-              @mouseenter="$event.currentTarget.style.background='#fff0f4'"
-              @mouseleave="$event.currentTarget.style.background='#fafafa'">
-              <div style="width:32px;height:32px;border-radius:50%;background:#e8587a22;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:10px;">
-                <span style="font-size:13px;font-weight:700;color:#e8587a;">{{ u.name.charAt(0) }}</span>
-              </div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:600;color:#222;">{{ u.name }}</div>
-                <div style="font-size:11px;color:#888;margin-top:1px;">{{ u.loginId }} · {{ u.dept || '-' }} · {{ u.role }}</div>
-              </div>
-              <span class="badge" :class="u.status==='활성'?'badge-green':'badge-gray'" style="font-size:10px;margin-right:8px;">{{ u.status }}</span>
-              <button class="btn btn-danger btn-xs" @click="removeUser(u.boUserId)" title="제거">✕</button>
-            </div>
-          </div>
-        </div>
-        <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
-          위 목록에서 역할을 선택하세요.
-        </div>
-      </div>
+      <!-- -- 사용자 선택 모달 ------------------------------------------------------ -->
+      <bo-user-select-modal v-if="uiState.userSelectOpen" @select="onUserSelect"
+        @close="uiState.userSelectOpen=false" />
+      <!-- -- 상위역할 선택 모달 ----------------------------------------------------- -->
+      <role-tree-modal
+        v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
+        @select="onParentSelect"
+        @close="roleTreeModal.show=false" />
     </div>
   </div>
-
-  <!-- -- 사용자 선택 모달 ------------------------------------------------------ -->
-  <bo-user-select-modal v-if="uiState.userSelectOpen" @select="onUserSelect"
-    @close="uiState.userSelectOpen=false" />
-
-  <!-- -- 상위역할 선택 모달 ----------------------------------------------------- -->
-  <role-tree-modal
-    v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
-    @select="onParentSelect"
-    @close="roleTreeModal.show=false" />
-</div></div>
-
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />

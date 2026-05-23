@@ -108,7 +108,6 @@ window.BlogEdit = {
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:760px;">
-
   <!-- -- 헤더 ------------------------------------------------------------- -->
   <div style="margin-bottom:28px;">
     <button @click="cancel"
@@ -117,13 +116,10 @@ window.BlogEdit = {
     </button>
     <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">{{ cfIsEdit ? '글 수정' : '새 글 작성' }}</h1>
   </div>
-
   <!-- -- 폼 -------------------------------------------------------------- -->
   <div class="card" style="padding:clamp(16px,3vw,28px);">
-
     <!-- -- 제목 / 카테고리 / 요약 / 본문 ----------------------------------- -->
     <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
-
     <!-- -- 이미지 첨부 ------------------------------------------------------- -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">이미지 첨부</label>
@@ -132,10 +128,11 @@ window.BlogEdit = {
         style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-base);border-radius:6px;margin-bottom:6px;border:1px solid var(--border);">
         <span style="font-size:0.82rem;color:var(--text-secondary);flex:1;">📎 {{ img.name }} ({{ img.size }})</span>
         <button @click="removeImage(img.id)"
-          style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.78rem;font-weight:600;">삭제</button>
+          style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.78rem;font-weight:600;">
+          삭제
+        </button>
       </div>
     </div>
-
     <!-- -- 태그 ----------------------------------------------------------- -->
     <div style="margin-bottom:28px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">태그 (쉼표로 구분)</label>
@@ -143,17 +140,17 @@ window.BlogEdit = {
         style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
       <div v-if="form.tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
         <span v-for="tag in form.tags.split(',').map(s=>s.trim()).filter(Boolean)" :key="tag"
-          style="padding:3px 10px;background:var(--blue-dim);color:var(--blue);border-radius:20px;font-size:0.72rem;font-weight:600;">#{{ tag }}</span>
+          style="padding:3px 10px;background:var(--blue-dim);color:var(--blue);border-radius:20px;font-size:0.72rem;font-weight:600;">
+          #{{ tag }}
+        </span>
       </div>
     </div>
-
     <!-- -- 버튼 ----------------------------------------------------------- -->
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button class="btn-outline" @click="cancel" style="padding:11px 28px;font-size:0.88rem;">취소</button>
       <button class="btn-blue" @click="handleSave" style="padding:11px 28px;font-size:0.88rem;">{{ cfIsEdit ? '수정' : '등록' }}</button>
     </div>
   </div>
-
 </div>
-  `
+`
 };

@@ -168,7 +168,9 @@ window.XsSample11 = {
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
         <input type="date" v-model="uiState.previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <input type="time" v-model="uiState.previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">현재</button>
+        <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
+          현재
+        </button>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <!-- -- 상태 --------------------------------------------------------- -->
@@ -212,9 +214,15 @@ window.XsSample11 = {
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <!-- -- 보기 모드 ------------------------------------------------------ -->
       <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-        <button @click="uiState.tabMode='list'" style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;" :style="uiState.tabMode==='list'?'background:#333;color:#fff;':'background:#fff;color:#666;'">☰ 리스트</button>
-        <button @click="uiState.tabMode='card'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.tabMode==='card'?'background:#333;color:#fff;':'background:#fff;color:#666;'">🖼 카드</button>
-        <button @click="uiState.tabMode='expand'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.tabMode==='expand'?'background:#333;color:#fff;':'background:#fff;color:#666;'">⊞ 상세</button>
+        <button @click="uiState.tabMode='list'" style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;" :style="uiState.tabMode==='list'?'background:#333;color:#fff;':'background:#fff;color:#666;'">
+          ☰ 리스트
+        </button>
+        <button @click="uiState.tabMode='card'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.tabMode==='card'?'background:#333;color:#fff;':'background:#fff;color:#666;'">
+          🖼 카드
+        </button>
+        <button @click="uiState.tabMode='expand'" style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;" :style="uiState.tabMode==='expand'?'background:#333;color:#fff;':'background:#fff;color:#666;'">
+          ⊞ 상세
+        </button>
       </div>
       <!-- -- 설명 토글 ------------------------------------------------------ -->
       <button @click="uiState.showDesc=!uiState.showDesc" style="font-size:11px;padding:3px 10px;border-radius:8px;border:1px solid #ddd;cursor:pointer;"
@@ -232,8 +240,12 @@ window.XsSample11 = {
         <div v-if="showAreaDrop" @click="showAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
         <div v-if="showAreaDrop" style="position:absolute;right:0;top:calc(100% + 4px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:220px;max-height:300px;overflow-y:auto;padding:8px 0;">
           <div style="display:flex;gap:6px;padding:6px 12px 6px;border-bottom:1px solid #f0f0f0;">
-            <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
-            <button @click.stop="clearAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
+            <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+              전체선택
+            </button>
+            <button @click.stop="clearAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
+              전체해제
+            </button>
           </div>
           <div v-for="a in cfAllAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;"
@@ -246,7 +258,9 @@ window.XsSample11 = {
             <span style="font-size:12px;">{{ a.codeLabel }}</span>
           </div>
           <div style="border-top:1px solid #f0f0f0;padding:6px 12px;">
-            <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">닫기</button>
+            <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">
+              닫기
+            </button>
           </div>
         </div>
       </div>
@@ -254,26 +268,46 @@ window.XsSample11 = {
     <!-- -- 조회 조건 요약 ----------------------------------------------------- -->
     <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">
       <span style="font-size:11px;color:#aaa;">조회 조건:</span>
-      <span style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:8px;padding:2px 8px;">📅 {{ uiState.previewDate }} {{ uiState.previewTime }}</span>
-      <span v-if="searchStatus" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;">상태: {{ searchStatus }}</span>
-      <span v-if="searchCondition" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">{{ searchCondition }}</span>
-      <span v-if="searchAuthRequired==='Y'" style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 8px;">인증 필요</span>
-      <span v-if="searchAuthRequired==='N'" style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:8px;padding:2px 8px;">인증 불필요</span>
-      <span v-if="searchAuthGrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">등급: {{ searchAuthGrade }}↑</span>
+      <span style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:8px;padding:2px 8px;">
+        📅 {{ uiState.previewDate }} {{ uiState.previewTime }}
+      </span>
+      <span v-if="searchStatus" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;">
+        상태: {{ searchStatus }}
+      </span>
+      <span v-if="searchCondition" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">
+        {{ searchCondition }}
+      </span>
+      <span v-if="searchAuthRequired==='Y'" style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 8px;">
+        인증 필요
+      </span>
+      <span v-if="searchAuthRequired==='N'" style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:8px;padding:2px 8px;">
+        인증 불필요
+      </span>
+      <span v-if="searchAuthGrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">
+        등급: {{ searchAuthGrade }}↑
+      </span>
       <template v-for="nm in cfSelectedCatNames" :key="nm">
         <span style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;">📂 {{ nm }}</span>
       </template>
-      <span style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;margin-left:auto;">총 {{ cfTotalPanels }}개 패널</span>
+      <span style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 8px;margin-left:auto;">
+        총 {{ cfTotalPanels }}개 패널
+      </span>
     </div>
     <!-- -- 현재 사용자 정보 ---------------------------------------------------- -->
     <div style="margin-top:8px;padding:7px 12px;background:#f8f9fa;border-radius:6px;border-left:3px solid #aaa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
-      <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">로그인</span>
+      <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">
+        로그인
+      </span>
       <span v-else style="font-size:11px;background:#f5f5f5;color:#999;border-radius:6px;padding:1px 7px;">비로그인</span>
       <span v-if="userNm" style="font-size:11px;color:#555;">{{ userNm }}</span>
-      <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">등급: {{ userGrade }}</span>
+      <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
+        등급: {{ userGrade }}
+      </span>
       <span style="font-size:11px;color:#aaa;">접근 가능 조건:</span>
-      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
+      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">
+        {{ c }}
+      </span>
     </div>
   </div>
   <!-- -- 영역별 패널 목록 ------------------------------------------------------ -->
@@ -281,7 +315,9 @@ window.XsSample11 = {
   <div v-for="area in cfAreaList" :key="area.codeValue" style="margin-bottom:8px;">
     <!-- -- 영역 헤더 -------------------------------------------------------- -->
     <div style="background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;padding:8px 14px;border-radius:6px 6px 0 0;display:flex;align-items:center;gap:8px;">
-      <span style="font-size:10px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 6px;">영역</span>
+      <span style="font-size:10px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 6px;">
+        영역
+      </span>
       <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 7px;border-radius:4px;">{{ area.codeValue }}</code>
       <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
       <span style="margin-left:auto;font-size:11px;opacity:.7;">패널 {{ panelsForArea(area.codeValue).length }}개</span>
@@ -295,10 +331,14 @@ window.XsSample11 = {
     <div v-else-if="uiState.tabMode==='list'" style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId"
         style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;">
-        <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#666;flex-shrink:0;">#{{ String(p.dispId).padStart(4,'0') }}</code>
+        <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#666;flex-shrink:0;">
+          #{{ String(p.dispId).padStart(4,'0') }}
+        </code>
         <span style="font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</span>
         <span style="font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:1px 7px;flex-shrink:0;">{{ p.status }}</span>
-        <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;flex-shrink:0;">{{ p.condition || '항상 표시' }}</span>
+        <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;flex-shrink:0;">
+          {{ p.condition || '항상 표시' }}
+        </span>
         <span style="font-size:10px;color:#999;flex-shrink:0;">위젯 {{ (p.rows||[]).length }}개</span>
       </div>
     </div>
@@ -307,11 +347,17 @@ window.XsSample11 = {
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId"
         style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;min-width:180px;flex:1;max-width:260px;">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
-          <code style="font-size:9px;background:#f0f0f0;padding:1px 4px;border-radius:3px;color:#777;">#{{ String(p.dispId).padStart(4,'0') }}</code>
+          <code style="font-size:9px;background:#f0f0f0;padding:1px 4px;border-radius:3px;color:#777;">
+            #{{ String(p.dispId).padStart(4,'0') }}
+          </code>
           <span style="font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 6px;">{{ p.status }}</span>
         </div>
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</div>
-        <div v-if="uiState.showDesc && p.description" style="font-size:11px;color:#888;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.description }}</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          {{ p.name }}
+        </div>
+        <div v-if="uiState.showDesc && p.description" style="font-size:11px;color:#888;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          {{ p.description }}
+        </div>
         <div style="font-size:10px;color:#999;">{{ p.condition || '항상 표시' }} · 위젯 {{ (p.rows||[]).length }}개</div>
       </div>
     </div>
@@ -320,19 +366,26 @@ window.XsSample11 = {
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId" style="border-bottom:1px solid #f0f0f0;">
         <!-- -- 패널 행 ----------------------------------------------------- -->
         <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fafafa;">
-          <code style="font-size:10px;background:#f0f0f0;padding:1px 5px;border-radius:3px;color:#666;">#{{ String(p.dispId).padStart(4,'0') }}</code>
+          <code style="font-size:10px;background:#f0f0f0;padding:1px 5px;border-radius:3px;color:#666;">
+            #{{ String(p.dispId).padStart(4,'0') }}
+          </code>
           <span style="font-size:13px;font-weight:700;flex:1;">{{ p.name }}</span>
           <span style="font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:1px 7px;">{{ p.status }}</span>
-          <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;">{{ p.condition || '항상 표시' }}</span>
+          <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;">
+            {{ p.condition || '항상 표시' }}
+          </span>
         </div>
         <!-- -- 설명 ------------------------------------------------------- -->
-        <div v-if="uiState.showDesc && p.description" style="padding:4px 14px 4px 30px;font-size:11px;color:#888;">{{ p.description }}</div>
+        <div v-if="uiState.showDesc && p.description" style="padding:4px 14px 4px 30px;font-size:11px;color:#888;">
+          {{ p.description }}
+        </div>
         <!-- -- 위젯 목록 ---------------------------------------------------- -->
         <div style="padding:4px 14px 8px 30px;display:flex;flex-wrap:wrap;gap:4px;">
           <span v-if="!p.rows || p.rows.length===0" style="font-size:11px;color:#ccc;">(위젯 없음)</span>
           <span v-for="(w, wi) in (p.rows||[])" :key="wi"
             style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:6px;padding:2px 8px;">
-            {{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}<span v-if="w.widgetNm" style="color:#aaa;"> · {{ w.widgetNm }}</span>
+            {{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}
+            <span v-if="w.widgetNm" style="color:#aaa;">· {{ w.widgetNm }}</span>
           </span>
         </div>
       </div>
@@ -341,5 +394,5 @@ window.XsSample11 = {
   <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->
   <category-select-modal :show="showCatModal" :selected-ids="[...selectedCatIds]" @close="showCatModal=false" @apply="onCatApply" />
 </div>
-  `,
+`,
 };

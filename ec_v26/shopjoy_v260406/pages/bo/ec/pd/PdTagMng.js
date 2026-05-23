@@ -156,22 +156,21 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
   template: `
 <div>
   <div class="page-title">태그관리</div>
-    <div class="card">
-      <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
-    </div>
-    <bo-grid
-      :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
-      list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-row-new' : (row._row_status==='U' ? 'table-row-mod' : '')"
-      @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">
-
-      <template #toolbar-actions>
-        <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
-        <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
-      </template>
-
-      <template #row-actions="{ idx }">
-        <button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button>
-      </template>
-    </bo-grid>
-</div>`
+  <div class="card">
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
+  </div>
+  <bo-grid
+    :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
+    list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-row-new' : (row._row_status==='U' ? 'table-row-mod' : '')"
+    @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">
+    <template #toolbar-actions>
+      <button class="btn btn-primary btn-sm" @click="addRow">+ 행추가</button>
+      <button class="btn btn-blue btn-sm" @click="saveAll">저장</button>
+    </template>
+    <template #row-actions="{ idx }">
+      <button class="btn btn-danger btn-xs" @click="deleteRow(idx)">삭제</button>
+    </template>
+  </bo-grid>
+</div>
+`
 };

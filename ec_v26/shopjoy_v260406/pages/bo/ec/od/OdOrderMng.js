@@ -459,7 +459,10 @@ window.OdOrderMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>주문목록 <span class="list-count">{{ pager.pageTotalCount }}건</span>
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        주문목록
+        <span class="list-count">{{ pager.pageTotalCount }}건</span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">선택 {{ checked.size }}건</span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -470,28 +473,27 @@ window.OdOrderMng = {
     </div>
     <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
-    <bo-grid bare selectable :columns="listGridColumns" :rows="orders" :pager="pager" row-key="orderId"
-      :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
-      :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
-      @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll"
-      @row-click="row => handleLoadDetail(row.orderId)"
-      @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
-      <template #row-actions="{ row }">
-        <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.orderId)">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-        </div>
-      </template>
-    </bo-grid>
-    </div><!-- /그리드 스크롤 컨테이너 -->
-
+      <bo-grid bare selectable :columns="listGridColumns" :rows="orders" :pager="pager" row-key="orderId"
+        :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
+        :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
+        @sort="onSort" @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll"
+        @row-click="row => handleLoadDetail(row.orderId)"
+        @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+        <template #row-actions="{ row }">
+          <div class="actions">
+            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.orderId)">수정</button>
+            <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+          </div>
+        </template>
+      </bo-grid>
+    </div>
+    <!-- /그리드 스크롤 컨테이너 -->
     <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
       <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
-
   <!-- -- 하단 상세: OrderDtl 임베드 -------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -505,13 +507,11 @@ window.OdOrderMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    
-    
+      
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchData"
-  />
+      />
   </div>
-
   <!-- -- 변경작업 모달 -------------------------------------------------------- -->
   <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="bulkOpen=false">
     <div style="background:#fff;border-radius:12px;width:640px;max-width:94vw;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;max-height:90vh;display:flex;flex-direction:column;">
@@ -522,7 +522,9 @@ window.OdOrderMng = {
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
         <button v-for="t in [{id:'status',label:'주문상태'},{id:'payMethod',label:'결제수단'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
           @click="uiState.bulkTab=t.id"
-          :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: uiState.bulkTab===t.id?800:600,background: uiState.bulkTab===t.id?'#fff':'transparent',color: uiState.bulkTab===t.id?'#e8587a':'#888',borderBottom: uiState.bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">{{ t.label }}</button>
+          :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: uiState.bulkTab===t.id?800:600,background: uiState.bulkTab===t.id?'#fff':'transparent',color: uiState.bulkTab===t.id?'#e8587a':'#888',borderBottom: uiState.bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">
+          {{ t.label }}
+        </button>
       </div>
       <div style="padding:20px 18px;">
         <div v-if="uiState.bulkTab==='status'">
@@ -563,7 +565,9 @@ window.OdOrderMng = {
             :cols="2" :show-actions="false">
             <template #tmplMsg>
               <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>
-              <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">{{ cfBuildTmplMsg }}</div>
+              <div style="margin-top:6px;padding:8px 10px;background:#f6f8fa;border-radius:6px;font-family:monospace;font-size:11.5px;white-space:pre-wrap;color:#333;border:1px dashed #d0d7de;">
+                {{ cfBuildTmplMsg }}
+              </div>
             </template>
           </bo-form-area>
         </div>
@@ -579,7 +583,6 @@ window.OdOrderMng = {
       </div>
     </div>
   </div>
-
   <!-- 회원 선택 팝업 -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="주문관리"
     subtitle="주문 조회 기준 회원을 선택해주세요"

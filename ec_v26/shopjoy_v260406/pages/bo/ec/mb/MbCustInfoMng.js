@@ -371,7 +371,6 @@
   <div class="page-header">
     <h2 class="page-title">고객종합정보</h2>
   </div>
-
   <!-- -- 검색 바 -- -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:14px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <!-- -- 모드 세그먼트 ------------------------------------------------------ -->
@@ -379,12 +378,11 @@
       <button v-for="m in SEARCH_MODES" :key="m?.id"
         @click="uiState.searchMode=m.id;uiState.searchInput=''"
         :style="uiState.searchMode===m.id
-          ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;'
-          : 'background:transparent;color:#666;border:none;border-radius:6px;padding:6px 16px;font-size:13px;cursor:pointer;transition:all .15s;'">
+        ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;'
+        : 'background:transparent;color:#666;border:none;border-radius:6px;padding:6px 16px;font-size:13px;cursor:pointer;transition:all .15s;'">
         {{ m.label }}
       </button>
     </div>
-
     <!-- -- 고객 선택 -------------------------------------------------------- -->
     <template v-if="uiState.searchMode==='member'">
       <button @click="openMemberModal"
@@ -393,7 +391,6 @@
       </button>
       <span style="font-size:12px;color:#aaa;">이름 · 이메일 · 전화번호로 검색</span>
     </template>
-
     <!-- -- 번호 입력 -------------------------------------------------------- -->
     <template v-else>
       <div style="display:flex;align-items:center;gap:0;background:#f8f9fa;border:1.5px solid #ddd;border-radius:8px;overflow:hidden;flex:1;max-width:360px;">
@@ -407,14 +404,12 @@
         </button>
       </div>
     </template>
-
     <span style="flex:1;"></span>
     <button v-if="uiState.customer" @click="clearCustomer"
       style="background:#f5f5f5;border:1px solid #ddd;color:#666;border-radius:8px;padding:7px 16px;font-size:12px;cursor:pointer;">
       ✕ 초기화
     </button>
   </div>
-
   <!-- -- 기간 필터 바 -- -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:12px;color:#888;font-weight:500;white-space:nowrap;">조회기간</span>
@@ -422,8 +417,8 @@
       <button v-for="p in PERIOD_OPTS" :key="p?.id"
         @click="searchParam.period=p.id"
         :style="searchParam.period===p.id
-          ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;'
-          : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;cursor:pointer;'">
+        ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;'
+        : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;cursor:pointer;'">
         {{ p.label }}
       </button>
     </div>
@@ -434,11 +429,8 @@
       <input type="date" v-model="searchParam.customTo"
         style="border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;outline:none;" />
     </template>
-    <span v-else style="font-size:12px;color:#aaa;">
-      {{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}
-    </span>
+    <span v-else style="font-size:12px;color:#aaa;">{{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}</span>
   </div>
-
   <!-- -- 고객 없음 안내 -- -->
   <div v-if="!uiState.customer"
     style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:#ccc;gap:12px;">
@@ -446,9 +438,7 @@
     <div style="font-size:15px;color:#bbb;">고객을 검색하여 선택하면 종합 정보가 표시됩니다.</div>
     <div style="font-size:12px;color:#d0d0d0;">고객 선택 · 주문번호 · 클레임번호 세 가지 방법으로 조회할 수 있습니다.</div>
   </div>
-
   <template v-else>
-
     <!-- -- 1. 고객 프로필 카드 -- -->
     <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;">
       <!-- -- 상단 컬러 배너 --------------------------------------------------- -->
@@ -462,8 +452,12 @@
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
             <span style="font-size:20px;font-weight:700;color:#212121;">{{ uiState.customer.memberNm }}</span>
-            <span :class="'badge '+(uiState.customer.grade==='VIP'?'badge-purple':uiState.customer.grade==='우수'?'badge-blue':'badge-gray')" style="font-size:12px;">{{ uiState.customer.grade }}</span>
-            <span :class="'badge '+(uiState.customer.status==='활성'?'badge-green':'badge-red')" style="font-size:12px;">{{ uiState.customer.status }}</span>
+            <span :class="'badge '+(uiState.customer.grade==='VIP'?'badge-purple':uiState.customer.grade==='우수'?'badge-blue':'badge-gray')" style="font-size:12px;">
+              {{ uiState.customer.grade }}
+            </span>
+            <span :class="'badge '+(uiState.customer.status==='활성'?'badge-green':'badge-red')" style="font-size:12px;">
+              {{ uiState.customer.status }}
+            </span>
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:12px 24px;font-size:13px;color:#555;">
             <span>✉ {{ uiState.customer.email }}</span>
@@ -492,19 +486,45 @@
         </div>
       </div>
     </div>
-
     <!-- -- 이력 탭바 + 뷰모드 -- -->
     <div class="tab-bar-row">
       <div class="tab-nav">
-        <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="tabMode2!=='tab'" @click="histTab='orders'">🛒 주문이력 <span class="tab-count">{{ cfCustOrders.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="histTab='claims'">↩ 클레임이력 <span class="tab-count">{{ cfCustClaims.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="histTab='dliv'">🚚 배송이력 <span class="tab-count">{{ cfCustDeliveries.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='cache'}"    :disabled="tabMode2!=='tab'" @click="histTab='cache'">💰 캐쉬내역 <span class="tab-count">{{ cfCustCache.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='contacts'}" :disabled="tabMode2!=='tab'" @click="histTab='contacts'">📋 문의이력 <span class="tab-count">{{ cfCustContacts.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='chats'}"    :disabled="tabMode2!=='tab'" @click="histTab='chats'">💬 채팅이력 <span class="tab-count">{{ cfCustChats.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='login'}"    :disabled="tabMode2!=='tab'" @click="histTab='login'">🔐 로그인 <span class="tab-count">{{ cfCustLoginHist.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='coupon'}"   :disabled="tabMode2!=='tab'" @click="histTab='coupon'">🎟 쿠폰 <span class="tab-count">{{ cfCustCouponUsage.length }}</span></button>
-        <button class="tab-btn" :class="{active:histTab==='send'}"     :disabled="tabMode2!=='tab'" @click="histTab='send'">📨 발송 <span class="tab-count">{{ cfCustSendHist.length }}</span></button>
+        <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="tabMode2!=='tab'" @click="histTab='orders'">
+          🛒 주문이력
+          <span class="tab-count">{{ cfCustOrders.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="histTab='claims'">
+          ↩ 클레임이력
+          <span class="tab-count">{{ cfCustClaims.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="histTab='dliv'">
+          🚚 배송이력
+          <span class="tab-count">{{ cfCustDeliveries.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='cache'}"    :disabled="tabMode2!=='tab'" @click="histTab='cache'">
+          💰 캐쉬내역
+          <span class="tab-count">{{ cfCustCache.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='contacts'}" :disabled="tabMode2!=='tab'" @click="histTab='contacts'">
+          📋 문의이력
+          <span class="tab-count">{{ cfCustContacts.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='chats'}"    :disabled="tabMode2!=='tab'" @click="histTab='chats'">
+          💬 채팅이력
+          <span class="tab-count">{{ cfCustChats.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='login'}"    :disabled="tabMode2!=='tab'" @click="histTab='login'">
+          🔐 로그인
+          <span class="tab-count">{{ cfCustLoginHist.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='coupon'}"   :disabled="tabMode2!=='tab'" @click="histTab='coupon'">
+          🎟 쿠폰
+          <span class="tab-count">{{ cfCustCouponUsage.length }}</span>
+        </button>
+        <button class="tab-btn" :class="{active:histTab==='send'}"     :disabled="tabMode2!=='tab'" @click="histTab='send'">
+          📨 발송
+          <span class="tab-count">{{ cfCustSendHist.length }}</span>
+        </button>
       </div>
       <div class="tab-modes">
         <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
@@ -514,142 +534,142 @@
         <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
-
     <!-- -- 이력 패널 -- -->
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
       <!-- -- 주문이력 -- -->
       <div v-show="showTab('orders')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#1976d2;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">주문이력</span>
-          <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustOrders.length }}건</span>
+          <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustOrders.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="orderGridColumns" :rows="cfCustOrders" row-key="orderId" empty-text="주문 내역이 없습니다."
-            @ref-click="({type,id}) => showRefModal(type, id)">
-          </bo-grid>
+            @ref-click="({type,id}) => showRefModal(type, id)"></bo-grid>
         </div>
       </div>
-
       <!-- -- 클레임이력 -- -->
       <div v-show="showTab('claims')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ef5350;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">클레임이력</span>
-          <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustClaims.length }}건</span>
+          <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustClaims.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="claimGridColumns" :rows="cfCustClaims" row-key="claimId" empty-text="클레임 내역이 없습니다."
-            @ref-click="({type,id}) => showRefModal(type, id)">
-          </bo-grid>
+            @ref-click="({type,id}) => showRefModal(type, id)"></bo-grid>
         </div>
       </div>
-
       <!-- -- 배송이력 -- -->
       <div v-show="showTab('dliv')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#00897b;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">배송이력</span>
-          <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustDeliveries.length }}건</span>
+          <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustDeliveries.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="dlivGridColumns" :rows="cfCustDeliveries" row-key="dlivId" empty-text="배송 내역이 없습니다."></bo-grid>
         </div>
       </div>
-
       <!-- -- 캐쉬내역 -- -->
       <div v-show="showTab('cache')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#f57c00;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">캐쉬내역</span>
-          <span style="margin-left:2px;background:#fff3e0;color:#e65100;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustCache.length }}건</span>
+          <span style="margin-left:2px;background:#fff3e0;color:#e65100;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustCache.length }}건
+          </span>
           <span style="margin-left:auto;font-size:12px;color:#7b1fa2;font-weight:600;">잔액 {{ fnFmtPrice(cfCustCacheBalance) }}</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="cacheGridColumns" :rows="cfCustCache" row-key="cacheId" empty-text="캐쉬 내역이 없습니다.">
-          </bo-grid>
+          <bo-grid bare :columns="cacheGridColumns" :rows="cfCustCache" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."></bo-grid>
         </div>
       </div>
-
       <!-- -- 문의이력 -- -->
       <div v-show="showTab('contacts')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#5c6bc0;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">문의이력</span>
-          <span style="margin-left:2px;background:#e8eaf6;color:#283593;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustContacts.length }}건</span>
+          <span style="margin-left:2px;background:#e8eaf6;color:#283593;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustContacts.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="contactGridColumns" :rows="cfCustContacts" row-key="inquiryId" empty-text="문의 내역이 없습니다.">
-          </bo-grid>
+          <bo-grid bare :columns="contactGridColumns" :rows="cfCustContacts" row-key="inquiryId" empty-text="문의 내역이 없습니다."></bo-grid>
         </div>
       </div>
-
       <!-- -- 채팅이력 -- -->
       <div v-show="showTab('chats')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#26a69a;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">채팅이력</span>
-          <span style="margin-left:2px;background:#e0f2f1;color:#004d40;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustChats.length }}건</span>
+          <span style="margin-left:2px;background:#e0f2f1;color:#004d40;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustChats.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="chatGridColumns" :rows="cfCustChats" row-key="chatId" empty-text="채팅 내역이 없습니다.">
-          </bo-grid>
+          <bo-grid bare :columns="chatGridColumns" :rows="cfCustChats" row-key="chatId" empty-text="채팅 내역이 없습니다."></bo-grid>
         </div>
       </div>
-
       <!-- -- 로그인이력 -- -->
       <div v-show="showTab('login')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#546e7a;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">로그인이력</span>
-          <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustLoginHist.length }}건</span>
+          <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustLoginHist.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="loginGridColumns" :rows="cfCustLoginHist" row-key="loginId" empty-text="로그인 내역이 없습니다."></bo-grid>
         </div>
       </div>
-
       <!-- -- 쿠폰사용이력 -- -->
       <div v-show="showTab('coupon')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#e91e63;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">쿠폰사용이력</span>
-          <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustCouponUsage.length }}건</span>
+          <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustCouponUsage.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="couponGridColumns" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
-            @ref-click="({type,id}) => showRefModal(type, id)">
-          </bo-grid>
+            @ref-click="({type,id}) => showRefModal(type, id)"></bo-grid>
         </div>
       </div>
-
       <!-- -- 발송이력 -- -->
       <div v-show="showTab('send')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ff7043;border-radius:2px;display:inline-block;"></span>
           <span style="font-weight:600;font-size:13px;color:#333;">발송이력</span>
-          <span style="margin-left:2px;background:#fbe9e7;color:#bf360c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">{{ cfCustSendHist.length }}건</span>
+          <span style="margin-left:2px;background:#fbe9e7;color:#bf360c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
+            {{ cfCustSendHist.length }}건
+          </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="sendGridColumns" :rows="cfCustSendHist" row-key="sendId" empty-text="발송 내역이 없습니다.">
-          </bo-grid>
+          <bo-grid bare :columns="sendGridColumns" :rows="cfCustSendHist" row-key="sendId" empty-text="발송 내역이 없습니다."></bo-grid>
         </div>
       </div>
-
-    </div><!-- -- /grid ------------------------------------------------------------ -->
+    </div>
+    <!-- -- /grid ------------------------------------------------------------ -->
   </template>
-
   <!-- -- 고객 선택 모달 -- -->
   <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
-            max-height="85vh" @close="memberModal.show=false">
+    max-height="85vh" @close="memberModal.show=false">
     <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
       <bo-multi-check-select
         v-model="memberModal.searchType"
         :options="[
-          { value: 'memberNm', label: '이름' },
-          { value: 'email',    label: '이메일' },
-          { value: 'phone',    label: '전화번호' },
+        { value: 'memberNm', label: '이름' },
+        { value: 'email',    label: '이메일' },
+        { value: 'phone',    label: '전화번호' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -665,7 +685,6 @@
       </template>
     </bo-grid>
   </bo-modal>
-
 </div>
 `,
   };

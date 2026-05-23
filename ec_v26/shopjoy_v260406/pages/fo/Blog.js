@@ -101,7 +101,6 @@ window.Blog = {
   },
   template: /* html */ `
 <div class="page-wrap">
-
   <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="블로그"
@@ -117,38 +116,40 @@ window.Blog = {
       </div>
     </div>
   </div>
-
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div style="display:flex;justify-content:center;margin-bottom:32px;">
     <fo-search-area bar-style="max-width:640px;width:100%;justify-content:center;"
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
-
   <!-- -- 레이아웃: 사이드바 + 본문 ------------------------------------------------ -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,3vw,32px);" class="blog-grid">
-
     <!-- -- 사이드바 --------------------------------------------------------- -->
     <aside>
       <!-- -- 카테고리 ------------------------------------------------------- -->
       <div style="margin-bottom:28px;">
-        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Prod Categories</h3>
+        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
+          Prod Categories
+        </h3>
         <ul style="list-style:none;padding:0;margin:0;">
           <li v-for="cat in categories" :key="cat.id"
             @click="searchParam.cat=cat.id;onSearch()"
             :style="{
-              padding:'8px 0', cursor:'pointer', fontSize:'0.84rem',
-              color: searchParam.cat===cat.id ? 'var(--blue)' : 'var(--text-secondary)',
-              fontWeight: searchParam.cat===cat.id ? '700' : '400',
-              borderLeft: searchParam.cat===cat.id ? '2px solid var(--blue)' : '2px solid transparent',
-              paddingLeft: '12px', transition:'all .15s',
-            }">{{ cat.name }}</li>
+            padding:'8px 0', cursor:'pointer', fontSize:'0.84rem',
+            color: searchParam.cat===cat.id ? 'var(--blue)' : 'var(--text-secondary)',
+            fontWeight: searchParam.cat===cat.id ? '700' : '400',
+            borderLeft: searchParam.cat===cat.id ? '2px solid var(--blue)' : '2px solid transparent',
+            paddingLeft: '12px', transition:'all .15s',
+            }">
+            {{ cat.name }}
+          </li>
         </ul>
       </div>
-
       <!-- -- 최신 글 ------------------------------------------------------- -->
       <div>
-        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">Latest Posts</h3>
+        <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
+          Latest Posts
+        </h3>
         <div v-for="p in cfLatestPosts" :key="p.id" @click="navigate('blogView', { dtlId: p.id })"
           style="display:flex;gap:10px;margin-bottom:14px;cursor:pointer;padding:6px 0;"
           @mouseenter="$event.currentTarget.style.opacity='0.7'"
@@ -157,13 +158,14 @@ window.Blog = {
             <img v-if="p.thumb" :src="p.thumb" style="width:100%;height:100%;object-fit:cover;" />
           </div>
           <div style="min-width:0;">
-            <div style="font-size:0.78rem;font-weight:600;color:var(--text-primary);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ p.title }}</div>
+            <div style="font-size:0.78rem;font-weight:600;color:var(--text-primary);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+              {{ p.title }}
+            </div>
             <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px;">{{ p.date }}</div>
           </div>
         </div>
       </div>
     </aside>
-
     <!-- -- 포스트 목록 ------------------------------------------------------- -->
     <div>
       <div v-for="post in posts" :key="post.id"
@@ -171,20 +173,22 @@ window.Blog = {
         @click="navigate('blogView', { dtlId: post.id })"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.boxShadow=''">
-
         <!-- -- 썸네일 ------------------------------------------------------ -->
         <div style="width:clamp(200px,30%,280px);min-height:180px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
           <img v-if="post.thumb" :src="post.thumb" :alt="post.title" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
             @mouseenter="$event.target.style.transform='scale(1.05)'" @mouseleave="$event.target.style.transform=''" />
         </div>
-
         <!-- -- 내용 ------------------------------------------------------- -->
         <div style="flex:1;min-width:200px;padding:clamp(14px,2vw,24px) clamp(14px,2vw,24px) clamp(14px,2vw,24px) 0;display:flex;flex-direction:column;justify-content:center;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">{{ categories.find(c => c.id === post.category)?.name || post.category }}</span>
+            <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">
+              {{ categories.find(c => c.id === post.category)?.name || post.category }}
+            </span>
           </div>
           <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:10px;line-height:1.4;">{{ post.title }}</h2>
-          <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ post.excerpt }}</p>
+          <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            {{ post.excerpt }}
+          </p>
           <div style="display:flex;align-items:center;gap:12px;font-size:0.75rem;color:var(--text-muted);">
             <span>By {{ post.author }}</span>
             <span>·</span>
@@ -194,7 +198,6 @@ window.Blog = {
           </div>
         </div>
       </div>
-
       <!-- -- 빈 상태 ------------------------------------------------------- -->
       <div v-if="posts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
         <div style="font-size:2rem;margin-bottom:12px;">📝</div>
@@ -202,7 +205,6 @@ window.Blog = {
       </div>
     </div>
   </div>
-
 </div>
-  `
+`
 };

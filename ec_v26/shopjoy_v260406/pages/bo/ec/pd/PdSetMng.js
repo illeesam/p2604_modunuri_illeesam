@@ -472,20 +472,29 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   <div class="page-title">세트상품관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#fff4ec;border-left:3px solid #e3803b;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#bf5a1a">세트상품</strong>은 여러 구성품을 하나의 세트로 판매하는 방식입니다.</span>
-    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#e3803b;background:none;border:none;cursor:pointer;padding:0">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#e3803b;background:none;border:none;cursor:pointer;padding:0">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" style="margin-top:6px">
-      ✔ 안분율 없이 <strong>세트 전체 단일 가격</strong>으로 판매·정산합니다.<br>
-      ✔ 클레임은 <strong>세트 전체 단위</strong>로만 가능합니다 (부분 취소·교환·반품 불가).<br>
-      ✔ 구성품은 등록 상품 연결 없이 <strong>비상품 항목</strong>도 추가할 수 있습니다.<br>
+      ✔ 안분율 없이
+      <strong>세트 전체 단일 가격</strong>
+      으로 판매·정산합니다.
+      <br>
+      ✔ 클레임은
+      <strong>세트 전체 단위</strong>
+      로만 가능합니다 (부분 취소·교환·반품 불가).
+      <br>
+      ✔ 구성품은 등록 상품 연결 없이
+      <strong>비상품 항목</strong>
+      도 추가할 수 있습니다.
+      <br>
       <span style="color:#888;font-size:12px">예) 선물세트, 패키지 구성품, 사은품 포함 세트</span>
     </div>
   </div>
-
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <!-- -- 목록 ------------------------------------------------------------- -->
   <div class="card">
     <div class="toolbar">
@@ -497,44 +506,44 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
     <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
-    <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="pager"
-      row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
-      <template #cell-prodNm="{ row }">
-        <td>
-          <div style="display:flex;align-items:flex-start;gap:6px">
-            <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">세트</span>
-            <div>
-              <span class="title-link" @click="openDtl(row.setProdId)">{{ row.prodNm }}</span>
-              <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
-                <span v-for="(item,i) in row.items" :key="item.setItemId||i"
-                      style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
-                  {{ item.itemNm }}
-                  <span style="color:#1677ff">×{{ item.itemQty }}</span>
-                  <span v-if="coUtil.cofAnd(!item.itemProdId, !item.componentProdId)" style="color:#f59e0b;margin-left:2px" title="비상품구성품">◆</span>
-                </span>
+      <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="pager"
+        row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
+        <template #cell-prodNm="{ row }">
+          <td>
+            <div style="display:flex;align-items:flex-start;gap:6px">
+              <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">세트</span>
+              <div>
+                <span class="title-link" @click="openDtl(row.setProdId)">{{ row.prodNm }}</span>
+                <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
+                  <span v-for="(item,i) in row.items" :key="item.setItemId||i"
+                    style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
+                    {{ item.itemNm }}
+                    <span style="color:#1677ff">×{{ item.itemQty }}</span>
+                    <span v-if="coUtil.cofAnd(!item.itemProdId, !item.componentProdId)" style="color:#f59e0b;margin-left:2px" title="비상품구성품">
+                      ◆
+                    </span>
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </td>
-      </template>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-xs" @click="openDtl(row.setProdId)">수정</button>
+          </td>
+        </template>
+        <template #row-actions="{ row }">
+          <button class="btn btn-blue btn-xs" @click="openDtl(row.setProdId)">수정</button>
           <button class="btn btn-danger btn-xs" @click="handleDelete(row.setProdId)">삭제</button>
-      </template>
-    </bo-grid>
-    </div><!-- /그리드 스크롤 컨테이너 -->
-
+        </template>
+      </bo-grid>
+    </div>
+    <!-- /그리드 스크롤 컨테이너 -->
     <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
       <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
-
   <!-- -- 신규등록 / 구성관리 (인라인 Dtl) ------------------------------------------ -->
   <div v-if="uiState.dtlMode !== null" class="card"
-       :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b'">
-
+    :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b'">
     <!-- -- Dtl 헤더 ------------------------------------------------------- -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
@@ -549,12 +558,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           🔒 세트 전체 단위로만 클레임 가능
         </span>
         <button class="btn btn-secondary btn-sm" @click="closeDtl">닫기</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">
-          {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
-        </button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">{{ uiState.dtlMode==='new' ? '등록' : '저장' }}</button>
       </div>
     </div>
-
     <!-- 신규 세트상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">세트상품 기본정보 (pd_prod)</div>
@@ -578,7 +584,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </template>
       </bo-form-area>
     </div>
-
     <!-- -- ② 카테고리 ------------------------------------------------------- -->
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
@@ -586,21 +591,26 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px">
           <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px">카테고리를 추가해주세요</div>
           <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)"
-               draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
-               :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''"
-               style="display:flex;align-items:center;gap:4px;padding:2px 0">
+            draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
+            :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''"
+            style="display:flex;align-items:center;gap:4px;padding:2px 0">
             <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0">≡</span>
-            <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0">대표</span>
+            <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0">
+              대표
+            </span>
             <span style="font-size:11px;color:#94a3b8;flex-shrink:0">{{ ['','대','중','소'][cat.depth]||cat.depth }}▸</span>
             <span style="font-size:13px;flex:1">{{ cat.categoryNm }}</span>
-            <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">✕</button>
+            <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">
+              ✕
+            </button>
           </div>
           <button type="button" @click="uiState.catPickerOpen=true"
-                  style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%">+ 카테고리 추가</button>
+            style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%">
+            + 카테고리 추가
+          </button>
         </div>
       </div>
     </div>
-
     <!-- -- ③ 구성품 목록 ----------------------------------------------------- -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <span style="font-size:13px;font-weight:600;color:#555">구성품 목록 (pd_prod_set_item)</span>
@@ -618,7 +628,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             <span style="font-size:11px;color:#aaa;background:#f5f5f5;padding:1px 6px;border-radius:4px">#{{ row.itemProdId }}</span>
             <span style="font-size:13px;color:#333">{{ getProdNm(row.itemProdId) }}</span>
             <button type="button" @click="row.itemProdId=null"
-                    style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 2px">✕ 연결해제</button>
+              style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 2px">
+              ✕ 연결해제
+            </button>
           </div>
           <div v-else style="display:flex;align-items:center;gap:6px">
             <span class="badge badge-orange" style="font-size:10px">비상품</span>
@@ -632,22 +644,19 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </td>
       </template>
     </bo-grid>
-
     <!-- -- 구성품 추가 버튼 ---------------------------------------------------- -->
     <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn btn-secondary btn-sm" @click="openPicker()">
-        + 상품 구성품 추가
-      </button>
+      <button class="btn btn-secondary btn-sm" @click="openPicker()">+ 상품 구성품 추가</button>
       <button class="btn btn-secondary btn-sm" @click="addItemBlank">
-        + 비상품 구성품 추가 <span style="font-size:11px;color:#aaa">(박스·엽서 등)</span>
+        + 비상품 구성품 추가
+        <span style="font-size:11px;color:#aaa">(박스·엽서 등)</span>
       </button>
     </div>
   </div>
-
   <!-- -- 상품 피커 모달 ------------------------------------------------------- -->
   <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="uiState.pickerOpen=false">
+      @click.self="uiState.pickerOpen=false">
       <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <strong style="font-size:15px">구성품 상품 선택</strong>
@@ -656,16 +665,16 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <bo-multi-check-select
           v-model="uiState.pickerSearchType"
           :options="[
-            { value: 'prodNm', label: '상품명' },
-            { value: 'prodId', label: 'ID' },
+          { value: 'prodNm', label: '상품명' },
+          { value: 'prodId', label: 'ID' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
           min-width="100%" />
         <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
           <input class="form-control" v-model="uiState.pickerSearch"
-                 placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
-                 @keyup.enter="onPickerSearch">
+            placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
+            @keyup.enter="onPickerSearch">
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
@@ -679,9 +688,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
   </teleport>
-
   <!-- -- 카테고리 피커 모달 ----------------------------------------------------- -->
   <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
-                 @select="addCategory" @close="uiState.catPickerOpen=false" />
-</div>`
+    @select="addCategory" @close="uiState.catPickerOpen=false" />
+</div>
+`
 };

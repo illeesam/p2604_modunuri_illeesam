@@ -245,11 +245,16 @@ window.PdProdMng = {
   <div class="page-title">상품관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#1a7a52">상품관리</strong>는 판매 상품의 기본정보·가격·재고·옵션을 등록하고 관리합니다.</span>
-    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">{{ descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button @click="descOpen=!descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
+      {{ descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="descOpen" style="margin-top:6px">
-      ✔ 단품/묶음/세트 상품 유형별 등록·수정·삭제를 처리합니다.<br>
-      ✔ 옵션(1단/2단) 및 SKU별 가격·재고를 설정합니다.<br>
-      ✔ 상품 상태(임시저장→검수→판매중→품절·중단)를 관리합니다.<br>
+      ✔ 단품/묶음/세트 상품 유형별 등록·수정·삭제를 처리합니다.
+      <br>
+      ✔ 옵션(1단/2단) 및 SKU별 가격·재고를 설정합니다.
+      <br>
+      ✔ 상품 상태(임시저장→검수→판매중→품절·중단)를 관리합니다.
+      <br>
       <span style="color:#888;font-size:12px">예) 단품 의류 등록, 옵션(색상·사이즈) 설정, 재고 이력 확인</span>
     </div>
   </div>
@@ -258,7 +263,11 @@ window.PdProdMng = {
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>상품목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        상품목록
+        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+      </span>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -273,21 +282,21 @@ window.PdProdMng = {
       <template #head-actions>관리</template>
       <template #row-actions="{ row: p }">
         <div class="actions">
-          <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.prodId)">👁</button>
+          <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기" @click="previewProduct(p.prodId)">
+            👁
+          </button>
           <button class="btn btn-blue btn-sm" @click="handleLoadDetail(p.prodId)">수정</button>
           <button class="btn btn-danger btn-sm" @click="handleDelete(p)">삭제</button>
         </div>
       </template>
     </bo-grid>
   </div>
-
   <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->
   <bo-category-tree-modal
     v-if="catModal && catModal.show"
     :exclude-id="null"
     @select="onCatSelect"
     @close="catModal.show=false" />
-
   <!-- -- 하단 상세: ProdDtl 임베드 --------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -296,7 +305,7 @@ window.PdProdMng = {
     <pd-prod-dtl
       :key="selectedId"
       :navigate="inlineNavigate"
-
+      
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
@@ -306,7 +315,7 @@ window.PdProdMng = {
       
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
-    />
+      />
   </div>
 </div>
 `

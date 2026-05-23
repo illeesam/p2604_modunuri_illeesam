@@ -198,32 +198,34 @@ window.PmCacheDtl = {
   template: /* html */`
 <div>
   <!-- 페이지 타이틀 + ID 표시 -->
-  <div class="page-title">{{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span></div>
-    <!-- 탭바 + 뷰모드 아이콘 -->
-    <div class="tab-bar-row">
-      <div class="tab-nav">
-        <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
-        <button v-if="form.memberId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">
-          🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
-        </button>
-      </div>
-      <div class="tab-modes">
-        <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
-        <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
-        <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
-        <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
-        <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
-      </div>
+  <div class="page-title">
+    {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span>
+  </div>
+  <!-- 탭바 + 뷰모드 아이콘 -->
+  <div class="tab-bar-row">
+    <div class="tab-nav">
+      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
+      <button v-if="form.memberId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">
+        🕒 회원 캐쉬 내역
+        <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
+      </button>
     </div>
-    <!-- 탭 콘텐츠 컨테이너 (1/2/3/4열 그리드 자동 적용) -->
-    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
+    <div class="tab-modes">
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
+    </div>
+  </div>
+  <!-- 탭 콘텐츠 컨테이너 (1/2/3/4열 그리드 자동 적용) -->
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
-
         <!-- 회원ID + 보기 -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -231,7 +233,6 @@ window.PmCacheDtl = {
             <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
           </div>
         </template>
-
         <!-- 판매업체 picker -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -239,15 +240,15 @@ window.PmCacheDtl = {
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">
+              초기화
+            </button>
           </div>
         </template>
       </bo-form-area>
-
       <!-- 판매업체 선택 모달 -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
-
       <!-- 폼 액션 버튼 (수정/저장/취소/닫기) -->
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
@@ -260,18 +261,21 @@ window.PmCacheDtl = {
         </template>
       </div>
     </div>
-
     <!-- 회원 캐쉬 내역 탭 -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 캐쉬 내역 <span class="tab-count">{{ cfMemberCacheHistory.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        🕒 회원 캐쉬 내역
+        <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
+      </div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="showRefModal('member', Number(form.memberId))">{{ form.memberNm }}</span> 현재 잔액
+          <span class="ref-link" @click="showRefModal('member', Number(form.memberId))">{{ form.memberNm }}</span>
+          현재 잔액
         </span>
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
       </div>
       <bo-grid bare :columns="cacheHistGridColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
-               empty-text="캐쉬 내역이 없습니다."></bo-grid>
+        empty-text="캐쉬 내역이 없습니다."></bo-grid>
     </div>
   </div>
 </div>

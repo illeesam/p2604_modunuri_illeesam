@@ -266,35 +266,35 @@ window.HelpBoModal = {
 <bo-modal :show="show" max-width="860px" height="92vh" max-height="92vh"
   box-pad="0" body-pad="0" :z-index="3000" @close="close">
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-
     <!-- 헤더 -->
     <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #ffc9d6;">
       <div style="font-size:15px;font-weight:800;color:#9f2946;">
-        <span style="color:#e8587a;font-size:9px;margin-right:6px;">●</span>도움말 가이드
+        <span style="color:#e8587a;font-size:9px;margin-right:6px;">●</span>
+        도움말 가이드
       </div>
-      <button @click="close" style="width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,0.6);color:#9f2946;font-size:14px;cursor:pointer;">✕</button>
+      <button @click="close" style="width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,0.6);color:#9f2946;font-size:14px;cursor:pointer;">
+        ✕
+      </button>
     </div>
-
     <!-- 바디 -->
     <div style="flex:1;display:flex;overflow:hidden;">
-
       <!-- 좌측 탭 -->
       <div style="width:148px;flex-shrink:0;background:#f7f8fa;border-right:1px solid #efe0e5;display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;">
         <button v-for="t in TABS" :key="t.id" @click="activeTab=t.id"
           :style="activeTab===t.id
-            ? 'display:block;width:100%;text-align:left;padding:9px 16px;font-size:12px;font-weight:700;color:#e8587a;background:#fff;border:none;border-right:3px solid #e8587a;cursor:pointer;line-height:1.4;'
-            : 'display:block;width:100%;text-align:left;padding:9px 16px;font-size:12px;font-weight:400;color:#666;background:transparent;border:none;border-right:3px solid transparent;cursor:pointer;line-height:1.4;'">
+          ? 'display:block;width:100%;text-align:left;padding:9px 16px;font-size:12px;font-weight:700;color:#e8587a;background:#fff;border:none;border-right:3px solid #e8587a;cursor:pointer;line-height:1.4;'
+          : 'display:block;width:100%;text-align:left;padding:9px 16px;font-size:12px;font-weight:400;color:#666;background:transparent;border:none;border-right:3px solid transparent;cursor:pointer;line-height:1.4;'">
           {{ t.label }}
         </button>
       </div>
-
       <!-- 우측 콘텐츠 -->
       <div style="flex:1;overflow-y:auto;padding:24px;">
-
         <!-- 개요 -->
         <template v-if="activeTab==='overview'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 12px;">ShopJoy 관리자 시스템 개요</h3>
-          <p style="color:#555;font-size:13px;line-height:1.8;margin-bottom:16px;">ShopJoy BO는 전자상거래 통합 관리 시스템입니다. 좌측 메뉴에서 도메인을 선택하고, 상단 탭에서 열린 화면들을 전환합니다.</p>
+          <p style="color:#555;font-size:13px;line-height:1.8;margin-bottom:16px;">
+            ShopJoy BO는 전자상거래 통합 관리 시스템입니다. 좌측 메뉴에서 도메인을 선택하고, 상단 탭에서 열린 화면들을 전환합니다.
+          </p>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
             <div v-for="item in OVERVIEW_CARDS" :key="item.tab"
               @click="activeTab=item.tab"
@@ -308,7 +308,6 @@ window.HelpBoModal = {
             각 탭을 클릭하면 해당 도메인의 상세 도움말을 확인할 수 있습니다.
           </div>
         </template>
-
         <!-- 회원관리 -->
         <template v-else-if="activeTab==='member'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">👤 회원관리</h3>
@@ -317,7 +316,8 @@ window.HelpBoModal = {
               <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">회원관리 기능</div>
               <div style="font-size:12px;color:#555;line-height:1.8;">
                 <div>• 전체 회원 목록 조회 (이름, 이메일, 전화번호, 상태 검색)</div>
-                <div>• 회원 상태:
+                <div>
+                  • 회원 상태:
                   <span style="background:#d1fae5;color:#065f46;border-radius:3px;padding:1px 6px;">활성</span>
                   <span style="background:#fee2e2;color:#991b1b;border-radius:3px;padding:1px 6px;margin-left:4px;">정지</span>
                   <span style="background:#f3f4f6;color:#374151;border-radius:3px;padding:1px 6px;margin-left:4px;">탈퇴</span>
@@ -329,7 +329,9 @@ window.HelpBoModal = {
               <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">회원 상세 탭 구성</div>
               <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
                 <span v-for="t in MEMBER_TABS_LIST" :key="t"
-                  style="background:#e6f4ff;border:1px solid #bae0ff;border-radius:4px;padding:3px 8px;color:#0958d9;">{{ t }}</span>
+                  style="background:#e6f4ff;border:1px solid #bae0ff;border-radius:4px;padding:3px 8px;color:#0958d9;">
+                  {{ t }}
+                </span>
               </div>
             </div>
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
@@ -341,7 +343,6 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-
         <!-- 상품관리 -->
         <template v-else-if="activeTab==='product'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">📦 상품관리</h3>
@@ -366,20 +367,19 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-
         <!-- 옵션설정 -->
         <template v-else-if="activeTab==='prodOpt'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">⚙ 옵션설정 상세 가이드</h3>
           <p style="font-size:12px;color:#888;margin:0 0 16px;">상품 상세 &gt; 옵션설정 탭</p>
-
           <!-- 서브탭 버튼 -->
           <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
             <button v-for="st in OPT_SUB_TABS" :key="st.id" @click="optSubTab=st.id"
               :style="optSubTab===st.id
-                ? 'padding:5px 12px;font-size:11px;border:1px solid #1677ff;border-radius:6px;cursor:pointer;background:#e6f4ff;color:#1677ff;font-weight:700;'
-                : 'padding:5px 12px;font-size:11px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:#f5f5f5;color:#555;'">{{ st.label }}</button>
+              ? 'padding:5px 12px;font-size:11px;border:1px solid #1677ff;border-radius:6px;cursor:pointer;background:#e6f4ff;color:#1677ff;font-weight:700;'
+              : 'padding:5px 12px;font-size:11px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:#f5f5f5;color:#555;'">
+              {{ st.label }}
+            </button>
           </div>
-
           <!-- 서브탭: 개요 -->
           <template v-if="optSubTab==='basic'">
             <div style="display:flex;flex-direction:column;gap:10px;">
@@ -415,7 +415,6 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-
           <!-- 서브탭: 의류 -->
           <template v-else-if="optSubTab==='clothing'">
             <div style="display:flex;flex-direction:column;gap:12px;">
@@ -449,7 +448,6 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-
           <!-- 서브탭: 신발 -->
           <template v-else-if="optSubTab==='shoes'">
             <div style="display:flex;flex-direction:column;gap:12px;">
@@ -482,7 +480,6 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-
           <!-- 서브탭: 전자기기 -->
           <template v-else-if="optSubTab==='elec'">
             <div style="display:flex;flex-direction:column;gap:12px;">
@@ -515,7 +512,6 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-
           <!-- 서브탭: 단독 옵션 -->
           <template v-else-if="optSubTab==='single'">
             <div style="display:flex;flex-direction:column;gap:12px;">
@@ -539,12 +535,12 @@ window.HelpBoModal = {
                 </table>
               </div>
               <div style="border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;line-height:1.8;">
-                단독 옵션은 2단 차원 없이 1차원 SKU만 생성됩니다.<br>
+                단독 옵션은 2단 차원 없이 1차원 SKU만 생성됩니다.
+                <br>
                 예) 색상 단독에서 블랙, 화이트, 레드 입력 시 SKU 3개 생성
               </div>
             </div>
           </template>
-
           <!-- 서브탭: 입력 방식 -->
           <template v-else-if="optSubTab==='inputtype'">
             <div style="display:flex;flex-direction:column;gap:12px;">
@@ -560,21 +556,20 @@ window.HelpBoModal = {
             </div>
           </template>
         </template>
-
         <!-- 주문관리 -->
         <template v-else-if="activeTab==='order'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">🛒 주문관리</h3>
           <p style="font-size:12px;color:#888;margin:0 0 12px;">주문접수부터 구매확정까지. 상품(order_item) 단위 부분처리 지원.</p>
-
           <!-- 서브탭 -->
           <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
             <button v-for="st in [{id:'flow',label:'상태 흐름'},{id:'partial',label:'부분처리/구매확정'},{id:'refund',label:'환불 순서'},{id:'bulk',label:'일괄 작업'}]"
               :key="st.id" @click="orderSubTab=st.id"
               :style="orderSubTab===st.id
-                ? 'padding:5px 12px;font-size:11px;border:1px solid #1677ff;border-radius:6px;cursor:pointer;background:#e6f4ff;color:#1677ff;font-weight:700;'
-                : 'padding:5px 12px;font-size:11px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:#f5f5f5;color:#555;'">{{ st.label }}</button>
+              ? 'padding:5px 12px;font-size:11px;border:1px solid #1677ff;border-radius:6px;cursor:pointer;background:#e6f4ff;color:#1677ff;font-weight:700;'
+              : 'padding:5px 12px;font-size:11px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:#f5f5f5;color:#555;'">
+              {{ st.label }}
+            </button>
           </div>
-
           <!-- 서브: 상태 흐름 -->
           <template v-if="orderSubTab==='flow'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:12px;">
@@ -591,7 +586,9 @@ window.HelpBoModal = {
               <div v-for="sd in ORDER_STEP_DETAILS" :key="sd.step"
                 style="border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;background:#fff;display:flex;gap:12px;align-items:flex-start;">
                 <div style="flex-shrink:0;min-width:68px;">
-                  <span :style="'display:inline-block;background:'+sd.color+';color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;text-align:center;width:100%;'">{{ sd.step }}</span>
+                  <span :style="'display:inline-block;background:'+sd.color+';color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;text-align:center;width:100%;'">
+                    {{ sd.step }}
+                  </span>
                 </div>
                 <div style="flex:1;">
                   <div style="font-size:12px;color:#333;line-height:1.7;">{{ sd.desc }}</div>
@@ -600,11 +597,9 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-
           <!-- 서브: 부분처리/구매확정 -->
           <template v-else-if="orderSubTab==='partial'">
             <div style="display:flex;flex-direction:column;gap:12px;">
-
               <!-- 핵심 원칙 -->
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
                 <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">핵심 원칙</div>
@@ -616,7 +611,6 @@ window.HelpBoModal = {
                   <div>• 주문 전체 상태는 <b>취소되지 않은 활성 상품</b>들의 상태 중 가장 앞선 값으로 집계</div>
                 </div>
               </div>
-
               <!-- 시나리오 -->
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
                 <div style="font-weight:700;color:#333;margin-bottom:4px;font-size:13px;">시나리오: 상품 3개 주문 — 1개 취소, 1개 반품진행중, 1개 정상완료</div>
@@ -627,15 +621,18 @@ window.HelpBoModal = {
                     <div style="flex-shrink:0;width:60px;font-weight:700;font-size:12px;color:#333;">{{ sc.item }}</div>
                     <div style="flex:1;">
                       <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;flex-wrap:wrap;">
-                        <span :style="'background:'+sc.color+';color:#fff;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;'">주문: {{ sc.status }}</span>
-                        <span :style="'background:'+sc.claimColor+';color:#fff;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;'">클레임: {{ sc.claimStatus }}</span>
+                        <span :style="'background:'+sc.color+';color:#fff;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;'">
+                          주문: {{ sc.status }}
+                        </span>
+                        <span :style="'background:'+sc.claimColor+';color:#fff;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;'">
+                          클레임: {{ sc.claimStatus }}
+                        </span>
                       </div>
                       <div style="font-size:11px;color:#555;line-height:1.6;">{{ sc.desc }}</div>
                     </div>
                   </div>
                 </div>
               </div>
-
               <!-- 구매확정 상세 -->
               <div style="border:1px solid #d9f0e7;border-radius:8px;padding:14px;background:#f0fdf4;">
                 <div style="font-weight:700;color:#059669;margin-bottom:8px;font-size:13px;">구매확정 처리 방식</div>
@@ -647,7 +644,6 @@ window.HelpBoModal = {
                   <div>• 구매확정 시: 적립금 지급, 리뷰 작성 가능, 추가 클레임 불가</div>
                 </div>
               </div>
-
               <!-- 부분취소/반품/교환 제약 -->
               <div style="border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;line-height:1.9;">
                 <div style="font-weight:700;margin-bottom:4px;">부분처리 제약사항</div>
@@ -658,29 +654,26 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-
           <!-- 서브: 환불 순서 -->
           <template v-else-if="orderSubTab==='refund'">
             <div style="display:flex;flex-direction:column;gap:12px;">
-
               <!-- 환불 우선순위 -->
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
                 <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">환불 처리 우선순위</div>
                 <div style="display:flex;flex-direction:column;gap:6px;">
                   <div v-for="row in REFUND_ORDER_ROWS" :key="row.rank"
                     :style="'border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;background:'+row.bg+';display:flex;gap:10px;align-items:flex-start;'">
-                    <div :style="'flex-shrink:0;width:22px;height:22px;border-radius:50%;background:'+row.color+';color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;'">{{ row.rank }}</div>
+                    <div :style="'flex-shrink:0;width:22px;height:22px;border-radius:50%;background:'+row.color+';color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;'">
+                      {{ row.rank }}
+                    </div>
                     <div style="flex:1;">
                       <div :style="'font-weight:700;font-size:12px;color:'+row.color+';margin-bottom:2px;'">{{ row.method }}</div>
                       <div style="font-size:11px;color:#555;line-height:1.6;">{{ row.desc }}</div>
                     </div>
                   </div>
                 </div>
-                <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.7;">
-                  * 복수 결제수단 혼용 시 적립금/캐쉬 먼저 복원 후 나머지를 결제수단 역순으로 환불
-                </div>
+                <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.7;">* 복수 결제수단 혼용 시 적립금/캐쉬 먼저 복원 후 나머지를 결제수단 역순으로 환불</div>
               </div>
-
               <!-- 반품 배송비 -->
               <div style="border:1px solid #fee2e2;border-radius:8px;padding:14px;background:#fff5f5;">
                 <div style="font-weight:700;color:#ef4444;margin-bottom:10px;font-size:13px;">반품 배송비 부담 기준</div>
@@ -696,14 +689,17 @@ window.HelpBoModal = {
                   <tbody>
                     <tr v-for="row in RETURN_FEE_ROWS" :key="row.reason" style="border-bottom:1px solid #fecaca;">
                       <td style="padding:5px 8px;border:1px solid #fecaca;font-weight:600;">{{ row.reason }}</td>
-                      <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.buyer!=='-'?'color:#ef4444;font-weight:700;':''">{{ row.buyer }}</td>
-                      <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.seller==='100%'?'color:#3b82f6;font-weight:700;':''">{{ row.seller }}</td>
+                      <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.buyer!=='-'?'color:#ef4444;font-weight:700;':''">
+                        {{ row.buyer }}
+                      </td>
+                      <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.seller==='100%'?'color:#3b82f6;font-weight:700;':''">
+                        {{ row.seller }}
+                      </td>
                       <td style="padding:5px 8px;border:1px solid #fecaca;font-size:11px;color:#666;">{{ row.note }}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-
               <!-- 쿠폰/할인 환불 처리 -->
               <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;">
                 <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">쿠폰/할인 환불 처리 방식</div>
@@ -716,14 +712,15 @@ window.HelpBoModal = {
                   </div>
                 </div>
                 <div style="margin-top:10px;font-size:11px;color:#065f46;background:#d1fae5;border-radius:6px;padding:8px 10px;line-height:1.7;">
-                  <b>환불액 계산 공식</b><br>
-                  환불액 = 반품상품금액 - 쿠폰/할인 안분액 - 반품배송비(고객부담) - 상품손상 감액<br>
+                  <b>환불액 계산 공식</b>
+                  <br>
+                  환불액 = 반품상품금액 - 쿠폰/할인 안분액 - 반품배송비(고객부담) - 상품손상 감액
+                  <br>
                   + 사용적립금 복원 (현금 아닌 적립금으로 복원)
                 </div>
               </div>
             </div>
           </template>
-
           <!-- 서브: 일괄 작업 -->
           <template v-else-if="orderSubTab==='bulk'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
@@ -739,20 +736,20 @@ window.HelpBoModal = {
                 {title:'택배정보', color:'#10b981', desc:'택배사 선택 및 송장번호 일괄 입력. 배송중 상태로 자동 전환.'},
                 {title:'결재처리', color:'#f59e0b', desc:'내부 결재 승인 처리. 특정 금액 이상 주문의 내부 승인 워크플로우.'},
                 {title:'추가결재요청', color:'#ef4444', desc:'고객에게 추가 금액 결제 요청. 담당자/상품/금액/사유 입력 후 알림 발송.'},
-              ]" :key="item.title"
+                ]" :key="item.title"
                 style="border:1px solid #e8e8e8;border-radius:8px;padding:10px 14px;background:#fff;display:flex;gap:12px;align-items:flex-start;">
-                <span :style="'flex-shrink:0;display:inline-block;background:'+item.color+';color:#fff;border-radius:4px;padding:2px 10px;font-size:11px;font-weight:700;white-space:nowrap;'">{{ item.title }}</span>
+                <span :style="'flex-shrink:0;display:inline-block;background:'+item.color+';color:#fff;border-radius:4px;padding:2px 10px;font-size:11px;font-weight:700;white-space:nowrap;'">
+                  {{ item.title }}
+                </span>
                 <span style="font-size:12px;color:#444;line-height:1.7;">{{ item.desc }}</span>
               </div>
             </div>
           </template>
         </template>
-
         <!-- 클레임 -->
         <template v-else-if="activeTab==='claim'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">🔄 클레임 처리</h3>
           <p style="font-size:12px;color:#888;margin:0 0 14px;">취소 / 반품 / 교환 3가지 유형으로 구분</p>
-
           <!-- 상태 흐름 요약 -->
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
             <div v-for="ct in CLAIM_TYPES" :key="ct.title"
@@ -763,7 +760,8 @@ window.HelpBoModal = {
                   <span :style="'background:'+ct.color+';color:#fff;border-radius:4px;padding:3px 8px;white-space:nowrap;'">{{ s }}</span>
                   <template v-if="i < ct.steps.length-1">
                     <span v-if="ct.doubleArrowAfter.includes(i)" style="color:#bbb;display:inline-flex;gap:2px;">
-                      <span>-&gt;</span><span>-&gt;</span>
+                      <span>-&gt;</span>
+                      <span>-&gt;</span>
                     </span>
                     <span v-else style="color:#bbb;">-&gt;</span>
                   </template>
@@ -771,22 +769,21 @@ window.HelpBoModal = {
               </div>
             </div>
           </div>
-
           <!-- 상세 정책 -->
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div v-for="cd in CLAIM_DETAILS" :key="cd.title"
               :style="'border:1px solid #ddd;border-radius:8px;padding:14px;background:'+cd.bg+';'">
               <div :style="'font-weight:700;color:'+cd.color+';margin-bottom:10px;font-size:13px;'">{{ cd.title }} 상세</div>
-
               <!-- 단계별 설명 -->
               <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
                 <div v-for="sd in cd.stepDetails" :key="sd.step"
                   style="display:flex;gap:10px;align-items:flex-start;font-size:12px;">
-                  <span :style="'flex-shrink:0;min-width:68px;display:inline-block;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;color:#fff;background:'+cd.color+';text-align:center;'">{{ sd.step }}</span>
+                  <span :style="'flex-shrink:0;min-width:68px;display:inline-block;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;color:#fff;background:'+cd.color+';text-align:center;'">
+                    {{ sd.step }}
+                  </span>
                   <span style="color:#444;line-height:1.7;">{{ sd.desc }}</span>
                 </div>
               </div>
-
               <!-- 정책 요약 -->
               <div style="border-top:1px dashed #ddd;padding-top:8px;font-size:11px;color:#666;line-height:1.9;">
                 <div><b>신청기간:</b> {{ cd.period }}</div>
@@ -795,7 +792,6 @@ window.HelpBoModal = {
               </div>
             </div>
           </div>
-
           <!-- 공통 제약사항 -->
           <div style="margin-top:14px;border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;">
             <div style="font-weight:700;margin-bottom:6px;">공통 제약사항</div>
@@ -807,7 +803,6 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-
         <!-- 프로모션 -->
         <template v-else-if="activeTab==='promotion'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🎫 프로모션</h3>
@@ -820,7 +815,6 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-
         <!-- 전시관리 -->
         <template v-else-if="activeTab==='display'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🖼 전시관리</h3>
@@ -840,11 +834,12 @@ window.HelpBoModal = {
             <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">위젯 타입</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
               <span v-for="w in DISP_WIDGETS" :key="w"
-                style="background:#f0f7ff;border:1px solid #bae0ff;border-radius:4px;padding:3px 8px;color:#0958d9;">{{ w }}</span>
+                style="background:#f0f7ff;border:1px solid #bae0ff;border-radius:4px;padding:3px 8px;color:#0958d9;">
+                {{ w }}
+              </span>
             </div>
           </div>
         </template>
-
         <!-- 시스템 -->
         <template v-else-if="activeTab==='system'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🔧 시스템 관리</h3>
@@ -856,9 +851,10 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-
-      </div><!-- /우측 콘텐츠 -->
-    </div><!-- /바디 -->
+      </div>
+      <!-- /우측 콘텐츠 -->
+    </div>
+    <!-- /바디 -->
   </div>
 </bo-modal>
 `,

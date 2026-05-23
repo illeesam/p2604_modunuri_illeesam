@@ -76,7 +76,6 @@ window.MbMemberDtl = {
         :readonly="false" :cols="2" :show-actions="false" />
     </div>
   </div>
-
   <!-- 이력정보 카드 -->
   <div v-if="!detailModal.isNew" class="card">
     <mb-member-hist :member-id="currentId" :key="currentId" />

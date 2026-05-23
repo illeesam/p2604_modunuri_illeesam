@@ -234,7 +234,9 @@ window.XsSample13 = {
         <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
         <input type="date" v-model="previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <input type="time" v-model="previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">현재</button>
+        <button @click="resetDate" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
+          현재
+        </button>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <!-- -- 상태 --------------------------------------------------------- -->
@@ -286,8 +288,12 @@ window.XsSample13 = {
         <div v-if="showAreaDrop" @click="showAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
         <div v-if="showAreaDrop" style="position:absolute;left:0;top:calc(100% + 4px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:220px;max-height:300px;overflow-y:auto;padding:8px 0;">
           <div style="display:flex;gap:6px;padding:6px 12px;border-bottom:1px solid #f0f0f0;">
-            <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">전체선택</button>
-            <button @click.stop="clearAllAreas"  style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">전체해제</button>
+            <button @click.stop="selectAllAreas" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+              전체선택
+            </button>
+            <button @click.stop="clearAllAreas"  style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
+              전체해제
+            </button>
           </div>
           <div v-for="a in cfAllAreas" :key="a.codeValue" @click.stop="toggleArea(a.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;"
@@ -300,7 +306,9 @@ window.XsSample13 = {
             <span style="font-size:12px;">{{ a.codeLabel }}</span>
           </div>
           <div style="border-top:1px solid #f0f0f0;padding:6px 12px;">
-            <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">닫기</button>
+            <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">
+              닫기
+            </button>
           </div>
         </div>
       </div>
@@ -309,29 +317,39 @@ window.XsSample13 = {
     <div v-if="selectedCatIds.size>0" style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#8e44ad;font-weight:600;">📂 카테고리 필터:</span>
       <span v-for="nm in cfSelectedCatNames" :key="nm"
-        style="font-size:11px;background:#f3e5f5;color:#8e44ad;border-radius:8px;padding:2px 8px;">{{ nm }}</span>
+        style="font-size:11px;background:#f3e5f5;color:#8e44ad;border-radius:8px;padding:2px 8px;">
+        {{ nm }}
+      </span>
     </div>
     <!-- -- 현재 사용자 정보 ---------------------------------------------------- -->
     <div style="margin-top:8px;padding:7px 12px;background:#f8f9fa;border-radius:6px;border-left:3px solid #aaa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
-      <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">로그인</span>
+      <span v-if="isLoggedIn" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:1px 7px;font-weight:600;">
+        로그인
+      </span>
       <span v-else style="font-size:11px;background:#f5f5f5;color:#999;border-radius:6px;padding:1px 7px;">비로그인</span>
       <span v-if="userNm" style="font-size:11px;color:#555;">{{ userNm }}</span>
-      <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">등급: {{ userGrade }}</span>
+      <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
+        등급: {{ userGrade }}
+      </span>
       <span style="font-size:11px;color:#aaa;">접근 가능 조건:</span>
-      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">{{ c }}</span>
+      <span v-for="c in cfAccessibleConds" :key="c" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:6px;padding:1px 7px;">
+        {{ c }}
+      </span>
     </div>
   </div>
   <!-- -- 영역별 패널+소스 목록 --------------------------------------------------- -->
-  <div v-if="cfPanelsByArea.length===0" style="text-align:center;padding:48px;color:#ccc;font-size:13px;">
-    조건에 맞는 영역/패널이 없습니다.
-  </div>
+  <div v-if="cfPanelsByArea.length===0" style="text-align:center;padding:48px;color:#ccc;font-size:13px;">조건에 맞는 영역/패널이 없습니다.</div>
   <div v-for="{ area, panels } in cfPanelsByArea" :key="area.codeValue" style="margin-bottom:14px;">
     <!-- -- 영역 헤더 -------------------------------------------------------- -->
     <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:#1e3a5f;color:#fff;border-radius:6px 6px 0 0;">
-      <span style="font-size:10px;background:rgba(255,255,255,.18);border-radius:4px;padding:2px 8px;font-family:monospace;letter-spacing:.5px;">{{ area.codeValue }}</span>
+      <span style="font-size:10px;background:rgba(255,255,255,.18);border-radius:4px;padding:2px 8px;font-family:monospace;letter-spacing:.5px;">
+        {{ area.codeValue }}
+      </span>
       <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
-      <span style="margin-left:auto;font-size:11px;background:rgba(255,255,255,.15);border-radius:8px;padding:2px 9px;">패널 {{ panels.length }}개</span>
+      <span style="margin-left:auto;font-size:11px;background:rgba(255,255,255,.15);border-radius:8px;padding:2px 9px;">
+        패널 {{ panels.length }}개
+      </span>
     </div>
     <!-- -- 패널 없음 -------------------------------------------------------- -->
     <div v-if="panels.length===0"
@@ -344,15 +362,27 @@ window.XsSample13 = {
       :style="pi===panels.length-1?'border-radius:0 0 6px 6px;overflow:hidden;':''">
       <!-- -- 좌: 패널 정보 --------------------------------------------------- -->
       <div style="width:155px;flex-shrink:0;padding:10px 12px;background:#fafafa;border-right:1px solid #e8e8e8;">
-        <div style="font-size:9px;background:#e8f0fe;color:#1a73e8;border-radius:3px;padding:1px 5px;display:inline-block;margin-bottom:5px;font-weight:600;">DispPanel</div>
+        <div style="font-size:9px;background:#e8f0fe;color:#1a73e8;border-radius:3px;padding:1px 5px;display:inline-block;margin-bottom:5px;font-weight:600;">
+          DispPanel
+        </div>
         <code style="display:block;font-size:10px;color:#888;margin-bottom:4px;">#{{ String(panel.dispId).padStart(4,'0') }}</code>
-        <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:6px;line-height:1.4;word-break:keep-all;">{{ panel.name }}</div>
+        <div style="font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:6px;line-height:1.4;word-break:keep-all;">
+          {{ panel.name }}
+        </div>
         <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px;">
           <span style="font-size:9px;border-radius:6px;padding:1px 6px;"
-            :style="panel.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">{{ panel.status }}</span>
-          <span style="font-size:9px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 6px;">{{ panel.condition || '항상 표시' }}</span>
-          <span v-if="panel.authRequired" style="font-size:9px;background:#fce4ec;color:#c62828;border-radius:6px;padding:1px 6px;">인증</span>
-          <span v-if="panel.authGrade" style="font-size:9px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;padding:1px 6px;">{{ panel.authGrade }}↑</span>
+            :style="panel.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">
+            {{ panel.status }}
+          </span>
+          <span style="font-size:9px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 6px;">
+            {{ panel.condition || '항상 표시' }}
+          </span>
+          <span v-if="panel.authRequired" style="font-size:9px;background:#fce4ec;color:#c62828;border-radius:6px;padding:1px 6px;">
+            인증
+          </span>
+          <span v-if="panel.authGrade" style="font-size:9px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;padding:1px 6px;">
+            {{ panel.authGrade }}↑
+          </span>
         </div>
         <div v-if="panel.dispStartDt||panel.dispEndDt" style="font-size:9px;color:#aaa;margin-top:4px;">
           📅 {{ panel.dispStartDt||'∞' }} ~ {{ panel.dispEndDt||'∞' }}
@@ -362,14 +392,20 @@ window.XsSample13 = {
       <!-- -- 중앙: 위젯 콘텐츠 미리보기 -------------------------------------------- -->
       <div style="flex:1;min-width:0;background:#fff;border-right:1px solid #e8e8e8;">
         <div v-if="!panel.rows||panel.rows.length===0"
-          style="padding:24px;text-align:center;font-size:12px;color:#ccc;">(위젯 없음)</div>
+          style="padding:24px;text-align:center;font-size:12px;color:#ccc;">
+          (위젯 없음)
+        </div>
         <div v-for="(w, wi) in (panel.rows||[])" :key="wi"
           style="border-bottom:1px solid #f0f0f0;padding:10px 14px;">
           <!-- -- 위젯 헤더 -------------------------------------------------- -->
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
             <span style="font-size:10px;color:#bbb;">위젯{{ wi+1 }}</span>
-            <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">{{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}</span>
-            <span v-if="w.widgetNm" style="font-size:11px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ w.widgetNm }}</span>
+            <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap;">
+              {{ fnWIcon(w.widgetType) }} {{ fnWLabel(w.widgetType) }}
+            </span>
+            <span v-if="w.widgetNm" style="font-size:11px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              {{ w.widgetNm }}
+            </span>
           </div>
           <!-- -- 위젯 콘텐츠 렌더링 --------------------------------------------- -->
           <div v-if="w.widgetType==='image_banner'"
@@ -381,19 +417,35 @@ window.XsSample13 = {
           <div v-else-if="w.widgetType==='product_slider'">
             <div style="display:flex;gap:6px;overflow:hidden;">
               <div v-for="n in 4" :key="n" style="flex:0 0 90px;border:1px solid #ececec;border-radius:6px;overflow:hidden;">
-                <div style="height:60px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);display:flex;align-items:center;justify-content:center;font-size:20px;">📦</div>
-                <div style="padding:5px 6px;"><div style="font-size:9px;color:#555;">상품명</div><div style="font-size:11px;font-weight:700;color:#e8587a;">₩00,000</div></div>
+                <div style="height:60px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);display:flex;align-items:center;justify-content:center;font-size:20px;">
+                  📦
+                </div>
+                <div style="padding:5px 6px;">
+                  <div style="font-size:9px;color:#555;">상품명</div>
+                  <div style="font-size:11px;font-weight:700;color:#e8587a;">₩00,000</div>
+                </div>
               </div>
             </div>
           </div>
           <div v-else-if="w.widgetType==='product'" style="display:flex;gap:10px;align-items:center;">
-            <div style="width:70px;height:70px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📦</div>
-            <div><div style="font-size:10px;color:#aaa;">단품 상품</div><div style="font-size:13px;font-weight:700;">상품명</div><div style="font-size:14px;font-weight:800;color:#e8587a;">₩00,000</div></div>
+            <div style="width:70px;height:70px;background:linear-gradient(135deg,#f0f0f0,#e4e4e4);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">
+              📦
+            </div>
+            <div>
+              <div style="font-size:10px;color:#aaa;">단품 상품</div>
+              <div style="font-size:13px;font-weight:700;">상품명</div>
+              <div style="font-size:14px;font-weight:800;color:#e8587a;">₩00,000</div>
+            </div>
           </div>
           <div v-else-if="w.widgetType==='cond_product'">
             <div v-for="n in 2" :key="n" style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f5f5f5;">
-              <div style="width:36px;height:36px;background:#f0f0f0;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px;">📦</div>
-              <div><div style="font-size:11px;color:#444;">상품명 {{ n }}</div><div style="font-size:11px;font-weight:700;color:#e8587a;">₩00,000</div></div>
+              <div style="width:36px;height:36px;background:#f0f0f0;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px;">
+                📦
+              </div>
+              <div>
+                <div style="font-size:11px;color:#444;">상품명 {{ n }}</div>
+                <div style="font-size:11px;font-weight:700;color:#e8587a;">₩00,000</div>
+              </div>
             </div>
           </div>
           <div v-else-if="w.widgetType==='chart_bar'">
@@ -416,7 +468,20 @@ window.XsSample13 = {
               <circle cx="50" cy="50" r="38" fill="none" stroke="#f6ad55" stroke-width="24" stroke-dasharray="17 83" stroke-dashoffset="-47"/>
               <circle cx="50" cy="50" r="38" fill="none" stroke="#68d391" stroke-width="24" stroke-dasharray="11 89" stroke-dashoffset="-64"/>
             </svg>
-            <div style="font-size:10px;"><div style="margin-bottom:3px;"><span style="display:inline-block;width:7px;height:7px;background:#667eea;border-radius:50%;margin-right:4px;"></span>카테고리A 72%</div><div style="margin-bottom:3px;"><span style="display:inline-block;width:7px;height:7px;background:#f6ad55;border-radius:50%;margin-right:4px;"></span>카테고리B 17%</div><div><span style="display:inline-block;width:7px;height:7px;background:#68d391;border-radius:50%;margin-right:4px;"></span>기타 11%</div></div>
+            <div style="font-size:10px;">
+              <div style="margin-bottom:3px;">
+                <span style="display:inline-block;width:7px;height:7px;background:#667eea;border-radius:50%;margin-right:4px;"></span>
+                카테고리A 72%
+              </div>
+              <div style="margin-bottom:3px;">
+                <span style="display:inline-block;width:7px;height:7px;background:#f6ad55;border-radius:50%;margin-right:4px;"></span>
+                카테고리B 17%
+              </div>
+              <div>
+                <span style="display:inline-block;width:7px;height:7px;background:#68d391;border-radius:50%;margin-right:4px;"></span>
+                기타 11%
+              </div>
+            </div>
           </div>
           <div v-else-if="w.widgetType==='text_banner'"
             style="background:#f8f9fa;border-left:4px solid #667eea;border-radius:0 8px 8px 0;padding:12px 14px;">
@@ -426,35 +491,54 @@ window.XsSample13 = {
           <div v-else-if="w.widgetType==='info_card'"
             style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;">
             <div style="font-size:28px;">ℹ</div>
-            <div><div style="font-size:12px;font-weight:700;color:#1565c0;">{{ w.widgetNm }}</div><div style="font-size:11px;color:#1976d2;">정보 카드 컨텐츠 영역입니다.</div></div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#1565c0;">{{ w.widgetNm }}</div>
+              <div style="font-size:11px;color:#1976d2;">정보 카드 컨텐츠 영역입니다.</div>
+            </div>
           </div>
           <div v-else-if="w.widgetType==='popup'"
             style="border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
             <div style="background:#f5f5f5;padding:6px 10px;border-bottom:1px solid #e0e0e0;display:flex;justify-content:space-between;">
-              <span style="font-size:10px;font-weight:700;color:#555;">팝업</span><span style="color:#aaa;">×</span>
+              <span style="font-size:10px;font-weight:700;color:#555;">팝업</span>
+              <span style="color:#aaa;">×</span>
             </div>
-            <div style="padding:16px;text-align:center;"><div style="font-size:22px;margin-bottom:5px;">💬</div><div style="font-size:12px;font-weight:700;">{{ w.widgetNm }}</div></div>
+            <div style="padding:16px;text-align:center;">
+              <div style="font-size:22px;margin-bottom:5px;">💬</div>
+              <div style="font-size:12px;font-weight:700;">{{ w.widgetNm }}</div>
+            </div>
           </div>
           <div v-else-if="w.widgetType==='file'"
             style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:12px;">
             <span style="font-size:24px;">📎</span>
-            <div><div style="font-size:12px;font-weight:700;">{{ w.widgetNm }}</div><div style="font-size:10px;color:#999;">파일 다운로드</div></div>
+            <div>
+              <div style="font-size:12px;font-weight:700;">{{ w.widgetNm }}</div>
+              <div style="font-size:10px;color:#999;">파일 다운로드</div>
+            </div>
           </div>
           <div v-else-if="w.widgetType==='file_list'">
             <div v-for="n in 3" :key="n" style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f0f0f0;">
-              <span style="font-size:16px;">📁</span><span style="font-size:11px;color:#555;flex:1;">파일명_{{ n }}.pdf</span><span style="font-size:10px;color:#aaa;">1.{{ n }}MB</span>
+              <span style="font-size:16px;">📁</span>
+              <span style="font-size:11px;color:#555;flex:1;">파일명_{{ n }}.pdf</span>
+              <span style="font-size:10px;color:#aaa;">1.{{ n }}MB</span>
             </div>
           </div>
           <div v-else-if="w.widgetType==='coupon'"
             style="border:2px dashed #e8587a;border-radius:8px;padding:14px;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#fff5f7,#fce4ec);">
             <div style="font-size:28px;">🎟</div>
-            <div style="flex:1;"><div style="font-size:13px;font-weight:800;color:#c2185b;">{{ w.widgetNm }}</div><div style="font-size:10px;color:#e8587a;">쿠폰 발급 이벤트</div></div>
-            <div style="background:#e8587a;color:#fff;border-radius:6px;padding:8px 12px;font-size:11px;font-weight:700;white-space:nowrap;">쿠폰 받기</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:800;color:#c2185b;">{{ w.widgetNm }}</div>
+              <div style="font-size:10px;color:#e8587a;">쿠폰 발급 이벤트</div>
+            </div>
+            <div style="background:#e8587a;color:#fff;border-radius:6px;padding:8px 12px;font-size:11px;font-weight:700;white-space:nowrap;">
+              쿠폰 받기
+            </div>
           </div>
           <div v-else-if="w.widgetType==='html_editor'"
             style="background:#1e1e2e;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#a9b7c6;line-height:1.8;">
-            <span style="color:#cc7832;">&lt;div&gt;</span><br>
-            <span style="padding-left:14px;">&nbsp;&nbsp;HTML 컨텐츠 영역 ({{ w.widgetNm }})</span><br>
+            <span style="color:#cc7832;">&lt;div&gt;</span>
+            <br>
+            <span style="padding-left:14px;">&nbsp;&nbsp;HTML 컨텐츠 영역 ({{ w.widgetNm }})</span>
+            <br>
             <span style="color:#cc7832;">&lt;/div&gt;</span>
           </div>
           <div v-else-if="w.widgetType==='event_banner'"
@@ -465,7 +549,10 @@ window.XsSample13 = {
           <div v-else-if="w.widgetType==='cache_banner'"
             style="background:linear-gradient(135deg,#f6d365,#fda085);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;color:#fff;">
             <div style="font-size:28px;">💰</div>
-            <div><div style="font-size:11px;opacity:.85;">적립금 / 캐시</div><div style="font-size:18px;font-weight:800;">+0,000P</div></div>
+            <div>
+              <div style="font-size:11px;opacity:.85;">적립금 / 캐시</div>
+              <div style="font-size:18px;font-weight:800;">+0,000P</div>
+            </div>
           </div>
           <div v-else-if="w.widgetType==='widget_embed'"
             style="border:2px dashed #a0aec0;border-radius:8px;padding:18px;text-align:center;background:#f7fafc;">
@@ -497,6 +584,6 @@ window.XsSample13 = {
   :selected-ids="[...selectedCatIds]"
   @close="showCatModal=false"
   @apply="onCatApply"
-/>
-  `,
+  />
+`,
 };

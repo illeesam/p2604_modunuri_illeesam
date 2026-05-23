@@ -162,8 +162,10 @@ window.SySiteDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.siteId }}</span></div>
-
+  <div class="page-title">
+    {{ cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정') }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.siteId }}</span>
+  </div>
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
@@ -172,14 +174,15 @@ window.SySiteDtl = {
       @cancel="navigate('sySiteMng')"
       @edit="navigate('__switchToEdit__')"
       @close="navigate('sySiteMng')">
-
       <!-- 주소: 우편번호+검색버튼+기본주소 (카카오 우편번호 연동) -->
       <template #addr>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
             style="width:110px;flex-shrink:0;" readonly />
           <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
-            style="white-space:nowrap;">🔍 주소 검색</button>
+            style="white-space:nowrap;">
+            🔍 주소 검색
+          </button>
         </div>
         <input class="form-control" v-model="form.siteAddress"
           placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />

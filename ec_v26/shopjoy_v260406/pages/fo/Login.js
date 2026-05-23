@@ -331,8 +331,9 @@ window.Login = {
   template: /* html */ `
 <div class="modal-overlay" @click.self="$emit('close')" style="z-index:200;">
   <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">
-    <button @click="$emit('close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
-
+    <button @click="$emit('close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
+      ✕
+    </button>
     <!-- -- ════ 로그인 ════ ------------------------------------------------ -->
     <template v-if="uiState.step==='login'">
       <div style="text-align:center;margin-bottom:24px;">
@@ -348,28 +349,29 @@ window.Login = {
           {{ foAuth.state.loading ? '로그인 중...' : '로그인' }}
         </button>
       </div>
-
       <div style="display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--text-muted);font-size:0.8rem;">
-        <div style="flex:1;height:1px;background:var(--border);"></div>소셜 로그인<div style="flex:1;height:1px;background:var(--border);"></div>
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        소셜 로그인
+        <div style="flex:1;height:1px;background:var(--border);"></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:9px;">
         <button @click="doSocial('google')"
           style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text-primary);font-weight:600;">
-          <span style="font-size:1.1rem;">🌐</span> Google로 로그인
+          <span style="font-size:1.1rem;">🌐</span>
+          Google로 로그인
         </button>
         <button @click="doSocial('kakao')"
           style="width:100%;padding:11px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#3C1E1E;font-weight:700;">
-          <span style="font-size:1.1rem;">💬</span> 카카오로 로그인
+          <span style="font-size:1.1rem;">💬</span>
+          카카오로 로그인
         </button>
         <button @click="doSocial('naver')"
           style="width:100%;padding:11px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#fff;font-weight:700;">
-          <span style="font-size:1.1rem;font-weight:900;">N</span> 네이버로 로그인
+          <span style="font-size:1.1rem;font-weight:900;">N</span>
+          네이버로 로그인
         </button>
       </div>
-
-      <div style="text-align:center;margin-top:22px;">
-        <span style="font-size:0.85rem;color:var(--text-muted);">아직 회원이 아니신가요?</span>
-      </div>
+      <div style="text-align:center;margin-top:22px;"><span style="font-size:0.85rem;color:var(--text-muted);">아직 회원이 아니신가요?</span></div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
         <button @click="uiState.snsProvider=null; uiState.step='terms'" class="btn-outline" style="width:100%;padding:10px;font-size:0.85rem;font-weight:700;">
           📧 이메일로 회원가입
@@ -389,7 +391,6 @@ window.Login = {
           </button>
         </div>
       </div>
-
       <!-- 회원선택 바로 로그인 (개발용) -->
       <div style="text-align:center;margin-top:18px;">
         <button @click="onOpenMemberPick"
@@ -398,7 +399,6 @@ window.Login = {
         </button>
       </div>
     </template>
-
     <!-- ════ 회원선택 모달 ════ -->
     <div v-if="memberPick.show" class="modal-overlay" @click.self="memberPick.show=false" style="z-index:300;">
       <div style="background:#fff;border-radius:16px;overflow:hidden;max-width:820px;width:96%;display:flex;flex-direction:column;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.18);">
@@ -411,7 +411,9 @@ window.Login = {
               <div style="font-size:10px;color:#e8587a;margin-top:1px;">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
             </div>
           </div>
-          <button @click="memberPick.show=false" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">✕</button>
+          <button @click="memberPick.show=false" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">
+            ✕
+          </button>
         </div>
         <!-- 본문 (스크롤) -->
         <div style="padding:14px 18px;overflow-y:auto;flex:1;">
@@ -422,9 +424,9 @@ window.Login = {
               <bo-multi-check-select
                 v-model="memberPick.searchType"
                 :options="[
-                  { value: 'memberNm',    label: '이름' },
-                  { value: 'loginId',     label: '로그인ID' },
-                  { value: 'memberPhone', label: '연락처' },
+                { value: 'memberNm',    label: '이름' },
+                { value: 'loginId',     label: '로그인ID' },
+                { value: 'memberPhone', label: '연락처' },
                 ]"
                 placeholder="검색대상 전체"
                 all-label="전체 선택"
@@ -434,10 +436,16 @@ window.Login = {
                 style="width:100%;padding:7px 10px 7px 32px;border:1.5px solid #f0c8d8;border-radius:8px;font-size:12px;outline:none;box-sizing:border-box;">
             </div>
             <button @click="onMemberPickSearch"
-              style="padding:0 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">조회</button>
+              style="padding:0 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
+              조회
+            </button>
           </div>
           <!-- 건수 -->
-          <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:left;">총 <b style="color:#e8587a;">{{ memberPick.total }}</b>명</div>
+          <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:left;">
+            총
+            <b style="color:#e8587a;">{{ memberPick.total }}</b>
+            명
+          </div>
           <!-- 테이블 -->
           <div style="border-radius:8px;border:1px solid #f0e0e8;overflow:hidden;">
             <fo-grid bare :columns="memberPickGridColumns" :rows="memberPick.rows" :pager="memberPick"
@@ -445,7 +453,9 @@ window.Login = {
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
               :row-click="onPickMember">
               <template #row-actions="{ row }">
-                <button @click.stop="onPickMember(row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">선택</button>
+                <button @click.stop="onPickMember(row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
+                  선택
+                </button>
               </template>
             </fo-grid>
           </div>
@@ -453,25 +463,34 @@ window.Login = {
         <!-- 페이지네이션 (고정) -->
         <div v-if="memberPick.totalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
           <button @click="onMemberPickPage(1)" :disabled="memberPick.pageNo===1"
-            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">«</button>
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">
+            «
+          </button>
           <button @click="onMemberPickPage(memberPick.pageNo-1)" :disabled="memberPick.pageNo===1"
-            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">‹</button>
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">
+            ‹
+          </button>
           <template v-for="p in memberPick.totalPage" :key="p">
             <button v-if="Math.abs(p-memberPick.pageNo)<=2||p===1||p===memberPick.totalPage"
               @click="onMemberPickPage(p)"
               :style="memberPick.pageNo===p
-                ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
-                : 'background:#fff;color:#888;border:1px solid #eee;'"
-              style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">{{ p }}</button>
+              ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
+              : 'background:#fff;color:#888;border:1px solid #eee;'"
+              style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">
+              {{ p }}
+            </button>
           </template>
           <button @click="onMemberPickPage(memberPick.pageNo+1)" :disabled="memberPick.pageNo===memberPick.totalPage"
-            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">›</button>
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">
+            ›
+          </button>
           <button @click="onMemberPickPage(memberPick.totalPage)" :disabled="memberPick.pageNo===memberPick.totalPage"
-            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">»</button>
+            style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">
+            »
+          </button>
         </div>
       </div>
     </div>
-
     <!-- -- ════ 약관 ════ ------------------------------------------------- -->
     <template v-else-if="uiState.step==='terms'">
       <div style="text-align:center;margin-bottom:20px;">
@@ -492,7 +511,7 @@ window.Login = {
           {key:'t2',req:true, text:'개인정보 수집·이용 동의'},
           {key:'t3',req:true, text:'만 14세 이상 확인'},
           {key:'t4',req:false,text:'마케팅 정보 수신 동의 (선택)'},
-        ]" :key="i" style="display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--border);cursor:pointer;">
+          ]" :key="i" style="display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--border);cursor:pointer;">
           <input type="checkbox" v-model="terms[t.key]" style="width:15px;height:15px;accent-color:var(--blue);">
           <span style="font-size:0.88rem;color:var(--text-secondary);">
             <span v-if="t.req" style="color:var(--blue);font-weight:700;">[필수]</span>
@@ -505,22 +524,23 @@ window.Login = {
         <button @click="uiState.snsProvider=null; uiState.step='login'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
         <button @click="goNextFromTerms" :disabled="!(terms.t1&&terms.t2&&terms.t3)"
           class="btn-blue" style="flex:2;padding:12px;"
-          :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">다음</button>
+          :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">
+          다음
+        </button>
       </div>
     </template>
-
     <!-- -- ════ 이메일 회원가입 ════ ------------------------------------------- -->
     <template v-else-if="uiState.step==='signup'">
       <div style="text-align:center;margin-bottom:16px;">
         <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">회원가입</div>
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">정보를 입력하고 인증을 완료해 주세요</div>
       </div>
-
       <!-- -- 필수 --------------------------------------------------------- -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">필수 정보</div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">
+        필수 정보
+      </div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
         <input v-model="sf.memberNm" type="text" placeholder="이름 *" :style="IS">
-
         <!-- -- 이메일 인증 --------------------------------------------------- -->
         <div>
           <div style="display:flex;gap:8px;">
@@ -535,11 +555,12 @@ window.Login = {
           <div v-if="sf.emailSent && !sf.emailVerified" style="display:flex;gap:8px;margin-top:8px;">
             <input v-model="sf.emailCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="verifyEmail" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">확인</button>
+            <button @click="verifyEmail" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+              확인
+            </button>
           </div>
           <div v-if="sf.emailVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 이메일 인증 완료</div>
         </div>
-
         <!-- -- 휴대폰 인증 --------------------------------------------------- -->
         <div>
           <div style="display:flex;gap:8px;">
@@ -554,19 +575,20 @@ window.Login = {
           <div v-if="sf.phoneSent && !sf.phoneVerified" style="display:flex;gap:8px;margin-top:8px;">
             <input v-model="sf.phoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="verifyPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">확인</button>
+            <button @click="verifyPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+              확인
+            </button>
           </div>
           <div v-if="sf.phoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 휴대폰 인증 완료</div>
         </div>
-
         <input v-model="sf.password"  type="password" placeholder="비밀번호 (6자 이상) *" :style="IS">
         <input v-model="sf.password2" type="password" placeholder="비밀번호 확인 *" :style="IS">
       </div>
-
       <!-- -- 선택 --------------------------------------------------------- -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">선택 정보 (입력하면 주문 시 자동 완성)</div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">
+        선택 정보 (입력하면 주문 시 자동 완성)
+      </div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-
         <!-- -- 주소 ------------------------------------------------------- -->
         <div>
           <div style="display:flex;gap:8px;margin-bottom:6px;">
@@ -581,7 +603,6 @@ window.Login = {
             style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;margin-bottom:6px;">
           <input v-model="sf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
         </div>
-
         <!-- -- 생년월일 + 성별 ------------------------------------------------ -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
           <div>
@@ -602,14 +623,14 @@ window.Login = {
           </div>
         </div>
       </div>
-
-      <div v-if="uiState.signupErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">{{ uiState.signupErr }}</div>
+      <div v-if="uiState.signupErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">
+        {{ uiState.signupErr }}
+      </div>
       <div style="display:flex;gap:10px;">
         <button @click="uiState.step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
         <button @click="doSignup" class="btn-blue" style="flex:2;padding:12px;">가입 완료</button>
       </div>
     </template>
-
     <!-- -- ════ SNS 회원가입 추가 정보 ════ ------------------------------------- -->
     <template v-else-if="uiState.step==='sns-signup'">
       <div style="text-align:center;margin-bottom:16px;">
@@ -620,9 +641,10 @@ window.Login = {
         <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">추가 정보 입력</div>
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">가입 완료를 위해 추가 정보를 입력하세요</div>
       </div>
-
       <!-- -- 필수 --------------------------------------------------------- -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">필수 정보</div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">
+        필수 정보
+      </div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
         <input v-model="uiState.snsNickname" type="text" placeholder="이름 / 닉네임 *" :style="IS">
         <!-- -- 휴대폰 인증 --------------------------------------------------- -->
@@ -639,14 +661,17 @@ window.Login = {
           <div v-if="uiState.snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
             <input v-model="uiState.snsPhoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="verifySnsPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">확인</button>
+            <button @click="verifySnsPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+              확인
+            </button>
           </div>
           <div v-if="uiState.snsPhoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 휴대폰 인증 완료</div>
         </div>
       </div>
-
       <!-- -- 선택 --------------------------------------------------------- -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">선택 정보</div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">
+        선택 정보
+      </div>
       <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
         <!-- -- 주소 ------------------------------------------------------- -->
         <div>
@@ -682,15 +707,13 @@ window.Login = {
           </div>
         </div>
       </div>
-
       <div v-if="uiState.snsErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">{{ uiState.snsErr }}</div>
       <div style="display:flex;gap:10px;">
         <button @click="uiState.step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
         <button @click="doSnsSignup" class="btn-blue" style="flex:2;padding:12px;">가입 완료</button>
       </div>
     </template>
-
   </div>
 </div>
-  `
+`
 };

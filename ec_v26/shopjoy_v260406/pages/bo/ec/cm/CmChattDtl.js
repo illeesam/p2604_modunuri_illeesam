@@ -230,14 +230,21 @@ window.CmChattDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '채팅 등록' : '채팅 상세' }}<span v-if="!cfIsNew && chat" style="font-size:12px;color:#999;margin-left:8px;">#{{ chat.chattRoomId }}</span></div>
-
+  <div class="page-title">
+    {{ cfIsNew ? '채팅 등록' : '채팅 상세' }}
+    <span v-if="!cfIsNew && chat" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ chat.chattRoomId }}
+    </span>
+  </div>
   <!-- -- 채팅 상세 ---------------------------------------------------------- -->
   <div v-if="!cfIsNew">
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:tab==='chat'}" :disabled="tabMode2!=='tab'" @click="tab='chat'">💬 채팅 내용</button>
-        <button class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></button>
+        <button class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">
+          🕒 회원 채팅 이력
+          <span class="tab-count">{{ cfMemberChats.length }}</span>
+        </button>
       </div>
       <div class="tab-modes">
         <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
@@ -248,67 +255,66 @@ window.CmChattDtl = {
       </div>
     </div>
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
-    <!-- -- 채팅 내용 탭 ------------------------------------------------------ -->
-    <div class="card" v-show="showTab('chat')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 채팅 내용</div>
-      <template v-if="chat">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <div>
-            <div style="font-size:15px;font-weight:700;">{{ chat.subject }}</div>
-            <div style="font-size:12px;color:#888;margin-top:3px;">
-              <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span>
-              &nbsp;·&nbsp;{{ chat.regDate }}
-              &nbsp;·&nbsp;<span class="badge" :class="chat.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ chat.chattStatusCd }}</span>
+      <!-- -- 채팅 내용 탭 ------------------------------------------------------ -->
+      <div class="card" v-show="showTab('chat')" style="margin:0;">
+        <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 채팅 내용</div>
+        <template v-if="chat">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div>
+              <div style="font-size:15px;font-weight:700;">{{ chat.subject }}</div>
+              <div style="font-size:12px;color:#888;margin-top:3px;">
+                <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span>
+                &nbsp;·&nbsp;{{ chat.regDate }} &nbsp;·&nbsp;
+                <span class="badge" :class="chat.chattStatusCd==='진행중'?'badge-green':'badge-gray'">{{ chat.chattStatusCd }}</span>
+              </div>
             </div>
+            <button v-if="chat.chattStatusCd==='진행중'" class="btn btn-secondary btn-sm" @click="closeChat">채팅 종료</button>
           </div>
-          <button v-if="chat.chattStatusCd==='진행중'" class="btn btn-secondary btn-sm" @click="closeChat">채팅 종료</button>
-        </div>
-
-        <!-- -- 메시지 목록 --------------------------------------------------- -->
-        <div class="chat-messages" ref="msgBoxRef">
-          <div v-for="(msg, idx) in (chat.messages||[])" :key="idx" class="chat-msg" :class="msg.from">
-            <div class="chat-bubble">
-              {{ msg.text }}
-              <span v-if="hasRef(msg)" class="ref-link" style="display:block;margin-top:4px;" @click="openMsgRef(msg)">{{ refLabel(msg) }}</span>
+          <!-- -- 메시지 목록 --------------------------------------------------- -->
+          <div class="chat-messages" ref="msgBoxRef">
+            <div v-for="(msg, idx) in (chat.messages||[])" :key="idx" class="chat-msg" :class="msg.from">
+              <div class="chat-bubble">
+                {{ msg.text }}
+                <span v-if="hasRef(msg)" class="ref-link" style="display:block;margin-top:4px;" @click="openMsgRef(msg)">
+                  {{ refLabel(msg) }}
+                </span>
+              </div>
+              <div class="chat-time">{{ msg.from==='user' ? '고객' : 'CS' }} · {{ msg.time }}</div>
             </div>
-            <div class="chat-time">{{ msg.from==='user' ? '고객' : 'CS' }} · {{ msg.time }}</div>
+            <div v-if="!(chat.messages||[]).length" style="text-align:center;color:#aaa;padding:20px;font-size:13px;">메시지가 없습니다.</div>
           </div>
-          <div v-if="!(chat.messages||[]).length" style="text-align:center;color:#aaa;padding:20px;font-size:13px;">메시지가 없습니다.</div>
-        </div>
-
-        <!-- -- 답변 입력 ---------------------------------------------------- -->
-        <div v-if="chat.chattStatusCd==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
-          <textarea class="form-control" v-model="replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
-            @keydown.enter.exact.prevent="() => sendReply?.()"></textarea>
-          <button class="btn btn-primary" @click="sendReply" style="white-space:nowrap;">전송</button>
-        </div>
-        <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">종료된 채팅입니다.</div>
-
-        <div class="form-actions" v-if="!cfDtlMode">
-          <button class="btn btn-secondary" @click="navigate('cmChattMng')">목록으로</button>
-        </div>
-      </template>
-      <div v-else style="text-align:center;color:#aaa;padding:40px;">채팅을 찾을 수 없습니다.</div>
-    </div>
-
-    <!-- -- 회원 채팅 이력 탭 --------------------------------------------------- -->
-    <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></div>
-      <div v-if="chat" style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;gap:12px;">
-        <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span> 의 다른 채팅
-        </span>
+          <!-- -- 답변 입력 ---------------------------------------------------- -->
+          <div v-if="chat.chattStatusCd==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
+            <textarea class="form-control" v-model="replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
+              @keydown.enter.exact.prevent="() => sendReply?.()"></textarea>
+            <button class="btn btn-primary" @click="sendReply" style="white-space:nowrap;">전송</button>
+          </div>
+          <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">
+            종료된 채팅입니다.
+          </div>
+          <div class="form-actions" v-if="!cfDtlMode">
+            <button class="btn btn-secondary" @click="navigate('cmChattMng')">목록으로</button>
+          </div>
+        </template>
+        <div v-else style="text-align:center;color:#aaa;padding:40px;">채팅을 찾을 수 없습니다.</div>
       </div>
-      <bo-grid bare :columns="memberChatGridColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">상세</button>
-      </template>
-      </bo-grid>
-    </div>
+      <!-- -- 회원 채팅 이력 탭 --------------------------------------------------- -->
+      <div class="card" v-show="showTab('history')" style="margin:0;">
+        <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 채팅 이력 <span class="tab-count">{{ cfMemberChats.length }}</span></div>
+        <div v-if="chat" style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:13px;color:#555;">
+            <span class="ref-link" @click="showRefModal('member', chat.memberId)">{{ chat.memberNm }}</span>
+            의 다른 채팅
+          </span>
+        </div>
+        <bo-grid bare :columns="memberChatGridColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
+          <template #row-actions="{ row }">
+            <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">상세</button>
+          </template>
+        </bo-grid>
+      </div>
     </div>
   </div>
-
   <!-- -- 신규 채팅 등록 ------------------------------------------------------- -->
   <template v-if="cfIsNew">
     <div class="card">
@@ -316,12 +322,10 @@ window.CmChattDtl = {
         <button class="tab-btn" :class="{active:tab==='new'}" @click="tab='new'">신규 등록</button>
         <button class="tab-btn" :class="{active:tab==='search'}" @click="tab='search'">고객 채팅 조회</button>
       </div>
-
       <!-- 신규 등록 탭 (BoFormArea 자동 렌더) -->
       <div v-show="tab==='new'">
         <bo-form-area :columns="newFormColumns" :form="form" :errors="errors"
           :readonly="false" :cols="2" :show-actions="false">
-
           <!-- 회원ID + 보기 -->
           <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">
@@ -335,25 +339,23 @@ window.CmChattDtl = {
           <button class="btn btn-secondary" @click="navigate('cmChattMng')">취소</button>
         </div>
       </div>
-
       <!-- -- 고객 채팅 조회 탭 ------------------------------------------------- -->
       <div v-show="tab==='search'">
         <div style="display:flex;gap:8px;margin-bottom:14px;">
           <input class="form-control" style="max-width:200px;" v-model="searchUserId" placeholder="회원 ID 입력" />
         </div>
         <bo-grid bare :columns="userChatGridColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">보기</button>
-      </template>
+          <template #row-actions="{ row }">
+            <button class="btn btn-blue btn-sm" @click="navigate('cmChattDtl',{id:row.chattRoomId})">보기</button>
+          </template>
         </bo-grid>
       </div>
     </div>
   </template>
-
   <!-- -- 메시지 내 참조 모달 (상품/주문/클레임) ---------------------------------------- -->
   <bo-modal :show="refModal.show"
-            :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'"
-            @close="closeRefModal">
+    :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'"
+    @close="closeRefModal">
     <div style="text-align:center;color:#aaa;padding:20px;">정보를 찾을 수 없습니다.</div>
     <template #footer>
       <button class="btn btn-secondary" @click="closeRefModal">닫기</button>

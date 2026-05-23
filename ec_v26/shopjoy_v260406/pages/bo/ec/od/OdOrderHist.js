@@ -115,56 +115,69 @@ window.OdOrderHist = {
   },
   template: /* html */`
 <div>
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
+    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+    이력정보
+  </div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="tabMode2!=='tab'" @click="botTab='products'">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="botTab='dliv'">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="tabMode2!=='tab'" @click="botTab='products'">
+        📦 구성 상품
+        <span class="tab-count">{{ orderItems.length }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="botTab='dliv'">
+        🚚 배송 이력
+        <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="botTab='claims'">
+        ↩ 연관 클레임
+        <span class="tab-count">{{ cfRelatedClaims.length }}</span>
+      </button>
     </div>
-    </div>
+  </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
-  <!-- -- 구성 상품 ---------------------------------------------------------- -->
-  <div class="card" v-show="showTab('products')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
-    <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
-             empty-text="구성 상품 정보가 없습니다." row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button>
-      </template>
-    </bo-grid>
-  </div>
-
-  <!-- -- 배송 이력 ---------------------------------------------------------- -->
-  <div class="card" v-show="showTab('dliv')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
-    <template v-if="cfRelatedDliv">
-      <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:13px;">
-          <span style="color:#888;">수령인</span> <b>{{ cfRelatedDliv.recvNm }}</b>
-          &nbsp;·&nbsp;<span style="color:#888;">택배사</span> <b>{{ cfRelatedDliv.outboundCourierCdNm || cfRelatedDliv.outboundCourierCd }}</b>
-          &nbsp;·&nbsp;<span style="color:#888;">운송장</span> <b>{{ cfRelatedDliv.outboundTrackingNo || '-' }}</b>
-        </div>
-        <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
-      </div>
-      <bo-grid bare :columns="dlivHistGridColumns" :rows="cfDlivHistory"
-               empty-text="배송 이력이 없습니다.">
+    <!-- -- 구성 상품 ---------------------------------------------------------- -->
+    <div class="card" v-show="showTab('products')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
+      <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
+        empty-text="구성 상품 정보가 없습니다." row-actions>
+        <template #row-actions="{ row }">
+          <button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button>
+        </template>
       </bo-grid>
-    </template>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
-  </div>
-
-  <!-- -- 연관 클레임 --------------------------------------------------------- -->
-  <div class="card" v-show="showTab('claims')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
-    <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
-             empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
+    </div>
+    <!-- -- 배송 이력 ---------------------------------------------------------- -->
+    <div class="card" v-show="showTab('dliv')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
+      <template v-if="cfRelatedDliv">
+        <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:13px;">
+            <span style="color:#888;">수령인</span>
+            <b>{{ cfRelatedDliv.recvNm }}</b>
+            &nbsp;·&nbsp;
+            <span style="color:#888;">택배사</span>
+            <b>{{ cfRelatedDliv.outboundCourierCdNm || cfRelatedDliv.outboundCourierCd }}</b>
+            &nbsp;·&nbsp;
+            <span style="color:#888;">운송장</span>
+            <b>{{ cfRelatedDliv.outboundTrackingNo || '-' }}</b>
+          </div>
+          <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
+        </div>
+        <bo-grid bare :columns="dlivHistGridColumns" :rows="cfDlivHistory"
+          empty-text="배송 이력이 없습니다."></bo-grid>
       </template>
-    </bo-grid>
-  </div>
+      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
+    </div>
+    <!-- -- 연관 클레임 --------------------------------------------------------- -->
+    <div class="card" v-show="showTab('claims')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
+      <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
+        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+        <template #row-actions="{ row }">
+          <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
+        </template>
+      </bo-grid>
+    </div>
   </div>
 </div>
 `,

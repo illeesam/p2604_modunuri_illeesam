@@ -143,13 +143,14 @@ window.SyTemplateDtl = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정') }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.templateId }}</span></div>
-
+  <div class="page-title">
+    {{ cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정') }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.templateId }}</span>
+  </div>
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" :show-actions="false">
-
       <!-- 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) -->
       <template #content>
         <template v-if="cfUseHtmlEditor">
@@ -164,7 +165,6 @@ window.SyTemplateDtl = {
         <span v-if="errors.templateContent" class="field-error">{{ errors.templateContent }}</span>
       </template>
     </bo-form-area>
-
     <!-- 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) -->
     <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-secondary" @click="uiState.previewOpen=true">📄 미리보기</button>
@@ -173,12 +173,10 @@ window.SyTemplateDtl = {
       <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
     </div>
   </div>
-
   <!-- -- 미리보기 모달 -------------------------------------------------------- -->
   <template-preview-modal v-if="uiState.previewOpen"
     :tmpl="form" :sample-params="form.sampleParams"
     @close="uiState.previewOpen=false" />
-
   <!-- -- 발송하기 모달 -------------------------------------------------------- -->
   <template-send-modal v-if="uiState.sendOpen"
     :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm"

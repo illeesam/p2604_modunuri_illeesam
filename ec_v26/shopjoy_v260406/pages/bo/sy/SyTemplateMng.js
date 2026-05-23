@@ -253,13 +253,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <div class="page-title">템플릿관리</div>  <div class="card">
+  <div class="page-title">템플릿관리</div>
+  <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
-
-
-
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="true"
@@ -270,51 +267,51 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.templateId)">
-
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
             <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
           </div>
         </template>
-        <template #head-actions><th style="text-align:right">관리</th></template>
-
+        <template #head-actions>
+          <th style="text-align:right">관리</th>
+        </template>
         <template #row-actions="{ row }">
-          <td><div class="actions">
-            <button class="btn btn-secondary btn-sm" @click="showPreview(row)">미리보기</button>
-            <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="openSend(row)">발송</button>
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.templateId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-          </div></td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-secondary btn-sm" @click="showPreview(row)">미리보기</button>
+              <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="openSend(row)">발송</button>
+              <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.templateId)">수정</button>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+            </div>
+          </td>
         </template>
       </bo-grid>
-
-  <!-- -- 미리보기/발송 모달 (position:fixed) ---------------------------------- -->
-  <template-preview-modal v-if="previewModal && previewModal.show"
-    :tmpl="previewModal.template"
-    :sample-params="previewModal.template?.sampleParams || '{}'"
-    @close="closePreview" />
-  <template-send-modal v-if="sendModal && sendModal.show"
-    :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
-    @close="closeSend" />
-</div>
-
-  <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->
-  <div v-if="selectedId" style="grid-column:1/-1;margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      <!-- -- 미리보기/발송 모달 (position:fixed) ---------------------------------- -->
+      <template-preview-modal v-if="previewModal && previewModal.show"
+        :tmpl="previewModal.template"
+        :sample-params="previewModal.template?.sampleParams || '{}'"
+        @close="closePreview" />
+      <template-send-modal v-if="sendModal && sendModal.show"
+        :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
+        @close="closeSend" />
     </div>
-    <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" 
-      
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      :on-list-reload="handleSearchList"
-    />
+    <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->
+    <div v-if="selectedId" style="grid-column:1/-1;margin-top:4px;">
+      <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+        <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      </div>
+      <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+        :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        
+        :reload-trigger="uiStateDetail.reloadTrigger"
+        :on-list-reload="handleSearchList"
+        />
+    </div>
+    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template"
+      :value="pathPickModal.row ? pathPickModal.row.pathId : null"
+      @select="onPathPicked" @close="closePathPick" />
   </div>
-
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

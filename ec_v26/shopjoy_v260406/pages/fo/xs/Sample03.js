@@ -24,5 +24,7 @@ window.XsSample03 = {
 
     return { uiState, codes };
   },
-  template: `<div style="padding:40px;">pages/fo/xs/Sample03.js</div>`,
+  template: `
+<div style="padding:40px;">pages/fo/xs/Sample03.js</div>
+`,
 };

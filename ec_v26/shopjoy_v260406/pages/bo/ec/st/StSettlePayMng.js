@@ -160,10 +160,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="page-desc-bar">
     <span class="page-desc-summary">마감된 정산액의 업체별 지급 요청·확인·완료 처리 및 이의신청을 관리합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청
-• [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다.
-• 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다.
-• 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청 • [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다. • 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다. • 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.
+    </div>
   </div>
   <div class="card">
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />

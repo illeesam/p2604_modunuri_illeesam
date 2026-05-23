@@ -153,11 +153,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
     empty-text="실행이력이 없습니다."
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleExpand(row.batchLogId)">
-
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="btn btn-secondary btn-sm" @click="onExpandAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">▼ 전체펼치기</button>
-        <button class="btn btn-secondary btn-sm" @click="onCollapseAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">▲ 전체접기</button>
+        <button class="btn btn-secondary btn-sm" @click="onExpandAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
+          ▼ 전체펼치기
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="onCollapseAll" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
+          ▲ 전체접기
+        </button>
         <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
           <option value="">배치 전체</option>
           <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">{{ b.label }}</option>
@@ -169,7 +172,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         <button class="btn btn-primary btn-sm" @click="onSearch" style="height:30px;font-size:12px;padding:2px 12px;">조회</button>
       </div>
     </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="padding:0;"
         :style="row.runStatus==='실패' ? 'background:#fff0f0;' : 'background:#f8faff;'">
@@ -199,14 +201,16 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:4px;">메시지</div>
           <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
             :style="row.runStatus==='실패'
-              ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
-              : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">{{ row.message }}</div>
+            ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
+            : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
+            {{ row.message }}
+          </div>
           <template v-if="row.detail">
             <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">상세 내용</div>
             <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
               :style="row.runStatus==='실패'
-                ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
-                : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
+              ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
+              : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
           </template>
         </div>
       </td>

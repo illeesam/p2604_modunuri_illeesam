@@ -226,10 +226,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="page-desc-bar">
     <span class="page-desc-summary">판촉비·위약금·보증금 등 정산조정 외 기타 항목을 별도 관리합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다.
-• 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등
-• 승인 후 정산마감 집계에 포함됩니다.
-• 승인 상태: 대기 / 승인 / 반려</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다. • 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등 • 승인 후 정산마감 집계에 포함됩니다. • 승인 상태: 대기 / 승인 / 반려
+    </div>
   </div>
   <div class="card">
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
@@ -237,7 +236,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
       <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 기타조정 추가</button></div>
+      <div style="margin-left:auto">
+        <button class="btn btn-primary" @click="openNew">+ 기타조정 추가</button>
+      </div>
     </div>
     <bo-grid
       :columns="baseGridColumns" :rows="etcAdjList" :pager="pager" row-key="adjId"

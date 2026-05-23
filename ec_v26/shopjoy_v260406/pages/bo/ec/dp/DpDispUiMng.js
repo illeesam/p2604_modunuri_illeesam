@@ -183,7 +183,10 @@ window.DpDispUiMng = {
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">
       <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_ui</span></span>
+        <span class="list-title" style="font-size:13px;">
+          📂 표시경로
+          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_ui</span>
+        </span>
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
@@ -196,12 +199,14 @@ window.DpDispUiMng = {
       empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.uiId)" row-actions>
       <template #toolbar-actions>
-        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
+        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
+          #{{ uiState.selectedPath }}
+        </span>
         <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
       </template>
       <template #row-actions="{ row }">
         <button class="btn btn-sm btn-secondary" @click="loadView(row.uiId)">상세</button>
-          <button class="btn btn-sm btn-primary" @click="handleLoadDetail(row.uiId)">수정</button>
+        <button class="btn btn-sm btn-primary" @click="handleLoadDetail(row.uiId)">수정</button>
       </template>
     </bo-grid>
   </div>
@@ -216,7 +221,8 @@ window.DpDispUiMng = {
       :tab-mode="uiStateDetail.openMode"
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
-    />
+      />
   </div>
-</div>`
+</div>
+`
 };

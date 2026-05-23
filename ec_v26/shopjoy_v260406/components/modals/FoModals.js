@@ -50,30 +50,35 @@ window.OrderDetailModal = {
 <fo-modal :show="show" max-width="520px" max-height="90vh" box-pad="0" :z-index="400" @close="$emit('close')">
   <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.28);border:1px solid var(--border);overflow:hidden;height:100%;"
     role="dialog" aria-modal="true">
-
     <!-- 헤더 -->
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div>
-        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">📦 주문 상세<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span></div>
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">
+          📦 주문 상세
+          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span>
+        </div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ order && order.orderId }}</div>
       </div>
       <button type="button" @click="$emit('close')" aria-label="닫기"
-        style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">✕</button>
+        style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">
+        ✕
+      </button>
     </div>
-
     <!-- 콘텐츠 -->
     <div v-if="order" style="padding:18px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px;">
-
       <!-- 주문일 / 상태 -->
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:0.82rem;color:var(--text-muted);">{{ order.orderDate }}</span>
         <span style="font-size:0.78rem;font-weight:700;padding:4px 12px;border-radius:20px;color:#fff;"
-          :style="'background:' + fnStatusColor(order.status)">{{ fnStatusLabel(order.status) }}</span>
+          :style="'background:' + fnStatusColor(order.status)">
+          {{ fnStatusLabel(order.status) }}
+        </span>
       </div>
-
       <!-- 상품 목록 -->
       <div>
-        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;">주문 상품</div>
+        <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;">
+          주문 상품
+        </div>
         <div v-for="(item, i) in order.orderItems" :key="i"
           style="display:flex;align-items:center;gap:10px;padding:8px 0;"
           :style="i < order.orderItems.length-1 ? 'border-bottom:1px dashed var(--border);' : ''">
@@ -89,7 +94,6 @@ window.OrderDetailModal = {
           <div style="font-size:0.88rem;font-weight:700;color:var(--blue);flex-shrink:0;">{{ item.price.toLocaleString() }}원</div>
         </div>
       </div>
-
       <!-- 결제 정보 -->
       <div style="background:var(--bg-base);border-radius:8px;padding:12px 14px;font-size:0.82rem;display:flex;flex-direction:column;gap:6px;">
         <div v-if="order.shippingFee > 0" style="display:flex;justify-content:space-between;">
@@ -113,20 +117,19 @@ window.OrderDetailModal = {
           <span style="font-size:0.95rem;font-weight:800;color:var(--blue);">{{ order.totalPrice.toLocaleString() }}원</span>
         </div>
       </div>
-
       <!-- 택배 정보 -->
       <div v-if="order.courier && order.trackingNo"
         style="display:flex;align-items:center;gap:8px;font-size:0.8rem;padding:10px 14px;background:var(--bg-base);border-radius:8px;">
         <span style="color:var(--text-muted);">🚚 {{ order.courier }}</span>
         <span style="font-weight:600;color:var(--text-primary);">{{ order.trackingNo }}</span>
       </div>
-
     </div>
-
     <!-- 푸터 -->
     <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
       <button type="button" @click="$emit('close')" class="btn-blue"
-        style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">닫기</button>
+        style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
+        닫기
+      </button>
     </div>
   </div>
 </fo-modal>
@@ -259,7 +262,6 @@ window.ProductModal = {
   },
   template: /* html */ `
 <fo-modal :show="show" max-width="840px" max-height="90vh" box-pad="0" :z-index="400" @close="$emit('close')">
-
   <!-- 내부 토스트 -->
   <transition name="fade">
     <div v-if="toastShow"
@@ -267,10 +269,8 @@ window.ProductModal = {
       {{ toastMsg }}
     </div>
   </transition>
-
   <div style="background:#fff;border-radius:8px;width:100%;height:100%;overflow:hidden;display:flex;"
     role="dialog" aria-modal="true">
-
     <!-- 좌: 이미지 + 썸네일 -->
     <div v-if="product" style="flex:0 0 360px;background:#f5f5f5;display:flex;flex-direction:column;padding:28px 24px 20px;">
       <!-- 메인 이미지 -->
@@ -282,40 +282,42 @@ window.ProductModal = {
       <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
         <div v-for="(img, i) in cfThumbImgs" :key="i" @click="selThumb=i"
           :style="{
-            width:'68px', height:'68px', background:'#fff', cursor:'pointer', boxSizing:'border-box',
-            border: selThumb===i ? '2px solid #1a1a1a' : '2px solid transparent',
-            padding:'4px', borderRadius:'2px', transition:'border-color .15s',
+          width:'68px', height:'68px', background:'#fff', cursor:'pointer', boxSizing:'border-box',
+          border: selThumb===i ? '2px solid #1a1a1a' : '2px solid transparent',
+          padding:'4px', borderRadius:'2px', transition:'border-color .15s',
           }">
           <img :src="img" style="width:100%;height:100%;object-fit:contain;" />
         </div>
       </div>
     </div>
-
     <!-- 우: 정보 -->
     <div v-if="product" style="flex:1;min-width:0;padding:28px 28px 24px;position:relative;display:flex;flex-direction:column;overflow-y:auto;">
       <button @click="$emit('close')"
-        style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#bbb;line-height:1;">✕</button>
-
+        style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#bbb;line-height:1;">
+        ✕
+      </button>
       <!-- 상품명 -->
-      <h2 style="font-size:1.15rem;font-weight:700;color:#1a1a1a;margin-bottom:6px;padding-right:28px;line-height:1.4;">{{ product.prodNm }}</h2>
-
+      <h2 style="font-size:1.15rem;font-weight:700;color:#1a1a1a;margin-bottom:6px;padding-right:28px;line-height:1.4;">
+        {{ product.prodNm }}
+      </h2>
       <!-- 평점 -->
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
         <span style="color:#f59e0b;font-size:0.88rem;letter-spacing:1px;">{{ cfStarStr }}</span>
         <span style="font-size:0.78rem;font-weight:600;color:#555;">{{ cfRating.score }}</span>
         <span style="font-size:0.75rem;color:#aaa;">({{ cfRating.count }}개 리뷰)</span>
       </div>
-
       <!-- 가격 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f0f0f0;">
         <span style="font-size:1.3rem;font-weight:800;color:#1a1a1a;">{{ product.price }}</span>
-        <span v-if="product.originalPrice" style="font-size:0.85rem;color:#bbb;text-decoration:line-through;">{{ product.originalPrice.toLocaleString ? product.originalPrice.toLocaleString() + '원' : product.originalPrice }}</span>
-        <span v-if="product.originalPrice && product.priceNum" style="font-size:0.8rem;font-weight:700;color:#ef4444;">{{ Math.round((1 - product.priceNum / product.originalPrice) * 100) }}%</span>
+        <span v-if="product.originalPrice" style="font-size:0.85rem;color:#bbb;text-decoration:line-through;">
+          {{ product.originalPrice.toLocaleString ? product.originalPrice.toLocaleString() + '원' : product.originalPrice }}
+        </span>
+        <span v-if="product.originalPrice && product.priceNum" style="font-size:0.8rem;font-weight:700;color:#ef4444;">
+          {{ Math.round((1 - product.priceNum / product.originalPrice) * 100) }}%
+        </span>
       </div>
-
       <!-- 설명 -->
       <p style="font-size:0.84rem;color:#666;line-height:1.75;margin-bottom:16px;">{{ product.desc }}</p>
-
       <!-- 색상 -->
       <div v-if="product.opt1s && product.opt1s.length" style="margin-bottom:14px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -325,15 +327,14 @@ window.ProductModal = {
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button v-for="c in product.opt1s" :key="c.name" @click="selColor=c; errColor=false; selThumb=0"
             :style="{
-              width:'28px', height:'28px', borderRadius:'50%', background:c.hex, cursor:'pointer',
-              border: selColor&&selColor.name===c.name ? '3px solid #1a1a1a' : '2px solid rgba(0,0,0,0.12)',
-              outline: selColor&&selColor.name===c.name ? '2px solid #fff' : 'none',
-              outlineOffset: '-4px', boxSizing:'border-box', transition:'border .15s',
+            width:'28px', height:'28px', borderRadius:'50%', background:c.hex, cursor:'pointer',
+            border: selColor&&selColor.name===c.name ? '3px solid #1a1a1a' : '2px solid rgba(0,0,0,0.12)',
+            outline: selColor&&selColor.name===c.name ? '2px solid #fff' : 'none',
+            outlineOffset: '-4px', boxSizing:'border-box', transition:'border .15s',
             }" :title="c.name"></button>
         </div>
         <p v-if="errColor" style="margin:6px 0 0;font-size:0.75rem;color:#ef4444;">색상을 선택해주세요.</p>
       </div>
-
       <!-- 사이즈 -->
       <div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:14px;">
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
@@ -344,36 +345,41 @@ window.ProductModal = {
           display:'flex', gap:'6px', flexWrap:'wrap', padding:'8px',
           border: errSize ? '1px solid #ef4444' : '1px solid transparent',
           borderRadius:'3px', transition:'border-color .2s',
-        }">
+          }">
           <button v-for="s in product.opt2s" :key="s" @click="selSize=s; errSize=false"
             :style="{
-              padding:'5px 14px', borderRadius:'2px', cursor:'pointer', fontSize:'0.8rem',
-              border: selSize===s ? '2px solid #1a1a1a' : '2px solid #ddd',
-              background: selSize===s ? '#1a1a1a' : '#fff',
-              color: selSize===s ? '#fff' : '#555',
-              fontWeight: selSize===s ? '700' : '400', transition:'all .15s',
-            }">{{ s }}</button>
+            padding:'5px 14px', borderRadius:'2px', cursor:'pointer', fontSize:'0.8rem',
+            border: selSize===s ? '2px solid #1a1a1a' : '2px solid #ddd',
+            background: selSize===s ? '#1a1a1a' : '#fff',
+            color: selSize===s ? '#fff' : '#555',
+            fontWeight: selSize===s ? '700' : '400', transition:'all .15s',
+            }">
+            {{ s }}
+          </button>
         </div>
       </div>
-
       <!-- 태그 -->
       <div v-if="product.tags && product.tags.length" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
         <span v-for="t in product.tags" :key="t"
-          style="padding:2px 10px;background:#f5f5f5;border-radius:20px;font-size:0.72rem;color:#888;">#{{ t }}</span>
+          style="padding:2px 10px;background:#f5f5f5;border-radius:20px;font-size:0.72rem;color:#888;">
+          #{{ t }}
+        </span>
       </div>
-
       <!-- 수량 -->
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-top:4px;">
         <span style="font-size:0.75rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;">수량</span>
         <div style="display:flex;align-items:center;border:1.5px solid #ddd;border-radius:2px;">
           <button @click="qty>1&&qty--"
-            style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">−</button>
+            style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">
+            −
+          </button>
           <span style="min-width:36px;text-align:center;font-size:0.88rem;font-weight:600;color:#1a1a1a;padding:0 4px;">{{ qty }}</span>
           <button @click="qty++"
-            style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">+</button>
+            style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">
+            +
+          </button>
         </div>
       </div>
-
       <!-- 하단 버튼 -->
       <div style="margin-top:auto;">
         <!-- 장바구니 모드: 장바구니 추가 버튼만 -->
@@ -387,16 +393,20 @@ window.ProductModal = {
         <template v-else>
           <div style="display:flex;gap:8px;">
             <button class="btn-blue" @click="navigate && navigate('prodView');$emit('close')"
-              style="flex:1;padding:12px;font-size:0.85rem;">상세보기</button>
+              style="flex:1;padding:12px;font-size:0.85rem;">
+              상세보기
+            </button>
             <button class="btn-outline" @click="handleBuyNow(navigate) && $emit('close')"
-              style="flex:1;padding:12px;font-size:0.85rem;">바로구매</button>
+              style="flex:1;padding:12px;font-size:0.85rem;">
+              바로구매
+            </button>
             <!-- 좋아요 토글 -->
             <button @click="handleLike"
               :style="{
-                width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
-                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
-                border: isLiked && isLiked(product.productId) ? '1.5px solid #ef4444' : '1.5px solid #ddd',
-                background: isLiked && isLiked(product.productId) ? '#fff5f5' : '#fff',
+              width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
+              border: isLiked && isLiked(product.productId) ? '1.5px solid #ef4444' : '1.5px solid #ddd',
+              background: isLiked && isLiked(product.productId) ? '#fff5f5' : '#fff',
               }">
               <svg width="18" height="18" viewBox="0 0 24 24"
                 :fill="isLiked && isLiked(product.productId) ? '#ef4444' : 'none'"
@@ -407,13 +417,14 @@ window.ProductModal = {
             <!-- 장바구니 토글 -->
             <button @click="handleCart"
               :style="{
-                width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
-                display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
-                border: inCart ? '1.5px solid #1a1a1a' : '1.5px solid #ddd',
-                background: inCart ? '#1a1a1a' : '#fff',
+              width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
+              display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
+              border: inCart ? '1.5px solid #1a1a1a' : '1.5px solid #ddd',
+              background: inCart ? '#1a1a1a' : '#fff',
               }">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="inCart ? '#fff' : '#999'" stroke-width="2">
-                <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
               </svg>
             </button>
@@ -440,13 +451,17 @@ window.CustomerModal = {
     role="dialog" aria-modal="true">
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:38px;height:38px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">👤</div>
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">
+          👤
+        </div>
         <div>
           <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">주문자 정보</div>
           <div v-if="order" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">{{ order.orderId }}</div>
         </div>
       </div>
-      <button type="button" @click="$emit('close')" aria-label="닫기" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">✕</button>
+      <button type="button" @click="$emit('close')" aria-label="닫기" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">
+        ✕
+      </button>
     </div>
     <div v-if="user" style="padding:18px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;">
       <div style="background:var(--bg-base);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
@@ -471,14 +486,17 @@ window.CustomerModal = {
           :style="i>0?'border-top:1px dashed var(--border);padding-top:6px;margin-top:3px;':''">
           <span style="padding:1px 7px;border-radius:4px;font-size:0.72rem;font-weight:700;"
             :style="pd.type==='계좌이체'||pd.type==='계좌환불'?'background:#dcfce7;color:#16a34a;':pd.type==='캐쉬'?'background:#fef3c7;color:#d97706;':'background:#dbeafe;color:#1d4ed8;'">
-            {{ pd.type }}</span>
+            {{ pd.type }}
+          </span>
           <span style="font-weight:600;color:var(--text-primary);font-size:0.85rem;">{{ pd.amount.toLocaleString() }}원</span>
           <span v-if="pd.account" style="color:var(--text-muted);font-size:0.78rem;">{{ pd.account }}</span>
         </div>
       </div>
     </div>
     <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-      <button type="button" @click="$emit('close')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">닫기</button>
+      <button type="button" @click="$emit('close')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
+        닫기
+      </button>
     </div>
   </div>
 </fo-modal>

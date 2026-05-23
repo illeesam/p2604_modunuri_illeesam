@@ -81,22 +81,21 @@ window.MyCache = {
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
-
   <MyDateFilter @search="onSearch" />
-
   <!-- -- 보유 캐쉬 ---------------------------------------------------------- -->
   <div style="background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:var(--radius);padding:24px;margin-bottom:20px;color:#1a1a1a;">
     <div style="font-size:0.85rem;font-weight:600;opacity:0.7;">보유 캐쉬</div>
-    <div style="font-size:2.2rem;font-weight:900;margin-top:4px;">{{ cashBalance.toLocaleString() }}<span style="font-size:1rem;margin-left:4px;">원</span></div>
+    <div style="font-size:2.2rem;font-weight:900;margin-top:4px;">
+      {{ cashBalance.toLocaleString() }}
+      <span style="font-size:1rem;margin-left:4px;">원</span>
+    </div>
   </div>
-
   <!-- -- 충전 입력 ---------------------------------------------------------- -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
     <input v-model="chargeAmount" type="number" placeholder="충전 금액 입력 (최소 1,000원)" @keyup.enter="addCash"
       style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;">
     <button @click="addCash" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">충전하기</button>
   </div>
-
   <!-- -- 빠른 금액 버튼 ------------------------------------------------------- -->
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
     <button v-for="amt in [5000,10000,30000,50000]" :key="amt" @click="chargeAmount=amt"
@@ -104,10 +103,8 @@ window.MyCache = {
       +{{ amt.toLocaleString() }}원
     </button>
   </div>
-
   <PagerHeader :total="cfDateFilteredHistory.length" :pager="pager" />
   <div v-if="!cfDateFilteredHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">캐쉬 내역이 없습니다.</div>
-
   <div v-for="h in paginate(cfDateFilteredHistory, pager)" :key="h.cashId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
     <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"
@@ -122,7 +119,7 @@ window.MyCache = {
             style="background:none;border:none;padding:0;cursor:pointer;font-size:0.88rem;font-weight:700;color:var(--blue);text-decoration:underline;text-underline-offset:2px;">
             {{ myStore.extractOrderId(h.desc) }}
           </button>
-          <span style="font-weight:400;color:var(--text-secondary);"> {{ h.desc.replace(myStore.extractOrderId(h.desc), '').trim() }}</span>
+          <span style="font-weight:400;color:var(--text-secondary);">{{ h.desc.replace(myStore.extractOrderId(h.desc), '').trim() }}</span>
         </template>
         <template v-else>{{ h.desc }}</template>
       </div>
@@ -180,15 +177,12 @@ window.MyCache = {
       <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ h.balance.toLocaleString() }}원</div>
     </div>
   </div>
-
   <Pagination :total="cashHistory.length" :pager="pager" />
-
   <Teleport to="body">
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
-  </Teleport>
-
+  </teleport>
 </fo-my-layout>
-  `,
+`,
   components: {
     FoMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,

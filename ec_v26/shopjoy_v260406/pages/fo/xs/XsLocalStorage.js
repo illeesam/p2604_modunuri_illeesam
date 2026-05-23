@@ -162,7 +162,6 @@ window.XsLocalStorage = {
     <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">localStorage 정보 관리</h1>
     <p style="margin: 0; font-size: 13px; color: #666;">브라우저 로컬 저장소 데이터 조회 및 편집</p>
   </div>
-
   <!-- -- 검색 및 액션 바 ------------------------------------------------------ -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px; align-items: flex-end;">
@@ -175,12 +174,15 @@ window.XsLocalStorage = {
           style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; background: white; color: #333; transition: all 0.2s;">
       </div>
       <div style="display: flex; gap: 8px;">
-        <button @click="loadStorageData" style="padding: 10px 16px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">🔄 새로고침</button>
-        <button @click="clearAllStorage" style="padding: 10px 16px; font-size: 12px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">🗑️ 전체 삭제</button>
+        <button @click="loadStorageData" style="padding: 10px 16px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
+          🔄 새로고침
+        </button>
+        <button @click="clearAllStorage" style="padding: 10px 16px; font-size: 12px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
+          🗑️ 전체 삭제
+        </button>
       </div>
     </div>
   </div>
-
   <!-- -- 테이블 ------------------------------------------------------------ -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
     <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: uiState.isResizing ? 'col-resize' : 'auto' }">
@@ -196,12 +198,16 @@ window.XsLocalStorage = {
                 <div style="width: 1px; height: 80%; background: #ff6b9d; opacity: 0; transition: opacity 0.2s;"></div>
               </div>
             </th>
-            <th :style="{ width: (100 - 25 - uiStateGlobal.valueColWidth) + '%', textAlign: 'center', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666' }">작업</th>
+            <th :style="{ width: (100 - 25 - uiStateGlobal.valueColWidth) + '%', textAlign: 'center', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666' }">
+              작업
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in cfFilteredData" :key="item.key" style="border-bottom: 1px solid #e5e7eb; transition: all 0.2s;">
-            <td style="padding: 12px 16px; word-break: break-all; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: #333;">{{ item.key }}</td>
+            <td style="padding: 12px 16px; word-break: break-all; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; color: #333;">
+              {{ item.key }}
+            </td>
             <td style="padding: 12px 16px;">
               <template v-if="uiStateGlobal.editingKey === item.key">
                 <textarea
@@ -210,18 +216,30 @@ window.XsLocalStorage = {
                   style="width: 100%; height: 80px; padding: 10px; border: 1.5px solid #ff6b9d; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; resize: vertical; color: #333;">
                 </textarea>
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
-                  <button @click="saveEdit(item.key)" style="flex: 1; padding: 6px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">저장</button>
-                  <button @click="cancelEdit" style="flex: 1; padding: 6px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">취소</button>
+                  <button @click="saveEdit(item.key)" style="flex: 1; padding: 6px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
+                    저장
+                  </button>
+                  <button @click="cancelEdit" style="flex: 1; padding: 6px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+                    취소
+                  </button>
                 </div>
               </template>
               <template v-else>
-                <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; border: 1px solid #e5e7eb; color: #333;">{{ parseValue(item.value) }}</div>
+                <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; border: 1px solid #e5e7eb; color: #333;">
+                  {{ parseValue(item.value) }}
+                </div>
               </template>
             </td>
             <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
-              <button @click="copyValue(item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">복사</button>
-              <button v-if="uiStateGlobal.editingKey !== item.key" @click="startEdit(item.key, item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">수정</button>
-              <button @click="handleDelete(item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">삭제</button>
+              <button @click="copyValue(item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
+                복사
+              </button>
+              <button v-if="uiStateGlobal.editingKey !== item.key" @click="startEdit(item.key, item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
+                수정
+              </button>
+              <button @click="handleDelete(item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+                삭제
+              </button>
             </td>
           </tr>
           <tr v-if="cfFilteredData.length === 0">
@@ -230,12 +248,13 @@ window.XsLocalStorage = {
         </tbody>
       </table>
     </div>
-
     <!-- -- 푸터: 항목 수 ----------------------------------------------------- -->
     <div style="padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fafafa; font-size: 12px; color: #666;">
-      총 <strong>{{ cfFilteredData.length }}</strong>개 항목
+      총
+      <strong>{{ cfFilteredData.length }}</strong>
+      개 항목
     </div>
   </div>
 </div>
-  `
+`
 };

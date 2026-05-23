@@ -1317,19 +1317,35 @@ window.PdProdDtl = {
       <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.prodId }}</span>
     </span>
     <button v-if="!cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
-      title="사용자 페이스에서 상품 상세 미리보기" @click="onPreview">👁 미리보기</button>
+      title="사용자 페이스에서 상품 상세 미리보기" @click="onPreview">
+      👁 미리보기
+    </button>
   </div>
-
   <!-- -- 탭바 ------------------------------------------------------------- -->
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="tabMode2!=='tab'" @click="topTab='info'">📋 기본정보</button>
       <button class="tab-btn" :class="{active:topTab==='detail'}"  :disabled="tabMode2!=='tab'" @click="topTab='detail'">📝 상세설정</button>
-      <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="tabMode2!=='tab'" @click="topTab='content'">📄 상품설명 <span class="tab-count">{{ tabData.content.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="tabMode2!=='tab'" @click="topTab='option'">⚙ 옵션설정 <span class="tab-count">{{ tabData.opts.groups.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="tabMode2!=='tab'" @click="topTab='price'">💰 옵션(가격/재고) <span class="tab-count">{{ tabData.skus.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="tabMode2!=='tab'" @click="topTab='image'">🖼 이미지 <span class="tab-count">{{ tabData.images.length }}</span></button>
-      <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="tabMode2!=='tab'" @click="topTab='related'">🔗 연관상품 <span class="tab-count">{{ tabData.rels.length }}</span></button>
+      <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="tabMode2!=='tab'" @click="topTab='content'">
+        📄 상품설명
+        <span class="tab-count">{{ tabData.content.length }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="tabMode2!=='tab'" @click="topTab='option'">
+        ⚙ 옵션설정
+        <span class="tab-count">{{ tabData.opts.groups.length }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="tabMode2!=='tab'" @click="topTab='price'">
+        💰 옵션(가격/재고)
+        <span class="tab-count">{{ tabData.skus.length }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="tabMode2!=='tab'" @click="topTab='image'">
+        🖼 이미지
+        <span class="tab-count">{{ tabData.images.length }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="tabMode2!=='tab'" @click="topTab='related'">
+        🔗 연관상품
+        <span class="tab-count">{{ tabData.rels.length }}</span>
+      </button>
     </div>
     <div class="tab-modes">
       <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="tabMode2='tab'"  title="탭">📑</button>
@@ -1340,190 +1356,193 @@ window.PdProdDtl = {
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
-  <!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
        📋 기본정보  (pd_prod 주요 필드)
   ══════════════════════════════════════ -->
-  <div class="card" v-show="showTab('info')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-
-    <!-- 상품명 / 상품코드 (BoFormArea 자동 렌더) -->
-    <bo-form-area :columns="prodNameFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
-
-    <!-- 카테고리 / 브랜드 (BoFormArea 자동 렌더) -->
-    <bo-form-area :columns="categoryBrandFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
-      <template #categories>
-        <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
-          <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
-          <div v-for="(cat,idx) in prodCategories" :key="cat?.categoryId"
-               draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
-               :style="catDragoverIdx===idx?'opacity:0.5;':''"
-               style="display:flex;align-items:center;gap:4px;padding:2px 0;">
-            <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0;">≡</span>
-            <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0;">대표</span>
-            <span style="font-size:12px;color:#64748b;flex-shrink:0;">
-              <span v-if="cat.depth>=1" style="font-size:10px;">{{ ['','대','중','소'][cat.depth]||cat.depth }}▸</span>
-            </span>
-            <span style="font-size:13px;flex:1;">{{ cat.categoryNm }}</span>
-            <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">✕</button>
+    <div class="card" v-show="showTab('info')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <!-- 상품명 / 상품코드 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="prodNameFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+      <!-- 카테고리 / 브랜드 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="categoryBrandFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        <template #categories>
+          <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
+            <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
+            <div v-for="(cat,idx) in prodCategories" :key="cat?.categoryId"
+              draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
+              :style="catDragoverIdx===idx?'opacity:0.5;':''"
+              style="display:flex;align-items:center;gap:4px;padding:2px 0;">
+              <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0;">≡</span>
+              <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0;">
+                대표
+              </span>
+              <span style="font-size:12px;color:#64748b;flex-shrink:0;">
+                <span v-if="cat.depth>=1" style="font-size:10px;">{{ ['','대','중','소'][cat.depth]||cat.depth }}▸</span>
+              </span>
+              <span style="font-size:13px;flex:1;">{{ cat.categoryNm }}</span>
+              <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">
+                ✕
+              </button>
+            </div>
+            <button type="button" @click="catPickerOpen=true"
+              style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%;">
+              + 카테고리 추가
+            </button>
           </div>
-          <button type="button" @click="catPickerOpen=true"
-                  style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%;">+ 카테고리 추가</button>
-        </div>
-      </template>
-      <template #brand>
-        <select class="form-control" v-model="form.brandId">
-          <option value="">-- 선택 --</option>
-          <option v-for="b in ([]||[])" :key="b.brandId||b.id" :value="b.brandId||b.id">{{ b.brandNm||b.name }}</option>
-        </select>
-      </template>
-    </bo-form-area>
-
-    <!-- -- 카테고리 피커 모달 --------------------------------------------------- -->
-    <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
-                   @select="addCategory" @close="catPickerOpen=false" />
-
-    <!-- 업체 / 상품유형 (BoFormArea 자동 렌더) -->
-    <bo-form-area :columns="vendorTypeFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
-      <template #vendor>
-        <select class="form-control" v-model="form.vendorId">
-          <option value="">-- 선택 --</option>
-          <option v-for="v in ([]||[])" :key="v.vendorId||v.id" :value="v.vendorId||v.id">{{ v.vendorNm||v.name }}</option>
-        </select>
-      </template>
-    </bo-form-area>
-
-    <!-- 담당MD / 배송템플릿 (BoFormArea 자동 렌더) -->
-    <bo-form-area :columns="mdDlivFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
-      <template #mdUser>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
-            style="flex:1;background:#fafafa;cursor:pointer;" @click="openMdModal" />
-          <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;">선택</button>
-          <button v-if="form.mdUserId" class="btn btn-xs btn-danger" type="button" @click="form.mdUserId=''" style="flex-shrink:0;" title="초기화">✕</button>
-        </div>
-      </template>
-      <template #dlivTmplt>
-        <select class="form-control" v-model="form.dlivTmpltId">
-          <option value="">-- 선택 --</option>
-          <option v-for="t in ([]||[])" :key="t?.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
-        </select>
-      </template>
-    </bo-form-area>
-
-    <!-- -- 담당MD 선택 모달 --------------------------------------------------- -->
-    <teleport to="body">
-      <div v-if="mdModalOpen"
-        style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
-        @click.self="mdModalOpen=false">
-        <div class="modal-box" style="width:480px;max-height:560px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-          <!-- -- 헤더 ----------------------------------------------------- -->
-          <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
-            <span style="font-size:15px;font-weight:700;">담당MD 선택</span>
-            <button @click="mdModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;" class="modal-close-btn">✕</button>
+        </template>
+        <template #brand>
+          <select class="form-control" v-model="form.brandId">
+            <option value="">-- 선택 --</option>
+            <option v-for="b in ([]||[])" :key="b.brandId||b.id" :value="b.brandId||b.id">{{ b.brandNm||b.name }}</option>
+          </select>
+        </template>
+      </bo-form-area>
+      <!-- -- 카테고리 피커 모달 --------------------------------------------------- -->
+      <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
+        @select="addCategory" @close="catPickerOpen=false" />
+      <!-- 업체 / 상품유형 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="vendorTypeFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        <template #vendor>
+          <select class="form-control" v-model="form.vendorId">
+            <option value="">-- 선택 --</option>
+            <option v-for="v in ([]||[])" :key="v.vendorId||v.id" :value="v.vendorId||v.id">{{ v.vendorNm||v.name }}</option>
+          </select>
+        </template>
+      </bo-form-area>
+      <!-- 담당MD / 배송템플릿 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="mdDlivFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        <template #mdUser>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
+              style="flex:1;background:#fafafa;cursor:pointer;" @click="openMdModal" />
+            <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;">선택</button>
+            <button v-if="form.mdUserId" class="btn btn-xs btn-danger" type="button" @click="form.mdUserId=''" style="flex-shrink:0;" title="초기화">
+              ✕
+            </button>
           </div>
-          <!-- -- 검색 ----------------------------------------------------- -->
-          <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-            <bo-multi-check-select
-              v-model="uiState.mdSearchType"
-              :options="[
+        </template>
+        <template #dlivTmplt>
+          <select class="form-control" v-model="form.dlivTmpltId">
+            <option value="">-- 선택 --</option>
+            <option v-for="t in ([]||[])" :key="t?.dlivTmpltId" :value="t.dlivTmpltId">{{ t.dlivTmpltNm }}</option>
+          </select>
+        </template>
+      </bo-form-area>
+      <!-- -- 담당MD 선택 모달 --------------------------------------------------- -->
+      <teleport to="body">
+        <div v-if="mdModalOpen"
+          style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
+          @click.self="mdModalOpen=false">
+          <div class="modal-box" style="width:480px;max-height:560px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+            <!-- -- 헤더 ----------------------------------------------------- -->
+            <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
+              <span style="font-size:15px;font-weight:700;">담당MD 선택</span>
+              <button @click="mdModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;" class="modal-close-btn">
+                ✕
+              </button>
+            </div>
+            <!-- -- 검색 ----------------------------------------------------- -->
+            <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
+              <bo-multi-check-select
+                v-model="uiState.mdSearchType"
+                :options="[
                 { value: 'userNm', label: '이름' },
                 { value: 'deptId', label: '부서' },
                 { value: 'roleId', label: '역할' },
-              ]"
-              placeholder="검색대상 전체"
-              all-label="전체 선택"
-              min-width="160px" />
-            <input class="form-control" v-model="uiState.mdSearch" placeholder="검색어 입력" autofocus style="font-size:13px;margin-top:6px;" />
-          </div>
-          <!-- -- 목록 ----------------------------------------------------- -->
-          <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-            <bo-grid bare :columns="mdUserGridColumns" :rows="cfMdUserListFiltered" row-key="userId"
-              :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser">
-            </bo-grid>
-          </div>
-          <!-- -- 푸터 ----------------------------------------------------- -->
-          <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
-            <button class="btn btn-secondary btn-sm" @click="mdModalOpen=false">닫기</button>
+                ]"
+                placeholder="검색대상 전체"
+                all-label="전체 선택"
+                min-width="160px" />
+              <input class="form-control" v-model="uiState.mdSearch" placeholder="검색어 입력" autofocus style="font-size:13px;margin-top:6px;" />
+            </div>
+            <!-- -- 목록 ----------------------------------------------------- -->
+            <div style="overflow-y:auto;flex:1;padding:8px 12px;">
+              <bo-grid bare :columns="mdUserGridColumns" :rows="cfMdUserListFiltered" row-key="userId"
+                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser"></bo-grid>
+            </div>
+            <!-- -- 푸터 ----------------------------------------------------- -->
+            <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
+              <button class="btn btn-secondary btn-sm" @click="mdModalOpen=false">닫기</button>
+            </div>
           </div>
         </div>
+      </teleport>
+      <!-- 상태 / 미판매메시지 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="prodStatusFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+      <!-- 판매기간 (BoFormArea 자동 렌더, BoDateTimePicker slot) -->
+      <bo-form-area :columns="salePeriodFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        <template #saleStart>
+          <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
+        </template>
+        <template #saleEnd>
+          <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
+        </template>
+      </bo-form-area>
+      <!-- 무게 / 사이즈 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="prodSizeFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+      <!-- -- 체크박스 그룹 ------------------------------------------------------ -->
+      <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />
+          신상품
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.isBest==='Y'" @change="form.isBest=$event.target.checked?'Y':'N'" />
+          베스트
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.adltYn==='Y'" @change="form.adltYn=$event.target.checked?'Y':'N'" />
+          성인상품
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.sameDayDlivYn==='Y'" @change="form.sameDayDlivYn=$event.target.checked?'Y':'N'" />
+          당일배송
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.soldOutYn==='Y'" @change="form.soldOutYn=$event.target.checked?'Y':'N'" style="accent-color:#e8587a;" />
+          <span style="color:#e8587a;">강제품절</span>
+        </label>
       </div>
-    </teleport>
-
-    <!-- 상태 / 미판매메시지 (BoFormArea 자동 렌더) -->
-    <bo-form-area :columns="prodStatusFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
-
-    <!-- 판매기간 (BoFormArea 자동 렌더, BoDateTimePicker slot) -->
-    <bo-form-area :columns="salePeriodFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
-      <template #saleStart>
-        <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
-      </template>
-      <template #saleEnd>
-        <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
-      </template>
-    </bo-form-area>
-
-    <!-- 무게 / 사이즈 (BoFormArea 자동 렌더) -->
-    <bo-form-area :columns="prodSizeFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
-
-    <!-- -- 체크박스 그룹 ------------------------------------------------------ -->
-    <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />신상품
-      </label>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.isBest==='Y'" @change="form.isBest=$event.target.checked?'Y':'N'" />베스트
-      </label>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.adltYn==='Y'" @change="form.adltYn=$event.target.checked?'Y':'N'" />성인상품
-      </label>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.sameDayDlivYn==='Y'" @change="form.sameDayDlivYn=$event.target.checked?'Y':'N'" />당일배송
-      </label>
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.soldOutYn==='Y'" @change="form.soldOutYn=$event.target.checked?'Y':'N'" style="accent-color:#e8587a;" />
-        <span style="color:#e8587a;">강제품절</span>
-      </label>
+      <div class="form-actions" v-if="!cfDtlMode">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
+      </div>
     </div>
-
-    <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
        ⚙ 옵션설정  (pd_prod_opt / pd_prod_opt_item / pd_prod_sku)
   ══════════════════════════════════════ -->
-  <div class="card" v-show="showTab('option')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
-
-    <!-- -- 옵션 사용 토글 + PROD_OPT_CATEGORY 3단 트리 선택 -------------------------- -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:12px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
-
-      <!-- -- 옵션 사용 체크박스 (disabled — 옵션 카테고리 선택 시 자동 체크) --- -->
-      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;flex-shrink:0;cursor:default;">
-        <input type="checkbox" :checked="!!prodOptCategoryTypeCd" disabled style="width:16px;height:16px;cursor:not-allowed;opacity:0.6;" />
-        옵션 사용
-      </label>
-      <!-- -- 도움말 아이콘 ----------------------------------------------- -->
-      <span @click="openHelp('prodOpt')"
-        style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;cursor:pointer;user-select:none;flex-shrink:0;"
-        title="옵션설정 도움말">?</span>
-      <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
-
-      <!-- -- STEP 1: PROD_OPT_CATEGORY level=1 (옵션 카테고리) 선택 -------------------- -->
-      <div style="display:flex;align-items:flex-start;gap:6px;">
+    <div class="card" v-show="showTab('option')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
+      <!-- -- 옵션 사용 토글 + PROD_OPT_CATEGORY 3단 트리 선택 -------------------------- -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:12px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
+        <!-- -- 옵션 사용 체크박스 (disabled — 옵션 카테고리 선택 시 자동 체크) --- -->
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;flex-shrink:0;cursor:default;">
+          <input type="checkbox" :checked="!!prodOptCategoryTypeCd" disabled style="width:16px;height:16px;cursor:not-allowed;opacity:0.6;" />
+          옵션 사용
+        </label>
+        <!-- -- 도움말 아이콘 ----------------------------------------------- -->
+        <span @click="openHelp('prodOpt')"
+          style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;cursor:pointer;user-select:none;flex-shrink:0;"
+          title="옵션설정 도움말">
+          ?
+        </span>
+        <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
+        <!-- -- STEP 1: PROD_OPT_CATEGORY level=1 (옵션 카테고리) 선택 -------------------- -->
+        <div style="display:flex;align-items:flex-start;gap:6px;">
           <div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;flex-shrink:0;margin-top:6px;">
             <span style="font-size:12px;color:#555;font-weight:600;">옵션 카테고리</span>
-            <code style="font-size:10px;color:#6a1b9a;background:#f3e5f5;padding:1px 4px;border-radius:3px;font-family:monospace;border:1px solid #e1bee7;">PROD_OPT_CATEGORY</code>
+            <code style="font-size:10px;color:#6a1b9a;background:#f3e5f5;padding:1px 4px;border-radius:3px;font-family:monospace;border:1px solid #e1bee7;">
+              PROD_OPT_CATEGORY
+            </code>
           </div>
           <div style="display:flex;flex-direction:column;gap:2px;">
             <select class="form-control" v-model="prodOptCategoryTypeCd"
@@ -1532,14 +1551,17 @@ window.PdProdDtl = {
               <option value="">-- 옵션 카테고리 선택 --</option>
               <option v-for="c in cfOptTypeLevel1Codes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
             </select>
-            <code v-if="prodOptCategoryTypeCd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">{{ prodOptCategoryTypeCd }}</code>
+            <code v-if="prodOptCategoryTypeCd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">
+              {{ prodOptCategoryTypeCd }}
+            </code>
           </div>
           <button type="button" class="btn btn-xs"
             style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:13px;padding:2px 8px;margin-top:4px;"
             title="옵션 카테고리 공통코드 미리보기 (PROD_OPT_CATEGORY)"
-            @click="openCodeGrpModal('PROD_OPT_CATEGORY', '옵션 카테고리 공통코드')">📋</button>
+            @click="openCodeGrpModal('PROD_OPT_CATEGORY', '옵션 카테고리 공통코드')">
+            📋
+          </button>
         </div>
-
         <!-- -- STEP 2: 옵션 차원별 유형 선택 — 1레벨 선택 후 활성화 ----------- -->
         <template v-if="prodOptCategoryTypeCd && optGroups.length>0">
           <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
@@ -1553,756 +1575,817 @@ window.PdProdDtl = {
                 <option value="">-- 유형선택 --</option>
                 <option v-for="c in cfOptTypeCodes" :key="c?.codeId" :value="c.codeValue">{{ c.codeLabel }}</option>
               </select>
-              <code v-if="grp.typeCd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">{{ grp.typeCd }}</code>
+              <code v-if="grp.typeCd" style="font-size:10px;color:#1565c0;background:#f5f5f7;padding:1px 4px;border-radius:3px;font-family:monospace;align-self:flex-start;">
+                {{ grp.typeCd }}
+              </code>
             </div>
             <span v-if="grp.typeCd" style="font-size:11px;color:#1677ff;margin-top:6px;">{{ getOptValCodes(grp.typeCd).length }}개 프리셋</span>
           </div>
         </template>
         <span v-if="!prodOptCategoryTypeCd" style="font-size:12px;color:#f5a623;">← 옵션 카테고리를 먼저 선택하세요</span>
         <span v-else-if="optGroups.length===0" style="font-size:12px;color:#1677ff;">카테고리 선택 후 + 차원 추가로 1단·2단 설정</span>
-    </div>
-
-    <!-- -- 옵션 미사용 안내 ---------------------------------------------------- -->
-    <template v-if="!prodOptCategoryTypeCd">
-      <div style="padding:10px 14px;background:#f9f0ff;border-radius:8px;border:1px solid #d3adf7;font-size:12px;color:#531dab;margin-bottom:8px;">
-        💡 옵션 카테고리를 선택하면 옵션 설정이 활성화됩니다.
       </div>
-    </template>
-
-    <!-- -- 옵션 사용 -------------------------------------------------------- -->
-    <template v-else>
-
-      <!-- -- 옵션 차원 헤더 --------------------------------------------------- -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">
-          옵션 차원 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_opt, 최대 2단)</span>
+      <!-- -- 옵션 미사용 안내 ---------------------------------------------------- -->
+      <template v-if="!prodOptCategoryTypeCd">
+        <div style="padding:10px 14px;background:#f9f0ff;border-radius:8px;border:1px solid #d3adf7;font-size:12px;color:#531dab;margin-bottom:8px;">
+          💡 옵션 카테고리를 선택하면 옵션 설정이 활성화됩니다.
         </div>
-        <button class="btn btn-sm btn-secondary" @click="addOptGroup" :disabled="optGroups.length>=2">+ 차원 추가</button>
-      </div>
-
-      <!-- -- 차원별 블록 ----------------------------------------------------- -->
-      <div v-for="(grp, gi) in optGroups" :key="grp?._id"
-        style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:16px;background:#fafafa;">
-
-        <!-- -- 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) ------------------------ -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-          <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
-          <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ safeFind(cfOptTypeAllCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}</span>
-          <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
-            style="flex:1;min-width:100px;font-size:13px;" />
-          <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
-            <option v-for="c in cfOptInputTypeCodes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-          </select>
-          <button class="btn btn-xs btn-danger" @click="removeOptGroup(gi)">삭제</button>
-        </div>
-
-        <!-- -- 옵션 값 테이블 (pd_prod_opt_item) ------------------------------ -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <div style="font-size:11px;color:#888;">
-            옵션 값 목록 (pd_prod_opt_item)
-            <span v-if="grp.typeCd && getOptValCodes(grp.typeCd).length>0" style="color:#1677ff;margin-left:6px;">
-              공통코드 opt_val: <strong>{{ getOptValCodes(grp.typeCd).length }}</strong>개 프리셋 사용 가능
-            </span>
-            <span v-else-if="grp.typeCd==='CUSTOM'||!grp.typeCd" style="color:#888;margin-left:6px;">직접 입력 모드 — 프리셋 없음</span>
+      </template>
+      <!-- -- 옵션 사용 -------------------------------------------------------- -->
+      <template v-else>
+        <!-- -- 옵션 차원 헤더 --------------------------------------------------- -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;">
+            옵션 차원
+            <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_opt, 최대 2단)</span>
           </div>
-          <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)" style="flex-shrink:0;">+ 값 추가</button>
+          <button class="btn btn-sm btn-secondary" @click="addOptGroup" :disabled="optGroups.length>=2">+ 차원 추가</button>
         </div>
-        <!-- 옵션 값 스크롤 컨테이너 — 1단=5행, 2단=10행 정도 보이고 그 이상은 세로 스크롤 -->
-        <div :style="'max-height:'+(grp.level===1?'200px':'340px')+';overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;margin-bottom:6px;background:#fff;'">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead style="position:sticky;top:0;background:#f5f5f5;z-index:1;">
-            <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
-              <th style="width:18px;padding:4px 2px;"></th>
-              <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
-              <th v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">상위옵션값</th>
-              <th style="padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">표시명 (opt_nm)</th>
-              <th style="width:234px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (opt_val)</th>
-              <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">스타일 (opt_style)</th>
-              <th style="width:221px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">공통코드ID (opt_val_code_id)</th>
-              <th style="width:36px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">사용</th>
-              <th style="width:30px;padding:4px 4px;text-align:center;"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, ii) in grp.items" :key="item?._id"
-              draggable="true"
-              @dragstart="onOptItemDragStart(grp, ii)"
-              @dragover.prevent="onOptItemDragOver(grp, ii)"
-              @drop.prevent="onOptItemDrop(grp)"
-              @dragend="dragOptGrpId=null;dragOptItemIdx=null;dragoverOptItemIdx=null"
-              style="border-bottom:1px solid #f0f0f0;transition:background 0.1s;"
-              :style="dragOptGrpId===grp._id && dragoverOptItemIdx===ii && dragOptItemIdx!==ii
-                ? 'background:#dbeafe;'
-                : (ii%2===1 ? 'background:#fafafa;' : '')">
-
-              <!-- -- 햄버거 핸들 --------------------------------------------- -->
-              <td style="padding:2px 2px;text-align:center;cursor:grab;color:#ccc;font-size:14px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">≡</td>
-              <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
-
-              <!-- -- 2단: 상위 옵션값 ----------------------------------------- -->
-              <td v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="padding:2px 4px;">
-                <select v-model="item.parentOptItemId"
-                  style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
-                  <option value="">전체 공통</option>
-                  <option v-for="p1 in (optGroups[0]?.items||[])" :key="p1?._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
-                </select>
-              </td>
-
-              <!-- -- 표시명 ------------------------------------------------ -->
-              <td style="padding:2px 4px;">
-                <input v-model="item.nm" placeholder="예: 블랙"
-                  style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;"
-                  @blur="generateSkus" />
-              </td>
-
-              <!-- -- 저장값 ------------------------------------------------ -->
-              <td style="padding:2px 4px;">
-                <input v-model="item.val"
-                  :placeholder="item.valCodeId ? '자동입력' : 'MY_VAL'"
-                  style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;"
-                  @blur="generateSkus" />
-              </td>
-
-              <!-- -- 스타일 (opt_style = 컬러 hex / 아이콘 클래스 등) ---------- -->
-              <td style="padding:2px 4px;">
-                <div style="display:flex;gap:4px;align-items:center;">
-                  <span v-if="item.optStyle && item.optStyle.startsWith('#')"
-                    :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+item.optStyle+';'"></span>
-                  <input v-model="item.optStyle"
-                    placeholder="#000000 / fa-icon"
-                    style="flex:1;min-width:0;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;font-family:monospace;" />
-                </div>
-              </td>
-
-              <!-- -- 공통코드ID (opt_val_code_id = sy_code.code_id) ----------- -->
-              <td style="padding:2px 4px;">
-                <select v-model="item.valCodeId"
-                  style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;"
-                  @change="() => { const found = getOptValCodes(grp.typeCd).find(c => c.codeId === item.valCodeId); if (found) { item.val = found.codeValue; if (!item.nm) item.nm = found.codeLabel; if (found.codeOpt1) item.optStyle = found.codeOpt1; generateSkus(); } else { item.val = ''; } }">
-                  <option value="">-- 직접입력 --</option>
-                  <option v-for="c in getOptValCodes(grp.typeCd)" :key="c?.codeId" :value="c.codeId">{{ c.codeLabel }} ({{ c.codeValue }})</option>
-                </select>
-              </td>
-
-              <td style="padding:2px 4px;text-align:center;">
-                <input type="checkbox" :checked="item.useYn==='Y'"
-                  @change="item.useYn=$event.target.checked?'Y':'N'; generateSkus()"
-                  style="width:14px;height:14px;" />
-              </td>
-              <td style="padding:2px 4px;text-align:center;">
-                <button style="background:#ff4d4f;color:#fff;border:none;border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1;padding:0;"
-                  @click="removeOptItem(grp, ii)">✕</button>
-              </td>
-            </tr>
-            <tr v-if="grp.items.length===0">
-              <td :colspan="grp.level===2&&safeFirst(optGroups)?.items.length>0?9:8"
-                style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">값을 추가해주세요.</td>
-            </tr>
-          </tbody>
-        </table>
-        </div><!-- /옵션 값 스크롤 컨테이너 -->
+        <!-- -- 차원별 블록 ----------------------------------------------------- -->
+        <div v-for="(grp, gi) in optGroups" :key="grp?._id"
+          style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:16px;background:#fafafa;">
+          <!-- -- 차원 설정 행 (typeCd는 위 "옵션사용" 행에서 관리) ------------------------ -->
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+            <span class="badge badge-blue" style="flex-shrink:0;font-size:12px;">{{ grp.level }}단</span>
+            <span v-if="grp.typeCd" class="badge badge-gray" style="font-size:11px;flex-shrink:0;">
+              {{ safeFind(cfOptTypeAllCodes, c=>c.codeValue===grp.typeCd)?.codeLabel||grp.typeCd }}
+            </span>
+            <input class="form-control" v-model="grp.grpNm" placeholder="옵션명 (예: 색상)"
+              style="flex:1;min-width:100px;font-size:13px;" />
+            <select class="form-control" v-model="grp.inputTypeCd" style="width:160px;font-size:12px;">
+              <option v-for="c in cfOptInputTypeCodes" :key="c?.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+            </select>
+            <button class="btn btn-xs btn-danger" @click="removeOptGroup(gi)">삭제</button>
+          </div>
+          <!-- -- 옵션 값 테이블 (pd_prod_opt_item) ------------------------------ -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="font-size:11px;color:#888;">
+              옵션 값 목록 (pd_prod_opt_item)
+              <span v-if="grp.typeCd && getOptValCodes(grp.typeCd).length>0" style="color:#1677ff;margin-left:6px;">
+                공통코드 opt_val:
+                <strong>{{ getOptValCodes(grp.typeCd).length }}</strong>
+                개 프리셋 사용 가능
+              </span>
+              <span v-else-if="grp.typeCd==='CUSTOM'||!grp.typeCd" style="color:#888;margin-left:6px;">직접 입력 모드 — 프리셋 없음</span>
+            </div>
+            <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)" style="flex-shrink:0;">+ 값 추가</button>
+          </div>
+          <!-- 옵션 값 스크롤 컨테이너 — 1단=5행, 2단=10행 정도 보이고 그 이상은 세로 스크롤 -->
+          <div :style="'max-height:'+(grp.level===1?'200px':'340px')+';overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;margin-bottom:6px;background:#fff;'">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead style="position:sticky;top:0;background:#f5f5f5;z-index:1;">
+                <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
+                  <th style="width:18px;padding:4px 2px;"></th>
+                  <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
+                  <th v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">
+                    상위옵션값
+                  </th>
+                  <th style="padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">표시명 (opt_nm)</th>
+                  <th style="width:234px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">저장값 (opt_val)</th>
+                  <th style="width:170px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">스타일 (opt_style)</th>
+                  <th style="width:221px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">
+                    공통코드ID (opt_val_code_id)
+                  </th>
+                  <th style="width:36px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">사용</th>
+                  <th style="width:30px;padding:4px 4px;text-align:center;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, ii) in grp.items" :key="item?._id"
+                  draggable="true"
+                  @dragstart="onOptItemDragStart(grp, ii)"
+                  @dragover.prevent="onOptItemDragOver(grp, ii)"
+                  @drop.prevent="onOptItemDrop(grp)"
+                  @dragend="dragOptGrpId=null;dragOptItemIdx=null;dragoverOptItemIdx=null"
+                  style="border-bottom:1px solid #f0f0f0;transition:background 0.1s;"
+                  :style="dragOptGrpId===grp._id && dragoverOptItemIdx===ii && dragOptItemIdx!==ii
+                  ? 'background:#dbeafe;'
+                  : (ii%2===1 ? 'background:#fafafa;' : '')">
+                  <!-- -- 햄버거 핸들 --------------------------------------------- -->
+                  <td style="padding:2px 2px;text-align:center;cursor:grab;color:#ccc;font-size:14px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">
+                    ≡
+                  </td>
+                  <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
+                  <!-- -- 2단: 상위 옵션값 ----------------------------------------- -->
+                  <td v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="padding:2px 4px;">
+                    <select v-model="item.parentOptItemId"
+                      style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
+                      <option value="">전체 공통</option>
+                      <option v-for="p1 in (optGroups[0]?.items||[])" :key="p1?._id" :value="String(p1._id)">{{ p1.nm||'(미입력)' }}</option>
+                    </select>
+                  </td>
+                  <!-- -- 표시명 ------------------------------------------------ -->
+                  <td style="padding:2px 4px;">
+                    <input v-model="item.nm" placeholder="예: 블랙"
+                      style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;"
+                      @blur="generateSkus" />
+                  </td>
+                  <!-- -- 저장값 ------------------------------------------------ -->
+                  <td style="padding:2px 4px;">
+                    <input v-model="item.val"
+                      :placeholder="item.valCodeId ? '자동입력' : 'MY_VAL'"
+                      style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;"
+                      @blur="generateSkus" />
+                  </td>
+                  <!-- -- 스타일 (opt_style = 컬러 hex / 아이콘 클래스 등) ---------- -->
+                  <td style="padding:2px 4px;">
+                    <div style="display:flex;gap:4px;align-items:center;">
+                      <span v-if="item.optStyle && item.optStyle.startsWith('#')"
+                        :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+item.optStyle+';'"></span>
+                      <input v-model="item.optStyle"
+                        placeholder="#000000 / fa-icon"
+                        style="flex:1;min-width:0;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;font-family:monospace;" />
+                    </div>
+                  </td>
+                  <!-- -- 공통코드ID (opt_val_code_id = sy_code.code_id) ----------- -->
+                  <td style="padding:2px 4px;">
+                    <select v-model="item.valCodeId"
+                      style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;"
+                      @change="() => { const found = getOptValCodes(grp.typeCd).find(c => c.codeId === item.valCodeId); if (found) { item.val = found.codeValue; if (!item.nm) item.nm = found.codeLabel; if (found.codeOpt1) item.optStyle = found.codeOpt1; generateSkus(); } else { item.val = ''; } }">
+                      <option value="">-- 직접입력 --</option>
+                      <option v-for="c in getOptValCodes(grp.typeCd)" :key="c?.codeId" :value="c.codeId">
+                        {{ c.codeLabel }} ({{ c.codeValue }})
+                      </option>
+                    </select>
+                  </td>
+                  <td style="padding:2px 4px;text-align:center;">
+                    <input type="checkbox" :checked="item.useYn==='Y'"
+                      @change="item.useYn=$event.target.checked?'Y':'N'; generateSkus()"
+                      style="width:14px;height:14px;" />
+                  </td>
+                  <td style="padding:2px 4px;text-align:center;">
+                    <button style="background:#ff4d4f;color:#fff;border:none;border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1;padding:0;"
+                      @click="removeOptItem(grp, ii)">
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+                <tr v-if="grp.items.length===0">
+                  <td :colspan="grp.level===2&&safeFirst(optGroups)?.items.length>0?9:8"
+                    style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">
+                    값을 추가해주세요.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- /옵션 값 스크롤 컨테이너 -->
+        </div>
+      </template>
+      <div style="padding:10px 14px;background:#e6f4ff;border-radius:8px;border:1px solid #bae0ff;font-size:12px;color:#0958d9;margin-top:8px;">
+        💡 SKU별 가격·재고는
+        <strong>💰 옵션(가격/재고)</strong>
+        탭에서 관리합니다.
       </div>
-
-    </template>
-
-    <div style="padding:10px 14px;background:#e6f4ff;border-radius:8px;border:1px solid #bae0ff;font-size:12px;color:#0958d9;margin-top:8px;">
-      💡 SKU별 가격·재고는 <strong>💰 옵션(가격/재고)</strong> 탭에서 관리합니다.
+      <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
+      </div>
     </div>
-
-    <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
        📄 상품설명  (contentBlocks — 첨부/URL/HTML 블록)
   ══════════════════════════════════════ -->
-  <div class="card" v-show="showTab('content')" style="margin:0;padding:0;overflow:hidden;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="padding:14px 20px;">📄 상품설명</div>
-
-    <!-- -- 상단 툴바: 블록 추가 버튼 ---------------------------------------------- -->
-    <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;">
-      <span style="font-size:13px;font-weight:700;color:#333;margin-right:4px;">상품설명 블록</span>
-      <button class="btn btn-secondary btn-sm" @click="addContentBlock('file')">+ 첨부 이미지</button>
-      <button class="btn btn-secondary btn-sm" @click="addContentBlock('url')">+ URL 이미지</button>
-      <button class="btn btn-secondary btn-sm" @click="addContentBlock('html')">+ HTML 에디터</button>
-      <span style="font-size:12px;color:#aaa;margin-left:4px;">{{ contentBlocks.length }}개 블록 · 좌측 ≡ 드래그로 순서 변경</span>
-    </div>
-
-    <!-- -- 스플릿 패널 (편집 좌 + 미리보기 우) --------------------------------------- -->
-    <div ref="contentSplitRef" style="display:flex;height:520px;overflow:hidden;">
-
-      <!-- -- 좌: 블록 편집 영역 ------------------------------------------------ -->
-      <div :style="{ width: splitPct + '%', overflowY: 'auto', padding: '12px 14px', flexShrink: 0 }">
-        <div v-if="contentBlocks.length === 0"
-          style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px 20px;text-align:center;color:#bbb;font-size:13px;">
-          위 버튼으로 블록을 추가해주세요.
-        </div>
-
-        <!-- -- 블록 리스트 --------------------------------------------------- -->
-        <div v-for="(block, bi) in contentBlocks" :key="block?._id"
-          draggable="true"
-          @dragstart="onBlockDragStart(bi)"
-          @dragover.prevent="onBlockDragOver(bi)"
-          @drop.prevent="onBlockDrop()"
-          @dragend="dragBlockIdx=null;dragoverBlockIdx=null"
-          style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;overflow:hidden;"
-          :style="dragoverBlockIdx===bi && dragBlockIdx!==bi ? 'border-color:#1677ff;background:#e6f4ff;' : ''">
-
-          <!-- -- 블록 헤더 -------------------------------------------------- -->
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9f9f9;border-bottom:1px solid #f0f0f0;">
-            <!-- -- 햄버거 핸들 ----------------------------------------------- -->
-            <span style="cursor:grab;color:#ccc;font-size:16px;user-select:none;letter-spacing:-2px;flex-shrink:0;" title="드래그로 순서 변경">≡</span>
-            <span class="badge" :class="block.type==='file'?'badge-green':block.type==='url'?'badge-blue':'badge-orange'" style="font-size:11px;flex-shrink:0;">
-              {{ block.type==='file' ? '📎 첨부' : block.type==='url' ? '🔗 URL' : '✏ HTML' }}
-            </span>
-            <span style="font-size:12px;color:#888;flex:1;">블록 {{ bi+1 }}</span>
-            <button class="btn btn-xs btn-danger" @click="removeContentBlock(bi)" title="삭제">✕</button>
-          </div>
-
-          <!-- -- 첨부 방식 -------------------------------------------------- -->
-          <div v-if="block.type==='file'" style="padding:12px;">
-            <div v-if="block.content" style="margin-bottom:8px;">
-              <img :src="block.content" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0;" />
-              <div style="font-size:11px;color:#888;margin-top:4px;">{{ block.fileName }}</div>
-            </div>
-            <label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-block;">
-              📎 파일 선택
-              <input type="file" accept="image/*" style="display:none;" @change="onBlockFileChange(block, $event)" />
-            </label>
-            <button v-if="block.content" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">삭제</button>
-          </div>
-
-          <!-- -- URL 방식 ------------------------------------------------- -->
-          <div v-else-if="block.type==='url'" style="padding:12px;">
-            <input class="form-control" v-model="block.content" placeholder="이미지 URL (https://...)" style="font-size:13px;margin-bottom:8px;" />
-            <div v-if="block.content" style="margin-top:4px;">
-              <img :src="block.content" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0;"
-                @error="$event.target.style.display='none'" @load="$event.target.style.display=''" />
-            </div>
-          </div>
-
-          <!-- -- HTML 에디터 방식 (Toast UI) ------------------------------------ -->
-          <div v-else-if="block.type==='html'" style="padding:12px;">
-            <base-html-editor v-model="block.content" height="240px" />
-          </div>
-        </div>
+    <div class="card" v-show="showTab('content')" style="margin:0;padding:0;overflow:hidden;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="padding:14px 20px;">📄 상품설명</div>
+      <!-- -- 상단 툴바: 블록 추가 버튼 ---------------------------------------------- -->
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;">
+        <span style="font-size:13px;font-weight:700;color:#333;margin-right:4px;">상품설명 블록</span>
+        <button class="btn btn-secondary btn-sm" @click="addContentBlock('file')">+ 첨부 이미지</button>
+        <button class="btn btn-secondary btn-sm" @click="addContentBlock('url')">+ URL 이미지</button>
+        <button class="btn btn-secondary btn-sm" @click="addContentBlock('html')">+ HTML 에디터</button>
+        <span style="font-size:12px;color:#aaa;margin-left:4px;">{{ contentBlocks.length }}개 블록 · 좌측 ≡ 드래그로 순서 변경</span>
       </div>
-
-      <!-- -- 드래그 구분선 ---------------------------------------------------- -->
-      <div @mousedown="onDividerMousedown"
-        style="width:5px;flex-shrink:0;background:#e8e8e8;cursor:col-resize;transition:background 0.15s;position:relative;z-index:1;"
-        :style="isDraggingDivider ? 'background:#1677ff;' : ''"
-        title="드래그로 좌우 너비 조절">
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#ccc;font-size:11px;writing-mode:vertical-rl;user-select:none;">⋮</div>
-      </div>
-
-      <!-- -- 우: 미리보기 영역 ------------------------------------------------- -->
-      <div :style="{ width: (100 - splitPct) + '%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #f0f0f0' }">
-        <!-- -- 디바이스 탭 --------------------------------------------------- -->
-        <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
-          <span style="font-size:11px;color:#aaa;margin-right:4px;">미리보기</span>
-          <button class="btn btn-xs" :class="previewDevice==='pc'?'btn-primary':'btn-secondary'" @click="previewDevice='pc'" style="font-size:11px;padding:2px 8px;">🖥 PC</button>
-          <button class="btn btn-xs" :class="previewDevice==='tablet'?'btn-primary':'btn-secondary'" @click="previewDevice='tablet'" style="font-size:11px;padding:2px 8px;">📱 태블릿</button>
-          <button class="btn btn-xs" :class="previewDevice==='mobile'?'btn-primary':'btn-secondary'" @click="previewDevice='mobile'" style="font-size:11px;padding:2px 8px;">📲 모바일</button>
-        </div>
-        <!-- -- 미리보기 뷰 --------------------------------------------------- -->
-        <div style="flex:1;overflow-y:auto;padding:12px;background:#f5f5f5;display:flex;justify-content:center;">
-          <div :style="{
-            width: previewDevice==='pc' ? '100%' : previewDevice==='tablet' ? '768px' : '375px',
-            maxWidth: '100%',
-            background: '#fff',
-            borderRadius: '8px',
-            border: '1px solid #e0e0e0',
-            padding: '16px',
-            minHeight: '200px',
-            fontSize: '14px',
-            lineHeight: '1.7',
-            overflowX: 'hidden',
-          }">
-            <div v-if="contentBlocks.length===0" style="color:#bbb;text-align:center;padding:40px;font-size:13px;">블록을 추가하면 여기에 미리보기가 표시됩니다.</div>
-            <template v-for="block in contentBlocks" :key="block?._id">
-              <div v-if="block.type==='file'||block.type==='url'" style="margin-bottom:12px;">
-                <img v-if="block.content" :src="block.content" style="max-width:100%;height:auto;display:block;border-radius:4px;" />
+      <!-- -- 스플릿 패널 (편집 좌 + 미리보기 우) --------------------------------------- -->
+      <div ref="contentSplitRef" style="display:flex;height:520px;overflow:hidden;">
+        <!-- -- 좌: 블록 편집 영역 ------------------------------------------------ -->
+        <div :style="{ width: splitPct + '%', overflowY: 'auto', padding: '12px 14px', flexShrink: 0 }">
+          <div v-if="contentBlocks.length === 0"
+            style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px 20px;text-align:center;color:#bbb;font-size:13px;">
+            위 버튼으로 블록을 추가해주세요.
+          </div>
+          <!-- -- 블록 리스트 --------------------------------------------------- -->
+          <div v-for="(block, bi) in contentBlocks" :key="block?._id"
+            draggable="true"
+            @dragstart="onBlockDragStart(bi)"
+            @dragover.prevent="onBlockDragOver(bi)"
+            @drop.prevent="onBlockDrop()"
+            @dragend="dragBlockIdx=null;dragoverBlockIdx=null"
+            style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;overflow:hidden;"
+            :style="dragoverBlockIdx===bi && dragBlockIdx!==bi ? 'border-color:#1677ff;background:#e6f4ff;' : ''">
+            <!-- -- 블록 헤더 -------------------------------------------------- -->
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9f9f9;border-bottom:1px solid #f0f0f0;">
+              <!-- -- 햄버거 핸들 ----------------------------------------------- -->
+              <span style="cursor:grab;color:#ccc;font-size:16px;user-select:none;letter-spacing:-2px;flex-shrink:0;" title="드래그로 순서 변경">
+                ≡
+              </span>
+              <span class="badge" :class="block.type==='file'?'badge-green':block.type==='url'?'badge-blue':'badge-orange'" style="font-size:11px;flex-shrink:0;">
+                {{ block.type==='file' ? '📎 첨부' : block.type==='url' ? '🔗 URL' : '✏ HTML' }}
+              </span>
+              <span style="font-size:12px;color:#888;flex:1;">블록 {{ bi+1 }}</span>
+              <button class="btn btn-xs btn-danger" @click="removeContentBlock(bi)" title="삭제">✕</button>
+            </div>
+            <!-- -- 첨부 방식 -------------------------------------------------- -->
+            <div v-if="block.type==='file'" style="padding:12px;">
+              <div v-if="block.content" style="margin-bottom:8px;">
+                <img :src="block.content" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0;" />
+                <div style="font-size:11px;color:#888;margin-top:4px;">{{ block.fileName }}</div>
               </div>
-              <div v-else-if="block.type==='html'" style="margin-bottom:12px;" v-html="block.content||''"></div>
-            </template>
+              <label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-block;">
+                📎 파일 선택
+                <input type="file" accept="image/*" style="display:none;" @change="onBlockFileChange(block, $event)" />
+              </label>
+              <button v-if="block.content" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">
+                삭제
+              </button>
+            </div>
+            <!-- -- URL 방식 ------------------------------------------------- -->
+            <div v-else-if="block.type==='url'" style="padding:12px;">
+              <input class="form-control" v-model="block.content" placeholder="이미지 URL (https://...)" style="font-size:13px;margin-bottom:8px;" />
+              <div v-if="block.content" style="margin-top:4px;">
+                <img :src="block.content" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0;"
+                  @error="$event.target.style.display='none'" @load="$event.target.style.display=''" />
+              </div>
+            </div>
+            <!-- -- HTML 에디터 방식 (Toast UI) ------------------------------------ -->
+            <div v-else-if="block.type==='html'" style="padding:12px;">
+              <base-html-editor v-model="block.content" height="240px" />
+            </div>
+          </div>
+        </div>
+        <!-- -- 드래그 구분선 ---------------------------------------------------- -->
+        <div @mousedown="onDividerMousedown"
+          style="width:5px;flex-shrink:0;background:#e8e8e8;cursor:col-resize;transition:background 0.15s;position:relative;z-index:1;"
+          :style="isDraggingDivider ? 'background:#1677ff;' : ''"
+          title="드래그로 좌우 너비 조절">
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#ccc;font-size:11px;writing-mode:vertical-rl;user-select:none;">
+            ⋮
+          </div>
+        </div>
+        <!-- -- 우: 미리보기 영역 ------------------------------------------------- -->
+        <div :style="{ width: (100 - splitPct) + '%', flexShrink: 0, display: 'flex', flexDirection: 'column', borderLeft: '1px solid #f0f0f0' }">
+          <!-- -- 디바이스 탭 --------------------------------------------------- -->
+          <div style="display:flex;align-items:center;gap:4px;padding:8px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
+            <span style="font-size:11px;color:#aaa;margin-right:4px;">미리보기</span>
+            <button class="btn btn-xs" :class="previewDevice==='pc'?'btn-primary':'btn-secondary'" @click="previewDevice='pc'" style="font-size:11px;padding:2px 8px;">
+              🖥 PC
+            </button>
+            <button class="btn btn-xs" :class="previewDevice==='tablet'?'btn-primary':'btn-secondary'" @click="previewDevice='tablet'" style="font-size:11px;padding:2px 8px;">
+              📱 태블릿
+            </button>
+            <button class="btn btn-xs" :class="previewDevice==='mobile'?'btn-primary':'btn-secondary'" @click="previewDevice='mobile'" style="font-size:11px;padding:2px 8px;">
+              📲 모바일
+            </button>
+          </div>
+          <!-- -- 미리보기 뷰 --------------------------------------------------- -->
+          <div style="flex:1;overflow-y:auto;padding:12px;background:#f5f5f5;display:flex;justify-content:center;">
+            <div :style="{
+              width: previewDevice==='pc' ? '100%' : previewDevice==='tablet' ? '768px' : '375px',
+              maxWidth: '100%',
+              background: '#fff',
+              borderRadius: '8px',
+              border: '1px solid #e0e0e0',
+              padding: '16px',
+              minHeight: '200px',
+              fontSize: '14px',
+              lineHeight: '1.7',
+              overflowX: 'hidden',
+              }">
+              <div v-if="contentBlocks.length===0" style="color:#bbb;text-align:center;padding:40px;font-size:13px;">
+                블록을 추가하면 여기에 미리보기가 표시됩니다.
+              </div>
+              <template v-for="block in contentBlocks" :key="block?._id">
+                <div v-if="block.type==='file'||block.type==='url'" style="margin-bottom:12px;">
+                  <img v-if="block.content" :src="block.content" style="max-width:100%;height:auto;display:block;border-radius:4px;" />
+                </div>
+                <div v-else-if="block.type==='html'" style="margin-bottom:12px;" v-html="block.content||''"></div>
+              </template>
+            </div>
           </div>
         </div>
       </div>
+      <div class="form-actions" v-if="!cfDtlMode" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
+      </div>
     </div>
-
-    <div class="form-actions" v-if="!cfDtlMode" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
        📝 상세설정  (advrt / 구매제한 / 혜택)
   ══════════════════════════════════════ -->
-  <div class="card" v-show="showTab('detail')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
-
-    <!-- -- 홍보문구 --------------------------------------------------------- -->
-    <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">홍보문구 (advrt_stmt)</div>
-    <div class="form-group">
-      <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
-      <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
+    <div class="card" v-show="showTab('detail')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
+      <!-- -- 홍보문구 --------------------------------------------------------- -->
+      <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">홍보문구 (advrt_stmt)</div>
+      <div class="form-group">
+        <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
+        <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
+      </div>
+      <!-- 광고 노출 기간 (BoFormArea 자동 렌더) -->
+      <bo-form-area :columns="advrtPeriodFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        <template #advrtStart>
+          <bo-date-time-picker v-model="form.advrtStartDate" />
+        </template>
+        <template #advrtEnd>
+          <bo-date-time-picker v-model="form.advrtEndDate" />
+        </template>
+      </bo-form-area>
+      <!-- 구매 제한 (BoFormArea 자동 렌더) -->
+      <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
+        구매 제한
+        <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL = 무제한)</span>
+      </div>
+      <bo-form-area :columns="buyLimitFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+      <!-- -- 혜택 적용 여부 ----------------------------------------------------- -->
+      <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">혜택 적용 여부</div>
+      <div style="display:flex;gap:24px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.couponUseYn==='Y'" @change="form.couponUseYn=$event.target.checked?'Y':'N'" />
+          쿠폰 사용 가능 (coupon_use_yn)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.saveUseYn==='Y'" @change="form.saveUseYn=$event.target.checked?'Y':'N'" />
+          적립금 사용 가능 (save_use_yn)
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+          <input type="checkbox" :checked="form.discntUseYn==='Y'" @change="form.discntUseYn=$event.target.checked?'Y':'N'" />
+          할인 적용 가능 (discnt_use_yn)
+        </label>
+      </div>
+      <div class="form-actions" v-if="!cfDtlMode" style="margin-top:20px;">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
+      </div>
     </div>
-    <!-- 광고 노출 기간 (BoFormArea 자동 렌더) -->
-    <bo-form-area :columns="advrtPeriodFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
-      <template #advrtStart>
-        <bo-date-time-picker v-model="form.advrtStartDate" />
-      </template>
-      <template #advrtEnd>
-        <bo-date-time-picker v-model="form.advrtEndDate" />
-      </template>
-    </bo-form-area>
-
-    <!-- 구매 제한 (BoFormArea 자동 렌더) -->
-    <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
-      구매 제한 <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL = 무제한)</span>
-    </div>
-    <bo-form-area :columns="buyLimitFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false" />
-
-    <!-- -- 혜택 적용 여부 ----------------------------------------------------- -->
-    <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">혜택 적용 여부</div>
-    <div style="display:flex;gap:24px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.couponUseYn==='Y'" @change="form.couponUseYn=$event.target.checked?'Y':'N'" />
-        쿠폰 사용 가능 (coupon_use_yn)
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.saveUseYn==='Y'" @change="form.saveUseYn=$event.target.checked?'Y':'N'" />
-        적립금 사용 가능 (save_use_yn)
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
-        <input type="checkbox" :checked="form.discntUseYn==='Y'" @change="form.discntUseYn=$event.target.checked?'Y':'N'" />
-        할인 적용 가능 (discnt_use_yn)
-      </label>
-    </div>
-
-    <div class="form-actions" v-if="!cfDtlMode" style="margin-top:20px;">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
        🖼 이미지  (pd_prod_img)
   ══════════════════════════════════════ -->
-  <div class="card" v-show="showTab('image')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
-    <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
-      <button class="btn btn-secondary" @click="triggerFileInput">+ 파일 선택</button>
-      <button class="btn btn-secondary" @click="addImageByUrl">+ URL 입력</button>
-      <span style="font-size:12px;color:#aaa;">{{ images.length }}개</span>
-    </div>
-    <div v-if="images.length===0"
-      style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
-      @click="triggerFileInput">클릭하거나 파일을 끌어다 놓으세요</div>
-    <!-- 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) -->
-    <div v-if="images.length>0" style="max-height:620px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:10px;padding:8px;background:#fafafa;">
-    <div v-for="(img, idx) in images" :key="img?.id"
-      draggable="true"
-      @dragstart="onImgDragStart(idx)"
-      @dragover.prevent="onImgDragOver(idx)"
-      @drop.prevent="onImgDrop()"
-      @dragend="dragImgIdx=null;dragoverImgIdx=null"
-      style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;"
-      :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : (dragoverImgIdx===idx && dragImgIdx!==idx ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
-
-      <!-- -- 드래그 핸들 ----------------------------------------------------- -->
-      <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:90px;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">⋮⋮</div>
-
-      <!-- -- 썸네일 -------------------------------------------------------- -->
-      <div style="flex-shrink:0;width:90px;height:90px;border-radius:8px;overflow:hidden;background:#f5f5f5;border:1px solid #e0e0e0;display:flex;align-items:center;justify-content:center;">
-        <img v-if="img.previewUrl" :src="img.previewUrl" style="width:100%;height:100%;object-fit:cover;" />
-        <span v-else style="font-size:11px;color:#bbb;text-align:center;">미리보기 없음</span>
+    <div class="card" v-show="showTab('image')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
+      <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+        <button class="btn btn-secondary" @click="triggerFileInput">+ 파일 선택</button>
+        <button class="btn btn-secondary" @click="addImageByUrl">+ URL 입력</button>
+        <span style="font-size:12px;color:#aaa;">{{ images.length }}개</span>
       </div>
-
-      <!-- -- 입력 영역 ------------------------------------------------------ -->
-      <div style="flex:1;min-width:0;">
-        <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:4px;">
-          <label class="form-label" style="font-size:11px;">이미지 URL</label>
-          <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" />
-        </div>
-        <div v-if="img.previewUrl" style="font-size:9px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;" :title="img.previewUrl">{{ img.previewUrl }}</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <!-- -- opt_item_id_1: 옵션 1단 select ---------------------------- -->
-          <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
-            <label class="form-label" style="font-size:11px;">opt_item_id_1 <span style="color:#aaa;">(NULL=공통)</span></label>
-            <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
-              <option value="">-- 공통 (NULL) --</option>
-              <option v-if="!safeFirst(optGroups)||safeFirst(optGroups).items.length===0" disabled value="">옵션설정 탭에서 1단 옵션을 먼저 추가하세요</option>
-              <option v-for="item in (optGroups[0]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}</option>
-            </select>
+      <div v-if="images.length===0"
+        style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
+        @click="triggerFileInput">
+        클릭하거나 파일을 끌어다 놓으세요
+      </div>
+      <!-- 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) -->
+      <div v-if="images.length>0" style="max-height:620px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:10px;padding:8px;background:#fafafa;">
+        <div v-for="(img, idx) in images" :key="img?.id"
+          draggable="true"
+          @dragstart="onImgDragStart(idx)"
+          @dragover.prevent="onImgDragOver(idx)"
+          @drop.prevent="onImgDrop()"
+          @dragend="dragImgIdx=null;dragoverImgIdx=null"
+          style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;"
+          :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : (dragoverImgIdx===idx && dragImgIdx!==idx ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
+          <!-- -- 드래그 핸들 ----------------------------------------------------- -->
+          <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:90px;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">
+            ⋮⋮
           </div>
-          <!-- -- opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) --------------- -->
-          <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
-            <label class="form-label" style="font-size:11px;">opt_item_id_2 <span style="color:#aaa;">(NULL=옵션1 공통)</span></label>
-            <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="!img.optItemId1&&optGroups.length<2">
-              <option value="">-- 공통 (NULL) --</option>
-              <option v-if="!optGroups[1]||optGroups[1].items.length===0" disabled value="">2단 옵션 없음</option>
-              <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">{{ fnOptItem2Label(item) }}</option>
-            </select>
+          <!-- -- 썸네일 -------------------------------------------------------- -->
+          <div style="flex-shrink:0;width:90px;height:90px;border-radius:8px;overflow:hidden;background:#f5f5f5;border:1px solid #e0e0e0;display:flex;align-items:center;justify-content:center;">
+            <img v-if="img.previewUrl" :src="img.previewUrl" style="width:100%;height:100%;object-fit:cover;" />
+            <span v-else style="font-size:11px;color:#bbb;text-align:center;">미리보기 없음</span>
+          </div>
+          <!-- -- 입력 영역 ------------------------------------------------------ -->
+          <div style="flex:1;min-width:0;">
+            <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:4px;">
+              <label class="form-label" style="font-size:11px;">이미지 URL</label>
+              <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" />
+            </div>
+            <div v-if="img.previewUrl" style="font-size:9px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;" :title="img.previewUrl">
+              {{ img.previewUrl }}
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <!-- -- opt_item_id_1: 옵션 1단 select ---------------------------- -->
+              <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
+                <label class="form-label" style="font-size:11px;">opt_item_id_1 <span style="color:#aaa;">(NULL=공통)</span></label>
+                <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
+                  <option value="">-- 공통 (NULL) --</option>
+                  <option v-if="!safeFirst(optGroups)||safeFirst(optGroups).items.length===0" disabled value="">
+                    옵션설정 탭에서 1단 옵션을 먼저 추가하세요
+                  </option>
+                  <option v-for="item in (optGroups[0]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">
+                    {{ item.nm + (item.val ? ' (' + item.val + ')' : '') }}
+                  </option>
+                </select>
+              </div>
+              <!-- -- opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) --------------- -->
+              <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
+                <label class="form-label" style="font-size:11px;">opt_item_id_2 <span style="color:#aaa;">(NULL=옵션1 공통)</span></label>
+                <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="!img.optItemId1&&optGroups.length<2">
+                  <option value="">-- 공통 (NULL) --</option>
+                  <option v-if="!optGroups[1]||optGroups[1].items.length===0" disabled value="">2단 옵션 없음</option>
+                  <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">
+                    {{ fnOptItem2Label(item) }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- -- 우측 버튼 ------------------------------------------------------ -->
+          <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
+            <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">
+              ★ 대표
+            </span>
+            <button class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
+            <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
           </div>
         </div>
       </div>
-
-      <!-- -- 우측 버튼 ------------------------------------------------------ -->
-      <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-        <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
-        <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">★ 대표</span>
-        <button class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
-        <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
+      <!-- /이미지 스크롤 컨테이너 -->
+      <div class="form-actions" v-if="!cfDtlMode">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
       </div>
     </div>
-    </div><!-- /이미지 스크롤 컨테이너 -->
-    <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════
+    <!-- ══════════════════════════════════════
        🔗 연관상품
   ══════════════════════════════════════ -->
-  <div class="card" v-show="showTab('related')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔗 연관상품</div>
-
-    <!-- --- 섹션1: 연관상품 --- -->
-    <div style="margin-bottom:28px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">연관상품 <span style="font-size:11px;font-weight:400;color:#888;">(pd_prod_rel · prod_rel_type_cd = <strong style="color:#1677ff;">REL_PROD</strong>)</span>
-          <span class="badge badge-blue" style="margin-left:6px;">{{ relProds.length }}건</span>
-        </div>
-        <button class="btn btn-sm btn-secondary" @click="openProdPicker('rel')">+ 추가</button>
-      </div>
-
-      <bo-grid bare :columns="relProdGridColumns" :rows="relProds" row-key="_id"
-        draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
-        @reorder="onRelDrop"
-        @ref-click="({id}) => navigate('pdProdDtl', { id })">
-        <template #row-actions="{ idx }">
-          <button class="btn btn-xs btn-danger" @click="removeRelProd(idx)">삭제</button>
-        </template>
-      </bo-grid>
-    </div>
-
-    <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;" />
-
-    <!-- --- 섹션2: 코디상품 --- -->
-    <div style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">코디상품 <span style="font-size:11px;font-weight:400;color:#888;">(pd_prod_rel · prod_rel_type_cd = <strong style="color:#722ed1;">CODY_PROD</strong>)</span>
-          <span class="badge badge-purple" style="margin-left:6px;">{{ codeProds.length }}건</span>
-        </div>
-        <button class="btn btn-sm btn-secondary" @click="openProdPicker('code')">+ 추가</button>
-      </div>
-
-      <bo-grid bare :columns="codeProdGridColumns" :rows="codeProds" row-key="_id"
-        draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
-        @reorder="onCodeDrop"
-        @ref-click="({id}) => navigate('pdProdDtl', { id })">
-        <template #row-actions="{ idx }">
-          <td style="text-align:center;">
-            <button class="btn btn-xs btn-danger" @click="removeCodeProd(idx)">삭제</button>
-          </td>
-        </template>
-      </bo-grid>
-    </div>
-
-    <div class="form-actions" v-if="!cfDtlMode">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
-    </div>
-
-    <!-- -- 상품 추가 피커 모달 (연관상품/코드상품 공용) ----------------------------------- -->
-    <teleport to="body">
-      <div v-if="prodPickerOpen"
-        style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
-        @click.self="prodPickerOpen=''">
-        <div class="modal-box" style="width:580px;max-height:580px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-          <!-- -- 헤더 ----------------------------------------------------- -->
-          <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
-            <span style="font-size:15px;font-weight:700;">{{ prodPickerOpen==='rel' ? '연관상품' : '코디상품' }} 추가</span>
-            <button @click="prodPickerOpen=''" class="modal-close-btn" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>
+    <div class="card" v-show="showTab('related')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔗 연관상품</div>
+      <!-- --- 섹션1: 연관상품 --- -->
+      <div style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;">
+            연관상품
+            <span style="font-size:11px;font-weight:400;color:#888;">
+              (pd_prod_rel · prod_rel_type_cd =
+              <strong style="color:#1677ff;">REL_PROD</strong>
+              )
+            </span>
+            <span class="badge badge-blue" style="margin-left:6px;">{{ relProds.length }}건</span>
           </div>
-          <!-- -- 검색 ----------------------------------------------------- -->
-          <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-            <bo-multi-check-select
-              v-model="uiState.prodPickerSearchType"
-              :options="[
+          <button class="btn btn-sm btn-secondary" @click="openProdPicker('rel')">+ 추가</button>
+        </div>
+        <bo-grid bare :columns="relProdGridColumns" :rows="relProds" row-key="_id"
+          draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
+          @reorder="onRelDrop"
+          @ref-click="({id}) => navigate('pdProdDtl', { id })">
+          <template #row-actions="{ idx }">
+            <button class="btn btn-xs btn-danger" @click="removeRelProd(idx)">삭제</button>
+          </template>
+        </bo-grid>
+      </div>
+      <hr style="border:none;border-top:1px solid #f0f0f0;margin:0 0 24px;" />
+      <!-- --- 섹션2: 코디상품 --- -->
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;">
+            코디상품
+            <span style="font-size:11px;font-weight:400;color:#888;">
+              (pd_prod_rel · prod_rel_type_cd =
+              <strong style="color:#722ed1;">CODY_PROD</strong>
+              )
+            </span>
+            <span class="badge badge-purple" style="margin-left:6px;">{{ codeProds.length }}건</span>
+          </div>
+          <button class="btn btn-sm btn-secondary" @click="openProdPicker('code')">+ 추가</button>
+        </div>
+        <bo-grid bare :columns="codeProdGridColumns" :rows="codeProds" row-key="_id"
+          draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
+          @reorder="onCodeDrop"
+          @ref-click="({id}) => navigate('pdProdDtl', { id })">
+          <template #row-actions="{ idx }">
+            <td style="text-align:center;">
+              <button class="btn btn-xs btn-danger" @click="removeCodeProd(idx)">삭제</button>
+            </td>
+          </template>
+        </bo-grid>
+      </div>
+      <div class="form-actions" v-if="!cfDtlMode">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
+      </div>
+      <!-- -- 상품 추가 피커 모달 (연관상품/코드상품 공용) ----------------------------------- -->
+      <teleport to="body">
+        <div v-if="prodPickerOpen"
+          style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
+          @click.self="prodPickerOpen=''">
+          <div class="modal-box" style="width:580px;max-height:580px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+            <!-- -- 헤더 ----------------------------------------------------- -->
+            <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
+              <span style="font-size:15px;font-weight:700;">{{ prodPickerOpen==='rel' ? '연관상품' : '코디상품' }} 추가</span>
+              <button @click="prodPickerOpen=''" class="modal-close-btn" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                ✕
+              </button>
+            </div>
+            <!-- -- 검색 ----------------------------------------------------- -->
+            <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
+              <bo-multi-check-select
+                v-model="uiState.prodPickerSearchType"
+                :options="[
                 { value: 'prodNm', label: '상품명' },
                 { value: 'prodId', label: 'ID' },
                 { value: 'cateNm', label: '카테고리' },
-              ]"
-              placeholder="검색대상 전체"
-              all-label="전체 선택"
-              min-width="160px" />
-            <input class="form-control" v-model="prodPickerSearch" placeholder="검색어 입력" style="font-size:13px;margin-top:6px;" />
-          </div>
-          <!-- -- 목록 ----------------------------------------------------- -->
-          <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-            <bo-grid bare :columns="prodPickerGridColumns" :rows="cfProdPickerList" row-key="productId"
-              empty-text="검색 결과가 없습니다." row-clickable @row-click="selectProdItem">
-            </bo-grid>
-          </div>
-          <!-- -- 푸터 ----------------------------------------------------- -->
-          <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
-            <button class="btn btn-secondary btn-sm" @click="prodPickerOpen=''">닫기</button>
+                ]"
+                placeholder="검색대상 전체"
+                all-label="전체 선택"
+                min-width="160px" />
+              <input class="form-control" v-model="prodPickerSearch" placeholder="검색어 입력" style="font-size:13px;margin-top:6px;" />
+            </div>
+            <!-- -- 목록 ----------------------------------------------------- -->
+            <div style="overflow-y:auto;flex:1;padding:8px 12px;">
+              <bo-grid bare :columns="prodPickerGridColumns" :rows="cfProdPickerList" row-key="productId"
+                empty-text="검색 결과가 없습니다." row-clickable @row-click="selectProdItem"></bo-grid>
+            </div>
+            <!-- -- 푸터 ----------------------------------------------------- -->
+            <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
+              <button class="btn btn-secondary btn-sm" @click="prodPickerOpen=''">닫기</button>
+            </div>
           </div>
         </div>
-      </div>
-    </teleport>
-  </div>
-
-  <!-- ══════════════════════════════════════
+      </teleport>
+    </div>
+    <!-- ══════════════════════════════════════
        💰 옵션(가격/재고)  (SKU 가격/재고 + 기본가격 + 판매계획)
   ══════════════════════════════════════ -->
-  <div class="card" v-show="showTab('price')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
-
-    <!-- 기본 가격 (BoFormArea 자동 렌더) -->
-    <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
-      기본 가격 <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
-    </div>
-    <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
-      <!-- 마진율 (purchasePrice 입력 시 자동 계산) -->
-      <template #marginRate>
-        <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
-          {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
-        </div>
-      </template>
-    </bo-form-area>
-
-    <!-- -- 가격 요약 카드 (컴팩트) -------------------------------------------- -->
-    <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
-        <div>
-          <div style="font-size:14px;font-weight:700;">{{ (form.listPrice||0).toLocaleString() }}원</div>
-          <div style="font-size:10px;color:#888;">정가</div>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#e8587a;">{{ (form.salePrice||0).toLocaleString() }}원</div>
-          <div style="font-size:10px;color:#888;">판매가</div>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
-          <div style="font-size:10px;color:#888;">할인율</div>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
-          <div style="font-size:10px;color:#888;">마진율</div>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#722ed1;">{{ cfPlatformFeeDisp }}</div>
-          <div style="font-size:10px;color:#888;">플랫폼수수료</div>
-        </div>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#1677ff;">{{ cfNetRevenueDisp }}</div>
-          <div style="font-size:10px;color:#888;">예상 순수익</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- -- 섹션2: 판매계획 --------------------------------------------------------- -->
-    <div style="margin-top:24px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;">판매계획 <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span></div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-sm btn-danger"    @click="deletePlanChecked">체크삭제</button>
-          <button class="btn btn-sm btn-secondary" @click="addPlanRow">행추가</button>
-        </div>
-      </div>
-      <div style="overflow-x:auto;">
-        <bo-grid bare :columns="planGridColumns" :rows="cfPlanVisible" row-key="_id"
-          selectable checked-key="_id"
-          :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
-          :row-style="fnPlanRowStyle2"
-          empty-text="[행추가]로 판매계획을 추가하세요."
-          @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll"
-          @cell-change="row => onPlanChange(row)">
-        </bo-grid>
-      </div>
-      <div style="margin-top:8px;display:flex;gap:8px;font-size:11px;color:#aaa;align-items:center;">
-        <span style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:3px;padding:1px 6px;color:#389e0d;">I 신규</span>
-        <span style="background:#fffbe6;border:1px solid #ffe58f;border-radius:3px;padding:1px 6px;color:#d46b08;">U 수정</span>
-        <span style="background:#fff1f0;border:1px solid #ffa39e;border-radius:3px;padding:1px 6px;color:#cf1322;">D 삭제예정</span>
-      </div>
-    </div>
-
-    <!-- -- 섹션3: SKU별 가격·재고 (옵션 카테고리 설정 시) ----------------------- -->
-    <template v-if="prodOptCategoryTypeCd">
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0 20px;" />
-      <!-- -- 헤더 행 ------------------------------------------------------- -->
-      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-        <div style="font-size:13px;font-weight:700;flex-shrink:0;">
-          SKU별 가격·재고 <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
-          <span class="badge badge-blue" style="margin-left:6px;">{{ safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
-          <span v-if="cfSkusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">필터 {{ cfSkusFiltered.length }}/{{ skus.length }}</span>
-        </div>
-        <!-- -- 필터 영역 ---------------------------------------------------- -->
-        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ optGroups[0]?.grpNm||'1단' }}</span>
-            <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
-              @change="skuFilter2=''">
-              <option value="">전체</option>
-              <option v-for="v in cfSkuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
-            </select>
-          </div>
-          <div v-if="optGroups.length>1" style="display:flex;align-items:center;gap:4px;">
-            <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ optGroups[1]?.grpNm||'2단' }}</span>
-            <select v-model="skuFilter2" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
-              <option value="">전체</option>
-              <option v-for="v in cfSkuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span style="font-size:11px;color:#555;flex-shrink:0;">재고</span>
-            <select v-model="skuFilterStock" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
-              <option value="">전체</option>
-              <option v-for="o in grpCodes.stock_filter_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-            </select>
-          </div>
-          <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
-            @click="skuFilter1='';skuFilter2='';skuFilterStock=''">✕ 초기화</button>
-          <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong>{{ cfTotalStock }}</strong>개</span>
-          <button class="btn btn-sm btn-secondary" @click="generateSkus">🔄 SKU 재생성</button>
-        </div>
-      </div>
-      <!-- 컴팩트 SKU 테이블 — 페이지 없이 약 10행 보이는 스크롤 컨테이너 (행 높이 24px × 10 + 헤더 ≈ 280px) -->
-      <div style="overflow:auto;max-height:300px;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead style="position:sticky;top:0;background:#f5f5f5;z-index:1;">
-            <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
-              <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
-              <th style="width:42px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">이동</th>
-              <th style="width:90px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">1단<span v-if="safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ safeFirst(optGroups).grpNm }})</span></th>
-              <th v-if="optGroups.length>1" style="width:90px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">2단<span v-if="optGroups[1]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[1].grpNm }})</span></th>
-              <th style="width:195px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">SKU코드</th>
-              <th style="width:150px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">기본가</th>
-              <th style="width:135px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">추가금액</th>
-              <th style="width:105px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">재고</th>
-              <th style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">판매상태</th>
-              <th style="width:68px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">판매수량</th>
-              <th style="width:42px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">사용</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(sku, ii) in cfSkusFiltered" :key="sku?._id"
-              :style="(sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':(ii%2===1?'background:#fafafa;':'')))+'border-bottom:1px solid #f0f0f0;transition:background 0.1s;'">
-              <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
-              <td style="padding:2px 2px;text-align:center;white-space:nowrap;">
-                <button type="button" @click="moveSku(sku,'up')"   :disabled="ii===0"
-                  style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;margin-right:1px;"
-                  title="위로">▲</button>
-                <button type="button" @click="moveSku(sku,'down')" :disabled="ii===cfSkusFiltered.length-1"
-                  style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;"
-                  title="아래로">▼</button>
-              </td>
-              <td style="padding:2px 6px;"><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
-              <td v-if="optGroups.length>1" style="padding:2px 6px;"><span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 }}</span></td>
-              <td style="padding:2px 4px;">
-                <input v-model="sku.skuCode" placeholder="SKU-XXX"
-                  style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;" />
-              </td>
-              <td style="padding:2px 4px;">
-                <div style="width:100%;font-size:12px;background:#f5f5f5;color:#555;border:1px solid #eee;border-radius:4px;padding:2px 6px;height:24px;line-height:20px;text-align:right;">
-                  {{ ((form.salePrice||0) + (sku.addPrice||0)).toLocaleString() }}원
-                </div>
-              </td>
-              <td style="padding:2px 4px;">
-                <input type="number" v-model.number="sku.addPrice" placeholder="0"
-                  style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;text-align:right;" />
-              </td>
-              <td style="padding:2px 4px;">
-                <input type="number" v-model.number="sku.stock" placeholder="0" min="0"
-                  :style="'width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;text-align:right;'+((sku.stock||0)===0?'color:#f5222d;font-weight:700;':'')" />
-              </td>
-              <td style="padding:2px 4px;">
-                <select v-model="sku.statusCd"
-                  :style="'width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;'+(sku.statusCd==='ON_SALE'?'color:#389e0d;':sku.statusCd==='SOLD_OUT'?'color:#f5a623;':sku.statusCd==='SUSPENDED'?'color:#cf1322;':'color:#555;')">
-                  <option v-for="c in grpCodes.opt_stock_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-                </select>
-              </td>
-              <td style="padding:2px 6px;text-align:right;font-size:12px;color:#555;">{{ (sku.saleCnt||0).toLocaleString() }}</td>
-              <td style="padding:2px 4px;text-align:center;">
-                <input type="checkbox" :checked="sku.useYn==='Y'" @change="sku.useYn=$event.target.checked?'Y':'N'" style="width:14px;height:14px;" />
-              </td>
-            </tr>
-            <tr v-if="skus.length===0">
-              <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#bbb;padding:16px;font-size:12px;">
-                옵션설정 탭에서 옵션 값 입력 후 [🔄 SKU 재생성]을 눌러주세요.
-              </td>
-            </tr>
-            <tr v-else-if="cfSkusFiltered.length===0">
-              <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#f5a623;padding:12px;font-size:12px;">
-                필터 조건에 맞는 SKU가 없습니다. <button class="btn btn-xs btn-secondary" @click="skuFilter1='';skuFilter2='';skuFilterStock=''">필터 초기화</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#888;margin-bottom:16px;">
-        <span>총 <strong style="color:#333;">{{ cfSkusFiltered.length }}</strong>건<span v-if="cfSkusFiltered.length<skus.length"> / 전체 {{ skus.length }}건</span></span>
-        <span>활성 <strong style="color:#1677ff;">{{ safeFilter(skus, s=>s.useYn==='Y').length }}</strong>건 · 총 재고 <strong style="color:#52c41a;">{{ cfTotalStock }}</strong>개</span>
-      </div>
-    </template>
-
-    <!-- -- 섹션4: 단일 재고 (옵션 카테고리 미설정 시) -------------------------- -->
-    <template v-if="!prodOptCategoryTypeCd">
-      <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0 20px;" />
+    <div class="card" v-show="showTab('price')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
+      <!-- 기본 가격 (BoFormArea 자동 렌더) -->
       <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
-        단일 재고 <span style="font-weight:400;font-size:11px;color:#888;">(옵션 미사용 — pd_prod.prod_stock)</span>
+        기본 가격
+        <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
       </div>
-      <!-- 재고수량 (BoFormArea 자동 렌더) -->
-      <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
-      <template v-if="tabData.skus.length">
-        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
-          잔존 SKU 데이터 <span class="badge badge-orange" style="margin-left:4px;">{{ tabData.skus.length }}건</span>
-          <span style="font-weight:400;font-size:11px;margin-left:6px;">옵션 미사용 전환 후 남아있는 SKU 이력 (읽기 전용)</span>
+      <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        <!-- 마진율 (purchasePrice 입력 시 자동 계산) -->
+        <template #marginRate>
+          <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
+            {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
+          </div>
+        </template>
+      </bo-form-area>
+      <!-- -- 가격 요약 카드 (컴팩트) -------------------------------------------- -->
+      <div style="padding:8px 12px;background:#f9f9f9;border-radius:6px;border:1px solid #e8e8e8;margin-bottom:12px;">
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">{{ (form.listPrice||0).toLocaleString() }}원</div>
+            <div style="font-size:10px;color:#888;">정가</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#e8587a;">{{ (form.salePrice||0).toLocaleString() }}원</div>
+            <div style="font-size:10px;color:#888;">판매가</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f5222d;">{{ cfDiscountRate }}%</div>
+            <div style="font-size:10px;color:#888;">할인율</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#52c41a;">{{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '-' }}</div>
+            <div style="font-size:10px;color:#888;">마진율</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#722ed1;">{{ cfPlatformFeeDisp }}</div>
+            <div style="font-size:10px;color:#888;">플랫폼수수료</div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1677ff;">{{ cfNetRevenueDisp }}</div>
+            <div style="font-size:10px;color:#888;">예상 순수익</div>
+          </div>
         </div>
-        <div style="overflow-x:auto;margin-bottom:16px;">
-          <bo-grid bare :columns="remainSkuGridColumns"
-            :rows="tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)"
-            row-key="skuId" :row-style="fnRemainSkuRowStyle" empty-text="잔존 SKU 데이터가 없습니다.">
-          </bo-grid>
+      </div>
+      <!-- -- 섹션2: 판매계획 --------------------------------------------------------- -->
+      <div style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;">
+            판매계획
+            <span style="font-size:12px;font-weight:400;color:#888;">{{ cfPlanVisible.length }}건</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm btn-danger"    @click="deletePlanChecked">체크삭제</button>
+            <button class="btn btn-sm btn-secondary" @click="addPlanRow">행추가</button>
+          </div>
         </div>
-        <div v-if="tabData.skus.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
-          <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
-          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
-          <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">{{ n }}</button>
-          <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">›</button>
-          <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">»</button>
-          <span class="pager-right">{{ tabData.skus.length }}건 / {{ tabPage.skus.pageSize }}개씩</span>
+        <div style="overflow-x:auto;">
+          <bo-grid bare :columns="planGridColumns" :rows="cfPlanVisible" row-key="_id"
+            selectable checked-key="_id"
+            :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
+            :row-style="fnPlanRowStyle2"
+            empty-text="[행추가]로 판매계획을 추가하세요."
+            @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll"
+            @cell-change="row => onPlanChange(row)"></bo-grid>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;font-size:11px;color:#aaa;align-items:center;">
+          <span style="background:#f6ffed;border:1px solid #b7eb8f;border-radius:3px;padding:1px 6px;color:#389e0d;">I 신규</span>
+          <span style="background:#fffbe6;border:1px solid #ffe58f;border-radius:3px;padding:1px 6px;color:#d46b08;">U 수정</span>
+          <span style="background:#fff1f0;border:1px solid #ffa39e;border-radius:3px;padding:1px 6px;color:#cf1322;">D 삭제예정</span>
+        </div>
+      </div>
+      <!-- -- 섹션3: SKU별 가격·재고 (옵션 카테고리 설정 시) ----------------------- -->
+      <template v-if="prodOptCategoryTypeCd">
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0 20px;" />
+        <!-- -- 헤더 행 ------------------------------------------------------- -->
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+          <div style="font-size:13px;font-weight:700;flex-shrink:0;">
+            SKU별 가격·재고
+            <span style="color:#888;font-weight:400;font-size:11px;">(pd_prod_sku)</span>
+            <span class="badge badge-blue" style="margin-left:6px;">{{ safeFilter(cfSkusFiltered, s=>s.useYn==='Y').length }}개 활성</span>
+            <span v-if="cfSkusFiltered.length < skus.length" class="badge badge-orange" style="margin-left:4px;font-size:10px;">
+              필터 {{ cfSkusFiltered.length }}/{{ skus.length }}
+            </span>
+          </div>
+          <!-- -- 필터 영역 ---------------------------------------------------- -->
+          <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span class="badge badge-gray" style="font-size:11px;flex-shrink:0;">{{ optGroups[0]?.grpNm||'1단' }}</span>
+              <select v-model="skuFilter1" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;"
+                @change="skuFilter2=''">
+                <option value="">전체</option>
+                <option v-for="v in cfSkuFilter1Options" :key="Math.random()" :value="v">{{ v }}</option>
+              </select>
+            </div>
+            <div v-if="optGroups.length>1" style="display:flex;align-items:center;gap:4px;">
+              <span class="badge badge-blue" style="font-size:11px;flex-shrink:0;">{{ optGroups[1]?.grpNm||'2단' }}</span>
+              <select v-model="skuFilter2" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
+                <option value="">전체</option>
+                <option v-for="v in cfSkuFilter2Options" :key="Math.random()" :value="v">{{ v }}</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;color:#555;flex-shrink:0;">재고</span>
+              <select v-model="skuFilterStock" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:3px 6px;min-width:80px;">
+                <option value="">전체</option>
+                <option v-for="o in grpCodes.stock_filter_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
+              </select>
+            </div>
+            <button v-if="skuFilter1||skuFilter2||skuFilterStock" class="btn btn-xs btn-secondary"
+              @click="skuFilter1='';skuFilter2='';skuFilterStock=''">
+              ✕ 초기화
+            </button>
+            <span style="font-size:12px;color:#555;margin-left:4px;">총 재고: <strong>{{ cfTotalStock }}</strong>개</span>
+            <button class="btn btn-sm btn-secondary" @click="generateSkus">🔄 SKU 재생성</button>
+          </div>
+        </div>
+        <!-- 컴팩트 SKU 테이블 — 페이지 없이 약 10행 보이는 스크롤 컨테이너 (행 높이 24px × 10 + 헤더 ≈ 280px) -->
+        <div style="overflow:auto;max-height:300px;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead style="position:sticky;top:0;background:#f5f5f5;z-index:1;">
+              <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
+                <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
+                <th style="width:42px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">이동</th>
+                <th style="width:90px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">
+                  1단
+                  <span v-if="safeFirst(optGroups)?.grpNm" style="color:#aaa;font-weight:400;">({{ safeFirst(optGroups).grpNm }})</span>
+                </th>
+                <th v-if="optGroups.length>1" style="width:90px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">
+                  2단
+                  <span v-if="optGroups[1]?.grpNm" style="color:#aaa;font-weight:400;">({{ optGroups[1].grpNm }})</span>
+                </th>
+                <th style="width:195px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">SKU코드</th>
+                <th style="width:150px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">기본가</th>
+                <th style="width:135px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">추가금액</th>
+                <th style="width:105px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">재고</th>
+                <th style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">판매상태</th>
+                <th style="width:68px;padding:4px 6px;text-align:right;font-weight:600;color:#555;font-size:11px;">판매수량</th>
+                <th style="width:42px;padding:4px 4px;text-align:center;font-weight:600;color:#555;font-size:11px;">사용</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(sku, ii) in cfSkusFiltered" :key="sku?._id"
+                :style="(sku.useYn==='N' ? 'opacity:0.45;background:#f5f5f5;' : (sku.statusCd==='SOLD_OUT'||sku.stock===0 ? 'background:#fffbe6;' : sku.statusCd==='SUSPENDED'?'background:#fff1f0;':(ii%2===1?'background:#fafafa;':'')))+'border-bottom:1px solid #f0f0f0;transition:background 0.1s;'">
+                <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
+                <td style="padding:2px 2px;text-align:center;white-space:nowrap;">
+                  <button type="button" @click="moveSku(sku,'up')"   :disabled="ii===0"
+                    style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;margin-right:1px;"
+                    title="위로">
+                    ▲
+                  </button>
+                  <button type="button" @click="moveSku(sku,'down')" :disabled="ii===cfSkusFiltered.length-1"
+                    style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;"
+                    title="아래로">
+                    ▼
+                  </button>
+                </td>
+                <td style="padding:2px 6px;"><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
+                <td v-if="optGroups.length>1" style="padding:2px 6px;">
+                  <span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 }}</span>
+                </td>
+                <td style="padding:2px 4px;">
+                  <input v-model="sku.skuCode" placeholder="SKU-XXX"
+                    style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;" />
+                </td>
+                <td style="padding:2px 4px;">
+                  <div style="width:100%;font-size:12px;background:#f5f5f5;color:#555;border:1px solid #eee;border-radius:4px;padding:2px 6px;height:24px;line-height:20px;text-align:right;">
+                    {{ ((form.salePrice||0) + (sku.addPrice||0)).toLocaleString() }}원
+                  </div>
+                </td>
+                <td style="padding:2px 4px;">
+                  <input type="number" v-model.number="sku.addPrice" placeholder="0"
+                    style="width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;text-align:right;" />
+                </td>
+                <td style="padding:2px 4px;">
+                  <input type="number" v-model.number="sku.stock" placeholder="0" min="0"
+                    :style="'width:100%;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;text-align:right;'+((sku.stock||0)===0?'color:#f5222d;font-weight:700;':'')" />
+                </td>
+                <td style="padding:2px 4px;">
+                  <select v-model="sku.statusCd"
+                    :style="'width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;'+(sku.statusCd==='ON_SALE'?'color:#389e0d;':sku.statusCd==='SOLD_OUT'?'color:#f5a623;':sku.statusCd==='SUSPENDED'?'color:#cf1322;':'color:#555;')">
+                    <option v-for="c in grpCodes.opt_stock_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+                  </select>
+                </td>
+                <td style="padding:2px 6px;text-align:right;font-size:12px;color:#555;">{{ (sku.saleCnt||0).toLocaleString() }}</td>
+                <td style="padding:2px 4px;text-align:center;">
+                  <input type="checkbox" :checked="sku.useYn==='Y'" @change="sku.useYn=$event.target.checked?'Y':'N'" style="width:14px;height:14px;" />
+                </td>
+              </tr>
+              <tr v-if="skus.length===0">
+                <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#bbb;padding:16px;font-size:12px;">
+                  옵션설정 탭에서 옵션 값 입력 후 [🔄 SKU 재생성]을 눌러주세요.
+                </td>
+              </tr>
+              <tr v-else-if="cfSkusFiltered.length===0">
+                <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#f5a623;padding:12px;font-size:12px;">
+                  필터 조건에 맞는 SKU가 없습니다.
+                  <button class="btn btn-xs btn-secondary" @click="skuFilter1='';skuFilter2='';skuFilterStock=''">필터 초기화</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#888;margin-bottom:16px;">
+          <span>
+            총
+            <strong style="color:#333;">{{ cfSkusFiltered.length }}</strong>
+            건
+            <span v-if="cfSkusFiltered.length<skus.length">/ 전체 {{ skus.length }}건</span>
+          </span>
+          <span>
+            활성
+            <strong style="color:#1677ff;">{{ safeFilter(skus, s=>s.useYn==='Y').length }}</strong>
+            건 · 총 재고
+            <strong style="color:#52c41a;">{{ cfTotalStock }}</strong>
+            개
+          </span>
         </div>
       </template>
-    </template>
-
-    <!-- -- 저장/취소 버튼 (맨 아래) ------------------------------------------- -->
-    <div class="form-actions" v-if="!cfDtlMode" style="margin-top:24px;">
-      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">저장</button>
-      <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
+      <!-- -- 섹션4: 단일 재고 (옵션 카테고리 미설정 시) -------------------------- -->
+      <template v-if="!prodOptCategoryTypeCd">
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:24px 0 20px;" />
+        <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
+          단일 재고
+          <span style="font-weight:400;font-size:11px;color:#888;">(옵션 미사용 — pd_prod.prod_stock)</span>
+        </div>
+        <!-- 재고수량 (BoFormArea 자동 렌더) -->
+        <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
+          :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+        <template v-if="tabData.skus.length">
+          <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
+            잔존 SKU 데이터
+            <span class="badge badge-orange" style="margin-left:4px;">{{ tabData.skus.length }}건</span>
+            <span style="font-weight:400;font-size:11px;margin-left:6px;">옵션 미사용 전환 후 남아있는 SKU 이력 (읽기 전용)</span>
+          </div>
+          <div style="overflow-x:auto;margin-bottom:16px;">
+            <bo-grid bare :columns="remainSkuGridColumns"
+              :rows="tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)"
+              row-key="skuId" :row-style="fnRemainSkuRowStyle" empty-text="잔존 SKU 데이터가 없습니다."></bo-grid>
+          </div>
+          <div v-if="tabData.skus.length > tabPage.skus.pageSize" class="pagination" style="margin:8px 0 16px;">
+            <button class="pager" @click="onTabPageChange('skus',1)" :disabled="tabPage.skus.pageNo===1">«</button>
+            <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo-1)" :disabled="tabPage.skus.pageNo===1">‹</button>
+            <button v-for="n in fnTabPageNos('skus')" :key="n" class="pager" :class="{active:tabPage.skus.pageNo===n}" @click="onTabPageChange('skus',n)">
+              {{ n }}
+            </button>
+            <button class="pager" @click="onTabPageChange('skus',tabPage.skus.pageNo+1)" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">
+              ›
+            </button>
+            <button class="pager" @click="onTabPageChange('skus',cfTabTotalPages('skus'))" :disabled="tabPage.skus.pageNo===cfTabTotalPages('skus')">
+              »
+            </button>
+            <span class="pager-right">{{ tabData.skus.length }}건 / {{ tabPage.skus.pageSize }}개씩</span>
+          </div>
+        </template>
+      </template>
+      <!-- -- 저장/취소 버튼 (맨 아래) ------------------------------------------- -->
+      <div class="form-actions" v-if="!cfDtlMode" style="margin-top:24px;">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="navigate('pdProdMng')">취소</button>
+      </div>
     </div>
   </div>
-
-  </div><!-- -- /dtl-tab-grid ---------------------------------------------------- -->
-
+  <!-- -- /dtl-tab-grid ---------------------------------------------------- -->
   <!-- -- 이력 ------------------------------------------------------------- -->
   <div v-if="!cfIsNew" style="margin-top:20px;">
     <pd-prod-hist :prod-id="dtlId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
-
   <!-- 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) -->
   <bo-code-grp-modal
     :show="codeGrpModal.show"

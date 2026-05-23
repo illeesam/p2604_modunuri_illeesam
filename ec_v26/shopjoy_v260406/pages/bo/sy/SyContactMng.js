@@ -210,23 +210,24 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="onSort" @set-page="setPage" @size-change="onSizeChange"
     @ref-click="({type,id}) => showRefModal(type, id)" @row-click="row => handleLoadDetail(row.contactId)">
-
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </template>
-    <template #head-actions><th style="text-align:right">관리</th></template>
-
+    <template #head-actions>
+      <th style="text-align:right">관리</th>
+    </template>
     <template #row-actions="{ row }">
-      <td><div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.contactId)">수정</button>
-        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-      </div></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.contactId)">수정</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+        </div>
+      </td>
     </template>
   </bo-grid>
-
   <!-- -- 하단 상세: ContactDtl 임베드 ------------------------------------------ -->
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -240,11 +241,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    
-    
+      
       :reload-trigger="detailModal.reloadTrigger"
       :on-list-reload="handleSearchList"
-  />
+      />
   </div>
 </div>
 `

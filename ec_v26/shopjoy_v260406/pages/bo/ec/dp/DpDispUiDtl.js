@@ -391,7 +391,9 @@ window.DpDispUiDtl = {
   <!-- -- 헤더 ------------------------------------------------------------- -->
   <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;background:#fafafa;">
     <div style="font-size:16px;font-weight:700;color:#222;">
-      전시 <span style="color:#e8587a;">UI</span> {{ cfIsNew ? '등록' : '수정' }}
+      전시
+      <span style="color:#e8587a;">UI</span>
+      {{ cfIsNew ? '등록' : '수정' }}
       <span v-if="!cfIsNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">#{{ form.codeId }}</span>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
@@ -401,61 +403,70 @@ window.DpDispUiDtl = {
         @click="!cfIsNew && openPick()">
         ✚ 전시영역추가
       </button>
-      <span style="font-size:12px;color:#888;margin-right:10px;">연결된 영역:
-        <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">{{ cfRelatedAreas.length }}개</span>
+      <span style="font-size:12px;color:#888;margin-right:10px;">
+        연결된 영역:
+        <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">
+          {{ cfRelatedAreas.length }}개
+        </span>
       </span>
-      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openUiPreview">🖼 UI미리보기</button>
-      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="openAreaPreview('fo')">👁 사용자 미리보기</button>
-      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="openAreaPreview('bo')">👁 관리자 미리보기</button>
+      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="openUiPreview">
+        🖼 UI미리보기
+      </button>
+      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="openAreaPreview('fo')">
+        👁 사용자 미리보기
+      </button>
+      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="openAreaPreview('bo')">
+        👁 관리자 미리보기
+      </button>
       <button class="btn btn-secondary btn-sm" @click="expanded = !expanded">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
       <button class="btn btn-primary btn-sm" @click="handleSave" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
-
   <!-- -- 안내 배너 ---------------------------------------------------------- -->
   <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin:12px 20px;font-size:11px;color:#444;line-height:1.6;">
-    <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-      <span>ℹ️ 여부 및 기간 관리 안내</span>
-    </div>
+    <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span>ℹ️ 여부 및 기간 관리 안내</span></div>
     <ul style="margin:0;padding-left:18px;">
       <li>배치로 매시 55분에 <b>전시여부, 사용여부</b> 정보가 자동 반영됩니다</li>
       <li>전시관리정보 수정 후 저장하면 <b>전시여부, 사용여부</b> 정보가 즉시 반영됩니다</li>
     </ul>
   </div>
-
   <!-- -- 본문 ------------------------------------------------------------- -->
   <div style="display:flex;min-height:520px;">
     <!-- -- 좌측 탭 --------------------------------------------------------- -->
     <div style="width:160px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
       <div @click="selectTab('base')"
         :style="{
-          display:'flex',alignItems:'center',justifyContent:'space-between',
-          padding:'9px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'6px',
-          fontSize:'12px',fontWeight: activeTab==='base'?'700':'500',
-          background: activeTab==='base' ? '#fff' : 'transparent',
-          color: activeTab==='base' ? '#e8587a' : '#555',
-          border: '1px solid '+(activeTab==='base' ? '#e8587a' : 'transparent'),
+        display:'flex',alignItems:'center',justifyContent:'space-between',
+        padding:'9px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'6px',
+        fontSize:'12px',fontWeight: activeTab==='base'?'700':'500',
+        background: activeTab==='base' ? '#fff' : 'transparent',
+        color: activeTab==='base' ? '#e8587a' : '#555',
+        border: '1px solid '+(activeTab==='base' ? '#e8587a' : 'transparent'),
         }">
         <span>📋 UI <b>기본정보</b></span>
       </div>
       <div v-for="(a, i) in cfRelatedAreas" :key="a?.codeId"
         @click="selectTab('area_'+a.codeId)"
         :style="{
-          display:'flex',alignItems:'center',justifyContent:'space-between',
-          padding:'8px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'4px',
-          fontSize:'12px',
-          background: activeTab==='area_'+a.codeId ? '#fff' : 'transparent',
-          color: activeTab==='area_'+a.codeId ? '#1565c0' : '#666',
-          border: '1px solid '+(activeTab==='area_'+a.codeId ? '#1565c0' : 'transparent'),
+        display:'flex',alignItems:'center',justifyContent:'space-between',
+        padding:'8px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'4px',
+        fontSize:'12px',
+        background: activeTab==='area_'+a.codeId ? '#fff' : 'transparent',
+        color: activeTab==='area_'+a.codeId ? '#1565c0' : '#666',
+        border: '1px solid '+(activeTab==='area_'+a.codeId ? '#1565c0' : 'transparent'),
         }">
         <span>영역 {{ i+1 }}. {{ a.codeLabel }}</span>
         <span v-if="activeTab==='area_'+a.codeId" style="display:flex;gap:2px;">
           <button @click.stop="moveArea(i, -1)" :disabled="i===0" title="위로"
             style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
-            :style="i===0?'opacity:0.3;cursor:default;':''">▲</button>
+            :style="i===0?'opacity:0.3;cursor:default;':''">
+            ▲
+          </button>
           <button @click.stop="moveArea(i, 1)" :disabled="i===cfRelatedAreas.length-1" title="아래로"
             style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
-            :style="i===cfRelatedAreas.length-1?'opacity:0.3;cursor:default;':''">▼</button>
+            :style="i===cfRelatedAreas.length-1?'opacity:0.3;cursor:default;':''">
+            ▼
+          </button>
         </span>
       </div>
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
@@ -466,7 +477,6 @@ window.DpDispUiDtl = {
         </button>
       </div>
     </div>
-
     <!-- -- 중앙 본문 -------------------------------------------------------- -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
       <!-- -- 기본정보 탭 -- -->
@@ -489,7 +499,9 @@ window.DpDispUiDtl = {
                 <button type="button" @click="openPathPick('form')" title="표시경로 선택"
                   :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                   @mouseover="$event.currentTarget.style.background='#eef2ff'"
-                  @mouseout="$event.currentTarget.style.background='#fff'">🔍</button>
+                  @mouseout="$event.currentTarget.style.background='#fff'">
+                  🔍
+                </button>
               </div>
             </template>
           </bo-form-area>
@@ -503,7 +515,6 @@ window.DpDispUiDtl = {
             <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" />
           </div>
         </div>
-
         <!-- -- ■ 제목 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
@@ -512,10 +523,12 @@ window.DpDispUiDtl = {
             <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
               <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
               <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                <input type="radio" v-model="form.titleYn" value="Y" /> 표시
+                <input type="radio" v-model="form.titleYn" value="Y" />
+                표시
               </label>
               <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                <input type="radio" v-model="form.titleYn" value="N" /> 미표시
+                <input type="radio" v-model="form.titleYn" value="N" />
+                미표시
               </label>
             </span>
           </div>
@@ -523,8 +536,8 @@ window.DpDispUiDtl = {
             <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
             <input class="form-control" v-model="form.title" placeholder="타이틀 텍스트" style="margin:0;flex:1;" />
           </div>
-        </div><!-- -- /제목 -------------------------------------------------------------- -->
-
+        </div>
+        <!-- -- /제목 -------------------------------------------------------------- -->
         <!-- -- ■ 내용 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
@@ -533,10 +546,9 @@ window.DpDispUiDtl = {
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📝 UI코멘트</div>
           <base-html-editor v-model="form.htmlDesc" height="280px" />
-        </div><!-- -- /내용 -------------------------------------------------------------- -->
-
+        </div>
+        <!-- -- /내용 -------------------------------------------------------------- -->
       </div>
-
       <!-- -- 영역 탭 -- -->
       <div v-else-if="cfActiveArea">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -551,12 +563,14 @@ window.DpDispUiDtl = {
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:12px;">
           <span><b style="color:#888;">유형:</b> {{ cfActiveArea.areaType || '-' }}</span>
-          <span><b style="color:#888;">표시:</b> {{ cfActiveArea.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(cfActiveArea.gridCols||1)+'열' }}</span>
+          <span>
+            <b style="color:#888;">표시:</b>
+            {{ cfActiveArea.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(cfActiveArea.gridCols||1)+'열' }}
+          </span>
           <span><b style="color:#888;">순서:</b> {{ cfActiveArea.sortOrd != null ? cfActiveArea.sortOrd : '-' }}</span>
           <span><b style="color:#888;">포함 패널:</b> {{ panelsOfArea(cfActiveArea.codeValue).length }}개</span>
           <span v-if="cfActiveArea.remark" style="flex:1 1 100%;"><b style="color:#888;">설명:</b> {{ cfActiveArea.remark }}</span>
         </div>
-
         <!-- -- ■ 설정 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
@@ -572,7 +586,8 @@ window.DpDispUiDtl = {
             <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
           </div>
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
-            📅 전시기간 <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 영역 기간 사용)</span>
+            📅 전시기간
+            <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 영역 기간 사용)</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
             <div style="display:flex;align-items:center;gap:8px;">
@@ -588,12 +603,12 @@ window.DpDispUiDtl = {
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
             <label v-for="opt in uiDispEnvOptions" :key="opt?.code"
               :style="{
-                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
-                border:'1px solid '+(hasUiDispEnv(opt.code)?'#7c3aed':'#ddd'),
-                background:hasUiDispEnv(opt.code)?'#f3e8ff':'#fafafa',
-                color:hasUiDispEnv(opt.code)?'#7c3aed':'#666',
-                fontSize:'12px',fontWeight:hasUiDispEnv(opt.code)?700:500,
-                cursor:'pointer',
+              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
+              border:'1px solid '+(hasUiDispEnv(opt.code)?'#7c3aed':'#ddd'),
+              background:hasUiDispEnv(opt.code)?'#f3e8ff':'#fafafa',
+              color:hasUiDispEnv(opt.code)?'#7c3aed':'#666',
+              fontSize:'12px',fontWeight:hasUiDispEnv(opt.code)?700:500,
+              cursor:'pointer',
               }">
               <input type="checkbox" :checked="hasUiDispEnv(opt.code)"
                 @change="toggleUiDispEnv(opt.code)"
@@ -605,12 +620,12 @@ window.DpDispUiDtl = {
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
             <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
               :style="{
-                display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
-                border:'1px solid '+(hasAreaVisibility(opt.codeValue)?'#1565c0':'#ddd'),
-                background:hasAreaVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
-                color:hasAreaVisibility(opt.codeValue)?'#1565c0':'#666',
-                fontSize:'12px',fontWeight:hasAreaVisibility(opt.codeValue)?700:500,
-                cursor:'pointer',
+              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
+              border:'1px solid '+(hasAreaVisibility(opt.codeValue)?'#1565c0':'#ddd'),
+              background:hasAreaVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
+              color:hasAreaVisibility(opt.codeValue)?'#1565c0':'#666',
+              fontSize:'12px',fontWeight:hasAreaVisibility(opt.codeValue)?700:500,
+              cursor:'pointer',
               }">
               <input type="checkbox" :checked="hasAreaVisibility(opt.codeValue)"
                 @change="toggleAreaVisibility(opt.codeValue)"
@@ -619,14 +634,16 @@ window.DpDispUiDtl = {
             </label>
           </div>
           <div v-if="!cfActiveArea.visibilityTargets" style="font-size:11px;color:#d32f2f;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
-        </div><!-- -- /설정 -------------------------------------------------------------- -->
-
+        </div>
+        <!-- -- /설정 -------------------------------------------------------------- -->
         <!-- -- ■ 내용 ----------------------------------------------------- -->
         <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
             <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;"></span>
             내용
-            <span style="margin-left:auto;font-size:12px;color:#888;font-weight:500;">패널 {{ panelsOfArea(cfActiveArea.codeValue).length }}개</span>
+            <span style="margin-left:auto;font-size:12px;color:#888;font-weight:500;">
+              패널 {{ panelsOfArea(cfActiveArea.codeValue).length }}개
+            </span>
           </div>
           <div v-if="panelsOfArea(cfActiveArea.codeValue).length" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
             <div v-for="(p, pi) in panelsOfArea(cfActiveArea.codeValue)" :key="pi"
@@ -642,23 +659,22 @@ window.DpDispUiDtl = {
           <div v-else style="padding:16px;text-align:center;color:#bbb;font-size:12px;border:1px dashed #e0e4ea;border-radius:8px;">
             연결된 패널이 없습니다.
           </div>
-        </div><!-- -- /내용 -------------------------------------------------------------- -->
+        </div>
+        <!-- -- /내용 -------------------------------------------------------------- -->
       </div>
     </div>
-
     <!-- -- 스플리터 --------------------------------------------------------- -->
     <div @mousedown="onSplitDrag"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
       title="드래그로 폭 조절">
       <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
     </div>
-
     <!-- -- 우측 미리보기 ------------------------------------------------------ -->
     <div :style="{
       width: previewPaneWidth + 'px',
       background:'#fafafa',borderLeft:'1px solid #e8ebef',padding:'14px',flexShrink:0,
       transition:'width .2s', overflowX:'auto',
-    }">
+      }">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <span style="font-size:12px;font-weight:700;color:#555;cursor:help;position:relative;"
           @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
@@ -674,23 +690,23 @@ window.DpDispUiDtl = {
         <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="previewMode = m.value"
           :style="{
-            flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
-            background: previewMode===m.value ? '#fff' : 'transparent',
-            color: previewMode===m.value ? '#1565c0' : '#666',
-            fontWeight: previewMode===m.value ? 700 : 500,
-            boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-          }">{{ m.label }}</button>
+          flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
+          background: previewMode===m.value ? '#fff' : 'transparent',
+          color: previewMode===m.value ? '#1565c0' : '#666',
+          fontWeight: previewMode===m.value ? 700 : 500,
+          boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+          }">
+          {{ m.label }}
+        </button>
       </div>
       <!-- -- 디바이스 프레임 --------------------------------------------------- -->
       <div :style="{
         width: cfPreviewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
         background:'#fff', padding:'8px', transition:'width .2s',
-      }">
+        }">
         <!-- -- UI 기본정보: 모든 영역 렌더 ---------------------------------------- -->
         <div v-if="activeTab==='base'" style="max-height:560px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
-          <div v-if="!cfRelatedAreas.length" style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">
-            연결된 영역이 없습니다.
-          </div>
+          <div v-if="!cfRelatedAreas.length" style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">연결된 영역이 없습니다.</div>
           <div v-for="a in cfRelatedAreas" :key="a?.codeId">
             <div style="font-size:10px;background:#222;color:#fff;padding:3px 8px;border-radius:4px 4px 0 0;display:flex;justify-content:space-between;">
               <code style="background:transparent;color:#fff;">{{ a.codeValue }}</code>
@@ -714,7 +730,6 @@ window.DpDispUiDtl = {
       </div>
     </div>
   </div>
-
   <!-- -- 영역 선택 팝업 ------------------------------------------------------- -->
   <area-pick-modal v-if="pickOpen"
     :title="'전시영역 추가 [' + form.codeValue + ']'"
@@ -722,10 +737,9 @@ window.DpDispUiDtl = {
     :exclude-ui="form.codeValue"
     @close="closePick"
     @pick="onAreaPicked" />
-
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_ui"
     :value="form.pathId" title="UI 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
-  `,
+`,
 };

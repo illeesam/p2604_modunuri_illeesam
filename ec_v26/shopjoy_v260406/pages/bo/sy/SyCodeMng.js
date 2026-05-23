@@ -627,17 +627,14 @@ window.SyCodeMng = {
   template: /* html */`
 <div>
   <div class="page-title">공통코드관리</div>
-
   <!-- -- 검색 영역 -------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <!-- -- 표시경로 트리 + 코드그룹 CRUD ----------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;margin-bottom:16px;align-items:flex-start;">
     <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="true"
       :selected="uiState.grpSelectedPath" @select="grpSelectNode" />
-
     <bo-grid-crud
       :columns="grpGridColumns" :rows="uiState.grpRows" row-key="codeGrp"
       list-title="공통코드그룹관리"
@@ -645,12 +642,13 @@ window.SyCodeMng = {
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
       @sort="onGrpSort" @cell-change="onGrpChange">
-
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="addGrp">+ 행추가</button>
-        <button class="btn btn-primary btn-sm" @click="handleSaveGrp" :disabled="!uiState.grpDirtyCount">저장 <span v-if="uiState.grpDirtyCount">({{ uiState.grpDirtyCount }})</span></button>
+        <button class="btn btn-primary btn-sm" @click="handleSaveGrp" :disabled="!uiState.grpDirtyCount">
+          저장
+          <span v-if="uiState.grpDirtyCount">({{ uiState.grpDirtyCount }})</span>
+        </button>
       </template>
-
       <template #cell-grpNm="{ row: g }">
         <td>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -664,24 +662,28 @@ window.SyCodeMng = {
       <template #row-actions="{ row: g, idx }">
         <button v-if="g._row_status !== 'D'" class="btn btn-xs" @click.stop="openGrpSetting(g, $event)"
           style="background:#f0f4ff;border:1px solid #c7d2fe;color:#4338ca;font-weight:600;"
-          title="코드관리">코드관리</button>
+          title="코드관리">
+          코드관리
+        </button>
         <bo-row-cancel-delete :row="g" @cancel="cancelGrp(idx)" @delete="handleDeleteGrp(idx)" />
       </template>
     </bo-grid-crud>
   </div>
-
   <!-- -- 코드 목록 영역 ---------------------------------------------------- -->
   <div class="card">
     <!-- -- 일반/트리 탭 ---------------------------------------------------- -->
     <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="uiState.activeCodeTab='일반'"
         style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
-        :style="uiState.activeCodeTab==='일반' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">일반</button>
+        :style="uiState.activeCodeTab==='일반' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">
+        일반
+      </button>
       <button @click="uiState.activeCodeTab='트리'" :disabled="!uiState.selectedGrp"
         style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
-        :style="uiState.activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">트리</button>
+        :style="uiState.activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">
+        트리
+      </button>
     </div>
-
     <!-- -- 일반 탭 ---------------------------------------------------------- -->
     <div v-if="uiState.activeCodeTab==='일반'">
       <bo-grid-crud
@@ -695,13 +697,11 @@ window.SyCodeMng = {
         @delete-checked="deleteRows" @cancel-checked="cancelChecked"
         @cell-change="onCellChange" @export="exportExcel" @reorder="onDragEnd"
         @row-dblclick="row => handleLoadDetail(row.codeId)">
-
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
         </template>
       </bo-grid-crud>
     </div>
-
     <!-- -- 트리 탭 (BoGridCrud 트리 모드) ----------------------------------- -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
       <bo-grid-crud
@@ -713,18 +713,20 @@ window.SyCodeMng = {
         @delete-checked="deleteRows" @cancel-checked="cancelChecked"
         v-model:checkAll="uiState.checkAll" v-model:focusedIdx="uiState.focusedIdx"
         @cell-change="onCellChange">
-
         <template #toolbar-actions>
           <div style="display:inline-flex;border:1px solid #d1d5db;border-radius:4px;overflow:hidden;align-self:center;">
             <button type="button" @click="codeExpandAll"
               style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;border-right:1px solid #d1d5db;"
-              title="모든 노드 펼치기">▼ 전체펼치기</button>
+              title="모든 노드 펼치기">
+              ▼ 전체펼치기
+            </button>
             <button type="button" @click="codeCollapseAll"
               style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;"
-              title="모든 노드 접기">▶ 전체접기</button>
+              title="모든 노드 접기">
+              ▶ 전체접기
+            </button>
           </div>
         </template>
-
         <template #cell-codeLabel="{ row, node }">
           <td style="padding-left:0;">
             <div style="display:flex;align-items:center;gap:4px;">
@@ -738,14 +740,17 @@ window.SyCodeMng = {
               <span v-if="node.depth > 0" style="color:#bfdbfe;margin-right:2px;font-weight:300;font-size:11px;">├</span>
               <span :style="'flex-shrink:0;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;'+
                 (node.depth===0?'background:#dbeafe;color:#1e40af;':node.depth===1?'background:#dcfce7;color:#166534;':'background:#fef3c7;color:#92400e;')"
-                :title="'레벨 ' + (node.depth+1)">L{{ node.depth+1 }}</span>
+                :title="'레벨 ' + (node.depth+1)">
+                L{{ node.depth+1 }}
+              </span>
               <input class="grid-input" style="flex:1;" v-model="row.codeLabel" :disabled="row._row_status==='D'" @input="onCellChange(row)" />
               <span v-if="node.node.children.length > 0" style="flex-shrink:0;font-size:10px;color:#6b7280;background:#f3f4f6;padding:1px 5px;border-radius:3px;"
-                :title="'직속 자식 ' + node.node.children.length + '개'">↳ {{ node.node.children.length }}</span>
+                :title="'직속 자식 ' + node.node.children.length + '개'">
+                ↳ {{ node.node.children.length }}
+              </span>
             </div>
           </td>
         </template>
-
         <template #row-actions="{ row }">
           <bo-row-cancel-delete :row="row"
             @cancel="cancelRow(uiState.gridRows.indexOf(row))"
@@ -754,7 +759,6 @@ window.SyCodeMng = {
       </bo-grid-crud>
     </div>
   </div>
-
   <!-- -- 코드 상세 패널 (인라인 임베드) --------------------------------- -->
   <div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
@@ -762,8 +766,8 @@ window.SyCodeMng = {
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
     </div>
     <sy-code-dtl :navigate="navigate" :show-toast="showToast"
-      :show-confirm="showConfirm" 
-      :set-api-res="() => {}" 
+      :show-confirm="showConfirm"
+      :set-api-res="() => {}"
       :on-list-reload="handleSearchList"
       :reload-trigger="uiState.codeReloadTrigger"
       :dtl-id="uiState.selectedCodeId"

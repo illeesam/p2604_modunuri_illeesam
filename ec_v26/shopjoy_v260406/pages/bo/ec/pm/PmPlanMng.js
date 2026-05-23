@@ -218,13 +218,21 @@ const CATEGORIES = [
   </div>
   <div class="card">
     <div class="toolbar">
-      <span class="list-title"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>기획전목록 <span class="list-count">{{ pager.pageTotalCount }}건</span></span>
+      <span class="list-title">
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        기획전목록
+        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+      </span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
           <button @click="tabMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">☰ 리스트</button>
+            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+            ☰ 리스트
+          </button>
           <button @click="tabMode='card'" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">⊞ 카드</button>
+            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+            ⊞ 카드
+          </button>
         </div>
         <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
@@ -246,7 +254,6 @@ const CATEGORIES = [
         </div>
       </template>
     </bo-grid>
-
     <!-- -- 카드 뷰 --------------------------------------------------------- -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="plans.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
@@ -257,7 +264,10 @@ const CATEGORIES = [
         <div v-if="p.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="p.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">기획전 #{{ p.planId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?{color:'#e8587a'}:{}">{{ p.planNm }}<span v-if="selectedId===p.planId" style="font-size:10px;margin-left:4px;">▼</span></div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(p.planId)" :style="selectedId===p.planId?{color:'#e8587a'}:{}">
+            {{ p.planNm }}
+            <span v-if="selectedId===p.planId" style="font-size:10px;margin-left:4px;">▼</span>
+          </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnStatusBadge(p.planStatusCd)" style="font-size:11px;">{{ p.planStatusCd }}</span>
             <span class="badge badge-blue" style="font-size:11px;">{{ p.category }}</span>
@@ -278,7 +288,6 @@ const CATEGORIES = [
     </div>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-
   <!-- -- 하단 상세: PlanDtl 임베드 --------------------------------------------- -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -292,11 +301,10 @@ const CATEGORIES = [
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    
-    
+      
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
-  />
+      />
   </div>
 </div>
 `

@@ -247,12 +247,10 @@ window.CmNoticeMng = {
   template: /* html */`
 <div>
   <div class="page-title">공지사항관리</div>
-
   <!-- -- 검색 영역 ------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <!-- -- 목록 영역 (BoGrid) --------------------------------------------- -->
   <bo-grid :columns="listGridColumns" :rows="notices" :pager="pager" row-key="noticeId"
     :sort-state="uiState" list-title="공지사항목록"
@@ -263,37 +261,34 @@ window.CmNoticeMng = {
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
-      <template #row-actions="{ row }">
-        <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.noticeId)">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-        </div>
-      </template>
+    <template #row-actions="{ row }">
+      <div class="actions">
+        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.noticeId)">수정</button>
+        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+      </div>
+    </template>
   </bo-grid>
-
+</div>
+<!-- -- 상세 패널 (인라인 임베드) --------------------------------------- -->
+<div v-if="selectedId" style="margin-top:4px;">
+  <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+    <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
   </div>
-
-  <!-- -- 상세 패널 (인라인 임베드) --------------------------------------- -->
-  <div v-if="selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
-    </div>
-    <cm-notice-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      :tab-mode="cfIsViewMode"
+  <cm-notice-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :show-toast="showToast"
+    :show-confirm="showConfirm"
+    :set-api-res="setApiRes"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    
+    :reload-trigger="uiStateDetail.reloadTrigger"
+    :tab-mode="cfIsViewMode"
     
     :on-list-reload="handleSearchList"
-  />
-  </div>
-
+    />
+</div>
 </div>
 `
 };

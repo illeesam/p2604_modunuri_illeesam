@@ -299,46 +299,40 @@ window.SyPathMng = {
   template: /* html */`
 <div>
   <div class="page-title">표시경로</div>
-
   <!-- -- 검색 -- -->
   <div class="card">
     <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <!-- -- 좌 트리 + 우 그리드 -- -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
-
     <!-- 트리 -->
     <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
       :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
       :on-toggle="toggleNode"
       @select="selectNode" @expand-all="expandAll" @collapse-all="collapseAll" />
-
     <!-- 그리드 -->
     <bo-grid
       :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass" :show-save="true" :row-actions="true"
       @save="handleSave" @set-page="setPage" @size-change="onSizeChange" @cell-change="onCellChange">
-
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
       </template>
       <template #head-actions>관리</template>
-
       <template #row-actions="{ row }">
         <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="cancelRow(row)">취소</button>
         <button v-else class="btn btn-danger btn-xs" @click.stop="deleteRow(row)">삭제</button>
       </template>
     </bo-grid>
   </div>
-
   <!-- -- 부모경로 선택 모달 (BoTreeSelectorModal) -- -->
   <bo-tree-selector-modal :show="parentModal.show" title="부모경로 선택"
     :node="cfParentTree" :expanded="parentModal.expanded" :on-toggle="toggleParentNode"
     root-label="(루트 — 상위없음)"
     @select="selectParent" @close="closeParentModal" />
-</div>`,
+</div>
+`,
 };
 
 /* PathTreeNode, PathParentSelector → components/comp/BoComp.js */

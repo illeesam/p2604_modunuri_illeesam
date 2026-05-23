@@ -243,13 +243,11 @@ window.XsSample04 = {
 
   template: /* html */`
 <div style="padding:16px;">
-
   <!-- -- 제목 ------------------------------------------------------------- -->
   <div style="font-size:16px;font-weight:700;margin-bottom:16px;">
     04. 모달 / 팝업
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">Modal &amp; Popup 전시관 — 커스텀 10종 + BaseModal 17종</span>
   </div>
-
   <!-- -- ━━━ 카탈로그 카드 그리드 ━━━ -------------------------------------------- -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:22px;">
     <div v-for="item in CATALOG" :key="item.id"
@@ -264,38 +262,52 @@ window.XsSample04 = {
       <!-- -- Alert: 4 variant 버튼 ---------------------------------------- -->
       <div v-if="item.id==='alert'" style="display:flex;gap:4px;flex-wrap:wrap;">
         <button @click="openModal('alert',{variant:'info',    data:{msg:'시스템 점검이 2026-04-15 02:00 예정되어 있습니다.'}})"
-          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#dbeafe;color:#1e40af;cursor:pointer;font-weight:700;">ℹ info</button>
+          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#dbeafe;color:#1e40af;cursor:pointer;font-weight:700;">
+          ℹ info
+        </button>
         <button @click="openModal('alert',{variant:'success', data:{msg:'저장이 완료되었습니다.'}})"
-          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#d1fae5;color:#065f46;cursor:pointer;font-weight:700;">✔ success</button>
+          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#d1fae5;color:#065f46;cursor:pointer;font-weight:700;">
+          ✔ success
+        </button>
         <button @click="openModal('alert',{variant:'warning', data:{msg:'재고가 5개 미만입니다. 확인해주세요.'}})"
-          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#fef3c7;color:#92400e;cursor:pointer;font-weight:700;">⚠ warning</button>
+          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#fef3c7;color:#92400e;cursor:pointer;font-weight:700;">
+          ⚠ warning
+        </button>
         <button @click="openModal('alert',{variant:'error',   data:{msg:'서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'}})"
-          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;font-weight:700;">✕ error</button>
+          style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;font-weight:700;">
+          ✕ error
+        </button>
       </div>
       <!-- -- Loading: async --------------------------------------------- -->
       <button v-else-if="item.id==='loading'" @click="loadingDemo()"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
-        :style="'background:'+item.color">열기 →</button>
+        :style="'background:'+item.color">
+        열기 →
+      </button>
       <!-- -- Confirm: 확인 시 success alert 표시 ----------------------------- -->
       <button v-else-if="item.id==='confirm'"
         @click="openModal('confirm',{onConfirm:()=>openModal('alert',{variant:'success',data:{msg:'확인 처리되었습니다.'}})})"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
-        :style="'background:'+item.color">열기 →</button>
+        :style="'background:'+item.color">
+        열기 →
+      </button>
       <!-- -- Detail: 첫 번째 회원 데이터로 오픈 ------------------------------------ -->
       <button v-else-if="item.id==='detail' && members.length"
         @click="openModal('detail',{data:members[0]})"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
-        :style="'background:'+item.color">열기 →</button>
+        :style="'background:'+item.color">
+        열기 →
+      </button>
       <!-- -- 그 외 -------------------------------------------------------- -->
       <button v-else-if="item.id!=='detail'" @click="openModal(item.id)"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
-        :style="'background:'+item.color">열기 →</button>
+        :style="'background:'+item.color">
+        열기 →
+      </button>
     </div>
   </div>
-
   <!-- -- ━━━ BaseModals.js 공통 모달 (17종) ━━━ ------------------------------- -->
   <div style="margin-top:22px;display:flex;flex-direction:column;gap:14px;">
-
     <!-- -- 섹션 헤더 -------------------------------------------------------- -->
     <div>
       <div style="font-size:13px;font-weight:700;color:#333;">
@@ -303,7 +315,6 @@ window.XsSample04 = {
         <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px;">components/modals/BaseModals.js — 17가지 패턴</span>
       </div>
     </div>
-
     <!-- -- /* ① FO + BO 공통 (3종) ----------------------------------------- -->
     <div style="border:1px solid #dbeafe;border-radius:10px;padding:14px 16px;background:#f0f7ff;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
@@ -323,11 +334,12 @@ window.XsSample04 = {
           </div>
           <button @click="openBModal(item.id)"
             style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
-            :style="'background:'+item.color">열기 →</button>
+            :style="'background:'+item.color">
+            열기 →
+          </button>
         </div>
       </div>
     </div>
-
     <!-- -- /* ② FO 전용 (1종) ---------------------------------------------- -->
     <div style="border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;background:#f0fdf4;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
@@ -347,11 +359,12 @@ window.XsSample04 = {
           </div>
           <button @click="openBModal(item.id)"
             style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
-            :style="'background:'+item.color">열기 →</button>
+            :style="'background:'+item.color">
+            열기 →
+          </button>
         </div>
       </div>
     </div>
-
     <!-- -- ③ BO 전용 (13종) ------------------------------------------------ -->
     <div style="border:1px solid #fecaca;border-radius:10px;padding:14px 16px;background:#fff7f7;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
@@ -371,13 +384,13 @@ window.XsSample04 = {
           </div>
           <button @click="openBModal(item.id)"
             style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
-            :style="'background:'+item.color">열기 →</button>
+            :style="'background:'+item.color">
+            열기 →
+          </button>
         </div>
       </div>
     </div>
-
   </div>
-
   <!-- -- ━━━ 회원 그리드 (상세보기 클릭) ━━━ --------------------------------------- -->
   <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:22px;">
     <div style="padding:8px 14px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:6px;">
@@ -391,13 +404,13 @@ window.XsSample04 = {
       :row-click="m => openModal('detail',{data:m})">
       <template #row-actions="{ row }">
         <button @click.stop="openModal('detail',{data:row})"
-          style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">상세</button>
+          style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">
+          상세
+        </button>
       </template>
     </fo-grid>
   </div>
-
   <!-- -- ━━━━━━ MODALS ━━━━━━ ------------------------------------------- -->
-
   <!-- -- ① Alert 모달 ----------------------------------------------------- -->
   <template v-if="uiState.modalType==='alert'">
     <div @click="closeModal"
@@ -415,12 +428,13 @@ window.XsSample04 = {
           </div>
           <button @click="closeModal"
             style="width:100%;padding:9px;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;"
-            :style="'background:'+fnAlertMeta(uiState.modalVariant).bg">확인</button>
+            :style="'background:'+fnAlertMeta(uiState.modalVariant).bg">
+            확인
+          </button>
         </div>
       </div>
     </div>
   </template>
-
   <!-- -- ② Confirm 다이얼로그 ------------------------------------------------ -->
   <template v-if="uiState.modalType==='confirm'">
     <div @click="closeModal"
@@ -429,17 +443,24 @@ window.XsSample04 = {
         style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:340px;max-width:90vw;padding:24px 22px 20px;">
         <div style="font-size:26px;margin-bottom:10px;">🤔</div>
         <div style="font-size:14px;font-weight:800;color:#111;margin-bottom:8px;">확인이 필요합니다</div>
-        <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:22px;">이 작업을 진행하시겠습니까?<br>작업 후에는 되돌릴 수 없습니다.</div>
+        <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:22px;">
+          이 작업을 진행하시겠습니까?
+          <br>
+          작업 후에는 되돌릴 수 없습니다.
+        </div>
         <div style="display:flex;gap:8px;">
           <button @click="closeModal"
-            style="flex:1;padding:9px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;font-size:13px;color:#666;">취소</button>
+            style="flex:1;padding:9px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;font-size:13px;color:#666;">
+            취소
+          </button>
           <button @click="doConfirm"
-            style="flex:1;padding:9px;border:none;border-radius:7px;background:#ef4444;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">확인</button>
+            style="flex:1;padding:9px;border:none;border-radius:7px;background:#ef4444;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
+            확인
+          </button>
         </div>
       </div>
     </div>
   </template>
-
   <!-- -- ③ 폼 입력 모달 ------------------------------------------------------ -->
   <template v-if="uiState.modalType==='form'">
     <div @click="closeModal"
@@ -452,14 +473,20 @@ window.XsSample04 = {
         </div>
         <div style="padding:18px 20px;">
           <div style="margin-bottom:13px;">
-            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">이름 <span style="color:#ef4444;">*</span></label>
+            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
+              이름
+              <span style="color:#ef4444;">*</span>
+            </label>
             <input v-model="form.name" placeholder="홍길동"
               style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border-radius:6px;outline:none;"
               :style="formErrors.name?'border:1.5px solid #ef4444;':'border:1px solid #ddd;'" />
             <div v-if="formErrors.name" style="font-size:11px;color:#ef4444;margin-top:3px;">{{ formErrors.name }}</div>
           </div>
           <div style="margin-bottom:13px;">
-            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">이메일 <span style="color:#ef4444;">*</span></label>
+            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
+              이메일
+              <span style="color:#ef4444;">*</span>
+            </label>
             <input v-model="form.email" placeholder="example@shopjoy.kr" type="email"
               style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border-radius:6px;outline:none;"
               :style="formErrors.email?'border:1.5px solid #ef4444;':'border:1px solid #ddd;'" />
@@ -479,13 +506,16 @@ window.XsSample04 = {
           </div>
         </div>
         <div style="padding:10px 20px 16px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0;">
-          <button @click="closeModal" style="padding:8px 18px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">취소</button>
-          <button @click="submitForm" style="padding:8px 18px;border:none;border-radius:6px;background:#34a853;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">등록</button>
+          <button @click="closeModal" style="padding:8px 18px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
+            취소
+          </button>
+          <button @click="submitForm" style="padding:8px 18px;border:none;border-radius:6px;background:#34a853;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
+            등록
+          </button>
         </div>
       </div>
     </div>
   </template>
-
   <!-- -- ④ 상세보기 모달 ------------------------------------------------------ -->
   <template v-if="uiState.modalType==='detail' && uiState.modalData">
     <div @click="closeModal"
@@ -495,35 +525,51 @@ window.XsSample04 = {
         <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;background:#f8f9fa;">
           <span style="font-size:18px;">👤</span>
           <span style="font-size:13px;font-weight:800;color:#222;">회원 상세 정보</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(uiState.modalData.grade)">{{ uiState.modalData.grade }}</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="fnStatusBadge(uiState.modalData.status)">{{ uiState.modalData.status }}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(uiState.modalData.grade)">
+            {{ uiState.modalData.grade }}
+          </span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="fnStatusBadge(uiState.modalData.status)">
+            {{ uiState.modalData.status }}
+          </span>
           <span style="flex:1;"></span>
           <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">✕</button>
         </div>
         <div style="padding:16px 20px;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:14px;">
             <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">이름</div>
+              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+                이름
+              </div>
               <div style="font-size:16px;font-weight:800;color:#111;">{{ uiState.modalData.name }}</div>
             </div>
             <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">회원번호</div>
+              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+                회원번호
+              </div>
               <div style="font-size:14px;font-weight:700;color:#555;">#{{ uiState.modalData.memberId }}</div>
             </div>
             <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">이메일</div>
+              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+                이메일
+              </div>
               <div style="font-size:11px;color:#333;font-family:monospace;">{{ uiState.modalData.email }}</div>
             </div>
             <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">연락처</div>
+              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+                연락처
+              </div>
               <div style="font-size:12px;color:#333;">{{ uiState.modalData.phone }}</div>
             </div>
             <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">가입일</div>
+              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+                가입일
+              </div>
               <div style="font-size:12px;color:#333;">{{ uiState.modalData.joinDate }}</div>
             </div>
             <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">주소</div>
+              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+                주소
+              </div>
               <div style="font-size:11px;color:#333;">{{ uiState.modalData.address }}</div>
             </div>
           </div>
@@ -547,20 +593,25 @@ window.XsSample04 = {
         </div>
         <div style="padding:10px 20px 14px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0;">
           <button @click="openEditConfirm(uiState.modalData)"
-            style="padding:7px 16px;border:none;border-radius:6px;background:#7c3aed;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">✏ 수정</button>
+            style="padding:7px 16px;border:none;border-radius:6px;background:#7c3aed;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
+            ✏ 수정
+          </button>
           <button @click="closeModal"
-            style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">닫기</button>
+            style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
+            닫기
+          </button>
         </div>
       </div>
     </div>
   </template>
-
   <!-- -- ⑤ 이미지 팝업 ------------------------------------------------------- -->
   <template v-if="uiState.modalType==='image'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
       <button @click="closeModal"
-        style="position:absolute;top:18px;right:22px;border:none;background:rgba(255,255,255,.15);cursor:pointer;font-size:16px;color:#fff;padding:6px 10px;border-radius:6px;line-height:1;">✕ 닫기</button>
+        style="position:absolute;top:18px;right:22px;border:none;background:rgba(255,255,255,.15);cursor:pointer;font-size:16px;color:#fff;padding:6px 10px;border-radius:6px;line-height:1;">
+        ✕ 닫기
+      </button>
       <div @click.stop
         style="width:480px;max-width:88vw;height:320px;border-radius:12px;overflow:hidden;box-shadow:0 8px 48px rgba(0,0,0,.6);background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f64f59 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
         <span style="font-size:56px;">🛍️</span>
@@ -570,7 +621,6 @@ window.XsSample04 = {
       <div style="color:rgba(255,255,255,.45);font-size:11px;">배경 또는 ✕ 클릭 시 닫기</div>
     </div>
   </template>
-
   <!-- -- ⑥ 우측 Drawer ---------------------------------------------------- -->
   <template v-if="uiState.modalType==='drawer'">
     <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
@@ -578,11 +628,14 @@ window.XsSample04 = {
       style="position:fixed;top:0;right:0;bottom:0;z-index:9001;width:360px;max-width:88vw;background:#fff;box-shadow:-4px 0 28px rgba(0,0,0,.18);display:flex;flex-direction:column;animation:s04_slideRight .22s ease;">
       <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#0f766e;color:#fff;">
         <span style="font-size:13px;font-weight:800;">◧ 우측 Drawer</span>
-        <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.8);line-height:1;">✕</button>
+        <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.8);line-height:1;">
+          ✕
+        </button>
       </div>
       <div style="flex:1;overflow-y:auto;padding:18px;">
         <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:16px;">
-          화면 우측에서 슬라이드인하는 Drawer 패턴입니다.<br>
+          화면 우측에서 슬라이드인하는 Drawer 패턴입니다.
+          <br>
           필터, 설정, 보조 정보 표시 등에 활용합니다.
         </div>
         <div v-for="i in 8" :key="i"
@@ -594,11 +647,12 @@ window.XsSample04 = {
         </div>
       </div>
       <div style="padding:12px 18px 18px;border-top:1px solid #f0f0f0;">
-        <button @click="closeModal" style="width:100%;padding:10px;border:none;border-radius:8px;background:#0f766e;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">닫기</button>
+        <button @click="closeModal" style="width:100%;padding:10px;border:none;border-radius:8px;background:#0f766e;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
+          닫기
+        </button>
       </div>
     </div>
   </template>
-
   <!-- -- ⑦ 바텀시트 --------------------------------------------------------- -->
   <template v-if="uiState.modalType==='bottom'">
     <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
@@ -610,7 +664,8 @@ window.XsSample04 = {
       <div style="padding:4px 20px 12px;font-size:14px;font-weight:800;color:#111;flex-shrink:0;">⬆ 바텀시트</div>
       <div style="flex:1;overflow-y:auto;padding:0 20px;">
         <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px;">
-          화면 하단에서 슬라이드업하는 바텀시트 패턴입니다.<br>
+          화면 하단에서 슬라이드업하는 바텀시트 패턴입니다.
+          <br>
           모바일 UX에서 자주 활용합니다.
         </div>
         <div v-for="(label,i) in ['배송지 변경','쿠폰 적용','포인트 사용','결제 수단 변경','주문 메모 추가','취소/반품 신청']" :key="i"
@@ -622,30 +677,35 @@ window.XsSample04 = {
         </div>
       </div>
       <div style="padding:14px 20px 22px;flex-shrink:0;">
-        <button @click="closeModal" style="width:100%;padding:12px;border:none;border-radius:10px;background:#9333ea;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">닫기</button>
+        <button @click="closeModal" style="width:100%;padding:12px;border:none;border-radius:10px;background:#9333ea;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">
+          닫기
+        </button>
       </div>
     </div>
   </template>
-
   <!-- -- ⑧ 전체화면 모달 ------------------------------------------------------ -->
   <template v-if="uiState.modalType==='fullscreen'">
     <div style="position:fixed;inset:0;z-index:9000;background:#fff;display:flex;flex-direction:column;animation:s04_fadeIn .18s ease;">
       <div style="padding:12px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#9f1239;color:#fff;flex-shrink:0;">
         <span style="font-size:13px;font-weight:800;">⛶ 전체화면 모달</span>
-        <button @click="closeModal" style="border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);cursor:pointer;font-size:12px;color:#fff;padding:5px 14px;border-radius:6px;">✕ 닫기</button>
+        <button @click="closeModal" style="border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);cursor:pointer;font-size:12px;color:#fff;padding:5px 14px;border-radius:6px;">
+          ✕ 닫기
+        </button>
       </div>
       <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#fafafa;">
         <span style="font-size:64px;">🚀</span>
         <div style="font-size:20px;font-weight:800;color:#222;">전체화면 모달</div>
         <div style="font-size:13px;color:#888;text-align:center;max-width:400px;line-height:1.8;">
-          화면 전체를 덮는 모달 패턴입니다.<br>
+          화면 전체를 덮는 모달 패턴입니다.
+          <br>
           에디터, 전체 편집 화면, 임시 대시보드 등에 활용됩니다.
         </div>
-        <button @click="closeModal" style="margin-top:8px;padding:11px 36px;border:none;border-radius:8px;background:#9f1239;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">닫기</button>
+        <button @click="closeModal" style="margin-top:8px;padding:11px 36px;border:none;border-radius:8px;background:#9f1239;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">
+          닫기
+        </button>
       </div>
     </div>
   </template>
-
   <!-- -- ⑨ 중첩 모달 -------------------------------------------------------- -->
   <template v-if="uiState.modalType==='nested'">
     <div @click="uiState.nested2 ? uiState.nested2=false : closeModal()"
@@ -658,14 +718,19 @@ window.XsSample04 = {
         </div>
         <div style="padding:20px 20px 16px;">
           <div style="font-size:12px;color:#555;line-height:1.75;margin-bottom:16px;">
-            이 모달 위에 2단계 모달을 추가로 오픈할 수 있습니다.<br>
+            이 모달 위에 2단계 모달을 추가로 오픈할 수 있습니다.
+            <br>
             배경 클릭 시 가장 상단 모달부터 닫힙니다.
           </div>
           <button @click="uiState.nested2=true"
-            style="font-size:12px;padding:7px 18px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-weight:700;">+ 2단계 모달 열기</button>
+            style="font-size:12px;padding:7px 18px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-weight:700;">
+            + 2단계 모달 열기
+          </button>
         </div>
         <div style="padding:10px 18px 14px;border-top:1px solid #f0f0f0;text-align:right;">
-          <button @click="closeModal" style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">닫기</button>
+          <button @click="closeModal" style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
+            닫기
+          </button>
         </div>
       </div>
     </div>
@@ -677,14 +742,19 @@ window.XsSample04 = {
           style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.35);width:300px;max-width:86vw;padding:22px 20px 18px;">
           <div style="font-size:22px;margin-bottom:10px;">✅</div>
           <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:8px;">2단계 모달</div>
-          <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:18px;">모달 위에 표시되는 중첩 모달입니다.<br>z-index를 높여 최상단에 렌더링됩니다.</div>
+          <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:18px;">
+            모달 위에 표시되는 중첩 모달입니다.
+            <br>
+            z-index를 높여 최상단에 렌더링됩니다.
+          </div>
           <button @click="uiState.nested2=false"
-            style="width:100%;padding:9px;border:none;border-radius:7px;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">닫기</button>
+            style="width:100%;padding:9px;border:none;border-radius:7px;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
+            닫기
+          </button>
         </div>
       </div>
     </template>
   </template>
-
   <!-- -- ⑩ 로딩 모달 -------------------------------------------------------- -->
   <template v-if="uiState.modalType==='loading'">
     <div style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
@@ -693,9 +763,7 @@ window.XsSample04 = {
       <div style="color:rgba(255,255,255,.45);font-size:11px;">2.5초 후 자동으로 닫힙니다</div>
     </div>
   </template>
-
   <!-- -- ━━━━━━ BaseModal 17종 ━━━━━━ ------------------------------------ -->
-
   <!-- -- ① 주문상세 / ② 상품상세 / ③ 주문자 — show prop 방식 ------------------------- -->
   <order-detail-modal
     :show="bModal.type==='orderDetail'"
@@ -710,7 +778,6 @@ window.XsSample04 = {
     :user="demoUser"
     :order="demoOrder"
     @close="closeBModal" />
-
   <!-- -- ④~⑨ 선택 모달 — 조건부 마운트 방식 ----------------------------------------- -->
   <template v-if="bModal.type==='siteSelect'">
     <site-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
@@ -730,7 +797,6 @@ window.XsSample04 = {
   <template v-if="bModal.type==='bbmSelect'">
     <bbm-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
-
   <!-- -- ⑩~⑪ 템플릿 모달 ----------------------------------------------------- -->
   <template v-if="bModal.type==='tmplPreview'">
     <template-preview-modal :tmpl="demoTmpl" :sample-params="demoSampleParams" @close="closeBModal" />
@@ -738,7 +804,6 @@ window.XsSample04 = {
   <template v-if="bModal.type==='tmplSend'">
     <template-send-modal :tmpl="demoTmpl" :bo-data="boData" :show-toast="bShowToast" :show-confirm="bShowConfirm" @close="closeBModal" />
   </template>
-
   <!-- -- ⑫~⑮ 트리 모달 ------------------------------------------------------ -->
   <template v-if="bModal.type==='roleTree'">
     <role-tree-modal :bo-data="boData" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
@@ -752,7 +817,6 @@ window.XsSample04 = {
   <template v-if="bModal.type==='categoryTree'">
     <bo-category-tree-modal :bo-data="boData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
-
   <!-- -- ⑯ 전시 미리보기 ------------------------------------------------------ -->
   <disp-preview-modal
     :show="bModal.type==='dispPreview'"
@@ -762,14 +826,12 @@ window.XsSample04 = {
     :widgets="[]"
     :widget="{}"
     @close="closeBModal" />
-
   <!-- -- ⑰ 카테고리 멀티선택 ---------------------------------------------------- -->
   <category-select-modal
     :show="bModal.type==='catSelect'"
     :selected-ids="catSelIds"
     @close="closeBModal"
     @apply="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
-
   <style>
     @keyframes s04_slideRight  { from { transform:translateX(100%); } to { transform:translateX(0); } }
     @keyframes s04_slideBottom { from { transform:translateY(100%); } to { transform:translateY(0); } }
@@ -819,5 +881,5 @@ window.XsSample04 = {
     .badge-xs      { padding:1px 5px !important;font-size:10px !important;border-radius:4px !important;font-weight:700 !important; }
   </style>
 </div>
-  `,
+`,
 };

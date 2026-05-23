@@ -156,9 +156,9 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
-      @sort="onSort" @set-page="setPage" @size-change="onSizeChange">
-    </bo-grid>
+      @sort="onSort" @set-page="setPage" @size-change="onSizeChange"></bo-grid>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-</div>`
+</div>
+`
 };

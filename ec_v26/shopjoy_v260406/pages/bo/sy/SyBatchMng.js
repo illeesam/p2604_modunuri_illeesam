@@ -337,58 +337,51 @@ window.SyBatchMng = {
   },
   template: /* html */`
 <div>
-  <div class="page-title">배치스케즐관리</div>  <!-- -- 검색 ------------------------------------------------------------- -->
+  <div class="page-title">배치스케즐관리</div>
+  <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
-  
-
-
-
-
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-<!-- -- CRUD 그리드 --------------------------------------------------------- -->
-  <bo-grid-crud
-    :columns="baseGridColumns" :rows="gridRows" row-key="batchId"
-    list-title="배치목록" :show-export="true"
-    v-model:focusedIdx="uiState.focusedIdx"
-    v-model:checkAll="uiState.checkAll"
-    @add="addRow" @save="handleSave"
-    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-    @cell-change="onCellChange" @export="exportExcel">
-
-
-    <template #cell-cronExpr="{ row, idx }">
-      <td>
-        <div style="display:flex;align-items:center;gap:3px;">
-          <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
-          <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs" style="flex-shrink:0;padding:2px 5px;font-size:11px;" title="Cron 편집" @click.stop="openCronPicker(idx)">🕐</button>
-        </div>
-      </td>
-    </template>
-
-    <template #row-actions="{ row, idx }">
-      <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
-      <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
-    </template>
-  </bo-grid-crud>
-
-  <!-- -- Cron 편집 모달 (BoCronModal 컴포넌트) -- -->
-  <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
-    @apply="onCronApply" @close="cronModal.show=false" />
-    </div><!-- /우측 영역 -->
-  </div><!-- /grid 컨테이너 -->
-
+      <!-- -- CRUD 그리드 --------------------------------------------------------- -->
+      <bo-grid-crud
+        :columns="baseGridColumns" :rows="gridRows" row-key="batchId"
+        list-title="배치목록" :show-export="true"
+        v-model:focusedIdx="uiState.focusedIdx"
+        v-model:checkAll="uiState.checkAll"
+        @add="addRow" @save="handleSave"
+        @delete-checked="deleteRows" @cancel-checked="cancelChecked"
+        @cell-change="onCellChange" @export="exportExcel">
+        <template #cell-cronExpr="{ row, idx }">
+          <td>
+            <div style="display:flex;align-items:center;gap:3px;">
+              <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
+              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs" style="flex-shrink:0;padding:2px 5px;font-size:11px;" title="Cron 편집" @click.stop="openCronPicker(idx)">
+                🕐
+              </button>
+            </div>
+          </td>
+        </template>
+        <template #row-actions="{ row, idx }">
+          <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="runNow(row)">▶</button>
+          <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
+        </template>
+      </bo-grid-crud>
+      <!-- -- Cron 편집 모달 (BoCronModal 컴포넌트) -- -->
+      <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
+        @apply="onCronApply" @close="cronModal.show=false" />
+    </div>
+    <!-- /우측 영역 -->
+  </div>
+  <!-- /grid 컨테이너 -->
   <!-- -- 배치 실행이력 (전체 폭) -- -->
   <div class="card" style="margin-top:12px;width:100%;">
     <sy-batch-hist />
   </div>
-
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />

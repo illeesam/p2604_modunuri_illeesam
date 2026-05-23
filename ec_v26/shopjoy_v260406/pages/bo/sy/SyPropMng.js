@@ -205,19 +205,15 @@ window.SyPropMng = {
   template: /* html */`
 <div>
   <div class="page-title">프로퍼티관리</div>
-
   <!-- -- 검색 바 ----------------------------------------------------------- -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <bo-search-area @search="fetchData" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <!-- -- 좌 트리 + 우 그리드 --------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
-
     <!-- -- 트리 ----------------------------------------------------------- -->
     <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
-
     <!-- -- 그리드 (BoGridCrud) -------------------------------------------- -->
     <bo-grid-crud
       :columns="baseGridColumns" :rows="rows" row-key="propId"
@@ -225,10 +221,11 @@ window.SyPropMng = {
       @add="addRow" @save="handleSave"
       @delete-checked="deleteChecked" @cancel-checked="cancelChecked"
       @cell-change="onCellChange">
-
       <template #row-actions="{ row }">
         <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="row._row_status='D'">삭제</button>
-        <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="row._row_status = row._row_org ? 'N' : 'I'">복원</button>
+        <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="row._row_status = row._row_org ? 'N' : 'I'">
+          복원
+        </button>
       </template>
     </bo-grid-crud>
   </div>
@@ -250,18 +247,22 @@ window.PropTreeNode = {
   template: /* html */`
 <div>
   <div :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',
-             paddingLeft: (8 + depth*14) + 'px',
-             background: selected===node.path ? '#fff0f4' : 'transparent',
-             color:      selected===node.path ? '#e8587a' : '#444',
-             fontWeight: selected===node.path ? 700 : 400}"
+    paddingLeft: (8 + depth*14) + 'px',
+    background: selected===node.path ? '#fff0f4' : 'transparent',
+    color:      selected===node.path ? '#e8587a' : '#444',
+    fontWeight: selected===node.path ? 700 : 400}"
     @mouseover="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : '#f8f9fb'"
     @mouseout="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : 'transparent'">
     <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;"
-      @click.stop="onToggle(node.path)">{{ expanded.has(node.path) ? '▼' : '▶' }}</span>
+      @click.stop="onToggle(node.path)">
+      {{ expanded.has(node.path) ? '▼' : '▶' }}
+    </span>
     <span v-else style="width:14px;"></span>
     <span style="font-size:13px;flex:1;" @click="onSelect(node.path)">{{ node.name || '전체' }}</span>
     <span v-if="node._badge"
-      :style="{fontSize:'9px',padding:'1px 5px',borderRadius:'7px',color:'#fff',fontWeight:700,background:node._badge[1]}">{{ node._badge[0] }}</span>
+      :style="{fontSize:'9px',padding:'1px 5px',borderRadius:'7px',color:'#fff',fontWeight:700,background:node._badge[1]}">
+      {{ node._badge[0] }}
+    </span>
     <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
   </div>
   <div v-if="expanded.has(node.path) && node.children.length>0">

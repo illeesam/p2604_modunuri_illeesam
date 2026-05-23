@@ -279,14 +279,14 @@ window.MbMemberMng = {
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button>
-      </template>
+    <template #row-actions="{ row }">
+      <button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button>
+    </template>
   </bo-grid>
   <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
-  :reload-trigger="detailModal.reloadTrigger"
-  :on-list-reload="handleSearchList"
-/>
+    :reload-trigger="detailModal.reloadTrigger"
+    :on-list-reload="handleSearchList"
+    />
 </div>
 `
 };

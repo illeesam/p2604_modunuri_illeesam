@@ -207,42 +207,52 @@ window.SiteSelectModal = {
   },
   template: /* html */`
 <bo-modal :show="true" @close="$emit('close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;"><span class="modal-title">사이트 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
+  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
+    <span class="modal-title">
+      사이트 선택
+      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
-        title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
-    </span><span class="modal-close" @click="$emit('close')">✕</span></div>
-    <bo-multi-check-select
-      v-model="searchParam.searchType"
-      :options="[
-        { value: 'siteId',     label: '사이트번호' },
-        { value: 'siteCode',   label: '사이트코드' },
-        { value: 'siteNm',     label: '사이트명' },
-        { value: 'siteDomain', label: '도메인' },
-      ]"
-      placeholder="검색대상 전체"
-      all-label="전체 선택"
-      min-width="100%" />
-    <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
-    <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
-    <div class="sel-modal-list">
-      <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
-      <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
-      <div v-for="s in list" :key="s.siteId" class="sel-modal-item">
-        <div class="sel-modal-item-name">{{ s.siteNm }}</div>
-        <span class="sel-modal-item-id">{{ s.siteCode }}</span>
-        <span style="font-family:monospace;font-size:12px;color:#e8587a;font-weight:700;min-width:26px;text-align:right;">{{ String(s.siteId).padStart(2,'0') }}</span>
-        <button class="sel-modal-item-btn" @click="$emit('select', s)">선택</button>
-      </div>
+        title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">
+        ?
+      </span>
+    </span>
+    <span class="modal-close" @click="$emit('close')">✕</span>
+  </div>
+  <bo-multi-check-select
+    v-model="searchParam.searchType"
+    :options="[
+    { value: 'siteId',     label: '사이트번호' },
+    { value: 'siteCode',   label: '사이트코드' },
+    { value: 'siteNm',     label: '사이트명' },
+    { value: 'siteDomain', label: '도메인' },
+    ]"
+    placeholder="검색대상 전체"
+    all-label="전체 선택"
+    min-width="100%" />
+  <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
+  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 {{ pager.pageTotalCount }}건</div>
+  <div class="sel-modal-list">
+    <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">로딩 중...</div>
+    <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
+    <div v-for="s in list" :key="s.siteId" class="sel-modal-item">
+      <div class="sel-modal-item-name">{{ s.siteNm }}</div>
+      <span class="sel-modal-item-id">{{ s.siteCode }}</span>
+      <span style="font-family:monospace;font-size:12px;color:#e8587a;font-weight:700;min-width:26px;text-align:right;">
+        {{ String(s.siteId).padStart(2,'0') }}
+      </span>
+      <button class="sel-modal-item-btn" @click="$emit('select', s)">선택</button>
     </div>
-    <!-- 페이징 -->
-    <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
-      <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-      <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
-      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
-      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
-    </div>
-</bo-modal>`,
+  </div>
+  <!-- 페이징 -->
+  <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
+    <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
+    <button class="pager-btn" :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
+    <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
+    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
+    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
+  </div>
+</bo-modal>
+`,
 };
 
 /* ── 판매업체 선택 모달 ── */
@@ -291,12 +301,18 @@ window.VendorSelectModal = {
   },
   template: /* html */`
 <bo-modal :show="true" @close="$emit('close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;"><span class="modal-title">판매업체 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
+    <span class="modal-title">
+      판매업체 선택
+      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
+    </span>
+    <span class="modal-close" @click="$emit('close')">✕</span>
+  </div>
   <bo-multi-check-select
     v-model="searchParam.searchType"
     :options="[
-      { value: 'vendorNm', label: '업체명' },
-      { value: 'corpNo',   label: '사업자번호' },
+    { value: 'vendorNm', label: '업체명' },
+    { value: 'corpNo',   label: '사업자번호' },
     ]"
     placeholder="검색대상 전체"
     all-label="전체 선택"
@@ -320,7 +336,8 @@ window.VendorSelectModal = {
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
@@ -444,27 +461,30 @@ window.BoUserSelectModal = {
   template: /* html */`
 <bo-modal :show="true" max-width="780px" height="82vh" box-pad="0" body-pad="0" @close="$emit('close')">
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-
     <!-- ── 헤더 ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:15px;font-weight:800;color:#1a1a2e;">사용자 선택</span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">{{ cfSiteNm }}</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">
+          {{ cfSiteNm }}
+        </span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span v-if="cfSelectedCount" style="font-size:12px;color:#e8587a;font-weight:700;background:#fff0f4;padding:3px 10px;border-radius:20px;">{{ cfSelectedCount }}명 선택됨</span>
+        <span v-if="cfSelectedCount" style="font-size:12px;color:#e8587a;font-weight:700;background:#fff0f4;padding:3px 10px;border-radius:20px;">
+          {{ cfSelectedCount }}명 선택됨
+        </span>
         <span style="cursor:pointer;font-size:20px;color:#d1d5db;line-height:1;" @click="$emit('close')">✕</span>
       </div>
     </div>
-
     <!-- ── 바디 ── -->
     <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
-
       <!-- 좌: 부서 트리 -->
       <div style="width:216px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#f8f9fb;">
         <!-- 부서 검색 -->
         <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
-          <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
+          <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">
+            조직 / 부서
+          </div>
           <div style="position:relative;">
             <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">🔍</span>
             <input v-model="uiState.deptSearchValue" placeholder="부서 검색"
@@ -478,11 +498,17 @@ window.BoUserSelectModal = {
             :style="uiState.selectedDeptId===null?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.25);':'background:transparent;'"
             @click="uiState.selectedDeptId=null; onSearch()">
             <span style="font-size:8px;font-weight:900;flex-shrink:0;line-height:1;"
-              :style="{ color: uiState.selectedDeptId===null?'#fff':'#e8587a' }">●</span>
+              :style="{ color: uiState.selectedDeptId===null?'#fff':'#e8587a' }">
+              ●
+            </span>
             <span style="font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-              :style="{ color: uiState.selectedDeptId===null?'#fff':'#374151' }">전체</span>
+              :style="{ color: uiState.selectedDeptId===null?'#fff':'#374151' }">
+              전체
+            </span>
             <span style="font-size:10px;font-weight:600;flex-shrink:0;"
-              :style="{ color: uiState.selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">{{ pager.pageTotalCount }}</span>
+              :style="{ color: uiState.selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">
+              {{ pager.pageTotalCount }}
+            </span>
           </div>
           <!-- 2레벨~: 실 데이터 -->
           <div v-for="d in cfFlatDeptTree" :key="d.deptId"
@@ -491,10 +517,12 @@ window.BoUserSelectModal = {
             @click="uiState.selectedDeptId=d.deptId; onSearch()">
             <span style="flex-shrink:0;font-weight:800;line-height:1;"
               :style="{
-                marginLeft: ((d._depth-1)*13)+'px',
-                fontSize: d._depth===1?'10px':'8px',
-                color: uiState.selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)]
-              }">{{ ['●','◦','·'][Math.min(d._depth-1,2)] }}</span>
+              marginLeft: ((d._depth-1)*13)+'px',
+              fontSize: d._depth===1?'10px':'8px',
+              color: uiState.selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)]
+              }">
+              {{ ['●','◦','·'][Math.min(d._depth-1,2)] }}
+            </span>
             <span style="font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
               :style="{ fontWeight: d._depth===1?'600':'400', color: uiState.selectedDeptId===d.deptId?'#fff':'#374151' }">
               {{ d.deptNm }}
@@ -503,7 +531,6 @@ window.BoUserSelectModal = {
           <div v-if="cfFlatDeptTree.length===0" style="padding:20px 0;text-align:center;font-size:12px;color:#bbb;">없음</div>
         </div>
       </div>
-
       <!-- 우: 사용자 목록 -->
       <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
         <!-- 검색 -->
@@ -512,7 +539,9 @@ window.BoUserSelectModal = {
             <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">🔍</span>
             <input v-model="pager.userSearchValue" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="onSearch"
               style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;color:#374151;" />
-            <button @click="onSearch" style="margin-top:4px;width:100%;padding:5px 0;border:1px solid #e8587a;border-radius:6px;background:#e8587a;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">조회</button>
+            <button @click="onSearch" style="margin-top:4px;width:100%;padding:5px 0;border:1px solid #e8587a;border-radius:6px;background:#e8587a;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">
+              조회
+            </button>
           </div>
         </div>
         <!-- 전체선택 바 -->
@@ -521,9 +550,7 @@ window.BoUserSelectModal = {
             <input type="checkbox" :checked="cfAllChecked" @change="handleToggleAll" style="width:14px;height:14px;" />
             전체선택
           </label>
-          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
-            총 <b style="color:#374151;">{{ pager.pageTotalCount }}</b>명
-          </span>
+          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">총 <b style="color:#374151;">{{ pager.pageTotalCount }}</b>명</span>
         </div>
         <!-- 카드 목록 -->
         <div style="flex:1;overflow-y:auto;">
@@ -549,7 +576,9 @@ window.BoUserSelectModal = {
                 {{ u.userNm || u.name }}
                 <span style="font-size:11px;color:#9ca3af;font-weight:400;">{{ u.loginId }}</span>
               </div>
-              <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">{{ u.deptNm || u.dept || '-' }} · {{ u.roleNm || u.role || '' }}</div>
+              <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">
+                {{ u.deptNm || u.dept || '-' }} · {{ u.roleNm || u.role || '' }}
+              </div>
             </div>
             <!-- 상태 뱃지 -->
             <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
@@ -559,18 +588,27 @@ window.BoUserSelectModal = {
           </div>
           <!-- 페이지네이션 -->
           <div v-if="pager.pageTotalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:3px;padding:8px 0;border-top:1px solid #f0f0f0;flex-shrink:0;">
-            <button :disabled="pager.page===1" @click="setPage(1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">«</button>
-            <button :disabled="pager.page===1" @click="setPage(pager.page-1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">‹</button>
+            <button :disabled="pager.page===1" @click="setPage(1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
+              «
+            </button>
+            <button :disabled="pager.page===1" @click="setPage(pager.page-1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
+              ‹
+            </button>
             <button v-for="n in pager.pageNums" :key="n" @click="setPage(n)"
               style="padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid;"
-              :style="pager.page===n?'background:#e8587a;color:#fff;border-color:#e8587a;font-weight:700;':'background:#fff;border-color:#e5e7eb;color:#374151;'">{{ n }}</button>
-            <button :disabled="pager.page===pager.pageTotalPage" @click="setPage(pager.page+1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">›</button>
-            <button :disabled="pager.page===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">»</button>
+              :style="pager.page===n?'background:#e8587a;color:#fff;border-color:#e8587a;font-weight:700;':'background:#fff;border-color:#e5e7eb;color:#374151;'">
+              {{ n }}
+            </button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="setPage(pager.page+1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
+              ›
+            </button>
+            <button :disabled="pager.page===pager.pageTotalPage" @click="setPage(pager.pageTotalPage)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
+              »
+            </button>
           </div>
         </div>
       </div>
     </div>
-
     <!-- ── 푸터 ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #f0f0f0;flex-shrink:0;background:#fff;">
       <span style="font-size:12px;" :style="cfSelectedCount?'color:#e8587a;font-weight:600;':'color:#bbb;'">
@@ -578,16 +616,20 @@ window.BoUserSelectModal = {
       </span>
       <div style="display:flex;gap:8px;">
         <button style="padding:8px 22px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;"
-          @click="$emit('close')">취소</button>
+          @click="$emit('close')">
+          취소
+        </button>
         <button :disabled="!cfSelectedCount"
           style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
           :style="cfSelectedCount?'background:#e8587a;color:#fff;box-shadow:0 2px 8px rgba(232,88,122,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
-          @click="handleConfirm">확인{{ cfSelectedCount?' ('+cfSelectedCount+'명)':'' }}</button>
+          @click="handleConfirm">
+          확인{{ cfSelectedCount?' ('+cfSelectedCount+'명)':'' }}
+        </button>
       </div>
     </div>
-
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 회원 선택 모달 ── */
@@ -636,13 +678,16 @@ window.MemberSelectModal = {
   },
   template: /* html */`
 <bo-modal :show="true" @close="$emit('close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;"><span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
+    <span class="modal-title">회원 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span>
+    <span class="modal-close" @click="$emit('close')">✕</span>
+  </div>
   <bo-multi-check-select
     v-model="searchParam.searchType"
     :options="[
-      { value: 'memberNm',    label: '이름' },
-      { value: 'memberEmail', label: '이메일' },
-      { value: 'memberId',    label: 'ID' },
+    { value: 'memberNm',    label: '이름' },
+    { value: 'memberEmail', label: '이메일' },
+    { value: 'memberId',    label: 'ID' },
     ]"
     placeholder="검색대상 전체"
     all-label="전체 선택"
@@ -666,7 +711,8 @@ window.MemberSelectModal = {
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 주문 선택 모달 ── */
@@ -715,13 +761,16 @@ window.OrderSelectModal = {
   },
   template: /* html */`
 <bo-modal :show="true" @close="$emit('close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;"><span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
+    <span class="modal-title">주문 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span>
+    <span class="modal-close" @click="$emit('close')">✕</span>
+  </div>
   <bo-multi-check-select
     v-model="searchParam.searchType"
     :options="[
-      { value: 'orderId',  label: '주문ID' },
-      { value: 'memberNm', label: '회원명' },
-      { value: 'prodNm',   label: '상품명' },
+    { value: 'orderId',  label: '주문ID' },
+    { value: 'memberNm', label: '회원명' },
+    { value: 'prodNm',   label: '상품명' },
     ]"
     placeholder="검색대상 전체"
     all-label="전체 선택"
@@ -733,7 +782,9 @@ window.OrderSelectModal = {
     <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">검색 결과가 없습니다.</div>
     <div v-for="o in list" :key="o.orderId" class="sel-modal-item">
       <div class="sel-modal-item-name">{{ o.orderId }} <span style="font-size:11px;color:#888;">{{ o.memberNm || o.userNm }}</span></div>
-      <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">{{ (o.totalAmt || o.totalPrice || 0).toLocaleString() }}원</span>
+      <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">
+        {{ (o.totalAmt || o.totalPrice || 0).toLocaleString() }}원
+      </span>
       <button class="sel-modal-item-btn" @click="$emit('select', o)">선택</button>
     </div>
   </div>
@@ -745,7 +796,8 @@ window.OrderSelectModal = {
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 게시판 선택 모달 ── */
@@ -800,13 +852,16 @@ window.BbmSelectModal = {
   },
   template: /* html */`
 <bo-modal :show="true" max-width="560px" @close="$emit('close')">
-  <div class="modal-header" style="margin:-20px -20px 14px -20px;"><span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span><span class="modal-close" @click="$emit('close')">✕</span></div>
+  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
+    <span class="modal-title">게시판 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span>
+    <span class="modal-close" @click="$emit('close')">✕</span>
+  </div>
   <bo-multi-check-select
     v-model="searchParam.searchType"
     :options="[
-      { value: 'bbmNm',   label: '게시판명' },
-      { value: 'bbmCode', label: '코드' },
-      { value: 'bbmType', label: '유형' },
+    { value: 'bbmNm',   label: '게시판명' },
+    { value: 'bbmCode', label: '코드' },
+    { value: 'bbmType', label: '유형' },
     ]"
     placeholder="검색대상 전체"
     all-label="전체 선택"
@@ -835,7 +890,8 @@ window.BbmSelectModal = {
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
     <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 템플릿 미리보기 모달 ── */
@@ -889,54 +945,53 @@ window.TemplatePreviewModal = {
   template: /* html */`
 <bo-modal :show="true" max-width="700px" @close="$emit('close')">
   <div class="modal-header" style="margin:-20px -20px 14px -20px;">
-    <span class="modal-title">📄 템플릿 미리보기<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></span>
+    <span class="modal-title">
+      📄 템플릿 미리보기
+      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
+    </span>
     <span class="modal-close" @click="$emit('close')">✕</span>
   </div>
-
-    <!-- 템플릿 기본정보 -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:#f8f9fa;border-radius:8px;">
-      <span class="badge" :class="cfTypeBadge">{{ tmpl?.templateType }}</span>
-      <span style="font-weight:700;font-size:14px;color:#1a1a2e;">{{ tmpl?.templateNm }}</span>
+  <!-- 템플릿 기본정보 -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:#f8f9fa;border-radius:8px;">
+    <span class="badge" :class="cfTypeBadge">{{ tmpl?.templateType }}</span>
+    <span style="font-weight:700;font-size:14px;color:#1a1a2e;">{{ tmpl?.templateNm }}</span>
+  </div>
+  <!-- 파라미터 샘플 뱃지 -->
+  <div v-if="cfParamList.length" style="margin-bottom:12px;">
+    <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">파라미터 샘플값</div>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;">
+      <span v-for="p in cfParamList" :key="p.k"
+        style="display:inline-flex;align-items:center;gap:3px;font-size:11px;background:#f0f4ff;border:1px solid #d0d9ff;border-radius:4px;padding:2px 8px;color:#2563eb;">
+        <b>{{ fmtKey(p.k) }}</b>
+        <span style="color:#aaa;margin:0 2px;">=</span>
+        <span style="color:#856404;background:#fff3cd;border-radius:2px;padding:0 3px;">{{ p.v }}</span>
+      </span>
     </div>
-
-    <!-- 파라미터 샘플 뱃지 -->
-    <div v-if="cfParamList.length" style="margin-bottom:12px;">
-      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">파라미터 샘플값</div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px;">
-        <span v-for="p in cfParamList" :key="p.k"
-          style="display:inline-flex;align-items:center;gap:3px;font-size:11px;background:#f0f4ff;border:1px solid #d0d9ff;border-radius:4px;padding:2px 8px;color:#2563eb;">
-          <b>{{ fmtKey(p.k) }}</b>
-          <span style="color:#aaa;margin:0 2px;">=</span>
-          <span style="color:#856404;background:#fff3cd;border-radius:2px;padding:0 3px;">{{ p.v }}</span>
-        </span>
-      </div>
-    </div>
-    <div v-else style="margin-bottom:12px;font-size:12px;color:#aaa;">파라미터 샘플값 없음</div>
-
-    <!-- 제목 -->
-    <div v-if="tmpl?.subject" style="margin-bottom:12px;">
-      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px;">제목 (Subject)</div>
-      <div style="padding:9px 13px;background:#fff;border:1px solid #e8e8e8;border-radius:7px;font-size:13px;color:#333;"
-        v-html="cfRenderedSubject"></div>
-    </div>
-
-    <!-- 내용 미리보기 -->
-    <div>
-      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">내용 미리보기</div>
-      <!-- HTML 타입 -->
-      <div v-if="cfIsHtml"
-        style="padding:18px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;min-height:120px;max-height:380px;overflow-y:auto;font-size:13px;line-height:1.8;"
-        v-html="cfRenderedContent"></div>
-      <!-- 텍스트 타입 -->
-      <pre v-else
-        style="padding:14px 16px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;min-height:80px;max-height:280px;overflow-y:auto;font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-all;margin:0;color:#333;"
-        v-html="cfRenderedContent"></pre>
-    </div>
-
+  </div>
+  <div v-else style="margin-bottom:12px;font-size:12px;color:#aaa;">파라미터 샘플값 없음</div>
+  <!-- 제목 -->
+  <div v-if="tmpl?.subject" style="margin-bottom:12px;">
+    <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:4px;">제목 (Subject)</div>
+    <div style="padding:9px 13px;background:#fff;border:1px solid #e8e8e8;border-radius:7px;font-size:13px;color:#333;"
+      v-html="cfRenderedSubject"></div>
+  </div>
+  <!-- 내용 미리보기 -->
+  <div>
+    <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:5px;">내용 미리보기</div>
+    <!-- HTML 타입 -->
+    <div v-if="cfIsHtml"
+      style="padding:18px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;min-height:120px;max-height:380px;overflow-y:auto;font-size:13px;line-height:1.8;"
+      v-html="cfRenderedContent"></div>
+    <!-- 텍스트 타입 -->
+    <pre v-else
+      style="padding:14px 16px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;min-height:80px;max-height:280px;overflow-y:auto;font-size:13px;line-height:1.8;white-space:pre-wrap;word-break:break-all;margin:0;color:#333;"
+      v-html="cfRenderedContent"></pre>
+  </div>
   <div style="margin-top:18px;display:flex;justify-content:flex-end;">
     <button class="btn btn-secondary" @click="$emit('close')">닫기</button>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 템플릿 발송하기 모달 ── */
@@ -1075,26 +1130,31 @@ window.TemplateSendModal = {
   template: /* html */`
 <bo-modal :show="true" max-width="800px" height="84vh" box-pad="0" body-pad="0" @close="$emit('close')">
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-
     <!-- ── 헤더 ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:10px;">
         <span style="font-size:15px;font-weight:800;color:#1a1a2e;">📨 발송하기</span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">{{ cfSiteNm }}</span>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">
+          {{ cfSiteNm }}
+        </span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span v-if="selected.length" style="font-size:12px;color:#52c41a;font-weight:700;background:#f6ffed;padding:3px 10px;border-radius:20px;">{{ selected.length }}명 선택됨</span>
+        <span v-if="selected.length" style="font-size:12px;color:#52c41a;font-weight:700;background:#f6ffed;padding:3px 10px;border-radius:20px;">
+          {{ selected.length }}명 선택됨
+        </span>
         <span style="cursor:pointer;font-size:20px;color:#d1d5db;line-height:1;" @click="$emit('close')">✕</span>
       </div>
     </div>
-
     <!-- ── 템플릿 정보 바 ── -->
     <div style="display:flex;align-items:center;gap:8px;padding:9px 20px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <span class="badge" :class="cfTypeBadge" style="flex-shrink:0;">{{ tmpl?.templateType }}</span>
-      <span style="font-weight:700;font-size:13px;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ tmpl?.templateNm }}</span>
-      <code v-if="tmpl?.templateCode" style="font-size:11px;color:#888;background:#efefef;padding:1px 8px;border-radius:4px;flex-shrink:0;">{{ tmpl.templateCode }}</code>
+      <span style="font-weight:700;font-size:13px;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        {{ tmpl?.templateNm }}
+      </span>
+      <code v-if="tmpl?.templateCode" style="font-size:11px;color:#888;background:#efefef;padding:1px 8px;border-radius:4px;flex-shrink:0;">
+        {{ tmpl.templateCode }}
+      </code>
     </div>
-
     <!-- ── 탭 ── -->
     <div style="display:flex;border-bottom:2px solid #f0f0f0;flex-shrink:0;background:#fff;">
       <button @click="searchParam.type='member'"
@@ -1108,17 +1168,16 @@ window.TemplateSendModal = {
         👤 관리자
       </button>
     </div>
-
     <!-- ── 바디: 좌(필터) + 우(목록) ── -->
     <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
-
       <!-- 좌: 필터 패널 -->
       <div style="width:200px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#f8f9fb;">
-
         <!-- 관리자 탭: 부서 트리 -->
         <template v-if="searchParam.type==='user'">
           <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
-            <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">조직 / 부서</div>
+            <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">
+              조직 / 부서
+            </div>
             <div style="position:relative;">
               <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">🔍</span>
               <input v-model="deptSearchValue" placeholder="부서 검색"
@@ -1140,7 +1199,7 @@ window.TemplateSendModal = {
               @click="selectedDeptId=d.deptId">
               <span style="flex-shrink:0;font-weight:800;"
                 :style="{ marginLeft:((d._depth-1)*13)+'px', fontSize:d._depth===1?'10px':'8px',
-                          color:selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)] }">
+                color:selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)] }">
                 {{ ['●','◦','·'][Math.min(d._depth-1,2)] }}
               </span>
               <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
@@ -1150,7 +1209,6 @@ window.TemplateSendModal = {
             </div>
           </div>
         </template>
-
         <!-- 회원 탭: 등급 필터 -->
         <template v-else>
           <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
@@ -1173,9 +1231,7 @@ window.TemplateSendModal = {
             </div>
           </div>
         </template>
-
       </div>
-
       <!-- 우: 사용자 목록 -->
       <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
         <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
@@ -1187,13 +1243,15 @@ window.TemplateSendModal = {
         </div>
         <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
-            <input type="checkbox" :checked="cfAllChecked" @change="handleToggleAll" style="width:14px;height:14px;" /> 전체선택
+            <input type="checkbox" :checked="cfAllChecked" @change="handleToggleAll" style="width:14px;height:14px;" />
+            전체선택
           </label>
           <span style="margin-left:auto;font-size:12px;color:#9ca3af;">총 <b style="color:#374151;">{{ cfList.length }}</b>명</span>
         </div>
         <div style="flex:1;overflow-y:auto;">
           <div v-if="cfList.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
-            <div style="font-size:32px;margin-bottom:8px;">🔍</div>검색 결과가 없습니다.
+            <div style="font-size:32px;margin-bottom:8px;">🔍</div>
+            검색 결과가 없습니다.
           </div>
           <div v-for="item in cfList" :key="item.userId||item.boUserId"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
@@ -1217,15 +1275,14 @@ window.TemplateSendModal = {
             </div>
             <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
               :style="searchParam.type==='user'
-                ? (item.status==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;')
-                : (item.grade==='VIP'?'background:#fef3c7;color:#d97706;':item.grade==='우수'?'background:#dbeafe;color:#1d4ed8;':'background:#f3f4f6;color:#6b7280;')">
+              ? (item.status==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;')
+              : (item.grade==='VIP'?'background:#fef3c7;color:#d97706;':item.grade==='우수'?'background:#dbeafe;color:#1d4ed8;':'background:#f3f4f6;color:#6b7280;')">
               {{ searchParam.type==='user' ? item.status : item.grade }}
             </span>
           </div>
         </div>
       </div>
     </div>
-
     <!-- ── 푸터 ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #f0f0f0;flex-shrink:0;background:#fff;">
       <span style="font-size:12px;" :style="selected.length?'color:#52c41a;font-weight:600;':'color:#bbb;'">
@@ -1233,7 +1290,9 @@ window.TemplateSendModal = {
       </span>
       <div style="display:flex;gap:8px;">
         <button style="padding:8px 22px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;"
-          @click="$emit('close')">취소</button>
+          @click="$emit('close')">
+          취소
+        </button>
         <button :disabled="!selected.length"
           style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
           :style="selected.length?'background:#52c41a;color:#fff;box-shadow:0 2px 8px rgba(82,196,26,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
@@ -1243,7 +1302,8 @@ window.TemplateSendModal = {
       </div>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 부서 트리 선택 모달 ──────────────────────────────────
@@ -1315,7 +1375,10 @@ window.RoleTreeModal = {
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위역할 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
+          상위역할 선택
+          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
+        </div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">역할을 클릭하면 상위역할로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1332,23 +1395,32 @@ window.RoleTreeModal = {
         :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null" @click="selectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
-        <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 권한으로 등록</span></div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
+        <div style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span>
+          <span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 권한으로 등록</span>
+        </div>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
+          ›
+        </span>
       </div>
       <div v-for="r in cfFlatTree" :key="r.roleId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: uiState.hoverId===r.roleId ? '#fff5f7' : '' }"
         @mouseenter="uiState.hoverId=r.roleId" @mouseleave="uiState.hoverId=null" @click="onSelect(r)">
         <span :style="{ marginLeft:(r._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-                        fontSize: r._depth===0?'7px':'12px', flexShrink:0,
-                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(r._depth,3)] }">
+          fontSize: r._depth===0?'7px':'12px', flexShrink:0,
+          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(r._depth,3)] }">
           {{ ['●','◦','·','-'][Math.min(r._depth,3)] }}
         </span>
         <div style="flex:1;min-width:0;overflow:hidden;">
           <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ r.roleNm }}</span>
-          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ r.roleCode }}</code>
+          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">
+            {{ r.roleCode }}
+          </code>
         </div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: uiState.hoverId===r.roleId ? 1 : 0 }">›</span>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: uiState.hoverId===r.roleId ? 1 : 0 }">
+          ›
+        </span>
       </div>
       <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
@@ -1358,7 +1430,8 @@ window.RoleTreeModal = {
       <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 window.MenuTreeModal = {
@@ -1423,16 +1496,17 @@ window.MenuTreeModal = {
   template: /* html */`
 <bo-modal :show="true" max-width="440px" max-height="80vh" box-pad="0" body-pad="0" @close="$emit('close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
-
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위메뉴 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
+          상위메뉴 선택
+          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
+        </div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">메뉴를 클릭하면 상위메뉴로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
     </div>
-
     <!-- ── 검색 ── -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
@@ -1442,13 +1516,11 @@ window.MenuTreeModal = {
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
     </div>
-
     <!-- ── 트리 목록 ── -->
     <div style="flex:1;overflow-y:auto;">
-
       <!-- 최상위 선택 -->
       <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;
-                  border-bottom:2px solid #f0f0f0;transition:background .12s;"
+        border-bottom:2px solid #f0f0f0;transition:background .12s;"
         :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null"
         @click="onSelectNone">
@@ -1458,48 +1530,49 @@ window.MenuTreeModal = {
           <span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 메뉴로 등록</span>
         </div>
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;"
-          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
+          ›
+        </span>
       </div>
-
       <!-- 메뉴 트리 항목들 -->
       <div v-for="m in cfFlatTree" :key="m.menuId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
-               border-bottom:1px solid #f5f5f5;transition:background .1s;"
+        border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: uiState.hoverId===m.menuId ? '#fff5f7' : '' }"
         @mouseenter="uiState.hoverId=m.menuId" @mouseleave="uiState.hoverId=null"
         @click="onSelect(m)">
-
         <!-- 블릿 들여쓰기 -->
         <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-                        fontSize: m._depth===0?'7px':'12px', flexShrink:0,
-                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
+          fontSize: m._depth===0?'7px':'12px', flexShrink:0,
+          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
           {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
         </span>
-
         <!-- 메뉴명 + 코드 -->
         <div style="flex:1;min-width:0;overflow:hidden;">
           <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ m.menuNm }}</span>
-          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ m.menuCode }}</code>
+          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">
+            {{ m.menuCode }}
+          </code>
         </div>
-
         <!-- hover 화살표 -->
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
-          :style="{ opacity: uiState.hoverId===m.menuId ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId===m.menuId ? 1 : 0 }">
+          ›
+        </span>
       </div>
-
       <!-- 빈 상태 -->
       <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
       </div>
     </div>
-
     <!-- ── 푸터 ── -->
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
       <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 window.DeptTreeModal = {
@@ -1564,19 +1637,20 @@ window.DeptTreeModal = {
   template: /* html */`
 <bo-modal :show="true" max-width="440px" max-height="80vh" box-pad="0" body-pad="0" @close="$emit('close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
-
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:18px;line-height:1;">🌳</span>
         <div>
-          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위부서 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
+          <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
+            상위부서 선택
+            <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
+          </div>
           <div style="font-size:11px;color:#aaa;margin-top:1px;">부서를 클릭하면 상위부서로 지정됩니다</div>
         </div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
     </div>
-
     <!-- ── 검색 ── -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <div style="position:relative;">
@@ -1586,13 +1660,11 @@ window.DeptTreeModal = {
           style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
       </div>
     </div>
-
     <!-- ── 트리 목록 ── -->
     <div style="flex:1;overflow-y:auto;">
-
       <!-- 최상위 선택 (고정 첫 항목) -->
       <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;
-                  border-bottom:2px solid #f0f0f0;transition:background .12s;"
+        border-bottom:2px solid #f0f0f0;transition:background .12s;"
         :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null"
         @click="onSelectNone">
@@ -1604,35 +1676,36 @@ window.DeptTreeModal = {
           <div style="font-size:11px;color:#aaa;margin-top:2px;">최상위 부서로 등록</div>
         </div>
         <span style="font-size:16px;color:#e8587a;font-weight:700;transition:opacity .12s;"
-          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
+          ›
+        </span>
       </div>
-
       <!-- 부서 트리 항목들 -->
       <div v-for="d in cfFlatTree" :key="d.deptId"
         style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
-               border-bottom:1px solid #f5f5f5;transition:background .1s;"
+        border-bottom:1px solid #f5f5f5;transition:background .1s;"
         :style="{ background: uiState.hoverId===d.deptId ? '#fff5f7' : '' }"
         @mouseenter="uiState.hoverId=d.deptId" @mouseleave="uiState.hoverId=null"
         @click="select(d)">
-
         <!-- 블릿 들여쓰기 -->
         <span :style="{ marginLeft:(d._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-                        fontSize: d._depth===0?'7px':'12px', flexShrink:0,
-                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(d._depth,3)] }">
+          fontSize: d._depth===0?'7px':'12px', flexShrink:0,
+          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(d._depth,3)] }">
           {{ ['●','◦','·','-'][Math.min(d._depth,3)] }}
         </span>
-
         <!-- 부서명 + 코드 -->
         <div style="flex:1;min-width:0;overflow:hidden;">
           <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ d.deptNm }}</span>
-          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">{{ d.deptCode }}</code>
+          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">
+            {{ d.deptCode }}
+          </code>
         </div>
-
         <!-- hover 화살표 -->
         <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
-          :style="{ opacity: uiState.hoverId===d.deptId ? 1 : 0 }">›</span>
+          :style="{ opacity: uiState.hoverId===d.deptId ? 1 : 0 }">
+          ›
+        </span>
       </div>
-
       <!-- 빈 상태 -->
       <div v-if="cfFlatTree.length===0"
         style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
@@ -1640,13 +1713,13 @@ window.DeptTreeModal = {
         {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
       </div>
     </div>
-
     <!-- ── 푸터 ── -->
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
       <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ─────────────────────────────────────────────
@@ -1710,7 +1783,10 @@ window.CategoryTreeModal = {
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
-        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">상위카테고리 선택<span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span></div>
+        <div style="font-size:15px;font-weight:700;color:#1a1a2e;">
+          상위카테고리 선택
+          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
+        </div>
         <div style="font-size:11px;color:#aaa;margin-top:1px;">카테고리를 클릭하면 상위카테고리로 지정됩니다</div>
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
@@ -1728,8 +1804,13 @@ window.CategoryTreeModal = {
         :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
         @mouseenter="uiState.hoverId='__none__'" @mouseleave="uiState.hoverId=null" @click="selectNone">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">●</span>
-        <div style="flex:1;"><span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span><span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 카테고리로 등록</span></div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">›</span>
+        <div style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">상위없음</span>
+          <span style="font-size:11px;color:#aaa;margin-left:6px;">최상위 카테고리로 등록</span>
+        </div>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
+          ›
+        </span>
       </div>
       <!-- 카테고리 트리 -->
       <div v-for="c in cfFlatTree" :key="c.categoryId"
@@ -1737,15 +1818,17 @@ window.CategoryTreeModal = {
         :style="{ background: uiState.hoverId===c.categoryId ? '#fff5f7' : '' }"
         @mouseenter="uiState.hoverId=c.categoryId" @mouseleave="uiState.hoverId=null" @click="select(c)">
         <span :style="{ marginLeft:(c._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-                        fontSize: c._depth===0?'7px':'12px', flexShrink:0,
-                        color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(c._depth,3)] }">
+          fontSize: c._depth===0?'7px':'12px', flexShrink:0,
+          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(c._depth,3)] }">
           {{ ['●','◦','·','-'][Math.min(c._depth,3)] }}
         </span>
         <div style="flex:1;min-width:0;overflow:hidden;">
           <span style="font-size:13px;font-weight:600;color:#1a1a2e;">{{ c.categoryNm }}</span>
           <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ c.depth }}단계</span>
         </div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===c.categoryId ? 1 : 0 }">›</span>
+        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===c.categoryId ? 1 : 0 }">
+          ›
+        </span>
       </div>
       <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
         <div style="font-size:32px;margin-bottom:8px;">🔍</div>
@@ -1756,7 +1839,8 @@ window.CategoryTreeModal = {
       <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 위젯미리보기 모달 ─────────────────────────────────
@@ -1809,22 +1893,25 @@ window.DispPreviewModal = {
   template: /* html */`
 <bo-modal :show="show" max-width="560px" max-height="88vh" box-pad="0" body-pad="0" :z-index="500" @close="$emit('close')">
   <div style="background:#fff;border-radius:12px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-
     <!-- 헤더 -->
     <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fafafa;">
       <div>
         <span style="font-size:14px;font-weight:700;color:#333;">👁 위젯미리보기</span>
         <span style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:600;">{{ tabLabel }}</span>
-        <span v-if="mode==='single' && cfWidgetLabel" style="margin-left:6px;font-size:11px;color:#aaa;">({{ cfWidgetLabel }})</span>
-        <span v-if="mode==='all' && area" style="margin-left:6px;font-size:11px;color:#aaa;">영역: {{ area }}</span>
+        <span v-if="mode==='single' && cfWidgetLabel" style="margin-left:6px;font-size:11px;color:#aaa;">
+          ({{ cfWidgetLabel }})
+        </span>
+        <span v-if="mode==='all' && area" style="margin-left:6px;font-size:11px;color:#aaa;">
+          영역: {{ area }}
+        </span>
       </div>
       <button @click="$emit('close')"
-        style="background:none;border:none;cursor:pointer;font-size:18px;color:#aaa;line-height:1;padding:2px 6px;">✕</button>
+        style="background:none;border:none;cursor:pointer;font-size:18px;color:#aaa;line-height:1;padding:2px 6px;">
+        ✕
+      </button>
     </div>
-
     <!-- 콘텐츠 -->
     <div style="flex:1;overflow-y:auto;padding:20px;">
-
       <!-- mode=all: 해당 area 전체 위젯 -->
       <template v-if="mode==='all'">
         <div v-if="cfAreaWidgets.length===0"
@@ -1842,16 +1929,13 @@ window.DispPreviewModal = {
               :disp-dataset="{ displays: [], codes: [] }"
               :disp-opt="{ showBadges: true }"
               :widget-item="w"
-            />
+              />
           </div>
         </div>
       </template>
-
       <!-- mode=single: 현재 form 단일 위젯 -->
       <template v-else>
-        <div style="font-size:10px;color:#bbb;margin-bottom:8px;font-family:monospace;">
-          현재 입력값 기준 실시간 위젯미리보기
-        </div>
+        <div style="font-size:10px;color:#bbb;margin-bottom:8px;font-family:monospace;">현재 입력값 기준 실시간 위젯미리보기</div>
         <!-- widgetType 없으면 DispWidget 렌더 금지 (widgetType.startsWith 오류 방지) -->
         <div v-if="cfPreviewWidget.widgetType"
           style="border:1px dashed #e0e0e0;border-radius:8px;padding:16px;background:#fafbff;">
@@ -1860,23 +1944,24 @@ window.DispPreviewModal = {
             :disp-dataset="{ displays: [], codes: [] }"
             :disp-opt="{ showBadges: true }"
             :widget-item="cfPreviewWidget"
-          />
+            />
         </div>
         <div v-else
           style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">
           <div style="font-size:28px;margin-bottom:8px;">🎨</div>
-          행(1~5행)에서 위젯 유형을 선택하면<br>위젯미리보기가 표시됩니다.
+          행(1~5행)에서 위젯 유형을 선택하면
+          <br>
+          위젯미리보기가 표시됩니다.
         </div>
       </template>
-
     </div>
-
     <!-- 푸터 -->
     <div style="padding:10px 18px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
       <button class="btn btn-secondary" @click="$emit('close')">닫기</button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 전시 DispUi 모달 ──────────────────────────────────────────
@@ -1910,7 +1995,6 @@ window.DispUiModal = {
 <bo-modal :show="show" width="1200px" max-width="96vw" max-height="90vh"
   box-pad="0" body-pad="0" :z-index="9999" @close="$emit('close')">
   <div style="border-radius:14px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
-
     <!-- 헤더 -->
     <div style="background:linear-gradient(135deg,#6a1b9a,#4a148c);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:2;">
       <div style="display:flex;align-items:center;gap:12px;">
@@ -1923,15 +2007,15 @@ window.DispUiModal = {
           🔄 재조회
         </button>
         <button @click="$emit('close')"
-          style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;padding:0;">×</button>
+          style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;opacity:.8;line-height:1;padding:0;">
+          ×
+        </button>
       </div>
     </div>
-
     <!-- 본문: DispX01Ui (파라미터 요약 바는 viewOpts 있을 때 내부 표시) -->
     <div style="flex:1;overflow-y:auto;">
       <disp-x01-ui :key="innerKey" :params="params" :disp-dataset="dispDataset" />
     </div>
-
     <!-- 푸터 -->
     <div style="padding:10px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;">
       <button @click="$emit('open-popup')"
@@ -1940,9 +2024,9 @@ window.DispUiModal = {
       </button>
       <button class="btn btn-secondary btn-sm" @click="$emit('close')">닫기</button>
     </div>
-
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 카테고리 멀티선택 모달 (사용자 페이스 Sample용) ────────────
@@ -2041,22 +2125,20 @@ window.CategorySelectModal = {
   template: /* html */`
 <bo-modal :show="show" width="340px" max-height="80vh" box-pad="0" body-pad="0" :z-index="500" @close="$emit('close')">
   <div style="background:#fff;border-radius:10px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-
     <!-- 헤더 -->
     <div style="padding:11px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <span style="font-size:13px;font-weight:700;color:#222;">📂 카테고리 선택</span>
-      <button @click="$emit('close')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#aaa;padding:2px 5px;line-height:1;">✕</button>
+      <button @click="$emit('close')" style="background:none;border:none;cursor:pointer;font-size:15px;color:#aaa;padding:2px 5px;line-height:1;">
+        ✕
+      </button>
     </div>
-
     <!-- 검색 -->
     <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
       <input v-model="searchParam.searchValue" type="text" placeholder="카테고리명 검색" style="width:100%;box-sizing:border-box;font-size:12px;padding:4px 9px;border:1px solid #ddd;border-radius:5px;outline:none;" />
     </div>
-
     <!-- 트리 목록 -->
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
       <div v-if="cfRoots.length===0" style="text-align:center;padding:30px;font-size:12px;color:#bbb;">검색 결과 없음</div>
-
       <!-- ① 전체 노드 -->
       <div @click="handleToggleAll"
         style="display:flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;user-select:none;"
@@ -2068,12 +2150,10 @@ window.CategorySelectModal = {
         </div>
         <span style="font-size:12px;font-weight:700;color:#333;">전체</span>
       </div>
-
       <!-- ② 루트 + 자식 트리 -->
       <div style="position:relative;padding-left:12px;">
         <!-- 레벨1 세로선 (전체 → 루트들) -->
         <div style="position:absolute;left:19px;top:0;bottom:14px;width:1px;background:#d0d0d0;"></div>
-
         <div v-for="root in cfRoots" :key="root.categoryId">
           <!-- 루트 행 -->
           <div style="display:flex;align-items:center;gap:4px;padding:5px 8px;cursor:pointer;user-select:none;"
@@ -2090,18 +2170,18 @@ window.CategorySelectModal = {
               style="width:13px;height:13px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
               :style="isRootFull(root)?'border-color:#e8587a;background:#e8587a;':isRootPart(root)?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
               <span v-if="isRootFull(root)" style="color:#fff;font-size:8px;line-height:1;">✓</span>
-              <span v-else-if="isRootPart(root)" style="color:#e8587a;font-size:10px;font-weight:900;line-height:1;margin-top:-1px;">−</span>
+              <span v-else-if="isRootPart(root)" style="color:#e8587a;font-size:10px;font-weight:900;line-height:1;margin-top:-1px;">
+                −
+              </span>
             </div>
             <!-- 라벨 -->
             <span @click.stop="toggleRoot(root)" style="font-size:12px;font-weight:700;color:#222;flex:1;">{{ root.categoryNm }}</span>
           </div>
-
           <!-- 자식 행들 -->
           <template v-if="expanded.has(root.categoryId)">
             <div style="position:relative;padding-left:26px;">
               <!-- 레벨2 세로선 (루트 → 자식들) -->
               <div style="position:absolute;left:33px;top:0;bottom:14px;width:1px;background:#d0d0d0;"></div>
-
               <div v-for="child in childrenOf(root.categoryId)" :key="child.categoryId"
                 @click="toggleChild(child.categoryId)"
                 style="display:flex;align-items:center;gap:4px;padding:4px 8px;cursor:pointer;user-select:none;"
@@ -2123,16 +2203,19 @@ window.CategorySelectModal = {
         </div>
       </div>
     </div>
-
     <!-- 하단 버튼 -->
     <div style="padding:9px 12px;border-top:1px solid #e0e0e0;display:flex;align-items:center;gap:8px;flex-shrink:0;">
       <span style="font-size:11px;color:#aaa;flex:1;">{{ localSel.size }}개 선택</span>
-      <button @click="onReset" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;">초기화</button>
-      <button @click="apply" style="font-size:12px;padding:4px 16px;border:none;border-radius:6px;background:#e8587a;color:#fff;font-weight:700;cursor:pointer;">적용</button>
+      <button @click="onReset" style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;">
+        초기화
+      </button>
+      <button @click="apply" style="font-size:12px;padding:4px 16px;border:none;border-radius:6px;background:#e8587a;color:#fff;font-weight:700;cursor:pointer;">
+        적용
+      </button>
     </div>
   </div>
 </bo-modal>
-  `,
+`,
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2293,15 +2376,17 @@ window.RowPickModal = {
   <div style="background:#fafafa;border-radius:14px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
     <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:14px;font-weight:700;">🔗 {{ title }}</span>
-      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">
+        ×
+      </button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <bo-multi-check-select
         v-model="searchType"
         :options="[
-          { value: 'widgetNm', label: '위젯명' },
-          { value: 'panelNm',  label: '패널명' },
-          { value: 'widgetType',     label: '유형' },
+        { value: 'widgetNm', label: '위젯명' },
+        { value: 'panelNm',  label: '패널명' },
+        { value: 'widgetType',     label: '유형' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -2318,7 +2403,9 @@ window.RowPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">
+            {{ pager.pageTotalCount }}
+          </span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label"
@@ -2331,14 +2418,23 @@ window.RowPickModal = {
       </div>
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ pager.pageTotalCount }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
-          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 복사</button>
+          <span>
+            총
+            <b>{{ pager.pageTotalCount }}</b>
+            건
+            <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span>
+          </span>
+          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">
+            선택한 {{ checked.size }}개 일괄 복사
+          </button>
         </div>
         <div style="flex:1;overflow-y:auto;">
           <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
-                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
+                <th style="width:36px;text-align:center;">
+                  <input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" />
+                </th>
                 <th style="width:110px;">위젯 유형</th>
                 <th>전시항목 정보</th>
                 <th style="width:160px;text-align:left;">사용위치경로</th>
@@ -2346,14 +2442,18 @@ window.RowPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!(pager.pageList||[]).length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 전시항목이 없습니다.</td></tr>
+              <tr v-if="!(pager.pageList||[]).length">
+                <td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 전시항목이 없습니다.</td>
+              </tr>
               <tr v-for="o in pager.pageList" :key="o.__rowId"
                 :style="isChecked(o.__rowId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
                   <input type="checkbox" :checked="isChecked(o.__rowId)" @change="toggleCheck(o.__rowId)" />
                 </td>
                 <td style="vertical-align:top;padding-top:12px;">
-                  <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ wLabel(o.row.widgetType) }}</span>
+                  <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
+                    {{ wLabel(o.row.widgetType) }}
+                  </span>
                 </td>
                 <td style="padding:10px 12px;">
                   <div style="margin-bottom:4px;">
@@ -2362,7 +2462,10 @@ window.RowPickModal = {
                   </div>
                   <div style="font-size:11px;color:#555;line-height:1.5;">
                     <span><b style="color:#888;">소속 패널:</b> {{ o.__panelName }} (#{{ o.__panelId }})</span>
-                    <span v-if="o.row.clickAction && o.row.clickAction !== 'none'" style="margin-left:10px;"><b style="color:#888;">클릭:</b> {{ o.row.clickAction }}</span>
+                    <span v-if="o.row.clickAction && o.row.clickAction !== 'none'" style="margin-left:10px;">
+                      <b style="color:#888;">클릭:</b>
+                      {{ o.row.clickAction }}
+                    </span>
                   </div>
                 </td>
                 <td style="vertical-align:top;padding-top:12px;">
@@ -2396,7 +2499,7 @@ window.RowPickModal = {
     </div>
   </div>
 </bo-modal>
-  `,
+`,
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2525,14 +2628,16 @@ window.AreaPickModal = {
   <div style="background:#fafafa;border-radius:14px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
     <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:14px;font-weight:700;">🔗 {{ title }}</span>
-      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">
+        ×
+      </button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'areaCd', label: '영역코드' },
-          { value: 'areaNm', label: '영역명' },
+        { value: 'areaCd', label: '영역코드' },
+        { value: 'areaNm', label: '영역명' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -2555,7 +2660,9 @@ window.AreaPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">
+            {{ pager.pageTotalCount }}
+          </span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label"
@@ -2568,14 +2675,23 @@ window.AreaPickModal = {
       </div>
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ pager.pageTotalCount }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
-          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
+          <span>
+            총
+            <b>{{ pager.pageTotalCount }}</b>
+            건
+            <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span>
+          </span>
+          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">
+            선택한 {{ checked.size }}개 일괄 추가
+          </button>
         </div>
         <div style="flex:1;overflow-y:auto;">
           <table class="bo-table" style="margin:0;">
             <thead>
               <tr>
-                <th style="width:36px;text-align:center;"><input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" /></th>
+                <th style="width:36px;text-align:center;">
+                  <input type="checkbox" :checked="cfAllChecked" @change="toggleCheckAll" />
+                </th>
                 <th style="width:56px;">ID</th>
                 <th>영역 정보</th>
                 <th style="width:140px;text-align:left;">사용위치경로</th>
@@ -2583,7 +2699,9 @@ window.AreaPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!(pager.pageList||[]).length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 영역이 없습니다.</td></tr>
+              <tr v-if="!(pager.pageList||[]).length">
+                <td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 영역이 없습니다.</td>
+              </tr>
               <tr v-for="a in pager.pageList" :key="a.codeId"
                 :style="isChecked(a.codeId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
@@ -2594,11 +2712,16 @@ window.AreaPickModal = {
                   <div style="margin-bottom:4px;">
                     <code style="background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;font-size:10px;">{{ a.codeValue }}</code>
                     <span style="font-size:14px;font-weight:700;color:#222;margin-left:8px;">{{ a.codeLabel }}</span>
-                    <span class="badge" :class="statusCls(a.useYn)" style="font-size:11px;margin-left:8px;">{{ a.useYn==='Y'?'사용':'미사용' }}</span>
+                    <span class="badge" :class="statusCls(a.useYn)" style="font-size:11px;margin-left:8px;">
+                      {{ a.useYn==='Y'?'사용':'미사용' }}
+                    </span>
                   </div>
                   <div style="font-size:11px;color:#555;line-height:1.5;">
                     <span><b style="color:#888;">유형:</b> {{ a.areaType || '-' }}</span>
-                    <span style="margin-left:10px;"><b style="color:#888;">표시:</b> {{ a.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(a.gridCols||1)+'열' }}</span>
+                    <span style="margin-left:10px;">
+                      <b style="color:#888;">표시:</b>
+                      {{ a.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(a.gridCols||1)+'열' }}
+                    </span>
                     <span v-if="a.uiCode" style="margin-left:10px;"><b style="color:#888;">현재UI:</b> {{ a.uiCode }}</span>
                   </div>
                 </td>
@@ -2633,7 +2756,7 @@ window.AreaPickModal = {
     </div>
   </div>
 </bo-modal>
-  `,
+`,
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2767,14 +2890,16 @@ window.PanelPickModal = {
   <div style="background:#fafafa;border-radius:14px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
     <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:14px;font-weight:700;">🔗 {{ title }}</span>
-      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">
+        ×
+      </button>
     </div>
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'panelNm', label: '패널명' },
-          { value: 'areaCd',  label: '영역코드' },
+        { value: 'panelNm', label: '패널명' },
+        { value: 'areaCd',  label: '영역코드' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -2792,7 +2917,9 @@ window.PanelPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">
+            {{ pager.pageTotalCount }}
+          </span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label"
@@ -2806,8 +2933,15 @@ window.PanelPickModal = {
       <!-- 목록 -->
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;display:flex;justify-content:space-between;align-items:center;">
-          <span>총 <b>{{ pager.pageTotalCount }}</b>건 <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span></span>
-          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">선택한 {{ checked.size }}개 일괄 추가</button>
+          <span>
+            총
+            <b>{{ pager.pageTotalCount }}</b>
+            건
+            <span v-if="checked.size" style="color:#1565c0;margin-left:8px;">선택 {{ checked.size }}개</span>
+          </span>
+          <button v-if="checked.size" @click="pickMulti" class="btn btn-primary btn-sm" style="font-size:11px;">
+            선택한 {{ checked.size }}개 일괄 추가
+          </button>
         </div>
         <div style="flex:1;overflow-y:auto;">
           <table class="bo-table" style="margin:0;">
@@ -2823,7 +2957,9 @@ window.PanelPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!(pager.pageList||[]).length"><td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 패널이 없습니다.</td></tr>
+              <tr v-if="!(pager.pageList||[]).length">
+                <td colspan="5" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 패널이 없습니다.</td>
+              </tr>
               <tr v-for="p in pager.pageList" :key="p.dispId"
                 :style="isChecked(p.dispId)?'background:#eef6fd;':''">
                 <td style="text-align:center;vertical-align:top;padding-top:14px;">
@@ -2832,7 +2968,9 @@ window.PanelPickModal = {
                 <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ p.dispId }}</td>
                 <td style="padding:10px 12px;">
                   <div style="margin-bottom:4px;">
-                    <code style="background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;font-size:10px;">{{ p.area || '(미등록)' }}</code>
+                    <code style="background:#f0f2f5;color:#555;padding:1px 6px;border-radius:3px;font-size:10px;">
+                      {{ p.area || '(미등록)' }}
+                    </code>
                     <span style="font-size:14px;font-weight:700;color:#222;margin-left:8px;">{{ p.name }}</span>
                     <span class="badge" :class="statusCls(p.status)" style="font-size:11px;margin-left:8px;">{{ p.status }}</span>
                   </div>
@@ -2872,7 +3010,7 @@ window.PanelPickModal = {
     </div>
   </div>
 </bo-modal>
-  `,
+`,
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -2985,20 +3123,19 @@ window.WidgetLibPickModal = {
   <div style="background:#fafafa;border-radius:14px;display:flex;flex-direction:column;height:100%;overflow:hidden;">
     <!-- 헤더 -->
     <div style="background:linear-gradient(135deg,#1565c0,#42a5f5);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:14px;font-weight:700;">
-        {{ mode==='copy' ? '📋 전시위젯Lib 내용복사' : '🔗 전시위젯Lib 참조' }}
-      </span>
-      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">×</button>
+      <span style="font-size:14px;font-weight:700;">{{ mode==='copy' ? '📋 전시위젯Lib 내용복사' : '🔗 전시위젯Lib 참조' }}</span>
+      <button @click="$emit('close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0;opacity:.85;">
+        ×
+      </button>
     </div>
-
     <!-- 검색 -->
     <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <bo-multi-check-select
         v-model="searchParam.searchType"
         :options="[
-          { value: 'nm',   label: '이름' },
-          { value: 'desc', label: '설명' },
-          { value: 'tag',  label: '태그' },
+        { value: 'nm',   label: '이름' },
+        { value: 'desc', label: '설명' },
+        { value: 'tag',  label: '태그' },
         ]"
         placeholder="검색대상 전체"
         all-label="전체 선택"
@@ -3012,7 +3149,6 @@ window.WidgetLibPickModal = {
         <option v-for="c in activeStatuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
       </select>
     </div>
-
     <!-- 본문: 좌측 트리 + 우측 목록 -->
     <div style="flex:1;overflow:hidden;display:flex;gap:12px;padding:12px;background:#f4f5f8;">
       <!-- 트리 -->
@@ -3021,7 +3157,9 @@ window.WidgetLibPickModal = {
         <div @click="toggleTree('__root__'); selectTree('')"
           :style="{ display:'flex',alignItems:'center',justifyContent:'space-between',padding:'6px 8px',borderRadius:'6px',cursor:'pointer',fontSize:'12px',marginBottom:'4px',background: selectedTreeKey==='' ? '#e3f2fd' : '#f8f9fb',color: selectedTreeKey==='' ? '#1565c0' : '#222',fontWeight:700,border:'1px solid '+(selectedTreeKey==='' ? '#90caf9' : '#e4e7ec') }">
           <span>{{ isTreeOpen('__root__') ? '▼' : '▶' }} 📂 전체</span>
-          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">{{ pager.pageTotalCount }}</span>
+          <span style="font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:10px;padding:1px 7px;">
+            {{ pager.pageTotalCount }}
+          </span>
         </div>
         <div v-if="isTreeOpen('__root__')" style="padding-left:12px;">
           <div v-for="node in cfTree" :key="node.label">
@@ -3033,7 +3171,6 @@ window.WidgetLibPickModal = {
           </div>
         </div>
       </div>
-
       <!-- 목록 -->
       <div style="flex:1;background:#fff;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;">
         <div style="padding:10px 14px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#555;">총 <b>{{ pager.pageTotalCount }}</b>건</div>
@@ -3047,12 +3184,16 @@ window.WidgetLibPickModal = {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!(pager.pageList||[]).length"><td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 데이터가 없습니다.</td></tr>
+              <tr v-if="!(pager.pageList||[]).length">
+                <td colspan="3" style="text-align:center;padding:30px;color:#bbb;font-size:12px;">표시할 데이터가 없습니다.</td>
+              </tr>
               <tr v-for="d in pager.pageList" :key="d.libId">
                 <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">#{{ String(d.libId).padStart(4,'0') }}</td>
                 <td style="padding:10px 12px;">
                   <div style="margin-bottom:4px;">
-                    <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">{{ d.widgetType }}</span>
+                    <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
+                      {{ d.widgetType }}
+                    </span>
                     <span style="font-size:14px;font-weight:700;color:#222;margin-left:8px;">{{ d.name }}</span>
                     <span class="badge" :class="statusCls(d.status)" style="font-size:11px;margin-left:8px;">{{ d.status }}</span>
                   </div>
@@ -3060,7 +3201,9 @@ window.WidgetLibPickModal = {
                     <span v-if="d.usedPaths && d.usedPaths.length">
                       <b style="color:#888;">사용위치:</b>
                       <span v-for="(p,pi) in d.usedPaths" :key="pi"
-                        style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;">{{ p }}</span>
+                        style="background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:8px;padding:1px 7px;margin-left:3px;">
+                        {{ p }}
+                      </span>
                     </span>
                     <span v-if="d.tags" style="margin-left:8px;"><b style="color:#888;">태그:</b> {{ d.tags }}</span>
                   </div>
@@ -3094,7 +3237,7 @@ window.WidgetLibPickModal = {
     </div>
   </div>
 </bo-modal>
-  `,
+`,
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -3266,11 +3409,12 @@ window.PathPickModal = {
   template: /* html */`
 <bo-modal :show="true" max-width="640px" box-pad="0" body-pad="0" @close="$emit('close')">
   <div style="overflow:hidden;border-radius:14px;display:flex;flex-direction:column;height:100%;">
-
     <!-- 헤더 -->
     <div style="background:#ffffff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">📂</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">
+          📂
+        </span>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;color:#1f2937;letter-spacing:-0.2px;">{{ title || '표시경로 선택' }}</div>
           <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">biz_cd · {{ bizCd }}</div>
@@ -3278,7 +3422,9 @@ window.PathPickModal = {
         <span class="modal-close" style="color:#9ca3af;cursor:pointer;font-size:20px;line-height:1;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .15s;"
           @click="$emit('close')"
           @mouseover="onCloseHover($event)"
-          @mouseout="onCloseLeave($event)">✕</span>
+          @mouseout="onCloseLeave($event)">
+          ✕
+        </span>
       </div>
       <!-- 선택 경로 미리보기 -->
       <div style="margin-top:12px;padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;display:flex;align-items:center;gap:10px;">
@@ -3289,31 +3435,37 @@ window.PathPickModal = {
         </span>
       </div>
     </div>
-
     <!-- 본문 -->
     <div style="padding:14px 22px 18px;background:#fafbfc;">
-
       <!-- 트리 도구 -->
       <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;">
         <span style="font-size:11.5px;font-weight:700;color:#374151;">경로 트리</span>
-        <span style="font-size:10px;color:#9ca3af;background:#fff;border:1px solid #e5e7eb;padding:2px 8px;border-radius:10px;">클릭: 선택 · 더블클릭: 즉시 적용</span>
+        <span style="font-size:10px;color:#9ca3af;background:#fff;border:1px solid #e5e7eb;padding:2px 8px;border-radius:10px;">
+          클릭: 선택 · 더블클릭: 즉시 적용
+        </span>
         <span style="flex:1;"></span>
-        <button @click="expandAll" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">▼ 펼치기</button>
-        <button @click="collapseAll" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">▶ 접기</button>
+        <button @click="expandAll" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">
+          ▼ 펼치기
+        </button>
+        <button @click="collapseAll" style="font-size:10.5px;padding:4px 9px;border:1px solid #e5e7eb;background:#fff;border-radius:5px;cursor:pointer;color:#6b7280;">
+          ▶ 접기
+        </button>
       </div>
-
       <div style="height:340px;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:8px;margin-bottom:14px;">
         <div @click="select(null); setAddParent(null);"
           @dblclick="select(null); confirm();"
           :style="{padding:'8px 12px',cursor:'pointer',borderRadius:'8px',transition:'all .12s',marginBottom:'2px',
-                   background: selectedId===null ? '#fef2f4' : (addParent===null ? '#ecfdf5' : 'transparent'),
-                   color:      selectedId===null ? '#e8587a' : '#374151',
-                   fontWeight: selectedId===null ? 700 : 500, fontSize:'13px',
-                   border:     selectedId===null ? '1px solid #fecdd3' : (addParent===null ? '1px solid #a7f3d0' : '1px solid transparent')}"
+          background: selectedId===null ? '#fef2f4' : (addParent===null ? '#ecfdf5' : 'transparent'),
+          color:      selectedId===null ? '#e8587a' : '#374151',
+          fontWeight: selectedId===null ? 700 : 500, fontSize:'13px',
+          border:     selectedId===null ? '1px solid #fecdd3' : (addParent===null ? '1px solid #a7f3d0' : '1px solid transparent')}"
           @mouseover="onRootHover($event)"
           @mouseout="onRootLeave($event)">
-          <span style="margin-right:8px;">📁</span>(루트)
-          <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">{{ cfTree.count }}</span>
+          <span style="margin-right:8px;">📁</span>
+          (루트)
+          <span style="font-size:10px;color:#6b7280;background:#fff;padding:1px 8px;border-radius:10px;border:1px solid #e5e7eb;margin-left:8px;font-weight:500;">
+            {{ cfTree.count }}
+          </span>
         </div>
         <path-pick-tree-node :node="cfTree" :expanded="expanded" :selected="selectedId" :add-parent="addParent"
           :editing-id="editingId" :edit-label="editLabel"
@@ -3321,11 +3473,12 @@ window.PathPickModal = {
           :on-start-edit="startEdit" :on-save-edit="saveEdit" :on-cancel-edit="cancelEdit"
           :on-update-label="(v) => editLabel = v" :on-delete="deleteNode" :depth="0" />
       </div>
-
       <!-- 추가 입력 -->
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
         <div style="display:flex;gap:8px;align-items:center;font-size:11px;color:#6b7280;margin-bottom:8px;">
-          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#10b981;color:#fff;font-size:11px;font-weight:700;">+</span>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#10b981;color:#fff;font-size:11px;font-weight:700;">
+            +
+          </span>
           <span style="font-weight:600;">하위 추가 위치:</span>
           <span style="background:#ecfdf5;color:#059669;padding:2px 10px;border-radius:6px;font-weight:700;font-size:11px;">
             {{ addParent == null ? '(루트)' : (labelOf(addParent) || ('#'+addParent)) }}
@@ -3336,20 +3489,26 @@ window.PathPickModal = {
           <button @click="doAdd"
             style="padding:0 16px;font-size:12px;font-weight:700;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap;"
             @mouseover="onAddHover($event)"
-            @mouseout="onAddLeave($event)">+ 추가</button>
+            @mouseout="onAddLeave($event)">
+            + 추가
+          </button>
         </div>
       </div>
-
       <!-- 액션 -->
       <div style="display:flex;justify-content:flex-end;gap:8px;">
         <button @click="$emit('close')"
-          style="padding:9px 20px;font-size:12.5px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:7px;cursor:pointer;">취소</button>
+          style="padding:9px 20px;font-size:12.5px;font-weight:600;background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:7px;cursor:pointer;">
+          취소
+        </button>
         <button @click="confirm"
-          style="padding:9px 22px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg,#e8587a,#d14165);color:#fff;border:none;border-radius:7px;cursor:pointer;box-shadow:0 2px 6px rgba(232,88,122,.25);">✓ 선택</button>
+          style="padding:9px 22px;font-size:12.5px;font-weight:700;background:linear-gradient(135deg,#e8587a,#d14165);color:#fff;border:none;border-radius:7px;cursor:pointer;box-shadow:0 2px 6px rgba(232,88,122,.25);">
+          ✓ 선택
+        </button>
       </div>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 window.PathPickTreeNode = {
@@ -3385,46 +3544,55 @@ window.PathPickTreeNode = {
     <!-- 노드 행 -->
     <div @click="onPathNodeClick(ch)" @dblclick="onPathNodeDblClick(ch)"
       :style="{position:'relative',display:'flex',alignItems:'center',padding:'4px 8px 4px 0',cursor: editingId===ch.pathId ? 'default' : 'pointer',transition:'background .12s',
-               paddingLeft: (depth*20 + 8) + 'px',
-               background: selected===ch.pathId ? '#fef2f4' : (addParent===ch.pathId ? '#ecfdf5' : 'transparent'),
-               color:      selected===ch.pathId ? '#e8587a' : '#374151',
-               fontWeight: selected===ch.pathId ? 700 : 500, fontSize:'13px',
-               borderLeft: selected===ch.pathId ? '3px solid #e8587a' : '3px solid transparent'}"
+      paddingLeft: (depth*20 + 8) + 'px',
+      background: selected===ch.pathId ? '#fef2f4' : (addParent===ch.pathId ? '#ecfdf5' : 'transparent'),
+      color:      selected===ch.pathId ? '#e8587a' : '#374151',
+      fontWeight: selected===ch.pathId ? 700 : 500, fontSize:'13px',
+      borderLeft: selected===ch.pathId ? '3px solid #e8587a' : '3px solid transparent'}"
       @mouseover="onPathNodeHover(ch, $event)"
       @mouseout="onPathNodeLeave(ch, $event)">
-
       <span :style="{position:'absolute',left:(depth*20 + 11)+'px',top:'50%',width:'10px',height:'1px',borderTop:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
-
       <span v-if="(ch.children||[]).length>0" @click.stop="onToggle(ch.pathId)"
-        style="position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid #94a3b8;background:#fff;font-size:10px;line-height:1;color:#475569;cursor:pointer;user-select:none;flex-shrink:0;font-family:monospace;font-weight:700;border-radius:2px;">{{ expanded.has(ch.pathId) ? '−' : '+' }}</span>
+        style="position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1px solid #94a3b8;background:#fff;font-size:10px;line-height:1;color:#475569;cursor:pointer;user-select:none;flex-shrink:0;font-family:monospace;font-weight:700;border-radius:2px;">
+        {{ expanded.has(ch.pathId) ? '−' : '+' }}
+      </span>
       <span v-else style="display:inline-block;width:16px;height:16px;flex-shrink:0;"></span>
-
-      <span style="margin:0 6px 0 4px;font-size:13px;flex-shrink:0;">{{ (ch.children||[]).length>0 ? (expanded.has(ch.pathId) ? '📂' : '📁') : '📄' }}</span>
-
+      <span style="margin:0 6px 0 4px;font-size:13px;flex-shrink:0;">
+        {{ (ch.children||[]).length>0 ? (expanded.has(ch.pathId) ? '📂' : '📁') : '📄' }}
+      </span>
       <!-- 인라인 수정 모드 -->
       <template v-if="editingId === ch.pathId">
         <input type="text" :value="editLabel" @input="onUpdateLabel($event.target.value)"
           @keyup.enter="onSaveEdit" @keyup.esc="onCancelEdit" @click.stop
           style="flex:1;padding:3px 8px;font-size:12px;border:1px solid #6366f1;border-radius:4px;outline:none;" />
         <button @click.stop="onSaveEdit" title="저장"
-          style="margin-left:4px;width:22px;height:22px;border:none;background:#10b981;color:#fff;border-radius:4px;cursor:pointer;font-size:11px;">✓</button>
+          style="margin-left:4px;width:22px;height:22px;border:none;background:#10b981;color:#fff;border-radius:4px;cursor:pointer;font-size:11px;">
+          ✓
+        </button>
         <button @click.stop="onCancelEdit" title="취소"
-          style="margin-left:2px;width:22px;height:22px;border:none;background:#9ca3af;color:#fff;border-radius:4px;cursor:pointer;font-size:11px;">✕</button>
+          style="margin-left:2px;width:22px;height:22px;border:none;background:#9ca3af;color:#fff;border-radius:4px;cursor:pointer;font-size:11px;">
+          ✕
+        </button>
       </template>
       <template v-else>
         <span style="flex:1;">{{ ch.pathLabel }}</span>
-        <span v-if="ch.count>0" style="font-size:10px;color:#6b7280;background:#fff;padding:1px 7px;border-radius:10px;border:1px solid #e5e7eb;font-weight:500;margin-right:4px;">{{ ch.count }}</span>
+        <span v-if="ch.count>0" style="font-size:10px;color:#6b7280;background:#fff;padding:1px 7px;border-radius:10px;border:1px solid #e5e7eb;font-weight:500;margin-right:4px;">
+          {{ ch.count }}
+        </span>
         <!-- 사용자 추가 항목만 수정/삭제 노출 -->
         <template v-if="ch.userAdded">
           <button @click.stop="onStartEdit(ch)" title="수정"
-            style="width:22px;height:22px;border:1px solid #c7d2fe;background:#eef2ff;color:#4f46e5;border-radius:4px;cursor:pointer;font-size:10px;margin-right:2px;">✏</button>
+            style="width:22px;height:22px;border:1px solid #c7d2fe;background:#eef2ff;color:#4f46e5;border-radius:4px;cursor:pointer;font-size:10px;margin-right:2px;">
+            ✏
+          </button>
           <button @click.stop="onDelete(ch)" title="삭제"
             :disabled="(ch.children||[]).length>0"
-            :style="{width:'22px',height:'22px',border:'1px solid '+((ch.children||[]).length>0?'#e5e7eb':'#fecaca'),background:(ch.children||[]).length>0?'#f3f4f6':'#fee2e2',color:(ch.children||[]).length>0?'#9ca3af':'#dc2626',borderRadius:'4px',cursor:(ch.children||[]).length>0?'not-allowed':'pointer',fontSize:'10px',marginRight:'4px'}">🗑</button>
+            :style="{width:'22px',height:'22px',border:'1px solid '+((ch.children||[]).length>0?'#e5e7eb':'#fecaca'),background:(ch.children||[]).length>0?'#f3f4f6':'#fee2e2',color:(ch.children||[]).length>0?'#9ca3af':'#dc2626',borderRadius:'4px',cursor:(ch.children||[]).length>0?'not-allowed':'pointer',fontSize:'10px',marginRight:'4px'}">
+            🗑
+          </button>
         </template>
       </template>
     </div>
-
     <div v-if="expanded.has(ch.pathId) && (ch.children||[]).length>0"
       :style="{position:'relative'}">
       <span :style="{position:'absolute',left:(depth*20 + 16)+'px',top:'0',bottom: (ci===node.children.length-1) ? '50%' : '0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
@@ -3434,11 +3602,11 @@ window.PathPickTreeNode = {
         :on-start-edit="onStartEdit" :on-save-edit="onSaveEdit" :on-cancel-edit="onCancelEdit"
         :on-update-label="onUpdateLabel" :on-delete="onDelete" :depth="depth+1" />
     </div>
-
     <span v-if="depth > 0 && ci < node.children.length - 1"
       :style="{position:'absolute',left:(depth*20 + 16 - 20)+'px',top:'0',bottom:'0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}"></span>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -3518,7 +3686,9 @@ window.BizPickModal = {
   <div style="overflow:hidden;border-radius:14px;display:flex;flex-direction:column;height:100%;">
     <div style="background:#fff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#fff0f4;color:#e8587a;font-size:16px;">🏢</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#fff0f4;color:#e8587a;font-size:16px;">
+          🏢
+        </span>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;color:#1f2937;">{{ title || '사업자 선택' }}</div>
           <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">sy_biz</div>
@@ -3529,9 +3699,9 @@ window.BizPickModal = {
         <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
-            { value: 'bizNo', label: '사업자번호' },
-            { value: 'bizNm', label: '상호' },
-            { value: 'ceoNm', label: '대표자' },
+          { value: 'bizNo', label: '사업자번호' },
+          { value: 'bizNm', label: '상호' },
+          { value: 'ceoNm', label: '대표자' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
@@ -3555,17 +3725,27 @@ window.BizPickModal = {
       <!-- 우측 사업자 목록 -->
       <div style="overflow:auto;">
         <table class="bo-table" style="background:#fff;">
-          <thead><tr>
-            <th>업체유형</th><th>사업자번호</th><th>상호</th><th>대표자</th><th></th>
-          </tr></thead>
+          <thead>
+            <tr>
+              <th>업체유형</th>
+              <th>사업자번호</th>
+              <th>상호</th>
+              <th>대표자</th>
+              <th></th>
+            </tr>
+          </thead>
           <tbody>
-            <tr v-if="cfFiltered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">검색 결과가 없습니다.</td></tr>
+            <tr v-if="cfFiltered.length===0">
+              <td colspan="5" style="text-align:center;color:#999;padding:30px;">검색 결과가 없습니다.</td>
+            </tr>
             <tr v-for="b in cfFiltered" :key="b.bizId" @dblclick="pickAndClose(b)" style="cursor:pointer;">
               <td><span class="badge" :class="vtBadge(b.vendorTypeCd)" style="font-size:10px;">{{ vtLabel(b.vendorTypeCd) }}</span></td>
               <td><code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ b.bizNo }}</code></td>
               <td style="font-weight:600;">{{ b.bizNm }}</td>
               <td>{{ b.ceoNm }}</td>
-              <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="pickAndClose(b)">선택</button></td>
+              <td style="text-align:right;">
+                <button class="btn btn-primary btn-xs" @click="pickAndClose(b)">선택</button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -3575,7 +3755,8 @@ window.BizPickModal = {
       <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ─────────────────────────────────────────────────────────────
@@ -3629,7 +3810,9 @@ window.SimpleUserPickModal = {
   <div style="overflow:hidden;border-radius:14px;display:flex;flex-direction:column;height:100%;">
     <div style="background:#fff;border-bottom:1px solid #eef0f3;padding:18px 22px 14px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">👤</span>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#eef2ff;color:#6366f1;font-size:16px;">
+          👤
+        </span>
         <div style="flex:1;">
           <div style="font-size:14px;font-weight:700;color:#1f2937;">{{ title || '사용자 선택' }}</div>
           <div style="font-size:10.5px;color:#9ca3af;font-family:monospace;margin-top:1px;">sy_user</div>
@@ -3640,9 +3823,9 @@ window.SimpleUserPickModal = {
         <bo-multi-check-select
           v-model="searchParam.searchType"
           :options="[
-            { value: 'nm',      label: '이름' },
-            { value: 'loginId', label: '로그인ID' },
-            { value: 'email',   label: '이메일' },
+          { value: 'nm',      label: '이름' },
+          { value: 'loginId', label: '로그인ID' },
+          { value: 'email',   label: '이메일' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
@@ -3654,15 +3837,27 @@ window.SimpleUserPickModal = {
     </div>
     <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
       <table class="bo-table" style="background:#fff;">
-        <thead><tr><th>이름</th><th>로그인ID</th><th>이메일</th><th>부서</th><th></th></tr></thead>
+        <thead>
+          <tr>
+            <th>이름</th>
+            <th>로그인ID</th>
+            <th>이메일</th>
+            <th>부서</th>
+            <th></th>
+          </tr>
+        </thead>
         <tbody>
-          <tr v-if="cfFiltered.length===0"><td colspan="5" style="text-align:center;color:#999;padding:30px;">결과가 없습니다.</td></tr>
+          <tr v-if="cfFiltered.length===0">
+            <td colspan="5" style="text-align:center;color:#999;padding:30px;">결과가 없습니다.</td>
+          </tr>
           <tr v-for="u in cfFiltered" :key="u.boUserId" @dblclick="pick(u)" style="cursor:pointer;">
             <td style="font-weight:600;">{{ u.name }}</td>
             <td><code style="font-size:11px;color:#2563eb;">{{ u.loginId }}</code></td>
             <td style="font-size:11.5px;color:#0369a1;">{{ u.email }}</td>
             <td style="font-size:11.5px;color:#666;">{{ u.dept }}</td>
-            <td style="text-align:right;"><button class="btn btn-primary btn-xs" @click="pick(u)">선택</button></td>
+            <td style="text-align:right;">
+              <button class="btn btn-primary btn-xs" @click="pick(u)">선택</button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -3671,7 +3866,8 @@ window.SimpleUserPickModal = {
       <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 간단 판매업체 선택 모달 (Pm Dtl 8종 공통 패턴) ──
@@ -3700,14 +3896,13 @@ window.SimpleVendorPickModal = {
       <span style="font-weight:500;">{{ v.vendorNm }}</span>
       <span v-if="selectedId===v.vendorId" style="color:#1565c0;font-weight:700;">✓</span>
     </div>
-    <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
-      판매업체가 없습니다.
-    </div>
+    <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">판매업체가 없습니다.</div>
   </div>
   <template #footer>
     <button class="btn btn-secondary btn-sm" @click="$emit('close')">닫기</button>
   </template>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── Od* 회원 선택 모달 (Cart/Order/Claim/Dliv 공통 패턴) ──
@@ -3781,7 +3976,9 @@ window.OdMemberPickModal = {
           <div style="font-size:17px;font-weight:700;color:#1e293b;">{{ title }}</div>
           <div style="font-size:12px;color:#9ca3af;margin-top:2px;">{{ subtitle }}</div>
         </div>
-        <button @click="$emit('close')" style="width:32px;height:32px;border-radius:50%;border:none;background:#fff;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#fce7f3';this.style.color='#e11d48'" onmouseout="this.style.background='#fff';this.style.color='#6b7280'">✕</button>
+        <button @click="$emit('close')" style="width:32px;height:32px;border-radius:50%;border:none;background:#fff;cursor:pointer;font-size:16px;color:#6b7280;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#fce7f3';this.style.color='#e11d48'" onmouseout="this.style.background='#fff';this.style.color='#6b7280'">
+          ✕
+        </button>
       </div>
       <div style="display:flex;gap:8px;margin-top:12px;">
         <div style="position:relative;flex:1;">
@@ -3789,8 +3986,8 @@ window.OdMemberPickModal = {
           <bo-multi-check-select
             v-model="state.searchType"
             :options="[
-              { value: 'memberNm', label: '이름' },
-              { value: 'loginId',  label: '아이디' },
+            { value: 'memberNm', label: '이름' },
+            { value: 'loginId',  label: '아이디' },
             ]"
             placeholder="검색대상 전체"
             all-label="전체 선택"
@@ -3801,13 +3998,15 @@ window.OdMemberPickModal = {
       </div>
     </div>
     <div style="padding:8px 24px;background:#fafafa;border-bottom:1px solid #f0f0f0;font-size:12px;color:#6b7280;flex-shrink:0;">
-      총 <strong style="color:#e11d48;">{{ state.total.toLocaleString() }}</strong>명
+      총
+      <strong style="color:#e11d48;">{{ state.total.toLocaleString() }}</strong>
+      명
     </div>
     <div style="flex:1;overflow-y:auto;">
       <div v-if="state.loading" style="text-align:center;padding:40px;color:#aaa;">조회 중...</div>
       <bo-grid v-else bare row-clickable :columns="memberPickGridColumns" :rows="state.rows" row-key="memberId"
-               :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
-               @row-click="onSelect" row-actions>
+        :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
+        @row-click="onSelect" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-primary btn-xs" @click.stop="onSelect(row)" style="border-radius:6px;font-size:11px;">선택</button>
         </template>
@@ -3817,14 +4016,19 @@ window.OdMemberPickModal = {
       <div class="pager" v-if="state.totalPage > 1">
         <button class="btn btn-secondary btn-sm" :disabled="state.pageNo <= 1" @click="onPickPage(state.pageNo - 1)">이전</button>
         <template v-for="n in state.totalPage" :key="n">
-          <button v-if="Math.abs(n - state.pageNo) <= 3" :class="['btn btn-sm', n === state.pageNo ? 'btn-primary' : 'btn-secondary']" @click="onPickPage(n)">{{ n }}</button>
+          <button v-if="Math.abs(n - state.pageNo) <= 3" :class="['btn btn-sm', n === state.pageNo ? 'btn-primary' : 'btn-secondary']" @click="onPickPage(n)">
+            {{ n }}
+          </button>
         </template>
-        <button class="btn btn-secondary btn-sm" :disabled="state.pageNo >= state.totalPage" @click="onPickPage(state.pageNo + 1)">다음</button>
+        <button class="btn btn-secondary btn-sm" :disabled="state.pageNo >= state.totalPage" @click="onPickPage(state.pageNo + 1)">
+          다음
+        </button>
       </div>
       <span v-else style="font-size:12px;color:#aaa;line-height:32px;">총 {{ state.total }}명</span>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 간단 상품 선택 모달 (PmPlanDtl / PmEventDtl 공통 패턴) ──
@@ -3870,7 +4074,8 @@ window.SimpleProdPickModal = {
   <template #footer>
     <button class="btn btn-primary" @click="$emit('close')">확인 ({{ (selectedIds||[]).length }}개)</button>
   </template>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ─────────────────────────────────────────────────────────────────────── */
@@ -3938,84 +4143,122 @@ window.BoRefModal = {
     </span>
     <span class="modal-close" @click="close">×</span>
   </div>
-
-    <!-- 회원 -->
-    <template v-if="s.type==='member'">
-      <template v-if="member.userId">
-        <div class="detail-row"><span class="detail-label">회원ID</span><span class="detail-value">{{ member.userId }}</span></div>
-        <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ member.memberNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value">{{ member.email }}</span></div>
-        <div class="detail-row"><span class="detail-label">연락처</span><span class="detail-value">{{ member.phone }}</span></div>
-        <div class="detail-row"><span class="detail-label">등급</span><span class="detail-value"><span class="badge badge-purple">{{ member.gradeCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(member.statusCd)">{{ member.statusCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">가입일</span><span class="detail-value">{{ member.joinDate }}</span></div>
-        <div class="detail-row"><span class="detail-label">최근 로그인</span><span class="detail-value">{{ member.lastLogin }}</span></div>
-        <div class="detail-row"><span class="detail-label">주문수</span><span class="detail-value">{{ member.orderCount }}건</span></div>
-        <div class="detail-row"><span class="detail-label">총 구매액</span><span class="detail-value">{{ member.totalPurchase.toLocaleString() }}원</span></div>
-      </template>
-      <div v-else style="color:#999;text-align:center;padding:20px;">회원 정보를 찾을 수 없습니다.</div>
+  <!-- 회원 -->
+  <template v-if="s.type==='member'">
+    <template v-if="member.userId">
+      <div class="detail-row"><span class="detail-label">회원ID</span><span class="detail-value">{{ member.userId }}</span></div>
+      <div class="detail-row"><span class="detail-label">이름</span><span class="detail-value">{{ member.memberNm }}</span></div>
+      <div class="detail-row"><span class="detail-label">이메일</span><span class="detail-value">{{ member.email }}</span></div>
+      <div class="detail-row"><span class="detail-label">연락처</span><span class="detail-value">{{ member.phone }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">등급</span>
+        <span class="detail-value"><span class="badge badge-purple">{{ member.gradeCd }}</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">상태</span>
+        <span class="detail-value"><span class="badge" :class="badgeCls(member.statusCd)">{{ member.statusCd }}</span></span>
+      </div>
+      <div class="detail-row"><span class="detail-label">가입일</span><span class="detail-value">{{ member.joinDate }}</span></div>
+      <div class="detail-row"><span class="detail-label">최근 로그인</span><span class="detail-value">{{ member.lastLogin }}</span></div>
+      <div class="detail-row"><span class="detail-label">주문수</span><span class="detail-value">{{ member.orderCount }}건</span></div>
+      <div class="detail-row">
+        <span class="detail-label">총 구매액</span>
+        <span class="detail-value">{{ member.totalPurchase.toLocaleString() }}원</span>
+      </div>
     </template>
-
-    <!-- 상품 -->
-    <template v-else-if="s.type==='product'">
-      <template v-if="product.productId">
-        <div class="detail-row"><span class="detail-label">상품ID</span><span class="detail-value">{{ product.productId }}</span></div>
-        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ product.prodNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">{{ product.category }}</span></div>
-        <div class="detail-row"><span class="detail-label">가격</span><span class="detail-value">{{ product.price.toLocaleString() }}원</span></div>
-        <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ product.stock }}개</span></div>
-        <div class="detail-row"><span class="detail-label">브랜드</span><span class="detail-value">{{ product.brand }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(product.statusCd)">{{ product.statusCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-value">{{ product.regDate }}</span></div>
-      </template>
-      <div v-else style="color:#999;text-align:center;padding:20px;">상품 정보를 찾을 수 없습니다.</div>
+    <div v-else style="color:#999;text-align:center;padding:20px;">회원 정보를 찾을 수 없습니다.</div>
+  </template>
+  <!-- 상품 -->
+  <template v-else-if="s.type==='product'">
+    <template v-if="product.productId">
+      <div class="detail-row"><span class="detail-label">상품ID</span><span class="detail-value">{{ product.productId }}</span></div>
+      <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ product.prodNm }}</span></div>
+      <div class="detail-row"><span class="detail-label">카테고리</span><span class="detail-value">{{ product.category }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">가격</span>
+        <span class="detail-value">{{ product.price.toLocaleString() }}원</span>
+      </div>
+      <div class="detail-row"><span class="detail-label">재고</span><span class="detail-value">{{ product.stock }}개</span></div>
+      <div class="detail-row"><span class="detail-label">브랜드</span><span class="detail-value">{{ product.brand }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">상태</span>
+        <span class="detail-value"><span class="badge" :class="badgeCls(product.statusCd)">{{ product.statusCd }}</span></span>
+      </div>
+      <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-value">{{ product.regDate }}</span></div>
     </template>
-
-    <!-- 주문 -->
-    <template v-else-if="s.type==='order'">
-      <template v-if="order.orderId">
-        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ order.orderId }}</span></div>
-        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ order.userNm }} (ID: {{ order.userId }})</span></div>
-        <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ order.orderDate }}</span></div>
-        <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ order.prodNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">결제금액</span><span class="detail-value">{{ order.totalPrice.toLocaleString() }}원</span></div>
-        <div class="detail-row"><span class="detail-label">결제수단</span><span class="detail-value">{{ order.payMethodCd }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(order.statusCd)">{{ order.statusCd }}</span></span></div>
-      </template>
-      <div v-else style="color:#999;text-align:center;padding:20px;">주문 정보를 찾을 수 없습니다.</div>
+    <div v-else style="color:#999;text-align:center;padding:20px;">상품 정보를 찾을 수 없습니다.</div>
+  </template>
+  <!-- 주문 -->
+  <template v-else-if="s.type==='order'">
+    <template v-if="order.orderId">
+      <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ order.orderId }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">회원</span>
+        <span class="detail-value">{{ order.userNm }} (ID: {{ order.userId }})</span>
+      </div>
+      <div class="detail-row"><span class="detail-label">주문일시</span><span class="detail-value">{{ order.orderDate }}</span></div>
+      <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ order.prodNm }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">결제금액</span>
+        <span class="detail-value">{{ order.totalPrice.toLocaleString() }}원</span>
+      </div>
+      <div class="detail-row"><span class="detail-label">결제수단</span><span class="detail-value">{{ order.payMethodCd }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">상태</span>
+        <span class="detail-value"><span class="badge" :class="badgeCls(order.statusCd)">{{ order.statusCd }}</span></span>
+      </div>
     </template>
-
-    <!-- 클레임 -->
-    <template v-else-if="s.type==='claim'">
-      <template v-if="claim.claimId">
-        <div class="detail-row"><span class="detail-label">클레임ID</span><span class="detail-value">{{ claim.claimId }}</span></div>
-        <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ claim.userNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ claim.orderId }}</span></div>
-        <div class="detail-row"><span class="detail-label">유형</span><span class="detail-value"><span class="badge badge-orange">{{ claim.type }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(claim.statusCd)">{{ claim.statusCd }}</span></span></div>
-        <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ claim.prodNm }}</span></div>
-        <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ claim.reasonCd }}</span></div>
-        <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">{{ claim.requestDate }}</span></div>
-        <div class="detail-row" v-if="claim.refundAmount"><span class="detail-label">환불금액</span><span class="detail-value">{{ claim.refundAmount.toLocaleString() }}원</span></div>
-      </template>
-      <div v-else style="color:#999;text-align:center;padding:20px;">클레임 정보를 찾을 수 없습니다.</div>
+    <div v-else style="color:#999;text-align:center;padding:20px;">주문 정보를 찾을 수 없습니다.</div>
+  </template>
+  <!-- 클레임 -->
+  <template v-else-if="s.type==='claim'">
+    <template v-if="claim.claimId">
+      <div class="detail-row"><span class="detail-label">클레임ID</span><span class="detail-value">{{ claim.claimId }}</span></div>
+      <div class="detail-row"><span class="detail-label">회원</span><span class="detail-value">{{ claim.userNm }}</span></div>
+      <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ claim.orderId }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">유형</span>
+        <span class="detail-value"><span class="badge badge-orange">{{ claim.type }}</span></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">상태</span>
+        <span class="detail-value"><span class="badge" :class="badgeCls(claim.statusCd)">{{ claim.statusCd }}</span></span>
+      </div>
+      <div class="detail-row"><span class="detail-label">상품명</span><span class="detail-value">{{ claim.prodNm }}</span></div>
+      <div class="detail-row"><span class="detail-label">사유</span><span class="detail-value">{{ claim.reasonCd }}</span></div>
+      <div class="detail-row"><span class="detail-label">신청일</span><span class="detail-value">{{ claim.requestDate }}</span></div>
+      <div class="detail-row" v-if="claim.refundAmount">
+        <span class="detail-label">환불금액</span>
+        <span class="detail-value">{{ claim.refundAmount.toLocaleString() }}원</span>
+      </div>
     </template>
-
-    <!-- 쿠폰 -->
-    <template v-else-if="s.type==='coupon'">
-      <template v-if="coupon.couponId">
-        <div class="detail-row"><span class="detail-label">쿠폰ID</span><span class="detail-value">{{ coupon.couponId }}</span></div>
-        <div class="detail-row"><span class="detail-label">쿠폰명</span><span class="detail-value">{{ coupon.name }}</span></div>
-        <div class="detail-row"><span class="detail-label">코드</span><span class="detail-value">{{ coupon.code }}</span></div>
-        <div class="detail-row"><span class="detail-label">할인</span><span class="detail-value">{{ coupon.discountTypeCd==='rate'?coupon.discountValue+'%':coupon.discountTypeCd==='shipping'?'무료배송':coupon.discountValue.toLocaleString()+'원' }}</span></div>
-        <div class="detail-row"><span class="detail-label">최소주문</span><span class="detail-value">{{ coupon.minOrder ? coupon.minOrder.toLocaleString()+'원 이상' : '제한없음' }}</span></div>
-        <div class="detail-row"><span class="detail-label">발급대상</span><span class="detail-value">{{ coupon.issueTo }}</span></div>
-        <div class="detail-row"><span class="detail-label">만료일</span><span class="detail-value">{{ coupon.expiry }}</span></div>
-        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value"><span class="badge" :class="badgeCls(coupon.statusCd)">{{ coupon.statusCd }}</span></span></div>
-      </template>
-      <div v-else style="color:#999;text-align:center;padding:20px;">쿠폰 정보를 찾을 수 없습니다.</div>
+    <div v-else style="color:#999;text-align:center;padding:20px;">클레임 정보를 찾을 수 없습니다.</div>
+  </template>
+  <!-- 쿠폰 -->
+  <template v-else-if="s.type==='coupon'">
+    <template v-if="coupon.couponId">
+      <div class="detail-row"><span class="detail-label">쿠폰ID</span><span class="detail-value">{{ coupon.couponId }}</span></div>
+      <div class="detail-row"><span class="detail-label">쿠폰명</span><span class="detail-value">{{ coupon.name }}</span></div>
+      <div class="detail-row"><span class="detail-label">코드</span><span class="detail-value">{{ coupon.code }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">할인</span>
+        <span class="detail-value">
+          {{ coupon.discountTypeCd==='rate'?coupon.discountValue+'%':coupon.discountTypeCd==='shipping'?'무료배송':coupon.discountValue.toLocaleString()+'원' }}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">최소주문</span>
+        <span class="detail-value">{{ coupon.minOrder ? coupon.minOrder.toLocaleString()+'원 이상' : '제한없음' }}</span>
+      </div>
+      <div class="detail-row"><span class="detail-label">발급대상</span><span class="detail-value">{{ coupon.issueTo }}</span></div>
+      <div class="detail-row"><span class="detail-label">만료일</span><span class="detail-value">{{ coupon.expiry }}</span></div>
+      <div class="detail-row">
+        <span class="detail-label">상태</span>
+        <span class="detail-value"><span class="badge" :class="badgeCls(coupon.statusCd)">{{ coupon.statusCd }}</span></span>
+      </div>
     </template>
-
+    <div v-else style="color:#999;text-align:center;padding:20px;">쿠폰 정보를 찾을 수 없습니다.</div>
+  </template>
   <div style="margin-top:16px;text-align:right;">
     <button class="btn btn-secondary" @click="close">닫기</button>
   </div>
@@ -4142,33 +4385,37 @@ window.BoCodeGrpModal = {
     <div class="tree-modal-header" style="padding:14px 20px;border-bottom:1px solid #f0e0e7;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:14px;font-weight:700;color:#222;">{{ title || '공통코드 미리보기' }}</span>
-        <code style="font-size:11px;background:#fff;color:#6a1b9a;padding:2px 8px;border-radius:4px;border:1px solid #e1bee7;font-family:monospace;">{{ codeGrp }}</code>
+        <code style="font-size:11px;background:#fff;color:#6a1b9a;padding:2px 8px;border-radius:4px;border:1px solid #e1bee7;font-family:monospace;">
+          {{ codeGrp }}
+        </code>
       </div>
       <button @click="onClose" style="border:none;background:transparent;color:#888;font-size:18px;cursor:pointer;">✕</button>
     </div>
-
     <!-- 탭 바 -->
     <div style="display:flex;gap:0;border-bottom:1px solid #eee;background:#fafafa;padding:0 14px;">
       <button type="button" @click="tab='list'"
         :style="(tab==='list'
-          ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
-          : 'border:none;background:transparent;color:#888;font-weight:500;')
-          + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
-        >📋 일반 코드목록</button>
+        ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
+        : 'border:none;background:transparent;color:#888;font-weight:500;')
+        + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
+        >
+        📋 일반 코드목록
+      </button>
       <button type="button" @click="tab='tree'"
         :style="(tab==='tree'
-          ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
-          : 'border:none;background:transparent;color:#888;font-weight:500;')
-          + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
-        >🌲 트리목록 <span v-if="!cfHasTree" style="font-size:10px;color:#bbb;margin-left:4px;">(단층)</span></button>
+        ? 'border:none;background:#fff;border-top:2px solid #ec4899;color:#222;font-weight:700;'
+        : 'border:none;background:transparent;color:#888;font-weight:500;')
+        + 'padding:10px 16px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;'"
+        >
+        🌲 트리목록
+        <span v-if="!cfHasTree" style="font-size:10px;color:#bbb;margin-left:4px;">(단층)</span>
+      </button>
     </div>
-
     <!-- 본문 -->
     <div style="padding:14px 20px;overflow-y:auto;flex:1;">
       <div v-if="loading" style="padding:32px;text-align:center;color:#999;font-size:13px;">불러오는 중...</div>
       <div v-else-if="error" style="padding:24px;text-align:center;color:#d32f2f;font-size:13px;">{{ error }}</div>
       <div v-else-if="!codes.length" style="padding:32px;text-align:center;color:#aaa;font-size:13px;">등록된 코드가 없습니다.</div>
-
       <!-- ── 일반 코드목록 ── -->
       <table v-else-if="tab==='list'" class="bo-table" style="width:100%;font-size:12px;">
         <thead>
@@ -4185,17 +4432,29 @@ window.BoCodeGrpModal = {
         </thead>
         <tbody>
           <tr v-for="(row, idx) in codes" :key="(row && (row.codeId || row.codeValue)) || idx"
-              @dblclick="onSelect(row)" style="cursor:pointer;"
-              title="더블클릭하여 선택">
+            @dblclick="onSelect(row)" style="cursor:pointer;"
+            title="더블클릭하여 선택">
             <td style="text-align:center;color:#999;">{{ idx + 1 }}</td>
-            <td><code style="background:#f3e5f5;padding:2px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;">{{ row.codeId }}</code></td>
-            <td><code style="background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:monospace;color:#1565c0;">{{ row.codeValue }}</code></td>
-            <td>{{ row.codeLabel }}</td>
-            <td style="text-align:center;">
-              <span class="badge" :class="row.codeLevel===1?'badge-blue':row.codeLevel===2?'badge-green':'badge-orange'" style="font-size:10px;">L{{ row.codeLevel }}</span>
+            <td>
+              <code style="background:#f3e5f5;padding:2px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;">
+                {{ row.codeId }}
+              </code>
             </td>
             <td>
-              <code v-if="row.parentCodeValue" style="background:#fafafa;padding:2px 6px;border-radius:4px;font-family:monospace;color:#888;font-size:11px;">{{ row.parentCodeValue }}</code>
+              <code style="background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:monospace;color:#1565c0;">
+                {{ row.codeValue }}
+              </code>
+            </td>
+            <td>{{ row.codeLabel }}</td>
+            <td style="text-align:center;">
+              <span class="badge" :class="row.codeLevel===1?'badge-blue':row.codeLevel===2?'badge-green':'badge-orange'" style="font-size:10px;">
+                L{{ row.codeLevel }}
+              </span>
+            </td>
+            <td>
+              <code v-if="row.parentCodeValue" style="background:#fafafa;padding:2px 6px;border-radius:4px;font-family:monospace;color:#888;font-size:11px;">
+                {{ row.parentCodeValue }}
+              </code>
               <span v-else style="color:#ccc;">-</span>
             </td>
             <td style="text-align:right;color:#666;">{{ row.sortOrd != null ? row.sortOrd : '-' }}</td>
@@ -4205,7 +4464,6 @@ window.BoCodeGrpModal = {
           </tr>
         </tbody>
       </table>
-
       <!-- ── 트리목록 ── -->
       <div v-else-if="tab==='tree'" style="font-size:12px;">
         <div v-if="!cfTree.length" style="padding:32px;text-align:center;color:#aaa;">표시할 트리가 없습니다.</div>
@@ -4215,14 +4473,14 @@ window.BoCodeGrpModal = {
         </ul>
       </div>
     </div>
-
     <!-- 푸터 -->
     <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:11px;color:#888;">총 {{ codes.length }}건 · 행 더블클릭 시 선택</span>
       <button class="btn btn-secondary btn-sm" @click="onClose">닫기</button>
     </div>
   </div>
-</bo-modal>`
+</bo-modal>
+`
 };
 
 /* ── BoCodeGrpTreeNode (재귀 노드 컴포넌트) ───────────────────── */
@@ -4247,29 +4505,38 @@ window.BoCodeGrpTreeNode = {
   template: /* html */`
 <li :style="'margin:0;padding:0;'">
   <div @dblclick="onSelect(node)"
-       :style="'display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;'
-               + (depth%2===0 ? '' : 'background:#fafbfc;')
-               + 'border-left:3px solid '+(node.codeLevel===1?'#1677ff':node.codeLevel===2?'#22c55e':'#f59e0b')+';'
-               + 'margin-left:'+(depth*16)+'px;'"
-       title="더블클릭하여 선택">
+    :style="'display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;'
+    + (depth%2===0 ? '' : 'background:#fafbfc;')
+    + 'border-left:3px solid '+(node.codeLevel===1?'#1677ff':node.codeLevel===2?'#22c55e':'#f59e0b')+';'
+    + 'margin-left:'+(depth*16)+'px;'"
+    title="더블클릭하여 선택">
     <button v-if="node.children && node.children.length"
       type="button" @click.stop="toggle"
       style="border:none;background:transparent;cursor:pointer;font-size:11px;color:#666;width:16px;">
       {{ open ? '▼' : '▶' }}
     </button>
     <span v-else style="display:inline-block;width:16px;color:#ddd;font-size:11px;text-align:center;">·</span>
-    <span class="badge" :class="node.codeLevel===1?'badge-blue':node.codeLevel===2?'badge-green':'badge-orange'" style="font-size:10px;flex-shrink:0;">L{{ node.codeLevel }}</span>
-    <code style="background:#f3e5f5;padding:1px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;flex-shrink:0;">{{ node.codeId }}</code>
-    <code style="background:#f5f5f7;padding:1px 6px;border-radius:4px;font-family:monospace;color:#1565c0;flex-shrink:0;">{{ node.codeValue }}</code>
+    <span class="badge" :class="node.codeLevel===1?'badge-blue':node.codeLevel===2?'badge-green':'badge-orange'" style="font-size:10px;flex-shrink:0;">
+      L{{ node.codeLevel }}
+    </span>
+    <code style="background:#f3e5f5;padding:1px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;flex-shrink:0;">
+      {{ node.codeId }}
+    </code>
+    <code style="background:#f5f5f7;padding:1px 6px;border-radius:4px;font-family:monospace;color:#1565c0;flex-shrink:0;">
+      {{ node.codeValue }}
+    </code>
     <span style="flex:1;">{{ node.codeLabel }}</span>
     <span style="color:#888;font-size:11px;flex-shrink:0;">정렬 {{ node.sortOrd }}</span>
-    <span :class="['badge', node.useYn==='Y' ? 'badge-green' : 'badge-gray']" style="font-size:10px;flex-shrink:0;">{{ node.useYn || '-' }}</span>
+    <span :class="['badge', node.useYn==='Y' ? 'badge-green' : 'badge-gray']" style="font-size:10px;flex-shrink:0;">
+      {{ node.useYn || '-' }}
+    </span>
   </div>
   <ul v-if="open && node.children && node.children.length" style="list-style:none;padding-left:0;margin:0;">
     <bo-code-grp-tree-node v-for="child in node.children" :key="child.codeId || child.codeValue"
       :node="child" :depth="depth+1" @select="onSelect" />
   </ul>
-</li>`
+</li>
+`
 };
 
 /* ── 프로필 모달 ─────────────────────────────────────────────────────────────
@@ -4301,7 +4568,8 @@ window.AuthProfileModal = {
         {{ fnInitial() }}
       </div>
       <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:#e8587a;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;">
-        <span v-if="uploading">⏳</span><span v-else>📷</span>
+        <span v-if="uploading">⏳</span>
+        <span v-else>📷</span>
       </div>
       <input type="file" accept="image/*" style="display:none;" :disabled="uploading" @change="$emit('img-change', $event)" />
     </label>
@@ -4336,7 +4604,8 @@ window.AuthProfileModal = {
     <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     <button class="btn btn-primary" @click="$emit('save')">저장</button>
   </template>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 사용자 선택 모달 (로그인 화면 개발용 picker) ──────────────────────────────
@@ -4371,7 +4640,9 @@ window.AuthUserPickModal = {
           <div style="font-size:10px;color:#e8587a;margin-top:1px;">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
         </div>
       </div>
-      <button @click="$emit('close')" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">✕</button>
+      <button @click="$emit('close')" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">
+        ✕
+      </button>
     </div>
     <!-- 본문 (스크롤 영역) -->
     <div style="padding:14px 18px;overflow-y:auto;flex:1;">
@@ -4385,15 +4656,15 @@ window.AuthUserPickModal = {
         <button class="btn btn-primary btn-sm" @click="$emit('search')" style="padding:0 16px;font-weight:700;">조회</button>
       </div>
       <!-- 건수 -->
-      <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
-        총 <b style="color:#e8587a;">{{ total }}</b>명
-      </div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:8px;">총 <b style="color:#e8587a;">{{ total }}</b>명</div>
       <!-- 테이블 -->
       <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
             <tr style="background:linear-gradient(90deg,#fdf0f4,#fce8ef);">
-              <th style="padding:6px 8px;text-align:center;width:32px;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;white-space:nowrap;">번호</th>
+              <th style="padding:6px 8px;text-align:center;width:32px;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;white-space:nowrap;">
+                번호
+              </th>
               <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">이름</th>
               <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">로그인ID</th>
               <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">사이트</th>
@@ -4418,27 +4689,41 @@ window.AuthUserPickModal = {
                 ? 'background:#fff0f4;cursor:pointer;'
                 : 'background:'+(idx%2===0?'#fff':'#fdfafe')+';cursor:pointer;'"
                 onmouseover="this.style.background='#fff5f8'" onmouseout="this.style.background=''">
-                <td style="padding:5px 8px;text-align:center;color:#ccc;font-size:11px;border-bottom:1px solid #f5eef2;">{{ (modal.pageNo-1)*pageSize+idx+1 }}</td>
+                <td style="padding:5px 8px;text-align:center;color:#ccc;font-size:11px;border-bottom:1px solid #f5eef2;">
+                  {{ (modal.pageNo-1)*pageSize+idx+1 }}
+                </td>
                 <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
                   <div style="display:flex;align-items:center;gap:6px;">
-                    <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ (u.userNm||u.label||'?').charAt(0) }}</div>
+                    <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      {{ (u.userNm||u.label||'?').charAt(0) }}
+                    </div>
                     <span style="font-weight:700;color:#1a1a2e;white-space:nowrap;">{{ u.userNm || u.label || '-' }}</span>
                   </div>
                 </td>
-                <td style="padding:5px 8px;color:#888;border-bottom:1px solid #f5eef2;font-family:monospace;font-size:11px;">{{ u.loginId }}</td>
+                <td style="padding:5px 8px;color:#888;border-bottom:1px solid #f5eef2;font-family:monospace;font-size:11px;">
+                  {{ u.loginId }}
+                </td>
                 <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.siteNm || '-' }}</td>
                 <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">{{ u.deptNm || '-' }}</td>
                 <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
-                  <span v-if="u.roleNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">{{ u.roleNm }}</span>
+                  <span v-if="u.roleNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">
+                    {{ u.roleNm }}
+                  </span>
                   <span v-else style="color:#ddd;">—</span>
                 </td>
                 <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
-                  <span v-if="u.userStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>
-                  <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">{{ u.userStatusCdNm || '비활성' }}</span>
+                  <span v-if="u.userStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">
+                    활성
+                  </span>
+                  <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">
+                    {{ u.userStatusCdNm || '비활성' }}
+                  </span>
                 </td>
                 <td style="padding:5px 8px;color:#999;font-size:11px;border-bottom:1px solid #f5eef2;">{{ u.userEmail || '-' }}</td>
                 <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
-                  <button @click.stop="$emit('pick', u)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">선택</button>
+                  <button @click.stop="$emit('pick', u)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
+                    선택
+                  </button>
                 </td>
               </tr>
             </template>
@@ -4449,24 +4734,35 @@ window.AuthUserPickModal = {
     <!-- 페이지네이션 (스크롤 밖 고정) -->
     <div v-if="totalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
       <button @click="$emit('go-page', 1)" :disabled="modal.pageNo===1"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">«</button>
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">
+        «
+      </button>
       <button @click="$emit('go-page', modal.pageNo-1)" :disabled="modal.pageNo===1"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">‹</button>
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">
+        ‹
+      </button>
       <template v-for="p in totalPage" :key="p">
         <button v-if="fnPageVisible(p, modal.pageNo, totalPage)"
           @click="$emit('go-page', p)"
           :style="modal.pageNo===p
           ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
           : 'background:#fff;color:#888;border:1px solid #eee;'"
-          style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">{{ p }}</button>
+          style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">
+          {{ p }}
+        </button>
       </template>
       <button @click="$emit('go-page', modal.pageNo+1)" :disabled="modal.pageNo===totalPage"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">›</button>
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">
+        ›
+      </button>
       <button @click="$emit('go-page', totalPage)" :disabled="modal.pageNo===totalPage"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">»</button>
+        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">
+        »
+      </button>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 비밀번호 변경 모달 ───────────────────────────────────────────────────────
@@ -4498,7 +4794,8 @@ window.AuthPwChangeModal = {
     <button class="btn btn-secondary" @click="$emit('close')">취소</button>
     <button class="btn btn-primary" @click="$emit('save')">변경</button>
   </template>
-</bo-modal>`,
+</bo-modal>
+`,
 };
 
 /* ── 로그인 / 회원가입 모달 ──────────────────────────────────────────────────
@@ -4529,7 +4826,6 @@ window.AuthLoginModal = {
       </div>
       <span class="modal-close" @click="$emit('close')">✕</span>
     </div>
-
     <!-- 로그인 폼 -->
     <div v-if="modal.tab==='login'">
       <div class="form-group">
@@ -4557,10 +4853,11 @@ window.AuthLoginModal = {
         <span style="color:#e8587a;cursor:pointer;margin-left:6px;font-weight:600;" @click="setTab('register')">회원가입</span>
       </div>
       <div style="text-align:center;margin-top:14px;">
-        <button @click="$emit('open-user-pick')" style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:#aaa;text-decoration:underline;padding:0;">사용자 선택하여 로그인 (개발)</button>
+        <button @click="$emit('open-user-pick')" style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:#aaa;text-decoration:underline;padding:0;">
+          사용자 선택하여 로그인 (개발)
+        </button>
       </div>
     </div>
-
     <!-- 회원가입 폼 -->
     <div v-if="modal.tab==='register'">
       <div class="form-row">
@@ -4601,5 +4898,6 @@ window.AuthLoginModal = {
       </div>
     </div>
   </div>
-</bo-modal>`,
+</bo-modal>
+`,
 };

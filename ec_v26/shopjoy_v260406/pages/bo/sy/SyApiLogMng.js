@@ -294,17 +294,17 @@ window.SyApiLogMng = {
   <div class="page-desc-bar">
     <span class="page-desc-summary">syh_access_log(API요청로그)와 syh_access_error_log(API오류로그)를 조회합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함
-• API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함
-• 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등)
-• 기본 조회기간: 최근 1주일.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함 • API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함 • 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등) • 기본 조회기간: 최근 1주일.
+    </div>
   </div>
-
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
       <template #actions-after>
-        <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
+        <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
+          {{ uiState.srchOpen?'▲':'▼' }}
+        </button>
       </template>
     </bo-search-area>
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
@@ -312,20 +312,23 @@ window.SyApiLogMng = {
       :columns="moreSearchColumns" :param="uiState"
       @search="onSearch" />
   </div>
-
   <!-- -- 탭 + 목록 --------------------------------------------------------- -->
   <div class="tab-nav" style="margin-bottom:16px">
-    <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">📋 API요청로그 <span class="tab-count">{{ tabCounts.access }}</span></button>
-    <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="onTabChange('error')">🚨 API오류로그 <span class="tab-count">{{ tabCounts.error }}</span></button>
+    <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">
+      📋 API요청로그
+      <span class="tab-count">{{ tabCounts.access }}</span>
+    </button>
+    <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="onTabChange('error')">
+      🚨 API오류로그
+      <span class="tab-count">{{ tabCounts.error }}</span>
+    </button>
   </div>
-
   <!-- -- API요청로그 탭 -------------------------------------------------- -->
   <bo-grid v-if="uiState.activeTab==='access'"
     :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
-
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
@@ -333,59 +336,131 @@ window.SyApiLogMng = {
         <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
       </div>
     </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px;">📡 요청 정보</div>
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td><td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td><td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">상태코드</td><td><span class="badge" :class="fnStatusBadge(row.respStatus)">{{ row.respStatus }}</span></td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td><td :style="row.respTimeMs>1000?'color:#e74c3c;font-weight:700':''">{{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td><td style="font-family:monospace;">{{ row.reqIp || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">Host</td><td style="font-family:monospace;">{{ row.reqHost || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">UA</td><td style="font-size:11px;color:#666;word-break:break-all;">{{ row.reqUa || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td><td>{{ String(row.regDate||'').slice(0,19) }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td>
+                <td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td>
+                <td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">상태코드</td>
+                <td><span class="badge" :class="fnStatusBadge(row.respStatus)">{{ row.respStatus }}</span></td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td>
+                <td :style="row.respTimeMs>1000?'color:#e74c3c;font-weight:700':''">
+                  {{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td>
+                <td style="font-family:monospace;">{{ row.reqIp || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">Host</td>
+                <td style="font-family:monospace;">{{ row.reqHost || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">UA</td>
+                <td style="font-size:11px;color:#666;word-break:break-all;">{{ row.reqUa || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td>
+                <td>{{ String(row.regDate||'').slice(0,19) }}</td>
+              </tr>
             </table>
           </div>
           <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
+            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">
+              🏷 X-헤더 (호출 추적)
+            </div>
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(row.cmdNm) || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ row.lineNo || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td>
+                <td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td>
+                <td>{{ fnDecode(row.cmdNm) || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td>
+                <td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td>
+                <td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td>
+                <td style="font-family:monospace;">{{ row.lineNo || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td>
+              </tr>
             </table>
           </div>
           <div>
-            <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px;">🔐 인증 · 서버</div>
+            <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px;">
+              🔐 인증 · 서버
+            </div>
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ row.userId || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td><td>{{ row.appTypeCd || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">역할ID</td><td>{{ row.roleId || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">부서ID</td><td>{{ row.deptId || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">업체ID</td><td>{{ row.vendorId || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td><td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td><td><span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span><span v-else>-</span></td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td>
+                <td>{{ row.userId || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td>
+                <td>{{ row.appTypeCd || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">역할ID</td>
+                <td>{{ row.roleId || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">부서ID</td>
+                <td>{{ row.deptId || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">업체ID</td>
+                <td>{{ row.vendorId || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td>
+                <td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td>
+                <td>
+                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span>
+                  <span v-else>-</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td>
+              </tr>
             </table>
           </div>
         </div>
       </td>
     </template>
   </bo-grid>
-
   <!-- -- API오류로그 탭 -------------------------------------------------- -->
   <bo-grid v-if="uiState.activeTab==='error'"
     :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
-
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
@@ -393,42 +468,105 @@ window.SyApiLogMng = {
         <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
       </div>
     </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
           <div>
             <div style="font-weight:700;color:#e74c3c;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">🚨 오류 정보</div>
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td><td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td><td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td><td>{{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td><td style="font-family:monospace;">{{ row.reqIp || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td><td>{{ row.userId || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td><td>{{ row.appTypeCd || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">오류유형</td><td style="color:#e74c3c;font-weight:600;word-break:break-all;">{{ row.errorType || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">오류메시지</td><td style="color:#c0392b;word-break:break-all;">{{ row.errorMsg || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td><td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td><td><span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span><span v-else>-</span></td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td><td>{{ String(row.regDate||'').slice(0,19) }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td>
+                <td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td>
+                <td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td>
+                <td>{{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td>
+                <td style="font-family:monospace;">{{ row.reqIp || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td>
+                <td>{{ row.userId || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td>
+                <td>{{ row.appTypeCd || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">오류유형</td>
+                <td style="color:#e74c3c;font-weight:600;word-break:break-all;">{{ row.errorType || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">오류메시지</td>
+                <td style="color:#c0392b;word-break:break-all;">{{ row.errorMsg || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td>
+                <td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td>
+                <td>
+                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span>
+                  <span v-else>-</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td>
+                <td>{{ String(row.regDate||'').slice(0,19) }}</td>
+              </tr>
             </table>
           </div>
           <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">🏷 X-헤더 (호출 추적)</div>
+            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">
+              🏷 X-헤더 (호출 추적)
+            </div>
             <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td><td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td><td>{{ fnDecode(row.cmdNm) || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td><td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td><td style="font-family:monospace;">{{ row.lineNo || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">로거</td><td style="font-size:11px;word-break:break-all;">{{ row.loggerNm || '-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td><td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td>
+                <td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td>
+                <td>{{ fnDecode(row.cmdNm) || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td>
+                <td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td>
+                <td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td>
+                <td style="font-family:monospace;">{{ row.lineNo || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">로거</td>
+                <td style="font-size:11px;word-break:break-all;">{{ row.loggerNm || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td>
+              </tr>
             </table>
           </div>
           <div>
             <div style="font-weight:700;color:#c0392b;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">📋 스택트레이스</div>
-            <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">{{ row.stackTrace }}</div>
+            <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
+              {{ row.stackTrace }}
+            </div>
             <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">스택트레이스 없음</div>
           </div>
         </div>

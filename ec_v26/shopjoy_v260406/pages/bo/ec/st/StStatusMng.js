@@ -474,12 +474,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="page-desc-bar">
     <span class="page-desc-summary">업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계
-• 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계
-• 정산집계 탭: 마감 기준 월별 최종 정산액 목록
-• CSV 내보내기를 지원합니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계 • 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계 • 정산집계 탭: 마감 기준 월별 최종 정산액 목록 • CSV 내보내기를 지원합니다.
+    </div>
   </div>
-
   <!-- -- 공통 날짜 필터 ------------------------------------------------------- -->
   <div class="card" style="margin-bottom:12px">
     <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'"
@@ -490,14 +488,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </template>
     </bo-search-area>
   </div>
-
   <!-- -- 탭 -------------------------------------------------------------- -->
   <div class="tab-bar-row" style="margin-bottom:0">
     <div class="tab-nav">
-      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: uiState.activeTab===t.id}" @click="uiState.activeTab=t.id">{{ t.label }}</button>
+      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: uiState.activeTab===t.id}" @click="uiState.activeTab=t.id">
+        {{ t.label }}
+      </button>
     </div>
   </div>
-
   <!-- -- ══ 1. 업체별현황 ══ ------------------------------------------------- -->
   <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
     <!-- -- 요약 카드 -------------------------------------------------------- -->
@@ -533,10 +531,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfVendorTotal + '개 업체'"
       empty-text="데이터가 없습니다."
       @set-page="setVendorPage"
-      @size-change="onVendorSizeChange">
-    </bo-grid>
+      @size-change="onVendorSizeChange"></bo-grid>
   </div>
-
   <!-- -- ══ 2. 주문별현황 ══ ------------------------------------------------- -->
   <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -570,17 +566,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
       empty-text="데이터가 없습니다."
       @set-page="setOrderPage"
-      @size-change="onOrderSizeChange">
-    </bo-grid>
+      @size-change="onOrderSizeChange"></bo-grid>
   </div>
-
   <!-- -- ══ 3. 클레임별현황 ══ ------------------------------------------------ -->
   <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
         <div style="font-size:11px;color:#888;margin-bottom:4px">클레임 건수</div>
         <div style="font-size:18px;font-weight:700;color:#333">{{ cfClaimSummary.cnt }}건</div>
-        <div style="font-size:11px;color:#999;margin-top:4px">취소 {{ cfClaimSummary.cancel }} / 반품 {{ cfClaimSummary.return_ }} / 교환 {{ cfClaimSummary.exchange }}</div>
+        <div style="font-size:11px;color:#999;margin-top:4px">
+          취소 {{ cfClaimSummary.cancel }} / 반품 {{ cfClaimSummary.return_ }} / 교환 {{ cfClaimSummary.exchange }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fff8f8">
         <div style="font-size:11px;color:#888;margin-bottom:4px">환불요청액</div>
@@ -592,7 +588,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0f4ff">
         <div style="font-size:11px;color:#888;margin-bottom:4px">처리율</div>
-        <div style="font-size:18px;font-weight:700;color:#3498db">{{ cfClaimSummary.cnt > 0 ? Math.round(cfClaimRows.filter(r=>r.isCompleted).length / cfClaimSummary.cnt * 100) : 0 }}%</div>
+        <div style="font-size:18px;font-weight:700;color:#3498db">
+          {{ cfClaimSummary.cnt > 0 ? Math.round(cfClaimRows.filter(r=>r.isCompleted).length / cfClaimSummary.cnt * 100) : 0 }}%
+        </div>
       </div>
     </div>
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
@@ -607,10 +605,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfClaimTotal + '건'"
       empty-text="데이터가 없습니다."
       @set-page="setClaimPage"
-      @size-change="onClaimSizeChange">
-    </bo-grid>
+      @size-change="onClaimSizeChange"></bo-grid>
   </div>
-
   <!-- -- ══ 4. 프로모션별현황 ══ ----------------------------------------------- -->
   <div v-if="uiState.activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
@@ -639,10 +635,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfPromoTotal + '개'"
       empty-text="데이터가 없습니다."
       @set-page="setPromoPage"
-      @size-change="onPromoSizeChange">
-    </bo-grid>
+      @size-change="onPromoSizeChange"></bo-grid>
   </div>
-
   <!-- -- ══ 5. 정산별현황 ══ ------------------------------------------------- -->
   <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -675,8 +669,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfSettleTotal + '개월'"
       empty-text="데이터가 없습니다."
       @set-page="setSettlePage"
-      @size-change="onSettleSizeChange">
-    </bo-grid>
+      @size-change="onSettleSizeChange"></bo-grid>
   </div>
 </div>
 `,

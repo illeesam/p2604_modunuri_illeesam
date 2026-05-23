@@ -618,7 +618,6 @@ window.XsSample07 = {
 
   template: /* html */`
 <div style="display:flex;height:calc(100vh - 56px);overflow:hidden;font-size:12px;background:#fff;">
-
   <!-- -- ━━━ 1. Tree Panel (좌측) ━━━ ------------------------------------- -->
   <div style="width:220px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f7f8fa;overflow:hidden;">
     <!-- -- Header ------------------------------------------------------- -->
@@ -627,13 +626,16 @@ window.XsSample07 = {
         <span style="font-size:11px;font-weight:800;color:#333;">API Endpoints</span>
         <button @click="uiState.settingsOpen=!settingsOpen" title="공통 설정"
           style="border:none;background:none;cursor:pointer;font-size:15px;padding:0;line-height:1;"
-          :style="uiState.settingsOpen?'color:#1a73e8;':'color:#999;'">⚙</button>
+          :style="uiState.settingsOpen?'color:#1a73e8;':'color:#999;'">
+          ⚙
+        </button>
       </div>
       <div style="display:flex;gap:3px;margin-bottom:6px;flex-wrap:wrap;">
         <label v-for="(meta,key) in APP_META" :key="key"
           style="font-size:10px;font-weight:700;cursor:pointer;padding:2px 7px;border-radius:10px;border:1px solid #ddd;background:#fff;transition:all .12s;user-select:none;"
           :style="appFilter[key]?'background:'+meta.color+';color:#fff;border-color:'+meta.color+';':''">
-          <input type="checkbox" v-model="appFilter[key]" style="display:none;" />{{ meta.label }}
+          <input type="checkbox" v-model="appFilter[key]" style="display:none;" />
+          {{ meta.label }}
         </label>
       </div>
       <input v-model="treeSearch" placeholder="🔍 이름 / URL 검색"
@@ -654,35 +656,47 @@ window.XsSample07 = {
           <template v-else>·</template>
         </span>
         <template v-if="item.n.type==='app'">
-          <span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:3px;background:#333;color:#fff;">{{ item.n.label }}</span>
+          <span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:3px;background:#333;color:#fff;">
+            {{ item.n.label }}
+          </span>
         </template>
         <template v-else-if="item.n.type==='folder'">
           <span style="font-size:11px;font-weight:700;color:#444;overflow:hidden;text-overflow:ellipsis;">📁 {{ item.n.label }}</span>
         </template>
         <template v-else>
-          <span style="font-size:9px;padding:1px 3px;border-radius:2px;font-weight:700;flex-shrink:0;min-width:38px;text-align:center;" :style="fnMethodStyle(item.n.method)">{{ item.n.method }}</span>
+          <span style="font-size:9px;padding:1px 3px;border-radius:2px;font-weight:700;flex-shrink:0;min-width:38px;text-align:center;" :style="fnMethodStyle(item.n.method)">
+            {{ item.n.method }}
+          </span>
           <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;flex:1;" :title="item.n.url">{{ item.n.label }}</span>
           <button @click.stop="quickRun(item.n, $event)" title="바로 실행"
             style="flex-shrink:0;border:none;background:none;cursor:pointer;font-size:10px;color:#bbb;padding:1px 3px;border-radius:3px;line-height:1;opacity:0;transition:opacity .1s;"
-            class="tree-run-btn">▶</button>
+            class="tree-run-btn">
+            ▶
+          </button>
         </template>
       </div>
     </div>
   </div>
-
   <!-- -- ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ -------------------------------------- -->
   <div style="width:172px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f4f5f7;overflow:hidden;">
     <div style="padding:5px 8px 4px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;background:#eeeff2;">
-      <span style="font-size:10px;font-weight:800;color:#555;">열린 탭
+      <span style="font-size:10px;font-weight:800;color:#555;">
+        열린 탭
         <span style="font-weight:400;color:#aaa;margin-left:2px;">{{ openTabs.length }}</span>
       </span>
       <button v-if="openTabs.length" @click="closeAllTabs" title="전체 닫기"
-        style="border:none;background:none;cursor:pointer;font-size:10px;color:#aaa;padding:0;">✕ 전체</button>
+        style="border:none;background:none;cursor:pointer;font-size:10px;color:#aaa;padding:0;">
+        ✕ 전체
+      </button>
     </div>
     <!-- -- 탭 없을 때 ------------------------------------------------------- -->
     <div v-if="!openTabs.length" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#ccc;">
       <span style="font-size:22px;">📂</span>
-      <span style="font-size:10px;text-align:center;line-height:1.4;">좌측 API 목록을<br>클릭하세요</span>
+      <span style="font-size:10px;text-align:center;line-height:1.4;">
+        좌측 API 목록을
+        <br>
+        클릭하세요
+      </span>
     </div>
     <!-- -- 탭 목록 --------------------------------------------------------- -->
     <div style="flex:1;overflow-y:auto;">
@@ -691,45 +705,50 @@ window.XsSample07 = {
         class="sj-tab-item"
         style="position:relative;padding:6px 6px 6px 6px;cursor:pointer;border-bottom:1px solid #e8e9ec;transition:background .1s;"
         :style="activeTabId===tab.tabId
-          ? 'background:#fff;border-left:3px solid #e8587a;'
-          : 'background:transparent;border-left:3px solid transparent;'"
+        ? 'background:#fff;border-left:3px solid #e8587a;'
+        : 'background:transparent;border-left:3px solid transparent;'"
         @mouseenter="e=>{ e.currentTarget.querySelectorAll('.tab-btn').forEach(b=>b.style.opacity='1'); if(activeTabId!==tab.tabId) e.currentTarget.style.background='#eaebee'; }"
         @mouseleave="e=>{ e.currentTarget.querySelectorAll('.tab-btn').forEach(b=>b.style.opacity='0'); if(activeTabId!==tab.tabId) e.currentTarget.style.background=''; }">
-
         <!-- -- 상단: 메서드 + 아이콘 버튼들 ---------------------------------------- -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
-          <span style="font-size:8px;padding:1px 4px;border-radius:2px;font-weight:700;flex-shrink:0;" :style="fnMethodStyle(tab.method)">{{ tab.method }}</span>
+          <span style="font-size:8px;padding:1px 4px;border-radius:2px;font-weight:700;flex-shrink:0;" :style="fnMethodStyle(tab.method)">
+            {{ tab.method }}
+          </span>
           <div style="display:flex;align-items:center;gap:1px;">
             <!-- -- 자동실행 토글 아이콘 ------------------------------------------ -->
             <button @click.stop="openAutoPopup(tab, $event)"
               style="border:none;background:none;cursor:pointer;font-size:12px;padding:1px 2px;border-radius:3px;line-height:1;transition:all .15s;"
               :style="tab.autoMs ? 'opacity:1;color:#22a84a;text-shadow:0 0 4px #86efac;' : 'opacity:0.55;color:#777;'"
-              :title="tab.autoMs ? '자동실행 중: '+tab.autoLabel : '자동실행 설정'">⏱</button>
+              :title="tab.autoMs ? '자동실행 중: '+tab.autoLabel : '자동실행 설정'">
+              ⏱
+            </button>
             <!-- -- 닫기 --------------------------------------------------- -->
             <button class="tab-btn" @click.stop="closeTab(tab.tabId)"
               style="border:none;background:none;cursor:pointer;font-size:11px;color:#aaa;padding:1px 3px;border-radius:3px;opacity:0;transition:opacity .15s;line-height:1;"
-              title="탭 닫기">✕</button>
+              title="탭 닫기">
+              ✕
+            </button>
           </div>
         </div>
-
         <!-- -- 탭 레이블 ---------------------------------------------------- -->
         <div style="font-size:10px;font-weight:600;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;" :title="tab.tabLabel">
           {{ tab.shortLabel }}
         </div>
-
         <!-- -- 하단 상태 ---------------------------------------------------- -->
         <div style="display:flex;align-items:center;gap:4px;margin-top:2px;min-height:13px;">
           <span v-if="tab.sending" style="font-size:9px;color:#1a73e8;">전송 중…</span>
-          <span v-else-if="tab.resStatus" style="font-size:9px;" :style="fnStatusStyle(tab.resStatus)">{{ tab.resStatus }} · {{ tab.resTime }}ms</span>
+          <span v-else-if="tab.resStatus" style="font-size:9px;" :style="fnStatusStyle(tab.resStatus)">
+            {{ tab.resStatus }} · {{ tab.resTime }}ms
+          </span>
           <!-- -- 자동실행 라벨 + 카운트다운 ---------------------------------------- -->
           <span v-if="tab.autoMs" style="font-size:9px;color:#22a84a;margin-left:auto;font-weight:600;white-space:nowrap;">
-            ⏱ {{ tab.autoLabel }} <span style="color:#aaa;font-weight:400;">({{ countdown[tab.tabId] != null ? countdown[tab.tabId] : '-' }}초)</span>
+            ⏱ {{ tab.autoLabel }}
+            <span style="color:#aaa;font-weight:400;">({{ countdown[tab.tabId] != null ? countdown[tab.tabId] : '-' }}초)</span>
           </span>
         </div>
       </div>
     </div>
   </div>
-
   <!-- -- ━━━ 자동실행 주기 선택 팝업 ━━━ ------------------------------------------ -->
   <template v-if="autoPopupTabId">
     <!-- -- backdrop ----------------------------------------------------- -->
@@ -743,16 +762,24 @@ window.XsSample07 = {
         @mouseenter="e=>e.currentTarget.style.background='#f5f5f5'"
         @mouseleave="e=>e.currentTarget.style.background=''">
         <span>🚫 자동실행 없음</span>
-        <span v-if="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===0||!openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs" style="font-size:10px;color:#34a853;">✔ 현재</span>
+        <span v-if="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===0||!openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs" style="font-size:10px;color:#34a853;">
+          ✔ 현재
+        </span>
       </div>
       <!-- -- 구분선 + 표 ---------------------------------------------------- -->
       <div style="padding:8px;">
         <table style="width:100%;border-collapse:collapse;font-size:11px;">
           <thead>
             <tr>
-              <th style="padding:3px 6px;text-align:center;font-weight:700;color:#888;font-size:10px;border-bottom:1px solid #eee;width:33%;">초 (sec)</th>
-              <th style="padding:3px 6px;text-align:center;font-weight:700;color:#888;font-size:10px;border-bottom:1px solid #eee;width:34%;">분 (min)</th>
-              <th style="padding:3px 6px;text-align:center;font-weight:700;color:#888;font-size:10px;border-bottom:1px solid #eee;width:33%;">시 (hr)</th>
+              <th style="padding:3px 6px;text-align:center;font-weight:700;color:#888;font-size:10px;border-bottom:1px solid #eee;width:33%;">
+                초 (sec)
+              </th>
+              <th style="padding:3px 6px;text-align:center;font-weight:700;color:#888;font-size:10px;border-bottom:1px solid #eee;width:34%;">
+                분 (min)
+              </th>
+              <th style="padding:3px 6px;text-align:center;font-weight:700;color:#888;font-size:10px;border-bottom:1px solid #eee;width:33%;">
+                시 (hr)
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -793,10 +820,8 @@ window.XsSample07 = {
       </div>
     </div>
   </template>
-
   <!-- -- ━━━ 3. Main Panel (우측) ━━━ ------------------------------------- -->
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
-
     <!-- -- ⚙ Settings Panel --------------------------------------------- -->
     <div v-show="settingsOpen" style="border-bottom:2px solid #1a73e8;background:#fff;flex-shrink:0;padding:10px 14px 12px;">
       <div style="font-size:11px;font-weight:800;color:#1a73e8;margin-bottom:8px;">
@@ -822,34 +847,42 @@ window.XsSample07 = {
           <div v-for="(h,i) in defHeaders" :key="i" style="display:flex;gap:3px;margin-bottom:3px;">
             <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
             <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-            <button @click="removeRow(defHeaders,i)" style="font-size:10px;padding:2px 5px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">✕</button>
+            <button @click="removeRow(defHeaders,i)" style="font-size:10px;padding:2px 5px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+              ✕
+            </button>
           </div>
-          <button @click="addRow(defHeaders)" style="font-size:10px;padding:2px 8px;border:1px dashed #ccc;border-radius:3px;background:#f0f0f0;color:#666;cursor:pointer;">+ 추가</button>
+          <button @click="addRow(defHeaders)" style="font-size:10px;padding:2px 8px;border:1px dashed #ccc;border-radius:3px;background:#f0f0f0;color:#666;cursor:pointer;">
+            + 추가
+          </button>
         </div>
         <div>
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
             <span style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;">LocalStorage</span>
-            <button @click="refreshLs" style="font-size:10px;padding:1px 5px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#666;">↻</button>
+            <button @click="refreshLs" style="font-size:10px;padding:1px 5px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#666;">
+              ↻
+            </button>
           </div>
           <div style="max-height:80px;overflow-y:auto;border:1px solid #eee;border-radius:4px;background:#fff;">
             <table style="width:100%;border-collapse:collapse;font-size:10px;">
               <tr v-for="item in lsItems" :key="item.k" style="border-bottom:1px solid #f5f5f5;">
-                <td style="padding:2px 5px;color:#555;font-weight:600;width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.k">{{ item.k }}</td>
-                <td style="padding:2px 5px;color:#888;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.v">{{ item.v }}</td>
+                <td style="padding:2px 5px;color:#555;font-weight:600;width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.k">
+                  {{ item.k }}
+                </td>
+                <td style="padding:2px 5px;color:#888;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="item.v">
+                  {{ item.v }}
+                </td>
               </tr>
             </table>
           </div>
         </div>
       </div>
     </div>
-
     <!-- -- 탭 없을 때 빈 상태 -------------------------------------------------- -->
     <div v-if="!cfActiveTab" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#ccc;background:#fafafa;">
       <span style="font-size:40px;">🚀</span>
       <div style="font-size:14px;font-weight:600;color:#bbb;">좌측 API Endpoints에서 항목을 선택하세요</div>
       <div style="font-size:11px;color:#ccc;">선택하면 여기에 탭으로 열립니다</div>
     </div>
-
     <!-- -- 활성 탭 내용 ------------------------------------------------------ -->
     <template v-if="cfActiveTab">
       <!-- -- Request Bar ------------------------------------------------ -->
@@ -879,10 +912,8 @@ window.XsSample07 = {
           <span v-if="cfActiveTab.resTime!==null" style="font-size:11px;color:#aaa;flex-shrink:0;">{{ cfActiveTab.resTime }}ms</span>
         </div>
       </div>
-
       <!-- -- Middle: Params + Response ---------------------------------- -->
       <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
-
         <!-- -- Params / Headers / Body ---------------------------------- -->
         <div style="width:42%;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;overflow:hidden;">
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;">
@@ -898,17 +929,25 @@ window.XsSample07 = {
               <div v-for="(p,i) in cfActiveTab.reqParams" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="p.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="p.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="removeRow(cfActiveTab.reqParams,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">✕</button>
+                <button @click="removeRow(cfActiveTab.reqParams,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+                  ✕
+                </button>
               </div>
-              <button @click="addRow(cfActiveTab.reqParams)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">+ 추가</button>
+              <button @click="addRow(cfActiveTab.reqParams)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">
+                + 추가
+              </button>
             </template>
             <template v-if="cfActiveTab.reqTab==='headers'">
               <div v-for="(h,i) in cfActiveTab.reqHeaders" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="removeRow(cfActiveTab.reqHeaders,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">✕</button>
+                <button @click="removeRow(cfActiveTab.reqHeaders,i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+                  ✕
+                </button>
               </div>
-              <button @click="addRow(cfActiveTab.reqHeaders)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">+ 추가</button>
+              <button @click="addRow(cfActiveTab.reqHeaders)" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">
+                + 추가
+              </button>
             </template>
             <template v-if="cfActiveTab.reqTab==='body'">
               <textarea v-model="cfActiveTab.reqBody" placeholder='{\n  "key": "value"\n}'
@@ -916,7 +955,6 @@ window.XsSample07 = {
             </template>
           </div>
         </div>
-
         <!-- -- Response ------------------------------------------------- -->
         <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;align-items:center;">
@@ -925,7 +963,9 @@ window.XsSample07 = {
               style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
               :style="cfActiveTab.resTab===t.id?'background:#fff;border-bottom-color:#1a73e8;color:#1a73e8;':'background:transparent;color:#999;'">
               {{ t.nm }}
-              <span v-if="t.id==='grid'&&cfResGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">{{ cfResGridRows.length }}</span>
+              <span v-if="t.id==='grid'&&cfResGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">
+                {{ cfResGridRows.length }}
+              </span>
             </button>
             <span v-if="cfActiveTab.sending" style="margin-left:auto;padding:0 12px;font-size:11px;color:#aaa;">전송 중…</span>
           </div>
@@ -951,14 +991,16 @@ window.XsSample07 = {
         </div>
       </div>
     </template>
-
     <!-- -- History ------------------------------------------------------ -->
     <div style="border-top:2px solid #e0e0e0;background:#fafafa;flex-shrink:0;">
       <div style="padding:4px 12px;border-bottom:1px solid #ebebeb;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:11px;font-weight:700;color:#555;">전송 이력
+        <span style="font-size:11px;font-weight:700;color:#555;">
+          전송 이력
           <span style="font-weight:400;color:#e8587a;margin-left:3px;">{{ history.length }}</span>
         </span>
-        <button @click="history.splice(0);histSelIdx=null;" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#888;">전체 삭제</button>
+        <button @click="history.splice(0);histSelIdx=null;" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#888;">
+          전체 삭제
+        </button>
       </div>
       <div style="max-height:228px;overflow-y:auto;">
         <fo-grid bare :columns="historyGridColumns" :rows="history" row-key="id"
@@ -976,7 +1018,6 @@ window.XsSample07 = {
         </fo-grid>
       </div>
     </div>
-
     <!-- -- History 상세 모달 ------------------------------------------------ -->
     <template v-if="histModal">
       <div @click="closeHistModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);"></div>
@@ -989,13 +1030,20 @@ window.XsSample07 = {
             <span v-else-if="histModal.status && histModal.status>=300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>
             #{{ history.length - histSelIdx }}
           </span>
-          <span style="font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;" :style="fnMethodStyle(histModal.method)">{{ histModal.method }}</span>
-          <span style="font-size:11px;font-family:monospace;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="histModal.url">{{ histModal.url }}</span>
-          <button @click="closeHistModal" style="border:none;background:none;cursor:pointer;font-size:16px;color:#aaa;padding:0;line-height:1;flex-shrink:0;">✕</button>
+          <span style="font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;" :style="fnMethodStyle(histModal.method)">
+            {{ histModal.method }}
+          </span>
+          <span style="font-size:11px;font-family:monospace;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="histModal.url">
+            {{ histModal.url }}
+          </span>
+          <button @click="closeHistModal" style="border:none;background:none;cursor:pointer;font-size:16px;color:#aaa;padding:0;line-height:1;flex-shrink:0;">
+            ✕
+          </button>
         </div>
         <!-- -- 탭명 ------------------------------------------------------- -->
         <div v-if="histModal.tabLabel" style="padding:3px 16px;background:#fff;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa;flex-shrink:0;">
-          탭: <span style="color:#666;">{{ histModal.tabLabel }}</span>
+          탭:
+          <span style="color:#666;">{{ histModal.tabLabel }}</span>
         </div>
         <!-- -- 좌/우 2컬럼 본문 ----------------------------------------------- -->
         <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
@@ -1042,14 +1090,18 @@ window.XsSample07 = {
               <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
                 <span>Headers <span style="font-size:9px;font-weight:400;color:#aaa;">({{ editReq.headers.length }}개)</span></span>
                 <button @click="editReq.headers.push({k:'',v:''})"
-                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">+ 추가</button>
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
+                  + 추가
+                </button>
               </div>
               <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
                 <div v-if="!editReq.headers.length" style="padding:6px 10px;font-size:11px;color:#bbb;">(없음)</div>
                 <div v-for="(h,i) in editReq.headers" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
                   <input v-model="h.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
                   <input v-model="h.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-                  <button @click="editReq.headers.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">✕</button>
+                  <button @click="editReq.headers.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+                    ✕
+                  </button>
                 </div>
               </div>
             </div>
@@ -1058,14 +1110,18 @@ window.XsSample07 = {
               <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
                 <span>Parameters <span style="font-size:9px;font-weight:400;color:#aaa;">({{ editReq.params.length }}개)</span></span>
                 <button @click="editReq.params.push({k:'',v:''})"
-                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">+ 추가</button>
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
+                  + 추가
+                </button>
               </div>
               <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
                 <div v-if="!editReq.params.length" style="padding:6px 10px;font-size:11px;color:#bbb;">(없음)</div>
                 <div v-for="(p,i) in editReq.params" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
                   <input v-model="p.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
                   <input v-model="p.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-                  <button @click="editReq.params.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">✕</button>
+                  <button @click="editReq.params.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+                    ✕
+                  </button>
                 </div>
               </div>
             </div>
@@ -1087,13 +1143,17 @@ window.XsSample07 = {
                   <span style="font-size:10px;color:#1a73e8;font-weight:600;">전송 중… {{ histResProgress }}%</span>
                 </template>
                 <template v-else-if="histResStatus">
-                  <span style="font-size:12px;font-weight:800;" :style="histResStatus<300?'color:#166534;':histResStatus<400?'color:#92400e;':'color:#991b1b;'">{{ histResStatus }}</span>
+                  <span style="font-size:12px;font-weight:800;" :style="histResStatus<300?'color:#166534;':histResStatus<400?'color:#92400e;':'color:#991b1b;'">
+                    {{ histResStatus }}
+                  </span>
                   <span style="font-size:10px;color:#888;">{{ histResTime }}ms</span>
                   <span style="font-size:10px;color:#aaa;">{{ histResTs }}</span>
                   <span style="font-size:9px;color:#1a73e8;background:#e8f0fe;padding:1px 5px;border-radius:3px;font-weight:600;">재전송</span>
                 </template>
                 <template v-else-if="histModal.status">
-                  <span style="font-size:12px;font-weight:800;" :style="histModal.status<300?'color:#166534;':histModal.status<400?'color:#92400e;':'color:#991b1b;'">{{ histModal.status }}</span>
+                  <span style="font-size:12px;font-weight:800;" :style="histModal.status<300?'color:#166534;':histModal.status<400?'color:#92400e;':'color:#991b1b;'">
+                    {{ histModal.status }}
+                  </span>
                   <span style="font-size:10px;color:#888;">{{ histModal.time }}ms</span>
                   <span style="font-size:10px;color:#aaa;">{{ histModal.ts }}</span>
                 </template>
@@ -1102,22 +1162,23 @@ window.XsSample07 = {
               <div style="height:6px;background:#f0f0f0;border-radius:0;margin:0 -14px;overflow:hidden;">
                 <div style="height:100%;transition:width .08s linear;"
                   :style="uiState.histResSending ? 'background:#e8587a;width:'+histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
-                ></div>
+                  ></div>
               </div>
             </div>
             <!-- -- 응답 본문 스크롤 영역 ----------------------------------------- -->
             <div style="flex:1;overflow-y:auto;padding:12px 14px;">
               <pre v-if="!uiState.histResSending && histResJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histResJson }}</pre>
               <pre v-else-if="!uiState.histResSending && !histResJson && histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histModal.resJson }}</pre>
-              <div v-else-if="!uiState.histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">응답 본문 없음</div>
+              <div v-else-if="!uiState.histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">
+                응답 본문 없음
+              </div>
             </div>
           </div>
         </div>
       </div>
     </template>
-
-  </div><!-- -- /Main Panel ------------------------------------------------------ -->
-
+  </div>
+  <!-- -- /Main Panel ------------------------------------------------------ -->
   <!-- -- ━━━ Toast 알림 (우측 하단) ━━━ --------------------------------------- -->
   <div style="position:fixed;right:16px;bottom:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;">
     <div v-for="t in toasts" :key="t.id"
@@ -1128,12 +1189,18 @@ window.XsSample07 = {
         :style="t.type==='error'?'background:#fee2e2;':'background:#dcfce7;'">
         <!-- -- 번호 배지 ---------------------------------------------------- -->
         <span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;flex-shrink:0;"
-          :style="t.type==='error'?'background:#ef4444;color:#fff;':'background:#22c55e;color:#fff;'">{{ t.seq }}</span>
+          :style="t.type==='error'?'background:#ef4444;color:#fff;':'background:#22c55e;color:#fff;'">
+          {{ t.seq }}
+        </span>
         <span style="font-size:13px;flex-shrink:0;">{{ t.type==='error' ? '🔴' : '🟢' }}</span>
         <span style="font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:11px;"
-          :title="t.tabLabel">{{ t.tabLabel }}</span>
+          :title="t.tabLabel">
+          {{ t.tabLabel }}
+        </span>
         <button @click="closeToast(t.id)"
-          style="border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">✕</button>
+          style="border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">
+          ✕
+        </button>
       </div>
       <!-- -- progress bar ----------------------------------------------- -->
       <div style="height:3px;background:#e5e7eb;">
@@ -1143,10 +1210,16 @@ window.XsSample07 = {
       <!-- -- URL 행 ------------------------------------------------------ -->
       <div style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:#fff;border-bottom:1px solid #f0f0f0;">
         <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;flex-shrink:0;"
-          :style="t.method==='GET'?'background:#dcfce7;color:#166534;':t.method==='POST'?'background:#dbeafe;color:#1e40af;':t.method==='PUT'?'background:#fef3c7;color:#92400e;':t.method==='DELETE'?'background:#fee2e2;color:#991b1b;':'background:#f3e8ff;color:#6b21a8;'">{{ t.method }}</span>
-        <span style="font-family:monospace;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px;" :title="t.url">{{ t.url }}</span>
+          :style="t.method==='GET'?'background:#dcfce7;color:#166534;':t.method==='POST'?'background:#dbeafe;color:#1e40af;':t.method==='PUT'?'background:#fef3c7;color:#92400e;':t.method==='DELETE'?'background:#fee2e2;color:#991b1b;':'background:#f3e8ff;color:#6b21a8;'">
+          {{ t.method }}
+        </span>
+        <span style="font-family:monospace;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px;" :title="t.url">
+          {{ t.url }}
+        </span>
         <span style="font-weight:700;flex-shrink:0;font-size:12px;"
-          :style="t.status<300?'color:#166534;':t.status<400?'color:#92400e;':'color:#991b1b;'">{{ t.status }}</span>
+          :style="t.status<300?'color:#166534;':t.status<400?'color:#92400e;':'color:#991b1b;'">
+          {{ t.status }}
+        </span>
       </div>
       <!-- -- JSON 접힌/펼친 ------------------------------------------------- -->
       <div style="background:#f9f9f9;">
@@ -1161,7 +1234,6 @@ window.XsSample07 = {
       </div>
     </div>
   </div>
-
 </div>
-  `,
+`,
 };

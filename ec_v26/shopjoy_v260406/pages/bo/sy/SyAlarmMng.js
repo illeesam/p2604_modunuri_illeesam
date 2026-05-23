@@ -247,57 +247,55 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <div class="page-title">알림관리</div>  <div class="card">
+  <div class="page-title">알림관리</div>
+  <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  
-
-
-
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <bo-path-tree-card biz-cd="sy_alarm" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-  <bo-grid
-    :columns="baseGridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
-    list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
-    :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.alarmId)">
-
-    <template #toolbar-actions>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </div>
-    </template>
-    <template #head-actions><th style="text-align:right">관리</th></template>
-
-    <template #row-actions="{ row }">
-      <td><div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.alarmId)">수정</button>
-        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-      </div></td>
-    </template>
-  </bo-grid>
-</div>
-
-  <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->
-  <div v-if="detailModal.show" style="grid-column:1/-1;margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      <bo-grid
+        :columns="baseGridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
+        list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
+        :sort-state="uiState" :row-style="fnRowStyle"
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.alarmId)">
+        <template #toolbar-actions>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+            <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+          </div>
+        </template>
+        <template #head-actions>
+          <th style="text-align:right">관리</th>
+        </template>
+        <template #row-actions="{ row }">
+          <td>
+            <div class="actions">
+              <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.alarmId)">수정</button>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+            </div>
+          </td>
+        </template>
+      </bo-grid>
     </div>
-    <sy-alarm-dtl :key="detailModal.dtlId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" 
-      
-      :reload-trigger="detailModal.reloadTrigger"
-      :on-list-reload="handleSearchList"
-    />
+    <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->
+    <div v-if="detailModal.show" style="grid-column:1/-1;margin-top:4px;">
+      <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+        <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      </div>
+      <sy-alarm-dtl :key="detailModal.dtlId" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+        :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        
+        :reload-trigger="detailModal.reloadTrigger"
+        :on-list-reload="handleSearchList"
+        />
+    </div>
+    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_alarm"
+      :value="pathPickModal.row ? pathPickModal.row.pathId : null"
+      @select="onPathPicked" @close="closePathPick" />
   </div>
-
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_alarm"
-    :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-    @select="onPathPicked" @close="closePathPick" />
 </div>
 `
 };

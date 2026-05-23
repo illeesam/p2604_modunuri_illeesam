@@ -276,11 +276,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   template: /* html */`
 <div>
   <div class="page-title">사용자관리</div>
-
   <div class="card">
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
-  
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 부서</span></div>
@@ -293,39 +291,42 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
     <div>
-  <bo-grid
-    :columns="baseGridColumns" :rows="users" :pager="pager" row-key="userId"
-    list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
-    :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.userId)">
-
-    <template #toolbar-actions>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </div>
-    </template>
-    <template #head-actions><th style="text-align:right">관리</th></template>
-
-    <template #row-actions="{ row }">
-      <td><div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.userId)">수정</button>
-        <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-      </div></td>
-    </template>
-  </bo-grid>
-</div>
-</div>
-<!-- 사용자 수정: 2열 그리드 밖 → 좌측 부서트리 영역까지 전체폭 사용 -->
-<div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
-  <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-    <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      <bo-grid
+        :columns="baseGridColumns" :rows="users" :pager="pager" row-key="userId"
+        list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
+        :sort-state="uiState" :row-style="fnRowStyle"
+        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.userId)">
+        <template #toolbar-actions>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
+            <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+          </div>
+        </template>
+        <template #head-actions>
+          <th style="text-align:right">관리</th>
+        </template>
+        <template #row-actions="{ row }">
+          <td>
+            <div class="actions">
+              <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.userId)">수정</button>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+            </div>
+          </td>
+        </template>
+      </bo-grid>
+    </div>
   </div>
-  <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-    :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    :reload-trigger="uiStateDetail.reloadTrigger"
-    :on-list-reload="handleSearchData"
-  />
+  <!-- 사용자 수정: 2열 그리드 밖 → 좌측 부서트리 영역까지 전체폭 사용 -->
+  <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+    </div>
+    <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      :on-list-reload="handleSearchData"
+      />
+  </div>
 </div>
 `
 };

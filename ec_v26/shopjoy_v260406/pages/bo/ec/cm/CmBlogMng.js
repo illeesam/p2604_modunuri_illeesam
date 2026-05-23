@@ -254,39 +254,42 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
   template: `
 <div>
   <div class="page-title">게시판(블로그)관리</div>
-    <div class="card">
-      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
-    </div>
-    <bo-grid :columns="listGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
-      :sort-state="uiState" list-title="게시글 목록"
-      :count-text="'총 ' + pager.pageTotalCount + '건'"
-      :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
-      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail" row-actions>
-      <template #toolbar-actions>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
-      </template>
-      <template #row-actions="{ row }">
-        <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="toggleUse(row)">{{ row.useYn==='Y'?'비공개':'공개' }}</button>
-      </template>
-    </bo-grid>
-    <div class="card" v-if="detailModal.show">
-      <div class="toolbar">
-        <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
-        <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
-          <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
-          <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
-        </div>
-      </div>
-      <!-- 블로그 detail 폼 (BoFormArea 자동 렌더) -->
-      <div style="padding:12px">
-        <bo-form-area :columns="blogFormColumns" :form="detailModal.form" :errors="{}"
-          :cols="2" :show-actions="false">
-          <template #blogContent>
-            <base-html-editor v-model="detailModal.form.blogContent" height="320px" />
-          </template>
-        </bo-form-area>
+  <div class="card">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+  </div>
+  <bo-grid :columns="listGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
+    :sort-state="uiState" list-title="게시글 목록"
+    :count-text="'총 ' + pager.pageTotalCount + '건'"
+    :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
+    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail" row-actions>
+    <template #toolbar-actions>
+      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+    </template>
+    <template #row-actions="{ row }">
+      <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="toggleUse(row)">
+        {{ row.useYn==='Y'?'비공개':'공개' }}
+      </button>
+    </template>
+  </bo-grid>
+  <div class="card" v-if="detailModal.show">
+    <div class="toolbar">
+      <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
+        <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
+        <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
       </div>
     </div>
-</div>`
+    <!-- 블로그 detail 폼 (BoFormArea 자동 렌더) -->
+    <div style="padding:12px">
+      <bo-form-area :columns="blogFormColumns" :form="detailModal.form" :errors="{}"
+        :cols="2" :show-actions="false">
+        <template #blogContent>
+          <base-html-editor v-model="detailModal.form.blogContent" height="320px" />
+        </template>
+      </bo-form-area>
+    </div>
+  </div>
+</div>
+`
 };

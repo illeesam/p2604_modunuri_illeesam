@@ -161,14 +161,12 @@ window.Cart = {
       </div>
     </div>
   </div>
-
   <!-- -- 빈 장바구니 --------------------------------------------------------- -->
   <div v-if="cart.length===0" style="text-align:center;padding:80px 20px;">
     <div style="font-size:4rem;margin-bottom:20px;">🛒</div>
     <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">장바구니가 비어 있어요</p>
     <button class="btn-blue" @click="navigate('prodList')" style="padding:12px 28px;">쇼핑하러 가기</button>
   </div>
-
   <!-- -- 장바구니 목록 -------------------------------------------------------- -->
   <template v-else>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);align-items:start;" class="order-grid">
@@ -186,9 +184,7 @@ window.Cart = {
                 <span v-if="uiState.checkedIdxs.size>0" style="font-weight:400;color:var(--blue);font-size:0.82rem;">
                   ({{ uiState.checkedIdxs.size }}개 선택됨)
                 </span>
-                <span v-else style="font-weight:400;color:var(--text-muted);font-size:0.82rem;">
-                  (총 {{ cart.length }}개)
-                </span>
+                <span v-else style="font-weight:400;color:var(--text-muted);font-size:0.82rem;">(총 {{ cart.length }}개)</span>
               </span>
             </label>
             <div style="display:flex;align-items:center;gap:6px;">
@@ -207,35 +203,31 @@ window.Cart = {
               </button>
             </div>
           </div>
-
           <!-- -- 각 상품 --------------------------------------------------- -->
           <div v-for="(item, idx) in cfSortedCart" :key="item._origIdx"
             style="padding:20px;display:flex;gap:12px;align-items:flex-start;"
             :style="{ borderBottom: idx===cfSortedCart.length-1 ? 'none' : '1px solid var(--border)',
-                      background: isChecked(item._origIdx) ? 'var(--blue-dim)' : '' }">
-
+            background: isChecked(item._origIdx) ? 'var(--blue-dim)' : '' }">
             <!-- -- 체크박스 ------------------------------------------------- -->
             <div style="padding-top:4px;flex-shrink:0;">
               <input type="checkbox" :checked="isChecked(item._origIdx)" @change="toggleCheck(item._origIdx)"
                 style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);" />
             </div>
-
             <!-- -- 상품 이미지 ----------------------------------------------- -->
             <div style="width:80px;height:80px;border-radius:12px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
               <img v-if="item.prod.image" :src="item.prod.image" :alt="item.prod.prodNm" style="width:100%;height:100%;object-fit:cover;" />
             </div>
-
             <!-- -- 상품 정보 ------------------------------------------------ -->
             <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;color:var(--text-primary);font-size:0.95rem;margin-bottom:4px;">
-                {{ item.prod.prodNm }}
-              </div>
+              <div style="font-weight:700;color:var(--text-primary);font-size:0.95rem;margin-bottom:4px;">{{ item.prod.prodNm }}</div>
               <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
                 <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:12px;background:var(--blue-dim);color:var(--blue);font-size:0.75rem;font-weight:600;">
                   <span :style="{ display:'inline-block', width:'10px', height:'10px', borderRadius:'50%', background:item.color.hex, border:'1px solid rgba(0,0,0,0.1)', flexShrink:0 }"></span>
                   {{ item.color.name }}
                 </span>
-                <span style="padding:2px 10px;border-radius:12px;background:var(--purple-dim);color:var(--purple);font-size:0.75rem;font-weight:600;">{{ item.size }}</span>
+                <span style="padding:2px 10px;border-radius:12px;background:var(--purple-dim);color:var(--purple);font-size:0.75rem;font-weight:600;">
+                  {{ item.size }}
+                </span>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                 <div style="display:flex;align-items:center;gap:8px;">
@@ -243,33 +235,28 @@ window.Cart = {
                   <span class="qty-val">{{ item.qty }}</span>
                   <button class="qty-btn" @click="updateCartQty(item._origIdx,1)">+</button>
                 </div>
-                <div style="font-size:0.95rem;font-weight:800;color:var(--blue);">
-                  {{ formatPrice(item.prod.price, item.qty) }}
-                </div>
+                <div style="font-size:0.95rem;font-weight:800;color:var(--blue);">{{ formatPrice(item.prod.price, item.qty) }}</div>
               </div>
             </div>
-
             <!-- -- 삭제 버튼 ------------------------------------------------ -->
             <button @click="removeItem(item._origIdx)"
               style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;padding:0;flex-shrink:0;transition:color 0.2s;"
               @mouseenter="$event.currentTarget.style.color='#e53e3e'"
               @mouseleave="$event.currentTarget.style.color='var(--text-muted)'"
-              title="삭제">✕</button>
+              title="삭제">
+              ✕
+            </button>
           </div>
         </div>
-
         <button class="btn-outline" @click="navigate('prodList')" style="padding:10px 20px;">← 계속 쇼핑하기</button>
       </div>
-
       <!-- -- 오른쪽: 주문 요약 ------------------------------------------------- -->
       <div>
         <div class="card" style="padding:clamp(12px,3vw,24px);position:sticky;top:76px;">
           <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">📋 주문 요약</h2>
-
           <div v-if="uiState.checkedIdxs.size>0" style="margin-bottom:8px;padding:6px 10px;border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;font-weight:600;">
             ✔ 선택 {{ uiState.checkedIdxs.size }}개 상품만 주문합니다
           </div>
-
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;font-size:0.875rem;">
             <div v-for="(item, idx) in cfSummaryItems" :key="idx"
               style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
@@ -279,7 +266,6 @@ window.Cart = {
               <span style="font-weight:600;flex-shrink:0;color:var(--text-primary);">{{ formatPrice(item.prod.price, item.qty) }}</span>
             </div>
           </div>
-
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:18px;">
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.875rem;">
               <span style="color:var(--text-secondary);">상품금액</span>
@@ -294,15 +280,12 @@ window.Cart = {
               <span style="color:var(--blue);">{{ cfTotalPriceStr }}</span>
             </div>
           </div>
-
-          <button class="btn-blue" @click="goOrder" style="width:100%;padding:14px;font-size:0.95rem;">
-            주문하기 ({{ cfOrderCount }}개)
-          </button>
+          <button class="btn-blue" @click="goOrder" style="width:100%;padding:14px;font-size:0.95rem;">주문하기 ({{ cfOrderCount }}개)</button>
           <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:10px;">계좌이체로 안전하게 결제</p>
         </div>
       </div>
     </div>
   </template>
 </div>
-  `,
+`,
 };

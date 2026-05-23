@@ -211,13 +211,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <div class="page-title">업체정보</div>  <div class="card">
+  <div class="page-title">업체정보</div>
+  <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  
-
-
-
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
   <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
     <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="true"
@@ -228,34 +225,37 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.vendorId)">
-
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
             <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
           </div>
         </template>
-        <template #head-actions><th style="text-align:right">관리</th></template>
-
+        <template #head-actions>
+          <th style="text-align:right">관리</th>
+        </template>
         <template #row-actions="{ row }">
-          <td><div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.vendorId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
-          </div></td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.vendorId)">수정</button>
+              <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+            </div>
+          </td>
         </template>
       </bo-grid>
-  <div v-if="selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      <div v-if="selectedId" style="margin-top:4px;">
+        <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+          <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+        </div>
+        <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+          :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+          
+          :reload-trigger="uiStateDetail.reloadTrigger"
+          :on-list-reload="handleSearchList"
+          />
+      </div>
     </div>
-    <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'" 
-      
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      :on-list-reload="handleSearchList"
-    />
   </div>
-</div></div>
 </div>
 `
 };

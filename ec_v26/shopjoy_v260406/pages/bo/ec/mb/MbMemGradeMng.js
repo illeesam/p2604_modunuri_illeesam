@@ -209,11 +209,9 @@ window.MbMemGradeMng = {
   template: `
 <div>
   <div class="page-title">회원등급관리</div>
-
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <bo-grid-crud
     :columns="baseGridColumns" :rows="gridRows" row-key="memberGradeId"
     list-title="회원등급 목록"
@@ -223,11 +221,10 @@ window.MbMemGradeMng = {
     @add="addRow" @save="handleSave"
     @delete-checked="deleteRows" @cancel-checked="cancelChecked"
     @cell-change="onCellChange">
-
-
     <template #row-actions="{ row, idx }">
       <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
     </template>
   </bo-grid-crud>
-</div>`
+</div>
+`
 };

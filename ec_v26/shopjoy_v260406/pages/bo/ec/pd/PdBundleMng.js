@@ -494,25 +494,32 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   <div class="page-title">묶음상품관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0f4ff;border-left:3px solid #6b7fe3;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#3b4dbf">묶음상품</strong>은 여러 단품을 하나의 묶음으로 판매하는 방식입니다.</span>
-    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#6b7fe3;background:none;border:none;cursor:pointer;padding:0">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#6b7fe3;background:none;border:none;cursor:pointer;padding:0">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" style="margin-top:6px">
-      ✔ 구성 상품별 <strong>안분율</strong>을 설정해 가격·정산을 개별 처리합니다.<br>
-      ✔ 구성 상품 단위로 <strong>부분 취소·교환·반품</strong>이 가능합니다.<br>
-      ✔ 재고는 각 구성 상품의 재고를 개별 차감합니다.<br>
+      ✔ 구성 상품별
+      <strong>안분율</strong>
+      을 설정해 가격·정산을 개별 처리합니다.
+      <br>
+      ✔ 구성 상품 단위로
+      <strong>부분 취소·교환·반품</strong>
+      이 가능합니다.
+      <br>
+      ✔ 재고는 각 구성 상품의 재고를 개별 차감합니다.
+      <br>
       <span style="color:#888;font-size:12px">예) 상의+하의 코디 세트, 3개 묶음 할인 패키지</span>
     </div>
   </div>
-
   <!-- -- 검색 ------------------------------------------------------------- -->
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-
   <!-- -- 목록 ------------------------------------------------------------- -->
   <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList"
-           :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
-           empty-text="데이터가 없습니다." :row-actions="true"
-           @set-page="setPage" @size-change="onSizeChange">
+    :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
+    empty-text="데이터가 없습니다." :row-actions="true"
+    @set-page="setPage" @size-change="onSizeChange">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
     </template>
@@ -524,7 +531,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             <span class="title-link" @click="openDtl(g.bundleProdId)">{{ g.prodNm }}</span>
             <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
               <span v-for="(item,i) in (g?.items || [])" :key="(item && item.bundleItemId)||i"
-                    style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
+                style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
                 {{ getProdNm(item.itemProdId) }}
                 <span style="color:#1677ff">×{{ item.itemQty }}</span>
                 <span style="color:#aaa;margin-left:2px">{{ item.priceRate }}%</span>
@@ -539,34 +546,27 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       <button class="btn btn-danger btn-xs" @click="handleDelete(g.bundleProdId)">삭제</button>
     </template>
   </bo-grid>
-
   <!-- -- 신규등록 / 구성관리 (인라인 Dtl) ------------------------------------------ -->
   <div v-if="uiState.dtlMode !== null" class="card"
-       :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
-
+    :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
     <!-- -- Dtl 헤더 ------------------------------------------------------- -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
-        <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-blue']">
-          {{ uiState.dtlMode==='new' ? '신규' : '묶음' }}
-        </span>
+        <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-blue']">{{ uiState.dtlMode==='new' ? '신규' : '묶음' }}</span>
         <strong style="font-size:15px">{{ cfDtlProdNm }}</strong>
         <span style="font-size:12px;color:#aaa">{{ uiState.dtlMode==='new' ? '묶음상품 등록' : '구성품 관리' }}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span :class="['badge', cfDtlRateOk ? 'badge-green' : 'badge-red']"
-              style="font-size:12px;padding:4px 10px;font-weight:600">
+          style="font-size:12px;padding:4px 10px;font-weight:600">
           안분율 {{ cfDtlRateSum.toFixed(1) }}%
-          <span v-if="!cfDtlRateOk"> ({{ cfDtlRateDiff > 0 ? '+' : '' }}{{ cfDtlRateDiff }}% 필요)</span>
-          <span v-else> ✓</span>
+          <span v-if="!cfDtlRateOk">({{ cfDtlRateDiff > 0 ? '+' : '' }}{{ cfDtlRateDiff }}% 필요)</span>
+          <span v-else>✓</span>
         </span>
         <button class="btn btn-secondary btn-sm" @click="closeDtl">닫기</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">
-          {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
-        </button>
+        <button class="btn btn-primary btn-sm" @click="handleSave">{{ uiState.dtlMode==='new' ? '등록' : '저장' }}</button>
       </div>
     </div>
-
     <!-- 신규 묶음상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">묶음상품 기본정보 (pd_prod)</div>
@@ -591,7 +591,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </template>
       </bo-form-area>
     </div>
-
     <!-- -- ② 카테고리 N개 (신규/편집 공통) ----------------------------------------- -->
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
@@ -599,44 +598,51 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
           <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">카테고리를 추가해주세요</div>
           <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)"
-               draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
-               :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''"
-               style="display:flex;align-items:center;gap:4px;padding:2px 0;">
+            draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
+            :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''"
+            style="display:flex;align-items:center;gap:4px;padding:2px 0;">
             <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0;">≡</span>
-            <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0;">대표</span>
+            <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0;">
+              대표
+            </span>
             <span style="font-size:11px;color:#94a3b8;flex-shrink:0;">{{ ['','대','중','소'][cat.depth]||cat.depth }}▸</span>
             <span style="font-size:13px;flex:1;">{{ cat.categoryNm }}</span>
-            <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">✕</button>
+            <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">
+              ✕
+            </button>
           </div>
           <button type="button" @click="uiState.catPickerOpen=true"
-                  style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%;">+ 카테고리 추가</button>
+            style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%;">
+            + 카테고리 추가
+          </button>
         </div>
       </div>
     </div>
-
     <!-- -- ③ 구성품 목록 ----------------------------------------------------- -->
     <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:10px">
       구성품 목록 (pd_prod_bundle_item)
       <span style="font-weight:400;color:#aaa;margin-left:6px">※ 안분율 합계 = 100% 필수</span>
     </div>
     <table class="bo-table">
-      <thead><tr>
-        <th style="width:28px"></th>
-        <th>구성품 상품 (item_prod_id)</th>
-        <th style="width:90px;text-align:right">개별가</th>
-        <th style="width:80px;text-align:center">수량</th>
-        <th style="width:140px;text-align:center">안분율 % (price_rate)</th>
-        <th style="width:110px;text-align:right">환불기준가</th>
-        <th style="width:60px;text-align:center">사용</th>
-        <th style="width:50px;text-align:center">삭제</th>
-      </tr></thead>
+      <thead>
+        <tr>
+          <th style="width:28px"></th>
+          <th>구성품 상품 (item_prod_id)</th>
+          <th style="width:90px;text-align:right">개별가</th>
+          <th style="width:80px;text-align:center">수량</th>
+          <th style="width:140px;text-align:center">안분율 % (price_rate)</th>
+          <th style="width:110px;text-align:right">환불기준가</th>
+          <th style="width:60px;text-align:center">사용</th>
+          <th style="width:50px;text-align:center">삭제</th>
+        </tr>
+      </thead>
       <tbody>
         <tr v-for="(item, idx) in dtlItems" :key="(item && item._id)"
-            draggable="true"
-            @dragstart="onDragStart(idx)"
-            @dragover.prevent="onDragOver(idx)"
-            @drop="onDrop()"
-            :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : ''">
+          draggable="true"
+          @dragstart="onDragStart(idx)"
+          @dragover.prevent="onDragOver(idx)"
+          @drop="onDrop()"
+          :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : ''">
           <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
           <td>
             <div style="display:flex;align-items:center;gap:6px">
@@ -644,18 +650,16 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
               <span style="font-weight:500">{{ getProdNm(item.itemProdId) }}</span>
             </div>
           </td>
-          <td style="text-align:right;color:#888;font-size:12px">
-            {{ getProdPrice(item.itemProdId).toLocaleString() }}원
-          </td>
+          <td style="text-align:right;color:#888;font-size:12px">{{ getProdPrice(item.itemProdId).toLocaleString() }}원</td>
           <td style="text-align:center">
             <input type="number" class="form-control" v-model.number="item.itemQty"
-                   min="1" style="width:60px;text-align:center;margin:0 auto;padding:3px 6px">
+              min="1" style="width:60px;text-align:center;margin:0 auto;padding:3px 6px">
           </td>
           <td>
             <div style="display:flex;align-items:center;justify-content:center;gap:4px">
               <input type="number" class="form-control" v-model.number="item.priceRate"
-                     min="0" max="100" step="0.01"
-                     style="width:72px;text-align:right;padding:3px 6px">
+                min="0" max="100" step="0.01"
+                style="width:72px;text-align:right;padding:3px 6px">
               <span style="color:#888">%</span>
             </div>
           </td>
@@ -675,34 +679,30 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           </td>
         </tr>
         <tr v-if="!dtlItems.length">
-          <td colspan="8" style="text-align:center;padding:24px;color:#aaa">
-            구성품이 없습니다. 아래 [+ 구성품 추가] 버튼으로 추가하세요.
-          </td>
+          <td colspan="8" style="text-align:center;padding:24px;color:#aaa">구성품이 없습니다. 아래 [+ 구성품 추가] 버튼으로 추가하세요.</td>
         </tr>
       </tbody>
     </table>
-
     <!-- -- 구성품 추가 / 안분율 안내 ---------------------------------------------- -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
-      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="openPicker()">
-        + 구성품 추가
-      </button>
+      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="openPicker()">+ 구성품 추가</button>
       <div v-if="dtlItems.length" style="flex:1;padding:7px 14px;border-radius:6px;font-size:12px"
-           :style="cfDtlRateOk
-             ? 'background:#f6ffed;border:1px solid #b7eb8f;color:#389e0d'
-             : 'background:#fff1f0;border:1px solid #ffa39e;color:#cf1322'">
-        <strong>안분율(price_rate) 합계 = 100% 필수</strong> — 부분클레임(반품/취소) 시 구성품별 환불 금액 계산 기준입니다.
-        <span v-if="!cfDtlRateOk"> 현재 {{ cfDtlRateSum.toFixed(1) }}% — {{ Math.abs(cfDtlRateDiff) }}%
-          {{ cfDtlRateDiff > 0 ? '부족' : '초과' }}합니다.</span>
-        <span v-else> 배분 완료 ✓</span>
+        :style="cfDtlRateOk
+        ? 'background:#f6ffed;border:1px solid #b7eb8f;color:#389e0d'
+        : 'background:#fff1f0;border:1px solid #ffa39e;color:#cf1322'">
+        <strong>안분율(price_rate) 합계 = 100% 필수</strong>
+        — 부분클레임(반품/취소) 시 구성품별 환불 금액 계산 기준입니다.
+        <span v-if="!cfDtlRateOk">
+          현재 {{ cfDtlRateSum.toFixed(1) }}% — {{ Math.abs(cfDtlRateDiff) }}% {{ cfDtlRateDiff > 0 ? '부족' : '초과' }}합니다.
+        </span>
+        <span v-else>배분 완료 ✓</span>
       </div>
     </div>
   </div>
-
   <!-- -- 구성품 Picker Modal ----------------------------------------------- -->
   <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-         @click.self="uiState.pickerOpen=false">
+      @click.self="uiState.pickerOpen=false">
       <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <strong style="font-size:15px">구성품 상품 선택</strong>
@@ -711,27 +711,29 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <bo-multi-check-select
           v-model="uiState.pickerSearchType"
           :options="[
-            { value: 'prodNm', label: '상품명' },
-            { value: 'prodId', label: 'ID' },
+          { value: 'prodNm', label: '상품명' },
+          { value: 'prodId', label: 'ID' },
           ]"
           placeholder="검색대상 전체"
           all-label="전체 선택"
           min-width="100%" />
         <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
           <input class="form-control" v-model="uiState.pickerSearch"
-                 placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
-                 @keyup.enter="onPickerSearch">
+            placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
+            @keyup.enter="onPickerSearch">
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
           <table class="bo-table" style="margin:0">
-            <thead><tr>
-              <th style="width:44px">ID</th>
-              <th>상품명</th>
-              <th style="width:70px;text-align:center">카테고리</th>
-              <th style="width:90px;text-align:right">판매가</th>
-              <th style="width:56px;text-align:center">선택</th>
-            </tr></thead>
+            <thead>
+              <tr>
+                <th style="width:44px">ID</th>
+                <th>상품명</th>
+                <th style="width:70px;text-align:center">카테고리</th>
+                <th style="width:90px;text-align:right">판매가</th>
+                <th style="width:56px;text-align:center">선택</th>
+              </tr>
+            </thead>
             <tbody>
               <tr v-for="p in cfPickerList" :key="(p && p.productId)">
                 <td style="color:#aaa;font-size:12px">{{ p.productId }}</td>
@@ -751,9 +753,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
   </teleport>
-
   <!-- -- 카테고리 피커 모달 ----------------------------------------------------- -->
   <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
-                 @select="addCategory" @close="uiState.catPickerOpen=false" />
-</div>`
+    @select="addCategory" @close="uiState.catPickerOpen=false" />
+</div>
+`
 };

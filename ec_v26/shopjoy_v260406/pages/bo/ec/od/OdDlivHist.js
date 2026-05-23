@@ -72,41 +72,56 @@ window.OdDlivHist = {
   },
   template: /* html */`
 <div>
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
+    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+    이력정보
+  </div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='order'}"  :disabled="tabMode2!=='tab'" @click="botTab='order'">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></button>
-      <button class="tab-btn" :class="{active:botTab==='claims'}" :disabled="tabMode2!=='tab'" @click="botTab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></button>
+      <button class="tab-btn" :class="{active:botTab==='order'}"  :disabled="tabMode2!=='tab'" @click="botTab='order'">
+        🛒 연관 주문
+        <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:botTab==='claims'}" :disabled="tabMode2!=='tab'" @click="botTab='claims'">
+        ↩ 연관 클레임
+        <span class="tab-count">{{ cfRelatedClaims.length }}</span>
+      </button>
     </div>
-    </div>
+  </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
-  <!-- -- 연관 주문 ---------------------------------------------------------- -->
-  <div class="card" v-show="showTab('order')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></div>
-    <template v-if="cfRelatedOrder">
-      <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ cfRelatedOrder.orderId }}</span></div>
-      <div class="detail-row"><span class="detail-label">회원</span>
-        <span class="detail-value"><span class="ref-link" @click="showRefModal('member', cfRelatedOrder.userId)">{{ cfRelatedOrder.userNm }}</span></span>
-      </div>
-      <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ cfRelatedOrder.prodNm }}</span></div>
-      <div class="detail-row"><span class="detail-label">금액</span><span class="detail-value">{{ (cfRelatedOrder.totalPrice||0).toLocaleString() }}원</span></div>
-      <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ cfRelatedOrder.statusCd }}</span></div>
-      <div style="margin-top:14px;"><button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:cfRelatedOrder.orderId})">주문 상세 수정</button></div>
-    </template>
-    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문 정보가 없습니다.</div>
-  </div>
-
-  <!-- -- 연관 클레임 --------------------------------------------------------- -->
-  <div class="card" v-show="showTab('claims')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
-    <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
-             empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
+    <!-- -- 연관 주문 ---------------------------------------------------------- -->
+    <div class="card" v-show="showTab('order')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></div>
+      <template v-if="cfRelatedOrder">
+        <div class="detail-row"><span class="detail-label">주문ID</span><span class="detail-value">{{ cfRelatedOrder.orderId }}</span></div>
+        <div class="detail-row">
+          <span class="detail-label">회원</span>
+          <span class="detail-value">
+            <span class="ref-link" @click="showRefModal('member', cfRelatedOrder.userId)">{{ cfRelatedOrder.userNm }}</span>
+          </span>
+        </div>
+        <div class="detail-row"><span class="detail-label">상품</span><span class="detail-value">{{ cfRelatedOrder.prodNm }}</span></div>
+        <div class="detail-row">
+          <span class="detail-label">금액</span>
+          <span class="detail-value">{{ (cfRelatedOrder.totalPrice||0).toLocaleString() }}원</span>
+        </div>
+        <div class="detail-row"><span class="detail-label">상태</span><span class="detail-value">{{ cfRelatedOrder.statusCd }}</span></div>
+        <div style="margin-top:14px;">
+          <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:cfRelatedOrder.orderId})">주문 상세 수정</button>
+        </div>
       </template>
-    </bo-grid>
-  </div>
+      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문 정보가 없습니다.</div>
+    </div>
+    <!-- -- 연관 클레임 --------------------------------------------------------- -->
+    <div class="card" v-show="showTab('claims')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
+      <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
+        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+        <template #row-actions="{ row }">
+          <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
+        </template>
+      </bo-grid>
+    </div>
   </div>
 </div>
 `,

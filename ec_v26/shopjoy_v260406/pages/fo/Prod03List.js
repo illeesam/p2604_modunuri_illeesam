@@ -258,14 +258,12 @@ window.Prod03List = {
   },
   template: /* html */ `
 <div class="page-wrap">
-
   <!-- -- Site 03 Edition Ribbon ----------------------------------------- -->
   <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
     <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.5);">👑 LUXE</span>
     <span>✨ 프리미엄 큐레이션 — 장인의 손길</span>
     <span style="margin-left:auto;opacity:0.9;">SITE 03</span>
   </div>
-
   <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품목록"
@@ -276,33 +274,34 @@ window.Prod03List = {
       <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">상품 목록</h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
         <span style="cursor:pointer;" @click="navigate('home')">홈</span>
-        <span>/</span><span style="color:#333;">상품목록</span>
+        <span>/</span>
+        <span style="color:#333;">상품목록</span>
       </div>
     </div>
   </div>
-
   <!-- -- 카테고리 탭 (최상위 독립 배치) -- -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
     <button
       @click="selCats.clear()"
       style="padding:7px 18px;border-radius:24px;cursor:pointer;font-size:0.85rem;font-weight:700;transition:all 0.18s;"
       :style="selCats.size===0
-        ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
-        : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
+      ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
+      : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
       전체
     </button>
     <button v-for="cat in cfAllCats" :key="cat.categoryId"
       @click="toggleCat(cat.categoryId)"
       style="padding:7px 18px;border-radius:24px;cursor:pointer;font-size:0.85rem;font-weight:700;transition:all 0.18s;"
       :style="selCats.has(cat.categoryId)
-        ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
-        : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
+      ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
+      : 'background:var(--bg-card);color:var(--text-secondary);border:2px solid var(--border);'">
       {{ cat.categoryNm }}
       <span v-if="selCats.has(cat.categoryId)"
-        style="margin-left:4px;font-size:0.75rem;opacity:0.8;">✓</span>
+        style="margin-left:4px;font-size:0.75rem;opacity:0.8;">
+        ✓
+      </span>
     </button>
   </div>
-
   <!-- -- 검색 바 -- -->
   <fo-search-area :show-actions="false" bar-style="margin-bottom:12px;"
     :columns="baseSearchColumns" :param="uiState"
@@ -322,11 +321,9 @@ window.Prod03List = {
       조회
     </button>
   </fo-search-area>
-
   <!-- -- 상세 필터 패널 -- -->
   <div v-show="uiState.filterOpen"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:clamp(12px,2vw,18px);margin-bottom:20px;">
-
     <!-- -- 가격 구간 -------------------------------------------------------- -->
     <div style="margin-bottom:16px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">💰 판매가 구간</div>
@@ -356,39 +353,42 @@ window.Prod03List = {
         </div>
       </div>
     </div>
-
     <!-- -- 색상 ----------------------------------------------------------- -->
     <div style="margin-bottom:16px;">
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">🎨 색상 <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span></div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">
+        🎨 색상
+        <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
         <button v-for="c in cfAllColors" :key="c.name"
           @click="toggleColor(c.name)"
           :title="c.name"
           style="display:flex;align-items:center;gap:5px;padding:4px 10px 4px 6px;border-radius:20px;cursor:pointer;font-size:0.75rem;font-weight:600;transition:all 0.15s;"
           :style="selColors.has(c.name)
-            ? 'border:2px solid var(--blue);background:var(--blue-dim);color:var(--blue);'
-            : 'border:1.5px solid var(--border);background:var(--bg-base);color:var(--text-secondary);'">
+          ? 'border:2px solid var(--blue);background:var(--blue-dim);color:var(--blue);'
+          : 'border:1.5px solid var(--border);background:var(--bg-base);color:var(--text-secondary);'">
           <span :style="'width:14px;height:14px;border-radius:50%;background:'+c.hex+';border:1px solid rgba(0,0,0,0.15);flex-shrink:0;'"></span>
           <span>{{ c.name }}</span>
         </button>
       </div>
     </div>
-
     <!-- -- 사이즈 ---------------------------------------------------------- -->
     <div style="margin-bottom:12px;">
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">📏 사이즈 <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span></div>
+      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">
+        📏 사이즈
+        <span style="font-weight:400;font-size:0.72rem;">(복수선택)</span>
+      </div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;">
         <button v-for="sz in cfAllSizes" :key="sz"
           @click="toggleSize(sz)"
           style="padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.15s;"
           :style="selSizes.has(sz)
-            ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);'
-            : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
+          ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);'
+          : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
           {{ sz }}
         </button>
       </div>
     </div>
-
     <!-- -- 필터 초기화 ------------------------------------------------------- -->
     <div style="display:flex;justify-content:flex-end;">
       <button v-if="cfHasFilter" @click="clearFilters"
@@ -397,15 +397,15 @@ window.Prod03List = {
       </button>
     </div>
   </div>
-
   <!-- -- 결과 요약 ---------------------------------------------------------- -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:0.85rem;color:var(--text-secondary);">
-      총 <strong style="color:var(--text-primary);">{{ allProds.length }}</strong>개 상품
+      총
+      <strong style="color:var(--text-primary);">{{ allProds.length }}</strong>
+      개 상품
       <span v-if="cfHasFilter" style="color:#f97316;font-size:0.78rem;margin-left:6px;">(필터 적용중)</span>
     </div>
   </div>
-
   <!-- -- 스켈레톤 -- -->
   <div v-if="uiState.loading" class="grid-3">
     <div v-for="i in 6" :key="'sk'+i" class="prod-card" style="overflow:hidden;">
@@ -421,12 +421,10 @@ window.Prod03List = {
       </div>
     </div>
   </div>
-
   <!-- -- 상품 그리드 -- -->
   <div v-else class="grid-3">
     <div v-for="p in pager.pageList" :key="p.prodId"
       class="prod-card" style="cursor:pointer;" @click="selectProd(p)">
-
       <!-- -- 썸네일 -------------------------------------------------------- -->
       <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
         <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
@@ -447,20 +445,21 @@ window.Prod03List = {
           <svg width="16" height="16" viewBox="0 0 24 24"
             :fill="isLiked&&isLiked(p.prodId)?'#ef4444':'none'"
             :stroke="isLiked&&isLiked(p.prodId)?'#ef4444':'#555'"
-            stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
         </button>
       </div>
-
       <div style="padding:16px;">
         <!-- -- 상품명 + 카테고리 ----------------------------------------------- -->
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:6px;">
           <span style="font-weight:700;color:var(--text-primary);font-size:0.92rem;flex:1;line-height:1.4;">{{ p.prodNm }}</span>
           <span class="badge badge-cat" style="flex-shrink:0;margin-top:2px;">{{ fnCategoryLabel(p) }}</span>
         </div>
-
         <!-- -- 설명 ------------------------------------------------------- -->
-        <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ p.desc }}</p>
-
+        <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ p.desc }}
+        </p>
         <!-- -- 색상 스와치 --------------------------------------------------- -->
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
           <div v-for="c in (p.opt1s||[]).slice(0,6)" :key="c.name"
@@ -468,27 +467,27 @@ window.Prod03List = {
             :title="c.name"></div>
           <span v-if="(p.opt1s||[]).length>6" style="font-size:0.68rem;color:var(--text-muted);">+{{ (p.opt1s||[]).length-6 }}</span>
         </div>
-
         <!-- -- 사이즈 ------------------------------------------------------ -->
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">
           <span v-for="s in (p.opt2s||[]).slice(0,5)" :key="s"
-            style="font-size:0.68rem;padding:2px 5px;border-radius:4px;border:1px solid var(--border);color:var(--text-muted);">{{ s }}</span>
+            style="font-size:0.68rem;padding:2px 5px;border-radius:4px;border:1px solid var(--border);color:var(--text-muted);">
+            {{ s }}
+          </span>
           <span v-if="(p.opt2s||[]).length>5" style="font-size:0.68rem;color:var(--text-muted);">+{{ (p.opt2s||[]).length-5 }}</span>
         </div>
-
         <!-- -- 가격 영역 ---------------------------------------------------- -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
           <span style="font-size:0.95rem;font-weight:800;color:var(--blue);">{{ p.price }}</span>
           <template v-if="p.originalPrice">
-            <span style="font-size:0.78rem;color:var(--text-muted);text-decoration:line-through;">{{ p.originalPrice.toLocaleString() }}원</span>
+            <span style="font-size:0.78rem;color:var(--text-muted);text-decoration:line-through;">
+              {{ p.originalPrice.toLocaleString() }}원
+            </span>
           </template>
         </div>
-
         <button class="btn-outline" style="width:100%;padding:9px;" @click.stop="selectProd(p)">상세보기</button>
       </div>
     </div>
   </div>
-
   <!-- -- 결과 없음 ---------------------------------------------------------- -->
   <div v-if="!uiState.loading && allProds.length===0"
     style="text-align:center;padding:60px 0;color:var(--text-muted);">
@@ -499,36 +498,37 @@ window.Prod03List = {
       필터 초기화
     </button>
   </div>
-
   <!-- -- PC 페이지네이션 -- -->
   <div v-if="!uiState.loading && !uiState.isMobile && pager.pageTotalPage > 1"
     style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
     <button @click="pager.pageNo=Math.max(1,pager.pageNo-1);fnBuildPagerNums()" :disabled="pager.pageNo===1"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="pager.pageNo===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
+      :style="pager.pageNo===1?'opacity:0.4;cursor:not-allowed;':''">
+      ‹
+    </button>
     <template v-for="n in pager.pageNums" :key="n">
       <span v-if="n==='…'" style="padding:8px 4px;color:var(--text-muted);font-size:0.85rem;">…</span>
       <button v-else @click="pager.pageNo=n;fnBuildPagerNums();$el.scrollIntoView({behavior:'smooth',block:'start'})"
         style="min-width:38px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s;"
         :style="pager.pageNo===n
-          ? 'background:var(--blue);color:#fff;border:1px solid var(--blue);'
-          : 'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);'">
+        ? 'background:var(--blue);color:#fff;border:1px solid var(--blue);'
+        : 'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);'">
         {{ n }}
       </button>
     </template>
     <button @click="pager.pageNo=Math.min(pager.pageTotalPage,pager.pageNo+1);fnBuildPagerNums()" :disabled="pager.pageNo===pager.pageTotalPage"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="pager.pageNo===pager.pageTotalPage?'opacity:0.4;cursor:not-allowed;':''">›</button>
+      :style="pager.pageNo===pager.pageTotalPage?'opacity:0.4;cursor:not-allowed;':''">
+      ›
+    </button>
     <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ pager.pageNo }} / {{ pager.pageTotalPage }}</span>
   </div>
-
   <!-- -- 모바일 무한스크롤 센티넬 -- -->
   <div v-if="!uiState.loading && uiState.isMobile" id="sj-sentinel" style="height:1px;"></div>
   <div v-if="!uiState.loading && uiState.isMobile && pager.pageNo < pager.pageTotalPage"
     style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
     스크롤하면 더 불러옵니다…
   </div>
-
 </div>
-  `,
+`,
 };

@@ -252,17 +252,17 @@ window.SyUserLoginHist = {
   <div class="page-desc-bar">
     <span class="page-desc-summary">관리자 사용자의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen?'▲ 접기':'▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 로그인 로그: syh_user_login_log — 로그인 시도·결과·IP·디바이스·x-헤더
-• 토큰 이력: syh_user_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료)
-• 행 클릭 → 상세정보 펼치기 (x-헤더 포함)
-• 이상 로그인(외부IP/연속실패/REVOKE)은 보안 담당자에게 즉시 보고하세요.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 로그인 로그: syh_user_login_log — 로그인 시도·결과·IP·디바이스·x-헤더 • 토큰 이력: syh_user_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료) • 행 클릭 → 상세정보 펼치기 (x-헤더 포함) • 이상 로그인(외부IP/연속실패/REVOKE)은 보안 담당자에게 즉시 보고하세요.
+    </div>
   </div>
-
   <!-- ── 검색 ──────────────────────────────────────────────────────── -->
   <div class="card">
     <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
       <template #actions-after>
-        <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">{{ uiState.srchOpen?'▲':'▼' }}</button>
+        <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
+          {{ uiState.srchOpen?'▲':'▼' }}
+        </button>
       </template>
     </bo-search-area>
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
@@ -270,20 +270,23 @@ window.SyUserLoginHist = {
       :columns="moreSearchColumns" :param="uiState"
       @search="onSearch" />
   </div>
-
   <!-- ── 탭 + 목록 ─────────────────────────────────────────────────── -->
   <div class="tab-nav" style="margin-bottom:16px">
-    <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">로그인 로그 <span class="tab-count">{{ tabCounts.log }}</span></button>
-    <button class="tab-btn" :class="{active:uiState.activeTab==='token'}" @click="onTabChange('token')">토큰 이력 <span class="tab-count">{{ tabCounts.token }}</span></button>
+    <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">
+      로그인 로그
+      <span class="tab-count">{{ tabCounts.log }}</span>
+    </button>
+    <button class="tab-btn" :class="{active:uiState.activeTab==='token'}" @click="onTabChange('token')">
+      토큰 이력
+      <span class="tab-count">{{ tabCounts.token }}</span>
+    </button>
   </div>
-
   <!-- ── 로그인 로그 탭 ──────────────────────────────────────────── -->
   <bo-grid v-if="uiState.activeTab==='log'"
     :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
-
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
@@ -291,54 +294,104 @@ window.SyUserLoginHist = {
         <button class="btn btn-danger btn-xs"    @click="handleClearLog">로그비우기</button>
       </div>
     </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">📡 접속 정보</div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">로그인일시</td><td>{{ String(row.loginDate||row.regDate||'').slice(0,19) }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">IP</td><td style="font-family:monospace">{{ row.ip||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">OS</td><td>{{ row.os||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">브라우저</td><td>{{ row.browser||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">연속실패</td><td :style="row.failCnt>0?'color:#e74c3c;font-weight:700':''">{{ row.failCnt>0?row.failCnt+'회':'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">결과</td><td><span class="badge" :class="fnResultBadge(row.resultCd)">{{ fnResultLabel(row.resultCd) }}</span></td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">로그인일시</td>
+                <td>{{ String(row.loginDate||row.regDate||'').slice(0,19) }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">IP</td>
+                <td style="font-family:monospace">{{ row.ip||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">OS</td>
+                <td>{{ row.os||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">브라우저</td>
+                <td>{{ row.browser||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">연속실패</td>
+                <td :style="row.failCnt>0?'color:#e74c3c;font-weight:700':''">{{ row.failCnt>0?row.failCnt+'회':'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">결과</td>
+                <td><span class="badge" :class="fnResultBadge(row.resultCd)">{{ fnResultLabel(row.resultCd) }}</span></td>
+              </tr>
             </table>
           </div>
           <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">🏷 X-헤더 (호출 추적)</div>
+            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">
+              🏷 X-헤더 (호출 추적)
+            </div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td><td style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm)||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td><td>{{ fnDecode(row.cmdNm)||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-file-nm</td><td style="font-family:monospace;font-size:11px">{{ row.fileNm||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-func-nm</td><td style="font-family:monospace;font-size:11px">{{ row.funcNm||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-line-no</td><td style="font-family:monospace">{{ row.lineNo||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all">{{ row.traceId||'-' }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td>
+                <td style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm)||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td>
+                <td>{{ fnDecode(row.cmdNm)||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-file-nm</td>
+                <td style="font-family:monospace;font-size:11px">{{ row.fileNm||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-func-nm</td>
+                <td style="font-family:monospace;font-size:11px">{{ row.funcNm||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-line-no</td>
+                <td style="font-family:monospace">{{ row.lineNo||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">x-trace-id</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all">{{ row.traceId||'-' }}</td>
+              </tr>
             </table>
           </div>
           <div>
             <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px">🔐 인증 · 토큰</div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사용자ID</td><td>{{ row.userId||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">로그인ID</td><td>{{ row.loginId||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사이트</td><td>{{ row.siteNm||row.siteId||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">AccessToken</td><td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">{{ row.accessToken||'미발급' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">AT만료</td><td style="color:#8e44ad">{{ row.accessTokenExp||'-' }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사용자ID</td>
+                <td>{{ row.userId||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">로그인ID</td>
+                <td>{{ row.loginId||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사이트</td>
+                <td>{{ row.siteNm||row.siteId||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">AccessToken</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">{{ row.accessToken||'미발급' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">AT만료</td>
+                <td style="color:#8e44ad">{{ row.accessTokenExp||'-' }}</td>
+              </tr>
             </table>
           </div>
         </div>
       </td>
     </template>
   </bo-grid>
-
   <!-- ── 토큰 이력 탭 ────────────────────────────────────────────── -->
   <bo-grid v-if="uiState.activeTab==='token'"
     :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
-
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
@@ -346,40 +399,90 @@ window.SyUserLoginHist = {
         <button class="btn btn-danger btn-xs"    @click="handleClearLog">로그비우기</button>
       </div>
     </template>
-
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">🔑 토큰 정보</div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">액션</td><td><span class="badge" :class="fnActionBadge(row.actionCd)">{{ fnActionLabel(row.actionCd) }}</span></td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">토큰유형</td><td><span class="badge" :class="fnTypeBadge(row.tokenTypeCd)">{{ row.tokenTypeCd }}</span></td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">AT만료</td><td style="color:#8e44ad">{{ String(row.accessTokenExp||'').slice(0,19)||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">RT만료</td><td :style="row.actionCd==='EXPIRE'||row.actionCd==='REVOKE'?'color:#e74c3c;font-weight:700':''">{{ String(row.tokenExp||'').slice(0,19)||'-' }}</td></tr>
-              <tr v-if="row.revokeReason"><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">폐기사유</td><td style="color:#e74c3c;font-weight:600">{{ row.revokeReason }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">IP</td><td style="font-family:monospace">{{ row.ip||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사용자ID</td><td>{{ row.userId||'-' }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">액션</td>
+                <td><span class="badge" :class="fnActionBadge(row.actionCd)">{{ fnActionLabel(row.actionCd) }}</span></td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">토큰유형</td>
+                <td><span class="badge" :class="fnTypeBadge(row.tokenTypeCd)">{{ row.tokenTypeCd }}</span></td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">AT만료</td>
+                <td style="color:#8e44ad">{{ String(row.accessTokenExp||'').slice(0,19)||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">RT만료</td>
+                <td :style="row.actionCd==='EXPIRE'||row.actionCd==='REVOKE'?'color:#e74c3c;font-weight:700':''">
+                  {{ String(row.tokenExp||'').slice(0,19)||'-' }}
+                </td>
+              </tr>
+              <tr v-if="row.revokeReason">
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">폐기사유</td>
+                <td style="color:#e74c3c;font-weight:600">{{ row.revokeReason }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">IP</td>
+                <td style="font-family:monospace">{{ row.ip||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사용자ID</td>
+                <td>{{ row.userId||'-' }}</td>
+              </tr>
             </table>
           </div>
           <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">🏷 X-헤더 (호출 추적)</div>
+            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">
+              🏷 X-헤더 (호출 추적)
+            </div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td><td style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm)||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td><td>{{ fnDecode(row.cmdNm)||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-file-nm</td><td style="font-family:monospace;font-size:11px">{{ row.fileNm||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-func-nm</td><td style="font-family:monospace;font-size:11px">{{ row.funcNm||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-line-no</td><td style="font-family:monospace">{{ row.lineNo||'-' }}</td></tr>
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">x-trace-id</td><td style="font-family:monospace;font-size:11px;word-break:break-all">{{ row.traceId||'-' }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td>
+                <td style="color:#e8587a;font-weight:600">{{ fnDecode(row.uiNm)||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-cmd-nm</td>
+                <td>{{ fnDecode(row.cmdNm)||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-file-nm</td>
+                <td style="font-family:monospace;font-size:11px">{{ row.fileNm||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-func-nm</td>
+                <td style="font-family:monospace;font-size:11px">{{ row.funcNm||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-line-no</td>
+                <td style="font-family:monospace">{{ row.lineNo||'-' }}</td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">x-trace-id</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all">{{ row.traceId||'-' }}</td>
+              </tr>
             </table>
           </div>
           <div>
             <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px">🔐 토큰 해시</div>
             <table style="width:100%;border-collapse:collapse">
-              <tr><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">현재 토큰</td><td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">{{ row.accessToken||'-' }}</td></tr>
-              <tr v-if="row.prevToken"><td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">이전 토큰</td><td style="font-family:monospace;font-size:11px;word-break:break-all;color:#aaa">{{ row.prevToken }}</td></tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">현재 토큰</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">{{ row.accessToken||'-' }}</td>
+              </tr>
+              <tr v-if="row.prevToken">
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">이전 토큰</td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;color:#aaa">{{ row.prevToken }}</td>
+              </tr>
             </table>
-            <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log</div>
+            <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
+              ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log
+            </div>
           </div>
         </div>
       </td>

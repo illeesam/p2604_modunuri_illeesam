@@ -73,7 +73,6 @@ window.SyDashboardMng = {
   template: /* html */`
 <div>
   <div class="page-title">대시보드</div>
-
   <!-- 통계 카드 -->
   <div class="dash-stats">
     <div v-for="s in cfStats" :key="s.label" class="dash-stat-card" :style="{'--accent': s.color}">
@@ -85,7 +84,6 @@ window.SyDashboardMng = {
       </div>
     </div>
   </div>
-
   <!-- 바로가기 -->
   <div class="card">
     <div class="section-title">바로가기</div>

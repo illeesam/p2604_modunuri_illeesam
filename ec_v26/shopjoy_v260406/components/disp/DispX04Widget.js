@@ -197,13 +197,11 @@ window.DispX04Widget = {
   },
   template: /* html */`
 <div v-if="cfVisible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleClick">
-
   <!-- ─── 위젯 타이틀 ─── -->
   <div v-if="widget.titleYn==='Y' && widget.title"
     style="font-size:14px;font-weight:700;color:var(--text-primary,#222);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--blue,#1677ff);">
     {{ widget.title }}
   </div>
-
   <!-- ─── 이미지 배너 ─── -->
   <template v-if="widget.widgetType==='image_banner'">
     <div v-if="widget.imageUrl" style="border-radius:10px;overflow:hidden;">
@@ -216,48 +214,50 @@ window.DispX04Widget = {
       <div v-else-if="widget.altText" style="font-size:12px;opacity:.7;margin-top:6px;">{{ widget.altText }}</div>
     </div>
   </template>
-
   <!-- ─── 상품 슬라이더 ─── -->
   <template v-else-if="widget.widgetType==='product_slider'">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
       <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:12px;">🛒 {{ widget.name }}</div>
       <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;">
         <div v-for="n in 4" :key="n" style="flex-shrink:0;width:110px;text-align:center;">
-          <div style="height:90px;background:linear-gradient(135deg,#f5f5f5,#ebebeb);border-radius:8px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:24px;">👗</div>
+          <div style="height:90px;background:linear-gradient(135deg,#f5f5f5,#ebebeb);border-radius:8px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:24px;">
+            👗
+          </div>
           <div style="font-size:11px;color:#555;font-weight:600;">상품 {{ n }}</div>
           <div style="font-size:11px;color:#e8587a;font-weight:700;margin-top:2px;">₩0,000</div>
         </div>
       </div>
     </div>
   </template>
-
   <!-- ─── 상품 ─── -->
   <template v-else-if="widget.widgetType==='product'">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
       <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:10px;">📦 {{ widget.name }}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <div v-for="n in 3" :key="n" style="width:90px;text-align:center;border:1px solid #f0f0f0;border-radius:8px;padding:8px;">
-          <div style="height:64px;background:#f9f9f9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:4px;">📦</div>
+          <div style="height:64px;background:#f9f9f9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:4px;">
+            📦
+          </div>
           <div style="font-size:10px;color:#888;">상품 {{ n }}</div>
         </div>
       </div>
     </div>
   </template>
-
   <!-- ─── 조건 상품 ─── -->
   <template v-else-if="widget.widgetType==='cond_product'">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
       <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:8px;">🔍 {{ widget.name }}</div>
       <div style="font-size:11px;color:#888;background:#f9f9f9;border-radius:6px;padding:8px;">
         <span v-if="widget.condSort">정렬: {{ widget.condSort }}</span>
-        <span v-if="widget.condLimit">  수량: {{ widget.condLimit }}</span>
-        <span v-if="widget.condCategory">  카테: {{ widget.condCategory }}</span>
-        <span v-if="widget.condBrand">  브랜드: {{ widget.condBrand }}</span>
-        <span v-if="!widget.condSort&&!widget.condLimit">조건상품 렌더링</span>
+        <span v-if="widget.condLimit">수량: {{ widget.condLimit }}</span>
+        <span v-if="widget.condCategory">카테: {{ widget.condCategory }}</span>
+        <span v-if="widget.condBrand">브랜드: {{ widget.condBrand }}</span>
+        <span v-if="!widget.condSort&&!widget.condLimit">
+          조건상품 렌더링
+        </span>
       </div>
     </div>
   </template>
-
   <!-- ─── 차트 ─── -->
   <template v-else-if="widget.widgetType&&widget.widgetType.startsWith('chart_')">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
@@ -267,13 +267,14 @@ window.DispX04Widget = {
       <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:5px;height:90px;">
         <div v-for="(bar, i) in cfChartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
           <div :style="{ height: bar.pct+'%', background: bar.color, borderRadius:'4px 4px 0 0', width:'100%', minHeight:'4px', transition:'height .3s' }"></div>
-          <div style="font-size:10px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">{{ bar.label }}</div>
+          <div style="font-size:10px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">
+            {{ bar.label }}
+          </div>
         </div>
       </div>
       <div v-else style="height:60px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;">차트 데이터 없음</div>
     </div>
   </template>
-
   <!-- ─── 텍스트 배너 ─── -->
   <template v-else-if="widget.widgetType==='text_banner'">
     <div :style="{ background: widget.bgColor||'#f5f5f5', color: widget.textColor||'#333', borderRadius:'10px', padding:'18px 20px', fontSize: (widget.fontSize||'14')+'px', lineHeight:'1.7' }">
@@ -281,7 +282,6 @@ window.DispX04Widget = {
       <span v-else style="opacity:.6;">{{ widget.name }}</span>
     </div>
   </template>
-
   <!-- ─── 정보 카드 ─── -->
   <template v-else-if="widget.widgetType==='info_card'">
     <div style="background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e8e8e8;box-shadow:0 1px 6px rgba(0,0,0,.06);">
@@ -292,7 +292,6 @@ window.DispX04Widget = {
       <div style="font-size:13px;color:#555;white-space:pre-line;line-height:1.6;">{{ widget.infoBody || '내용 없음' }}</div>
     </div>
   </template>
-
   <!-- ─── 팝업 ─── -->
   <template v-else-if="widget.widgetType==='popup'">
     <div style="background:#fff;border-radius:10px;padding:16px 20px;border:2px dashed #e8587a;text-align:center;">
@@ -302,7 +301,6 @@ window.DispX04Widget = {
       <div v-if="widget.popupWidth" style="font-size:11px;color:#aaa;margin-top:4px;">{{ widget.popupWidth }}×{{ widget.popupHeight }}</div>
     </div>
   </template>
-
   <!-- ─── 파일 ─── -->
   <template v-else-if="widget.widgetType==='file'">
     <div style="display:flex;align-items:center;gap:12px;background:#f8f9ff;border-radius:10px;padding:14px 18px;border:1px solid #dce3f8;">
@@ -313,7 +311,6 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
-
   <!-- ─── 파일 목록 ─── -->
   <template v-else-if="widget.widgetType==='file_list'">
     <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e8e8e8;">
@@ -325,13 +322,16 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
-
   <!-- ─── 쿠폰 ─── -->
   <template v-else-if="widget.widgetType==='coupon'">
     <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#f06292,#e91e63);color:#fff;display:flex;align-items:center;padding:20px 24px;gap:18px;position:relative;">
-      <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">✏️</div>
+      <div style="width:48px;height:48px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">
+        ✏️
+      </div>
       <div style="flex:1;">
-        <div v-if="widget.couponCode" style="font-size:11px;opacity:.75;letter-spacing:.5px;margin-bottom:3px;">{{ widget.couponCode }}</div>
+        <div v-if="widget.couponCode" style="font-size:11px;opacity:.75;letter-spacing:.5px;margin-bottom:3px;">
+          {{ widget.couponCode }}
+        </div>
         <div style="font-size:16px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.2);">{{ widget.couponDesc || widget.name }}</div>
         <div v-if="widget.discountRate" style="font-size:12px;opacity:.8;margin-top:3px;">할인율: {{ widget.discountRate }}%</div>
       </div>
@@ -340,7 +340,6 @@ window.DispX04Widget = {
       <div style="font-size:13px;font-weight:700;width:60px;text-align:center;flex-shrink:0;">받기</div>
     </div>
   </template>
-
   <!-- ─── HTML 에디터 ─── -->
   <template v-else-if="widget.widgetType==='html_editor'">
     <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
@@ -351,7 +350,6 @@ window.DispX04Widget = {
       <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">HTML 내용 없음</div>
     </div>
   </template>
-
   <!-- ─── 텍스트 영역 ─── -->
   <template v-else-if="widget.widgetType==='textarea'">
     <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
@@ -362,7 +360,6 @@ window.DispX04Widget = {
       <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">내용 없음</div>
     </div>
   </template>
-
   <!-- ─── Markdown ─── -->
   <template v-else-if="widget.widgetType==='markdown'">
     <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
@@ -373,20 +370,17 @@ window.DispX04Widget = {
       <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">Markdown 내용 없음</div>
     </div>
   </template>
-
   <!-- ─── 바코드 / QR코드 ─── -->
   <template v-else-if="widget.widgetType==='barcode'||widget.widgetType==='qrcode'||widget.widgetType==='barcode_qrcode'">
     <co-barcode-widget :widget="widget" />
   </template>
-
   <!-- ─── 동영상 플레이어 ─── -->
   <template v-else-if="widget.widgetType==='video_player'">
     <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
       <div v-if="getVideoEmbed(widget)" style="position:relative;padding-top:56.25%;background:#000;">
         <iframe :src="getVideoEmbed(widget)"
           style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
-          allowfullscreen allow="accelerometer;clipboard-write;encrypted-media;gyroscope;picture-in-picture">
-        </iframe>
+          allowfullscreen allow="accelerometer;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe>
       </div>
       <div v-else style="background:#1a1a2e;padding:40px 20px;text-align:center;color:#fff;">
         <div style="font-size:40px;margin-bottom:8px;">▶</div>
@@ -394,17 +388,16 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
-
   <!-- ─── 카운트다운 타이머 ─── -->
   <template v-else-if="widget.widgetType==='countdown'">
     <co-countdown-widget :widget="widget" />
   </template>
-
   <!-- ─── 결제위젯 ─── -->
   <template v-else-if="widget.widgetType==='payment_widget'">
     <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:20px;">
       <div style="font-size:22px;font-weight:900;color:#1a1a2e;margin-bottom:4px;letter-spacing:-.5px;">
-        {{ Number(widget.payAmount||0).toLocaleString() }}<span style="font-size:14px;font-weight:600;margin-left:2px;">{{ widget.payCurrency==='USD' ? 'USD' : '원' }}</span>
+        {{ Number(widget.payAmount||0).toLocaleString() }}
+        <span style="font-size:14px;font-weight:600;margin-left:2px;">{{ widget.payCurrency==='USD' ? 'USD' : '원' }}</span>
       </div>
       <div style="font-size:11px;color:#aaa;margin-bottom:14px;">{{ widget.name }}</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
@@ -418,12 +411,12 @@ window.DispX04Widget = {
       </button>
     </div>
   </template>
-
   <!-- ─── 전자결재 ─── -->
   <template v-else-if="widget.widgetType==='approval_widget'">
     <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
       <div style="background:#1a237e;color:#fff;padding:10px 16px;font-size:13px;font-weight:700;">
-        ✅ {{ widget.approvalDocType || '전자결재' }}<span v-if="widget.approvalTitle"> – {{ widget.approvalTitle }}</span>
+        ✅ {{ widget.approvalDocType || '전자결재' }}
+        <span v-if="widget.approvalTitle">– {{ widget.approvalTitle }}</span>
       </div>
       <div style="display:flex;border-bottom:1px solid #e8e8e8;overflow-x:auto;">
         <div v-for="(ap, i) in parseApprovalLine(widget.approvalLine)" :key="i"
@@ -438,14 +431,12 @@ window.DispX04Widget = {
       <div style="padding:10px 14px;font-size:12px;color:#888;">결재를 진행합니다.</div>
     </div>
   </template>
-
   <!-- ─── 지도맵 ─── -->
   <template v-else-if="widget.widgetType==='map_widget'">
     <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
       <iframe v-if="getMapEmbed(widget)" :src="getMapEmbed(widget)"
         style="width:100%;height:220px;border:none;display:block;"
-        allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-      </iframe>
+        allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       <div v-else style="height:120px;background:#f5f5f5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
         <span style="font-size:28px;">🗺</span>
         <span style="font-size:12px;color:#aaa;">주소 또는 위도/경도를 입력하세요</span>
@@ -456,7 +447,6 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
-
   <!-- ─── 이벤트 배너 ─── -->
   <template v-else-if="widget.widgetType==='event_banner'">
     <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#f50057,#c51162);padding:28px 24px;text-align:center;color:#fff;">
@@ -465,11 +455,12 @@ window.DispX04Widget = {
       <div v-if="widget.eventUrl" style="font-size:12px;opacity:.7;margin-top:6px;">→ {{ widget.eventUrl }}</div>
     </div>
   </template>
-
   <!-- ─── 캐시 배너 ─── -->
   <template v-else-if="widget.widgetType==='cache_banner'">
     <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#ff8f00,#f57f17);padding:22px 24px;color:#fff;display:flex;align-items:center;gap:18px;">
-      <div style="width:52px;height:52px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">💰</div>
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">
+        💰
+      </div>
       <div>
         <div style="font-size:22px;font-weight:900;letter-spacing:.5px;text-shadow:0 1px 4px rgba(0,0,0,.3);">
           +{{ widget.cacheAmount ? widget.cacheAmount.toLocaleString() : '0' }}P
@@ -479,7 +470,6 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
-
   <!-- ─── 위젯 임베드 ─── -->
   <template v-else-if="widget.widgetType==='widget_embed'">
     <div style="background:#f8f8f8;border-radius:10px;padding:16px;border:1px dashed #ccc;text-align:center;">
@@ -487,7 +477,6 @@ window.DispX04Widget = {
       <div style="font-size:12px;color:#888;">위젯 임베드: {{ widget.name }}</div>
     </div>
   </template>
-
   <!-- ─── 기타 ─── -->
   <template v-else>
     <div :style="'border-radius:10px;overflow:hidden;background:'+nameGrad(widget.name)+';padding:24px 20px;text-align:center;color:#fff;'">
@@ -496,7 +485,6 @@ window.DispX04Widget = {
       <div style="font-size:11px;opacity:.6;margin-top:4px;">{{ widget.widgetType }}</div>
     </div>
   </template>
-
 </div>
 `,
 };

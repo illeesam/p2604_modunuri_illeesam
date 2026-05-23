@@ -271,13 +271,27 @@ window.DispX01Ui = {
   <!-- 파라미터 요약 바 (보기옵션이 있을 때만) -->
   <div v-if="params.viewOpts" style="background:#fff;border-bottom:1px solid #e8e0f8;padding:10px 24px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
     <span style="font-size:11px;color:#888;margin-right:4px;">전달 파라미터:</span>
-    <span v-if="params.areas.length" style="font-size:11px;background:#ede7f6;color:#4a148c;border-radius:8px;padding:2px 10px;">영역: {{ params.areas.join(', ') }}</span>
-    <span v-if="params.date" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:8px;padding:2px 10px;">📅 {{ params.date }} {{ params.time }}</span>
-    <span v-if="params.status" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 10px;">상태: {{ params.status }}</span>
-    <span v-if="params.visibilityTargets" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 10px;">공개대상: {{ params.visibilityTargets.replace(/\^/g,'') }}</span>
-    <span v-if="params.siteId" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 10px;">siteId: {{ params.siteId }}</span>
-    <span v-if="params.memberId" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 10px;">memberId: {{ params.memberId }}</span>
-    <span v-if="params.viewOpts" style="font-size:11px;background:#f0f4ff;color:#4f46e5;border-radius:8px;padding:2px 10px;">보기: {{ params.viewOpts }}</span>
+    <span v-if="params.areas.length" style="font-size:11px;background:#ede7f6;color:#4a148c;border-radius:8px;padding:2px 10px;">
+      영역: {{ params.areas.join(', ') }}
+    </span>
+    <span v-if="params.date" style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:8px;padding:2px 10px;">
+      📅 {{ params.date }} {{ params.time }}
+    </span>
+    <span v-if="params.status" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 10px;">
+      상태: {{ params.status }}
+    </span>
+    <span v-if="params.visibilityTargets" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 10px;">
+      공개대상: {{ params.visibilityTargets.replace(/\^/g,'') }}
+    </span>
+    <span v-if="params.siteId" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 10px;">
+      siteId: {{ params.siteId }}
+    </span>
+    <span v-if="params.memberId" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:2px 10px;">
+      memberId: {{ params.memberId }}
+    </span>
+    <span v-if="params.viewOpts" style="font-size:11px;background:#f0f4ff;color:#4f46e5;border-radius:8px;padding:2px 10px;">
+      보기: {{ params.viewOpts }}
+    </span>
   </div>
   <style>
     @keyframes skelShimmer {
@@ -306,8 +320,8 @@ window.DispX01Ui = {
           <span @click.stop="showContentStruct=!showContentStruct"
             style="font-size:11px;padding:1px 7px;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;margin-right:8px;border:1px solid;"
             :style="showContentStruct
-              ? 'background:#ede7f6;color:#6a1b9a;border-color:#b39ddb;font-weight:600;'
-              : 'background:#f5f5f5;color:#bbb;border-color:#e0e0e0;'"
+            ? 'background:#ede7f6;color:#6a1b9a;border-color:#b39ddb;font-weight:600;'
+            : 'background:#f5f5f5;color:#bbb;border-color:#e0e0e0;'"
             :title="showContentStruct?'구조 숨기기':'구조 보기'">
             상세
           </span>
@@ -316,8 +330,8 @@ window.DispX01Ui = {
         <button v-else @click="activeTab=tab.key"
           style="padding:9px 20px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;border-bottom:3px solid transparent;margin-bottom:-2px;"
           :style="activeTab===tab.key
-            ? 'background:#fff;color:#6a1b9a;border-bottom-color:#6a1b9a;'
-            : 'background:transparent;color:#aaa;'">
+          ? 'background:#fff;color:#6a1b9a;border-bottom-color:#6a1b9a;'
+          : 'background:transparent;color:#aaa;'">
           {{ tab.label }}
         </button>
       </template>
@@ -328,26 +342,22 @@ window.DispX01Ui = {
       <span @click="showContentStruct=!showContentStruct"
         style="font-size:11px;padding:1px 7px;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid;"
         :style="showContentStruct
-          ? 'background:#ede7f6;color:#6a1b9a;border-color:#b39ddb;font-weight:600;'
-          : 'background:#f5f5f5;color:#bbb;border-color:#e0e0e0;'">
+        ? 'background:#ede7f6;color:#6a1b9a;border-color:#b39ddb;font-weight:600;'
+        : 'background:#f5f5f5;color:#bbb;border-color:#e0e0e0;'">
         상세
       </span>
     </div>
   </div>
-
   <!-- 영역 없음 -->
   <div v-if="!(params.areas&&params.areas.length)"
     style="text-align:center;padding:60px;color:#bbb;font-size:14px;">
     전시영역 파라미터가 없습니다. 관리자 화면에서 영역을 선택 후 다시 열어주세요.
   </div>
-
   <template v-else>
-
     <!-- ══════════════════════════════════════
          내용보기 — 위젯 시각적 렌더링
     ══════════════════════════════════════ -->
     <div v-if="activeTab==='' || activeTab==='content' || cfActiveTabs.length===0">
-
       <!-- ── 구조보기 OFF: 순수 위젯만 ── -->
       <div v-if="!showContentStruct" style="display:flex;flex-direction:column;gap:0;">
         <template v-for="areaCode in params.areas" :key="areaCode">
@@ -356,7 +366,7 @@ window.DispX01Ui = {
             :disp-dataset="dispDataset"
             :disp-opt="{ ...dispOpt, mode: 'area_detail', showDesc: false }"
             :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
-          />
+            />
           <!-- 스켈레톤 (패널 없을 때) -->
           <div v-else style="padding:12px 0 4px 0;">
             <div style="display:flex;flex-direction:column;gap:10px;">
@@ -390,7 +400,6 @@ window.DispX01Ui = {
           </div>
         </template>
       </div>
-
       <!-- ── 구조보기 ON: DispX02Area에 위임 ── -->
       <div v-else style="padding:16px;background:#f0f0f0;display:flex;flex-direction:column;gap:4px;">
         <template v-for="areaCode in params.areas" :key="areaCode">
@@ -399,7 +408,7 @@ window.DispX01Ui = {
             :disp-dataset="dispDataset"
             :disp-opt="{ ...dispOpt, mode: 'expand', showDesc: true }"
             :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
-          />
+            />
           <!-- 스켈레톤 (패널 없을 때) -->
           <div v-if="!panelsForArea(areaCode).length"
             style="background:#fff;border-radius:0 0 8px 8px;border:1px solid #e0e0e0;border-top:none;padding:14px 16px;">
@@ -415,14 +424,11 @@ window.DispX01Ui = {
           </div>
         </template>
       </div>
-
     </div>
-
     <!-- ══════════════════════════════════════
          구조보기 — 윈도우 트리
     ══════════════════════════════════════ -->
     <div v-else-if="activeTab==='struct'" style="padding:0;">
-
       <!-- 트리 컨트롤 바 -->
       <div style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:#f5f5f5;border-bottom:1px solid #e0e0e0;flex-wrap:wrap;">
         <button @click="expandAll"
@@ -446,11 +452,9 @@ window.DispX01Ui = {
         </button>
         <span style="font-size:11px;color:#aaa;margin-left:auto;">영역 {{ params.areas.length }}개 · 패널 {{ cfTotalPanels }}개</span>
       </div>
-
       <!-- 트리 본문 -->
       <div style="padding:10px 16px;background:#fff;font-family:monospace;">
         <div v-for="(areaCode, ai) in params.areas" :key="areaCode" style="margin-bottom:2px;">
-
           <!-- 1레벨: Area 행 -->
           <div @click="toggleArea(areaCode)"
             style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:7px;cursor:pointer;user-select:none;border:1px solid #d1c4e9;background:linear-gradient(90deg,#ede7f6,#f8f5ff);"
@@ -459,26 +463,25 @@ window.DispX01Ui = {
             <span style="font-size:12px;color:#6a1b9a;width:14px;text-align:center;flex-shrink:0;">
               {{ structAreaOpen.has(areaCode) ? '▼' : '▶' }}
             </span>
-            <span style="font-size:10px;font-weight:700;background:#6a1b9a;color:#fff;border-radius:4px;padding:1px 7px;flex-shrink:0;">Area</span>
-            <code style="font-size:11px;color:#4a148c;font-weight:700;background:#e8d5f8;padding:1px 6px;border-radius:4px;">{{ areaCode }}</code>
+            <span style="font-size:10px;font-weight:700;background:#6a1b9a;color:#fff;border-radius:4px;padding:1px 7px;flex-shrink:0;">
+              Area
+            </span>
+            <code style="font-size:11px;color:#4a148c;font-weight:700;background:#e8d5f8;padding:1px 6px;border-radius:4px;">
+              {{ areaCode }}
+            </code>
             <span style="font-size:12px;color:#4a148c;font-weight:600;">{{ areaLabel(areaCode) }}</span>
             <!-- Area 옵션 정보 -->
             <span style="margin-left:auto;font-size:10px;color:#9c6fb5;font-family:monospace;white-space:nowrap;flex-shrink:0;">
-              표시형식:{{ (areaInfo(areaCode)||{}).layoutType||'grid' }}:{{ (areaInfo(areaCode)||{}).gridCols||1 }},
-              정렬:{{ (areaInfo(areaCode)||{}).sortOrd != null ? (areaInfo(areaCode)||{}).sortOrd : '-' }},
-              타이틀:{{ (areaInfo(areaCode)||{}).titleYn==='Y' ? ((areaInfo(areaCode)||{}).title||'(제목없음)') : '미표시' }},
-              area="{{ areaCode }}"
+              표시형식:{{ (areaInfo(areaCode)||{}).layoutType||'grid' }}:{{ (areaInfo(areaCode)||{}).gridCols||1 }}, 정렬:{{ (areaInfo(areaCode)||{}).sortOrd != null ? (areaInfo(areaCode)||{}).sortOrd : '-' }}, 타이틀:{{ (areaInfo(areaCode)||{}).titleYn==='Y' ? ((areaInfo(areaCode)||{}).title||'(제목없음)') : '미표시' }}, area="{{ areaCode }}"
             </span>
             <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:10px;">패널 {{ panelsForArea(areaCode).length }}개</span>
           </div>
-
           <!-- 2레벨: Panel 목록 (영역 펼쳐져 있을 때) -->
           <div v-if="structAreaOpen.has(areaCode)" style="margin-left:20px;border-left:2px solid #d1c4e9;padding-left:8px;margin-top:2px;">
             <div v-if="!panelsForArea(areaCode).length"
               style="padding:6px 10px;font-size:11px;color:#bbb;font-style:italic;">
               ── 해당 조건 패널 없음
             </div>
-
             <div v-for="(p, pi) in panelsForArea(areaCode)" :key="p.dispId" style="margin-bottom:2px;">
               <!-- Panel 행 -->
               <div @click="togglePanel(p.dispId)"
@@ -492,33 +495,36 @@ window.DispX01Ui = {
                 <span style="font-size:11px;color:#2e7d32;width:14px;text-align:center;flex-shrink:0;">
                   {{ structPanelOpen.has(p.dispId) ? '▼' : '▶' }}
                 </span>
-                <span style="font-size:9px;font-weight:700;background:#2e7d32;color:#fff;border-radius:3px;padding:1px 6px;flex-shrink:0;">Panel</span>
+                <span style="font-size:9px;font-weight:700;background:#2e7d32;color:#fff;border-radius:3px;padding:1px 6px;flex-shrink:0;">
+                  Panel
+                </span>
                 <code style="font-size:10px;color:#888;flex-shrink:0;">#{{ String(p.dispId).padStart(4,'0') }}</code>
                 <span style="font-size:12px;font-weight:600;color:#1b5e20;">{{ p.name }}</span>
                 <!-- Panel 옵션 정보 (우측) -->
                 <span style="margin-left:auto;font-size:10px;color:#5a8a6a;font-family:monospace;white-space:nowrap;flex-shrink:0;">
-                  표시형식:{{ p.layoutType||'grid' }}:{{ p.gridCols||1 }},
-                  정렬:{{ p.sortOrder != null ? p.sortOrder : '-' }},
-                  타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }},
-                  기간: {{ (p.dispStartDt||p.dispEndDt) ? (p.dispStartDt||'∞')+' ~ '+(p.dispEndDt||'∞') : '기간없음' }}
-                  &nbsp;|&nbsp;상태: {{ p.status||'-' }}
+                  표시형식:{{ p.layoutType||'grid' }}:{{ p.gridCols||1 }}, 정렬:{{ p.sortOrder != null ? p.sortOrder : '-' }}, 타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }}, 기간: {{ (p.dispStartDt||p.dispEndDt) ? (p.dispStartDt||'∞')+' ~ '+(p.dispEndDt||'∞') : '기간없음' }} &nbsp;|&nbsp;상태: {{ p.status||'-' }}
                 </span>
                 <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px;">위젯 {{ (p.rows||[]).length }}개</span>
               </div>
-
               <!-- 3레벨: Widget 목록 (패널 펼쳐져 있을 때) -->
               <div v-if="structPanelOpen.has(p.dispId)"
                 style="margin-left:28px;border-left:2px solid #c8e6c9;padding-left:8px;margin-top:2px;margin-bottom:2px;">
                 <div v-if="!(p.rows&&p.rows.length)"
-                  style="padding:4px 10px;font-size:11px;color:#ccc;font-style:italic;">── 위젯 없음</div>
+                  style="padding:4px 10px;font-size:11px;color:#ccc;font-style:italic;">
+                  ── 위젯 없음
+                </div>
                 <div v-for="(w, wi) in (p.rows||[])" :key="wi"
                   style="display:flex;align-items:center;gap:6px;padding:4px 10px;margin-bottom:1px;border-radius:5px;background:#f0f7ff;border:1px solid #dce7fb;">
                   <span style="font-size:11px;color:#82b1ff;margin-left:-2px;width:12px;flex-shrink:0;">
                     {{ wi === (p.rows||[]).length - 1 ? '└' : '├' }}
                   </span>
-                  <span style="font-size:9px;font-weight:700;background:#1a73e8;color:#fff;border-radius:3px;padding:1px 5px;flex-shrink:0;">Widget</span>
+                  <span style="font-size:9px;font-weight:700;background:#1a73e8;color:#fff;border-radius:3px;padding:1px 5px;flex-shrink:0;">
+                    Widget
+                  </span>
                   <span style="font-size:10px;color:#90caf9;flex-shrink:0;">{{ wi+1 }}.</span>
-                  <span style="font-size:11px;background:#e8f0fe;color:#1a73e8;border-radius:5px;padding:1px 7px;flex-shrink:0;">{{ wLabel(w.widgetType) }}</span>
+                  <span style="font-size:11px;background:#e8f0fe;color:#1a73e8;border-radius:5px;padding:1px 7px;flex-shrink:0;">
+                    {{ wLabel(w.widgetType) }}
+                  </span>
                   <span v-if="w.widgetNm" style="font-size:11px;color:#555;">{{ w.widgetNm }}</span>
                 </div>
               </div>
@@ -527,7 +533,6 @@ window.DispX01Ui = {
         </div>
       </div>
     </div>
-
     <!-- ══════════════════════════════════════
          소스보기 — 컬럼 + 하이라이팅
     ══════════════════════════════════════ -->
@@ -553,7 +558,6 @@ window.DispX01Ui = {
         </table>
       </div>
     </div>
-
   </template>
 </div>
 `,

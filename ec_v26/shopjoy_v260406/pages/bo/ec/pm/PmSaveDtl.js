@@ -220,7 +220,10 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '마일리지 등록' : '마일리지 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.saveId }}</span></div>
+  <div class="page-title">
+    {{ cfIsNew ? '마일리지 등록' : '마일리지 수정' }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.saveId }}</span>
+  </div>
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
@@ -236,13 +239,11 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
     <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
-
         <!-- 판매업체 picker -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -250,20 +251,22 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">
+              초기화
+            </button>
           </div>
         </template>
       </bo-form-area>
-
       <!-- 판매업체 선택 모달 -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
     </div>
-
     <!-- -- 공개대상 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('visibility')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
@@ -276,11 +279,12 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         </label>
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
     </div>
-
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
@@ -288,10 +292,22 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.saveNm || '마일리지명' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
         <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #10b981;">
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">적립유형: <span style="font-weight:700;color:#10b981;">{{ form.saveType }}</span></div>
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">적립값: <span style="font-weight:700;color:#10b981;">{{ (form.saveVal||0).toLocaleString() }} {{ form.saveUnit || '원' }}</span></div>
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">유효기간: <span style="font-weight:700;">{{ form.expireDay || 365 }}일</span></div>
-          <div style="font-size:13px;color:#666;">최소주문금액: <span style="font-weight:700;">{{ (form.minOrderAmt||0).toLocaleString() }}원</span></div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            적립유형:
+            <span style="font-weight:700;color:#10b981;">{{ form.saveType }}</span>
+          </div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            적립값:
+            <span style="font-weight:700;color:#10b981;">{{ (form.saveVal||0).toLocaleString() }} {{ form.saveUnit || '원' }}</span>
+          </div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            유효기간:
+            <span style="font-weight:700;">{{ form.expireDay || 365 }}일</span>
+          </div>
+          <div style="font-size:13px;color:#666;">
+            최소주문금액:
+            <span style="font-weight:700;">{{ (form.minOrderAmt||0).toLocaleString() }}원</span>
+          </div>
         </div>
         <button class="btn btn-primary" @click="showToast('마일리지를 확인하였습니다.', 'success')">마일리지 확인</button>
       </div>

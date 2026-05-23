@@ -228,14 +228,13 @@ window.CmChattMng = {
       <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
     </template>
-      <template #row-actions="{ row }">
-        <div class="actions">
+    <template #row-actions="{ row }">
+      <div class="actions">
         <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.chattRoomId)">보기</button>
         <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
       </div>
-      </template>
+    </template>
   </bo-grid>
-
   <!-- -- 하단 상세: ChattDtl 임베드 -------------------------------------------- -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -249,11 +248,10 @@ window.CmChattMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-    
-    
+      
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
-  />
+      />
   </div>
 </div>
 `

@@ -337,7 +337,6 @@ window.SyAttachMng = {
 <div>
   <div class="page-title">첨부관리</div>
   <div style="display:flex;gap:16px;align-items:flex-start;">
-
     <!-- 좌: 첨부그룹관리 (30%) -->
     <div style="flex:0 0 30%;min-width:260px;">
       <div class="card" style="margin-bottom:0;">
@@ -349,8 +348,8 @@ window.SyAttachMng = {
           <bo-multi-check-select
             v-model="grpSearchType"
             :options="[
-              { value: 'attachGrpNm',   label: '그룹명' },
-              { value: 'attachGrpCode', label: '코드' },
+            { value: 'attachGrpNm',   label: '그룹명' },
+            { value: 'attachGrpCode', label: '코드' },
             ]"
             placeholder="검색대상 전체"
             all-label="전체 선택"
@@ -360,12 +359,13 @@ window.SyAttachMng = {
             <button class="btn btn-primary btn-sm" style="font-size:12px;padding:4px 10px;flex-shrink:0;" @click="onGrpSearch">조회</button>
           </div>
         </div>
-
         <!-- 그룹 폼 (BoFormArea 자동 렌더) -->
         <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;">
             {{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}
-            <span v-if="uiState.grpEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">#{{ uiState.grpEditId }}</span>
+            <span v-if="uiState.grpEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">
+              #{{ uiState.grpEditId }}
+            </span>
           </div>
           <bo-form-area :columns="grpFormColumns" :form="grpForm" :errors="{}"
             :cols="2" :show-actions="false" />
@@ -374,33 +374,38 @@ window.SyAttachMng = {
             <button class="btn btn-secondary btn-sm" style="flex:1;" @click="uiState.grpEditMode=false">취소</button>
           </div>
         </div>
-
         <!-- 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) -->
         <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
-        <div v-for="g in attachGrps" :key="g.attachGrpId"
-          style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
-          :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#fff0f4;border-left:3px solid #e8587a;' : ''"
-          @click="selectGrp(g.attachGrpId)">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:#333;">{{ g.attachGrpNm }}</div>
-              <div style="font-size:11px;color:#888;margin-top:2px;">{{ g.attachGrpCode }} | 최대 {{ g.maxFileCount }}개 / {{ g.maxFileSize }}MB</div>
-              <div style="font-size:10px;color:#bbb;margin-top:1px;">#{{ g.attachGrpId }}</div>
+          <div v-for="g in attachGrps" :key="g.attachGrpId"
+            style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
+            :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#fff0f4;border-left:3px solid #e8587a;' : ''"
+            @click="selectGrp(g.attachGrpId)">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#333;">{{ g.attachGrpNm }}</div>
+                <div style="font-size:11px;color:#888;margin-top:2px;">
+                  {{ g.attachGrpCode }} | 최대 {{ g.maxFileCount }}개 / {{ g.maxFileSize }}MB
+                </div>
+                <div style="font-size:10px;color:#bbb;margin-top:1px;">#{{ g.attachGrpId }}</div>
+              </div>
+              <div style="display:flex;gap:4px;" @click.stop>
+                <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="openGrpEdit(g)">수정</button>
+                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleDeleteGrp(g)">삭제</button>
+              </div>
             </div>
-            <div style="display:flex;gap:4px;" @click.stop>
-              <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="openGrpEdit(g)">수정</button>
-              <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleDeleteGrp(g)">삭제</button>
+            <div style="margin-top:4px;">
+              <span class="badge" :class="g.useYn==='Y' ? 'badge-green' : 'badge-gray'" style="font-size:10px;">
+                {{ g.useYn==='Y' ? '사용' : '미사용' }}
+              </span>
+              <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.fileExtAllow }}</span>
+              <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ cfSiteNm }}</span>
             </div>
           </div>
-          <div style="margin-top:4px;">
-            <span class="badge" :class="g.useYn==='Y' ? 'badge-green' : 'badge-gray'" style="font-size:10px;">{{ g.useYn==='Y' ? '사용' : '미사용' }}</span>
-            <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.fileExtAllow }}</span>
-            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ cfSiteNm }}</span>
+          <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">
+            {{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}
           </div>
         </div>
-        <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">{{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}</div>
-        </div><!-- /그룹 목록 박스 -->
-
+        <!-- /그룹 목록 박스 -->
         <!-- 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
           <bo-pager :pager="grpPager" :on-set-page="setGrpPage" :on-size-change="onGrpSizeChange"
@@ -408,22 +413,24 @@ window.SyAttachMng = {
         </div>
       </div>
     </div>
-
     <!-- 우: 첨부파일관리 (70%) -->
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
         <!-- 검색바 -->
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-          <b style="font-size:14px;white-space:nowrap;">첨부파일관리
-            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">— {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}</span>
+          <b style="font-size:14px;white-space:nowrap;">
+            첨부파일관리
+            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">
+              — {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}
+            </span>
             <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">(전체)</span>
           </b>
           <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="onSearch" />
           <bo-multi-check-select
             v-model="searchParam.searchType"
             :options="[
-              { value: 'fileNm',    label: '파일명' },
-              { value: 'refId', label: 'RefID' },
+            { value: 'fileNm',    label: '파일명' },
+            { value: 'refId', label: 'RefID' },
             ]"
             placeholder="검색대상 전체"
             all-label="전체 선택"
@@ -443,17 +450,18 @@ window.SyAttachMng = {
             <button class="btn btn-primary btn-sm" @click="openFileNew">+ 신규</button>
           </div>
         </div>
-
         <span class="list-title">
           <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-          첨부파일목록 <span class="list-count">{{ pager.pageTotalCount }}건</span>
+          첨부파일목록
+          <span class="list-count">{{ pager.pageTotalCount }}건</span>
         </span>
-
         <!-- 파일 폼 -->
         <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px 12px;margin-bottom:10px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#444;">
             {{ uiState.fileEditId===null ? '파일 등록' : '파일 수정' }}
-            <span v-if="uiState.fileEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">#{{ uiState.fileEditId }}</span>
+            <span v-if="uiState.fileEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">
+              #{{ uiState.fileEditId }}
+            </span>
           </div>
           <!-- 파일 폼 (BoFormArea 자동 렌더, 4컬럼) -->
           <bo-form-area :columns="fileFormColumns" :form="fileForm" :errors="{}"
@@ -464,34 +472,32 @@ window.SyAttachMng = {
             <button class="btn btn-secondary btn-sm" style="min-width:60px;" @click="uiState.fileEditMode=false">취소</button>
           </div>
         </div>
-
         <!-- 파일 그리드 (기본 10개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) -->
         <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
-        <bo-grid
-          bare
-          :columns="fileGridColumns"
-          :rows="attaches"
-          :pager="pager"
-          row-key="attachId"
-          :loading="uiState.loading"
-          :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
-          @set-page="setPage"
-          @size-change="onSizeChange" row-actions>
-      <template #row-actions="{ row }">
-        <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="openFileEdit(row)">수정</button>
-              <button class="btn btn-danger btn-sm" @click="handleDeleteFile(row)">삭제</button>
-            </div>
-      </template>
-        </bo-grid>
-        </div><!-- /파일 그리드 스크롤 컨테이너 -->
-
+          <bo-grid
+            bare
+            :columns="fileGridColumns"
+            :rows="attaches"
+            :pager="pager"
+            row-key="attachId"
+            :loading="uiState.loading"
+            :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
+            @set-page="setPage"
+            @size-change="onSizeChange" row-actions>
+            <template #row-actions="{ row }">
+              <div class="actions">
+                <button class="btn btn-blue btn-sm" @click="openFileEdit(row)">수정</button>
+                <button class="btn btn-danger btn-sm" @click="handleDeleteFile(row)">삭제</button>
+              </div>
+            </template>
+          </bo-grid>
+        </div>
+        <!-- /파일 그리드 스크롤 컨테이너 -->
         <!-- 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
           <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
             style="margin-top:0;min-height:34px;" />
         </div>
-
       </div>
     </div>
   </div>

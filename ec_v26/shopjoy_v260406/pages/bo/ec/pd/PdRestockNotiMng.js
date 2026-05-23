@@ -151,24 +151,24 @@ window.PdRestockNotiMng = {
   template: `
 <div>
   <div class="page-title">재입고알림관리</div>
-    <div class="card">
-      <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+  <div class="card">
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <span class="list-title">재입고알림 목록</span>
+      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
+      <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleSend">
+        📣 알림발송 ({{ checkedCount }}건)
+      </button>
     </div>
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-title">재입고알림 목록</span>
-        <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-        <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleSend">
-          📣 알림발송 ({{ checkedCount }}건)
-        </button>
-      </div>
-      <bo-grid
-        :columns="baseGridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
-        list-title="목록" :count-text="pager.pageTotalCount + '건'"
-        selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
-        @set-page="setPage" @size-change="onSizeChange"
-        @toggle-check="toggleOne" @toggle-check-all="toggleAll">
-      </bo-grid>
-    </div>
-</div>`
+    <bo-grid
+      :columns="baseGridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'"
+      selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
+      @set-page="setPage" @size-change="onSizeChange"
+      @toggle-check="toggleOne" @toggle-check-all="toggleAll"></bo-grid>
+  </div>
+</div>
+`
 };

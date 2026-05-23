@@ -244,9 +244,13 @@ window.DpDispWidgetLibMng = {
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset">
       <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
-        <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">변경됨 →</span>
+        <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
+          변경됨 →
+        </span>
         <button class="btn btn-primary" @click="onSearch"
-          :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">조회</button>
+          :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">
+          조회
+        </button>
         <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
       </div>
     </bo-search-area>
@@ -254,7 +258,10 @@ window.DpDispWidgetLibMng = {
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">
       <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">📂 표시경로 <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_widget_lib</span></span>
+        <span class="list-title" style="font-size:13px;">
+          📂 표시경로
+          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_widget_lib</span>
+        </span>
         <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
@@ -268,21 +275,29 @@ window.DpDispWidgetLibMng = {
         empty-text="데이터가 없습니다." row-clickable
         @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => handleLoadDetail(r.widgetLibId)" row-actions>
         <template #toolbar-actions>
-          <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">#{{ uiState.selectedPath }}</span>
+          <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
+            #{{ uiState.selectedPath }}
+          </span>
           <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
             <span v-if="cfNoFilter" style="color:#999;">필터 없음</span>
-            <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">검색: {{ applied.searchValue }}</span>
-            <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">유형: {{ wTypeLabel(applied.type) }}</span>
-            <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}</span>
+            <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
+              검색: {{ applied.searchValue }}
+            </span>
+            <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
+              유형: {{ wTypeLabel(applied.type) }}
+            </span>
+            <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
+              상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
+            </span>
           </div>
           <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
         </template>
-      <template #row-actions="{ row }">
-        <div class="actions">
+        <template #row-actions="{ row }">
+          <div class="actions">
             <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.widgetLibId)">수정</button>
             <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
           </div>
-      </template>
+        </template>
       </bo-grid>
     </div>
   </div>
@@ -298,7 +313,7 @@ window.DpDispWidgetLibMng = {
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
-    />
+      />
   </div>
 </div>
 `

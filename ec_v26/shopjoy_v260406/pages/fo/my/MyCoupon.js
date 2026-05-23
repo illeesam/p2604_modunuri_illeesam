@@ -91,51 +91,49 @@ window.MyCoupon = {
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
-
   <MyDateFilter @search="onSearch" />
-
   <!-- -- 쿠폰 등록 ---------------------------------------------------------- -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
     <input v-model="couponCode" type="text" placeholder="쿠폰 코드 입력 (예: SPRING5000)" @keyup.enter="addCoupon"
       style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;text-transform:uppercase;">
     <button @click="addCoupon" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">쿠폰 등록</button>
   </div>
-
   <!-- -- 탭 -------------------------------------------------------------- -->
   <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;">
     <button @click="onTabChange('unused')"
       :style="{
-        padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
-        fontSize:'0.88rem', fontWeight: uiState.activeTab==='unused' ? '700' : '500',
-        color: uiState.activeTab==='unused' ? 'var(--text-primary)' : 'var(--text-muted)',
-        borderBottom: uiState.activeTab==='unused' ? '2px solid var(--text-primary)' : '2px solid transparent',
-        marginBottom: '-2px',
-      }">미사용 <span style="font-size:0.8rem;margin-left:2px;">({{ cfUnusedCount }})</span></button>
+      padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
+      fontSize:'0.88rem', fontWeight: uiState.activeTab==='unused' ? '700' : '500',
+      color: uiState.activeTab==='unused' ? 'var(--text-primary)' : 'var(--text-muted)',
+      borderBottom: uiState.activeTab==='unused' ? '2px solid var(--text-primary)' : '2px solid transparent',
+      marginBottom: '-2px',
+      }">
+      미사용
+      <span style="font-size:0.8rem;margin-left:2px;">({{ cfUnusedCount }})</span>
+    </button>
     <button @click="onTabChange('used')"
       :style="{
-        padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
-        fontSize:'0.88rem', fontWeight: uiState.activeTab==='used' ? '700' : '500',
-        color: uiState.activeTab==='used' ? 'var(--text-primary)' : 'var(--text-muted)',
-        borderBottom: uiState.activeTab==='used' ? '2px solid var(--text-primary)' : '2px solid transparent',
-        marginBottom: '-2px',
-      }">사용 <span style="font-size:0.8rem;margin-left:2px;">({{ cfUsedCount }})</span></button>
+      padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
+      fontSize:'0.88rem', fontWeight: uiState.activeTab==='used' ? '700' : '500',
+      color: uiState.activeTab==='used' ? 'var(--text-primary)' : 'var(--text-muted)',
+      borderBottom: uiState.activeTab==='used' ? '2px solid var(--text-primary)' : '2px solid transparent',
+      marginBottom: '-2px',
+      }">
+      사용
+      <span style="font-size:0.8rem;margin-left:2px;">({{ cfUsedCount }})</span>
+    </button>
   </div>
-
   <PagerHeader :total="cfDateFilteredCoupons.length" :pager="pager" />
   <div v-if="!cfDateFilteredCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     {{ uiState.activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}
   </div>
-
   <div v-for="c in paginate(cfDateFilteredCoupons, pager)" :key="c.couponId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;">
-
     <!-- -- 쿠폰 아이콘 ------------------------------------------------------- -->
     <div style="font-size:2rem;flex-shrink:0;margin-top:2px;">🎟️</div>
-
     <!-- -- 메인 정보 -------------------------------------------------------- -->
     <div style="flex:1;min-width:0;">
       <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px;">{{ c.name }}</div>
-
       <!-- -- 배지 --------------------------------------------------------- -->
       <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;">
         <span style="font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:600;"
@@ -151,42 +149,52 @@ window.MyCoupon = {
           {{ c.regMethod || '수동' }}
         </span>
       </div>
-
       <!-- -- 기본 정보 ------------------------------------------------------ -->
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:3px 16px;margin-bottom:6px;">
         <div style="font-size:0.78rem;color:var(--text-muted);">
-          쿠폰코드 <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;font-family:monospace;letter-spacing:.5px;">{{ c.code }}</span>
+          쿠폰코드
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;font-family:monospace;letter-spacing:.5px;">
+            {{ c.code }}
+          </span>
         </div>
         <div style="font-size:0.78rem;color:var(--text-muted);">
-          쿠폰발급번호 <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ String(c.couponId).padStart(8, '0') }}</span>
+          쿠폰발급번호
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ String(c.couponId).padStart(8, '0') }}</span>
         </div>
         <div style="font-size:0.78rem;color:var(--text-muted);">
-          만료 <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.expiry }}</span>
+          만료
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.expiry }}</span>
         </div>
         <div v-if="c.minOrder>0" style="font-size:0.78rem;color:var(--text-muted);">
-          최소주문 <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.minOrder.toLocaleString() }}원 이상</span>
+          최소주문
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.minOrder.toLocaleString() }}원 이상</span>
         </div>
         <div v-if="c.regDate" style="font-size:0.78rem;color:var(--text-muted);">
-          등록일 <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.regDate }}</span>
+          등록일
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.regDate }}</span>
         </div>
         <div v-if="c.regSource" style="font-size:0.78rem;color:var(--text-muted);">
-          등록출처 <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.regSource }}</span>
+          등록출처
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.regSource }}</span>
         </div>
       </div>
-
       <!-- -- 사용 정보 (사용됨 탭) ---------------------------------------------- -->
       <div v-if="c.used" style="margin-top:6px;padding:8px 12px;background:var(--bg-base);border-radius:6px;border:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px 20px;">
         <div v-if="c.usedOrderId" style="font-size:0.78rem;color:var(--text-muted);">
-          주문id <span style="font-weight:600;color:var(--blue);margin-left:4px;">{{ c.usedOrderId }}</span>
+          주문id
+          <span style="font-weight:600;color:var(--blue);margin-left:4px;">{{ c.usedOrderId }}</span>
         </div>
         <div v-if="c.usedOrderItemId" style="font-size:0.78rem;color:var(--text-muted);">
-          주문상품id <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.usedOrderItemId }}</span>
+          주문상품id
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.usedOrderItemId }}</span>
         </div>
         <div v-if="c.usedProductId" style="font-size:0.78rem;color:var(--text-muted);">
-          상품id <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.usedProductId }}</span>
+          상품id
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.usedProductId }}</span>
         </div>
         <div v-if="c.usedClaimId" style="font-size:0.78rem;color:var(--text-muted);">
-          클레임id <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.usedClaimId }}</span>
+          클레임id
+          <span style="font-weight:600;color:var(--text-secondary);margin-left:4px;">{{ c.usedClaimId }}</span>
         </div>
         <div v-if="myStore.getCouponUsedOrderItems(c)" style="width:100%;display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;">
           <span v-for="(item, ii) in myStore.getCouponUsedOrderItems(c)" :key="ii"
@@ -196,7 +204,6 @@ window.MyCoupon = {
         </div>
       </div>
     </div>
-
     <!-- -- 할인금액 + 상태 ---------------------------------------------------- -->
     <div style="text-align:right;flex-shrink:0;">
       <div style="font-size:1.1rem;font-weight:800;color:var(--blue);">{{ myStore.discountLabel(c) }}</div>
@@ -206,11 +213,9 @@ window.MyCoupon = {
       </div>
     </div>
   </div>
-
   <Pagination :total="cfDateFilteredCoupons.length" :pager="pager" />
-
 </fo-my-layout>
-  `,
+`,
   components: {
     FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,

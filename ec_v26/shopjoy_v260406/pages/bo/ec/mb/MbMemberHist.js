@@ -89,11 +89,20 @@ window.MbMemberHist = {
   },
   template: /* html */`
 <div>
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;"><span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>이력정보</div>
+  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
+    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+    이력정보
+  </div>
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='orders'}" :disabled="tabMode2!=='tab'" @click="tab='orders'">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></button>
-      <button class="tab-btn" :class="{active:tab==='claims'}" :disabled="tabMode2!=='tab'" @click="tab='claims'">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></button>
+      <button class="tab-btn" :class="{active:tab==='orders'}" :disabled="tabMode2!=='tab'" @click="tab='orders'">
+        🛒 연관 주문
+        <span class="tab-count">{{ cfMemberOrders.length }}</span>
+      </button>
+      <button class="tab-btn" :class="{active:tab==='claims'}" :disabled="tabMode2!=='tab'" @click="tab='claims'">
+        ↩ 연관 클레임
+        <span class="tab-count">{{ cfMemberClaims.length }}</span>
+      </button>
     </div>
     <div class="tab-modes">
       <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
@@ -104,26 +113,24 @@ window.MbMemberHist = {
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
-  <!-- -- 연관 주문 ---------------------------------------------------------- -->
-  <div class="card" v-show="showTab('orders')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></div>
-    <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
-      </template>
-    </bo-grid>
-  </div>
-
-  <!-- -- 연관 클레임 --------------------------------------------------------- -->
-  <div class="card" v-show="showTab('claims')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
-    <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
-      </template>
-    </bo-grid>
-  </div>
+    <!-- -- 연관 주문 ---------------------------------------------------------- -->
+    <div class="card" v-show="showTab('orders')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></div>
+      <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+        <template #row-actions="{ row }">
+          <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
+        </template>
+      </bo-grid>
+    </div>
+    <!-- -- 연관 클레임 --------------------------------------------------------- -->
+    <div class="card" v-show="showTab('claims')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
+      <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+        <template #row-actions="{ row }">
+          <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
+        </template>
+      </bo-grid>
+    </div>
   </div>
 </div>
 `,

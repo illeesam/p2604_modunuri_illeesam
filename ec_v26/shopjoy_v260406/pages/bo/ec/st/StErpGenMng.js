@@ -144,12 +144,10 @@ window.StErpGenMng = {
   <div class="page-desc-bar">
     <span class="page-desc-summary">마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다.
-• 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다.
-• 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다.
-• 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다. • 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다. • 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다. • 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.
+    </div>
   </div>
-
   <!-- -- 생성 설정 ---------------------------------------------------------- -->
   <div class="card">
     <div style="font-weight:700;margin-bottom:12px">전표 생성 설정</div>
@@ -164,23 +162,19 @@ window.StErpGenMng = {
         </div>
       </template>
     </bo-form-area>
-
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div v-if="cfPreviewRows.length" style="margin-top:16px">
       <bo-grid
         :columns="previewGridColumns" :rows="cfPreviewRows"
-        :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'">
-      </bo-grid>
+        :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'"></bo-grid>
     </div>
     <div v-else style="color:#999;margin-top:12px">해당 월의 생성 대상 전표가 없습니다.</div>
   </div>
-
   <!-- -- 생성 이력 ---------------------------------------------------------- -->
   <div class="card" style="margin-top:12px">
     <bo-grid
       :columns="histGridColumns" :rows="genHistory" row-key="genId"
-      list-title="전표생성 이력" :count-text="genHistory.length + '건'">
-    </bo-grid>
+      list-title="전표생성 이력" :count-text="genHistory.length + '건'"></bo-grid>
   </div>
 </div>
 `,

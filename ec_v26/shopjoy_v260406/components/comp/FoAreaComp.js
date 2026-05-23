@@ -170,7 +170,9 @@ window.FoSearchArea = {
   <template v-if="cfAutoMode">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
       <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
-      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">{{ col.label }}</label>
+      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">
+        {{ col.label }}
+      </label>
       <!-- 라벨 텍스트 -->
       <label v-if="col.type==='label'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">{{ col.label }}</label>
       <!-- 슬롯 탈출구 -->
@@ -232,7 +234,8 @@ window.FoSearchArea = {
     <button class="btn-outline btn-sm" @click="onReset">{{ resetLabel }}</button>
     <slot name="actions-after"></slot>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── 공통 헬퍼 (그리드 공유) ────────────────────────────────────────────── */
@@ -420,7 +423,8 @@ window.FoGrid = {
   template: /* html */`
 <div :class="bare ? '' : 'fo-grid-card'">
   <div v-if="!bare" class="fo-grid-toolbar">
-    <span class="fo-grid-title">{{ listTitle }}
+    <span class="fo-grid-title">
+      {{ listTitle }}
       <span class="fo-grid-count">{{ countText != null ? countText : ('총 ' + cfTotal + '건') }}</span>
     </span>
     <div style="margin-left:auto;display:flex;gap:6px;">
@@ -428,7 +432,6 @@ window.FoGrid = {
       <button v-if="showSave" class="btn-blue btn-sm" @click="onSave">{{ saveLabel }}</button>
     </div>
   </div>
-
   <div class="fo-grid-scroll">
     <table class="fo-grid-table" :style="cfTableStyle">
       <thead>
@@ -440,22 +443,26 @@ window.FoGrid = {
           <th v-if="showRowNo" style="width:40px;text-align:center;">번호</th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
-                :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
-                @click="onSort(col)">
+              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
+              @click="onSort(col)">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
-                    :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">{{ sortIcon(col) }}</span>
+                :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
+                {{ sortIcon(col) }}
+              </span>
             </th>
           </slot>
-          <th v-if="rowActions" style="width:44px;text-align:center;"><slot name="head-actions">관리</slot></th>
+          <th v-if="rowActions" style="width:44px;text-align:center;">
+            <slot name="head-actions">관리</slot>
+          </th>
           <slot v-else name="head-actions"></slot>
         </tr>
       </thead>
       <tbody>
         <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
           <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
-              :draggable="draggable" @click="onTrClick(row)"
-              @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+            :draggable="draggable" @click="onTrClick(row)"
+            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
             <td v-if="selectable" style="text-align:center;" @click.stop>
               <input type="checkbox" :checked="fnRowChecked(row)" @change="onToggleCheck(row)" />
             </td>
@@ -465,18 +472,20 @@ window.FoGrid = {
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
                 <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                   <input v-if="col.edit==='text'" class="fo-grid-input" v-model="row[col.key]"
-                         :placeholder="col.placeholder" />
+                    :placeholder="col.placeholder" />
                   <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"
-                         v-model.number="row[col.key]" />
+                    v-model.number="row[col.key]" />
                   <input v-else-if="col.edit==='date'" type="date" class="fo-grid-input"
-                         v-model="row[col.key]" />
+                    v-model="row[col.key]" />
                   <select v-else-if="col.edit==='select'" class="fo-grid-select" v-model="row[col.key]">
                     <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                   </select>
                   <span v-else-if="col.link" class="fo-grid-link" @click="onRowClick(row)">{{ U.cellText(col, row) }}</span>
                   <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
                   <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
-                        :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">{{ U.cellText(col, row) }}</span>
+                    :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
+                    {{ U.cellText(col, row) }}
+                  </span>
                   <template v-else>{{ U.cellText(col, row) }}</template>
                 </td>
               </slot>
@@ -503,13 +512,13 @@ window.FoGrid = {
       </tfoot>
     </table>
   </div>
-
   <div v-if="cfHasPager" class="fo-grid-pager">
     <button :disabled="U.pgNo(pager)===1" @click="onSetPage(Math.max(1, U.pgNo(pager)-1))">‹</button>
     <button v-for="p in cfPageNos" :key="p" :class="{ on: U.pgNo(pager)===p }" @click="onSetPage(p)">{{ p }}</button>
     <button :disabled="U.pgNo(pager)===cfPageNos.length" @click="onSetPage(Math.min(cfPageNos.length, U.pgNo(pager)+1))">›</button>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── FoGridCrud — CRUD 그리드(전체 로드 / 행상태 N·I·U·D) ────────────────── */
@@ -614,9 +623,7 @@ window.FoGridCrud = {
   template: /* html */`
 <div class="fo-grid-card">
   <div class="fo-grid-toolbar">
-    <span class="fo-grid-title">{{ listTitle }}
-      <span class="fo-grid-count">{{ cfVisibleCount }}건</span>
-    </span>
+    <span class="fo-grid-title">{{ listTitle }} <span class="fo-grid-count">{{ cfVisibleCount }}건</span></span>
     <div style="display:flex;gap:6px;margin-left:auto;">
       <slot name="toolbar-actions"></slot>
       <button v-if="showAdd" class="btn-outline btn-sm" @click="onAdd">+ 행추가</button>
@@ -625,7 +632,6 @@ window.FoGridCrud = {
       <button v-if="showSave" class="btn-blue btn-sm" @click="onSave">저장</button>
     </div>
   </div>
-
   <div class="fo-grid-scroll" :style="'max-height:' + maxHeight + ';'">
     <table class="fo-grid-table" :style="cfTableStyle">
       <thead>
@@ -639,11 +645,13 @@ window.FoGridCrud = {
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
-                :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
-                :title="fnColTitle(col)" @click="onSort(col)">
+              :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
+              :title="fnColTitle(col)" @click="onSort(col)">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
-                    :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">{{ sortIcon(col) }}</span>
+                :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
+                {{ sortIcon(col) }}
+              </span>
             </th>
           </slot>
           <th style="width:44px;"></th>
@@ -654,14 +662,16 @@ window.FoGridCrud = {
           <td :colspan="cfEmptyColspan" class="fo-grid-empty">{{ emptyText }}</td>
         </tr>
         <tr v-else v-for="(row, idx) in rows" :key="row[rowKey]"
-            class="fo-grid-clickable" :class="[ 's-row-' + row._row_status, focusedIdx===idx ? 'fo-grid-focused' : '' ]"
-            :draggable="draggable"
-            :style="focusedIdx===idx ? 'outline:2px solid var(--accent) inset;' : ''"
-            @click="onSetFocused(idx)"
-            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+          class="fo-grid-clickable" :class="[ 's-row-' + row._row_status, focusedIdx===idx ? 'fo-grid-focused' : '' ]"
+          :draggable="draggable"
+          :style="focusedIdx===idx ? 'outline:2px solid var(--accent) inset;' : ''"
+          @click="onSetFocused(idx)"
+          @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
           <td v-if="draggable" class="fo-grid-drag" title="드래그로 순서 변경">⠿</td>
           <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">{{ idx + 1 }}</td>
-          <td v-if="showRowId" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">{{ row[rowKey] > 0 ? row[rowKey] : 'NEW' }}</td>
+          <td v-if="showRowId" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">
+            {{ row[rowKey] > 0 ? row[rowKey] : 'NEW' }}
+          </td>
           <td v-if="showRowStatus" style="text-align:center;">
             <span class="fo-grid-status" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
           </td>
@@ -672,17 +682,17 @@ window.FoGridCrud = {
             <slot :name="'cell-' + col.key" :row="row" :idx="idx">
               <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                 <input v-if="col.edit==='text'" class="fo-grid-input" :class="{ 'fo-grid-mono': col.mono }"
-                       v-model="row[col.key]" :disabled="row._row_status==='D'"
-                       :placeholder="col.placeholder" @input="onCellChange(row)" />
+                  v-model="row[col.key]" :disabled="row._row_status==='D'"
+                  :placeholder="col.placeholder" @input="onCellChange(row)" />
                 <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"
-                       v-model.number="row[col.key]" :disabled="row._row_status==='D'"
-                       @input="onCellChange(row)" />
+                  v-model.number="row[col.key]" :disabled="row._row_status==='D'"
+                  @input="onCellChange(row)" />
                 <input v-else-if="col.edit==='date'" type="date" class="fo-grid-input"
-                       v-model="row[col.key]" :disabled="row._row_status==='D'"
-                       @input="onCellChange(row)" />
+                  v-model="row[col.key]" :disabled="row._row_status==='D'"
+                  @input="onCellChange(row)" />
                 <select v-else-if="col.edit==='select'" class="fo-grid-select"
-                        v-model="row[col.key]" :disabled="row._row_status==='D'"
-                        @change="onCellChange(row)">
+                  v-model="row[col.key]" :disabled="row._row_status==='D'"
+                  @change="onCellChange(row)">
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
@@ -697,7 +707,8 @@ window.FoGridCrud = {
       </tbody>
     </table>
   </div>
-</div>`,
+</div>
+`,
 };
 
 /* ── FoModal — 공통 모달 껍데기 (FO .modal-overlay / .modal-box 재사용) ───── */
@@ -744,14 +755,17 @@ window.FoModal = {
         </span>
       </div>
       <div :style="cfBodyStyle">
-        <slot name="body"><slot></slot></slot>
+        <slot name="body">
+          <slot></slot>
+        </slot>
       </div>
       <div v-if="$slots.footer" class="fo-modal-footer">
         <slot name="footer" :confirm="onConfirm" :close="onClose"></slot>
       </div>
     </div>
   </div>
-</teleport>`,
+</teleport>
+`,
 };
 
 /* ── FoRowCancelDelete — FoGridCrud #row-actions 표준 취소/삭제 버튼 묶음 ─────
@@ -789,10 +803,15 @@ window.FoRowCancelDelete = {
   template: /* html */`
 <span>
   <button v-if="cfShowCancel" @click.stop="onCancel"
-    style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">{{ cancelLabel }}</button>
+    style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">
+    {{ cancelLabel }}
+  </button>
   <button v-if="cfShowDelete" @click.stop="onDelete"
-    style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">{{ deleteLabel }}</button>
-</span>`,
+    style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">
+    {{ deleteLabel }}
+  </button>
+</span>
+`,
 };
 
 /* ── FoFormArea ────────────────────────────────────────────────────────────
@@ -861,70 +880,65 @@ window.FoFormArea = {
   template: /* html */`
 <div class="fo-form-area">
   <div v-for="(row, ri) in cfRows" :key="ri"
-       :style="{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax('+minColWidth+',1fr))',gap:gap+'px',marginBottom:gap+'px'}">
+    :style="{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax('+minColWidth+',1fr))',gap:gap+'px',marginBottom:gap+'px'}">
     <div v-for="col in row" :key="col.key"
-         :style="(col.colSpan && col.colSpan>1 ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
+      :style="(col.colSpan && col.colSpan>1 ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
       <!-- 라벨 -->
       <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
-        {{ col.label }}<span v-if="col.required" class="form-required">*</span>
+        {{ col.label }}
+        <span v-if="col.required" class="form-required">*</span>
       </label>
-
       <!-- readonly 표시 -->
       <div v-if="col.type === 'readonly'"
-           style="padding:10px 12px;background:#f9fafb;border-radius:6px;color:#374151;font-size:0.9rem;min-height:38px;display:flex;align-items:center;">{{ dispVal(col) }}</div>
-
+        style="padding:10px 12px;background:#f9fafb;border-radius:6px;color:#374151;font-size:0.9rem;min-height:38px;display:flex;align-items:center;">
+        {{ dispVal(col) }}
+      </div>
       <!-- text/email/tel/password -->
       <input v-else-if="col.type === 'text' || col.type === 'email' || col.type === 'tel' || col.type === 'password'"
-             class="form-input" :type="col.type === 'password' ? 'password' : (col.type === 'email' ? 'email' : (col.type === 'tel' ? 'tel' : 'text'))"
-             v-model="form[col.key]" :placeholder="col.placeholder"
-             :readonly="col.readonly"
-             :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
-             :class="errors[col.key] ? 'is-invalid' : ''"
-             @input="onChange(col, $event)" />
-
+        class="form-input" :type="col.type === 'password' ? 'password' : (col.type === 'email' ? 'email' : (col.type === 'tel' ? 'tel' : 'text'))"
+        v-model="form[col.key]" :placeholder="col.placeholder"
+        :readonly="col.readonly"
+        :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="onChange(col, $event)" />
       <!-- number -->
       <input v-else-if="col.type === 'number'" class="form-input" type="number"
-             v-model.number="form[col.key]" :placeholder="col.placeholder"
-             :readonly="col.readonly" :min="col.min" :max="col.max"
-             :style="col.readonly ? 'background:#f5f5f5;' : ''"
-             :class="errors[col.key] ? 'is-invalid' : ''"
-             @input="onChange(col, $event)" />
-
+        v-model.number="form[col.key]" :placeholder="col.placeholder"
+        :readonly="col.readonly" :min="col.min" :max="col.max"
+        :style="col.readonly ? 'background:#f5f5f5;' : ''"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="onChange(col, $event)" />
       <!-- date -->
       <input v-else-if="col.type === 'date'" class="form-input" type="date"
-             v-model="form[col.key]" :readonly="col.readonly"
-             :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
-
+        v-model="form[col.key]" :readonly="col.readonly"
+        :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
       <!-- textarea -->
       <textarea v-else-if="col.type === 'textarea'" class="form-input"
-                v-model="form[col.key]" :placeholder="col.placeholder"
-                :readonly="col.readonly" :rows="col.rows || 5"
-                :class="errors[col.key] ? 'is-invalid' : ''"
-                @input="onChange(col, $event)"></textarea>
-
+        v-model="form[col.key]" :placeholder="col.placeholder"
+        :readonly="col.readonly" :rows="col.rows || 5"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @input="onChange(col, $event)"></textarea>
       <!-- select -->
       <select v-else-if="col.type === 'select'" class="form-input"
-              v-model="form[col.key]" :disabled="col.readonly"
-              :class="errors[col.key] ? 'is-invalid' : ''"
-              @change="onChange(col, $event)">
+        v-model="form[col.key]" :disabled="col.readonly"
+        :class="errors[col.key] ? 'is-invalid' : ''"
+        @change="onChange(col, $event)">
         <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '선택해주세요' }}</option>
         <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
-
       <!-- slot 탈출구 -->
       <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col"></slot>
-
       <!-- 에러 메시지 / 힌트 -->
       <div v-if="errors[col.key]" class="form-error">{{ errors[col.key] }}</div>
       <div v-else-if="col.hint" style="font-size:11px;color:#888;margin-top:4px;">{{ col.hint }}</div>
     </div>
   </div>
-
   <!-- 폼 액션 버튼 (옵션) -->
   <div v-if="showActions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
     <slot name="actions-before"></slot>
     <button class="btn-blue" @click="onSubmit" style="padding:13px 24px;">{{ submitLabel }}</button>
     <slot name="actions-after"></slot>
   </div>
-</div>`,
+</div>
+`,
 };

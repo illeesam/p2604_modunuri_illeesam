@@ -235,7 +235,10 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
   },
   template: /* html */`
 <div>
-  <div class="page-title">{{ cfIsNew ? '사은품 등록' : '사은품 수정' }}<span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.giftId }}</span></div>
+  <div class="page-title">
+    {{ cfIsNew ? '사은품 등록' : '사은품 수정' }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.giftId }}</span>
+  </div>
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
@@ -251,13 +254,11 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-
     <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfIsView" :cols="2" :show-actions="false">
-
         <!-- 판매업체 picker -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -265,20 +266,22 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
               <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
               <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">초기화</button>
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">
+              초기화
+            </button>
           </div>
         </template>
       </bo-form-area>
-
       <!-- 판매업체 선택 모달 -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
       <div class="form-actions" v-if="!cfIsView">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
         <button class="btn btn-secondary" @click="navigate('pmGiftMng')">취소</button>
       </div>
     </div>
-
     <!-- -- 공개대상 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('visibility')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
@@ -291,11 +294,12 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
         </label>
       </div>
       <div class="form-actions" v-if="!cfIsView">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">저장</button>
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleSave">
+          저장
+        </button>
         <button class="btn btn-secondary" @click="navigate('pmGiftMng')">취소</button>
       </div>
     </div>
-
     <!-- -- 미리보기 --------------------------------------------------------- -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
@@ -303,9 +307,20 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">🎁 {{ form.giftNm || '사은품명' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
         <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #f59e0b;">
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">조건: <span style="font-weight:700;color:#f59e0b;">{{ form.giftTypeCd }}</span></div>
-          <div v-if="form.giftTypeCd !== '무조건'" style="font-size:13px;color:#666;margin-bottom:4px;">조건값: <span style="font-weight:700;">{{ form.giftTypeCd === '금액조건' ? (form.condVal||0).toLocaleString() + '원↑' : form.giftTypeCd === '수량조건' ? (form.condVal||0) + '개↑' : form.condVal||0 }}</span></div>
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">재고: <span style="font-weight:700;">{{ (form.giftStock||0).toLocaleString() }}개</span></div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            조건:
+            <span style="font-weight:700;color:#f59e0b;">{{ form.giftTypeCd }}</span>
+          </div>
+          <div v-if="form.giftTypeCd !== '무조건'" style="font-size:13px;color:#666;margin-bottom:4px;">
+            조건값:
+            <span style="font-weight:700;">
+              {{ form.giftTypeCd === '금액조건' ? (form.condVal||0).toLocaleString() + '원↑' : form.giftTypeCd === '수량조건' ? (form.condVal||0) + '개↑' : form.condVal||0 }}
+            </span>
+          </div>
+          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+            재고:
+            <span style="font-weight:700;">{{ (form.giftStock||0).toLocaleString() }}개</span>
+          </div>
           <div style="font-size:13px;color:#666;">상태: <span style="font-weight:700;">{{ form.giftStatusCd }}</span></div>
         </div>
         <button class="btn btn-primary" @click="showToast('사은품을 확인하였습니다.', 'success')">사은품 확인</button>

@@ -249,10 +249,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="page-desc-bar">
     <span class="page-desc-summary">수집원장 데이터에 업체별 추가·차감 조정 항목을 입력하여 최종 정산액을 보정합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">• 조정 유형: 추가(+) / 차감(-) / 위약금 / 프로모션 분담금 등
-• 조정 항목은 담당자 승인 후 정산마감에 반영됩니다.
-• 승인 상태: 대기 / 승인 / 반려
-• 마감 완료된 기간의 조정은 재오픈 후 처리해야 합니다.</div>
+    <div v-if="uiState.descOpen" class="page-desc-detail">
+      • 조정 유형: 추가(+) / 차감(-) / 위약금 / 프로모션 분담금 등 • 조정 항목은 담당자 승인 후 정산마감에 반영됩니다. • 승인 상태: 대기 / 승인 / 반려 • 마감 완료된 기간의 조정은 재오픈 후 처리해야 합니다.
+    </div>
   </div>
   <div class="card">
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
@@ -260,7 +259,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
       <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      <div style="margin-left:auto"><button class="btn btn-primary" @click="openNew">+ 조정 추가</button></div>
+      <div style="margin-left:auto">
+        <button class="btn btn-primary" @click="openNew">+ 조정 추가</button>
+      </div>
     </div>
     <bo-grid
       :columns="baseGridColumns" :rows="adjList" :pager="pager" row-key="adjId"
@@ -275,7 +276,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </template>
     </bo-grid>
   </div>
-
   <!-- 편집 폼 (BoFormArea 자동 렌더) -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '조정 추가' : '조정 수정' }}</div>
