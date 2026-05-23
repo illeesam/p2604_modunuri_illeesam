@@ -210,22 +210,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'alarmTitle', label: '제목' },
           { value: 'alarmMsg',   label: '메시지' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', options: () => codes.alarm_type, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.alarm_status, nullLabel: '상태 전체' },
-      { type: 'label', label: '발송일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', label: '유형', options: () => codes.alarm_type, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.alarm_status, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '발송일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.alarm_type, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.alarm_status, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

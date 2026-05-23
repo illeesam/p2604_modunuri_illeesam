@@ -171,14 +171,14 @@ window.XsSample08 = {
     /* fo-grid-crud 컬럼 */
     /* FoSearchArea :columns 자동 렌더 정의 */
     const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'categoryNm', label: '카테고리명' },
           { value: 'parentNm',   label: '상위명' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
-      { key: 'searchValue', type: 'text',   placeholder: '검색어 입력', width: '200px' },
-      { key: 'useYn',       type: 'select', options: () => codes.use_yn_opts, nullLabel: '사용여부 전체' },
+      { key: 'searchValue', type: 'text',   label: '검색어', placeholder: '검색어 입력', width: '200px' },
+      { key: 'useYn',       type: 'select', label: '사용여부', options: () => codes.use_yn_opts, nullLabel: '사용여부 전체' },
     ];
 
     const baseGridColumns = [

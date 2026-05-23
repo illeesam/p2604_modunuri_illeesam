@@ -201,20 +201,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
         const baseSearchColumns = [
-      { type: 'label', label: '제목/작성자' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
             { value: 'blogTitle',  label: '제목' },
             { value: 'blogAuthor', label: '작성자' },
           ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { type: 'label', label: '공개여부' },
-      { key: 'use', type: 'select', options: () => codes.open_yn_opts, nullLabel: '전체' },
-      { type: 'label', label: '공지여부' },
-      { key: 'notice', type: 'select', options: () => codes.notice_yn_opts, nullLabel: '전체' },
-      { key: 'use', type: 'select', options: () => codes.open_yn_opts, nullLabel: '전체' },
-      { key: 'notice', type: 'select', options: () => codes.notice_yn_opts, nullLabel: '전체' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'use', type: 'select', label: '공개여부', options: () => codes.open_yn_opts, nullLabel: '전체' },
+      { key: 'notice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
     ];
 
     const listGridColumns = [

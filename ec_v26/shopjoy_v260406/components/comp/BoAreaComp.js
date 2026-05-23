@@ -162,6 +162,8 @@ window.BoSearchArea = {
 <div class="search-bar" :style="barStyle" @keyup.enter="onSearch">
   <template v-if="columns && param">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
+      <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
+      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" class="search-label">{{ col.label }}</label>
       <!-- 라벨 텍스트 -->
       <label v-if="col.type==='label'" class="search-label">{{ col.label }}</label>
       <!-- 슬롯 탈출구 -->

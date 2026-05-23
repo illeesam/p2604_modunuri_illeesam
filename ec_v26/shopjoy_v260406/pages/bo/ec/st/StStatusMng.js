@@ -425,29 +425,29 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* 검색바 :columns 자동 렌더 정의 — 모두 uiState 공유 */
     const dateSearchColumns = [
-      { key: 'dateRange', type: 'select', options: () => codes.date_range_opts,
+      { key: 'dateRange', label: '기간', type: 'select', options: () => codes.date_range_opts,
         nullLabel: '기간 선택', onChange: () => onDateRangeChange() },
       { key: 'dateStart', type: 'date' },
       { type: 'label', label: '~' },
       { key: 'dateEnd',   type: 'date' },
     ];
     const vendorSearchColumns = [
-      { key: 'vendorSearchValue', type: 'text', placeholder: '업체명 검색', width: '200px' },
+      { key: 'vendorSearchValue', label: '업체', type: 'text', placeholder: '업체명 검색', width: '200px' },
     ];
     const orderSearchColumns = [
-      { key: 'orderSearchValue',  type: 'text',   placeholder: '주문ID / 고객명 / 상품명', width: '220px' },
-      { key: 'orderSearchStatus', type: 'select', options: () => codes.st_order_statuses,  nullLabel: '상태 전체' },
+      { key: 'orderSearchValue',  label: '검색어', type: 'text',   placeholder: '주문ID / 고객명 / 상품명', width: '220px' },
+      { key: 'orderSearchStatus', label: '상태', type: 'select', options: () => codes.st_order_statuses,  nullLabel: '상태 전체' },
     ];
     const claimSearchColumns = [
-      { key: 'claimSearchType',   type: 'select', options: () => codes.claim_types_kr,    nullLabel: '유형 전체' },
-      { key: 'claimSearchStatus', type: 'select', options: () => codes.claim_statuses_kr, nullLabel: '상태 전체' },
+      { key: 'claimSearchType',   label: '유형', type: 'select', options: () => codes.claim_types_kr,    nullLabel: '유형 전체' },
+      { key: 'claimSearchStatus', label: '상태', type: 'select', options: () => codes.claim_statuses_kr, nullLabel: '상태 전체' },
     ];
     const promoSearchColumns = [
-      { key: 'promoSearchType',  type: 'select', options: () => codes.promo_types_kr, nullLabel: '유형 전체' },
-      { key: 'promoSearchValue', type: 'text',   placeholder: '프로모션명 검색', width: '180px' },
+      { key: 'promoSearchType',  label: '유형', type: 'select', options: () => codes.promo_types_kr, nullLabel: '유형 전체' },
+      { key: 'promoSearchValue', label: '검색어', type: 'text',   placeholder: '프로모션명 검색', width: '180px' },
     ];
     const settleSearchColumns = [
-      { key: 'settleSearchMonth', type: 'text', placeholder: '월 검색 (예: 2026-04)', width: '180px' },
+      { key: 'settleSearchMonth', label: '정산월', type: 'text', placeholder: '월 검색 (예: 2026-04)', width: '180px' },
     ];
 
     return {

@@ -171,23 +171,20 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
 
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'vendorNm', label: '업체명' },
           { value: 'corpNo',   label: '사업자번호' },
           { value: 'vendorId', label: '업체ID' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.vendor_status, nullLabel: '상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', label: '유형', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.vendor_status, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.vendor_status, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

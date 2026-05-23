@@ -144,8 +144,7 @@ window.DpDispRelationMng = {
     // -- return ---------------------------------------------------------------
 
     const baseSearchColumns = [
-      { type: 'label', label: '등록기간' },
-      { key: 'dateStart_range', type: 'dateRange', startKey: 'dateStart', endKey: 'dateEnd' },
+      { key: 'dateStart_range', type: 'dateRange', label: '등록기간', startKey: 'dateStart', endKey: 'dateEnd' },
     ];
 
     return {

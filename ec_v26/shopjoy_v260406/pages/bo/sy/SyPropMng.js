@@ -169,7 +169,7 @@ window.SyPropMng = {
 
     /* BoGridCrud 컬럼 정의 (헤더는 label/style/cls 로 자동 생성, 특수셀은 #cell-{key} 슬롯 override) */
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'pathId',    label: '표시경로' },
           { value: 'propKey',   label: '키' },
@@ -177,9 +177,9 @@ window.SyPropMng = {
           { value: 'propLabel', label: '라벨' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '420px' },
-      { key: 'typeFlt', type: 'select', options: () => codes.prop_types, nullLabel: '전체 타입' },
-      { key: 'useFlt', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '420px' },
+      { key: 'typeFlt', type: 'select', label: '타입', options: () => codes.prop_types, nullLabel: '전체 타입' },
+      { key: 'useFlt', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
     const baseGridColumns = [

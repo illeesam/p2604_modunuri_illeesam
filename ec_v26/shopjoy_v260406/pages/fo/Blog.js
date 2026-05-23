@@ -94,7 +94,7 @@ window.Blog = {
 
     /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 입력 */
     const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '검색어를 입력하세요...' },
+      { key: 'searchValue', type: 'text', label: '검색', placeholder: '검색어를 입력하세요...' },
     ];
 
     return { pager, setPage, onSizeChange, searchParam, baseSearchColumns, categories, posts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };

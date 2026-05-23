@@ -82,14 +82,14 @@ window.StSettleCloseMng = {
 
     /* 검색바 :columns 자동 렌더 정의 */
     const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
           { value: 'closeMon',  label: '정산월' },
           { value: 'regUserNm', label: '담당자' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
-      { key: 'searchStatus', type: 'select', options: () => codes.settle_close_statuses, nullLabel: '상태 전체' },
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
+      { key: 'searchStatus', label: '상태', type: 'select', options: () => codes.settle_close_statuses, nullLabel: '상태 전체' },
     ];
 
     const closeList = reactive([]);

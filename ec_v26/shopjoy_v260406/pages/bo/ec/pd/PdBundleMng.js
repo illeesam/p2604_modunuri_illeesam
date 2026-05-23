@@ -430,8 +430,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* 묶음상품 목록 그리드 컬럼 (모든 셀 커스텀 → #cell 슬롯, 헤더만 정의) */
         const baseSearchColumns = [
-      { type: 'label', label: '묶음상품명' },
-      { key: 'nm', type: 'text', placeholder: '묶음상품명 검색', width: '320px' },
+      { key: 'nm', label: '묶음상품명', type: 'text', placeholder: '묶음상품명 검색', width: '320px' },
     ];
 
     const bundleGridColumns = [

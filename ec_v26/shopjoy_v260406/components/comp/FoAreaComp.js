@@ -169,6 +169,8 @@ window.FoSearchArea = {
 <div :style="'display:flex;flex-wrap:wrap;gap:10px;align-items:center;'+barStyle" @keyup.enter="onSearch">
   <template v-if="cfAutoMode">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
+      <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
+      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">{{ col.label }}</label>
       <!-- 라벨 텍스트 -->
       <label v-if="col.type==='label'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">{{ col.label }}</label>
       <!-- 슬롯 탈출구 -->

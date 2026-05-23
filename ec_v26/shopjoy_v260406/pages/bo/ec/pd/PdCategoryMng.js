@@ -374,16 +374,12 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     // -- return ---------------------------------------------------------------
 
     const baseSearchColumns = [
-      { type: 'label', label: '사이트 *' },
-      { key: 'siteId', type: 'select', nullable: false,
+      { key: 'siteId', label: '사이트 *', type: 'select', nullable: false,
         options: () => sites.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
         onChange: () => onSiteChange() },
-      { type: 'label', label: '카테고리명' },
-      { key: 'searchValue', type: 'text', placeholder: '카테고리명 검색' },
-      { type: 'label', label: '단계' },
-      { key: 'categoryDepth', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
-      { type: 'label', label: '상태' },
-      { key: 'categoryStatusCd', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
+      { key: 'searchValue', label: '카테고리명', type: 'text', placeholder: '카테고리명 검색' },
+      { key: 'categoryDepth', label: '단계', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
+      { key: 'categoryStatusCd', label: '상태', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
     ];
 
     return {

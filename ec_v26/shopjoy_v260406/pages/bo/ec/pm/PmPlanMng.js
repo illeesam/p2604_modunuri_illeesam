@@ -182,11 +182,10 @@ const CATEGORIES = [
     // -- return ---------------------------------------------------------------
 
     const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '기획전명 검색' },
-      { key: 'category', type: 'select', options: () => CATEGORIES.slice(1), nullLabel: '카테고리 전체' },
-      { key: 'status',   type: 'select', options: () => codes.plan_statuses, nullLabel: '상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '기획전명', placeholder: '기획전명 검색' },
+      { key: 'category', type: 'select', label: '카테고리', options: () => CATEGORIES.slice(1), nullLabel: '카테고리 전체' },
+      { key: 'status',   type: 'select', label: '상태', options: () => codes.plan_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },

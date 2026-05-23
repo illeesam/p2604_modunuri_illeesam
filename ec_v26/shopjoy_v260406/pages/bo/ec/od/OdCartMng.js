@@ -115,16 +115,13 @@ window.OdCartMng = {
       uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : '';
 
     const baseSearchColumns = [
-      { type: 'label', label: '사이트' },
-      { key: 'siteId', type: 'select',
+      { key: 'siteId', type: 'select', label: '사이트',
         options: () => codes.sites.map(s => ({ value: s.siteId, label: s.siteNm })),
         nullLabel: '전체' },
-      { type: 'label', label: '회원' },
-      { key: 'memberId', type: 'pick', nameKey: 'memberNm',
+      { key: 'memberId', type: 'pick', label: '회원', nameKey: 'memberNm',
         display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택', width: '160px',
         onOpen: () => openMemberPick(), onClear: () => onClearMember() },
-      { type: 'label', label: '검색' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'memberNm', label: '회원명' },
           { value: 'memberId', label: '회원ID' },
@@ -132,9 +129,8 @@ window.OdCartMng = {
           { value: 'prodNm',   label: '상품명' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
-      { type: 'label', label: '기간' },
-      { key: '_dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '180px' },
+      { key: '_dateRange', type: 'dateRange', label: '기간',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.cart_date_types,
         dateWidth: '136px' },

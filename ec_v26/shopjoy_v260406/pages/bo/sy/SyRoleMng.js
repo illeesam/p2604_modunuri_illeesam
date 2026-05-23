@@ -560,15 +560,15 @@ window.SyRoleMng = {
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'roleCode', label: '역할코드' },
           { value: 'roleNm',   label: '역할명' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'cat', type: 'select', options: () => codes.role_cats, nullLabel: '역할구분 전체' },
-      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'cat', type: 'select', label: '역할구분', options: () => codes.role_cats, nullLabel: '역할구분 전체' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
     const baseGridColumns = [

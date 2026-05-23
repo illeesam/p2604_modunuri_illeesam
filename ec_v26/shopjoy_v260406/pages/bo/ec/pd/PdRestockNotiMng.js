@@ -130,10 +130,8 @@ window.PdRestockNotiMng = {
     /* AG-Grid 식 컬럼 정의 — width/align 등 헤더·셀 속성을 컬럼 객체에 선언.
        체크박스 열은 BoGrid 의 selectable 기능이 자동 렌더하므로 컬럼에서 제외. */
         const baseSearchColumns = [
-      { type: 'label', label: '상품명' },
-      { key: 'prod', type: 'text', placeholder: '상품명 검색' },
-      { type: 'label', label: '알림발송' },
-      { key: 'noti', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
+      { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
+      { key: 'noti', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

@@ -226,22 +226,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'bbsTitle', label: '제목' },
           { value: 'authorNm', label: '작성자' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'bbmId', type: 'select', options: () => cfBbmOptions, nullLabel: '게시판 전체' },
-      { key: 'status', type: 'select', options: () => codes.bbs_post_statuses, nullLabel: '상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'bbmId', type: 'select', label: '게시판', options: () => cfBbmOptions.value, nullLabel: '게시판 전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.bbs_post_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'bbmId', type: 'select', options: () => codes.cfBbmOptions, nullLabel: '게시판 전체' },
-      { key: 'status', type: 'select', options: () => codes.bbs_post_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

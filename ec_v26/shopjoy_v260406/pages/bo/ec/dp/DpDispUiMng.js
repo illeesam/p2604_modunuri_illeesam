@@ -140,10 +140,8 @@ window.DpDispUiMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
         const baseSearchColumns = [
-      { type: 'label', label: '키워드' },
-      { key: 'searchValue', type: 'text', placeholder: 'UI명 검색', width: '200px' },
-      { type: 'label', label: '사용여부' },
-      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'searchValue', type: 'text', label: '키워드', placeholder: 'UI명 검색', width: '200px' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     const listGridColumns = [

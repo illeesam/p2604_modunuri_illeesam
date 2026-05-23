@@ -221,30 +221,28 @@ window.SyApiLogMng = {
 
     /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
     const baseSearchColumns = [
-      { type: 'label', label: '등록기간' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'dateRange', type: 'dateRange', label: '등록기간',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => onDateRangeChange() },
-      { key: 'searchMethod', type: 'select',
+      { key: 'searchMethod', type: 'select', label: '메서드',
         options: () => codes.http_methods, nullLabel: '메서드 전체' },
-      { key: 'searchPath', type: 'text',
+      { key: 'searchPath', type: 'text', label: 'API 경로',
         placeholder: 'API 경로 (예: /bo/sy/)', width: '190px' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [{ value: 'reqIp', label: 'IP' }, { value: 'userId', label: '사용자ID' }],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
-      { key: 'searchValue', type: 'text',
+      { key: 'searchValue', type: 'text', label: '검색어',
         placeholder: '검색어 입력', width: '150px' },
     ];
 
     /* 펼침 영역(srchOpen=true) 두번째 BoSearchArea 용 columns */
     const moreSearchColumns = [
-      { key: 'searchStatus',    type: 'text',   placeholder: '상태코드 (예: 500)', width: '150px' },
-      { key: 'searchAppTypeCd', type: 'select', options: () => codes.app_types, nullLabel: '앱유형 전체' },
-      { type: 'label', label: 'x-헤더' },
-      { key: 'searchUiNm',      type: 'text',   placeholder: '화면명 (x-ui-nm)', width: '170px' },
-      { key: 'searchTraceId',   type: 'text',   placeholder: 'Trace ID',         width: '200px' },
+      { key: 'searchStatus',    type: 'text',   label: '상태코드', placeholder: '상태코드 (예: 500)', width: '150px' },
+      { key: 'searchAppTypeCd', type: 'select', label: '앱유형', options: () => codes.app_types, nullLabel: '앱유형 전체' },
+      { key: 'searchUiNm',      type: 'text',   label: 'x-헤더 화면명', placeholder: '화면명 (x-ui-nm)', width: '170px' },
+      { key: 'searchTraceId',   type: 'text',   label: 'Trace ID',  placeholder: 'Trace ID',         width: '200px' },
     ];
 
     const accessGridColumns = [

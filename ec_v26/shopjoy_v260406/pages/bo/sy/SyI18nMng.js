@@ -142,20 +142,15 @@ window.SyI18nMng = {
 
     /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
-      { type: 'label', label: '키/설명' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
             { value: 'i18nKey',  label: '키' },
             { value: 'i18nDesc', label: '설명' },
           ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { type: 'label', label: '범위' },
-      { key: 'scope', type: 'select', options: () => codes.i18n_scopes, nullLabel: '전체' },
-      { type: 'label', label: '사용여부' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
-      { key: 'scope', type: 'select', options: () => codes.i18n_scopes, nullLabel: '전체' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'scope', type: 'select', label: '범위', options: () => codes.i18n_scopes, nullLabel: '전체' },
+      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

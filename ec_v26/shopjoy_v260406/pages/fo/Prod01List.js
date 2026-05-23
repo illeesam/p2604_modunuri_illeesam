@@ -239,7 +239,7 @@ window.Prod01List = {
 
     /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 input 만 자동, 필터/조회는 default slot */
     const baseSearchColumns = [
-      { key: 'searchText', type: 'text', placeholder: '상품명, 태그 검색...' },
+      { key: 'searchText', type: 'text', label: '상품명', placeholder: '상품명, 태그 검색...' },
     ];
 
     return { pager,

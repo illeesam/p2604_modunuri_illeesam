@@ -289,22 +289,19 @@ window.SyBatchMng = {
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'batchNm',   label: '배치명' },
           { value: 'batchCode', label: '배치코드' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'status', type: 'select', options: () => codes.active_statuses, nullLabel: '활성여부 전체' },
-      { key: 'runStatus', type: 'select', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'status', type: 'select', label: '활성여부', options: () => codes.active_statuses, nullLabel: '활성여부 전체' },
+      { key: 'runStatus', type: 'select', label: '실행상태', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'status', type: 'select', options: () => codes.active_statuses, nullLabel: '활성여부 전체' },
-      { key: 'runStatus', type: 'select', options: () => codes.batch_run_statuses, nullLabel: '실행상태 전체' },
     ];
 
     const baseGridColumns = [

@@ -398,7 +398,7 @@ window.OdClaimMng = {
 
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'claimId',  label: '클레임ID' },
           { value: 'orderId',  label: '주문ID' },
@@ -407,14 +407,13 @@ window.OdClaimMng = {
           { value: 'loginId',  label: '로그인ID' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { type: 'label', label: '회원' },
-      { key: 'memberId', type: 'pick', nameKey: 'memberNm',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'memberId', type: 'pick', label: '회원', nameKey: 'memberNm',
         display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택',
         onOpen: () => openMemberPick(), onClear: () => onClearMember() },
-      { key: 'type', type: 'select', options: () => codes.claim_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.claim_statuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'type', type: 'select', label: '유형', options: () => codes.claim_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.claim_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '신청일',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.claim_date_types,
         rangeOptions: () => codes.date_range_opts,

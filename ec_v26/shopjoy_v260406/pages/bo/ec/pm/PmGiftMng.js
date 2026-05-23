@@ -196,22 +196,19 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'giftNm', label: '사은품명' },
           { value: 'giftId', label: 'ID' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
-      { type: 'label', label: '시작일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', label: '유형', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '시작일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
     ];
 
     // ===== 그리드 컬럼 정의 (BoGrid :columns) ==============================

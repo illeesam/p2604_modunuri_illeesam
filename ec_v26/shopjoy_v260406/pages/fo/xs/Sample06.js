@@ -163,9 +163,9 @@ window.XsSample06 = {
 
     /* FoSearchArea :columns 자동 렌더 정의 */
     const baseSearchColumns = [
-      { key: 'searchValue',  type: 'text',   placeholder: '쿠폰명 검색', width: '180px' },
-      { key: 'discountType', type: 'select', options: () => codes.discnt_type_opts, nullLabel: '할인유형 전체' },
-      { key: 'useYn',        type: 'select', options: () => codes.use_yn_opts,      nullLabel: '사용여부 전체' },
+      { key: 'searchValue',  type: 'text',   label: '쿠폰명', placeholder: '쿠폰명 검색', width: '180px' },
+      { key: 'discountType', type: 'select', label: '할인유형', options: () => codes.discnt_type_opts, nullLabel: '할인유형 전체' },
+      { key: 'useYn',        type: 'select', label: '사용여부', options: () => codes.use_yn_opts,      nullLabel: '사용여부 전체' },
     ];
 
     /* fo-grid-crud 컬럼 */

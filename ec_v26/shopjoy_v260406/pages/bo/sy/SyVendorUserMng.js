@@ -472,21 +472,20 @@ window.SyVendorUserMng = {
     // -- return ---------------------------------------------------------------
 
     const baseSearchColumns = [
-      { type: 'label', label: '업체' },
-      { key: 'searchVendorId', type: 'pick',
+      { key: 'searchVendorId', type: 'pick', label: '업체',
         display: (p) => p.searchVendorId != null ? fnVendorSummary(p.searchVendorId) : '',
         placeholder: '업체 선택...', width: '300px',
         onOpen: () => { uiState.vendorPickOpen = true; },
         onClear: () => { uiState.searchVendorId = null; vendorUsers.splice(0); } },
-      { key: 'bizSearchType', type: 'multiCheck',
+      { key: 'bizSearchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'vendorNm', label: '업체명' },
           { value: 'corpNo',   label: '사업자번호' },
           { value: 'vendorId', label: '업체ID' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'bizSearchValue', type: 'text', placeholder: '검색어 입력', width: '200px' },
-      { key: 'bizVendorFlt', type: 'select',
+      { key: 'bizSearchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '200px' },
+      { key: 'bizVendorFlt', type: 'select', label: '업체유형',
         options: () => codes.vendor_types.map(v => ({ value: v[0], label: v[1] })),
         nullLabel: '업체유형 전체' },
     ];

@@ -81,6 +81,8 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 
 /* ── CRUD 그리드 ── */
 .crud-grid td { padding: 4px 6px; vertical-align: middle; }
+/* 스크롤 시 헤더 고정 */
+.crud-grid thead th { position: sticky; top: 0; z-index: 2; background: #fafafa; }
 .crud-grid .col-drag  { width: 28px; }
 .crud-grid .col-id    { width: 46px; }
 .crud-grid .col-status{ width: 38px; text-align: center; }

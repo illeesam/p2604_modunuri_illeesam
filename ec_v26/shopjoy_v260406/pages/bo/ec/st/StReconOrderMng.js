@@ -107,17 +107,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
     const baseSearchColumns = [
-      { key: 'dateRange', type: 'dateRange', paramObj: uiState,
+      { key: 'dateRange', label: '주문일', type: 'dateRange', paramObj: uiState,
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px',
         sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'diff', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'diff', label: '대사결과', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
+      { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [{ value: 'orderId', label: '주문ID' }, { value: 'custNm', label: '고객명' }],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
     ];
 
     const baseGridColumns = [

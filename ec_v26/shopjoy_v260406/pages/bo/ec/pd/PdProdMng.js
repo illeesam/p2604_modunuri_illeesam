@@ -206,7 +206,7 @@ window.PdProdMng = {
     // -- return ---------------------------------------------------------------
 
     const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
           { value: 'prodId',   label: '상품ID' },
           { value: 'prodNm',   label: '상품명' },
@@ -214,12 +214,12 @@ window.PdProdMng = {
           { value: 'brandNm',  label: '브랜드명' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'cate', type: 'pick',
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력' },
+      { key: 'cate', label: '카테고리', type: 'pick',
         display: (p) => p.cate, placeholder: '카테고리 선택', width: '120px',
         openLabel: '선택', onOpen: () => openCatModal(), onClear: () => clearCate() },
-      { key: 'status', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'status', label: '상태', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', label: '등록일', type: 'dateRange',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.prod_date_types,
         rangeOptions: () => codes.date_range_opts,

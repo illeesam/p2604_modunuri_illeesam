@@ -191,12 +191,9 @@ window.PdDlivTmpltMng = {
 
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
     const baseSearchColumns = [
-      { type: 'label', label: '템플릿명' },
-      { key: 'searchValue', type: 'text', placeholder: '템플릿명 검색' },
-      { type: 'label', label: '배송방법' },
-      { key: 'method', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
-      { type: 'label', label: '사용여부' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'searchValue', label: '템플릿명', type: 'text', placeholder: '템플릿명 검색' },
+      { key: 'method', label: '배송방법', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
+      { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // ===== 그리드 컬럼 정의 (BoGrid :columns) ==============================

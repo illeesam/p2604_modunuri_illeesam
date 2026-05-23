@@ -196,21 +196,19 @@ window.PmCacheMng = {
 
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'memberNm', label: '회원명' },
           { value: 'memberId', label: '회원ID' },
           { value: 'cacheDesc',   label: '내용' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', options: () => codes.cache_trans_types, nullLabel: '유형 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', label: '유형', options: () => codes.cache_trans_types, nullLabel: '유형 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.cache_trans_types, nullLabel: '유형 전체' },
     ];
 
     // ===== 그리드 컬럼 정의 (BoGrid :columns) ==============================

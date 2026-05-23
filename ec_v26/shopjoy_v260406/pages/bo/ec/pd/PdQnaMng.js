@@ -115,11 +115,8 @@ const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTot
     // -- return ---------------------------------------------------------------
 
         const baseSearchColumns = [
-      { type: 'label', label: '키워드' },
-      { key: 'searchValue', type: 'text', placeholder: '제목 검색' },
-      { type: 'label', label: '상태' },
-      { key: 'status', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
-      { key: 'status', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
+      { key: 'searchValue', label: '키워드', type: 'text', placeholder: '제목 검색' },
+      { key: 'status', label: '상태', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

@@ -203,23 +203,20 @@ const detailModal = reactive({
     });
 
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'siteCode',   label: '사이트코드' },
           { value: 'siteNm',     label: '사이트명' },
           { value: 'siteDomain', label: '도메인' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', options: () => cfTypeOptions, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.site_oper_statuses, nullLabel: '상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'type', type: 'select', label: '유형', options: () => cfTypeOptions.value, nullLabel: '유형 전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.site_oper_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.cfTypeOptions, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.site_oper_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

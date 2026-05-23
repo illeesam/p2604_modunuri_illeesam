@@ -19,17 +19,14 @@ window.MbMemGradeMng = {
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
         const baseSearchColumns = [
-      { type: 'label', label: '등급명/코드' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'gradeNm', label: '등급명' },
           { value: 'gradeCd', label: '코드' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { type: 'label', label: '사용여부' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

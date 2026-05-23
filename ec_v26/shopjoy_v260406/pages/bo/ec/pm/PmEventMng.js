@@ -173,15 +173,12 @@ window.PmEventMng = {
     // -- return ---------------------------------------------------------------
 
         const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '이벤트 제목 검색' },
-      { key: 'status', type: 'text', placeholder: '이벤트 제목 검색' },
-      { key: 'status', type: 'select', options: () => codes.event_statuses, nullLabel: '상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '이벤트 제목', placeholder: '이벤트 제목 검색' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
-      { key: 'status', type: 'select', options: () => codes.event_statuses, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

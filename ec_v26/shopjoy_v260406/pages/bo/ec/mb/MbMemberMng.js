@@ -225,20 +225,15 @@ window.MbMemberMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
         const baseSearchColumns = [
-      { type: 'label', label: '이름/이메일/ID' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'memberNm', label: '이름' },
           { value: 'loginId',  label: '이메일' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { type: 'label', label: '등급' },
-      { key: 'grade', type: 'select', options: () => codes.member_grades, nullLabel: '전체' },
-      { type: 'label', label: '상태' },
-      { key: 'status', type: 'select', options: () => codes.member_statuses, nullLabel: '전체' },
-      { key: 'grade', type: 'select', options: () => codes.member_grades, nullLabel: '전체' },
-      { key: 'status', type: 'select', options: () => codes.member_statuses, nullLabel: '전체' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'grade', type: 'select', label: '등급', options: () => codes.member_grades, nullLabel: '전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.member_statuses, nullLabel: '전체' },
     ];
 
     const listGridColumns = [

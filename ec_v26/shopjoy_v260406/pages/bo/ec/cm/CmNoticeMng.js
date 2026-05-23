@@ -200,16 +200,14 @@ window.CmNoticeMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
         const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '제목 검색' },
-      { key: 'type', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
+      { key: 'searchValue', label: '제목', type: 'text', placeholder: '제목 검색' },
+      { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
+      { key: 'status',      label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
       { type: 'label', label: '등록일' },
       { key: 'dateRange', type: 'dateRange',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
     ];
 
     const listGridColumns = [

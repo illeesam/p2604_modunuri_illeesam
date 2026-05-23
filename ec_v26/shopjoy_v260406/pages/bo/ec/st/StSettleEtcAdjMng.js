@@ -174,23 +174,21 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
         const baseSearchColumns = [
-      { key: 'dateRange', type: 'dateRange', paramObj: uiState,
+      { key: 'dateRange', label: '정산일', type: 'dateRange', paramObj: uiState,
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.settle_etc_adj_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'type', label: '유형', type: 'select', options: () => codes.settle_etc_adj_types, nullLabel: '유형 전체' },
+      { key: 'status', label: '상태', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
+      { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
           { value: 'id',       label: 'ID' },
           { value: 'vendorNm', label: '업체명' },
           { value: 'reason',   label: '사유' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '180px' },
-      { key: 'type', type: 'select', options: () => codes.settle_etc_adj_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
     ];
 
     const baseGridColumns = [

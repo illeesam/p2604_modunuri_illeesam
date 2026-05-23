@@ -66,10 +66,8 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     let   _tempId    = -1;
 
     const baseSearchColumns = [
-      { type: 'label', label: '태그명' },
-      { key: 'searchValue', type: 'text', placeholder: '태그명 검색' },
-      { type: 'label', label: '사용여부' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'searchValue', label: '태그명', type: 'text', placeholder: '태그명 검색' },
+      { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

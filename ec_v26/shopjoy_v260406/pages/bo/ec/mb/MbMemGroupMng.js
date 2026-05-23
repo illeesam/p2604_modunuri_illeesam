@@ -166,11 +166,8 @@ window.MbMemGroupMng = {
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
         const baseSearchColumns = [
-      { type: 'label', label: '그룹명' },
-      { key: 'searchValue', type: 'text', placeholder: '그룹명 검색' },
-      { type: 'label', label: '사용여부' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
-      { key: 'use', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
+      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

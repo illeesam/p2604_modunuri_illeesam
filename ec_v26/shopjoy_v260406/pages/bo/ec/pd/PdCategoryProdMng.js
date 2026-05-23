@@ -329,8 +329,7 @@ window.PdCategoryProdMng = {
 
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
         const baseSearchColumns = [
-      { type: 'label', label: '상품명' },
-      { key: 'prodNm', type: 'text', placeholder: '상품명 검색', width: '280px' },
+      { key: 'prodNm', label: '상품명', type: 'text', placeholder: '상품명 검색', width: '280px' },
     ];
 
     const cfCatProdGridColumns = computed(() => {

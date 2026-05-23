@@ -262,14 +262,9 @@ window.PdReviewMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
         const baseSearchColumns = [
-      { type: 'label', label: '리뷰제목' },
-      { key: 'searchValue', type: 'text', placeholder: '리뷰 제목 검색' },
-      { type: 'label', label: '상태' },
-      { key: 'status', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
-      { type: 'label', label: '평점' },
-      { key: 'rating', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
-      { key: 'status', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
-      { key: 'rating', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
+      { key: 'searchValue', label: '리뷰제목', type: 'text', placeholder: '리뷰 제목 검색' },
+      { key: 'status', label: '상태', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
+      { key: 'rating', label: '평점', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
     ];
 
     const listGridColumns = [

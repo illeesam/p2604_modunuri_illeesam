@@ -119,13 +119,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // -- return ---------------------------------------------------------------
 
         const baseSearchColumns = [
-      { key: 'dateRange', type: 'dateRange', paramObj: uiState,
+      { key: 'dateRange', label: '대사일', type: 'dateRange', paramObj: uiState,
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'type', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
-      { key: 'diff', type: 'select', options: () => codes.erp_recon_results, nullLabel: '결과 전체' },
+      { key: 'type', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'diff', label: '대사결과', type: 'select', options: () => codes.erp_recon_results, nullLabel: '결과 전체' },
     ];
 
     const baseGridColumns = [

@@ -234,7 +234,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* BoSearchArea 컬럼 정의 — :columns + :param 자동 렌더 */
     const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'userId',    label: '사용자ID' },
           { value: 'loginId',   label: '로그인ID' },
@@ -242,10 +242,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           { value: 'userEmail', label: '이메일' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'role',   type: 'select', options: () => codes.user_roles,  nullLabel: '권한 전체' },
-      { key: 'status', type: 'select', options: () => codes.user_status, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'role',   type: 'select', label: '권한', options: () => codes.user_roles,  nullLabel: '권한 전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.user_status, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.user_date_types,
         rangeOptions: () => codes.date_range_opts,

@@ -183,26 +183,24 @@ window.SyMemberLoginHist = {
 
     /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
     const baseSearchColumns = [
-      { type: 'label', label: '등록기간' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'dateRange', type: 'dateRange', label: '등록기간',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => onDateRangeChange() },
-      { key: 'searchResultCd', type: 'select',
+      { key: 'searchResultCd', type: 'select', label: '로그인결과',
         options: () => codes.login_results, nullLabel: '로그인결과 전체' },
-      { key: 'searchIp', type: 'text', placeholder: 'IP 주소', width: '140px' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchIp', type: 'text', label: 'IP 주소', placeholder: 'IP 주소', width: '140px' },
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [{ value: 'memberId', label: '회원ID' }, { value: 'loginId', label: '로그인ID' }],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '170px' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '170px' },
     ];
 
     /* 펼침 영역(srchOpen=true) 두번째 BoSearchArea 용 columns */
     const moreSearchColumns = [
-      { type: 'label', label: 'x-헤더' },
-      { key: 'searchUiNm',    type: 'text', placeholder: '화면명 (x-ui-nm)', width: '170px' },
-      { key: 'searchTraceId', type: 'text', placeholder: 'Trace ID',         width: '200px' },
+      { key: 'searchUiNm',    type: 'text', label: 'x-헤더 화면명', placeholder: '화면명 (x-ui-nm)', width: '170px' },
+      { key: 'searchTraceId', type: 'text', label: 'Trace ID',  placeholder: 'Trace ID',         width: '200px' },
     ];
 
     const logGridColumns = [

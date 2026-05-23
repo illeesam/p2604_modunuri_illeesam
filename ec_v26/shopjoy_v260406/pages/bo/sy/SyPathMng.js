@@ -258,19 +258,15 @@ window.SyPathMng = {
 
     /* BoGrid 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
         const baseSearchColumns = [
-      { type: 'label', label: '업무코드' },
-      { key: 'bizCd', type: 'text', placeholder: 'biz_cd 검색', width: '180px' },
-      { key: 'searchType', type: 'text', placeholder: 'biz_cd 검색', width: '180px' },
-      { type: 'label', label: '라벨/비고' },
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'bizCd', type: 'text', label: '업무코드', placeholder: 'biz_cd 검색', width: '180px' },
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'pathLabel',  label: '라벨' },
           { value: 'pathRemark', label: '비고' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '320px' },
-      { type: 'label', label: '사용여부' },
-      { key: 'useYn', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '320px' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     const baseGridColumns = [

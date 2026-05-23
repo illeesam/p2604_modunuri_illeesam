@@ -242,18 +242,16 @@ window.DpDispPanelMng = {
 
     /* 1행: 일반 검색 :columns */
     const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'panelNm', label: '패널명' },
           { value: 'areaCd',  label: '영역코드' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { type: 'label', label: '화면영역' },
-      { key: 'area', type: 'select', options: () => cfAreaSelectOptions.value, nullLabel: '전체 영역', minWidth: '160px' },
-      { key: 'status', type: 'select', options: () => codes.active_statuses, nullLabel: '상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'area', type: 'select', label: '화면영역', options: () => cfAreaSelectOptions.value, nullLabel: '전체 영역', minWidth: '160px' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.active_statuses, nullLabel: '상태 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
@@ -262,10 +260,8 @@ window.DpDispPanelMng = {
     const moreSearchColumns = [
       { type: 'label', label: '전시일시' },
       { type: 'slot', name: 'dispDate' },
-      { type: 'label', label: '공개대상' },
-      { key: 'visibility', type: 'select', options: () => codes.visibility_opts, nullable: false, minWidth: '100px' },
-      { type: 'label', label: '표시방식' },
-      { key: 'layoutType', type: 'select', options: () => codes.layout_types, nullLabel: '전체', minWidth: '100px' },
+      { key: 'visibility', type: 'select', label: '공개대상', options: () => codes.visibility_opts, nullable: false, minWidth: '100px' },
+      { key: 'layoutType', type: 'select', label: '표시방식', options: () => codes.layout_types, nullLabel: '전체', minWidth: '100px' },
     ];
 
     /* setDispNow */

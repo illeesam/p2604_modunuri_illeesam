@@ -243,9 +243,9 @@ window.XsSample02 = {
 
     /* FoSearchArea :columns 자동 렌더 정의 */
     const baseSearchColumns = [
-      { key: 'searchValue', type: 'text',   placeholder: '상품명 검색', width: '180px' },
-      { key: 'category',    type: 'select', options: () => cfCategoryOpts.value,   nullLabel: '카테고리 전체' },
-      { key: 'status',      type: 'select', options: () => codes.prod_status_opts, nullLabel: '상태 전체' },
+      { key: 'searchValue', type: 'text',   label: '상품명', placeholder: '상품명 검색', width: '180px' },
+      { key: 'category',    type: 'select', label: '카테고리', options: () => cfCategoryOpts.value,   nullLabel: '카테고리 전체' },
+      { key: 'status',      type: 'select', label: '상태', options: () => codes.prod_status_opts, nullLabel: '상태 전체' },
     ];
 
     const baseGridColumns = [

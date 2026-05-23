@@ -398,8 +398,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
         const baseSearchColumns = [
-      { type: 'label', label: '세트상품명' },
-      { key: 'nm', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
+      { key: 'nm', label: '세트상품명', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
     ];
 
     const setGridColumns = [

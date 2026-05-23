@@ -55,9 +55,9 @@ window.SyCodeMng = {
     /* codeTotal */
     const codeTotal = () => uiState.gridRows.filter(r => r._row_status !== 'D').length;
 
-    /* fnCodeListTitle: 코드목록 제목에 선택 그룹코드/경로 표기 부착 */
+    /* fnCodeListTitle: 코드목록 제목에 선택한 그룹코드 표기 부착 (그룹관리 클릭값만 사용) */
     const fnCodeListTitle = () => {
-      const tag = uiState.selectedGrp || uiState.grpSelectedPath || '';
+      const tag = uiState.selectedGrp || '';
       return tag ? `코드목록  [ ${tag} ]` : '코드목록';
     };
 
@@ -472,10 +472,15 @@ window.SyCodeMng = {
       handleSearchList();
     };
 
-    /* grpSelectNode */
+    /* grpSelectNode — 표시경로 노드 클릭 시 코드목록 초기화 */
     const grpSelectNode = (path) => {
       uiState.grpSelectedPath = path;
       uiState.selectedGrp = '';
+      uiState.gridRows = [];
+      uiState.isTreeType = false;
+      uiState.focusedIdx = null;
+      uiState.activeCodeTab = '일반';
+      rebuildTree();
       handleLoadAllGroups();
     };
 
@@ -526,18 +531,16 @@ window.SyCodeMng = {
     /* BoGridCrud 컬럼 정의 (코드목록 일반 탭 / 특수셀은 #cell-{key} 슬롯 override)
        parentCodeValue 는 트리타입에서만 노출 → 헤더·셀 정합 위해 columns 자체를 동적 구성 */
         const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck',
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'codeGrp',   label: '코드그룹' },
           { value: 'codeLabel', label: '라벨' },
           { value: 'codeValue', label: '코드값' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
-      { key: 'useYn', type: 'text', placeholder: '검색어 입력' },
-      { key: 'useYn', type: 'select', options: () => pageCodes.use_yn, nullLabel: '사용여부 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => pageCodes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => pageCodes.date_range_opts,
         onRangeChange: () => handleDateRangeChange() },
