@@ -294,7 +294,7 @@ window.SyMenuMng = {
   <div class="card">
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <bo-path-tree-card biz-cd="sy_menu" title="메뉴" :show-biz-cd="true"
       :selected="uiState.selectedTreeId" @select="selectNode" />
     <div>

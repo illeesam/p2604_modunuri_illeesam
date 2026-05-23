@@ -631,7 +631,7 @@ window.SyCodeMng = {
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- -- 표시경로 트리 + 코드그룹 CRUD ----------------------------------- -->
-  <div style="display:grid;grid-template-columns:17fr 83fr;gap:16px;margin-bottom:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;margin-bottom:16px;align-items:flex-start;">
     <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="true"
       :selected="uiState.grpSelectedPath" @select="grpSelectNode" />
     <bo-grid-crud

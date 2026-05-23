@@ -621,7 +621,7 @@ window.SyRoleMng = {
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
-  <div style="display:grid;grid-template-columns:20fr 80fr;gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,20fr) minmax(0,80fr);gap:16px;align-items:flex-start;">
     <bo-local-tree-card title="역할"
       :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
       :on-toggle="toggleNode"
