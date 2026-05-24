@@ -173,12 +173,14 @@ window.SyBbmDtl = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     {{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbmId }}</span>
   </div>
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
   <div class="card">
+    <!-- ===== 폼 영역 ======================================================= -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3"
       @save="handleSave"

@@ -248,8 +248,10 @@ window.DpDispWidgetLibMng = {
   template: /* html */`
 <div>
   <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}</style>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">위젯라이브러리관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" :show-actions="false"
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset">
@@ -279,6 +281,7 @@ window.DpDispWidgetLibMng = {
       </div>
     </div>
     <div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid :columns="listGridColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"

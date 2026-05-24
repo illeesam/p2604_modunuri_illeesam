@@ -262,15 +262,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">템플릿관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
+  <!-- ===== 좌 트리 + 우 영역 ================================================ -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+    <!-- ===== 경로 트리 ====================================================== -->
     <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid
         :columns="baseGridColumns" :rows="templates" :pager="pager" row-key="templateId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
@@ -296,7 +300,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
           </td>
         </template>
       </bo-grid>
-      <!-- -- 미리보기/발송 모달 (position:fixed) ---------------------------------- -->
+      <!-- ===== 미리보기/발송 모달 (position:fixed) ================================ -->
       <template-preview-modal v-if="previewModal && previewModal.show"
         :tmpl="previewModal.template"
         :sample-params="previewModal.template?.sampleParams || '{}'"
@@ -305,7 +309,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
         @close="closeSend" />
     </div>
-    <!-- -- 수정 패널 (grid 직접 자식 → 전체 폭) --------------------------------- -->
+    <!-- ===== 수정 패널 (grid 직접 자식 → 전체 폭) ================================== -->
     <div v-if="selectedId" style="grid-column:1/-1;margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
         <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

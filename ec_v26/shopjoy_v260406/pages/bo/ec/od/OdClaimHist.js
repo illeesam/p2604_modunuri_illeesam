@@ -152,7 +152,7 @@ window.OdClaimHist = {
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- ── 클레임 항목 ───────────────────────────────────────────────────────── -->
+    <!-- ===== 클레임 항목 ===================================================== -->
     <div class="card" v-show="showTab('items')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임 항목 <span class="tab-count">{{ claimItems.length }}</span></div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
@@ -264,13 +264,14 @@ window.OdClaimHist = {
     <!-- 처리 정보 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('process')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 처리 정보</div>
+      <!-- ===== 폼 영역 ======================================================= -->
       <bo-form-area :columns="processFormColumns" :form="processForm" :errors="{}"
         :cols="2" :show-actions="false" />
       <div class="form-actions">
         <button class="btn btn-primary" @click="handleSaveProcess">저장</button>
       </div>
     </div>
-    <!-- ── 연관 주문 ────────────────────────────────────────────────────────── -->
+    <!-- ===== 연관 주문 ====================================================== -->
     <div class="card" v-show="showTab('order')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span></div>
       <template v-if="relatedOrder">

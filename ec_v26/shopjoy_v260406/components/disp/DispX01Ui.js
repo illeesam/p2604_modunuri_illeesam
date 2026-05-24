@@ -365,7 +365,7 @@ window.DispX01Ui = {
          내용보기 — 위젯 시각적 렌더링
     ══════════════════════════════════════ -->
     <div v-if="activeTab==='' || activeTab==='content' || cfActiveTabs.length===0">
-      <!-- ── 구조보기 OFF: 순수 위젯만 ── -->
+      <!-- ===== 구조보기 OFF: 순수 위젯만 =========================================== -->
       <div v-if="!showContentStruct" style="display:flex;flex-direction:column;gap:0;">
         <template v-for="areaCode in params.areas" :key="areaCode">
           <disp-x02-area v-if="panelsForArea(areaCode).length"
@@ -407,7 +407,7 @@ window.DispX01Ui = {
           </div>
         </template>
       </div>
-      <!-- ── 구조보기 ON: DispX02Area에 위임 ── -->
+      <!-- ===== 구조보기 ON: DispX02Area에 위임 =================================== -->
       <div v-else style="padding:16px;background:#f0f0f0;display:flex;flex-direction:column;gap:4px;">
         <template v-for="areaCode in params.areas" :key="areaCode">
           <disp-x02-area

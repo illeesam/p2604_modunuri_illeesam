@@ -250,6 +250,7 @@ window.PdProdMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">상품관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#1a7a52">상품관리</strong>는 판매 상품의 기본정보·가격·재고·옵션을 등록하고 관리합니다.</span>
@@ -267,6 +268,7 @@ window.PdProdMng = {
     </div>
   </div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
   <div class="card">
@@ -281,6 +283,7 @@ window.PdProdMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid
       :columns="baseGridColumns" :rows="products" :pager="pager" row-key="prodId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
@@ -299,13 +302,13 @@ window.PdProdMng = {
       </template>
     </bo-grid>
   </div>
-  <!-- -- 카테고리 선택 모달 ----------------------------------------------------- -->
+  <!-- ===== 카테고리 선택 모달 ================================================= -->
   <bo-category-tree-modal
     v-if="catModal && catModal.show"
     :exclude-id="null"
     @select="onCatSelect"
     @close="catModal.show=false" />
-  <!-- -- 하단 상세: ProdDtl 임베드 --------------------------------------------- -->
+  <!-- ===== 하단 상세: ProdDtl 임베드 ========================================= -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

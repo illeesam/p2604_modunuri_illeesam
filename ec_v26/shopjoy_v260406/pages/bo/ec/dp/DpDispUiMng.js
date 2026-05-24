@@ -186,8 +186,10 @@ window.DpDispUiMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">전시 UI 관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
@@ -203,6 +205,7 @@ window.DpDispUiMng = {
         <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid :columns="listGridColumns" :rows="displays" :pager="pager" row-key="uiId"
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"

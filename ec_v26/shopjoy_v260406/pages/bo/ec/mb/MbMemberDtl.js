@@ -83,6 +83,7 @@ window.MbMemberDtl = {
     </div>
     <!-- 폼 영역 (BoFormArea 자동 렌더) - 상단 툴바 버튼 사용으로 :show-actions=false -->
     <div style="padding:12px;">
+      <!-- ===== 폼 영역 ======================================================= -->
       <bo-form-area :columns="baseFormColumns" :form="detailModal.form" :errors="{}"
         :readonly="false" :cols="2" :show-actions="false" />
     </div>

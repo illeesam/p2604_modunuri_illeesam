@@ -134,6 +134,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">업체-정산 대사</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">업체가 제출한 정산 내역과 시스템 정산 데이터 간 불일치를 검출하고 대사 처리합니다.</span>
@@ -143,6 +144,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
   </div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
@@ -160,6 +162,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div>
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="vendorId"
       list-title="목록" :count-text="pager.pageTotalCount + '개 업체'"

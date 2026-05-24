@@ -259,6 +259,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">정산조정</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">수집원장 데이터에 업체별 추가·차감 조정 항목을 입력하여 최종 정산액을 보정합니다.</span>
@@ -268,6 +269,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
   </div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
@@ -277,6 +279,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <button class="btn btn-primary" @click="openNew">+ 조정 추가</button>
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid
       :columns="baseGridColumns" :rows="adjList" :pager="pager" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
@@ -293,6 +296,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- 편집 폼 (BoFormArea 자동 렌더) -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '조정 추가' : '조정 수정' }}</div>
+    <!-- ===== 폼 영역 ======================================================= -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :cols="4"
       @save="handleSave" @cancel="closeForm" />

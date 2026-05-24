@@ -201,12 +201,14 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     {{ cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.contactId }}</span>
   </div>
   <div class="card">
     <!-- 사이트명 (BoFormArea 자동 렌더) -->
+    <!-- ===== 폼 영역 ======================================================= -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
       :cols="4" :show-actions="false" />
     <div class="tab-bar-row">
@@ -229,6 +231,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       <!-- 문의 내용 탭 (BoFormArea 자동 렌더) -->
       <div class="card" v-show="showTab('content')" style="margin:0;">
         <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
+        <!-- ===== 폼 영역 ======================================================= -->
         <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="2" :show-actions="false">
           <!-- 회원ID + 보기 버튼 -->
@@ -258,7 +261,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
           </template>
         </div>
       </div>
-      <!-- -- 답변 ----------------------------------------------------------- -->
+      <!-- ===== 답변 ========================================================= -->
       <div class="card" v-show="showTab('answer')" style="margin:0;">
         <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
         <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
@@ -287,7 +290,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
           </template>
         </div>
       </div>
-      <!-- -- 회원 문의 이력 ----------------------------------------------------- -->
+      <!-- ===== 회원 문의 이력 =================================================== -->
       <div class="card" v-show="showTab('history')" style="margin:0;">
         <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🕒 회원 문의 이력</div>
         <div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">회원 문의 이력은 목록에서 확인하세요.</div>

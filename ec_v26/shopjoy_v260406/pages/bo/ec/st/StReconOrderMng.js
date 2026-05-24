@@ -148,6 +148,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">주문-정산 대사</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">주문 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다.</span>
@@ -157,6 +158,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
   </div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px"
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
@@ -180,6 +182,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div>
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"

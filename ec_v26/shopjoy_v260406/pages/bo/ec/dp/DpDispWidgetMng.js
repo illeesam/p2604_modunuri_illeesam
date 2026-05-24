@@ -246,13 +246,14 @@ window.DpDispWidgetMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     <span style="font-size:14px;font-weight:600;color:#333;">전시위젯관리</span>
     <span style="font-size:13px;font-weight:400;color:#999;margin:0 8px;">&gt;</span>
     <span style="font-size:14px;font-weight:600;color:#666;">전시위젯관리</span>
     <span style="font-size:13px;font-weight:400;color:#888;display:block;margin-top:4px;">위젯 유형별 리소스 등록·재활용</span>
   </div>
-  <!-- -- 검색 필터 ---------------------------------------------------------- -->
+  <!-- ===== 검색 필터 ====================================================== -->
   <div class="card" style="padding:14px 18px;margin-bottom:14px;">
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
@@ -291,9 +292,9 @@ window.DpDispWidgetMng = {
       <button @click="onReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
     </div>
   </div>
-  <!-- -- 본문: 좌측 트리 + 우측 목록 ---------------------------------------------- -->
+  <!-- ===== 본문: 좌측 트리 + 우측 목록 ========================================== -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
-    <!-- -- 좌측 표시경로 -------------------------------------------------------- -->
+    <!-- ===== 좌측 표시경로 ==================================================== -->
     <div class="card" style="width:240px;min-width:180px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
       <div class="toolbar" style="margin-bottom:6px;">
         <span class="list-title" style="font-size:13px;">
@@ -306,9 +307,9 @@ window.DpDispWidgetMng = {
         <bo-path-tree biz-cd="ec_disp_widget" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
-    <!-- -- 우측 목록 ---------------------------------------------------------- -->
+    <!-- ===== 우측 목록 ====================================================== -->
     <div style="flex:1;min-width:0;width:100%;">
-      <!-- -- 목록 ------------------------------------------------------------- -->
+      <!-- ===== 목록 ========================================================= -->
       <bo-grid :columns="listGridColumns" :rows="widgets" :pager="pager" row-key="widgetId"
         :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
         :count-text="pager.pageTotalCount + '건'"
@@ -391,10 +392,10 @@ window.DpDispWidgetMng = {
         </template>
       </bo-grid>
     </div>
-    <!-- -- /우측 목록 ----------------------------------------------------------- -->
+    <!-- ===== /우측 목록 ===================================================== -->
   </div>
-  <!-- -- /본문 flex --------------------------------------------------------- -->
-  <!-- -- 인라인 상세 --------------------------------------------------------- -->
+  <!-- ===== /본문 flex =================================================== -->
+  <!-- ===== 인라인 상세 ===================================================== -->
   <div v-if="selectedId !== null" style="margin-top:16px;">
     <dp-disp-widget-dtl
       :key="cfDetailKey"

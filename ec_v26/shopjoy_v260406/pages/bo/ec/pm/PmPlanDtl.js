@@ -298,6 +298,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     {{ cfIsNew ? '기획전 등록' : '기획전 상세' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.planId }}</span>
@@ -326,7 +327,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- -- 배너이미지 -------------------------------------------------------- -->
+    <!-- ===== 배너이미지 ====================================================== -->
     <div class="card" v-show="showTab('banner')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
@@ -340,10 +341,11 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
-    <!-- -- 기본정보 --------------------------------------------------------- -->
+    <!-- ===== 기본정보 ======================================================= -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- 기본정보 폼 (BoFormArea 자동 렌더) -->
+      <!-- ===== 폼 영역 ======================================================= -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="false" :cols="2" :show-actions="false">
         <!-- 공개대상 체크박스 그리드 -->
@@ -358,6 +360,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       </bo-form-area>
       <!-- 판매업체/판매담당자 (BoFormArea 자동 렌더) -->
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+        <!-- ===== 폼 영역 ======================================================= -->
         <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
           :cols="2" :show-actions="false">
           <template #vendor>
@@ -373,7 +376,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
           </template>
         </bo-form-area>
       </div>
-      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
+      <!-- ===== 판매업체 선택 모달 ================================================= -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
       <div class="form-actions" v-if="!cfDtlMode">
@@ -383,7 +386,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
-    <!-- -- 내용입력 (HTML 에디터) ---------------------------------------------- -->
+    <!-- ===== 내용입력 (HTML 에디터) ============================================ -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 내용입력</div>
       <div style="margin-bottom:12px;">
@@ -411,7 +414,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
-    <!-- -- 대상상품 --------------------------------------------------------- -->
+    <!-- ===== 대상상품 ======================================================= -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품</div>
       <div style="margin-bottom:16px;">
@@ -442,11 +445,11 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmPlanMng')">취소</button>
       </div>
     </div>
-    <!-- -- 미리보기 --------------------------------------------------------- -->
+    <!-- ===== 미리보기 ======================================================= -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:6px;padding:20px;">
-        <!-- -- 배너 미리보기 -------------------------------------------------- -->
+        <!-- ===== 배너 미리보기 ==================================================== -->
         <div v-if="form.bannerImage" style="margin-bottom:20px;padding:16px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>
         <div style="background:#fff;border-radius:6px;padding:20px;border:1px solid #e0e0e0;">
           <div style="font-size:18px;font-weight:700;color:#222;margin-bottom:12px;">{{ form.planNm }}</div>
@@ -465,7 +468,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
             <div>📅 기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
             <div style="margin-top:4px;">{{ form.desc }}</div>
           </div>
-          <!-- -- 컨텐츠 미리보기 ----------------------------------------------- -->
+          <!-- ===== 컨텐츠 미리보기 =================================================== -->
           <template v-if="form.content1 || form.content2 || form.content3">
             <div style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
               <div v-if="form.content1" style="margin-bottom:20px;">
@@ -482,7 +485,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
               </div>
             </div>
           </template>
-          <!-- -- 대상상품 미리보기 ---------------------------------------------- -->
+          <!-- ===== 대상상품 미리보기 ================================================== -->
           <div v-if="cfSelectedProducts.length > 0" style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
             <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">🛍 대상상품 ({{ cfSelectedProducts.length }}개)</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;">
@@ -506,7 +509,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     </div>
   </div>
 </div>
-<!-- -- 상품선택 모달 ---------------------------------------------------------- -->
+<!-- ===== 상품선택 모달 ==================================================== -->
 <simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.productIds"
   title="상품선택" @toggle="toggleProduct" @close="showProdPopup=false" />
 `

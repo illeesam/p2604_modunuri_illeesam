@@ -121,18 +121,20 @@ window.MbMemberHist = {
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- -- 연관 주문 ---------------------------------------------------------- -->
+    <!-- ===== 연관 주문 ====================================================== -->
     <div class="card" v-show="showTab('orders')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
         </template>
       </bo-grid>
     </div>
-    <!-- -- 연관 클레임 --------------------------------------------------------- -->
+    <!-- ===== 연관 클레임 ===================================================== -->
     <div class="card" v-show="showTab('claims')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>

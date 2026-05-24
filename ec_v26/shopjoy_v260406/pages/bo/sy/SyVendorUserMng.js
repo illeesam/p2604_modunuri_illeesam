@@ -580,13 +580,15 @@ window.SyVendorUserMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">업체사용자</div>
-  <!-- -- 업체 검색 ---------------------------------------------------------- -->
+  <!-- ===== 업체 검색 ====================================================== -->
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState"
       :loading="uiState.loading" @search="onSearch" @reset="onReset" />
   </div>
-  <!-- -- 업체 목록 ---------------------------------------------------------- -->
+  <!-- ===== 업체 목록 ====================================================== -->
   <bo-grid
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
     list-title="업체목록" :count-text="vendors.length + '건'"
@@ -598,7 +600,7 @@ window.SyVendorUserMng = {
       </button>
     </template>
   </bo-grid>
-  <!-- -- 사용자 목록 ------------------------------------------------------- -->
+  <!-- ===== 사용자 목록 ===================================================== -->
   <bo-grid v-if="uiState.searchVendorId != null" style="margin-top:16px;"
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
     list-title="사용자목록" :count-text="vendorUsers.length + '건'"
@@ -612,7 +614,7 @@ window.SyVendorUserMng = {
     </template>
   </bo-grid>
   <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.</div>
-  <!-- -- 인라인 폼 ------------------------------------------------------ -->
+  <!-- ===== 인라인 폼 ====================================================== -->
   <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
     <div class="toolbar">
       <span class="list-title">
@@ -628,16 +630,18 @@ window.SyVendorUserMng = {
     </div>
     <!-- 업체사용자 상세 폼 (BoFormArea 자동 렌더) -->
     <div style="padding:16px;">
+      <!-- ===== 폼 영역 ======================================================= -->
       <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
         :cols="4" :show-actions="false" />
     </div>
-    <!-- -- 역할 목록 (수정 모드에서만) ----------------------------------------- -->
+    <!-- ===== 역할 목록 (수정 모드에서만) =========================================== -->
     <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
       <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title" style="font-size:13px;">🎭 부여된 역할 <span class="list-count">{{ userRoles.length }}개</span></span>
         <button class="btn btn-blue btn-sm" @click="openRoleModal">+ 역할 추가</button>
       </div>
       <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid v-else bare :columns="userRoleGridColumns" :rows="userRoles" row-key="vendorUserRoleId"
         empty-text="부여된 역할이 없습니다." row-actions>
         <template #row-actions="{ row }">
@@ -648,7 +652,7 @@ window.SyVendorUserMng = {
   </div>
 </div>
 </div>
-<!-- -- 역할 선택 모달 (BoRoleSelectModal) ----------------------------------- -->
+<!-- ===== 역할 선택 모달 (BoRoleSelectModal) =============================== -->
 <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
   :confirm-disabled="!uiState.roleModalTemp"
   @close="closeRoleModal" @confirm="confirmRoleModal">

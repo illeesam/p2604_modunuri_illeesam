@@ -276,10 +276,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">게시글관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== 목록 영역 ====================================================== -->
   <bo-grid
     :columns="baseGridColumns" :rows="bbss" :pager="pager" row-key="bbsId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건' + (uiState.selectedPath != null ? '  #' + uiState.selectedPath : '')"

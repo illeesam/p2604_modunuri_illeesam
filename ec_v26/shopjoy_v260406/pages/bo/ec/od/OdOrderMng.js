@@ -468,8 +468,10 @@ window.OdOrderMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">주문관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
   <div class="card">
@@ -488,6 +490,7 @@ window.OdOrderMng = {
     </div>
     <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare selectable :columns="listGridColumns" :rows="orders" :pager="pager" row-key="orderId"
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
@@ -509,7 +512,7 @@ window.OdOrderMng = {
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
-  <!-- -- 하단 상세: OrderDtl 임베드 -------------------------------------------- -->
+  <!-- ===== 하단 상세: OrderDtl 임베드 ======================================== -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
@@ -527,7 +530,7 @@ window.OdOrderMng = {
       :on-list-reload="handleSearchData"
       />
   </div>
-  <!-- -- 변경작업 모달 -------------------------------------------------------- -->
+  <!-- ===== 변경작업 모달 ==================================================== -->
   <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="bulkOpen=false">
     <div style="background:#fff;border-radius:12px;width:640px;max-width:94vw;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;max-height:90vh;display:flex;flex-direction:column;">
       <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
@@ -558,6 +561,7 @@ window.OdOrderMng = {
         </div>
         <!-- 결재처리 (BoFormArea 자동 렌더) -->
         <div v-if="uiState.bulkTab==='approval'">
+          <!-- ===== 폼 영역 ======================================================= -->
           <bo-form-area :columns="bulkApprovalFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
         </div>
@@ -570,12 +574,15 @@ window.OdOrderMng = {
             </select>
           </div>
           <!-- 전화번호/이메일 (BoFormArea 자동 렌더, readonly) -->
+          <!-- ===== 폼 영역 ======================================================= -->
           <bo-form-area :columns="apprContactFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <!-- 요청대상/요청대상명 (BoFormArea 자동 렌더) -->
+          <!-- ===== 폼 영역 ======================================================= -->
           <bo-form-area :columns="apprTargetFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <!-- 요청금액/요청사유/전송템플릿 (BoFormArea 자동 렌더) -->
+          <!-- ===== 폼 영역 ======================================================= -->
           <bo-form-area :columns="apprDetailFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false">
             <template #tmplMsg>

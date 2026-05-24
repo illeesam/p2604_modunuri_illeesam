@@ -214,10 +214,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">문의관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== 목록 영역 ====================================================== -->
   <bo-grid
     :columns="baseGridColumns" :rows="contacts" :pager="pager" row-key="contactId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
@@ -242,7 +245,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
       </td>
     </template>
   </bo-grid>
-  <!-- -- 하단 상세: ContactDtl 임베드 ------------------------------------------ -->
+  <!-- ===== 하단 상세: ContactDtl 임베드 ====================================== -->
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

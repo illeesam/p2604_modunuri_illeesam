@@ -238,9 +238,11 @@ window.OdCartMng = {
   },
   template: `
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">장바구니관리</div>
   <!-- 검색 -->
   <div class="card" style="margin-bottom:14px;">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;"
       :columns="baseSearchColumns" :param="search"
       @search="onSearch" @reset="onReset" />
@@ -260,6 +262,7 @@ window.OdCartMng = {
       <div style="font-size:28px;margin-bottom:8px;">⏳</div>
       조회 중...
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid v-else bare selectable :columns="listGridColumns" :rows="rows" :pager="pager" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."

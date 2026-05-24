@@ -97,7 +97,7 @@ window.DispX02Area = {
     style="padding:12px 16px 8px;font-size:16px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:16px;">
     {{ areaItem.info.title }}
   </div>
-  <!-- ── 리스트 모드 ── -->
+  <!-- ===== 리스트 모드 ===================================================== -->
   <div v-if="mode==='list'"
     style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">이 영역에 등록된 패널이 없습니다.</div>
@@ -143,7 +143,7 @@ window.DispX02Area = {
       </tbody>
     </table>
   </div>
-  <!-- ── 카드 모드 ── -->
+  <!-- ===== 카드 모드 ====================================================== -->
   <div v-else-if="mode==='card'"
     style="display:flex;flex-wrap:wrap;gap:12px;padding:18px 14px 14px;background:#f8f8f8;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;min-height:80px;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;width:100%;text-align:center;">
@@ -180,7 +180,7 @@ window.DispX02Area = {
       </div>
     </div>
   </div>
-  <!-- ── 상세정보 모드 (모든 패널 펼침) ── -->
+  <!-- ===== 상세정보 모드 (모든 패널 펼침) ========================================= -->
   <div v-else-if="mode==='expand'"
     style="padding:14px;background:#f0f0f0;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;display:flex;flex-direction:column;gap:10px;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">이 영역에 등록된 패널이 없습니다.</div>
@@ -260,7 +260,7 @@ window.DispX02Area = {
         />
     </template>
   </div>
-  <!-- ── 영역-위젯 상세보기 모드 (area_detail) ── -->
+  <!-- ===== 영역-위젯 상세보기 모드 (area_detail) ================================ -->
   <div v-else-if="mode==='area_detail'"
     style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">이 영역에 등록된 패널이 없습니다.</div>

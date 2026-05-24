@@ -291,6 +291,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     {{ cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.eventId }}</span>
@@ -319,7 +320,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- -- 배너이미지 -------------------------------------------------------- -->
+    <!-- ===== 배너이미지 ====================================================== -->
     <div class="card" v-show="showTab('banner')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🎨 배너이미지</div>
       <div style="margin-bottom:12px;">
@@ -339,10 +340,11 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
-    <!-- -- 기본정보 --------------------------------------------------------- -->
+    <!-- ===== 기본정보 ======================================================= -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) -->
+      <!-- ===== 폼 영역 ======================================================= -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false" />
       <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
@@ -368,6 +370,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       </div>
       <!-- 판매업체/판매담당자 (BoFormArea 자동 렌더) -->
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+        <!-- ===== 폼 영역 ======================================================= -->
         <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="2" :show-actions="false">
           <template #vendor>
@@ -383,7 +386,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           </template>
         </bo-form-area>
       </div>
-      <!-- -- 판매업체 선택 모달 ------------------------------------------------- -->
+      <!-- ===== 판매업체 선택 모달 ================================================= -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
       <div class="form-actions" v-if="!cfDtlMode">
@@ -399,7 +402,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
-    <!-- -- 이벤트 내용 (HTML 에디터) -------------------------------------------- -->
+    <!-- ===== 이벤트 내용 (HTML 에디터) ========================================== -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 이벤트 내용</div>
       <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
@@ -433,13 +436,14 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
-    <!-- -- 대상 상품 -------------------------------------------------------- -->
+    <!-- ===== 대상 상품 ====================================================== -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span></div>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
         <button v-if="!cfDtlMode" class="btn btn-secondary" @click="showProdPopup=true">+ 상품 추가</button>
         <span style="font-size:13px;color:#888;">{{ form.targetProducts.length }}개 선택됨</span>
       </div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare :columns="productGridColumns" :rows="cfSelectedProducts" row-key="productId"
         empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
         <template #row-actions="{ row }">
@@ -459,11 +463,11 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
-    <!-- -- 미리보기 --------------------------------------------------------- -->
+    <!-- ===== 미리보기 ======================================================= -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
-        <!-- -- 배너 미리보기 -------------------------------------------------- -->
+        <!-- ===== 배너 미리보기 ==================================================== -->
         <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage"></div>
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.eventTitle || '이벤트 제목' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
@@ -497,7 +501,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       </div>
     </div>
   </div>
-  <!-- -- 상품 선택 팝업 ------------------------------------------------------- -->
+  <!-- ===== 상품 선택 팝업 =================================================== -->
   <simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.targetProducts"
     title="대상 상품 선택" @toggle="toggleProduct" @close="showProdPopup=false" />
 </div>

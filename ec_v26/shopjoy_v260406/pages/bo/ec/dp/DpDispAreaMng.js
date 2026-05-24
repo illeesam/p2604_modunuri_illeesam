@@ -193,8 +193,10 @@ const searchParam = reactive(_initSearchParam());
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">전시 영역 관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
@@ -210,6 +212,7 @@ const searchParam = reactive(_initSearchParam());
         <bo-path-tree biz-cd="ec_disp_area" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid :columns="listGridColumns" :rows="areas" :pager="pager" row-key="areaId"
       :sort-state="uiState" list-title="전시 영역 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"

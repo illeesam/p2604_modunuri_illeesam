@@ -350,6 +350,7 @@ window.SyAttachMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">첨부관리</div>
   <div style="display:flex;gap:16px;align-items:flex-start;">
     <!-- 좌: 첨부그룹관리 (30%) -->
@@ -382,6 +383,7 @@ window.SyAttachMng = {
               #{{ uiState.grpEditId }}
             </span>
           </div>
+          <!-- ===== 폼 영역 ======================================================= -->
           <bo-form-area :columns="grpFormColumns" :form="grpForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <div style="display:flex;gap:6px;margin-top:8px;">
@@ -479,6 +481,7 @@ window.SyAttachMng = {
             </span>
           </div>
           <!-- 파일 폼 (BoFormArea 자동 렌더, 4컬럼) -->
+          <!-- ===== 폼 영역 ======================================================= -->
           <bo-form-area :columns="fileFormColumns" :form="fileForm" :errors="{}"
             :cols="4" :show-actions="false" />
           <!-- 저장/취소 가운데 정렬 -->
@@ -489,6 +492,7 @@ window.SyAttachMng = {
         </div>
         <!-- 파일 그리드 (기본 10개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) -->
         <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
+          <!-- ===== 목록 영역 ====================================================== -->
           <bo-grid
             bare
             :columns="fileGridColumns"

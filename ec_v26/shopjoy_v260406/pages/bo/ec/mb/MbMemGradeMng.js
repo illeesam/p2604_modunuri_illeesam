@@ -220,10 +220,13 @@ window.MbMemGradeMng = {
   },
   template: `
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">회원등급관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== CRUD 그리드 =================================================== -->
   <bo-grid-crud
     :columns="baseGridColumns" :rows="gridRows" row-key="memberGradeId"
     list-title="회원등급 목록"

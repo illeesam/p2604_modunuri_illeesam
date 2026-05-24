@@ -626,12 +626,14 @@ window.SyRoleMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">역할관리</div>
-  <!-- -- 검색 ------------------------------------------------------------- -->
+  <!-- ===== 검색 ========================================================= -->
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- -- 좌 트리 + 우 영역 ---------------------------------------------------- -->
+  <!-- ===== 좌 트리 + 우 영역 ================================================ -->
   <div style="display:grid;grid-template-columns:minmax(220px,20fr) minmax(0,80fr);gap:16px;align-items:flex-start;">
     <bo-local-tree-card title="역할"
       :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
@@ -645,7 +647,7 @@ window.SyRoleMng = {
       </template>
     </bo-local-tree-card>
     <div>
-      <!-- -- CRUD 그리드 --------------------------------------------------------- -->
+      <!-- ===== CRUD 그리드 =================================================== -->
       <bo-grid-crud
         :columns="baseGridColumns" :rows="gridRows" row-key="roleId"
         list-title="역할목록" :show-export="true" :draggable="false"
@@ -666,9 +668,9 @@ window.SyRoleMng = {
           </button>
         </template>
       </bo-grid-crud>
-      <!-- -- 하단: 메뉴 배분 + 사용자 배분 --------------------------------------------- -->
+      <!-- ===== 하단: 메뉴 배분 + 사용자 배분 ========================================= -->
       <div id="role-config-panel" style="display:flex;gap:16px;align-items:flex-start;">
-        <!-- -- 좌: 메뉴목록 ------------------------------------------------------ -->
+        <!-- ===== 좌: 메뉴목록 ==================================================== -->
         <div style="flex:1;">
           <div class="card" style="margin-bottom:0;">
             <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
@@ -691,18 +693,18 @@ window.SyRoleMng = {
                 <button class="btn btn-primary btn-sm" style="margin-left:8px;" @click="handleSaveRoleConfig">💾 설정 저장</button>
               </div>
             </div>
-            <!-- -- 메뉴 검색 ---------------------------------------------------- -->
+            <!-- ===== 메뉴 검색 ====================================================== -->
             <div v-if="uiState.selectedRoleId" style="padding:8px 0 6px;">
               <input class="form-control" v-model="uiState.menuSearchValue" placeholder="메뉴명 또는 메뉴코드 검색"
                 style="font-size:12px;padding:5px 10px;" />
             </div>
-            <!-- -- 메뉴 트리 목록 ------------------------------------------------- -->
+            <!-- ===== 메뉴 트리 목록 =================================================== -->
             <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;">
               <div v-if="!cfMenuTree.length" style="text-align:center;color:#bbb;padding:20px;font-size:13px;">메뉴가 없습니다.</div>
               <div v-for="m in cfMenuTree" :key="m.menuId"
                 style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
                 :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
-                <!-- -- 블릿 트리 들여쓰기 ------------------------------------------- -->
+                <!-- ===== 블릿 트리 들여쓰기 ================================================= -->
                 <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
                   fontSize: m._depth===0?'7px':'11px', flexShrink:0,
                   color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
@@ -714,7 +716,7 @@ window.SyRoleMng = {
                 <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin:0 8px;flex-shrink:0;">
                   {{ m.menuCode }}
                 </code>
-                <!-- -- 권한 레벨 토글 버튼 ------------------------------------------ -->
+                <!-- ===== 권한 레벨 토글 버튼 ================================================ -->
                 <div style="display:flex;gap:2px;flex-shrink:0;">
                   <button v-for="p in codes.perm_levels" :key="p"
                     style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
@@ -730,7 +732,7 @@ window.SyRoleMng = {
             <div v-else style="text-align:center;color:#bbb;padding:40px 0;font-size:13px;">위 목록에서 역할의 [설정] 버튼을 클릭하세요.</div>
           </div>
         </div>
-        <!-- -- 우: 대상사용자 ----------------------------------------------------- -->
+        <!-- ===== 우: 대상사용자 =================================================== -->
         <div style="flex:1;">
           <div class="card" style="margin-bottom:0;">
             <div class="toolbar">
@@ -744,7 +746,7 @@ window.SyRoleMng = {
                 + 사용자 추가
               </button>
             </div>
-            <!-- -- 선택된 사용자 목록 ----------------------------------------------- -->
+            <!-- ===== 선택된 사용자 목록 ================================================= -->
             <div v-if="uiState.selectedRoleId">
               <div v-if="!cfRoleUsersList.length"
                 style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
@@ -775,10 +777,10 @@ window.SyRoleMng = {
           </div>
         </div>
       </div>
-      <!-- -- 사용자 선택 모달 ------------------------------------------------------ -->
+      <!-- ===== 사용자 선택 모달 ================================================== -->
       <bo-user-select-modal v-if="uiState.userSelectOpen" @select="onUserSelect"
         @close="uiState.userSelectOpen=false" />
-      <!-- -- 상위역할 선택 모달 ----------------------------------------------------- -->
+      <!-- ===== 상위역할 선택 모달 ================================================= -->
       <role-tree-modal
         v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
         @select="onParentSelect"

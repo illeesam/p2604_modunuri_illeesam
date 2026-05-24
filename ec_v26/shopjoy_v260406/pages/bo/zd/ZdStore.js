@@ -198,6 +198,7 @@ window.ZdStore = {
   template: `
 <div>
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <!-- ===== 페이지 타이틀 ==================================================== -->
     <div class="page-title" style="margin: 0;">Store 정보 관리</div>
     <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
       🔄 재로드

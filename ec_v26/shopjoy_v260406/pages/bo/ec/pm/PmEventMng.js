@@ -214,8 +214,10 @@ window.PmEventMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">이벤트관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card">
@@ -240,7 +242,7 @@ window.PmEventMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <!-- -- 리스트 뷰 -------------------------------------------------------- -->
+    <!-- ===== 리스트 뷰 ====================================================== -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="baseGridColumns" :rows="events" :pager="pager" row-key="eventId"
       :row-actions="true"
@@ -256,13 +258,13 @@ window.PmEventMng = {
         </div>
       </template>
     </bo-grid>
-    <!-- -- 카드 뷰 --------------------------------------------------------- -->
+    <!-- ===== 카드 뷰 ======================================================= -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="events.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="e in events" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="uiStateDetail.selectedId===e.eventId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleLoadDetail(e.eventId)">
-        <!-- -- 배너 이미지 --------------------------------------------------- -->
+        <!-- ===== 배너 이미지 ===================================================== -->
         <div v-if="e.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="e.bannerImage"></div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">이벤트 #{{ e.eventId }}</div>
@@ -291,7 +293,7 @@ window.PmEventMng = {
     </div>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-  <!-- -- 하단 상세: EventDtl 임베드 -------------------------------------------- -->
+  <!-- ===== 하단 상세: EventDtl 임베드 ======================================== -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

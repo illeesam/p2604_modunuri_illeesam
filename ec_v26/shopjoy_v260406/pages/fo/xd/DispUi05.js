@@ -61,7 +61,7 @@ window.DispUi05 = {
   },
   template: /* html */`
 <div>
-  <!-- -- 페이지 헤더 --------------------------------------------------------- -->
+  <!-- ===== 페이지 헤더 ===================================================== -->
   <div style="background:linear-gradient(135deg,#0097a7,#00838f);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2);">
     <div>
       <span style="font-size:16px;font-weight:700;">👤 DispUi04 - MY_PAGE / FOOTER</span>
@@ -69,7 +69,7 @@ window.DispUi05 = {
     </div>
     <span style="font-size:13px;opacity:.8;">패널 {{ cfTotalPanels }}개</span>
   </div>
-  <!-- -- 본문: DispUi 컴포넌트 ------------------------------------------------ -->
+  <!-- ===== 본문: DispUi 컴포넌트 ============================================ -->
   <disp-x01-ui :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" />
 </div>
 `,

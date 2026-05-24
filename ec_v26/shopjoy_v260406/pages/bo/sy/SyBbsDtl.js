@@ -180,29 +180,31 @@ window.SyBbsDtl = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     {{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbsId }}</span>
   </div>
   <div class="card">
     <!-- 사이트명 (BoFormArea 자동 렌더) -->
+    <!-- ===== 폼 영역 ======================================================= -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
       :cols="4" :show-actions="false" />
-    <!-- ── 게시판 선택 ─────────────────────────────────────────────────────── -->
+    <!-- ===== 게시판 선택 ===================================================== -->
     <div class="form-group">
       <label class="form-label">게시판 <span v-if="!cfDtlMode" class="req">*</span></label>
       <div style="display:flex;align-items:center;gap:8px;">
-        <!-- ── 신규: 선택 버튼 ──────────────────────────────────────────────── -->
+        <!-- ===== 신규: 선택 버튼 ================================================== -->
         <template v-if="cfIsNew && !cfDtlMode">
           <button class="btn btn-secondary btn-sm" type="button" @click="showBbmModal=true">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
-        <!-- ── 수정 또는 cfDtlMode: 변경 불가 ──────────────────────────────────── -->
+        <!-- ===== 수정 또는 cfDtlMode: 변경 불가 ===================================== -->
         <template v-else>
           <button class="btn btn-secondary btn-sm" type="button" disabled style="opacity:.5;cursor:not-allowed;">📋 게시판 선택</button>
           <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="showBbmDetail=true" title="게시판 상세보기">🔍</button>
         </template>
-        <!-- ── 선택된 게시판 표시 ─────────────────────────────────────────────── -->
+        <!-- ===== 선택된 게시판 표시 ================================================= -->
         <span v-if="selectedBbm" style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <b style="color:#1a1a2e;">{{ selectedBbm.bbmNm }}</b>
           <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:4px;">{{ selectedBbm.bbmCode }}</code>
@@ -213,9 +215,10 @@ window.SyBbsDtl = {
       <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
     </div>
     <!-- 기본 정보 (BoFormArea 자동 렌더) -->
+    <!-- ===== 폼 영역 ======================================================= -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="4" :show-actions="false" />
-    <!-- ── 내용 입력 (contentType 에 따라 렌더링) ───────────────────────────────── -->
+    <!-- ===== 내용 입력 (contentType 에 따라 렌더링) =============================== -->
     <div v-if="!selectedBbm" class="form-group">
       <label class="form-label">내용</label>
       <div style="color:#bbb;font-size:13px;padding:12px 0;">게시판을 먼저 선택하세요.</div>
@@ -233,7 +236,7 @@ window.SyBbsDtl = {
       <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
       <base-html-editor v-else v-model="form.contentHtml" height="320px" />
     </div>
-    <!-- ── 첨부파일 ───────────────────────────────────────────────────────── -->
+    <!-- ===== 첨부파일 ======================================================= -->
     <div v-if="selectedBbm && cfAttachMaxCount > 0" class="form-group">
       <label class="form-label">
         첨부파일
@@ -268,12 +271,12 @@ window.SyBbsDtl = {
       </template>
     </div>
   </div>
-  <!-- ── 게시판 선택 팝업 ────────────────────────────────────────────────────── -->
+  <!-- ===== 게시판 선택 팝업 ================================================== -->
   <bbm-select-modal
     v-if="showBbmModal" @select="onBbmSelect"
     @close="showBbmModal=false"
     />
-  <!-- ── 게시판 상세보기 팝업 ──────────────────────────────────────────────────── -->
+  <!-- ===== 게시판 상세보기 팝업 ================================================ -->
   <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
     width="420px" @close="showBbmDetail=false">
     <div class="detail-row"><span class="detail-label">게시판ID</span><span class="detail-value">{{ selectedBbm.bbmId }}</span></div>

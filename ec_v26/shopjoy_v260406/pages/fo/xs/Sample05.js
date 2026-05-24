@@ -233,9 +233,11 @@ window.XsSample05 = {
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span>
   </div>
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
+    <!-- ===== 검색 영역 ====================================================== -->
     <fo-search-area :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
+  <!-- ===== 목록 영역 ====================================================== -->
   <fo-grid-crud
     list-title="게시판 목록" row-key="boardId"
     :columns="baseGridColumns" :rows="gridRows"

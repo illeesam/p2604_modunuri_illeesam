@@ -164,6 +164,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
+  <!-- ===== 목록 영역 ====================================================== -->
   <bo-grid
     :columns="histGridColumns" :rows="batchLogs" :pager="pager" row-key="batchLogId"
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"

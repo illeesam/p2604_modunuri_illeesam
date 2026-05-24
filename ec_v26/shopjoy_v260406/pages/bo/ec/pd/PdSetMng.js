@@ -480,6 +480,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
   template: `
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">세트상품관리</div>
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#fff4ec;border-left:3px solid #e3803b;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#bf5a1a">세트상품</strong>은 여러 구성품을 하나의 세트로 판매하는 방식입니다.</span>
@@ -502,11 +503,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       <span style="color:#888;font-size:12px">예) 선물세트, 패키지 구성품, 사은품 포함 세트</span>
     </div>
   </div>
-  <!-- -- 검색 ------------------------------------------------------------- -->
+  <!-- ===== 검색 ========================================================= -->
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- -- 목록 ------------------------------------------------------------- -->
+  <!-- ===== 목록 ========================================================= -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">세트상품 목록</span>
@@ -517,6 +519,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </div>
     <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="pager"
         row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
         <template #cell-prodNm="{ row }">
@@ -552,10 +555,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
-  <!-- -- 신규등록 / 구성관리 (인라인 Dtl) ------------------------------------------ -->
+  <!-- ===== 신규등록 / 구성관리 (인라인 Dtl) ====================================== -->
   <div v-if="uiState.dtlMode !== null" class="card"
     :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b'">
-    <!-- -- Dtl 헤더 ------------------------------------------------------- -->
+    <!-- ===== Dtl 헤더 ===================================================== -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
         <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-orange']">
@@ -575,6 +578,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     <!-- 신규 세트상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">세트상품 기본정보 (pd_prod)</div>
+      <!-- ===== 폼 영역 ======================================================= -->
       <bo-form-area :columns="newSetFormColumns" :form="newForm" :errors="newErrors"
         :cols="3" :show-actions="false">
         <template #brand>
@@ -595,7 +599,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </template>
       </bo-form-area>
     </div>
-    <!-- -- ② 카테고리 ------------------------------------------------------- -->
+    <!-- ===== ② 카테고리 ===================================================== -->
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
         <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
@@ -622,13 +626,14 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </div>
       </div>
     </div>
-    <!-- -- ③ 구성품 목록 ----------------------------------------------------- -->
+    <!-- ===== ③ 구성품 목록 =================================================== -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <span style="font-size:13px;font-weight:600;color:#555">구성품 목록 (pd_prod_set_item)</span>
       <span style="font-size:11px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 8px">
         표시 목적 · 재고 개별 차감 없음 · 안분율 없음
       </span>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid bare :columns="setItemGridColumns" :rows="dtlItems" row-key="_id"
       draggable row-actions :row-style="fnSetItemRowStyle"
       empty-text="구성품이 없습니다. 아래 버튼으로 추가하세요."
@@ -655,7 +660,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </td>
       </template>
     </bo-grid>
-    <!-- -- 구성품 추가 버튼 ---------------------------------------------------- -->
+    <!-- ===== 구성품 추가 버튼 ================================================== -->
     <div style="margin-top:12px;display:flex;gap:8px">
       <button class="btn btn-secondary btn-sm" @click="openPicker()">+ 상품 구성품 추가</button>
       <button class="btn btn-secondary btn-sm" @click="addItemBlank">
@@ -664,7 +669,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </button>
     </div>
   </div>
-  <!-- -- 상품 피커 모달 ------------------------------------------------------- -->
+  <!-- ===== 상품 피커 모달 =================================================== -->
   <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
       @click.self="uiState.pickerOpen=false">
@@ -689,6 +694,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
+          <!-- ===== 목록 영역 ====================================================== -->
           <bo-grid bare :columns="pickerGridColumns" :rows="cfPickerList" row-key="productId"
             empty-text="검색 결과가 없습니다." row-actions>
             <template #row-actions="{ row }">
@@ -699,7 +705,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
   </teleport>
-  <!-- -- 카테고리 피커 모달 ----------------------------------------------------- -->
+  <!-- ===== 카테고리 피커 모달 ================================================= -->
   <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
     @select="addCategory" @close="uiState.catPickerOpen=false" />
 </div>

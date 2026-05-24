@@ -152,6 +152,7 @@ window.ZdLocalStorage = {
   },
   template: `
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">localStorage 정보 관리</div>
   <div class="card">
     <div style="display: flex; gap: 16px; margin-bottom: 16px;">

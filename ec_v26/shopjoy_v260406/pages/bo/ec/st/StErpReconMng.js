@@ -157,6 +157,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">ERP 전표대사</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다.</span>
@@ -166,6 +167,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
   </div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
@@ -187,6 +189,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div>
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid
       :columns="baseGridColumns" :rows="reconList" :pager="pager" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"

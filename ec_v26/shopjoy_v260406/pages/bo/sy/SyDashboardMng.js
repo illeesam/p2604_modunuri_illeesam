@@ -80,6 +80,7 @@ window.SyDashboardMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">대시보드</div>
   <!-- 통계 카드 -->
   <div class="dash-stats">

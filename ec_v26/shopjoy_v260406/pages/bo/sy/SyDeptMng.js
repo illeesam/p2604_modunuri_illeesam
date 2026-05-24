@@ -357,8 +357,10 @@ window.SyDeptMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">부서관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
@@ -373,6 +375,7 @@ window.SyDeptMng = {
       </div>
     </div>
     <div>
+      <!-- ===== CRUD 그리드 =================================================== -->
       <bo-grid-crud
         :columns="baseGridColumns" :rows="gridRows" row-key="deptId"
         list-title="부서목록" :show-export="true" :draggable="false"

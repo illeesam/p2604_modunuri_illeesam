@@ -229,8 +229,10 @@ window.PmVoucherMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">상품권관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card">
@@ -255,6 +257,7 @@ window.PmVoucherMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="baseGridColumns" :rows="vouchers" :pager="pager" row-key="voucherId"
       :row-actions="true"
@@ -269,7 +272,7 @@ window.PmVoucherMng = {
         </div>
       </template>
     </bo-grid>
-    <!-- -- 카드 뷰 --------------------------------------------------------- -->
+    <!-- ===== 카드 뷰 ======================================================= -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="vouchers.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="v in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
@@ -301,7 +304,7 @@ window.PmVoucherMng = {
     </div>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-  <!-- -- 하단 상세: VoucherDtl 임베드 ------------------------------------------ -->
+  <!-- ===== 하단 상세: VoucherDtl 임베드 ====================================== -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

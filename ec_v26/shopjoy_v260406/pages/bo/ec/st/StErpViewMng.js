@@ -155,6 +155,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">ERP 전표조회</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.</span>
@@ -164,9 +165,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
   </div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div class="card" style="margin-top:12px">
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid
       :columns="baseGridColumns" :rows="slips" :pager="pager" row-key="slipId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"

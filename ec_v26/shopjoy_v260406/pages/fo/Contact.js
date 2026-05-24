@@ -89,7 +89,7 @@ window.Contact = {
   },
   template: /* html */ `
 <div class="page-wrap">
-  <!-- -- 페이지 타이틀 배너 ----------------------------------------------------- -->
+  <!-- ===== 페이지 타이틀 배너 ================================================= -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="고객센터"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -105,9 +105,10 @@ window.Contact = {
     </div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(14px,2.5vw,28px);align-items:start;" class="contact-grid">
-    <!-- -- 문의 폼 --------------------------------------------------------- -->
+    <!-- ===== 문의 폼 ======================================================= -->
     <div class="card" style="padding:clamp(16px,4vw,32px);">
       <h2 style="font-size:1rem;font-weight:700;margin-bottom:22px;color:var(--text-primary);">✉️ 문의 양식</h2>
+      <!-- ===== 폼 영역 ======================================================= -->
       <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
       <div style="margin-bottom:22px;">
         <label class="form-label">첨부파일 (준비중)</label>
@@ -115,7 +116,7 @@ window.Contact = {
       </div>
       <button class="btn-blue" @click="handleSubmit" style="width:100%;padding:13px;">문의 접수하기</button>
     </div>
-    <!-- -- 연락처 + 미니 FAQ ------------------------------------------------- -->
+    <!-- ===== 연락처 + 미니 FAQ =============================================== -->
     <div style="display:flex;flex-direction:column;gap:18px;">
       <div class="card" style="padding:24px;">
         <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:16px;color:var(--text-primary);">📋 연락처</h3>

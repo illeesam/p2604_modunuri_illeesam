@@ -255,9 +255,11 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   template: /* html */`
 <div>
   <!-- 페이지 타이틀 -->
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">할인관리</div>
   <!-- 검색영역 -->
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- 목록영역 (리스트/카드 토글) -->
@@ -285,6 +287,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       </div>
     </div>
     <!-- 리스트 뷰 (BoGrid) -->
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="baseGridColumns" :rows="discounts" :pager="pager" row-key="discntId"
       :row-actions="true"

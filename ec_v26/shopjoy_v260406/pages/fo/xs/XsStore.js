@@ -189,7 +189,7 @@ window.XsStore = {
       🔄 재로드
     </button>
   </div>
-  <!-- -- Store 선택 탭 + 뷰모드 버튼 -------------------------------------------- -->
+  <!-- ===== Store 선택 탭 + 뷰모드 버튼 ======================================== -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px; overflow: hidden;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
       <div style="display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0;">
@@ -210,7 +210,7 @@ window.XsStore = {
           {{ store.label }}
         </button>
       </div>
-      <!-- -- 뷰모드 버튼 (탭바 우측) --------------------------------------------- -->
+      <!-- ===== 뷰모드 버튼 (탭바 우측) ============================================= -->
       <div style="display: flex; gap: 4px; padding-left: 16px; flex-shrink: 0;">
         <button
           @click="uiState.tabMode = 'tab'"
@@ -311,7 +311,7 @@ window.XsStore = {
       </div>
     </div>
   </div>
-  <!-- -- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) --------------------------------------- -->
+  <!-- ===== 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) =================================== -->
   <div :style="{
     display: 'grid',
     gridTemplateColumns: uiState.tabMode === 'col1' ? '1fr' : uiState.tabMode === 'col2' ? 'repeat(2, 1fr)' : uiState.tabMode === 'col3' ? 'repeat(3, 1fr)' : uiState.tabMode === 'col4' ? 'repeat(4, 1fr)' : uiState.tabMode === 'col5' ? 'repeat(5, 1fr)' : '1fr',

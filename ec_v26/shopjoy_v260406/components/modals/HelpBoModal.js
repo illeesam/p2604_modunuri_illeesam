@@ -268,6 +268,7 @@ window.HelpBoModal = {
     };
   },
   template: `
+<!-- ===== 모달 ========================================================= -->
 <bo-modal :show="show" max-width="860px" height="92vh" max-height="92vh"
   box-pad="0" body-pad="0" :z-index="3000" @close="close">
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">

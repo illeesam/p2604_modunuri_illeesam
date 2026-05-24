@@ -142,9 +142,10 @@ window.OdOrderHist = {
     </div>
   </div>
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- -- 구성 상품 ---------------------------------------------------------- -->
+    <!-- ===== 구성 상품 ====================================================== -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
         empty-text="구성 상품 정보가 없습니다." row-actions>
         <template #row-actions="{ row }">
@@ -152,7 +153,7 @@ window.OdOrderHist = {
         </template>
       </bo-grid>
     </div>
-    <!-- -- 배송 이력 ---------------------------------------------------------- -->
+    <!-- ===== 배송 이력 ====================================================== -->
     <div class="card" v-show="showTab('dliv')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
       <template v-if="cfRelatedDliv">
@@ -169,14 +170,16 @@ window.OdOrderHist = {
           </div>
           <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
         </div>
+        <!-- ===== 목록 영역 ====================================================== -->
         <bo-grid bare :columns="dlivHistGridColumns" :rows="cfDlivHistory"
           empty-text="배송 이력이 없습니다."></bo-grid>
       </template>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
     </div>
-    <!-- -- 연관 클레임 --------------------------------------------------------- -->
+    <!-- ===== 연관 클레임 ===================================================== -->
     <div class="card" v-show="showTab('claims')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
         empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
         <template #row-actions="{ row }">

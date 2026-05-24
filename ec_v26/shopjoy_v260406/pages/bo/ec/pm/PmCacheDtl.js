@@ -212,6 +212,7 @@ window.PmCacheDtl = {
   template: /* html */`
 <div>
   <!-- 페이지 타이틀 + ID 표시 -->
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span>
@@ -238,6 +239,7 @@ window.PmCacheDtl = {
     <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <!-- ===== 폼 영역 ======================================================= -->
       <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
         <!-- 회원ID + 보기 -->
@@ -288,6 +290,7 @@ window.PmCacheDtl = {
         </span>
         <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
       </div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid bare :columns="cacheHistGridColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
         empty-text="캐쉬 내역이 없습니다."></bo-grid>
     </div>

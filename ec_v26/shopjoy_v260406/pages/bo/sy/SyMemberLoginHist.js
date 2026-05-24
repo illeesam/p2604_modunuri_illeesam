@@ -259,6 +259,7 @@ window.SyMemberLoginHist = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">회원로그인이력</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">회원의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다.</span>
@@ -267,8 +268,9 @@ window.SyMemberLoginHist = {
       • 로그인 로그: mbh_member_login_log — 로그인 시도·결과·IP·디바이스·x-헤더 • 토큰 이력: mbh_member_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료) • 행 클릭 → 상세정보 펼치기 (x-헤더 포함)
     </div>
   </div>
-  <!-- ── 검색 ──────────────────────────────────────────────────────── -->
+  <!-- ===== 검색 ========================================================= -->
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
@@ -276,12 +278,13 @@ window.SyMemberLoginHist = {
         </button>
       </template>
     </bo-search-area>
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="moreSearchColumns" :param="uiState"
       @search="onSearch" />
   </div>
-  <!-- ── 탭 + 목록 ─────────────────────────────────────────────────── -->
+  <!-- ===== 탭 + 목록 ===================================================== -->
   <div class="tab-nav" style="margin-bottom:16px">
     <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">
       로그인 로그
@@ -292,7 +295,7 @@ window.SyMemberLoginHist = {
       <span class="tab-count">{{ tabCounts.token }}</span>
     </button>
   </div>
-  <!-- ── 로그인 로그 탭 ──────────────────────────────────────────── -->
+  <!-- ===== 로그인 로그 탭 =================================================== -->
   <bo-grid v-if="uiState.activeTab==='log'"
     :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
@@ -401,7 +404,7 @@ window.SyMemberLoginHist = {
       </td>
     </template>
   </bo-grid>
-  <!-- ── 토큰 이력 탭 ────────────────────────────────────────────── -->
+  <!-- ===== 토큰 이력 탭 ==================================================== -->
   <bo-grid v-if="uiState.activeTab==='token'"
     :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"

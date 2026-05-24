@@ -207,6 +207,7 @@ window.StConfigMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">정산기준관리</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다.</span>
@@ -223,6 +224,7 @@ window.StConfigMng = {
         <button class="btn btn-primary" @click="openNew">+ 기준 추가</button>
       </div>
     </div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid
       :columns="baseGridColumns" :rows="configs" row-key="settleConfigId"
       list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
@@ -237,6 +239,7 @@ window.StConfigMng = {
   <!-- 편집 폼 (BoFormArea 자동 렌더) -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
+    <!-- ===== 폼 영역 ======================================================= -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :cols="4"
       @save="handleSave" @cancel="closeForm" />

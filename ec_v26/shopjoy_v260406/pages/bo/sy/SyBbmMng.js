@@ -209,16 +209,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">게시판관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
-    <!-- -- 좌: 표시경로 트리 --------------------------------------------------- -->
+    <!-- ===== 좌: 표시경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
-    <!-- -- 우: 목록 + 상세 --------------------------------------------------- -->
+    <!-- ===== 우: 목록 + 상세 ================================================= -->
     <div>
+      <!-- ===== 목록 영역 ====================================================== -->
       <bo-grid
         :columns="baseGridColumns" :rows="bbms" :pager="pager" row-key="bbmId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"

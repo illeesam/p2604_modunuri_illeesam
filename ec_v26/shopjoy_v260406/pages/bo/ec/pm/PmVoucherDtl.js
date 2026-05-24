@@ -315,6 +315,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">
     {{ cfIsNew ? '상품권 등록' : '상품권 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.voucherId }}</span>
@@ -328,7 +329,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
-  <!-- -- 탭 네비게이션 -------------------------------------------------------- -->
+  <!-- ===== 탭 네비게이션 ==================================================== -->
   <div class="tab-nav">
     <button v-for="t in ['info','detail','issueHist','useHist','preview']" :key="Math.random()"
       :class="['tab-btn', {active:tab===t}]"
@@ -339,6 +340,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
   <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
+    <!-- ===== 폼 영역 ======================================================= -->
     <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
       <!-- 판매업체 picker -->
@@ -364,13 +366,13 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <button @click="navigate('pmVoucherMng')" class="btn btn-secondary">취소</button>
     </div>
   </div>
-  <!-- -- 미리보기 탭 --------------------------------------------------------- -->
+  <!-- ===== 미리보기 탭 ===================================================== -->
   <div v-if="showTab('preview')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">미리보기</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
-      <!-- -- 좌측 컬럼 ------------------------------------------------------ -->
+      <!-- ===== 좌측 컬럼 ====================================================== -->
       <div style="display:flex;flex-direction:column;gap:16px;">
-        <!-- -- 바코드 ------------------------------------------------------ -->
+        <!-- ===== 바코드 ======================================================== -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(to right, #fff 0%, rgba(232,88,122,0.02) 100%);">
           <div style="position:absolute;top:-20px;right:-20px;font-size:60px;opacity:0.04;transform:rotate(-15deg);pointer-events:none;">
             💳
@@ -391,7 +393,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
             </div>
           </div>
         </div>
-        <!-- -- SNS전송형태 -------------------------------------------------- -->
+        <!-- ===== SNS전송형태 ==================================================== -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden;">
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:6px;z-index:0;">
             ShopJoy
@@ -411,7 +413,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
             <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
           </div>
         </div>
-        <!-- -- 이메일 내용 --------------------------------------------------- -->
+        <!-- ===== 이메일 내용 ===================================================== -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">
             📧 이메일 내용
@@ -444,9 +446,9 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
           </div>
         </div>
       </div>
-      <!-- -- 우측 컬럼 ------------------------------------------------------ -->
+      <!-- ===== 우측 컬럼 ====================================================== -->
       <div style="display:flex;flex-direction:column;gap:16px;">
-        <!-- -- QR코드 ----------------------------------------------------- -->
+        <!-- ===== QR코드 ======================================================= -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(135deg, #fff 0%, rgba(232,88,122,0.01) 100%);">
           <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">📱</div>
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">
@@ -465,7 +467,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
             </div>
           </div>
         </div>
-        <!-- -- 종이형태 ----------------------------------------------------- -->
+        <!-- ===== 종이형태 ======================================================= -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">
             🎟 종이형태
@@ -499,19 +501,21 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       </div>
     </div>
   </div>
-  <!-- -- 발급내역 탭 --------------------------------------------------------- -->
+  <!-- ===== 발급내역 탭 ===================================================== -->
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid bare :columns="issueGridColumns" :rows="cfIssuedList" row-key="issueNo"
       empty-text="발급내역이 없습니다."></bo-grid>
   </div>
-  <!-- -- 사용내역 탭 --------------------------------------------------------- -->
+  <!-- ===== 사용내역 탭 ===================================================== -->
   <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
+    <!-- ===== 목록 영역 ====================================================== -->
     <bo-grid bare :columns="usageGridColumns" :rows="cfUsedList" row-key="usageNo"
       empty-text="사용내역이 없습니다."></bo-grid>
   </div>
-  <!-- -- 상세정보 탭 --------------------------------------------------------- -->
+  <!-- ===== 상세정보 탭 ===================================================== -->
   <div v-if="showTab('detail')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
     <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e8e8e8;">
@@ -527,7 +531,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       </div>
     </div>
   </div>
-  <!-- -- SNS 전송 모달 ------------------------------------------------------ -->
+  <!-- ===== SNS 전송 모달 ================================================== -->
   <bo-modal :show="snsModal.show"
     :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"
     width="500px" @close="snsModal.show=false">

@@ -204,10 +204,13 @@ window.MbMemGroupMng = {
   },
   template: `
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">회원그룹관리</div>
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== CRUD 그리드 =================================================== -->
   <bo-grid-crud
     :columns="baseGridColumns" :rows="gridRows" row-key="memberGroupId"
     list-title="회원그룹 목록"

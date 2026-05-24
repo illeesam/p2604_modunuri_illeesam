@@ -329,6 +329,7 @@ window.SyApiLogMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== 페이지 타이틀 ==================================================== -->
   <div class="page-title">API로그조회</div>
   <div class="page-desc-bar">
     <span class="page-desc-summary">syh_access_log(API요청로그)와 syh_access_error_log(API오류로그)를 조회합니다.</span>
@@ -337,8 +338,9 @@ window.SyApiLogMng = {
       • API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함 • API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함 • 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등) • 기본 조회기간: 최근 1주일.
     </div>
   </div>
-  <!-- -- 검색 ------------------------------------------------------------- -->
+  <!-- ===== 검색 ========================================================= -->
   <div class="card">
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
@@ -346,12 +348,13 @@ window.SyApiLogMng = {
         </button>
       </template>
     </bo-search-area>
+    <!-- ===== 검색 영역 ====================================================== -->
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="moreSearchColumns" :param="uiState"
       @search="onSearch" />
   </div>
-  <!-- -- 탭 + 목록 --------------------------------------------------------- -->
+  <!-- ===== 탭 + 목록 ===================================================== -->
   <div class="tab-nav" style="margin-bottom:16px">
     <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">
       📋 API요청로그
@@ -362,7 +365,7 @@ window.SyApiLogMng = {
       <span class="tab-count">{{ tabCounts.error }}</span>
     </button>
   </div>
-  <!-- -- API요청로그 탭 -------------------------------------------------- -->
+  <!-- ===== API요청로그 탭 ================================================== -->
   <bo-grid v-if="uiState.activeTab==='access'"
     :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
@@ -494,7 +497,7 @@ window.SyApiLogMng = {
       </td>
     </template>
   </bo-grid>
-  <!-- -- API오류로그 탭 -------------------------------------------------- -->
+  <!-- ===== API오류로그 탭 ================================================== -->
   <bo-grid v-if="uiState.activeTab==='error'"
     :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
