@@ -51,6 +51,17 @@ window.MyChatt = {
       await handleSearchData();
     };
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MyChatt.js : handleBtnAction -> ', cmd, param);
+      // 날짜 필터 조회
+      if (cmd === 'searchParam-date-search') {
+        return onSearch(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MyChatt.js : handleSelectAction -> ', cmd, param);
@@ -69,15 +80,14 @@ window.MyChatt = {
 
     return {
       uiState, codes,                                                        // 상태 / 데이터
-      handleSelectAction,                                                    // dispatch
+      handleBtnAction, handleSelectAction,                                   // dispatch
       // ===== chatts 영역 ======================================================
       myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats,
-      onDateSearch, onSearch,
     };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
-  <MyDateFilter @search="onSearch" />
+  <MyDateFilter @search="handleBtnAction('searchParam-date-search', $event)" />
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredChats.length" :pager="chatPager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->

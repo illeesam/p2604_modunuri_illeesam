@@ -1175,7 +1175,36 @@ pathModal-pick            ← 경로 선택 모달 선택
 - **기준 PoC**: [SyRoleMng.js:32-132](../../../pages/bo/sy/SyRoleMng.js#L32) — handleBtnAction 19 cmd + handleSelectAction 13 cmd, **9개 도메인 영역** (`searchParam`, `roles`, `roles-row`, `pathTree`, `config`, `roleMenus`, `roleUsers`, `parentModal`, `pathModal`). 모든 영역명이 setup() 안 reactive 변수명과 일치. template + 컬럼 콜백 안 모든 이벤트가 dispatch 경유. 각 if 위 + return 아래 한글 주석 부여.
 - **return 객체 단순화 효과**: SyRoleMng 기준 55개 → 17개 (-69%). [SyRoleMng.js:711-720](../../../pages/bo/sy/SyRoleMng.js#L711) 참조.
 
-### BO 전체 일괄 적용 이력 (2026-05-24) ⭐
+### BO + FO 전체 일괄 적용 이력 (2026-05-24 ~ 2026-05-25) ⭐
+
+**BO 121개 + FO 54개 = 총 175개 파일 100% dispatch 패턴 적용 완료** — sy + ec/{cm,mb,od,pd,pm,dp,st} + zd + Dashboard + FO 전 페이지.
+
+#### FO 적용 이력 (2026-05-25)
+
+FO 54개 파일 — Home/Prod (메인 상품) + my/My* (마이페이지) + xs/Sample (샘플 페이지) + xd/DispUi (전시 UI 샘플) 등 전 도메인 적용.
+
+**FO 영역명 표준**:
+- 데이터: `cart`, `orders`, `claims`, `coupons`, `caches`, `contacts`, `chatts`, `events`, `blogs`, `faqs`, `likes`, `stores`, `members`, `posts`, `prods`, `prod`(단건)
+- 페이지 이동: `page-go-{대상}` (예: `page-go-home`, `page-go-prod-list`, `page-go-cart`)
+- 폼: `form` (Login/Order/BlogEdit/Contact)
+- 모달: `xxxModal` (`memberPickModal`, `sizeGuideModal`, `zoomModal`, `quickBuy`, `photoModal` 등)
+- 탭/뷰모드: `tab`, `sort`, `filter`, `category`
+- 옵션: `options` (Prod View 의 색상/사이즈 선택)
+- 슬라이드/갤러리: `hero`, `gallery`, `photoGrid`, `photoDetail`
+- 요약: `summary` (Cart/Order)
+- 검색바: `searchParam`
+
+**FO 특수 사이트별 분기**:
+- `Home01/02/03`, `Prod01List/02/03`, `Prod01View/02/03` 등 사이트별 변형 화면들은 **cmd 명명을 동일하게 유지** (테마/CSS 만 차이)
+- 예: Prod01View / Prod02View / Prod03View 모두 `handleBtnAction 27 cmd + handleSelectAction 8 cmd` 동일
+
+**§15 단순 컴포넌트 면제 정책 폐지 ⭐ (2026-05-25)**:
+- 기존: 핸들러가 하나도 없는 정적 표시 컴포넌트는 dispatch 생략 가능
+- **신규**: 모든 파일에 dispatch 함수 2개 (`handleBtnAction` + `handleSelectAction`) 추가 — 핸들러가 0개여도 최소한 unknown warn 만 있는 빈 함수 추가
+- 이유: 일관성 + 향후 액션 추가 시 즉시 사용 가능 + 디버깅 추적성
+- 적용 대상: xs/Sample10/11/12/13/14/03/21/22/23, xd/DispUi01~06, DispUiPage 등 16개 파일
+
+### BO 전체 일괄 적용 이력 (2026-05-24)
 
 **BO 121개 파일 100% dispatch 패턴 적용 완료** — sy + ec/{cm,mb,od,pd,pm,dp,st} + zd + Dashboard 전 도메인.
 
