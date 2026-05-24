@@ -5,11 +5,15 @@ window.Location = {
     navigate: { type: Function, required: true },        // 페이지 이동
   },
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: '' });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -39,7 +43,9 @@ window.Location = {
     const naverLink  = `https://map.naver.com/v5/search/${ADDR_ENC}`;
     const googleLink = `https://maps.google.com/maps?q=${ADDR_ENC}`;
 
-    /* iframe 에러 → 다음 제공자로 fallback */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onMapError — 이벤트 */
     const onMapError = () => {
       if (uiState.mapProvider === 'google') {
         uiState.mapProvider = 'osm';
@@ -84,7 +90,8 @@ window.Location = {
       }
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       uiState, codes, onMapError,

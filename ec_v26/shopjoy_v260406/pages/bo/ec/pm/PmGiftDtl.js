@@ -11,6 +11,8 @@ window.PmGiftDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -23,7 +25,7 @@ window.PmGiftDtl = {
     const codes = reactive({ gift_cond_types: [], gift_statuses: [] });
 
     // 단건 조회
-    /* 소속업체 목록 로드 (vendor 선택 모달용) */
+    /* loadVendors — 로드 */
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -31,6 +33,7 @@ window.PmGiftDtl = {
       } catch (e) { console.warn('[PmGiftDtl.js] vendor load failed', e); }
     };
 
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
       if (cfIsNew.value) return;
@@ -58,10 +61,13 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmGiftDtlState.tabMode = v; });
 
-    /* 사은품 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 사은품 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.gift_cond_types = codeStore.sgGetGrpCodes('GIFT_COND_KR');
@@ -72,7 +78,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     const _today = new Date();
 
-    /* 사은품 _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
@@ -104,10 +110,10 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* 사은품 hasVisibility */
+    /* hasVisibility — 여부 확인 */
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
 
-    /* 사은품 toggleVisibility */
+    /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.visibilityTargets);
       const i = list.indexOf(code);
@@ -121,7 +127,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       return v ? v.vendorNm : '소속업체 선택';
     });
 
-    /* 사은품 selectVendor */
+    /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -140,13 +146,13 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     /* info 외 탭의 [저장] 버튼은 ID 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
-    /* 사은품 _afterApiOk */
+    /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
 
-    /* 사은품 _afterApiErr */
+    /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -155,6 +161,9 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     };
 
     /* ── 탭별 저장: info=신규/전체저장, visibility=공개대상만 부분 PUT ── */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
 
@@ -206,9 +215,10 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfIsView = computed(() => props.dtlMode === 'view');
 
-    // -- return ---------------------------------------------------------------
-
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const infoFormColumns = [
       { key: 'giftNm',       label: '사은품명', type: 'text', required: true,
         placeholder: '사은품명 입력', colSpan: 2 },
@@ -229,6 +239,9 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfIsView, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfCondValLabel, cfSelectedVendorNm, selectVendor, infoFormColumns };
   },

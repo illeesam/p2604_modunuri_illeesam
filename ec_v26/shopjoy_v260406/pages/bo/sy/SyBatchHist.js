@@ -7,6 +7,8 @@ window.SyBatchHist = {
     batchCode:    { type: String, default: null }, // 대상 코드
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,6 +20,7 @@ window.SyBatchHist = {
     const codes = reactive({ batch_run_statuses: [] });
 
     // onMounted에서 API 로드
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -48,6 +51,10 @@ window.SyBatchHist = {
     };
 
     /* 배치 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -60,8 +67,6 @@ window.SyBatchHist = {
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
@@ -71,56 +76,64 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
-    /* 배치 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 배치 setPage */
+    /* setPage — 설정 */
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData().then(() => { onExpandAll(); }); } };
 
     /* 배치 onSizeChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData().then(() => { onExpandAll(); }); };
 
-    /* 배치 목록조회 */
+    /* onSearch — 조회 */
     const onSearch     = () => { pager.pageNo = 1; handleSearchData('DEFAULT').then(() => { onExpandAll(); }); };
 
-    /* ── 메시지 상세 토글 ── */
+    /* isExpanded — 여부 확인 */
     const isExpanded = (logId) => uiState.expandedSet.has(logId);
 
-    /* 배치 toggleExpand */
+    /* toggleExpand — 토글 */
     const toggleExpand = (logId) => {
       if (uiState.expandedSet.has(logId)) uiState.expandedSet.delete(logId);
       else uiState.expandedSet.add(logId);
     };
 
-    /* 배치 onExpandAll */
+    /* onExpandAll — 이벤트 */
     const onExpandAll = () => {
       uiState.expandedSet.clear();
       batchLogs.forEach(l => uiState.expandedSet.add(l.batchLogId));
     };
 
-    /* 배치 onCollapseAll */
+    /* onCollapseAll — 이벤트 */
     const onCollapseAll = () => {
       uiState.expandedSet.clear();
     };
 
     /* 배치 fnRunBadge — sy_code BATCH_RUN_STATUS code_opt1 우선, 없으면 FB */
     const _BATCH_RUN_STATUS_FB = { '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' };
+    /* fnRunBadge — 유틸 */
     const fnRunBadge = s => coUtil.cofCodeBadge('BATCH_RUN_STATUS', s, _BATCH_RUN_STATUS_FB[s] || 'badge-gray');
 
-    /* 배치 fnFmtDuration */
+    /* fnFmtDuration — 유틸 */
     const fnFmtDuration = (sec) => {
       if (!sec && sec !== 0) return '-';
       if (sec < 60) return `${sec}초`;
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 
-    // ── return ───────────────────────────────────────────────────────────────
-
     onMounted(() => {
       handleSearchData().then(() => { onExpandAll(); });
     });
 
     /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+    // --- [컬럼 정의] ---
+
     const histGridColumns = [
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
@@ -131,9 +144,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'runStatus',  label: '결과',    style: 'width:66px;text-align:center;', align: 'center', badge: (row) => fnRunBadge(row.runStatus) },
       { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatus === '실패' ? 'color:#dc2626' : 'color:#555') },
     ];
+    /* fnRowExpanded — 행 펼침 여부 */
     const fnRowExpanded = (log) => isExpanded(log.batchLogId);
+    /* fnHistRowStyle — 유틸 */
     const fnHistRowStyle = (log) =>
       log.runStatus === '실패' ? 'background:#fff5f5;' : log.runStatus === '실행중' ? 'background:#f0f8ff;' : '';
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { batches, batchLogs, uiState, cfBatchOptions,
       pager,

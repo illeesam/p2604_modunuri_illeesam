@@ -4,19 +4,25 @@ window.foAppFooter = {
   props: ['config', 'navigate'],
   emits: [],
   setup() {
+
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive } = Vue;
     const uiState = reactive({ menuOpen: false, loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
 
-    /* toggleMenu */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* toggleMenu — 토글 */
+
     const toggleMenu = () => { uiState.menuOpen = !uiState.menuOpen; };
 
-    /* closeMenu */
+    /* closeMenu — 닫기 */
     const closeMenu  = () => { uiState.menuOpen = false; };
     /* 외부(헤더 등)에서 팝업 오픈 요청 수신 */
     window.addEventListener('open-quick-menu', () => { uiState.menuOpen = true; });
 
-    /* goItem */
+    /* goItem — 이동 */
     const goItem = (root, target) => {
       if (root === 'foOffice') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');
@@ -95,7 +101,7 @@ window.foAppFooter = {
       { id:'03',   label:'FO_SITE_NO=03' },
       { id:'9999', label:'FO_SITE_NO=9999' },
     ];
-    /* site_no → site_id: 'SITE' + 6자리 0 패딩 (coUtil.siteNoToSiteId 와 동일 규칙) */
+    /* toSiteId — → 사이트 Id */
     const toSiteId = (no) => 'SITE' + String(no).padStart(6, '0');
     const SITE_PAIR_MENU = [
       { fo:'01',   bo:'01',   siteId: toSiteId('01')   },
@@ -103,6 +109,9 @@ window.foAppFooter = {
       { fo:'03',   bo:'03',   siteId: toSiteId('03')   },
       { fo:'9999', bo:'9999', siteId: toSiteId('9999') },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
+
     return { uiState, codes, toggleMenu, closeMenu, goItem, currentFoSiteNo, currentBoSiteNo, FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU };
   },
   template: /* html */ `

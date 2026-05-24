@@ -30,10 +30,10 @@ window.MyDateFilter = {
     const { ref } = Vue;
     const today = new Date();
 
-    /* fmt */
+    /* fmt — 포맷 */
     const fmt = d => d.toISOString().slice(0, 10);
 
-    /* calcStart */
+    /* calcStart — 계산 시작 */
     const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };
     const PERIODS = [
       { label: '1달', value: 1 }, { label: '2달', value: 2 }, { label: '3달', value: 3 },
@@ -44,13 +44,13 @@ window.MyDateFilter = {
     const startDate = ref(calcStart(6));
     const endDate   = ref(fmt(today));
 
-    /* onPeriodChange */
+    /* onPeriodChange — 이벤트 */
     const onPeriodChange = () => { startDate.value = calcStart(period.value); endDate.value = fmt(today); };
 
-    /* search */
+    /* search — 검색 */
     const search = () => emit('search', { startDate: startDate.value, endDate: endDate.value });
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       period.value = 6;
       startDate.value = calcStart(6);
@@ -140,7 +140,7 @@ window.foMyLayout = {
 
     const cfTabCounts = computed(() => myStore.getTabCounts(props.cartCount));
 
-    /* goTab */
+    /* goTab — 이동 */
     const goTab = (pageId) => {
       if (pageId === 'myCart') {
         props.navigate('cart');

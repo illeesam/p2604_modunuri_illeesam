@@ -15,6 +15,8 @@ window.DispX01Ui = {
     dispOpt:     { type: Object, default: () => ({ layout: 'auto', showHeader: true, showBadges: true }) },
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -48,10 +50,10 @@ window.DispX01Ui = {
       'cache_banner':'캐시',       'widget_embed':'위젯',
     };
 
-    /* wLabel */
+    /* wLabel — w 라벨 */
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
-    /* ── 패널 필터 ── */
+    /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
       const pm = props.params;
       // ✓ 전시여부 체크 (UI-Area 매핑)
@@ -83,17 +85,17 @@ window.DispX01Ui = {
       return true;
     };
 
-    /* panelsForArea */
+    /* panelsForArea — panels For 영역 */
     const panelsForArea = (areaCode) =>
       (props.dispDataset.displays || [])
         .filter(p => p.area === areaCode && panelFilter(p))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-    /* areaInfo */
+    /* areaInfo — 영역 정보 */
     const areaInfo = (code) =>
       (props.dispDataset.codes || []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
-    /* areaLabel */
+    /* areaLabel — 영역 라벨 */
     const areaLabel = (code) => areaInfo(code)?.codeLabel || code;
 
     const cfTotalPanels = computed(() =>
@@ -124,34 +126,36 @@ window.DispX01Ui = {
       )
     );
 
-    /* expandAll */
+    /* expandAll — 펼치기 전체 */
     const expandAll   = () => {
       (props.params.areas || []).forEach(c => structAreaOpen.add(c));
       (props.params.areas || []).forEach(c => panelsForArea(c).forEach(p => structPanelOpen.add(p.dispId)));
     };
 
-    /* collapseAll */
+    /* collapseAll — 접기 전체 */
     const collapseAll = () => { structAreaOpen.clear(); structPanelOpen.clear(); };
 
-    /* toggleAll1 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* toggleAll1 — 토글 */
     const toggleAll1  = () => {
       if (allAreas1Open.value) { structAreaOpen.clear(); structPanelOpen.clear(); }
       else (props.params.areas || []).forEach(c => structAreaOpen.add(c));
     };
 
-    /* toggleAll2 */
+    /* toggleAll2 — 토글 */
     const toggleAll2  = () => {
       if (allPanels2Open.value) structPanelOpen.clear();
       else (props.params.areas || []).forEach(c => panelsForArea(c).forEach(p => structPanelOpen.add(p.dispId)));
     };
 
-    /* toggleArea */
+    /* toggleArea — 영역 토글 */
     const toggleArea  = (code) => {
       if (structAreaOpen.has(code)) structAreaOpen.delete(code);
       else structAreaOpen.add(code);
     };
 
-    /* togglePanel */
+    /* togglePanel — 패널 토글 */
     const togglePanel = (id) => {
       if (structPanelOpen.has(id)) structPanelOpen.delete(id);
       else structPanelOpen.add(id);
@@ -222,7 +226,7 @@ window.DispX01Ui = {
       return lines;
     });
 
-    /* 라인 타입별 색상 */
+    /* lineColor — line 색상 */
     const lineColor = (line) => {
       switch (line.type) {
         case 'header':
@@ -247,6 +251,9 @@ window.DispX01Ui = {
 
     /* 내용보기 구조 표시 토글 (기본 OFF = 순수 위젯만) */
     const showContentStruct = ref(false);
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       uiState, codes,

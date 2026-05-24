@@ -5,6 +5,8 @@ window.PdTagMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -15,6 +17,9 @@ window.PdTagMng = {
     const codes = reactive({ use_yn: [] });
 
     /* 태그 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -27,6 +32,9 @@ window.PdTagMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // onMounted에서 API 로드
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -46,7 +54,7 @@ window.PdTagMng = {
       }
     };
 
-    /* -- 검색 파라미터 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ use: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -58,11 +66,16 @@ window.PdTagMng = {
 
 const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 태그 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const gridRows   = reactive([]);
     let   _tempId    = -1;
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+    // --- [컬럼 정의] ---
 
     const baseSearchColumns = [
       { key: 'searchValue', label: '태그명', type: 'text', placeholder: '태그명 검색' },
@@ -81,13 +94,13 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
 
     watch(tags, (list) => { gridRows.splice(0, gridRows.length, ...list.map(t => ({ ...t, _row_status: 'N' }))); }, { immediate: true });
 
-    /* 태그 addRow */
+    /* addRow — 행 추가 */
     const addRow       = () => { gridRows.unshift({ tagId: 'T' + (_tempId--), siteId: 1, tagNm: '', tagDesc: '', useCount: 0, sortOrd: 0, useYn: 'Y', _row_status: 'N' }); };
 
-    /* 태그 onCellChange — BoGrid edit emit (row, col) 형태 수신 */
+    /* onCellChange — 셀 변경 */
     const onCellChange = (row) => { if (row._row_status !== 'N') row._row_status = 'U'; };
 
-    /* 태그 deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow    = async (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
@@ -105,7 +118,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       }
     };
 
-    /* 태그 saveAll */
+    /* saveAll — 저장 */
     const saveAll = async () => {
       const changed = window.safeArrayUtils.safeFilter(gridRows, r => ['N','I','U','D'].includes(r._row_status));
       if (!changed.length) { showToast('변경된 내용이 없습니다.', 'info'); return; }
@@ -125,29 +138,30 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
       }
     };
 
-    /* 태그 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
-    /* 태그 onReset */
+    /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
 
-    /* 태그 setPage */
+    /* setPage — 설정 */
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
-    /* 태그 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 태그 fnYnBadge */
+    /* fnYnBadge — 유틸 */
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { tags, uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              gridRows, baseGridColumns, baseSearchColumns, addRow, onCellChange, deleteRow, saveAll, fnYnBadge, onSizeChange };

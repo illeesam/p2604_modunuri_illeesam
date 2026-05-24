@@ -6,6 +6,8 @@ window.BlogEdit = {
     dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, computed, reactive, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
 
@@ -30,6 +32,9 @@ window.BlogEdit = {
     ];
 
     /* FoFormArea columns 정의 */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const baseFormColumns = [
       { key: 'title',    label: '제목',     type: 'text',     required: true, colSpan: 2,
         placeholder: '제목을 입력하세요' },
@@ -45,7 +50,7 @@ window.BlogEdit = {
         rows: 14, placeholder: '본문을 입력하세요...' },
     ];
 
-    /* 수정 모드: 기존 데이터 로드 */
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async (searchType = 'DEFAULT') => {
       if (!cfIsEdit.value) return;
       try {
@@ -62,7 +67,7 @@ window.BlogEdit = {
       }
     };
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -75,7 +80,7 @@ window.BlogEdit = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = () => {
       if (!form.title.trim()) { showToast?.('제목을 입력해주세요.', 'error'); return; }
       if (!form.body.trim()) { showToast?.('본문을 입력해주세요.', 'error'); return; }
@@ -83,25 +88,26 @@ window.BlogEdit = {
       props.navigate('blog');
     };
 
-    /* cancel */
+    /* cancel — 취소 */
     const cancel = () => props.navigate('blog');
 
     /* 이미지 첨부 (목업) */
     const images = reactive([]);
 
-    /* addImage */
+    /* addImage — 추가 */
     const addImage = () => {
       images.push({ id: Date.now(), name: 'image_' + (images.length + 1) + '.jpg', size: '1.2 MB' });
     };
 
-    /* removeImage */
+    /* removeImage — 제거 */
     const removeImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
     onMounted(() => {
       handleSearchDetail();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { cfIsEdit, form, errors, categories, baseFormColumns, images, handleSave, cancel, addImage, removeImage , uiState, codes };
   },

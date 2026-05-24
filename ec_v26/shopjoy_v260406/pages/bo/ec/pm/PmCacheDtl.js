@@ -13,6 +13,8 @@ window.PmCacheDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     // ===== Vue Composition API / boApp 전역 의존 ===========================
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
@@ -29,7 +31,7 @@ window.PmCacheDtl = {
     const codes = reactive({ cache_trans_types: [] });
 
     // ===== 업체 목록 로드 / 단건 상세 조회 =================================
-    /* 소속업체 목록 로드 (vendor 선택 모달용) */
+    /* loadVendors — 로드 */
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -37,6 +39,7 @@ window.PmCacheDtl = {
       } catch (e) { console.warn('[PmCacheDtl.js] vendor load failed', e); }
     };
 
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
       if (cfIsNew.value) return;
@@ -60,11 +63,14 @@ window.PmCacheDtl = {
 
         watch(() => uiState.tabMode2, v => { window._pmCacheDtlState.tabMode = v; });
 
-    /* 캐시(충전금) showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     // ===== 공통코드 로딩 ===================================================
     /* 캐시(충전금) fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.cache_trans_types = codeStore.sgGetGrpCodes('CACHE_TRANS_TYPE');
@@ -104,6 +110,9 @@ window.PmCacheDtl = {
 
     // ===== 저장 (등록/수정) ================================================
     /* 캐시(충전금) 저장 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -130,7 +139,7 @@ window.PmCacheDtl = {
     };
 
     // ===== 회원/업체 선택 핸들러 ===========================================
-    /* 캐시(충전금) onUserIdChange */
+    /* onUserIdChange — 이벤트 */
     const onUserIdChange = () => {
       const m = getMember.value(Number(form.memberId));
       if (m) form.memberNm = m.memberNm;
@@ -142,7 +151,7 @@ window.PmCacheDtl = {
       return v ? v.vendorNm : '소속업체 선택';
     });
 
-    /* 캐시(충전금) selectVendor */
+    /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -151,6 +160,7 @@ window.PmCacheDtl = {
     // ===== 배지(badge) 헬퍼 ================================================
     /* 캐시(충전금) fnTypeBadge — sy_code CACHE_TYPE_KR code_opt1 우선, 없으면 FB */
     const _CACHE_TYPE_FB = { '충전': 'badge-green', '사용': 'badge-orange', '환불': 'badge-blue', '소멸': 'badge-red' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => coUtil.cofCodeBadge('CACHE_TYPE_KR', t, _CACHE_TYPE_FB[t] || 'badge-gray');
 
     // ===== 모달 토글 / 읽기전용 판정 =======================================
@@ -172,6 +182,9 @@ window.PmCacheDtl = {
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const baseFormColumns = [
       { key: 'memberId',    label: '회원ID', type: 'slot', name: 'memberId', required: true },
       { key: 'memberNm',    label: '회원명', type: 'readonly' },
@@ -191,6 +204,8 @@ window.PmCacheDtl = {
     ];
 
     // ===== setup() return =================================================
+    // ===== return (템플릿 노출) ===============================================
+
     return { vendors, showVendorModal, uiState, codes, cfIsNew, tab, form, errors, cfMemberCacheHistory, cfTotalBalance, handleSave, onUserIdChange, fnTypeBadge, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, showVendorModal, cacheHistGridColumns, baseFormColumns, showRefModal };
   },
   // ===== 템플릿 ===========================================================

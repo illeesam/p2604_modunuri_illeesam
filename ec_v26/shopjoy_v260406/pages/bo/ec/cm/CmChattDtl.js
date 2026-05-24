@@ -11,6 +11,8 @@ window.CmChattDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -22,7 +24,9 @@ window.CmChattDtl = {
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ chatt_statuses: [] });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.chatt_statuses = codeStore.sgGetGrpCodes('CHATT_STATUS');
@@ -31,7 +35,7 @@ window.CmChattDtl = {
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* handleSearchDetail */
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       if (!props.dtlId) return;
       uiState.loading = true;
@@ -54,7 +58,7 @@ window.CmChattDtl = {
 
     watch(() => uiState.tabMode2, v => { window._cmChattDtlState.tabMode = v; });
 
-    /* showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const msgBoxRef = ref(null);
@@ -62,7 +66,7 @@ window.CmChattDtl = {
     /* 채팅 내 참조 모달 (상품/주문/클레임) */
     const refModal = reactive({ show: false, type: '', id: null, data: null });
 
-    /* openMsgRef */
+    /* openMsgRef — 열기 */
     const openMsgRef = (msg) => {
       if (msg.productId) {
         refModal.type = 'product'; refModal.id = msg.productId; refModal.show = true;
@@ -73,13 +77,13 @@ window.CmChattDtl = {
       }
     };
 
-    /* closeRefModal */
+    /* closeRefModal — 닫기 */
     const closeRefModal = () => { refModal.show = false; };
 
-    /* hasRef */
+    /* hasRef — 여부 확인 */
     const hasRef = (msg) => !!(msg.productId || msg.orderId || msg.claimId);
 
-    /* refLabel */
+    /* refLabel — ref 라벨 */
     const refLabel = (msg) => {
       if (msg.productId) return '[상품#' + msg.productId + ' 보기]';
       if (msg.orderId) return '[' + msg.orderId + ' 보기]';
@@ -87,7 +91,7 @@ window.CmChattDtl = {
       return '';
     };
 
-    /* scrollToBottom */
+    /* scrollToBottom — 스크롤 → 하단 */
     const scrollToBottom = () => {
       nextTick(() => { const el = msgBoxRef.value; if (el) el.scrollTop = el.scrollHeight; });
     };
@@ -124,7 +128,7 @@ window.CmChattDtl = {
       subject: yup.string().required('제목을 입력해주세요.'),
     });
 
-    /* sendReply */
+    /* sendReply — 전송 Reply */
     const sendReply = () => {
       if (!uiState.replyText.trim()) return;
       if (!uiState.chat) return;
@@ -136,14 +140,16 @@ window.CmChattDtl = {
       showToast('답변을 전송했습니다.');
     };
 
-    /* closeChat */
+    /* closeChat — 닫기 */
     const closeChat = () => {
       if (!uiState.chat) return;
       uiState.chat.chattStatusCd = '종료';
       showToast('채팅이 종료되었습니다.');
     };
 
-    /* 저장 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -176,7 +182,7 @@ window.CmChattDtl = {
       }
     };
 
-    /* onUserChange */
+    /* onUserChange — 이벤트 */
     const onUserChange = () => {};
 
     const cfUserChats = reactive([]);
@@ -197,6 +203,9 @@ window.CmChattDtl = {
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시' },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const userChatGridColumns = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
@@ -205,8 +214,6 @@ window.CmChattDtl = {
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
       { key: 'regDate', label: '일시' },
     ];
-
-    // -- return ---------------------------------------------------------------
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 신규 등록 탭 ==================
     const newFormColumns = [
@@ -219,6 +226,9 @@ window.CmChattDtl = {
       { key: 'chattStatusCd', label: '상태', type: 'select', options: () => codes.chatt_statuses,
         width: '200px' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { cfIsNew, tab, cfDtlMode, tabMode2, showTab, chat, replyText, sendReply, closeChat, msgBoxRef,
       hasRef, refLabel, openMsgRef, refModal, closeRefModal,

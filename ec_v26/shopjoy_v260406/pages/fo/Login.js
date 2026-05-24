@@ -6,13 +6,17 @@ window.Login = {
   },
   emits: ['close'],
   setup(props, { emit }) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, watch, onMounted } = Vue;
 
     /* -- UI 상태 -- */
     const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false, step: 'login', snsProvider: null, loginErr: '', signupErr: '', _ec: '', _pc: '', snsNickname: '', snsPhoneCode: '', snsPhoneCodeSent: false, _spc: '', snsErr: ''});;
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -30,7 +34,9 @@ window.Login = {
     /* -- 로그인 -- */
     const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
 
-    /* doLogin */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* doLogin — 실행 */
     const doLogin = async () => {
       uiState.loginErr = '';
       if (!form.email || !form.password) { uiState.loginErr = '이메일과 비밀번호를 입력하세요.'; return; }
@@ -56,7 +62,10 @@ window.Login = {
     /* -- 회원선택 모달 (개발용) -- */
     const memberPick = reactive({ show: false, searchType: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, pageSize: 20, totalPage: 1 });
     const PICK_SIZE = 20;
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     /* fo-grid 컬럼 — 특수 셀(이름/등급/상태/선택)은 #cell 슬롯으로 override */
+    // --- [컬럼 정의] ---
     const memberPickGridColumns = [
       { key: 'memberNm', label: '이름',
         fmt: (v, row) => `${(row.memberNm || '?').charAt(0)} ${row.memberNm || '-'}`,
@@ -77,7 +86,7 @@ window.Login = {
       { key: 'joinDate', label: '가입일', fmt: v => (v ? v.substring(0, 10) : '-') },
     ];
 
-    /* _loadMemberPick */
+    /* _loadMemberPick — 로드 */
     const _loadMemberPick = async () => {
       memberPick.loading = true;
       try {
@@ -101,16 +110,16 @@ window.Login = {
       }
     };
 
-    /* onOpenMemberPick */
+    /* onOpenMemberPick — 이벤트 */
     const onOpenMemberPick = () => { memberPick.show = true; memberPick.searchType = ''; memberPick.searchValue = ''; memberPick.pageNo = 1; _loadMemberPick(); };
 
-    /* onMemberPickSearch */
+    /* onMemberPickSearch — 이벤트 */
     const onMemberPickSearch = () => { memberPick.pageNo = 1; _loadMemberPick(); };
 
-    /* onMemberPickPage */
+    /* onMemberPickPage — 이벤트 */
     const onMemberPickPage = (p) => { memberPick.pageNo = p; _loadMemberPick(); };
 
-    /* onPickMember */
+    /* onPickMember — 이벤트 */
     const onPickMember = async (m) => {
       memberPick.show = false;
       form.email = m.loginId || m.memberEmail || '';
@@ -118,7 +127,7 @@ window.Login = {
       await doLogin();
     };
 
-    /* 소셜 SDK 호출 헬퍼 (provider → Promise<{provider, accessToken, profile}>) */
+    /* _callSocialSdk — 호출 소셜 SDK */
     const _callSocialSdk = async (provider) => {
       if (!window.coExtSdk) throw new Error('coExtSdk 헬퍼가 로드되지 않았습니다.');
       if (provider === 'google') return await window.coExtSdk.loginGoogle();
@@ -127,7 +136,7 @@ window.Login = {
       throw new Error('알 수 없는 provider: ' + provider);
     };
 
-    /* 소셜 로그인 (기존 회원) — SDK 호출 → 인증 시도 → 데모 폴백 */
+    /* doSocial — 실행 */
     const doSocial = async (provider) => {
       uiState.loginErr = '';
       try {
@@ -146,7 +155,7 @@ window.Login = {
       }
     };
 
-    /* 소셜 회원가입 — SDK 호출 → 약관 → sns-signup 폼으로 이동 (프로필 미리 채움) */
+    /* startSnsSignup — 시작 SNS 회원가입 */
     const startSnsSignup = async (provider) => {
       uiState.snsErr = '';
       try {
@@ -174,19 +183,19 @@ window.Login = {
     /* -- 약관 -- */
     const terms = reactive({ all: false, t1: false, t2: false, t3: false, t4: false });
 
-    /* toggleAll */
+    /* toggleAll — 전체 토글 */
     const toggleAll = () => { terms.t1 = terms.t2 = terms.t3 = terms.t4 = terms.all; };
 
     watch(() => [terms.t1, terms.t2, terms.t3, terms.t4], () => {
       terms.all = terms.t1 && terms.t2 && terms.t3 && terms.t4;
     });
 
-    /* goNextFromTerms */
+    /* goNextFromTerms — 이동 */
     const goNextFromTerms = () => {
       uiState.step = uiState.snsProvider ? 'sns-signup' : 'signup';
     };
 
-    /* -- 공통 회원가입 필드 -- */
+    /* _initSf — 초기화 */
     const _initSf = () => reactive({
       memberNm: '', email: '', emailCode: '', emailSent: false, emailVerified: false,
       phone: '', phoneCode: '', phoneSent: false, phoneVerified: false,
@@ -197,7 +206,7 @@ window.Login = {
     });
     const sf       = _initSf();
 
-    /* 이메일 인증 */
+    /* sendEmailCode — 전송 이메일 코드 */
     const sendEmailCode = () => {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sf.email)) { uiState.signupErr = '올바른 이메일을 입력하세요.'; return; }
       uiState._ec = String(Math.floor(100000 + Math.random() * 900000));
@@ -205,13 +214,13 @@ window.Login = {
       props.showToast('인증코드: ' + uiState._ec + '  (데모용)', 'info');
     };
 
-    /* verifyEmail */
+    /* verifyEmail — 검증 이메일 */
     const verifyEmail = () => {
       if (sf.emailCode === uiState._ec) { sf.emailVerified = true; uiState.signupErr = ''; props.showToast('이메일 인증 완료!', 'success'); }
       else uiState.signupErr = '인증코드가 올바르지 않습니다.';
     };
 
-    /* 휴대폰 인증 */
+    /* sendPhoneCode — 전송 전화 코드 */
     const sendPhoneCode = () => {
       if (!/^010[-]?\d{4}[-]?\d{4}$/.test(sf.phone.replace(/\s/g, ''))) { uiState.signupErr = '올바른 휴대폰 번호를 입력하세요. (010-0000-0000)'; return; }
       uiState._pc = String(Math.floor(100000 + Math.random() * 900000));
@@ -219,13 +228,13 @@ window.Login = {
       props.showToast('인증코드: ' + uiState._pc + '  (데모용)', 'info');
     };
 
-    /* verifyPhone */
+    /* verifyPhone — 검증 전화 */
     const verifyPhone = () => {
       if (sf.phoneCode === uiState._pc) { sf.phoneVerified = true; uiState.signupErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
       else uiState.signupErr = '인증코드가 올바르지 않습니다.';
     };
 
-    /* 카카오 주소 검색 */
+    /* openKakaoAddr — 열기 */
     const openKakaoAddr = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) { props.showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return; }
       new daum.Postcode({
@@ -233,7 +242,7 @@ window.Login = {
       }).open();
     };
 
-    /* -- 일반 회원가입 제출 -- */
+    /* doSignup — 실행 */
     const doSignup = async () => {
       uiState.signupErr = '';
       if (!sf.memberNm.trim())      { uiState.signupErr = '이름을 입력하세요.'; return; }
@@ -258,16 +267,16 @@ window.Login = {
     /* -- SNS 회원가입 제출 -- */
         const snsPhone    = ref('');
 
-    /* providerLabel */
+    /* providerLabel — 공급자 라벨 */
     const providerLabel = p => ({ google: 'Google', kakao: '카카오', naver: '네이버' }[p] || p);
 
-    /* providerColor */
+    /* providerColor — 공급자 색상 */
     const providerColor = p => ({ google: '#fff', kakao: '#FEE500', naver: '#03C75A' }[p] || '#fff');
 
-    /* providerTextColor */
+    /* providerTextColor — 공급자 Text 색상 */
     const providerTextColor = p => ({ google: '#333', kakao: '#3C1E1E', naver: '#fff' }[p] || '#333');
 
-    /* sendSnsPhoneCode */
+    /* sendSnsPhoneCode — 전송 SNS 전화 코드 */
     const sendSnsPhoneCode = () => {
       if (!/^010[-]?\d{4}[-]?\d{4}$/.test(snsPhone.value.replace(/\s/g, ''))) { uiState.snsErr = '올바른 휴대폰 번호를 입력하세요.'; return; }
       uiState._spc = String(Math.floor(100000 + Math.random() * 900000));
@@ -275,7 +284,7 @@ window.Login = {
       props.showToast('인증코드: ' + uiState._spc + '  (데모용)', 'info');
     };
 
-    /* verifySnsPhone */
+    /* verifySnsPhone — 검증 SNS 전화 */
     const verifySnsPhone = () => {
       if (uiState.snsPhoneCode === uiState._spc) { uiState.snsPhoneVerified = true; uiState.snsErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
       else uiState.snsErr = '인증코드가 올바르지 않습니다.';
@@ -284,7 +293,7 @@ window.Login = {
     /* SNS 선택 정보 */
     const snsSf = reactive({ postcode: '', address: '', addressDetail: '', birthdate: '', gender: '' });
 
-    /* openKakaoAddrSns */
+    /* openKakaoAddrSns — 열기 */
     const openKakaoAddrSns = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) { props.showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return; }
       new daum.Postcode({
@@ -292,7 +301,7 @@ window.Login = {
       }).open();
     };
 
-    /* doSnsSignup */
+    /* doSnsSignup — 실행 */
     const doSnsSignup = async () => {
       uiState.snsErr = '';
       if (!uiState.snsNickname.trim()) { uiState.snsErr = '이름/닉네임을 입력하세요.'; return; }
@@ -314,7 +323,8 @@ window.Login = {
     /* -- 공통 인풋 스타일 -- */
     const IS = 'width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;';
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       uiState, form, doLogin, doSocial, startSnsSignup,

@@ -5,6 +5,8 @@ window.DpDispWidgetMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -15,7 +17,9 @@ window.DpDispWidgetMng = {
     const widgetLibs = reactive([]);
     const widgets = reactive([]);
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
@@ -26,7 +30,7 @@ window.DpDispWidgetMng = {
 
     // 코드 주입
 
-    /* _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
@@ -39,14 +43,16 @@ window.DpDispWidgetMng = {
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
-    /* onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -56,10 +62,11 @@ window.DpDispWidgetMng = {
       handleSearchData('DEFAULT');
     };
 
-    /* sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       uiState.loading = true;
       try {
@@ -107,7 +114,7 @@ window.DpDispWidgetMng = {
       if (isAppReady.value) fnLoadCodes();
       handleSearchData('DEFAULT');    });
 
-    /* pathLabel */
+    /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -124,19 +131,19 @@ window.DpDispWidgetMng = {
       'payment_widget':'💳', 'approval_widget':'✅',   'map_widget':'🗺',
     };
 
-    /* wTypeLabel */
+    /* wTypeLabel — w 유형 라벨 */
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
 
-    /* wIcon */
+    /* wIcon — w 아이콘 */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* -- 검색 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -146,20 +153,20 @@ window.DpDispWidgetMng = {
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
-    /* 정책: 수정 클릭 시 항상 상세 API 호출. 같은 id 재클릭이어도 닫지 않고 reload 만 트리거 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => {
       uiStateDetail.selectedId = id;
       uiStateDetail.openMode = 'edit';
       uiStateDetail.reloadTrigger++;
     };
 
-    /* openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
-    /* inlineNavigate */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispWidgetMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -169,25 +176,28 @@ window.DpDispWidgetMng = {
     /* key 는 'open' / 'closed' 두 값만 사용 — id 가 바뀌어도 컴포넌트 remount 하지 않고 props.dtlId / reloadTrigger watch 로 내용만 교체 */
     const cfDetailKey = computed(() => uiStateDetail.selectedId === null ? 'closed' : 'open');
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* fnStatusCls */
+    /* fnStatusCls — 유틸 */
     const fnStatusCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    /* fnStatusLabel */
+    /* fnStatusLabel — 유틸 */
     const fnStatusLabel = (v) => v === 'Y' ? '활성' : '비활성';
 
-    /* contentSummary */
+    /* contentSummary — content 요약 */
     const contentSummary = (d) => d?.widgetLibDesc || d?.contents || d?.desc || '';
 
     /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
     const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
 
-    /* 선택 행 강조 + 행 높이 (기존 :style 보존) */
+    /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (row) => (uiStateDetail.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;cursor:pointer;';
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+    // --- [컬럼 정의] ---
     const listGridColumns = [
       { key: 'widgetId',   label: 'ID',       style: 'width:56px;', link: true,
         cellStyle: 'color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;font-family:monospace;',
@@ -195,16 +205,16 @@ window.DpDispWidgetMng = {
       { key: 'widgetInfo', label: '위젯 정보', sortKey: 'reg' },
     ];
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
 
-    /* onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* -- 표시경로 트리 -- */
+    /* selectNode — 노드 선택 */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
 
-    /* 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.widgetNm || d.widgetId}] 위젯을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -217,7 +227,8 @@ window.DpDispWidgetMng = {
       }
     };
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { widgets, widgetLibs, uiState, pathLabel,
       codes, wTypeLabel, wIcon,

@@ -5,6 +5,8 @@ window.SyVendorUserMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -28,6 +30,9 @@ window.SyVendorUserMng = {
     const roleMenus = reactive([]);
 
     // onMounted에서 역할/메뉴/역할메뉴 API 로드
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleLoadData — 처리 */
     const handleLoadData = async () => {
       try {
         const [roleRes, menuRes, roleMenuRes] = await Promise.all([
@@ -51,7 +56,7 @@ window.SyVendorUserMng = {
     const cfTree = computed(() => {
       const rolesById = Object.fromEntries(roles.map(r => [r.roleId, r]));
 
-      /* 업체 사용자 badgeOf */
+      /* badgeOf — 배지 의 */
       const badgeOf = (role) => {
         let cur = role;
         while (cur && cur.parentId) cur = rolesById[cur.parentId];
@@ -59,7 +64,7 @@ window.SyVendorUserMng = {
       };
       const CAT_ROOT_MAP = { SALES:'SITE_MGR_ROOT', DELIVERY:'DLIV_ROOT', CS:'CS_ROOT', SITE:'SITE_OP_ROOT', PROG:'PROG_ROOT' };
 
-      /* 업체 사용자 childrenOf */
+      /* childrenOf — 자식 의 */
       const childrenOf = (pid) => roles
         .filter(r => r.parentId === pid)
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
@@ -71,31 +76,31 @@ window.SyVendorUserMng = {
         kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
       }
 
-    // -- return ---------------------------------------------------------------
 
       return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids };
     });
 
-    /* 업체 사용자 toggleNode */
+    /* toggleNode — 노드 토글 */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
 
-    /* 업체 사용자 selectNode */
+    /* selectNode — 노드 선택 */
     const selectNode = (id) => { uiState.selectedPath = id; };
 
-    /* 업체 사용자 expandAll */
+    /* expandAll — 펼치기 전체 */
     const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
 
-    /* 업체 사용자 collapseAll */
+    /* collapseAll — 접기 전체 */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
     /* -- 업체 목록 (상단 검색/선택) -- */
 
     const vendors = reactive([]);
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 업체 사용자 fnBuildBizPagerNums */
+    /* fnBuildBizPagerNums — 유틸 */
     const fnBuildBizPagerNums = () => { bizPager.pageTotalCount=vendors.length; bizPager.pageTotalPage=Math.max(1,Math.ceil(vendors.length/bizPager.pageSize)); bizPager.pageList=vendors.slice((bizPager.pageNo-1)*bizPager.pageSize,bizPager.pageNo*bizPager.pageSize); const c=bizPager.pageNo,l=bizPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); bizPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 업체 사용자 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
+
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
@@ -120,7 +125,8 @@ window.SyVendorUserMng = {
       }
     };
 
-    /* 업체 사용자 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
@@ -139,13 +145,13 @@ window.SyVendorUserMng = {
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
 
-    /* 업체 사용자 fnVendorNm */
+    /* fnVendorNm — 유틸 */
     const fnVendorNm  = (id) => (cfVendorMap.value[id] || {}).vendorNm || '#'+id;
 
-    /* 업체 사용자 fnVendorTypeCd */
+    /* fnVendorTypeCd — 유틸 */
     const fnVendorTypeCd = (id) => (cfVendorMap.value[id] || {}).vendorTypeCd || '';
 
-    /* 업체 사용자 fnVendorSummary */
+    /* fnVendorSummary — 유틸 */
     const fnVendorSummary = (id) => {
       const v = cfVendorMap.value[id];
       if (!v) return '';
@@ -153,28 +159,28 @@ window.SyVendorUserMng = {
       return '['+vt+'] '+v.vendorNm;
     };
 
-    /* 업체 사용자 setBizPage */
+    /* setBizPage — 설정 */
     const setBizPage    = n => { if(n>=1&&n<=bizPager.pageTotalPage) { bizPager.pageNo=n; fnBuildBizPagerNums(); } };
 
-    /* 업체 사용자 fnVendorStatusBadge */
+    /* fnVendorStatusBadge — 유틸 */
     const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
 
-    /* 업체 사용자 fnVendorStatusLabel */
+    /* fnVendorStatusLabel — 유틸 */
     const fnVendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
 
-    /* 업체 사용자 fnVendorTypeBadge */
+    /* fnVendorTypeBadge — 유틸 */
     const fnVendorTypeBadge   = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
 
-    /* 업체 사용자 fnVendorTypeLabel */
+    /* fnVendorTypeLabel — 유틸 */
     const fnVendorTypeLabel   = (cd) => (codes.vendor_types.find(v=>v[0]===cd)||[,'?'])[1];
 
-    /* 업체 사용자 fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = (s) => ({ ACTIVE:'badge-green', LEFT:'badge-gray', SUSPENDED:'badge-orange' }[s]||'badge-gray');
 
-    /* 업체 사용자 fnStatusLabel */
+    /* fnStatusLabel — 유틸 */
     const fnStatusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
 
-    /* 업체 사용자 pickVendorRow */
+    /* pickVendorRow — 선택 업체 행 */
     const pickVendorRow = (v) => {
       uiState.searchVendorId = v.vendorId;
       uiState.treeRoleCat = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
@@ -183,10 +189,10 @@ window.SyVendorUserMng = {
       pager.pageNo = 1;
     };
 
-    /* 업체 사용자 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { bizPager.pageNo = 1; handleLoadDetail(); };
 
-    /* 업체 사용자 onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       uiState.bizSearchType = '';
       uiState.bizSearchValue = '';
@@ -196,10 +202,10 @@ window.SyVendorUserMng = {
       handleLoadDetail();
     };
 
-    /* 업체 사용자 onVendorPicked */
+    /* onVendorPicked — 이벤트 */
     const onVendorPicked = (v) => { uiState.vendorPickOpen=false; pickVendorRow(v); };
 
-    /* -- 사용자 목록 API 로드 -- */
+    /* loadVendorUsers — 로드 */
     const loadVendorUsers = async (vendorId) => {
       uiState.loading = true;
       try {
@@ -226,19 +232,19 @@ window.SyVendorUserMng = {
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 업체 사용자 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { pager.pageTotalCount=vendorUsers.length; pager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/pager.pageSize)); pager.pageList=vendorUsers.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 업체 사용자 setPage */
+    /* setPage — 설정 */
     const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) { pager.pageNo=n; fnBuildPagerNums(); } };
 
-    /* 업체 사용자 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo=1; fnBuildPagerNums(); };
 
     /* -- 인라인 폼 (사용자 등록/수정) -- */
         const formData = reactive({});
 
-    /* 업체 사용자 blank */
+    /* blank — 빈 폼 데이터 생성 */
     const blank = () => ({
       vendorUserId: null, vendorId: null, userId: null,
       memberNm: '', positionCd: '', vendorUserDeptNm: '', vendorUserPhone: '',
@@ -247,7 +253,7 @@ window.SyVendorUserMng = {
       vendorUserStatusCd: 'ACTIVE', vendorUserRemark: '',
     });
 
-    /* 업체 사용자 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => {
       const vid = uiState.searchVendorId;
       if (!vid) { showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
@@ -257,13 +263,13 @@ window.SyVendorUserMng = {
       uiState.formMode = 'new';
     };
 
-    /* 업체 사용자 openEdit */
+    /* openEdit — 열기 */
     const openEdit = (u) => { Object.assign(formData, u); uiState.formMode = 'edit'; loadUserRoles(u.vendorUserId); };
 
-    /* 업체 사용자 closeForm */
+    /* closeForm — 닫기 */
     const closeForm = () => { uiState.formMode = ''; userRoles.splice(0); };
 
-    /* 업체 사용자 handleSaveForm */
+    /* handleSaveForm — 저장 */
     const handleSaveForm = async () => {
       if (!formData.memberNm || !formData.vendorUserMobile || !formData.vendorUserEmail) {
         showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
@@ -291,7 +297,7 @@ window.SyVendorUserMng = {
       }
     };
 
-    /* 업체 사용자 handleDeleteRow */
+    /* handleDeleteRow — 삭제 */
     const handleDeleteRow = async (u) => {
       const ok = await showConfirm('삭제', `[${u.memberNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -311,7 +317,7 @@ window.SyVendorUserMng = {
     /* -- 역할 관리 (sy_vendor_user_role) -- */
     const userRoles = reactive([]);
 
-    /* 업체 사용자 loadUserRoles */
+    /* loadUserRoles — 로드 */
     const loadUserRoles = async (vendorUserId) => {
       if (!vendorUserId) return;
       uiState.roleLoading = true;
@@ -334,15 +340,13 @@ window.SyVendorUserMng = {
     const cfFormRoleTree = computed(() => {
       const allowedRootCode = cfFormAllowedRootCode.value;
 
-      /* 업체 사용자 buildBranch */
+      /* buildBranch — 빌드 */
       const buildBranch = (pid, allowed) => roles
         .filter(r => r.parentId === pid)
         .sort((a,b) => (a.sortOrd||0)-(b.sortOrd||0))
         .map(r => {
           const isAllowedRoot = r.parentId===null && r.roleCode===allowedRootCode;
           const branchAllowed = allowed || isAllowedRoot;
-
-    // -- return ---------------------------------------------------------------
 
           return { roleId:r.roleId, roleCode:r.roleCode, roleNm:r.roleNm,
                    isRoot:r.parentId===null, allowed: branchAllowed && r.parentId!==null,
@@ -351,7 +355,7 @@ window.SyVendorUserMng = {
       return buildBranch(null, false);
     });
 
-    /* 업체 사용자 openRoleModal */
+    /* openRoleModal — 열기 */
     const openRoleModal = async () => {
       uiState.roleModalTemp = null;
       roleTreeExpanded.clear();
@@ -361,16 +365,16 @@ window.SyVendorUserMng = {
       uiState.roleModalOpen = true;
     };
 
-    /* 업체 사용자 closeRoleModal */
+    /* closeRoleModal — 닫기 */
     const closeRoleModal = () => { uiState.roleModalOpen = false; };
 
-    /* 업체 사용자 toggleRoleNode */
+    /* toggleRoleNode — 토글 */
     const toggleRoleNode = (id) => { if(roleTreeExpanded.has(id)) roleTreeExpanded.delete(id); else roleTreeExpanded.add(id); };
 
-    /* 업체 사용자 pickRoleInModal */
+    /* pickRoleInModal — 선택 권한 에서 모달 */
     const pickRoleInModal = (n) => { if (!n.allowed) return; uiState.roleModalTemp = n.roleCode; };
 
-    /* 업체 사용자 roleNmByCode */
+    /* roleNmByCode — 권한 Nm 으로 코드 */
     const roleNmByCode = (code) => {
       const m = Object.fromEntries(roles.map(x=>[x.roleId,x]));
       let cur = roles.find(x=>x.roleCode===code);
@@ -380,10 +384,10 @@ window.SyVendorUserMng = {
       return seg.join(' > ');
     };
 
-    /* 업체 사용자 roleIdByCode */
+    /* roleIdByCode — 권한 Id 으로 코드 */
     const roleIdByCode = (code) => roles.find(r=>r.roleCode===code)?.roleId || null;
 
-    /* 업체 사용자 confirmRoleModal */
+    /* confirmRoleModal — 확인 권한 모달 */
     const confirmRoleModal = async () => {
       if (!uiState.roleModalTemp) return;
       const rid = roleIdByCode(uiState.roleModalTemp);
@@ -408,7 +412,7 @@ window.SyVendorUserMng = {
       closeRoleModal();
     };
 
-    /* 업체 사용자 handleDeleteRole */
+    /* handleDeleteRole — 삭제 */
     const handleDeleteRole = async (r) => {
       const ok = await showConfirm('역할 삭제', `[${r.roleNm}] 역할을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -437,7 +441,7 @@ window.SyVendorUserMng = {
       const permBy = Object.fromEntries(rm.map(x=>[x.menuId, x.permLevel]));
       const fallback = role ? (ROLE_DEFAULT_PERM[role.roleCode]||'없음') : '없음';
 
-      /* 업체 사용자 buildMenu */
+      /* buildMenu — 빌드 */
       const buildMenu = (pid, depth) => menus
         .filter(m=>(m.parentId||null)===(pid||null))
         .sort((a,b)=>(a.sortOrd||0)-(b.sortOrd||0))
@@ -445,31 +449,35 @@ window.SyVendorUserMng = {
       return buildMenu(null, 0);
     });
 
-    /* 업체 사용자 fnPermBadgeColor */
+    /* fnPermBadgeColor — 유틸 */
     const fnPermBadgeColor = (p) => ({관리:'#f59e0b',쓰기:'#16a34a',읽기:'#2563eb',차단:'#e8587a'}[p]||'#9ca3af');
 
-    /* hover 헬퍼 — 인라인 표현식 SyntaxError 회피 */
+    /* onRoleRootHover — 이벤트 */
     const onRoleRootHover = (root, evt) => {
       if (root.roleCode === cfFormAllowedRootCode.value && evt && evt.currentTarget) {
         evt.currentTarget.style.background = '#eff6ff';
       }
     };
 
-    /* 업체 사용자 onRoleChildHover */
+    /* onRoleChildHover — 이벤트 */
     const onRoleChildHover = (ch, evt) => {
       if (ch.allowed && uiState.roleModalTemp !== ch.roleCode && evt && evt.currentTarget) {
         evt.currentTarget.style.background = '#eff6ff';
       }
     };
 
-    /* 업체 사용자 onRoleChildLeave */
+    /* onRoleChildLeave — 이벤트 */
     const onRoleChildLeave = (ch, evt) => {
       if (uiState.roleModalTemp !== ch.roleCode && evt && evt.currentTarget) {
         evt.currentTarget.style.background = 'transparent';
       }
     };
 
-    // -- return ---------------------------------------------------------------
+
+    // --- [컬럼 정의] ---
+
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const baseSearchColumns = [
       { key: 'searchVendorId', type: 'pick', label: '업체',
@@ -515,10 +523,11 @@ window.SyVendorUserMng = {
         fmt: (v, row) => (row.validFrom || row.validTo) ? `${row.validFrom||'∞'} ~ ${row.validTo||'∞'}` : '제한없음',
         cellInnerStyle: (v, row) => (row.validFrom || row.validTo) ? '' : 'color:#d1d5db;' },
     ];
+    /* fnVendorRowStyle — 유틸 */
     const fnVendorRowStyle = (v) => 'cursor:pointer;' + (uiState.searchVendorId === v.vendorId ? 'background:#fff0f4;' : '');
+    /* fnUserRowStyle — 유틸 */
     const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 업체사용자 상세 폼 ============
     const baseVendorUserFormColumns = [
       { key: 'vendorId',          label: '업체', type: 'readonly',
         fmt: (v) => fnVendorSummary(v) },
@@ -537,6 +546,8 @@ window.SyVendorUserMng = {
       { key: 'leaveDate',         label: '퇴직일', type: 'date' },
       { key: 'vendorUserRemark',  label: '비고', type: 'text', colSpan: 2 },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, codes,

@@ -5,13 +5,13 @@ window.CmNoticeMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-
-    // -- 선언부 ----------------------------------------------------------------
 
     const notices       = reactive([]);                                              // 공지사항 목록
     const uiState       = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' }); // 로딩·에러·코드로드 상태
@@ -23,7 +23,7 @@ window.CmNoticeMng = {
       pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {}
     });                                                                              // 페이징 상태
 
-    /* _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -33,23 +33,20 @@ window.CmNoticeMng = {
 
     // 날짜범위 옵션은 codes.date_range_opts에서 로드
 
-    // -- computed --------------------------------------------------------------
-
     const cfSiteNm       = computed(() => boUtil.bofGetSiteNm());             // 현재 사이트명
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId); // 신규 시 null, 수정 시 ID
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__'); // 조회 모드 여부
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`); // 상세 컴포넌트 강제 재마운트 키
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    // -- watch -----------------------------------------------------------------
 
     // 앱 준비 완료 시 코드 로드 트리거
 
-    // -- 초기화부 --------------------------------------------------------------
-
     // 공통코드 스토어에서 유형·상태 코드 로드
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
@@ -66,15 +63,17 @@ window.CmNoticeMng = {
       handleSearchList('DEFAULT');
     });
 
-    // -- 이벤트 함수 모음 ------------------------------------------------------
-
     // 조회 버튼 클릭 — 1페이지부터 재조회
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSearch — 조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
     // 초기화 버튼 클릭 — 검색 조건을 초기값으로 되돌린 후 재조회
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -82,6 +81,7 @@ window.CmNoticeMng = {
     };
 
     // 날짜범위 옵션 변경 — 선택된 옵션으로 dateStart·dateEnd 자동 세팅
+    /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.bofGetDateRange(searchParam.dateRange);
@@ -92,25 +92,25 @@ window.CmNoticeMng = {
     };
 
     // 페이지당 건수 변경 — 1페이지부터 재조회
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // 페이지 번호 클릭
+    /* setPage — 설정 */
     const setPage = (n) => {
       if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); }
     };
 
-    // -- 일반 함수 모음 --------------------------------------------------------
-
     const SORT_MAP = { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
-    /* onSort */
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -120,10 +120,11 @@ window.CmNoticeMng = {
       handleSearchList();
     };
 
-    /* sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // 공지사항 목록 페이징 조회
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -143,6 +144,7 @@ window.CmNoticeMng = {
     };
 
     // 공지사항 삭제 — 확인 후 낙관적 UI 제거 → API 호출 → 목록 갱신
+    /* handleDelete — 삭제 */
     const handleDelete = async (n) => {
       const ok = await showConfirm('삭제', `[${n.noticeTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -163,18 +165,23 @@ window.CmNoticeMng = {
     };
 
     // 조회 모드로 하단 상세 열기 (같은 행 재클릭 시 닫힘)
+    /* loadView — 뷰 로드 */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
     // 수정 모드로 하단 상세 열기 (같은 행 재클릭 시 닫힘)
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
     // 신규 등록 폼 열기
+    /* openNew — 신규 열기 */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
     // 하단 상세 패널 닫기
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
     // 상세 컴포넌트 내부 navigate 인터셉터 — 목록 복귀·편집전환은 페이지 이동 없이 처리
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       console.log('[inlineNavigate]', pg, opts);
       if (pg === 'cmNoticeMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
@@ -184,13 +191,16 @@ window.CmNoticeMng = {
 
     // 상태 코드 → badge 클래스 변환
     const _NOTICE_STATUS_FB = { '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('NOTICE_STATUS', s, _NOTICE_STATUS_FB[s] || 'badge-gray');
 
     // 유형 코드 → badge 클래스 변환
     const _NOTICE_TYPE_FB = { '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge   = t => coUtil.cofCodeBadge('NOTICE_TYPE', t, _NOTICE_TYPE_FB[t] || 'badge-gray');
 
     // 현재 목록을 CSV로 내보내기
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(
       notices,
       [{ label: 'ID', key: 'noticeId' }, { label: '제목', key: 'noticeTitle' }, { label: '유형', key: 'noticeTypeCd' },
@@ -199,6 +209,7 @@ window.CmNoticeMng = {
     );
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'searchValue', label: '제목', type: 'text', placeholder: '제목 검색' },
       { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
@@ -209,6 +220,8 @@ window.CmNoticeMng = {
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const listGridColumns = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
@@ -228,9 +241,11 @@ window.CmNoticeMng = {
       { key: 'siteNm',         label: '사이트명', style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',        label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
     ];
+    /* fnGridRowClass — 유틸 */
     const fnGridRowClass = (row) => (uiStateDetail.selectedId === row.noticeId ? 'active' : '');
 
-    // -- return ----------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       uiStateDetail, notices, uiState, codes, pager,

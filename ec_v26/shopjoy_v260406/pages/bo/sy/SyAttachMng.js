@@ -5,6 +5,8 @@ window.SyAttachMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -26,13 +28,13 @@ window.SyAttachMng = {
 
     /* 그룹 검색은 클라이언트 filter 금지 — API 재조회(onGrpSearch)로만 갱신 (UI/UX 검색 방식 정책) */
 
-    /* 첨부파일 fnBuildPageNums */
+    /* fnBuildPageNums — 유틸 */
     const fnBuildPageNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
-    /* 첨부그룹 fnBuildGrpPageNums */
+    /* fnBuildGrpPageNums — 유틸 */
     const fnBuildGrpPageNums = () => {
       const c = grpPager.pageNo, l = grpPager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
@@ -42,11 +44,16 @@ window.SyAttachMng = {
     const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
 
     /* 첨부파일 onDateRangeChange */
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
     };
 
     // 그룹 목록 로드 (서버사이드 페이징 — grpPager 사용)
+    /* handleLoadGrps — 처리 */
     const handleLoadGrps = async () => {
       try {
         const p = { pageNo: grpPager.pageNo, pageSize: grpPager.pageSize };
@@ -67,14 +74,16 @@ window.SyAttachMng = {
       }
     };
 
-    /* 그룹 검색 — [조회] 버튼/Enter 시에만 API 재조회 (1페이지로 리셋) */
+    /* onGrpSearch — 이벤트 */
     const onGrpSearch = async () => { grpPager.pageNo = 1; await handleLoadGrps(); };
 
-    /* 첨부그룹 setGrpPage / onGrpSizeChange */
+    /* setGrpPage — 설정 */
     const setGrpPage      = n => { if (n >= 1 && n <= grpPager.pageTotalPage) { grpPager.pageNo = n; handleLoadGrps(); } };
+    /* onGrpSizeChange — 이벤트 */
     const onGrpSizeChange = () => { grpPager.pageNo = 1; handleLoadGrps(); };
 
     // 파일 목록 조회 (서버사이드 페이징)
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       uiState.loading = true;
       try {
@@ -105,7 +114,8 @@ window.SyAttachMng = {
       }
     };
 
-    /* 첨부파일 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
@@ -126,10 +136,10 @@ window.SyAttachMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    /* -- 검색 / 페이징 -- */
+    /* onSearch — 조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
 
-    /* 첨부파일 onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, { attachGrpId: '', dateStart: '', dateEnd: '', dateRange: '' });
       uiState.selectedGrpId = null;
@@ -137,16 +147,16 @@ window.SyAttachMng = {
       handleSearchData();
     };
 
-    /* 첨부파일 setPage */
+    /* setPage — 설정 */
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
 
-    /* 첨부파일 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* -- 첨부그룹 -- */
     const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
 
-    /* 첨부파일 selectGrp */
+    /* selectGrp — 선택 */
     const selectGrp = (id) => {
       uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id;
       searchParam.attachGrpId = '';
@@ -156,19 +166,19 @@ window.SyAttachMng = {
       handleSearchData();
     };
 
-    /* 첨부파일 openGrpNew */
+    /* openGrpNew — 열기 */
     const openGrpNew = () => {
       uiState.grpEditId = null; uiState.grpEditMode = true;
       Object.assign(grpForm, { attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
     };
 
-    /* 첨부파일 openGrpEdit */
+    /* openGrpEdit — 열기 */
     const openGrpEdit = (g) => {
       uiState.grpEditId = g.attachGrpId; uiState.grpEditMode = true;
       Object.assign(grpForm, { ...g });
     };
 
-    /* 첨부파일 handleSaveGrp */
+    /* handleSaveGrp — 그룹 저장 */
     const handleSaveGrp = async () => {
       if (!grpForm.attachGrpNm || !grpForm.attachGrpCode) { showToast('그룹명과 코드는 필수입니다.', 'error'); return; }
       try {
@@ -186,7 +196,7 @@ window.SyAttachMng = {
       }
     };
 
-    /* 첨부파일 handleDeleteGrp */
+    /* handleDeleteGrp — 그룹 삭제 */
     const handleDeleteGrp = async (g) => {
       const ok = await showConfirm('그룹 삭제', `[${g.attachGrpNm}] 그룹을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -208,7 +218,7 @@ window.SyAttachMng = {
       sortOrd: 0, attachMemo: '', refId: '',
     });
 
-    /* 첨부파일 openFileNew */
+    /* openFileNew — 열기 */
     const openFileNew = () => {
       uiState.fileEditId = null; uiState.fileEditMode = true;
       Object.assign(fileForm, {
@@ -219,13 +229,13 @@ window.SyAttachMng = {
       });
     };
 
-    /* 첨부파일 openFileEdit */
+    /* openFileEdit — 열기 */
     const openFileEdit = (a) => {
       uiState.fileEditId = a.attachId; uiState.fileEditMode = true;
       Object.assign(fileForm, { ...a });
     };
 
-    /* 첨부파일 handleSaveFile */
+    /* handleSaveFile — 저장 */
     const handleSaveFile = async () => {
       if (!fileForm.fileNm || !fileForm.attachGrpId) { showToast('그룹과 파일명은 필수입니다.', 'error'); return; }
       try {
@@ -244,7 +254,7 @@ window.SyAttachMng = {
       }
     };
 
-    /* 첨부파일 handleDeleteFile */
+    /* handleDeleteFile — 삭제 */
     const handleDeleteFile = async (a) => {
       const ok = await showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -257,7 +267,7 @@ window.SyAttachMng = {
       }
     };
 
-    /* 첨부파일 fnFmtSize */
+    /* fnFmtSize — 유틸 */
     const fnFmtSize = bytes => {
       if (!bytes) return '0 B';
       if (bytes < 1024) return bytes + ' B';
@@ -267,9 +277,15 @@ window.SyAttachMng = {
 
     /* 첨부파일 fnStatusBadge */
     const _USE_YN_FB = { '활성': 'badge-green', '비활성': 'badge-gray', 'ACTIVE': 'badge-green', 'INACTIVE': 'badge-gray' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('USE_YN', s, _USE_YN_FB[s] || 'badge-gray');
 
     /* BoGrid 컬럼 정의 (첨부파일 목록) */
+
+    // --- [컬럼 정의] ---
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const fileGridColumns = [
       { key: 'attachGrpId', label: '그룹', cellStyle: 'color:#666;',
         fmt: (v, row) => {
@@ -287,7 +303,6 @@ window.SyAttachMng = {
         cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 그룹 폼 ======================
     const grpFormColumns = [
       { key: 'attachGrpNm',   label: '그룹명',   type: 'text', required: true, placeholder: '그룹명', colSpan: 2 },
       { type: 'rowBreak' },
@@ -300,7 +315,6 @@ window.SyAttachMng = {
       { type: 'rowBreak' },
       { key: 'useYn',         label: '상태', type: 'select', options: () => codes.use_yns, colSpan: 2 },
     ];
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 파일 폼 (18필드 4컬럼) ========
     const fileFormColumns = [
       { key: 'attachGrpId',      label: '첨부그룹ID', type: 'text', required: true, placeholder: 'ATG...' },
       { key: 'fileNm',           label: '파일명', type: 'text', required: true, placeholder: '파일명.jpg', colSpan: 2 },
@@ -323,7 +337,8 @@ window.SyAttachMng = {
       { key: 'attachMemo',       label: '메모', type: 'text', colSpan: 3 },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
     return {
       attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
       attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,

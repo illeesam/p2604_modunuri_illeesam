@@ -5,6 +5,8 @@ window.SyBbmMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -15,6 +17,10 @@ window.SyBbmMng = {
     const codes = reactive({ bbm_type: [], bbm_status: [], use_yn: [] });
 
     // onMounted에서 API 로드
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -39,10 +45,11 @@ window.SyBbmMng = {
       }
     };
 
-    /* 표시경로 트리/픽커 (sy_path biz_cd=sy_bbm) */
+    /* selectNode — 노드 선택 */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchList(); };
 
-    /* 게시판 마스터 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.bbm_type = codeStore.sgGetGrpCodes('BBM_TYPE');
@@ -61,8 +68,9 @@ window.SyBbmMng = {
     /* 표시경로 선택 → bo-path-pick-field 컴포넌트 내장 (보일러플레이트 제거) */
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    /* 게시판 마스터 _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
+
       return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
@@ -75,19 +83,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       reloadTrigger: 0 // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
     });
 
-    /* 게시판 마스터 loadView */
+    /* loadView — 뷰 로드 */
     const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; detailModal.reloadTrigger++; };
 
-    /* 게시판 마스터 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; detailModal.reloadTrigger++; };
 
-    /* 게시판 마스터 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; detailModal.reloadTrigger++; };
 
-    /* 게시판 마스터 closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
 
-    /* 게시판 마스터 inlineNavigate */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syBbmMng') { detailModal.show = false; detailModal.dtlId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
@@ -97,41 +105,42 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
-    /* 게시판 마스터 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 게시판 마스터 fnTypeBadge */
     const _BBM_TYPE_FB = { '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => coUtil.cofCodeBadge('BBM_TYPE', t, _BBM_TYPE_FB[t] || 'badge-gray');
 
-    /* 게시판 마스터 fnYnBadge */
+    /* fnYnBadge — 유틸 */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    /* 게시판 마스터 fnCommentBadge */
+    /* fnCommentBadge — 유틸 */
     const fnCommentBadge = v => ({ '불가': 'badge-gray', '댓글허용': 'badge-blue', '대댓글허용': 'badge-green' }[v] || 'badge-gray');
 
-    /* 게시판 마스터 fnAttachBadge */
+    /* fnAttachBadge — 유틸 */
     const fnAttachBadge  = v => ({ '불가': 'badge-gray', '1개': 'badge-orange', '2개': 'badge-orange', '3개': 'badge-orange', '목록': 'badge-blue' }[v] || 'badge-gray');
 
-    /* 게시판 마스터 fnContentBadge */
+    /* fnContentBadge — 유틸 */
     const fnContentBadge = v => ({ '불가': 'badge-gray', 'textarea': 'badge-blue', 'htmleditor': 'badge-green' }[v] || 'badge-gray');
 
-    /* 게시판 마스터 fnScopeBadge */
+    /* fnScopeBadge — 유틸 */
     const fnScopeBadge   = v => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[v] || 'badge-gray');
 
-    /* 게시판 마스터 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 게시판 마스터 onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
-    /* 게시판 마스터 setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* 게시판 마스터 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 게시판 마스터 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (b) => {
       const ok = await showConfirm('삭제', `[${b.bbmNm}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -150,10 +159,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
-    /* 게시판 마스터 exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(bbms, [{label:'ID',key:'bbmId'},{label:'게시판명',key:'bbmNm'},{label:'유형',key:'bbmTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '게시판목록.csv');
 
     /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+
+        // --- [컬럼 정의] ---
+
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -165,6 +177,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'type', type: 'select', label: '유형', options: () => codes.bbm_type, nullLabel: '유형 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const baseGridColumns = [
       { key: 'pathId',        label: '표시경로', pathPick: 'sy_bbm' },
@@ -184,9 +198,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',       label: '등록일' },
     ];
+    /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (b) => detailModal.dtlId === b.bbmId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return { bbms, uiState, codes, cfSiteNm, searchParam, pager, fnTypeBadge, fnYnBadge, fnCommentBadge, fnAttachBadge, fnContentBadge, fnScopeBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel,
       selectNode,

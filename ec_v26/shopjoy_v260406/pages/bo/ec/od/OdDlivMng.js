@@ -5,6 +5,8 @@ window.OdDlivMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,7 +19,7 @@ window.OdDlivMng = {
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* 배송 getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
@@ -25,6 +27,9 @@ window.OdDlivMng = {
     };
 
     /* 배송 onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -34,10 +39,11 @@ window.OdDlivMng = {
       handleSearchData();
     };
 
-    /* 배송 sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -65,7 +71,7 @@ window.OdDlivMng = {
       }
     };
 
-    /* -- 검색 파라미터 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -73,7 +79,7 @@ window.OdDlivMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* 배송 handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.bofGetDateRange(searchParam.dateRange);
@@ -85,7 +91,7 @@ window.OdDlivMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 배송 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
@@ -110,19 +116,19 @@ window.OdDlivMng = {
     /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
-    /* 배송 loadView */
+    /* loadView — 뷰 로드 */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
-    /* 배송 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 배송 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 배송 closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
-    /* DlivDtl 에 넘길 navigate: 'odDlivMng' 이동 요청 → 패널 닫기로 인터셉트 */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'odDlivMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -133,7 +139,7 @@ window.OdDlivMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    /* 목록 */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 배송 fnStatusBadge — 공통코드 DLIV_STATUS 우선, 미매칭 시 로컬 fallback */
@@ -141,9 +147,10 @@ window.OdDlivMng = {
       '준비중': 'badge-orange', '출고완료': 'badge-blue', '배송중': 'badge-blue',
       '배송완료': 'badge-green', '배송실패': 'badge-red',
     };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('DLIV_STATUS', s, _DLIV_STATUS_FB[s] || 'badge-gray');
 
-    /* 배송 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
         props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -153,7 +160,7 @@ window.OdDlivMng = {
       await handleSearchData('DEFAULT');
     };
 
-    /* 배송 onReset */
+    /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -161,13 +168,13 @@ window.OdDlivMng = {
       await handleSearchData();
     };
 
-    /* 배송 setPage */
+    /* setPage — 설정 */
     const setPage  = n  => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
 
-    /* 배송 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    /* 배송 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -187,20 +194,20 @@ window.OdDlivMng = {
       }
     };
 
-    /* 배송 exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(deliveries, [{label:'배송ID',key:'deliveryId'},{label:'주문ID',key:'orderId'},{label:'수령인',key:'receiverName'},{label:'연락처',key:'receiverPhone'},{label:'주소',key:'address'},{label:'택배사',key:'courierCd'},{label:'운송장',key:'trackingNo'},{label:'상태',key:'statusCd'},{label:'등록일',key:'regDate'}], '배송목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
 
-    /* 배송 toggleCheck */
+    /* toggleCheck — 토글 */
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
 
-    /* 배송 isChecked */
+    /* isChecked — 여부 확인 */
     const isChecked = (id) => checked.has(id);
     const cfAllChecked = computed(() => deliveries.length > 0 && deliveries.every(d => checked.has(d.dlivId)));
 
-    /* 배송 toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) deliveries.forEach(d => s.delete(d.dlivId));
@@ -215,14 +222,14 @@ window.OdDlivMng = {
       reqTarget:'배송', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
 
-    /* 배송 onApprToChange */
+    /* onApprToChange — 이벤트 */
     const onApprToChange = () => {
       const m = (members).find(x => String(x.memberId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.memberNm || ''; bulkForm.apprToPhone = m.memberPhone || ''; bulkForm.apprToEmail = m.memberEmail || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
 
-    /* 배송 onReqTargetChange */
+    /* onReqTargetChange — 이벤트 */
     const onReqTargetChange = () => {
       const ids = Array.from(checked);
       const first = window.safeArrayUtils.safeFind(Array.isArray(deliveries) ? deliveries : [], d => ids.includes(d.dlivId));
@@ -240,7 +247,7 @@ window.OdDlivMng = {
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
       .replace('{reason}', bulkForm.reqReason || '-'));
 
-    /* 배송 openBulk */
+    /* openBulk — 열기 */
     const openBulk = () => {
       if (!checked.size) { showToast('항목을 선택하세요.', 'error'); return; }
       uiState.bulkTab = 'status';
@@ -279,7 +286,7 @@ window.OdDlivMng = {
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
 
-    /* 배송 saveBulk */
+    /* saveBulk — 저장 */
     const saveBulk = async () => {
       const ids = Array.from(checked);
       if (!ids.length) { showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
@@ -363,11 +370,15 @@ window.OdDlivMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
+    /* openMemberPick — 열기 */
     const openMemberPick = () => { memberPick.open = true; };
+    /* onSelectMember — 이벤트 */
     const onSelectMember = m => { searchParam.memberId = m.memberId; searchParam.memberNm = m.memberNm || m.loginId || m.memberId; };
+    /* onClearMember — 이벤트 */
     const onClearMember  = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -389,6 +400,8 @@ window.OdDlivMng = {
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const listGridColumns = [
       { key: 'dlivId',           label: '배송ID', link: true,
@@ -410,15 +423,13 @@ window.OdDlivMng = {
         fmt: () => cfSiteNm.value,
         cellStyle: 'color:#2563eb;' },
     ];
+    /* fnGridRowStyle — 유틸 */
     const fnGridRowStyle = (d) =>
       (uiStateDetail.selectedId === d.dlivId ? 'background:#fff8f9;' : '')
       + (isChecked(d.dlivId) ? 'background:#eef6fd;' : '');
 
     /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 일괄결재요청 모달 ============
     const apprContactFormColumns = [
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
@@ -457,6 +468,8 @@ window.OdDlivMng = {
       { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
         placeholder: '(선택)', colSpan: 2 },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), deliveries, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, COURIER_OPTIONS, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, onSelectMember, onClearMember, showRefModal, baseSearchColumns, listGridColumns, fnGridRowStyle, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns, bulkCourierFormColumns, bulkApprovalFormColumns };
   },

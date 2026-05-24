@@ -6,6 +6,8 @@ window.PmSaveMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     // ===== Vue Composition API / boApp 전역 의존 ===========================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -25,6 +27,9 @@ window.PmSaveMng = {
 
     // ===== 공통코드 로딩 ===================================================
     /* 적립금 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -43,7 +48,7 @@ window.PmSaveMng = {
     // onMounted에서 API 로드
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* 적립금 getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
@@ -51,6 +56,9 @@ window.PmSaveMng = {
     };
 
     /* 적립금 onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -60,11 +68,11 @@ window.PmSaveMng = {
       handleSearchList();
     };
 
-    /* 적립금 sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // ===== 목록 조회 API ===================================================
-    /* 적립금 목록조회 */
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -91,6 +99,7 @@ window.PmSaveMng = {
 
     // ===== 검색 파라미터 + 라이프사이클 ====================================
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
@@ -100,7 +109,7 @@ window.PmSaveMng = {
       handleSearchList('DEFAULT');    });
 
     // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
-    /* 적립금 handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
@@ -112,19 +121,19 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   const searchParam = reactive(_initSearchParam());
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
-    /* 적립금 loadView */
+    /* loadView — 뷰 로드 */
     const loadView   = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
-    /* 적립금 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 적립금 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 적립금 closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
-    /* 적립금 inlineNavigate */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'pmSaveMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -135,40 +144,42 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
     // ===== 페이저 번호 빌더 ================================================
-    /* 적립금 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     // ===== 배지(badge) 헬퍼 ================================================
     /* 적립금 fnTypeBadge — sy_code SAVE_TYPE_KR code_opt1 우선, 없으면 FB */
     const _SAVE_TYPE_FB = { '구매적립': 'badge-green', '회원가입': 'badge-blue', '리뷰적립': 'badge-orange', '출석체크': 'badge-purple' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge   = t => coUtil.cofCodeBadge('SAVE_TYPE_KR', t, _SAVE_TYPE_FB[t] || 'badge-gray');
 
     /* 적립금 fnStatusBadge */
     const _SAVE_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _SAVE_STATUS_FB[s] || 'badge-gray');
 
     // ===== 검색 / 리셋 / 페이지 변경 =======================================
-    /* 적립금 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
-    /* 적립금 onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
       onSearch();
     };
 
-    /* 적립금 setPage */
+    /* setPage — 설정 */
     const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
-    /* 적립금 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // ===== 삭제 / 엑셀 다운로드 ============================================
-    /* 적립금 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (s) => {
       const ok = await showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -187,7 +198,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       }
     };
 
-    /* 적립금 exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(saves,
       [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
       '마일리지목록.csv');
@@ -196,6 +207,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -212,7 +224,9 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         onRangeChange: () => onDateRangeChange() },
     ];
 
-    // ===== 그리드 컬럼 정의 (BoGrid :columns) ==============================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
     const baseGridColumns = [
       { key: 'saveNm',     label: '마일리지명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -227,7 +241,9 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'siteNm',     label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    // ===== setup() return =================================================
+    // ===== return (템플릿 노출) ===============================================
+
+
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), saves, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },

@@ -5,6 +5,8 @@ window.MbMemGradeMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,33 +20,9 @@ window.MbMemGradeMng = {
 
     const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
-        const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck', label: '검색대상',
-        options: [
-          { value: 'gradeNm', label: '등급명' },
-          { value: 'gradeCd', label: '코드' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
-    ];
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
-    const baseGridColumns = [
-      { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;',
-        edit: 'select', options: () => codes.member_grades },
-      { key: 'gradeNm',        label: '등급명',       style: 'min-width:150px;',
-        edit: 'text', placeholder: '등급명' },
-      { key: 'gradeRank',      label: '순위',         style: 'width:80px;text-align:right;',
-        edit: 'number' },
-      { key: 'minPurchaseAmt', label: '최소구매금액', style: 'width:150px;text-align:right;',
-        edit: 'number' },
-      { key: 'saveRate',       label: '적립률(%)',    style: 'width:110px;text-align:right;',
-        edit: 'number' },
-      { key: 'useYn',          label: '사용여부',     style: 'width:90px;text-align:center;',
-        edit: 'select', options: () => codes.use_yn },
-    ];
-
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
@@ -53,7 +31,7 @@ window.MbMemGradeMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* makeRow */
+    /* makeRow — 행 생성 */
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N',
@@ -61,7 +39,9 @@ window.MbMemGradeMng = {
       _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
@@ -90,23 +70,23 @@ window.MbMemGradeMng = {
       handleSearchList();
     });
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => { await handleSearchList(); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, { searchType: '', searchValue: '', use: '' }); handleSearchList(); };
 
-    /* setFocused */
+    /* setFocused — 포커스 설정 */
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
-    /* onCellChange */
+    /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
-    /* addRow */
+    /* addRow — 행 추가 */
     const addRow = () => {
       const newRow = {
         memberGradeId: _tempId--, gradeCd: '', gradeNm: '', gradeRank: gridRows.length + 1,
@@ -118,7 +98,7 @@ window.MbMemGradeMng = {
       uiState.focusedIdx = insertAt;
     };
 
-    /* deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -129,7 +109,7 @@ window.MbMemGradeMng = {
       }
     };
 
-    /* cancelRow */
+    /* cancelRow — 행 취소 */
     const cancelRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -141,7 +121,7 @@ window.MbMemGradeMng = {
       }
     };
 
-    /* deleteRows */
+    /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -150,7 +130,7 @@ window.MbMemGradeMng = {
       }
     };
 
-    /* cancelChecked */
+    /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.memberGradeId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -163,10 +143,10 @@ window.MbMemGradeMng = {
       }
     };
 
-    /* toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -195,9 +175,41 @@ window.MbMemGradeMng = {
       }
     };
 
-    /* fnStatusClass */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    /* fnStatusClass — 상태 배지 클래스 */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+
+    // --- [컬럼 정의] ---
+
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
+        options: [
+          { value: 'gradeNm', label: '등급명' },
+          { value: 'gradeCd', label: '코드' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
+    ];
+
+    const baseGridColumns = [
+      { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;',
+        edit: 'select', options: () => codes.member_grades },
+      { key: 'gradeNm',        label: '등급명',       style: 'min-width:150px;',
+        edit: 'text', placeholder: '등급명' },
+      { key: 'gradeRank',      label: '순위',         style: 'width:80px;text-align:right;',
+        edit: 'number' },
+      { key: 'minPurchaseAmt', label: '최소구매금액', style: 'width:150px;text-align:right;',
+        edit: 'number' },
+      { key: 'saveRate',       label: '적립률(%)',    style: 'width:110px;text-align:right;',
+        edit: 'number' },
+      { key: 'useYn',          label: '사용여부',     style: 'width:90px;text-align:center;',
+        edit: 'select', options: () => codes.use_yn },
+    ];
+
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, codes, searchParam, gridRows, baseSearchColumns, baseGridColumns,

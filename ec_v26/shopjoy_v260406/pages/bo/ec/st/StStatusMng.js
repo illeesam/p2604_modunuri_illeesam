@@ -5,6 +5,8 @@ window.StStatusMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     /* 적용된 검색조건 스냅샷 — 입력(uiState.*)은 즉시 화면에 반영하지 않고, [조회] 시점에만 이 값으로 동기화 (UI/UX 검색 방식 정책) */
     const applied = reactive({
@@ -19,7 +21,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -35,8 +39,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // -- watch ----------------------------------------------------------------
-
     /* -- 탭 -- */
         const TABS = [
       { id: 'vendor',    label: '업체별현황' },
@@ -49,7 +51,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* -- 공통 날짜 필터 -- */
             const dateEnd   = ref('');
 
-    /* onDateRangeChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
         const r = boUtil.bofGetDateRange(uiState.dateRange);
@@ -67,7 +71,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const couponList = reactive([]);
     const cacheDataList = reactive([]);
 
-    /* 목록조회 */
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         // 기간(uiState.dateStart~dateEnd)을 서버 검색 파라미터로 전달.
@@ -97,7 +101,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const COMM_RATE = 0.10; // 수수료율 10%
 
-    /* inRange */
+    /* inRange — 에서 범위 */
     const inRange = (dateStr) => {
       const d = String(dateStr || '').slice(0, 10);
       if (uiState.dateStart && d < uiState.dateStart) return false;
@@ -123,7 +127,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
 
-    // -- return ---------------------------------------------------------------
+        // ===== return (템플릿 노출) ===============================================
+
 
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
       }).filter(r => !applied.vendorSearchValue || r.vendorNm.includes(applied.vendorSearchValue));
@@ -152,8 +157,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const comm   = isCancelled ? 0 : Math.round((o.totalPrice || 0) * COMM_RATE);
         const settle = isCancelled ? 0 : (o.totalPrice || 0) - comm;
 
-    // -- return ---------------------------------------------------------------
-
         return { ...o, vendorNm: vendor ? vendor.vendorNm : '-', comm, settle, isCancelled };
       });
     });
@@ -162,8 +165,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const cfOrderPageList = computed(() => cfOrderRows.value.slice((orderPager.page - 1) * orderPager.size, orderPager.page * orderPager.size));
     const cfOrderSummary  = computed(() => {
       const valid = window.safeArrayUtils.safeFilter(cfOrderRows.value, r => !r.isCancelled);
-
-    // -- return ---------------------------------------------------------------
 
       return { cnt: valid.length, sales: valid.reduce((s, r) => s + r.totalPrice, 0), comm: valid.reduce((s, r) => s + r.comm, 0), settle: valid.reduce((s, r) => s + r.settle, 0) };
     });
@@ -183,8 +184,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }).map(c => {
         const isCompleted = ['환불완료','취소완료','교환완료'].includes(c.status);
         const settleImpact = ['환불완료','취소완료'].includes(c.status) ? -(c.refundAmount || 0) : 0;
-
-    // -- return ---------------------------------------------------------------
 
         return { ...c, isCompleted, settleImpact };
       });
@@ -213,8 +212,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const discountAmt = c.discountType === 'amount' ? c.discountValue * c.useCount
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
           : 3000 * c.useCount;
-
-    // -- return ---------------------------------------------------------------
 
         return {
           promoId: 'CPN-' + c.couponId, promoType: '쿠폰', promoNm: c.name,
@@ -265,8 +262,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const promo = Math.round(net * 0.03); // 프로모션 비용 가정 3%
         const settle = net - comm - promo;
 
-    // -- return ---------------------------------------------------------------
-
         return { ...r, net, comm, promo, settle, statusCd: settle > 0 ? '정산예정' : '마감' };
       }).filter(r => !applied.settleSearchMonth || r.month.includes(applied.settleSearchMonth));
     });
@@ -275,13 +270,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const cfSettlePageList = computed(() => cfSettleRows.value.slice((settlePager.page - 1) * settlePager.size, settlePager.page * settlePager.size));
     const cfSettleSummary  = computed(() => cfSettleRows.value.reduce((a, r) => ({ sales: a.sales + r.sales, refund: a.refund + r.refund, comm: a.comm + r.comm, settle: a.settle + r.settle }), { sales: 0, refund: 0, comm: 0, settle: 0 }));
 
-    /* -- 공통 유틸 -- */
+    /* fmt — 포맷 */
     const fmt  = n => Number(n || 0).toLocaleString();
 
-    /* fmtW */
+    /* fmtW — 포맷 W */
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
-    /* fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({
       '완료':'badge-green', '정산예정':'badge-blue', '마감':'badge-gray',
       '취소완료':'badge-red', '환불완료':'badge-red', '교환완료':'badge-purple',
@@ -290,9 +285,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* fnTypeBadge */
     const _CLAIM_TYPE_KR_FB = { '취소':'badge-red', '반품':'badge-orange', '교환':'badge-purple' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => coUtil.cofCodeBadge('CLAIM_TYPE_KR', t, _CLAIM_TYPE_KR_FB[t] || 'badge-gray');
 
     /* 입력값(uiState.*) → 적용 스냅샷(applied.*) 동기화 */
+    /* fnSyncApplied — 유틸 */
     const fnSyncApplied = () => {
       applied.vendorSearchValue = uiState.vendorSearchValue;
       applied.orderSearchValue  = uiState.orderSearchValue;
@@ -304,54 +301,54 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       applied.settleSearchMonth = uiState.settleSearchMonth;
     };
 
-    /* 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1;
       fnSyncApplied();
       await handleSearchData('DEFAULT');
     };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset  = () => {
       uiState.vendorSearchValue = ''; uiState.orderSearchValue = ''; uiState.orderSearchStatus = '';
       uiState.claimSearchType = ''; uiState.claimSearchStatus = ''; uiState.promoSearchValue = ''; uiState.promoSearchType = ''; uiState.settleSearchMonth = '';
       onSearch();
     };
 
-    /* pageNums */
+    /* pageNums — 페이지 Nums */
     const pageNums = (cur, last) => { const s = Math.max(1, cur-2), e = Math.min(last, s+4); return Array.from({length: e-s+1}, (_,i) => s+i); };
 
-    /* setVendorPage */
+    /* setVendorPage — 설정 */
     const setVendorPage = n => { if (n >= 1 && n <= cfVendorPages.value) vendorPager.page = n; };
 
-    /* onVendorSizeChange */
+    /* onVendorSizeChange — 이벤트 */
     const onVendorSizeChange = () => { vendorPager.page = 1; };
 
-    /* setOrderPage */
+    /* setOrderPage — 설정 */
     const setOrderPage = n => { if (n >= 1 && n <= cfOrderPages.value) orderPager.page = n; };
 
-    /* onOrderSizeChange */
+    /* onOrderSizeChange — 이벤트 */
     const onOrderSizeChange = () => { orderPager.page = 1; };
 
-    /* setClaimPage */
+    /* setClaimPage — 설정 */
     const setClaimPage = n => { if (n >= 1 && n <= cfClaimPages.value) claimPager.page = n; };
 
-    /* onClaimSizeChange */
+    /* onClaimSizeChange — 이벤트 */
     const onClaimSizeChange = () => { claimPager.page = 1; };
 
-    /* setPromoPage */
+    /* setPromoPage — 설정 */
     const setPromoPage = n => { if (n >= 1 && n <= cfPromoPages.value) promoPager.page = n; };
 
-    /* onPromoSizeChange */
+    /* onPromoSizeChange — 이벤트 */
     const onPromoSizeChange = () => { promoPager.page = 1; };
 
-    /* setSettlePage */
+    /* setSettlePage — 설정 */
     const setSettlePage = n => { if (n >= 1 && n <= cfSettlePages.value) settlePager.page = n; };
 
-    /* onSettleSizeChange */
+    /* onSettleSizeChange — 이벤트 */
     const onSettleSizeChange = () => { settlePager.page = 1; };
 
-    /* exportTab */
+    /* exportTab — 내보내기 */
     const exportTab = () => {
       const tab = window.safeArrayUtils.safeFind(TABS, t => t.id === uiState.activeTab);
       showToast && showToast(`${tab.label} 데이터를 Excel로 내보냅니다.`, 'info');
@@ -418,8 +415,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         cellStyle: (v) => 'font-weight:700;' + (v >= 0 ? 'color:#27ae60' : 'color:#e74c3c') },
       { key: 'statusCd',  label: '상태', badge: (row) => fnStatusBadge(row.statusCd) },
     ];
-
-    // -- return ---------------------------------------------------------------
 
     /* 검색바 :columns 자동 렌더 정의 — 모두 uiState 공유 */
     const dateSearchColumns = [

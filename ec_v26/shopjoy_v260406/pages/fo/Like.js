@@ -5,19 +5,23 @@ window.Like = {
     navigate:      { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, watch, onMounted } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
 
-    /* toggleLike */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* toggleLike — 토글 */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
 
-    /* selectProd */
+    /* selectProd — 선택 */
     const selectProd        = (p) => window.foApp.selectProd(p);
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -33,7 +37,8 @@ window.Like = {
       return (prods || []).filter(p => window.foApp.isLiked(p.prodId));
     });
 
-    // -- return ---------------------------------------------------------------
+
+    // ===== return (템플릿 노출) ===============================================
 
     return { cfLikedProds , uiState, codes };
   },

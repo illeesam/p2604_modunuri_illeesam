@@ -5,6 +5,8 @@ window.StConfigMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -13,7 +15,9 @@ window.StConfigMng = {
     const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
     const configs = reactive([]);
 
-    /* handleLoadList */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleLoadList — 목록 조회 */
     const handleLoadList = async () => {
       uiState.loading = true;
       try {
@@ -38,7 +42,7 @@ window.StConfigMng = {
         const form = reactive({});
     const errors = reactive({});
 
-    /* fnMapUiToApi */
+    /* fnMapUiToApi — 유틸 */
     const fnMapUiToApi = (uiForm) => ({
       settleConfigId: uiForm.settleConfigId,
       siteId: uiForm.siteId,
@@ -52,7 +56,7 @@ window.StConfigMng = {
       useYn: uiForm.useYn
     });
 
-    /* fnMapApiToUi */
+    /* fnMapApiToUi — 유틸 */
     const fnMapApiToUi = (apiData) => ({
       settleConfigId: apiData.settleConfigId,
       siteId: apiData.siteId,
@@ -70,7 +74,7 @@ window.StConfigMng = {
       useYn: apiData.useYn
     });
 
-    /* openEdit */
+    /* openEdit — 열기 */
     const openEdit = (c) => {
       Object.assign(form, fnMapApiToUi(c));
       uiState.selectedId = c.settleConfigId;
@@ -78,7 +82,7 @@ window.StConfigMng = {
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
-    /* openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => {
       Object.assign(form, { settleConfigId: null, siteId: '01', siteNm: 'ShopJoy 01', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
       uiState.selectedId = '__new__';
@@ -86,10 +90,10 @@ window.StConfigMng = {
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
-    /* closeForm */
+    /* closeForm — 닫기 */
     const closeForm = () => { uiState.selectedId = null; };
 
-    /* validate */
+    /* validate — 검증 */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       if (!form.settleCycleCd) errors.settleCycleCd = '정산주기를 선택하세요.';
@@ -98,7 +102,7 @@ window.StConfigMng = {
       return Object.keys(errors).length === 0;
     };
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       if (!validate()) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await showConfirm('저장', '정산기준을 저장하시겠습니까?');
@@ -118,7 +122,7 @@ window.StConfigMng = {
       }
     };
 
-    /* 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
       const cycleName = c.settleCycleNm || c.settleCycleCd;
       const ok = await showConfirm('삭제', `[${cycleName}] 정산기준을 삭제하시겠습니까?`);
@@ -137,16 +141,16 @@ window.StConfigMng = {
       }
     };
 
-    /* fnCycleCdToLabel */
+    /* fnCycleCdToLabel — 유틸 */
     const fnCycleCdToLabel = (cd) => ({ 'DAILY': '일정산', 'WEEKLY': '주정산', 'MONTHLY': '월정산' }[cd] || cd);
 
-    /* fnCycleBadge */
+    /* fnCycleBadge — 유틸 */
     const fnCycleBadge = (cd) => ({ 'DAILY': 'badge-orange', 'WEEKLY': 'badge-green', 'MONTHLY': 'badge-blue' }[cd] || 'badge-gray');
 
     // -- 공통코드 -------------------------------------------------------------
     const codes = reactive({ settle_cycles: [], use_yn: [] });
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -161,7 +165,10 @@ window.StConfigMng = {
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // -- return ---------------------------------------------------------------
+
+    // --- [컬럼 정의] ---
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const baseGridColumns = [
       { key: 'siteNm',             label: '사이트' },
@@ -180,7 +187,6 @@ window.StConfigMng = {
       { key: 'settleConfigRemark', label: '비고', cellStyle: 'color:#888' },
     ];
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 편집 폼 ========================
     const baseFormColumns = [
       { key: 'categoryNm',     label: '카테고리', type: 'text', placeholder: '카테고리명' },
       { key: 'commissionRate', label: '수수료율(%)', type: 'number', required: true, min: 0, max: 100 },
@@ -193,6 +199,9 @@ window.StConfigMng = {
       { type: 'rowBreak' },
       { key: 'settleConfigRemark', label: '비고', type: 'text', placeholder: '비고 입력', colSpan: 4 },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, configs, baseGridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi, baseFormColumns };
   },

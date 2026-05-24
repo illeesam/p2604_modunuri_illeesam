@@ -11,6 +11,8 @@ window.MbMemberDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { watch, ref, reactive, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -19,9 +21,12 @@ window.MbMemberDtl = {
     const currentId = ref(props.detailModal.dtlId);
     const codes = reactive({ member_grades: [], member_statuses: [] });
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
     watch(() => props.detailModal.dtlId, (newId) => {
       if (newId) currentId.value = newId;
     }, { immediate: true });
+
 
     onMounted(() => {
       const codeStore = window.sfGetBoCodeStore();
@@ -42,7 +47,10 @@ window.MbMemberDtl = {
       } catch (err) { console.error('[MbMemberDtl reloadTrigger]', err); }
     });
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+    // --- [컬럼 정의] ---
     const baseFormColumns = [
       { key: 'loginId',        label: '이메일',    type: 'text', required: true, placeholder: '이메일 주소' },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },
@@ -54,6 +62,9 @@ window.MbMemberDtl = {
       { key: 'memberMemo',     label: '메모',      type: 'textarea', rows: 6,
         placeholder: '관리자 메모', colSpan: 2 },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { currentId, codes, baseFormColumns };
   },

@@ -5,6 +5,8 @@ window.MbMemGroupMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,14 +20,16 @@ window.MbMemGroupMng = {
 
     const EDIT_FIELDS = ['groupNm', 'groupMemo', 'useYn'];
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
       uiState.isPageCodeLoad = true;
     };
 
-    /* makeRow */
+    /* makeRow — 행 생성 */
     const makeRow = (b) => ({
       ...b,
       _row_status: 'N',
@@ -33,7 +37,9 @@ window.MbMemGroupMng = {
       _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
@@ -57,23 +63,23 @@ window.MbMemGroupMng = {
       handleSearchList();
     });
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => { await handleSearchList(); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, { use: '' }); handleSearchList(); };
 
-    /* setFocused */
+    /* setFocused — 포커스 설정 */
     const setFocused = (idx) => { uiState.focusedIdx = idx; };
 
-    /* onCellChange */
+    /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
-    /* addRow */
+    /* addRow — 행 추가 */
     const addRow = () => {
       const newRow = {
         memberGroupId: _tempId--, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y',
@@ -84,7 +90,7 @@ window.MbMemGroupMng = {
       uiState.focusedIdx = insertAt;
     };
 
-    /* deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -95,7 +101,7 @@ window.MbMemGroupMng = {
       }
     };
 
-    /* cancelRow */
+    /* cancelRow — 행 취소 */
     const cancelRow = (idx) => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -107,7 +113,7 @@ window.MbMemGroupMng = {
       }
     };
 
-    /* deleteRows */
+    /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -116,7 +122,7 @@ window.MbMemGroupMng = {
       }
     };
 
-    /* cancelChecked */
+    /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.memberGroupId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -129,10 +135,10 @@ window.MbMemGroupMng = {
       }
     };
 
-    /* toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -161,9 +167,14 @@ window.MbMemGroupMng = {
       }
     };
 
-    /* fnStatusClass */
+    /* fnStatusClass — 상태 배지 클래스 */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
+
+        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+        // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
       { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
@@ -180,6 +191,9 @@ window.MbMemGroupMng = {
       { key: 'useYn',     label: '사용여부', style: 'width:90px;text-align:center;',
         edit: 'select', options: () => codes.use_yn },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       uiState, codes, searchParam, gridRows, baseSearchColumns, baseGridColumns,

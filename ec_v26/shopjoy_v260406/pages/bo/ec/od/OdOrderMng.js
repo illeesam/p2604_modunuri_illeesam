@@ -5,6 +5,8 @@ window.OdOrderMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,7 +20,7 @@ window.OdOrderMng = {
 
     const SORT_MAP = { reg: { asc: 'orderDate asc', desc: 'orderDate desc' } };
 
-    /* 주문 getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
@@ -26,6 +28,9 @@ window.OdOrderMng = {
     };
 
     /* 주문 onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -35,10 +40,11 @@ window.OdOrderMng = {
       handleSearchData();
     };
 
-    /* 주문 sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -70,7 +76,7 @@ window.OdOrderMng = {
       }
     };
 
-    /* -- 검색 파라미터 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -78,7 +84,7 @@ window.OdOrderMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* 주문 handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.bofGetDateRange(searchParam.dateRange);
@@ -90,7 +96,7 @@ window.OdOrderMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 주문 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
@@ -113,19 +119,19 @@ window.OdOrderMng = {
     /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
-    /* 주문 loadView */
+    /* loadView — 뷰 로드 */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
-    /* 주문 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 주문 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 주문 closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
-    /* 주문 inlineNavigate */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'odOrderMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -135,7 +141,7 @@ window.OdOrderMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    /* 주문 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 주문 fnStatusBadge — 공통코드 ORDER_STATUS code_opt1 우선, 미매칭 시 로컬 fallback */
@@ -144,6 +150,7 @@ window.OdOrderMng = {
       '배송중': 'badge-blue', '배송완료': 'badge-green', '구매확정': 'badge-gray',
       '취소': 'badge-red', '자동취소': 'badge-red',
     };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('ORDER_STATUS', s, _ORDER_STATUS_FB[s] || 'badge-gray');
 
     /* 주문 fnPayStatusBadge */
@@ -151,9 +158,10 @@ window.OdOrderMng = {
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
     };
+    /* fnPayStatusBadge — 유틸 */
     const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, _PAY_STATUS_FB[s] || 'badge-gray');
 
-    /* 주문 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
         props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -163,7 +171,7 @@ window.OdOrderMng = {
       await handleSearchData('DEFAULT');
     };
 
-    /* 주문 onReset */
+    /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -171,13 +179,13 @@ window.OdOrderMng = {
       await handleSearchData();
     };
 
-    /* 주문 setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
 
-    /* 주문 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    /* 주문 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (o) => {
       const ok = await showConfirm('삭제', `[${o.orderId}]를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -197,14 +205,14 @@ window.OdOrderMng = {
       }
     };
 
-    /* 주문 exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(orders, [{label:'주문ID',key:'orderId'},{label:'회원명',key:'userNm'},{label:'상태',key:'statusCd'},{label:'결제금액',key:'totalAmount'},{label:'결제방법',key:'payMethodCd'},{label:'주문일',key:'orderDate'}], '주문목록.csv');
 
-    /* 클레임 조회 */
+    /* claimByOrder — 클레임 으로 주문 */
     const claimByOrder = (orderId) =>
       (Array.isArray(claims) ? claims : []).find(c => c.orderId === orderId);
 
-    /* 주문 fnClaimTypeColor */
+    /* fnClaimTypeColor — 유틸 */
     const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
 
     /* 결제수단 색맵 (배지 배경/글자색) */
@@ -213,12 +221,13 @@ window.OdOrderMng = {
       '카드결제': { bg:'#f3e5f5', fg:'#6a1b9a' },
       '캐쉬':     { bg:'#fff3e0', fg:'#e65100' },
     };
+    /* fnPayMethodStyle — 유틸 */
     const fnPayMethodStyle = (v) => {
       const c = PAY_COLORS[v] || { bg:'#e8f5e9', fg:'#2e7d32' };
       return `font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;background:${c.bg};color:${c.fg};`;
     };
 
-    /* 주문 getItemCount */
+    /* getItemCount — 조회 */
     const getItemCount = (o) => {
       const m = (o.prodNm || '').match(/외\s*(\d+)/);
       return m ? parseInt(m[1]) + 1 : 1;
@@ -227,18 +236,18 @@ window.OdOrderMng = {
     /* 일괄선택 */
     const checked = reactive(new Set());
 
-    /* 주문 toggleCheck */
+    /* toggleCheck — 토글 */
     const toggleCheck = (id) => {
       const s = new Set(checked);
       if (s.has(id)) s.delete(id); else s.add(id);
       checked = s;
     };
 
-    /* 주문 isChecked */
+    /* isChecked — 여부 확인 */
     const isChecked = (id) => checked.has(id);
     const cfAllChecked = computed(() => orders.length > 0 && orders.every(o => checked.has(o.orderId)));
 
-    /* 주문 toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) orders.forEach(o => s.delete(o.orderId));
@@ -253,14 +262,14 @@ window.OdOrderMng = {
       reqTarget:'주문', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
 
-    /* 주문 onApprToChange */
+    /* onApprToChange — 이벤트 */
     const onApprToChange = () => {
       const m = (members).find(x => String(x.memberId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.memberNm || ''; bulkForm.apprToPhone = m.memberPhone || ''; bulkForm.apprToEmail = m.memberEmail || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
 
-    /* 주문 onReqTargetChange */
+    /* onReqTargetChange — 이벤트 */
     const onReqTargetChange = () => {
       const ids = Array.from(checked);
       const first = window.safeArrayUtils.safeFind(Array.isArray(orders) ? orders : [], o => ids.includes(o.orderId));
@@ -278,7 +287,7 @@ window.OdOrderMng = {
       .replace('{amount}', Number(bulkForm.reqAmount||0).toLocaleString())
       .replace('{reason}', bulkForm.reqReason || '-'));
 
-    /* 주문 openBulk */
+    /* openBulk — 열기 */
     const openBulk = () => {
       if (!checked.size) { showToast('항목을 선택하세요.', 'error'); return; }
       uiState.bulkTab = 'status';
@@ -312,7 +321,7 @@ window.OdOrderMng = {
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
 
-    /* 주문 saveBulk */
+    /* saveBulk — 저장 */
     const saveBulk = async () => {
       const ids = Array.from(checked);
       if (!ids.length) { showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
@@ -352,9 +361,17 @@ window.OdOrderMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
+    /* openMemberPick — 열기 */
     const openMemberPick = () => { memberPick.open = true; };
+    /* onSelectMember — 이벤트 */
     const onSelectMember = m => { searchParam.memberId = m.memberId; searchParam.memberNm = m.memberNm || m.loginId || m.memberId; };
+    /* onClearMember — 이벤트 */
     const onClearMember  = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
+
+
+    // --- [컬럼 정의] ---
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
@@ -378,7 +395,7 @@ window.OdOrderMng = {
         onRangeChange: () => handleDateRangeChange() },
     ];
 
-    /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
+    /* fnPayStatusText — 유틸 */
     const fnPayStatusText = (o) => (o.orderStatusCd === '취소' || o.orderStatusCd === '자동취소') ? '환불완료' : o.orderStatusCd === '입금대기' ? '미결제' : '결제완료';
     const listGridColumns = [
       { key: 'orderId',       label: '주문ID', link: true,
@@ -412,15 +429,13 @@ window.OdOrderMng = {
         fmt: () => cfSiteNm.value,
         cellStyle: 'color:#2563eb;' },
     ];
+    /* fnGridRowStyle — 유틸 */
     const fnGridRowStyle = (o) =>
       (uiStateDetail.selectedId === o.orderId ? 'background:#fff8f9;' : '')
       + (isChecked(o.orderId) ? 'background:#eef6fd;' : '');
 
     /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 일괄결재요청 모달 ============
     const apprContactFormColumns = [
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
@@ -446,6 +461,8 @@ window.OdOrderMng = {
       { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
         placeholder: '(선택)', colSpan: 2 },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), orders, members, claims, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnStatusBadge, fnPayStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, claimByOrder, fnClaimTypeColor, getItemCount, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, bulkForm, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, onSelectMember, onClearMember, baseSearchColumns, listGridColumns, fnGridRowStyle, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns, bulkApprovalFormColumns };
   },

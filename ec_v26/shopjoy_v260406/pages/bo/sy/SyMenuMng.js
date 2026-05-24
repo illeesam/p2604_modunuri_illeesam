@@ -5,6 +5,8 @@ window.SyMenuMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -16,6 +18,10 @@ window.SyMenuMng = {
     const codes = reactive({ menu_type: [], menu_status: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
 
     // onMounted에서 API 로드
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -33,16 +39,18 @@ window.SyMenuMng = {
       }
     };
 
-    /* -- 검색 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
+
       return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* 좌측 메뉴 트리 */
+    /* selectNode — 노드 선택 */
     const selectNode = (id) => { uiState.selectedTreeId = id; handleSearchList(); };
 
-    /* 메뉴 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
@@ -69,7 +77,7 @@ window.SyMenuMng = {
 
     const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentMenuId', 'menuUrl', 'menuTypeCd', 'sortOrd', 'useYn', 'menuRemark'];
 
-    /* -- 트리 정렬 -- */
+    /* buildTreeRows — 빌드 */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(m => { map[m.menuId] = { ...m, _children: [] }; });
@@ -80,7 +88,7 @@ window.SyMenuMng = {
       });
       const result = [];
 
-      /* 메뉴 traverse */
+      /* traverse — traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
@@ -89,35 +97,35 @@ window.SyMenuMng = {
       return result;
     };
 
-    /* 메뉴 makeRow */
+    /* makeRow — 행 생성 */
     const makeRow = (m) => ({
       ...m, _depth: m._depth || 0, _row_status: 'N', _row_check: false,
       _row_org: { menuCode: m.menuCode, menuNm: m.menuNm, parentMenuId: m.parentMenuId,
                menuUrl: m.menuUrl, menuTypeCd: m.menuTypeCd, sortOrd: m.sortOrd, useYn: m.useYn, menuRemark: m.menuRemark },
     });
 
-    /* 메뉴 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
 
-    /* 메뉴 onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
-    /* 메뉴 setFocused */
+    /* setFocused — 포커스 설정 */
     const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
 
-    /* 메뉴 onCellChange */
+    /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
-    /* 메뉴 addRow */
+    /* addRow — 행 추가 */
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
@@ -132,7 +140,7 @@ window.SyMenuMng = {
       uiState.focusedIdx = insertAt;
     };
 
-    /* 메뉴 deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -141,7 +149,7 @@ window.SyMenuMng = {
       } else { row._row_status = 'D'; }
     };
 
-    /* 메뉴 cancelRow */
+    /* cancelRow — 행 취소 */
     const cancelRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -153,7 +161,7 @@ window.SyMenuMng = {
       }
     };
 
-    /* 메뉴 cancelChecked */
+    /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
       const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.menuId));
       if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -168,7 +176,7 @@ window.SyMenuMng = {
       }
     };
 
-    /* 메뉴 deleteRows */
+    /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -177,7 +185,7 @@ window.SyMenuMng = {
       }
     };
 
-    /* 메뉴 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -202,10 +210,10 @@ window.SyMenuMng = {
       }
     };
 
-    /* 메뉴 toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* 메뉴 parentNm */
+    /* parentNm — 상위 Nm */
     const parentNm = (parentId) => {
       if (!parentId) return '';
       const p = menus.find(m => m.menuId === parentId);
@@ -214,10 +222,10 @@ window.SyMenuMng = {
 
     const menuTreeModal = reactive({ show: false, targetRow: null });
 
-    /* 메뉴 openParentModal */
+    /* openParentModal — 열기 */
     const openParentModal = async (row) => { menuTreeModal.targetRow = row; await handleSearchList('DEFAULT'); menuTreeModal.show = true; };
 
-    /* 메뉴 onParentSelect */
+    /* onParentSelect — 이벤트 */
     const onParentSelect  = (menu) => {
       if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentMenuId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }
       menuTreeModal.show = false;
@@ -227,19 +235,19 @@ window.SyMenuMng = {
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
 
-    /* 메뉴 depthBullet */
+    /* depthBullet — 깊이 글머리 */
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
 
-    /* 메뉴 depthColor */
+    /* depthColor — 깊이 색상 */
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
 
-    /* 메뉴 fnStatusClass */
+    /* fnStatusClass — 상태 배지 클래스 */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    /* 메뉴 fnTypeClass */
+    /* fnTypeClass — 유틸 */
     const fnTypeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
 
-    /* 메뉴 exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'menuId'},{label:'메뉴코드',key:'menuCode'},{label:'메뉴명',key:'menuNm'},{label:'상위ID',key:'parentMenuId'},{label:'URL',key:'menuUrl'},{label:'유형',key:'menuTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'비고',key:'menuRemark'}],
@@ -247,6 +255,9 @@ window.SyMenuMng = {
     );
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+
+        // --- [컬럼 정의] ---
+
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -258,6 +269,8 @@ window.SyMenuMng = {
       { key: 'type', type: 'select', label: '유형', options: () => codes.menu_types, nullLabel: '유형 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const baseGridColumns = [
       { key: 'menuCode',   label: '메뉴코드', style: 'width:110px;',    edit: 'text', mono: true },
@@ -274,7 +287,7 @@ window.SyMenuMng = {
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return { menus, uiState, codes, selectNode,
       searchParam,

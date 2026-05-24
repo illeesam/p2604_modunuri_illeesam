@@ -5,6 +5,8 @@ window.StErpViewMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,7 +20,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       date_range_opts: [],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -35,7 +39,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
             const dateEnd   = ref('');
 
-    /* handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -43,15 +47,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const slips = reactive([]);
 
-    /* _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         slips.splice(0, slips.length);
@@ -64,7 +70,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); });
 
-    /* doResend */
+    /* doResend — 실행 */
     const doResend = async (r) => {
       const ok = await showConfirm('재전송', '전표를 ERP로 재전송하시겠습니까?');
       if (!ok) return;
@@ -83,28 +89,33 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* fnStatusBadge — sy_code ERP_STATUS code_opt1 우선, 없으면 FB */
     const _ERP_STATUS_FB = { '전송완료':'badge-green', '전송대기':'badge-blue', '오류':'badge-red' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_STATUS', s, _ERP_STATUS_FB[s] || 'badge-gray');
 
     /* fnTypeBadge — sy_code ERP_VOUCHER_TYPE_KR code_opt1 우선, 없으면 FB */
     const _ERP_VOUCHER_TYPE_FB = { '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge   = t => coUtil.cofCodeBadge('ERP_VOUCHER_TYPE_KR', t, _ERP_VOUCHER_TYPE_FB[t] || 'badge-gray');
 
-    /* fmtW */
+    /* fmtW — 포맷 W */
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    // -- return ---------------------------------------------------------------
+        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+        // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
       { key: 'dateRange', label: '전표일', type: 'dateRange', paramObj: uiState,
@@ -136,6 +147,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         fmt: (v) => v || '-' },
       { key: 'sendStatus', label: '전송상태', badge: (row) => fnStatusBadge(row.sendStatus) },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, handleDateRangeChange, codes, pager, slips, baseSearchColumns, baseGridColumns, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },

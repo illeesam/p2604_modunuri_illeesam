@@ -7,6 +7,8 @@ window.HelpBoModal = {
   props: ['show', 'topic'],
   emits: ['close'],
   setup(props, { emit }) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, watch } = Vue;
 
     const TABS = [
@@ -249,8 +251,11 @@ window.HelpBoModal = {
     watch(() => props.topic, (v) => { if (v) activeTab.value = v; });
     watch(() => props.show,  (v) => { if (v && props.topic) activeTab.value = props.topic; });
 
-    /* close */
+    /* close — 닫기 */
     const close = () => emit('close');
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       TABS, OPT_SUB_TABS,

@@ -5,6 +5,8 @@ window.DpDispUiSimul = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -26,7 +28,7 @@ window.DpDispUiSimul = {
     const members = reactive([]);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    /* 목록조회 */
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [dpRes, sitesRes, membersRes] = await Promise.all([
@@ -51,7 +53,9 @@ window.DpDispUiSimul = {
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
     const tab = Vue.toRef(uiState, 'tab');
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
@@ -63,9 +67,7 @@ window.DpDispUiSimul = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
-    /* ── 검색/필터 조건 ── */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ previewDate: today, previewTime: new Date().toTimeString().slice(0, 5), status: '활성', visibility: '', structColCount: 1, dispUiAreaErr: false, dispUiSiteSearch: '', dispUiMemberSearch: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -89,10 +91,10 @@ window.DpDispUiSimul = {
       'cache_banner':'💰', 'widget_embed':'🧩',
     };
 
-    /* wLabel */
+    /* wLabel — w 라벨 */
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
-    /* wIcon */
+    /* wIcon — w 아이콘 */
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
     /* ── 화면영역 코드 ── */
@@ -107,25 +109,26 @@ window.DpDispUiSimul = {
       return window.safeArrayUtils.safeFilter(all, c => selectedAreas.has(c.codeValue));
     });
 
-    /* ── 영역 드롭다운 멀티선택 ── */
+    /* toggleArea — 영역 토글 */
     const toggleArea     = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
 
-    /* selectAllAreas */
+    /* selectAllAreas — 선택 */
     const selectAllAreas = () => { window.safeArrayUtils.safeForEach(cfAllAreaListRaw.value, a => selectedAreas.add(a.codeValue)); };
 
-    /* clearAllAreas */
+    /* clearAllAreas — 비우기 */
     const clearAllAreas  = () => { selectedAreas.clear(); };
     const cfAreaBtnLabel   = computed(() => {
       const sz = selectedAreas.size;
       return sz === 0 ? '전체 영역' : `${sz}개 영역 선택`;
     });
 
-    /* ── 날짜+시간 범위 판단 ── */
+    /* isDateInRange — 여부 확인 */
     const isDateInRange = (panel) => {
       const d = searchParam.previewDate;
       if (!d) return true;
       const t  = searchParam.previewTime || '00:00';
       const dt = `${d}T${t}`;
+      /* _norm — _norm */
       const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
       if (panel.dispStartDt) {
         if (dt < _norm(panel.dispStartDt)) return false;
@@ -136,7 +139,7 @@ window.DpDispUiSimul = {
       return true;
     };
 
-    /* ── 공통 패널 필터 함수 ── */
+    /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
       if (searchParam.status && p.status !== searchParam.status) return false;
       if (!isDateInRange(p)) return false;
@@ -144,7 +147,7 @@ window.DpDispUiSimul = {
       return true;
     };
 
-    /* ── Tab1: 영역별 필터 패널 ── */
+    /* panelsForArea — panels For 영역 */
     const panelsForArea = (areaCode) =>
       (Array.isArray(displays) ? displays : [])
         .filter(p => p.area === areaCode && panelFilter(p))
@@ -154,12 +157,14 @@ window.DpDispUiSimul = {
       (Array.isArray(displays) ? displays : []).filter(p => panelFilter(p)).length
     );
 
-    /* onReset */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
     };
 
-    /* resetDate */
+    /* resetDate — 초기화 */
     const resetDate = () => {
       searchParam.previewDate = today;
       searchParam.previewTime = new Date().toTimeString().slice(0, 5);
@@ -170,7 +175,7 @@ window.DpDispUiSimul = {
     ───────────────────────────────────────── */
     const checkedPanelIds = reactive(new Set());
 
-    /* 패널의 위젯 타입 목록 */
+    /* panelWidgetTypes — 패널 위젯 Types */
     const panelWidgetTypes = (p) => {
       if (p.rows && p.rows.length) return p.rows.map(r => r.widgetType);
       return p.widgetType ? [p.widgetType] : [];
@@ -183,11 +188,12 @@ window.DpDispUiSimul = {
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-    // ── return ───────────────────────────────────────────────────────────────
-
         onMounted(() => {
       handleSearchData();
     });
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { ...area, panels };
       }).filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
@@ -196,18 +202,18 @@ window.DpDispUiSimul = {
     /* 영역 펼침 상태 */
     const expandedAreas = reactive(new Set());
 
-    /* initExpandedAreas */
+    /* initExpandedAreas — 초기화 */
     const initExpandedAreas = () => {
       window.safeArrayUtils.safeForEach(cfAllAreaListRaw.value, a => expandedAreas.add(a.codeValue));
     };
 
-    /* toggleAreaExpand */
+    /* toggleAreaExpand — 영역 토글 */
     const toggleAreaExpand = (code) => {
       if (expandedAreas.has(code)) expandedAreas.delete(code);
       else expandedAreas.add(code);
     };
 
-    /* 패널 체크 토글 — 하위 위젯 포함 cascade */
+    /* togglePanelCheck — 패널 토글 */
     const togglePanelCheck = (p) => {
       const id = p.dispId;
       const rows = p.rows || [];
@@ -222,12 +228,12 @@ window.DpDispUiSimul = {
       }
     };
 
-    /* isPanelAllChecked */
+    /* isPanelAllChecked — 여부 확인 */
     const isPanelAllChecked = (p) =>
       checkedPanelIds.has(p.dispId) &&
       ((p.rows || []).length === 0 || (p.rows || []).every((_, wi) => checkedWidgetKeys.has(p.dispId + '_' + wi)));
 
-    /* checkAllPanels */
+    /* checkAllPanels — 확인 */
     const checkAllPanels = () => {
       window.safeArrayUtils.safeForEach(cfStructAreaList.value, a => a.panels.forEach(p => {
         checkedPanelIds.add(p.dispId);
@@ -235,10 +241,10 @@ window.DpDispUiSimul = {
       }));
     };
 
-    /* clearCheckedPanels */
+    /* clearCheckedPanels — 비우기 */
     const clearCheckedPanels = () => { checkedPanelIds.clear(); checkedWidgetKeys.clear(); };
 
-    /* 영역 단위 전체체크 — 하위 패널·위젯 포함 cascade */
+    /* checkAreaPanels — 확인 */
     const checkAreaPanels = (area) => {
       const allPanels = area.panels.every(p => checkedPanelIds.has(p.dispId));
       const allWidgets = area.panels.every(p =>
@@ -257,7 +263,7 @@ window.DpDispUiSimul = {
       }
     };
 
-    /* isAreaAllChecked */
+    /* isAreaAllChecked — 여부 확인 */
     const isAreaAllChecked = (area) =>
       area.panels.length > 0 &&
       area.panels.every(p => checkedPanelIds.has(p.dispId)) &&
@@ -268,7 +274,7 @@ window.DpDispUiSimul = {
     /* ── 위젯 체크 (키: `${dispId}_${wi}`) ── */
     const checkedWidgetKeys = reactive(new Set());
 
-    /* toggleWidgetCheck */
+    /* toggleWidgetCheck — 토글 */
     const toggleWidgetCheck = (dispId, wi, event) => {
       if (event) event.stopPropagation();
       const key = `${dispId}_${wi}`;
@@ -276,7 +282,7 @@ window.DpDispUiSimul = {
       else checkedWidgetKeys.add(key);
     };
 
-    /* checkAllWidgets */
+    /* checkAllWidgets — 확인 */
     const checkAllWidgets = () => {
       window.safeArrayUtils.safeForEach(cfStructAreaList.value, a =>
         a.panels.forEach(p =>
@@ -285,7 +291,7 @@ window.DpDispUiSimul = {
       );
     };
 
-    /* clearCheckedWidgets */
+    /* clearCheckedWidgets — 비우기 */
     const clearCheckedWidgets = () => { checkedWidgetKeys.clear(); };
     const cfCheckedWidgetCount = computed(() => checkedWidgetKeys.size);
 
@@ -330,7 +336,7 @@ window.DpDispUiSimul = {
     const cfSourceLines = computed(() => {
       const lines = [];
 
-      /* A */
+      /* A — A */
       const A = (key, val, real = false) => ({ key, val: String(val), real });
       const areas = window.safeArrayUtils.safeFilter(cfAllAreaListRaw.value, a =>
         selectedAreas.size === 0 || selectedAreas.has(a.codeValue)
@@ -439,10 +445,10 @@ window.DpDispUiSimul = {
     });
 
     const cfSourceText = computed(() => {
-      /* fa */
+      /* fa — fa */
       const fa = (attrs) => attrs.map(a => `${a.key}="${a.val}"`).join(' ');
 
-      /* ind */
+      /* ind — ind */
       const ind = (n) => '  '.repeat(n);
       return cfSourceLines.value.map(l => {
         if (l.type === 'blank')        return '';
@@ -466,7 +472,7 @@ window.DpDispUiSimul = {
       }).join('\n');
     });
 
-    /* copySource */
+    /* copySource — 복사 */
     const copySource = () => {
       navigator.clipboard?.writeText(cfSourceText.value).then(() => {
         uiState.sourceCopied = true;
@@ -474,7 +480,7 @@ window.DpDispUiSimul = {
       });
     };
 
-    /* 탭 전환 시 초기화 */
+    /* switchTab — switch 탭 */
     const switchTab = (tab) => {
       uiState.mainTab = tab;
       if (tab === 'struct') initExpandedAreas();
@@ -487,11 +493,11 @@ window.DpDispUiSimul = {
        // 'grid' | 'dashboard'
     const structColCount   = ref(1);        // 1 ~ 32
 
-    /* sMakeInit */
+    /* sMakeInit — s 생성 초기화 */
     const sMakeInit = (cols) => Array(cols * 2).fill(null);
     const structSlots = reactive([...sMakeInit(1)]);
 
-    /* structAutoExpand */
+    /* structAutoExpand — struct 자동 펼치기 */
     const structAutoExpand = () => {
       const cols = uiState.structColCount;
       if (structSlots.slice(structSlots.length - cols).some(Boolean))
@@ -506,7 +512,7 @@ window.DpDispUiSimul = {
       return `repeat(${n},1fr)`;
     });
 
-    /* 영역 설정을 캔버스에 적용 */
+    /* applyAreaLayout — 적용 */
     const applyAreaLayout = (area) => {
       const lt = area.layoutType || 'grid';
       const gc = area.gridCols   || 1;
@@ -528,10 +534,10 @@ window.DpDispUiSimul = {
     const structDashItems = reactive([]);
         const onStructDashDragOver  = (e) => { e.preventDefault(); uiState.structDashDragOver = true; };
 
-    /* onStructDashDragLeave */
+    /* onStructDashDragLeave — 이벤트 */
     const onStructDashDragLeave = () => { uiState.structDashDragOver = false; };
 
-    /* onStructDashDrop */
+    /* onStructDashDrop — 이벤트 */
     const onStructDashDrop = (e) => {
       e.preventDefault(); uiState.structDashDragOver = false;
       const widgets = window._dragAreaWidgets;
@@ -553,33 +559,33 @@ window.DpDispUiSimul = {
       });
     };
 
-    /* startStructDashMove */
+    /* startStructDashMove — 시작 Struct Dash 이동 */
     const startStructDashMove = (e, item) => {
       e.preventDefault();
       const ox = e.clientX - item.x, oy = e.clientY - item.y;
 
-      /* mv */
+      /* mv — mv */
       const mv = (me) => { item.x = Math.max(0, me.clientX - ox); item.y = Math.max(0, me.clientY - oy); };
 
-      /* up */
+      /* up — up */
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     };
 
-    /* startStructDashResize */
+    /* startStructDashResize — 시작 Struct Dash Resize */
     const startStructDashResize = (e, item) => {
       e.preventDefault(); e.stopPropagation();
       const sx = e.clientX, sy = e.clientY, sw = item.w, sh = item.h;
 
-      /* mv */
+      /* mv — mv */
       const mv = (me) => { item.w = Math.max(160, sw + (me.clientX - sx)); item.h = Math.max(100, sh + (me.clientY - sy)); };
 
-      /* up */
+      /* up — up */
       const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
       document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
     };
 
-    /* removeStructDashItem */
+    /* removeStructDashItem — 제거 */
     const removeStructDashItem = (id) => {
       const i = structDashItems.findIndex(d => d.id === id);
       if (i >= 0) structDashItems.splice(i, 1);
@@ -591,15 +597,15 @@ window.DpDispUiSimul = {
       uiState.structSpanPopupIdx = uiState.structSpanPopupIdx === idx ? -1 : idx;
     };
 
-    /* closeStructSpanPopup */
+    /* closeStructSpanPopup — 닫기 */
     const closeStructSpanPopup = () => { uiState.structSpanPopupIdx = -1; };
 
         const onStructDragOver  = (e, idx) => { e.preventDefault(); uiState.structDragOverIdx = idx; };
 
-    /* onStructDragLeave */
+    /* onStructDragLeave — 이벤트 */
     const onStructDragLeave = () => { uiState.structDragOverIdx = -1; };
 
-    /* onStructDrop */
+    /* onStructDrop — 이벤트 */
     const onStructDrop = (e, idx) => {
       e.preventDefault(); uiState.structDragOverIdx = -1;
       const widgets = window._dragAreaWidgets;
@@ -619,10 +625,10 @@ window.DpDispUiSimul = {
       structAutoExpand();
     };
 
-    /* removeStructSlot */
+    /* removeStructSlot — 제거 */
     const removeStructSlot = (idx) => { structSlots.splice(idx, 1, null); };
 
-    /* setStructSpan */
+    /* setStructSpan — 설정 */
     const setStructSpan = (idx, axis, delta) => {
       const slot = structSlots[idx]; if (!slot) return;
       const maxCol = uiState.structColCount;
@@ -631,12 +637,12 @@ window.DpDispUiSimul = {
     };
     const cfStructPlacedCount = computed(() => window.safeArrayUtils.safeFilter(structSlots, Boolean).length);
 
-    /* resetStructGrid */
+    /* resetStructGrid — 초기화 */
     const resetStructGrid = () => {
       structSlots.splice(0, structSlots.length, ...sMakeInit(uiState.structColCount));
     };
 
-    /* ── 노드 드래그 (영역 / 패널) ── */
+    /* onAreaDragStart — 이벤트 */
     const onAreaDragStart = (e, area) => {
       const widgets = area.panels.flatMap(p =>
         (p.rows || []).map(w => ({ ...w, _panelNm: p.name, _area: area.codeLabel })));
@@ -645,7 +651,7 @@ window.DpDispUiSimul = {
       e.dataTransfer.setData('text/plain', 'area:' + widgets.length);
     };
 
-    /* onPanelDragStart */
+    /* onPanelDragStart — 이벤트 */
     const onPanelDragStart = (e, p, areaLabel) => {
       const widgets = (p.rows || []).map(w => ({ ...w, _panelNm: p.name, _area: areaLabel }));
       window._dragAreaWidgets = widgets;
@@ -653,7 +659,7 @@ window.DpDispUiSimul = {
       e.dataTransfer.setData('text/plain', 'panel:' + widgets.length);
     };
 
-    /* onAreaDragEnd */
+    /* onAreaDragEnd — 이벤트 */
     const onAreaDragEnd = () => { window._dragAreaWidgets = null; };
 
     /* ── Ui미리보기 레이어 ── */
@@ -678,7 +684,7 @@ window.DpDispUiSimul = {
       );
     });
 
-    /* selectDispUiSite */
+    /* selectDispUiSite — 선택 */
     const selectDispUiSite = (site) => {
       dispUiForm.siteId = String(site.siteId);
       dispUiForm.siteNm = site.siteNm;
@@ -694,14 +700,14 @@ window.DpDispUiSimul = {
       ).slice(0, 30);
     });
 
-    /* selectDispUiMember */
+    /* selectDispUiMember — 선택 */
     const selectDispUiMember = (m) => {
       dispUiForm.memberId = String(m.userId);
       dispUiForm.memberNm = m.memberNm || m.email;
       uiState.dispUiMemberModalOpen = false;
     };
 
-    /* 초기화 */
+    /* resetDispUiForm — 초기화 */
     const resetDispUiForm = () => {
       dispUiForm.areas       = [];
       dispUiForm.date        = '';
@@ -723,7 +729,7 @@ window.DpDispUiSimul = {
       return sz === 0 ? '전체 영역' : `${sz}개 영역 선택`;
     });
 
-    /* dispUiToggleArea */
+    /* dispUiToggleArea — disp UI 토글 영역 */
     const dispUiToggleArea = (code) => {
       const i = dispUiForm.areas.indexOf(code);
       if (i !== -1) dispUiForm.areas.splice(i, 1);
@@ -731,7 +737,7 @@ window.DpDispUiSimul = {
       uiState.dispUiAreaErr = false;
     };
 
-    /* dispUiSelectAllAreas */
+    /* dispUiSelectAllAreas — disp UI 선택 전체 Areas */
     const dispUiSelectAllAreas = () => {
       window.safeArrayUtils.safeForEach(cfAllAreaListRaw.value, a => {
         if (!dispUiForm.areas.includes(a.codeValue)) dispUiForm.areas.push(a.codeValue);
@@ -739,10 +745,10 @@ window.DpDispUiSimul = {
       uiState.dispUiAreaErr = false;
     };
 
-    /* dispUiClearAllAreas */
+    /* dispUiClearAllAreas — disp UI Clear 전체 Areas */
     const dispUiClearAllAreas = () => { dispUiForm.areas.splice(0); };
 
-    /* 레이어 열기 – 처음 열 때 현재 필터값 복사 */
+    /* openDispUiLayer — 열기 */
     const openDispUiLayer = () => {
       if (!uiState.dispUiLayerOpen) {
         dispUiForm.areas        = [...selectedAreas];
@@ -766,8 +772,6 @@ window.DpDispUiSimul = {
     const cfDispUiParamObj = computed(() => {
       const viewOpts = ['content','struct','source'].filter(k => dispUiViewOpts[k]).join(',');
 
-    // ── return ───────────────────────────────────────────────────────────────
-
       return {
         areas:        [...dispUiForm.areas],
         date:         dispUiForm.date,
@@ -786,14 +790,14 @@ window.DpDispUiSimul = {
         .filter(t => dispUiViewOpts[t.key])
     );
 
-    /* _validateDispUi */
+    /* _validateDispUi — 검증 Disp UI */
     const _validateDispUi = () => {
       if (dispUiForm.areas.length === 0) { uiState.dispUiAreaErr = true; return false; }
       uiState.dispUiAreaErr = false;
       return true;
     };
 
-    /* openDispUiModal */
+    /* openDispUiModal — 열기 */
     const openDispUiModal = () => {
       if (!_validateDispUi()) return;
       uiState.dispUiModalOpen = true;
@@ -813,7 +817,7 @@ window.DpDispUiSimul = {
     }));
     const cfDispOpt = computed(() => ({ layout: uiState.tabMode, showBadges: true, mode: uiState.tabMode, showDesc: uiState.showDesc }));
 
-    /* areaInfo */
+    /* areaInfo — 영역 정보 */
     const areaInfo = (code) =>
       (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
 
@@ -842,10 +846,10 @@ window.DpDispUiSimul = {
     ];
         const openDispUiOther = () => { uiState.otherMenuOpen = !uiState.otherMenuOpen; };
 
-    /* closeOtherMenu */
+    /* closeOtherMenu — 닫기 */
     const closeOtherMenu = () => { uiState.otherMenuOpen = false; };
 
-    /* pickOtherPage */
+    /* pickOtherPage — 선택 Other 페이지 */
     const pickOtherPage = (url) => {
       const base = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
       window.open(
@@ -855,7 +859,7 @@ window.DpDispUiSimul = {
       uiState.otherMenuOpen = false;
     };
 
-    /* openDispUiPopup */
+    /* openDispUiPopup — 열기 */
     const openDispUiPopup = (scope) => {
       if (!_validateDispUi()) return;
       const p = cfDispUiParamObj.value;
@@ -890,8 +894,6 @@ window.DpDispUiSimul = {
     const structSpanPopupIdx = Vue.toRef(uiState, 'structSpanPopupIdx');
     const structViewport = Vue.toRef(uiState, 'structViewport');
     const tabMode = Vue.toRef(uiState, 'tabMode');
-
-    // ── return ───────────────────────────────────────────────────────────────
 
     return {
       today, cfSiteNm, codes,

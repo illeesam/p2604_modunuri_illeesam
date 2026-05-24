@@ -7,6 +7,8 @@ window.MbMemberHist = {
     memberId:     { type: String, default: null }, // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { computed, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -16,13 +18,13 @@ window.MbMemberHist = {
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
-    // -- watch ----------------------------------------------------------------
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
 
     watch(() => uiState.tabMode2, v => { window._ecMemberHistState.tabMode = v; });
 
-    /* 회원 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
     };
@@ -37,6 +39,9 @@ window.MbMemberHist = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* 회원 showTab */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const cfMemberOrders = computed(() => {
@@ -56,6 +61,8 @@ window.MbMemberHist = {
     });
 
     // -- 그리드 컬럼 정의 ------------------------------------------------------
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const orderGridColumns = [
       { key: 'orderId', label: '주문ID', refLink: 'order' },
       { key: 'orderDate', label: '주문일' },
@@ -72,7 +79,8 @@ window.MbMemberHist = {
       { key: 'requestDate', label: '신청일', fmt: (v) => (v ? v.slice(0, 10) : '') },
     ];
 
-    // -- return ---------------------------------------------------------------
+
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState,

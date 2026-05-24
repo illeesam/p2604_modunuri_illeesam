@@ -9,6 +9,8 @@ window.DispX04Widget = {
   },
   emits: ['click-action'],
   setup(props, { emit }) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { computed, reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -68,7 +70,9 @@ window.DispX04Widget = {
       return true;
     });
 
-    /* handleClick */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleClick — 처리 */
     const handleClick = () => {
       const w = props.widgetItem;
       if (!w.clickAction || w.clickAction === 'none') return;
@@ -86,7 +90,7 @@ window.DispX04Widget = {
       'linear-gradient(135deg,#1565c0 0%,#0d47a1 100%)',
     ];
 
-    /* nameGrad */
+    /* nameGrad — 이름 그라데이션 */
     const nameGrad = (name) => {
       const h = (name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       return GRADIENTS[h % GRADIENTS.length];
@@ -103,10 +107,10 @@ window.DispX04Widget = {
       return vals.map((v, i) => ({ value: v, label: labels[i] || '', pct: Math.round((v / max) * 100), color: chartColors[i % chartColors.length] }));
     });
 
-    /* parseMarkdown */
+    /* parseMarkdown — 파싱 Markdown */
     const parseMarkdown = (md) => (window.marked ? window.marked.parse(md || '') : (md || ''));
 
-    /* 동영상 embed URL 생성 */
+    /* getVideoEmbed — 조회 */
     const getVideoEmbed = (w) => {
       const url = (w.videoUrl || '').trim();
       if (!url) return null;
@@ -124,7 +128,7 @@ window.DispX04Widget = {
       return url;
     };
 
-    /* 지도 embed URL 생성 */
+    /* getMapEmbed — 조회 */
     const getMapEmbed = (w) => {
       if (!w.mapAddress && !w.mapLat) return null;
       const q = (w.mapLat && w.mapLng)
@@ -133,7 +137,7 @@ window.DispX04Widget = {
       return `https://maps.google.com/maps?q=${q}&z=${w.mapZoom || 14}&output=embed&hl=ko`;
     };
 
-    /* 결재선 JSON 파싱 */
+    /* parseApprovalLine — 파싱 Approval Line */
     const parseApprovalLine = (json) => {
       try { return JSON.parse(json || '[]'); }
       catch { return [{ role: '담당자', name: '' }, { role: '팀장', name: '' }, { role: '부서장', name: '' }]; }
@@ -146,12 +150,15 @@ window.DispX04Widget = {
     const widget = computed(() => {
       const src = props.widgetItem || {};
 
-      /* tryParse */
+      /* tryParse — try 파싱 */
       const tryParse = (s) => { try { return JSON.parse(s); } catch (_) { return null; } };
       const cfg = tryParse(src.widgetConfigJson) || tryParse(src.widgetConfigJson) || {};
 
-      /* fromCfg */
+      /* fromCfg — 에서 Cfg */
       const fromCfg = (k1, k2) => cfg[k1] != null ? cfg[k1] : (k2 != null && cfg[k2] != null ? cfg[k2] : undefined);
+
+      // ===== return (템플릿 노출) ===============================================
+
 
       return {
         ...src,

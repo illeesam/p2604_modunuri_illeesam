@@ -9,9 +9,10 @@ window.SyUserLoginHist = {
     setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, onMounted } = Vue;
 
-    // ── 상태 ──────────────────────────────────────────────────────────────
     const uiState = reactive({
       descOpen: false, isPageCodeLoad: false, srchOpen: false,
       activeTab: 'log',
@@ -22,14 +23,17 @@ window.SyUserLoginHist = {
 
     (() => { const r = boUtil.bofGetDateRange('1week'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    /* onDateRangeChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
 
     const codes = reactive({ login_results: [], token_actions: [], date_range_opts: [] });
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
       const cs = window.sfGetBoCodeStore();
@@ -39,17 +43,15 @@ window.SyUserLoginHist = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ── 페이저 ────────────────────────────────────────────────────────────
     const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes:[10,20,50,100], pageCond:{} });
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
       pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
       const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1,c-2), e = Math.min(l,s+4);
       pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
     };
 
-    // ── 데이터 ────────────────────────────────────────────────────────────
     const logList   = reactive([]);
     const tokenList = reactive([]);
     const tabCounts = reactive({ log:0, token:0 });
@@ -57,20 +59,20 @@ window.SyUserLoginHist = {
     const expandedRows    = reactive(new Set());
     const allExpanded     = reactive({ value: false });
 
-    /* toggleRow */
+    /* toggleRow — 토글 */
     const toggleRow       = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
 
-    /* isExpanded */
+    /* isExpanded — 여부 확인 */
     const isExpanded      = id => expandedRows.has(id);
 
-    /* toggleExpandAll */
+    /* toggleExpandAll — 토글 */
     const toggleExpandAll = () => {
       const list = uiState.activeTab==='log' ? logList : tokenList;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
       else { list.forEach((r,i) => expandedRows.add(r.logId||i)); allExpanded.value = true; }
     };
 
-    // ── 검색 ─────────────────────────────────────────────────────────────
+    /* buildParams — 빌드 */
     const buildParams = () => {
       const p = {
         pageNo: pager.pageNo, pageSize: pager.pageSize,
@@ -90,7 +92,7 @@ window.SyUserLoginHist = {
       return p;
     };
 
-    /* handleSearchLog */
+    /* handleSearchLog — 처리 */
     const handleSearchLog = async () => {
       try {
         const res = await boApiSvc.syUserLoginLog.getPage(buildParams(), '사용자로그인이력', '로그인로그조회');
@@ -104,7 +106,7 @@ window.SyUserLoginHist = {
       }
     };
 
-    /* handleSearchToken */
+    /* handleSearchToken — 처리 */
     const handleSearchToken = async () => {
       try {
         const res = await boApiSvc.syUserTokenLog.getPage(buildParams(), '사용자로그인이력', '토큰이력조회');
@@ -118,7 +120,7 @@ window.SyUserLoginHist = {
       }
     };
 
-    /* 목록조회 */
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
       if (uiState.activeTab === 'log') await handleSearchLog();
       else                             await handleSearchToken();
@@ -126,25 +128,25 @@ window.SyUserLoginHist = {
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList(); });
 
-    // ── 이벤트 ───────────────────────────────────────────────────────────
+    /* onTabChange — 탭 변경 */
     const onTabChange = tab => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch    = () => { pager.pageNo = 1; handleSearchList(); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset     = () => {
       Object.assign(uiState, { searchType:'', searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
       onDateRangeChange(); pager.pageNo = 1; handleSearchList();
     };
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage      = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo=n; handleSearchList(); } };
 
-    /* onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo=1; handleSearchList(); };
 
-    /* handleClearLog */
+    /* handleClearLog — 로그 비우기 */
     const handleClearLog = async () => {
       const tabNm = uiState.activeTab==='log' ? '사용자로그인 로그' : '사용자토큰 이력';
       const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
@@ -161,26 +163,31 @@ window.SyUserLoginHist = {
       }
     };
 
-    // ── 표시용 ───────────────────────────────────────────────────────────
     const cfCurrentList = computed(() => uiState.activeTab==='log' ? logList : tokenList);
 
-    /* fnResultBadge */
+    /* fnResultBadge — 유틸 */
     const fnResultBadge = cd => ({'SUCCESS':'badge-green','LOGOUT':'badge-blue','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray','FAIL_IP':'badge-purple'}[cd]||'badge-gray');
 
-    /* fnResultLabel */
+    /* fnResultLabel — 유틸 */
     const fnResultLabel = cd => ({'SUCCESS':'성공','LOGOUT':'로그아웃','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정','FAIL_IP':'IP차단'}[cd]||cd||'-');
 
-    /* fnActionBadge */
+    /* fnActionBadge — 유틸 */
     const fnActionBadge = cd => ({'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange','LOGOUT':'badge-gray'}[cd]||'badge-gray');
 
-    /* fnActionLabel */
+    /* fnActionLabel — 유틸 */
     const fnActionLabel = cd => ({'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료','LOGOUT':'로그아웃'}[cd]||cd||'-');
 
-    /* fnTypeBadge */
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge   = cd => ({'ACCESS':'badge-purple','REFRESH':'badge-blue'}[cd]||'badge-gray');
 
-    /* fnDecode */
+    /* fnDecode — 유틸 */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
+
+
+    // --- [컬럼 정의] ---
+
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const baseSearchColumns = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
@@ -234,9 +241,13 @@ window.SyUserLoginHist = {
       { key: 'traceId',       label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
-    /* BoGrid isExpanded prop 래퍼 (row,idx)=>bool */
+    /* fnRowExpanded — 행 펼침 여부 */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
+    /* fnRowClickStyle — 행 클릭 스타일 */
     const fnRowClickStyle = (r, idx) => 'cursor:pointer;' + (isExpanded(r.logId || idx) ? 'background:#fafbff;' : '');
+
+
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, codes, pager, tabCounts, cfCurrentList,

@@ -6,6 +6,8 @@ window.foAppHeader = {
           'appShowSettings', 'appShowApiLog', 'appApiLogs'],
   emits: ['app-toggle-sidebar', 'app-toggle-mobile', 'app-toggle-settings', 'app-toggle-api-log'],
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
 
     /* ── UI 상태 ── */
@@ -13,23 +15,26 @@ window.foAppHeader = {
     const codes = reactive({});
     const userMenuRoot = ref(null);
 
-    /* toggleUserMenu */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* toggleUserMenu — 사용자 메뉴 토글 */
+
     const toggleUserMenu = () => { uiState.userMenuOpen = !uiState.userMenuOpen; };
 
-    /* closeUserMenu */
+    /* closeUserMenu — 사용자 메뉴 닫기 */
     const closeUserMenu  = () => { uiState.userMenuOpen = false; };
 
-    /* goMy */
+    /* goMy — 마이페이지 */
     const goMy    = () => { closeUserMenu(); props.navigate('myOrder'); };
 
-    /* doLogout */
+    /* doLogout — 로그아웃 */
     const doLogout = () => { closeUserMenu(); props.onAppLogout(); };
 
     /* ── Profile 모달 ── */
     const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
                           postcode: '', address: '', addressDetail: '' });
 
-    /* openProfile */
+    /* openProfile — 프로필 열기 */
     const openProfile = () => {
       closeUserMenu();
       const u = props.appAuth.user || {};
@@ -40,7 +45,7 @@ window.foAppHeader = {
       uiState.profileOpen = true;
     };
 
-    /* saveProfile */
+    /* saveProfile — 저장 */
     const saveProfile = () => {
       if (!pf.memberNm.trim()) return;
       const u = props.appAuth.user;
@@ -59,7 +64,7 @@ window.foAppHeader = {
       uiState.profileOpen = false;
     };
 
-    /* openKakaoAddrProfile */
+    /* openKakaoAddrProfile — 카카오 주소 검색 */
     const openKakaoAddrProfile = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) return;
       new daum.Postcode({ oncomplete(d) {
@@ -68,16 +73,16 @@ window.foAppHeader = {
       }}).open();
     };
 
-    /* genderLabel */
+    /* genderLabel — gender 라벨 */
     const genderLabel = g => ({ M: '남성', F: '여성', '': '선택안함' }[g] ?? '선택안함');
 
     /* ── 비밀번호 변경 모달 ── */
     const pw = reactive({ current: '', next: '', next2: '', err: '', ok: false });
 
-    /* openPw */
+    /* openPw — 비밀번호 변경 열기 */
     const openPw = () => { closeUserMenu(); pw.current=''; pw.next=''; pw.next2=''; pw.err=''; pw.ok=false; uiState.pwOpen=true; };
 
-    /* savePw */
+    /* savePw — 저장 */
     const savePw = async () => {
       pw.err = ''; pw.ok = false;
       if (!pw.current) { pw.err = '현재 비밀번호를 입력하세요.'; return; }
@@ -121,7 +126,7 @@ window.foAppHeader = {
     function bindUserMenuOutside() {
       unbindUserMenuOutside();
 
-      /* onPointerDown */
+      /* onPointerDown — 이벤트 */
       const onPointerDown = (e) => {
         if (!uiState.userMenuOpen) return;
         const root = userMenuRoot.value;
@@ -137,6 +142,10 @@ window.foAppHeader = {
     onUnmounted(() => unbindUserMenuOutside());
 
     const cfTopMenu = computed(() => window.sfGetFoMenuStore?.()?.svTopMenu || []);
+
+    // ===== return (템플릿 노출) ===============================================
+
+
 
     return {
       uiState, codes, userMenuRoot,

@@ -9,6 +9,8 @@ window.SyCodeDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -32,7 +34,9 @@ window.SyCodeDtl = {
       codeValue: yup.string().required('코드값을 입력해주세요.'),
     });
 
-    /* 상세조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -49,7 +53,8 @@ window.SyCodeDtl = {
       }
     };
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -61,8 +66,6 @@ window.SyCodeDtl = {
     };
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ── watch ────────────────────────────────────────────────────────────────
 
     // ★ onMounted — 코드 로드 + 상세 조회
     onMounted(async () => {
@@ -76,7 +79,7 @@ window.SyCodeDtl = {
       await handleLoadDetail();
     });
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -105,7 +108,10 @@ window.SyCodeDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    // --- [컬럼 정의] ---
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const baseFormColumns = [
       { key: 'siteNm',    label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },
@@ -121,6 +127,9 @@ window.SyCodeDtl = {
     ];
 
     // ===== setup() return ===================================================
+
+    // ===== return (템플릿 노출) ===============================================
+
     return { uiState, pageCodes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, baseFormColumns };
   },
   template: /* html */`

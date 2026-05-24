@@ -6,6 +6,8 @@ window.Cart = {
   },
   emits: [],
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { computed, ref, reactive, watch, onMounted } = Vue;
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
     const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
@@ -16,7 +18,9 @@ window.Cart = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkedIdxs: new Set(), sortKey: '', sortDir: 'asc' });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -29,7 +33,9 @@ window.Cart = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    /* -- 정렬 -- */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onCartSort — 이벤트 */
     const onCartSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -37,7 +43,7 @@ window.Cart = {
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
     };
 
-    /* cartSortIcon */
+    /* cartSortIcon — 장바구니 정렬 아이콘 */
     const cartSortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     const cfSortedCart = computed(() => {
@@ -51,10 +57,10 @@ window.Cart = {
       });
     });
 
-    /* -- 체크박스 -- */
+    /* isChecked — 여부 확인 */
     const isChecked = (idx) => uiState.checkedIdxs.has(idx);
 
-    /* toggleCheck */
+    /* toggleCheck — 토글 */
     const toggleCheck = (idx) => {
       if (uiState.checkedIdxs.has(idx)) uiState.checkedIdxs.delete(idx);
       else uiState.checkedIdxs.add(idx);
@@ -67,7 +73,7 @@ window.Cart = {
       uiState.checkedIdxs.size > 0 && uiState.checkedIdxs.size < cart.length
     );
 
-    /* toggleAll */
+    /* toggleAll — 전체 토글 */
     const toggleAll = () => {
       if (cfAllChecked.value) {
         uiState.checkedIdxs.clear();
@@ -77,7 +83,7 @@ window.Cart = {
       }
     };
 
-    /* 체크 해제된 항목 삭제 시 인덱스 재정렬 */
+    /* removeItem — 제거 */
     const removeItem = (idx) => {
       removeFromCart(idx);
       const newSet = new Set();
@@ -86,7 +92,7 @@ window.Cart = {
       newSet.forEach(i => uiState.checkedIdxs.add(i));
     };
 
-    /* 선택 항목만 주문 (체크 없으면 전체) */
+    /* goOrder — 이동 */
     const goOrder = () => {
       if (uiState.checkedIdxs.size === 0) {
         props.navigate('order');
@@ -128,13 +134,14 @@ window.Cart = {
       uiState.checkedIdxs.size > 0 ? uiState.checkedIdxs.size : cart.length
     );
 
-    /* handleClearAll */
+    /* handleClearAll — 처리 */
     const handleClearAll = async () => {
       const ok = await showConfirm('장바구니 비우기', '장바구니의 모든 상품을 삭제하시겠습니까?', 'warning');
       if (ok) { clearCart(); uiState.checkedIdxs.clear(); }
     };
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       isChecked, toggleCheck, cfAllChecked, cfSomeChecked, toggleAll,

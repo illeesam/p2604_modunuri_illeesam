@@ -9,6 +9,8 @@ window.DpDispUiDtl = {
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -19,7 +21,9 @@ window.DpDispUiDtl = {
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_ui_types = codeStore.sgGetGrpCodes('DISP_UI_TYPE');
@@ -31,6 +35,7 @@ window.DpDispUiDtl = {
     // 코드 주입
 
     // onMounted에서 API 로드
+    /* handleLoadData — 처리 */
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
@@ -51,16 +56,16 @@ window.DpDispUiDtl = {
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, target: null });
 
-    /* openPathPick */
+    /* openPathPick — 경로 선택 열기 */
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
 
-    /* closePathPick */
+    /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
 
-    /* onPathPicked */
+    /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
 
-    /* pathLabel */
+    /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.dtlId);
@@ -68,7 +73,7 @@ window.DpDispUiDtl = {
     /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
 
-    /* _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
@@ -87,7 +92,7 @@ window.DpDispUiDtl = {
       codeLabel: yup.string().required('UI명을 입력해주세요.'),
     });
 
-    /* handleInitForm */
+    /* handleInitForm — 처리 */
     const handleInitForm = async () => {
       if (!cfIsNew.value) {
         /* displays가 아직 비어 있을 수 있으므로 handleLoadData 완료 후 재시도 */
@@ -146,7 +151,7 @@ window.DpDispUiDtl = {
       return cfRelatedAreas.value.find(a => a.codeId === id) || null;
     });
 
-    /* 패널(displays) 조회 헬퍼 */
+    /* panelsOfArea — panels 의 영역 */
     const panelsOfArea = (areaCode) =>
       (displays || [])
         .filter(p => p.area === areaCode)
@@ -169,18 +174,18 @@ window.DpDispUiDtl = {
       uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
 
-    /* onSplitDrag */
+    /* onSplitDrag — 이벤트 */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
       const startW = uiState.previewPaneWidth;
 
-      /* onMove */
+      /* onMove — 이벤트 */
       const onMove = (ev) => {
         uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
 
-      /* onUp */
+      /* onUp — 이벤트 */
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
@@ -200,10 +205,10 @@ window.DpDispUiDtl = {
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
 
-    /* openPick */
+    /* openPick — 열기 */
     const openPick  = () => { uiState.pickOpen = true; uiState.pickSearchValue = ''; };
 
-    /* onAreaPicked */
+    /* onAreaPicked — 이벤트 */
     const onAreaPicked = (a) => {
       if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
       a.uiCode = form.codeValue;
@@ -211,10 +216,10 @@ window.DpDispUiDtl = {
       uiState.pickOpen = false;
     };
 
-    /* closePick */
+    /* closePick — 닫기 */
     const closePick = () => { uiState.pickOpen = false; };
 
-    /* moveArea */
+    /* moveArea — 이동 */
     const moveArea = (idx, dir) => {
       const arr = cfRelatedAreas.value;
       const target = idx + dir;
@@ -225,7 +230,7 @@ window.DpDispUiDtl = {
       showToast && showToast(`[${a.codeLabel}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
     };
 
-    /* removeArea */
+    /* removeArea — 제거 */
     const removeArea = (a) => {
       showConfirm && showConfirm({
         title: 'UI에서 제거',
@@ -240,14 +245,14 @@ window.DpDispUiDtl = {
     /* -- 공개 대상 (UI-Area 매핑) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* hasAreaVisibility */
+    /* hasAreaVisibility — 여부 확인 */
     const hasAreaVisibility = (code) => {
       if (!cfActiveArea.value) return false;
       if (!cfActiveArea.value.visibilityTargets) cfActiveArea.value.visibilityTargets = '^PUBLIC^';
       return window.visibilityUtil.has(cfActiveArea.value.visibilityTargets, code);
     };
 
-    /* toggleAreaVisibility */
+    /* toggleAreaVisibility — 영역 토글 */
     const toggleAreaVisibility = (code) => {
       if (!cfActiveArea.value) return;
       if (!cfActiveArea.value.visibilityTargets) cfActiveArea.value.visibilityTargets = '^PUBLIC^';
@@ -269,14 +274,14 @@ window.DpDispUiDtl = {
       { code: 'TEST', label: 'TEST' },
     ];
 
-    /* hasUiDispEnv */
+    /* hasUiDispEnv — 여부 확인 */
     const hasUiDispEnv = (code) => {
       if (!cfActiveArea.value) return false;
       if (!cfActiveArea.value.uiDispEnv) cfActiveArea.value.uiDispEnv = '^PROD^';
       return cfActiveArea.value.uiDispEnv.includes('^' + code + '^');
     };
 
-    /* toggleUiDispEnv */
+    /* toggleUiDispEnv — 토글 */
     const toggleUiDispEnv = (code) => {
       if (!cfActiveArea.value) return;
       if (!cfActiveArea.value.uiDispEnv) cfActiveArea.value.uiDispEnv = '^PROD^';
@@ -286,13 +291,13 @@ window.DpDispUiDtl = {
       cfActiveArea.value.uiDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
-    /* 미리보기 액션 */
+    /* openUiPreview — 열기 */
     const openUiPreview = () => {
       if (!form.codeValue) return showToast && showToast('UI코드를 먼저 입력하세요.', 'error');
       window.open(`${window.pageUrl('index.html')}`, '_blank', 'width=1280,height=900');
     };
 
-    /* openAreaPreview */
+    /* openAreaPreview — 열기 */
     const openAreaPreview = (scope) => {
       if (!cfActiveArea.value) return showToast && showToast('미리볼 영역을 선택하세요.', 'error');
       const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
@@ -300,7 +305,9 @@ window.DpDispUiDtl = {
         '_blank', 'width=1280,height=900');
     };
 
-    /* 저장 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       form.codeValue = (form.codeValue || '').toUpperCase();
@@ -344,7 +351,7 @@ window.DpDispUiDtl = {
       }
     };
 
-    /* doCancel */
+    /* doCancel — 실행 */
     const doCancel = () => { props.navigate('dpDispUiMng'); };
 
     const expanded = Vue.toRef(uiState, 'expanded');
@@ -373,7 +380,8 @@ window.DpDispUiDtl = {
         hint: 'UI가 노출되는 경로 (예: FO.모바일메인)' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { codes, displays, areas, uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       form, errors, cfIsNew, expanded, pickOpen, showComponentTooltip,

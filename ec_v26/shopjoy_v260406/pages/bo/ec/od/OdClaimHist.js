@@ -7,6 +7,8 @@ window.OdClaimHist = {
     claimId:      { type: String, default: null }, // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -19,6 +21,9 @@ window.OdClaimHist = {
     const codes = reactive({ refund_methods: [] });
 
     /* 클레임(취소/반품/교환) fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -31,12 +36,13 @@ window.OdClaimHist = {
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
         watch(botTab, v => { window._odClaimHistState.tab = v; });
         const cfCodes = Vue.computed(() => window.sfGetBoCodeStore()?.svCodes || []);
 
     /* 클레임(취소/반품/교환) showTab */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     /* 클레임 항목 */
@@ -82,7 +88,7 @@ window.OdClaimHist = {
       }
     });
 
-    /* 클레임(취소/반품/교환) addClaimItem */
+    /* addClaimItem — 추가 */
     const addClaimItem = () => {
       claimItems.push({
         _id: itemIdSeq++,
@@ -92,13 +98,13 @@ window.OdClaimHist = {
       });
     };
 
-    /* 클레임(취소/반품/교환) removeClaimItem */
+    /* removeClaimItem — 제거 */
     const removeClaimItem = (id) => {
       const idx = claimItems.findIndex(r => r._id === id);
       if (idx !== -1) claimItems.splice(idx, 1);
     };
 
-    /* 클레임(취소/반품/교환) handleSaveProcess */
+    /* handleSaveProcess — 처리 저장 */
     const handleSaveProcess = () => {
       const idx = claims.value.findIndex(c => c.claimId === props.claimId);
       if (idx !== -1) Object.assign(claims.value[idx], {
@@ -112,15 +118,17 @@ window.OdClaimHist = {
     const botTab = Vue.toRef(uiState, 'botTab');
     const relatedOrder = Vue.toRef(uiState, 'relatedOrder');
 
-    // ── return ───────────────────────────────────────────────────────────────
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 처리 정보 ====================
     const processFormColumns = [
       { key: 'refundAmount',   label: '환불금액', type: 'number' },
       { key: 'refundMethodCd', label: '환불방법', type: 'select', options: () => codes.refund_methods },
       { type: 'rowBreak' },
       { key: 'memo',           label: '처리 메모', type: 'textarea', rows: 4, colSpan: 2 },
     ];
+
+
+    // ===== return (템플릿 노출) ===============================================
 
     return { botTab, claimItems, addClaimItem, removeClaimItem, processForm, handleSaveProcess, cfStatusOptions, relatedOrder, relatedDliv, tabMode2, showTab, codes, processFormColumns };
   },

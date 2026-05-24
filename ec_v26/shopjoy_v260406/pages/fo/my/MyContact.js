@@ -5,6 +5,8 @@ window.MyContact = {
     navigate:    { type: Function, required: true },                    // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
@@ -14,7 +16,9 @@ window.MyContact = {
 
     const myStore = window.useFoMyStore();
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -34,7 +38,7 @@ window.MyContact = {
     // 날짜/기간 필터는 서버(API)가 처리 — inquiries 는 이미 조회기간 내 결과.
     const cfDateFilteredInquiries = computed(() => inquiries.value);
 
-    /* cancelInquiry */
+    /* cancelInquiry — 취소 */
     const cancelInquiry = async id => {
       const ok = await showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');
       if (!ok) return;
@@ -43,13 +47,15 @@ window.MyContact = {
       showToast('문의가 취소되었습니다.', 'success');
     };
 
-    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (reg_date 기준) */
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
       await myStore.loadInquiries(params);
     };
 
-    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData();
@@ -58,7 +64,8 @@ window.MyContact = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       myStore, inquiries, expandedInquiry,

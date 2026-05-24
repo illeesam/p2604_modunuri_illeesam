@@ -10,6 +10,8 @@ window.SySiteDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -38,6 +40,10 @@ window.SySiteDtl = {
     });
 
     /* 사이트 상세조회 */
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -54,7 +60,8 @@ window.SySiteDtl = {
       }
     };
 
-    /* 사이트 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -66,8 +73,6 @@ window.SySiteDtl = {
     };
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ── watch ────────────────────────────────────────────────────────────────
 
     // ★ onMounted — 코드 로드 + 상세 조회
     onMounted(async () => {
@@ -83,9 +88,9 @@ window.SySiteDtl = {
       await handleLoadDetail();
     });
 
-    /* ── 카카오 주소 검색 ── */
+    /* openKakaoPostcode — 열기 */
     const openKakaoPostcode = () => {
-      /* 사이트 run */
+      /* run — 실행 */
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
@@ -102,7 +107,7 @@ window.SySiteDtl = {
       document.head.appendChild(s);
     };
 
-    /* 사이트 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -131,7 +136,10 @@ window.SySiteDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    // --- [컬럼 정의] ---
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const baseFormColumns = [
       { key: 'siteCode',       label: '사이트코드', type: 'text', required: true,
         placeholder: 'ST0001', mono: true },
@@ -156,6 +164,9 @@ window.SySiteDtl = {
     ];
 
     // ===== setup() return ===================================================
+
+    // ===== return (템플릿 노출) ===============================================
+
     return { uiState, codes, cfIsNew, form, errors, handleSave, addrDetailRef, openKakaoPostcode, cfDtlMode, baseFormColumns };
   },
   template: /* html */`

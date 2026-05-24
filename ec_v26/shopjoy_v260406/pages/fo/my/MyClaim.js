@@ -5,6 +5,8 @@ window.MyClaim = {
     navigate:    { type: Function, required: true },                    // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
@@ -12,7 +14,9 @@ window.MyClaim = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -32,7 +36,7 @@ window.MyClaim = {
     const { dateRange, onDateSearch } = window.myDateFilterHelper();
     const claimStatusFilter = reactive([]);
 
-    /* toggleClaimStatus */
+    /* toggleClaimStatus — 토글 */
     const toggleClaimStatus = (step) => {
       const idx = claimStatusFilter.indexOf(step);
       if (idx === -1) claimStatusFilter.push(step);
@@ -46,30 +50,30 @@ window.MyClaim = {
 
     const cfAuthUser = computed(() => window.foAuth.state.user);
 
-    /* findProd */
+    /* findProd — 찾기 상품 */
     const findProd = name => window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
 
-    /* openProdModal */
+    /* openProdModal — 열기 */
     const openProdModal = name => {
       const p = findProd(name);
       if (p) { myStore.productModal.prod = p; myStore.productModal.show = true; }
     };
 
-    /* openCustomerModal */
+    /* openCustomerModal — 열기 */
     const openCustomerModal = order => {
       myStore.customerModal.user = cfAuthUser.value;
       myStore.customerModal.order = order || null;
       myStore.customerModal.show = true;
     };
 
-    /* openOrderModal */
+    /* openOrderModal — 열기 */
     const openOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
       if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
-    /* openTracking2 */
+    /* openTracking2 — 열기 */
     const openTracking2 = (courier, trackingNo) => {
       const URLS = {
         'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,
@@ -80,7 +84,7 @@ window.MyClaim = {
       if (fn) window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes');
     };
 
-    /* cancelClaim */
+    /* cancelClaim — 취소 */
     const cancelClaim = async claimId => {
       const ok = await showConfirm('신청 취소', '이 신청을 취소하시겠습니까?', 'warning');
       if (!ok) return;
@@ -94,14 +98,16 @@ window.MyClaim = {
       showToast('신청이 취소되었습니다.', 'info');
     };
 
-    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (requestDate=request_date 기준) */
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       const params = { dateType: 'request_date', dateStart: dateRange.start, dateEnd: dateRange.end };
       await myStore.handleLoadClaims(params);
       myStore.handleLoadOrders();
     };
 
-    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData();
@@ -114,7 +120,8 @@ window.MyClaim = {
       handleSearchData();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       myStore, claims, claimFilter, filteredClaims, orders,

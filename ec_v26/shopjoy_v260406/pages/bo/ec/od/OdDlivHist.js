@@ -7,6 +7,8 @@ window.OdDlivHist = {
     orderId:      { type: String, default: null }, // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,6 +20,9 @@ window.OdDlivHist = {
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
     // onMounted에서 API 로드
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -32,11 +37,9 @@ window.OdDlivHist = {
       }
     };
 
-    // -- watch ----------------------------------------------------------------
-
         watch(botTab, v => { window._ecDlivHistState.tab = v; });
 
-    /* 배송 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
 };
@@ -46,7 +49,7 @@ window.OdDlivHist = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    /* 배송 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
     const cfRelatedOrder  = computed(() => getOrder.value(props.orderId));
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims, c => c.orderId === props.orderId));
@@ -56,6 +59,8 @@ window.OdDlivHist = {
       handleSearchList();
     });
     /* BoGrid(bare) 컬럼 — 연관 클레임 */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const claimGridColumns = [
       { key: 'claimId',     label: '클레임ID', style: 'width:120px;', refLink: 'claim' },
       { key: 'type',        label: '유형',   style: 'width:70px;' },
@@ -64,7 +69,8 @@ window.OdDlivHist = {
       { key: 'requestDate', label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
     ];
 
-    // -- return ---------------------------------------------------------------
+
+    // ===== return (템플릿 노출) ===============================================
 
     return { deliveries, uiState, cfRelatedOrder, cfRelatedClaims, showTab, claimGridColumns,
              botTab, tabMode2, showRefModal, navigate: props.navigate };

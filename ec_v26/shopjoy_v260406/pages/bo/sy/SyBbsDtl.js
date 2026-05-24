@@ -10,6 +10,8 @@ window.SyBbsDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, onMounted, ref, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -20,6 +22,10 @@ window.SyBbsDtl = {
     const codes = reactive({ bbs_post_statuses: [] });
 
     /* 게시판 게시물 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -31,8 +37,6 @@ window.SyBbsDtl = {
     };
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ── watch ────────────────────────────────────────────────────────────────
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -54,7 +58,7 @@ window.SyBbsDtl = {
     /* ── 게시판 선택 팝업 ── */
     const showBbmModal  = ref(false);
 
-    /* 게시판 게시물 onBbmSelect */
+    /* onBbmSelect — 이벤트 */
     const onBbmSelect = (b) => {
       uiState.showBbmModal = false;
       if (uiState.selectedBbm && uiState.selectedBbm.bbmId === b.bbmId) return;
@@ -75,6 +79,10 @@ window.SyBbsDtl = {
     /* ── 초기화 ── */
 
     /* 게시판 게시물 상세조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -113,7 +121,7 @@ window.SyBbsDtl = {
       return map[cfAllowAttach.value] ?? 0;
     });
 
-    /* ── 저장 ── */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -149,6 +157,11 @@ window.SyBbsDtl = {
     const siteFormColumns = [
       { key: 'siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+    // --- [컬럼 정의] ---
+
     const baseFormColumns = [
       { key: 'bbsTitle',    label: '제목', type: 'text', required: true,
         placeholder: '게시글 제목', colSpan: 2 },
@@ -158,6 +171,9 @@ window.SyBbsDtl = {
 
     // ===== setup() return ===================================================
     const dtlId = Vue.computed(() => props.dtlId);
+    // ===== return (템플릿 노출) ===============================================
+
+
     return { uiState, codes, cfIsNew, dtlId, form, errors, selectedBbm, cfContentType, cfAllowAttach, cfAttachMaxCount,
       showBbmModal, onBbmSelect, handleSave, cfSiteNm, cfDtlMode, baseFormColumns, siteFormColumns, showToast,
     };

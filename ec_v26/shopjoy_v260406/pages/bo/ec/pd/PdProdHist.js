@@ -7,6 +7,8 @@ window.PdProdHist = {
     prodId:       { type: String, default: null }, // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { computed, onMounted, reactive, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -22,6 +24,8 @@ window.PdProdHist = {
     const botTab   = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
     watch(botTab, v => {
       window._ecProdHistState.tab = v;
       handleLoadTab(v);
@@ -29,11 +33,14 @@ window.PdProdHist = {
 
     watch(() => uiState.tabMode2, v => { window._ecProdHistState.tabMode = v; });
 
-    /* 상품 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* 상품 showTab */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     const qnaList       = reactive([]);
@@ -44,13 +51,13 @@ window.PdProdHist = {
     const statusHistory = reactive([]);
     const changeHistory = reactive([]);
 
-    /* 상품 BASE */
+    /* BASE — 기본 */
     const BASE = (tab) => `/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
 
-    /* 상품 HDR */
+    /* HDR — 헤더 */
     const HDR  = (cmd) => coUtil.cofApiHdr('상품관리', cmd);
 
-    /* 상품 fnPickPageList */
+    /* fnPickPageList — 유틸 */
     const fnPickPageList = (res) => {
       const d = res?.data?.data;
       return d?.pageList || d?.list || (Array.isArray(d) ? d : []);
@@ -58,7 +65,7 @@ window.PdProdHist = {
 
     const ALL_TABS = ['qna', 'review', 'orders', 'stock', 'price', 'status', 'changes'];
 
-    /* 상품 handleLoadTab */
+    /* handleLoadTab — 처리 */
     const handleLoadTab = async (tab) => {
       if (!props.prodId || uiState.loadedTabs.has(tab)) return;
       uiState.loading = true;
@@ -93,10 +100,10 @@ window.PdProdHist = {
       }
     };
 
-    /* 상품 fnFmtDate */
+    /* fnFmtDate — 유틸 */
     const fnFmtDate = (v) => v ? String(v).slice(0, 16).replace('T', ' ') : '-';
 
-    /* 상품 fnStockBadge */
+    /* fnStockBadge — 유틸 */
     const fnStockBadge = (cd) => {
       if (!cd) return 'badge-gray';
       const s = String(cd).toUpperCase();
@@ -105,10 +112,12 @@ window.PdProdHist = {
       return 'badge-gray';
     };
 
-    /* 행 커서 기본 비활성(원본 외형 보존) */
+    /* fnNoCursor — 유틸 */
     const fnNoCursor = () => '';
 
     /* bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const qnaGridColumns = [
       { key: 'qnaTitle',     label: '질문',   style: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         cellStyle: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
@@ -202,6 +211,9 @@ window.PdProdHist = {
     watch(() => uiState.tabMode2, (v) => {
       if (v !== 'tab') ALL_TABS.forEach(t => handleLoadTab(t));
     });
+
+
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, botTab, tabMode2,

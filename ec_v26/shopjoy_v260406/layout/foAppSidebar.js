@@ -4,11 +4,14 @@ window.foAppSidebar = {
   props: ['page', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate', 'appCartCount', 'appAuth'],
   emits: ['app-toggle-sidebar', 'app-close-mobile'],
   setup(props, { emit }) {
+
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch } = Vue;
 
     const MY_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt'];
 
-    /* isMenuActive */
+    /* isMenuActive — 여부 확인 */
     const isMenuActive = (page, menuId) => {
       if (menuId === 'myOrder') return MY_PAGES.includes(page);
       return page === menuId;
@@ -58,7 +61,10 @@ window.foAppSidebar = {
       { siteNo: '9999', siteNm: 'FO=9999' },
     ];
 
-    /* navToSite */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* navToSite — 이동 */
+
     const navToSite = (siteNo) => {
       try { localStorage.setItem('modu-fo-siteNo', siteNo); } catch(_){}
       window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + siteNo;
@@ -73,7 +79,7 @@ window.foAppSidebar = {
       if (DEV_TOOLS_ITEMS.some(i => i.menuId === p)) uiState.devToolsOpen = true;
     }, { immediate: true });
 
-    /* navTo */
+    /* navTo — 이동 */
     const navTo = (menuId) => {
       props.navigate(menuId, { replace: true });
       emit('app-close-mobile');
@@ -83,6 +89,10 @@ window.foAppSidebar = {
     const showSamples = foSiteNo !== '01'; // Site 01은 샘플 메뉴 숨김
 
     const cfSidebarMenu = computed(() => window.sfGetFoMenuStore?.()?.svSidebarMenu || []);
+
+    // ===== return (템플릿 노출) ===============================================
+
+
 
     return { isMenuActive, uiState, codes,
              SAMPLE0_ITEMS, SAMPLE1_ITEMS, SAMPLE2_ITEMS, DISP_UI_ITEMS, DEV_TOOLS_ITEMS, navTo, navToSite,

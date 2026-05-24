@@ -11,6 +11,8 @@ window.PmDiscntDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -23,7 +25,7 @@ window.PmDiscntDtl = {
     const codes = reactive({ discnt_types: [], promo_statuses: [], discnt_apply_targets: [] });
 
     // 단건 조회
-    /* 소속업체 목록 로드 (vendor 선택 모달용) */
+    /* loadVendors — 로드 */
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -31,6 +33,7 @@ window.PmDiscntDtl = {
       } catch (e) { console.warn('[PmDiscntDtl.js] vendor load failed', e); }
     };
 
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
       if (cfIsNew.value) return;
@@ -53,10 +56,13 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmDiscntDtlState.tabMode = v; });
 
-    /* 할인 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 할인 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE_KR');
@@ -68,7 +74,7 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
     const _today = new Date();
 
-    /* 할인 _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
@@ -100,10 +106,10 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* 할인 hasVisibility */
+    /* hasVisibility — 여부 확인 */
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
 
-    /* 할인 toggleVisibility */
+    /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.visibilityTargets);
       const i = list.indexOf(code);
@@ -115,13 +121,13 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     const cfHasId       = computed(() => !!cfCurId.value);
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
-    /* 할인 _afterApiOk */
+    /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
 
-    /* 할인 _afterApiErr */
+    /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -130,6 +136,9 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     };
 
     /* ── 탭별 저장: info/detail 은 form 전체, target 은 적용대상/공개대상만 부분 PUT ── */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
 
@@ -179,7 +188,7 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
       return v ? v.vendorNm : '소속업체 선택';
     });
 
-    /* 할인 selectVendor */
+    /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -190,9 +199,10 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // -- return ---------------------------------------------------------------
-
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const infoFormColumns = [
       { key: 'discntNm',     label: '할인명', type: 'text', required: true,
         placeholder: '할인명 입력', colSpan: 2 },
@@ -218,6 +228,9 @@ watch(() => uiState.tab, v => { window._pmDiscntDtlState.tab = v; });
       { key: 'discntStatusCd', label: '상태', type: 'select', options: () => codes.promo_statuses },
       { key: 'discntDesc',     label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, cfDtlMode, tabMode2, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfSelectedVendorNm, selectVendor, infoFormColumns, discntApplyFormColumns, discntPeriodFormColumns, discntStatusFormColumns };
   },

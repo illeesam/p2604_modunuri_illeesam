@@ -5,6 +5,8 @@ window.SyUserMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,14 +19,19 @@ window.SyUserMng = {
 
     const SORT_MAP = { nm: { asc: 'userNm asc', desc: 'userNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* 사용자(관리자) getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
+
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
     /* 사용자(관리자) onSort */
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -34,10 +41,11 @@ window.SyUserMng = {
       handleSearchData('DEFAULT');
     };
 
-    /* 사용자(관리자) sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -71,13 +79,13 @@ window.SyUserMng = {
     /* 좌측 부서 트리 */
     const expanded = reactive(new Set([null]));
 
-    /* 사용자(관리자) toggleNode */
+    /* toggleNode — 노드 토글 */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
 
-    /* 사용자(관리자) selectNode */
+    /* selectNode — 노드 선택 */
     const selectNode = (id) => { uiState.selectedDeptId = id; handleSearchData(); };
 
-    /* 사용자(관리자) buildTree */
+    /* buildTree — 빌드 */
     const buildTree = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
@@ -87,10 +95,10 @@ window.SyUserMng = {
         else roots.push(map[d.deptId]);
       });
 
-      /* 사용자(관리자) sort */
+      /* sort — 정렬 */
       const sort = arr => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 
-      /* 사용자(관리자) sortAll */
+      /* sortAll — 정렬 */
       const sortAll = (node) => { sort(node.children); node.children.forEach(sortAll); };
       sort(roots).forEach(sortAll);
       return { deptId: null, deptNm: '전체', children: roots };
@@ -98,13 +106,13 @@ window.SyUserMng = {
 
     const cfTree = computed(() => buildTree(depts));
 
-    /* 사용자(관리자) expandAll */
+    /* expandAll — 펼치기 전체 */
     const expandAll = () => { const walk = (n) => { expanded.add(n.deptId); n.children.forEach(walk); }; cfTree.value.children.forEach(walk); expanded.add(null); };
 
-    /* 사용자(관리자) collapseAll */
+    /* collapseAll — 접기 전체 */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
-    /* 사용자(관리자) handleSearchTree */
+    /* handleSearchTree — 처리 */
     const handleSearchTree = async () => {
       try {
         const res = await boApiSvc.syDept.getTree('사용자관리', '트리조회');
@@ -114,7 +122,7 @@ window.SyUserMng = {
       }
     };
 
-    /* 검색 파라미터 */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -122,7 +130,8 @@ window.SyUserMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* 사용자(관리자) fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
@@ -149,7 +158,7 @@ window.SyUserMng = {
       return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
 
-    /* 사용자(관리자) handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.bofGetDateRange(searchParam.dateRange);
@@ -163,19 +172,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
-    /* 사용자(관리자) loadView */
+    /* loadView — 뷰 로드 */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
-    /* 사용자(관리자) 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 사용자(관리자) openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 사용자(관리자) closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
-    /* 사용자(관리자) inlineNavigate */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syUserMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -185,30 +194,32 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    /* 사용자(관리자) fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 사용자(관리자) fnRoleBadge */
     const _USER_ROLE_FB = { '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' };
+    /* fnRoleBadge — 유틸 */
     const fnRoleBadge = r => coUtil.cofCodeBadge('USER_ROLE', r, _USER_ROLE_FB[r] || 'badge-gray');
 
     /* 사용자(관리자) fnStatusBadge */
     const _USER_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('USER_STATUS', s, _USER_STATUS_FB[s] || 'badge-gray');
 
-    /* 사용자(관리자) 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    /* 사용자(관리자) onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
 
-    /* 사용자(관리자) setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
 
-    /* 사용자(관리자) onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    /* 사용자(관리자) 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (u) => {
       const ok = await showConfirm('삭제', `[${u.userNm}] 사용자를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -227,10 +238,15 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
-    /* 사용자(관리자) exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
 
     /* BoSearchArea 컬럼 정의 — :columns + :param 자동 렌더 */
+
+    // --- [컬럼 정의] ---
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -265,9 +281,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         fmt: (v) => v ? v.substring(0, 10) : '-' },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
+    /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (u) => uiStateDetail.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), users, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree, searchParam, handleDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnRoleBadge, fnStatusBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, baseGridColumns, baseSearchColumns, fnRowStyle };
   },

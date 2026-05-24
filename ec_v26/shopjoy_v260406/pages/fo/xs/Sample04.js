@@ -2,6 +2,8 @@
 window.XsSample04 = {
   name: 'XsSample04',
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
@@ -12,7 +14,9 @@ window.XsSample04 = {
       ],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -32,7 +36,9 @@ window.XsSample04 = {
     /* -- Confirm 콜백 저장 -- */
     let _confirmCb = null;
 
-    /* openModal */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* openModal — 열기 */
     const openModal = (type, opts = {}) => {
       uiState.modalType     = type;
       uiState.modalVariant  = opts.variant || 'info';
@@ -41,24 +47,24 @@ window.XsSample04 = {
       _confirmCb     = opts.onConfirm || null;
     };
 
-    /* closeModal */
+    /* closeModal — 닫기 */
     const closeModal = () => { uiState.modalType = null; uiState.nested2 = false; _confirmCb = null; };
 
-    /* doConfirm */
+    /* doConfirm — 실행 */
     const doConfirm = () => {
       const cb = _confirmCb;
       closeModal();
       if (cb) setTimeout(cb, 80);
     };
 
-    /* loadingDemo */
+    /* loadingDemo — 로딩 데모 */
     const loadingDemo = async () => {
       openModal('loading');
       await new Promise(r => setTimeout(r, 2500));
       if (uiState.modalType === 'loading') closeModal();
     };
 
-    /* submitForm */
+    /* submitForm — 제출 */
     const submitForm = () => {
       Object.keys(formErrors).forEach(k => delete formErrors[k]);
       if (!form.name.trim()) formErrors.name = '이름을 입력해주세요.';
@@ -71,7 +77,7 @@ window.XsSample04 = {
       setTimeout(() => openModal('alert', { variant: 'success', data: { msg: `${nm}님이 등록되었습니다.` } }), 80);
     };
 
-    /* 상세 모달의 수정 Confirm — 멤버 이름을 클로저로 캡처 */
+    /* openEditConfirm — 열기 */
     const openEditConfirm = (member) => {
       const nm = member.name;
       openModal('confirm', {
@@ -93,7 +99,7 @@ window.XsSample04 = {
       { id: 'loading',    icon: '⏳', name: '로딩 모달',            desc: '2.5초 후 자동으로 닫힘',               color: '#374151' },
     ];
 
-    /* fnGradeBadge */
+    /* fnGradeBadge — 유틸 */
     const fnGradeBadge = g => ({
       'VVIP': 'background:#fce7f3;color:#9d174d;border:1px solid #fbcfe8;',
       'VIP':  'background:#fef9c3;color:#854d0e;border:1px solid #fde68a;',
@@ -101,7 +107,7 @@ window.XsSample04 = {
       '일반': 'background:#f0f0f0;color:#666;border:1px solid #e0e0e0;',
     }[g] || 'background:#f0f0f0;color:#666;');
 
-    /* fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({
       '활성': 'background:#d1fae5;color:#065f46;',
       '휴면': 'background:#fef3c7;color:#92400e;',
@@ -126,7 +132,7 @@ window.XsSample04 = {
     ];
     const sample04Top3 = Vue.computed(() => members.slice(0, 3));
 
-    /* fnAlertMeta */
+    /* fnAlertMeta — 유틸 */
     const fnAlertMeta = v => ({
       info:    { icon: 'ℹ️',  label: '안내',  bg: '#3b82f6', bar: '#3b82f6' },
       success: { icon: '✅', label: '성공',  bg: '#22c55e', bar: '#22c55e' },
@@ -150,16 +156,16 @@ window.XsSample04 = {
     const boData = { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
     const bModal      = reactive({ type: null });
 
-    /* openBModal */
+    /* openBModal — 열기 */
     const openBModal  = (type) => { bModal.type = type; };
 
-    /* closeBModal */
+    /* closeBModal — 닫기 */
     const closeBModal = () => { bModal.type = null; };
 
-    /* bShowToast */
+    /* bShowToast — b 표시 토스트 */
     const bShowToast    = (msg, variant = 'info') => openModal('alert', { variant, data: { msg } });
 
-    /* bShowConfirm */
+    /* bShowConfirm — b 표시 확인 */
     const bShowConfirm  = (title, msg) => Promise.resolve(window.confirm(`${title}\n\n${msg}`));
 
     /* -- 데모 데이터 -- */
@@ -226,7 +232,8 @@ window.XsSample04 = {
       { id: 'dispPreview',     icon: '👁',  name: '전시 미리보기',     desc: 'DispPreviewModal — 위젯 미리보기',     color: '#b91c1c' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       uiState, members, form, formErrors, CATALOG,

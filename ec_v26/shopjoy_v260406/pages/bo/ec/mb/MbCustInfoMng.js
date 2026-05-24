@@ -70,6 +70,8 @@
       navigate:     { type: Function, required: true }, // 페이지 이동
     },
     setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, ref, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -95,7 +97,9 @@
     const couponUsage = reactive([]);
     const sendHistory = reactive([]);
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -109,6 +113,7 @@
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // onMounted에서 API 로드
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -174,10 +179,10 @@
 
       watch(() => uiState.tabMode2, v => { window._mbCustInfoState.tabMode = v; });
 
-      /* showTab */
+      /* showTab — 표시 */
       const showTab = (id) => tabMode2.value !== 'tab' || histTab.value === id;
 
-      /* -- 고객 초기화 -- */
+      /* clearCustomer — 비우기 */
       const clearCustomer = () => { uiState.customer = null; uiState.searchInput = ''; };
 
       /* period 변경 시 custom 초기값 세팅 */
@@ -195,7 +200,9 @@
       /* 날짜 필터 헬퍼
          - filtered: 기간 필터는 서버(API)가 처리하므로 클라이언트 재필터 없이 그대로 통과.
          - filteredLocal: 캐쉬는 잔액 정확성 위해 전체 로드 → 목록만 클라이언트 기간 필터. */
+      /* filtered — 서버 필터링 통과 (재필터 없음) */
       const filtered = (list /* , dateField */) => list;
+      /* filteredLocal — 로컬 기간 필터링 */
       const filteredLocal = (list, dateField) =>
         list.filter(r => inRange(r[dateField], cfDateFrom.value, cfDateTo.value));
 
@@ -245,7 +252,7 @@
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
 
-      /* -- 고객선택 모달 -- */
+      /* openMemberModal — 열기 */
       const openMemberModal = async () => {
         memberModal.keyword = '';
         await handleSearchData('DEFAULT');
@@ -253,7 +260,7 @@
         memberModal.show = true;
       };
 
-      /* searchMemberModal */
+      /* searchMemberModal — 검색 */
       const searchMemberModal = () => {
         const searchVal = memberModal.keyword.trim().toLowerCase();
         const types = memberModal.searchType || 'memberNm,email,phone';
@@ -268,19 +275,22 @@
           : [...members];
       };
 
-      /* selectMember */
+      /* selectMember — 선택 */
       const selectMember = (m) => {
         uiState.customer = m;
         memberModal.show = false;
         uiState.searchInput = '';
       };
 
-      /* -- 검색 실행 -- */
+      // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+      /* onSearch — 조회 */
       const onSearch = async () => {
         await handleSearchData('DEFAULT');
       };
 
       // -- 그리드 컬럼 정의 ----------------------------------------------------
+      /* _ellipsis — 말줄임 */
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
       const orderGridColumns = [
         { key: 'orderId', label: '주문번호', refLink: 'order' },
@@ -322,6 +332,9 @@
         { key: 'lastMsg', label: '마지막 메시지', cellStyle: _ellipsis(180, 'color:#666;'), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
+      // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+      // --- [컬럼 정의] ---
       const loginGridColumns = [
         { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'ip', label: 'IP', cellStyle: 'color:#666;font-family:monospace;' },
@@ -350,7 +363,8 @@
         { key: 'status', label: '상태', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.status === '활성' ? 'badge-green' : 'badge-red') },
       ];
 
-    // -- return ---------------------------------------------------------------
+  // ===== return (템플릿 노출) ===============================================
+
 
   return { custInfos, uiState, SEARCH_MODES, memberModal,
         orderGridColumns, claimGridColumns, dlivGridColumns, cacheGridColumns, contactGridColumns, chatGridColumns, loginGridColumns, couponGridColumns, sendGridColumns, memberModalGridColumns,

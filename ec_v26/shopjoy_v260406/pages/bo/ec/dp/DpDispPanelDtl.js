@@ -10,6 +10,8 @@ window.DpDispPanelDtl = {
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -22,7 +24,9 @@ window.DpDispPanelDtl = {
     const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], disp_areas: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
     const events = reactive([]);
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
@@ -36,6 +40,9 @@ window.DpDispPanelDtl = {
     // 코드 주입
 
     // onMounted에서 API 로드
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -87,7 +94,7 @@ window.DpDispPanelDtl = {
       }
     };
 
-    /* handleLoadData */
+    /* handleLoadData — 처리 */
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
@@ -106,16 +113,16 @@ window.DpDispPanelDtl = {
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, target: null });
 
-    /* openPathPick */
+    /* openPathPick — 경로 선택 열기 */
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
 
-    /* closePathPick */
+    /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
 
-    /* onPathPicked */
+    /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
 
-    /* fnPathLabel */
+    /* fnPathLabel — 유틸 */
     const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.dtlId);
@@ -136,18 +143,18 @@ window.DpDispPanelDtl = {
       uiState.previewPaneWidth = (info?.width || 480) + 40;
     });
 
-    /* 스플리터 드래그 */
+    /* onSplitDrag — 이벤트 */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
       const startW = uiState.previewPaneWidth;
 
-      /* onMove */
+      /* onMove — 이벤트 */
       const onMove = (ev) => {
         uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
 
-      /* onUp */
+      /* onUp — 이벤트 */
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
@@ -159,7 +166,7 @@ window.DpDispPanelDtl = {
     /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
 
-    /* _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
@@ -180,7 +187,7 @@ window.DpDispPanelDtl = {
       panelVisibilityTargets: '^PUBLIC^',
     });
 
-    /* -- 행별 독립 데이터 팩토리 -- */
+    /* makeRowData — 행 생성 */
     const makeRowData = (overrides = {}) => ({
       widgetType: 'image_banner',
       clickAction: 'none', clickTarget: '',
@@ -242,7 +249,7 @@ window.DpDispPanelDtl = {
     const cfActiveRowIdx = computed(() => { const idx = cfTabRowMap.value[uiState.tab]; return idx !== undefined ? idx : null; });
     const cfActiveRow    = computed(() => (cfActiveRowIdx.value !== null && cfActiveRowIdx.value !== undefined) ? rows[cfActiveRowIdx.value] : null);
 
-    /* -- 위젯 위아래 이동 (탭순서 = 노출순서 sortOrder 자동 갱신) -- */
+    /* moveRow — 이동 */
     const moveRow = (dir) => {
       const idx = cfActiveRowIdx.value;
       if (idx === null) return;
@@ -295,18 +302,18 @@ window.DpDispPanelDtl = {
       catch { return []; }
     });
 
-    /* _saveFileList */
+    /* _saveFileList — 저장 */
     const _saveFileList = (items) => {
       if (cfActiveRow.value) cfActiveRow.value.fileListJson = JSON.stringify(items);
     };
 
-    /* addFileItem */
+    /* addFileItem — 추가 */
     const addFileItem    = () => _saveFileList([...cfFileListItems.value, { name: '', url: '' }]);
 
-    /* removeFileItem */
+    /* removeFileItem — 제거 */
     const removeFileItem = (idx) => _saveFileList(window.safeArrayUtils.safeFilter(cfFileListItems, (_, i) => i !== idx));
 
-    /* updateFileItem */
+    /* updateFileItem — 갱신 */
     const updateFileItem = (idx, field, val) =>
       _saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
@@ -440,7 +447,7 @@ window.DpDispPanelDtl = {
       return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null;
     });
 
-    /* handleInitForm */
+    /* handleInitForm — 처리 */
     const handleInitForm = async () => {
       await nextTick();
       if (cfIsNew.value) {
@@ -466,7 +473,7 @@ window.DpDispPanelDtl = {
       handleInitForm();
     });
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       if (!form.name || !form.area || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
       const isNewPanel = cfIsNew.value;
@@ -500,10 +507,10 @@ window.DpDispPanelDtl = {
     /* -- 위젯미리보기 모달 -- */
     const preview = reactive({ show: false, tabLabel: '' });
 
-    /* openPreview */
+    /* openPreview — 열기 */
     const openPreview = (tabKey, tabLabel) => { preview.tabLabel = tabLabel; preview.show = true; };
 
-    /* closePreview */
+    /* closePreview — 미리보기 닫기 */
     const closePreview = () => { preview.show = false; };
     const cfPreviewWidget = computed(() => ({
       ...form, ...(cfActiveRow.value ? { ...cfActiveRow.value } : {}), status: '활성',
@@ -512,17 +519,17 @@ window.DpDispPanelDtl = {
     /* -- 패널미리보기 (카드) -- */
     const cardPreview = reactive({ show: false });
 
-    /* openCardPreview */
+    /* openCardPreview — 열기 */
     const openCardPreview = () => { cardPreview.show = true; };
 
-    /* closeCardPreview */
+    /* closeCardPreview — 닫기 */
     const closeCardPreview = () => { cardPreview.show = false; };
     const cfCurrentAreaLabel = computed(() => {
       const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
       return found ? found.codeLabel : form.area;
     });
 
-    /* fnWLabel */
+    /* fnWLabel — 유틸 */
     const fnWLabel = (t) => codes.disp_widget_types.find(w => w.codeValue === t)?.codeLabel || t || '-';
 
     /* -- 펼치기 / 탭 모드 토글 -- */
@@ -530,28 +537,28 @@ window.DpDispPanelDtl = {
     /* 아코디언 다중 펼치기 */
     const expandedSections = reactive(new Set(['info', 'tab1']));
 
-    /* toggleSection */
+    /* toggleSection — 토글 */
     const toggleSection = (key) => { if (expandedSections.has(key)) expandedSections.delete(key); else expandedSections.add(key); };
 
-    /* isSectionExpanded */
+    /* isSectionExpanded — 여부 확인 */
     const isSectionExpanded = (key) => expandedSections.has(key);
 
-    /* row 파라미터 기반 유형 체크 (아코디언 다중 펼치기용) */
+    /* fnRowIsHtmlEditor — 유틸 */
     const fnRowIsHtmlEditor  = (r) => r?.widgetType === 'html_editor';
 
-    /* fnRowIsFileList */
+    /* fnRowIsFileList — 유틸 */
     const fnRowIsFileList    = (r) => r?.widgetType === 'file_list';
 
-    /* fnRowIsImage */
+    /* fnRowIsImage — 유틸 */
     const fnRowIsImage       = (r) => r?.widgetType === 'image_banner';
 
-    /* fnRowIsText */
+    /* fnRowIsText — 유틸 */
     const fnRowIsText        = (r) => r?.widgetType === 'text_banner';
 
-    /* fnRowIsProduct */
+    /* fnRowIsProduct — 유틸 */
     const fnRowIsProduct     = (r) => ['product_slider','product'].includes(r?.widgetType);
 
-    /* fnGetDisplayRows */
+    /* fnGetDisplayRows — 유틸 */
     const fnGetDisplayRows = (r) => {
       if (!r) return [];
       const wt = r.widgetType;
@@ -571,22 +578,22 @@ window.DpDispPanelDtl = {
       return [];
     };
 
-    /* fnGetRelatedEvent */
+    /* fnGetRelatedEvent — 유틸 */
     const fnGetRelatedEvent  = (r) => { const eid = r?.eventId; if (!eid) return null; return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null; };
 
-    /* fnGetFileListItems */
+    /* fnGetFileListItems — 유틸 */
     const fnGetFileListItems = (r) => { try { return JSON.parse(r?.fileListJson || '[]'); } catch { return []; } };
 
-    /* fnAddFileItemAt */
+    /* fnAddFileItemAt — 유틸 */
     const fnAddFileItemAt    = (r) => { r.fileListJson = JSON.stringify([...fnGetFileListItems(r), { name: '', url: '' }]); };
 
-    /* fnRemoveFileItemAt */
+    /* fnRemoveFileItemAt — 유틸 */
     const fnRemoveFileItemAt = (r, idx) => { r.fileListJson = JSON.stringify(fnGetFileListItems(r).filter((_, i) => i !== idx)); };
 
-    /* fnSetFileItem */
+    /* fnSetFileItem — 유틸 */
     const fnSetFileItem      = (r, idx, field, val) => { const items = fnGetFileListItems(r); items[idx] = { ...items[idx], [field]: val }; r.fileListJson = JSON.stringify(items); };
 
-    /* 위젯 이동 (아코디언 모드 — tab 변경 없이) */
+    /* moveRowAt — 이동 */
     const moveRowAt = (rowIdx, dir) => {
       const target = rowIdx + dir;
       if (target < 0 || target >= rows.length) return;
@@ -597,7 +604,7 @@ window.DpDispPanelDtl = {
       window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
     };
 
-    /* -- 위젯 추가 / 삭제 -- */
+    /* addWidget — 추가 */
     const addWidget = () => {
       if (rows.length >= MAX_WIDGETS) { showToast(`위젯은 최대 ${MAX_WIDGETS}개까지 추가할 수 있습니다.`, 'error'); return; }
       rows.push(makeRowData({ sortOrder: rows.length + 1 }));
@@ -606,7 +613,7 @@ window.DpDispPanelDtl = {
       expandedSections.add(newKey);
     };
 
-    /* removeWidget */
+    /* removeWidget — 제거 */
     const removeWidget = (idx) => {
       if (idx === 0 || rows.length <= 1) return;
       const currentIdx = cfActiveRowIdx.value;
@@ -621,13 +628,13 @@ window.DpDispPanelDtl = {
     /* -- 공개 대상 멀티체크 토글 (전시항목별) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* hasVisibility */
+    /* hasVisibility — 여부 확인 */
     const hasVisibility = (code) => {
       if (!cfActiveRow.value) return false;
       return window.visibilityUtil.has(cfActiveRow.value.visibilityTargets, code);
     };
 
-    /* toggleVisibility */
+    /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
       if (!cfActiveRow.value) return;
       const list = window.visibilityUtil.parse(cfActiveRow.value.visibilityTargets);
@@ -649,13 +656,13 @@ window.DpDispPanelDtl = {
       { code: 'PROD', label: 'PROD' },
     ];
 
-    /* hasDispEnv */
+    /* hasDispEnv — 여부 확인 */
     const hasDispEnv = (code) => {
       if (!cfActiveRow.value) return false;
       return cfActiveRow.value.dispEnv.includes('^' + code + '^');
     };
 
-    /* toggleDispEnv */
+    /* toggleDispEnv — 토글 */
     const toggleDispEnv = (code) => {
       if (!cfActiveRow.value) return;
       const envList = cfActiveRow.value.dispEnv.split('^').filter(e => e && e !== 'NONE');
@@ -664,10 +671,10 @@ window.DpDispPanelDtl = {
       cfActiveRow.value.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
-    /* -- 패널 레벨 전시환경/공개대상 토글 -- */
+    /* hasPanelDispEnv — 여부 확인 */
     const hasPanelDispEnv = (code) => form.panelDispEnv.includes('^' + code + '^');
 
-    /* togglePanelDispEnv */
+    /* togglePanelDispEnv — 패널 토글 */
     const togglePanelDispEnv = (code) => {
       const envList = form.panelDispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
@@ -675,10 +682,10 @@ window.DpDispPanelDtl = {
       form.panelDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
-    /* hasPanelVisibility */
+    /* hasPanelVisibility — 여부 확인 */
     const hasPanelVisibility = (code) => window.visibilityUtil.has(form.panelVisibilityTargets, code);
 
-    /* togglePanelVisibility */
+    /* togglePanelVisibility — 패널 토글 */
     const togglePanelVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.panelVisibilityTargets);
       const i = list.indexOf(code);
@@ -688,7 +695,7 @@ window.DpDispPanelDtl = {
       form.panelVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    /* -- 전시항목 복사 팝업 -- */
+    /* onRowCopy — 이벤트 */
     const onRowCopy = (pickedRows) => {
       if (!Array.isArray(pickedRows) || !pickedRows.length) return;
       window.safeArrayUtils.safeForEach(pickedRows, r => {
@@ -705,7 +712,7 @@ window.DpDispPanelDtl = {
       uiState.libPickMode = mode; uiState.libPickOpen = true;
     };
 
-    /* onLibPicked */
+    /* onLibPicked — 이벤트 */
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
       if (!cfActiveRow.value) return;
@@ -742,7 +749,7 @@ window.DpDispPanelDtl = {
         editIntercept: { placeholder: 'https://... 또는 /files/sample.pdf',
           onInput: (row, val, idx) => updateFileItem(idx, 'url', val) } },
     ];
-    /* file_list 위젯용 (위젯 r 단위) — fnSetFileItem(r, idx, field, value) — 컬럼 동적 생성 */
+    /* fnFileListColsForRow — 유틸 */
     const fnFileListColsForRow = (r) => [
       { key: 'name', label: '파일명',     style: 'width:200px;',
         editIntercept: { placeholder: '파일명.pdf',
@@ -783,7 +790,8 @@ window.DpDispPanelDtl = {
         hint: '전시영역관리에서 편집' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, pathPickModal, openPathPick, closePathPick, onPathPicked, fnPathLabel,
       libPickMode, libPickOpen, openLibPick, onLibPicked,

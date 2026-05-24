@@ -6,6 +6,8 @@ window.EventView = {
     dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 0});
@@ -14,7 +16,9 @@ window.EventView = {
     /* -- 이벤트 데이터 -- */
     const events = reactive([]);
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await foApiSvc.pmEvent.getById(props.dtlId, '이벤트상세', '상세조회');
@@ -25,7 +29,7 @@ window.EventView = {
       }
     };
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -70,7 +74,7 @@ window.EventView = {
       };
     });
 
-    /* 탭 변경 시 0으로 리셋 */
+    /* setTab — 설정 */
     const setTab = (i) => { uiState.activeTab = i; };
 
     /* 더 많은 프로모션: 단건 상세 응답이라 목록 없음 → 빈 배열 */
@@ -80,7 +84,7 @@ window.EventView = {
       handleSearchData();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return { cfEvent, setTab, cfPromoEvents, uiState, codes };
   },

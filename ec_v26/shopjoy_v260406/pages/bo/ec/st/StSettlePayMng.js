@@ -5,6 +5,8 @@ window.StSettlePayMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,6 +19,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     });
 
     /* 정산 지급 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -30,6 +35,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* 정산 지급 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = {
@@ -60,7 +68,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
             const dateEnd   = ref('');
 
-    /* 정산 지급 handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -73,7 +81,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 정산 지급 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
@@ -82,7 +90,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       pending: payList.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
     }));
 
-    /* 정산 지급 doPay */
+    /* doPay — 실행 */
     const doPay = async (r) => {
       const ok = await showConfirm('지급처리', `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`);
       if (!ok) return;
@@ -99,25 +107,28 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
-    /* 정산 지급 fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
 
-    /* 정산 지급 fmtW */
+    /* fmtW — 포맷 W */
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
-    /* 정산 지급 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 정산 지급 onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
-    /* 정산 지급 setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* 정산 지급 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    // -- return ---------------------------------------------------------------
+        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+        // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
       { key: 'dateRange', label: '지급일', type: 'dateRange', paramObj: uiState,
@@ -150,6 +161,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'payStatus',  label: '상태', badge: (row) => fnStatusBadge(row.payStatus) },
       { key: 'regUserNm',  label: '담당자' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, codes, handleDateRangeChange, pager, payList, baseSearchColumns, baseGridColumns, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
   },

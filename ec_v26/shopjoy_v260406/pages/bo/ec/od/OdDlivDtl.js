@@ -11,6 +11,8 @@ window.OdDlivDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -23,6 +25,9 @@ window.OdDlivDtl = {
     const relatedClaims = reactive([]);
 
     /* 배송 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
@@ -37,6 +42,9 @@ window.OdDlivDtl = {
         watch(() => uiState.tabMode2, v => { window._odDlivDtlState.tabMode = v; });
 
     /* 배송 showTab */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({
@@ -51,6 +59,7 @@ window.OdDlivDtl = {
     });
 
     // 단건 GET
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -92,7 +101,7 @@ window.OdDlivDtl = {
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444','반품':'#FFBB00','교환':'#3b82f6' };
     const cfFirstClaim = computed(() => relatedClaims[0] || null);
 
-    /* 배송 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -123,7 +132,7 @@ window.OdDlivDtl = {
 
     const dlivItems = reactive([]);
 
-    /* 배송 sampleDlivItems */
+    /* sampleDlivItems — 샘플 배송 Items */
     const sampleDlivItems = () => {
       const base = form.prodNm || form.recvNm || '배송상품';
       const total = 30000;
@@ -140,13 +149,12 @@ window.OdDlivDtl = {
         if (paid <= 0) return null;
         const sale = discRates[i] > 0 ? Math.round(paid / (1 - discRates[i])) : paid;
 
-    // -- return ---------------------------------------------------------------
 
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       }).filter(Boolean);
     };
 
-    /* 배송 initItems — 배송항목은 handleSearchDetail에서 getById 임베드 데이터로 채움 */
+    /* initItems — 초기화 */
     const initItems = async () => {};
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -162,10 +170,10 @@ window.OdDlivDtl = {
       await handleSearchDetail();
     });
 
-    /* 배송 fmt */
+    /* fmt — 포맷 */
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
-    /* 배송 trackingUrl */
+    /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
       if (!no) return '';
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
@@ -176,7 +184,7 @@ window.OdDlivDtl = {
       return '';
     };
 
-    /* 배송 openTracking */
+    /* openTracking — 열기 */
     const openTracking = (courier, no) => {
       const url = trackingUrl(courier, no);
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }
@@ -218,6 +226,9 @@ window.OdDlivDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* 결제정보 컬럼 */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const paymentGridColumns = [
       { key: 'orderId',   label: '주문ID', refLink: 'order' },
       { key: 'dlivFee',   label: '배송비',   style: 'text-align:right;',
@@ -279,9 +290,6 @@ window.OdDlivDtl = {
         } },
     ];
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
     const baseFormColumns = [
       { key: 'dlivId',       label: '배송ID', type: 'text', required: true,
         placeholder: 'DLIV-XXX', readonly: !cfIsNew.value },
@@ -297,6 +305,8 @@ window.OdDlivDtl = {
       { type: 'rowBreak' },
       { key: 'dlivMemo',     label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentGridColumns, editHistGridColumns, dlivItemGridColumns, baseFormColumns, showRefModal };
   },

@@ -12,6 +12,8 @@ window.DispX02Area = {
     areaItem:    { type: Object, required: true },     // { code, label, info, panels }
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -38,31 +40,31 @@ window.DispX02Area = {
       'cache_banner':'💰', 'widget_embed':'🧩',
     };
 
-    /* wLabel */
+    /* wLabel — w 라벨 */
     const wLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
-    /* wIcon */
+    /* wIcon — w 아이콘 */
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
-    /* 패널의 위젯 타입 목록 (카드 아이콘용) */
+    /* panelWidgetTypes — 패널 위젯 Types */
     const panelWidgetTypes = (p) => {
       if (p.rows && p.rows.length) return p.rows.map(r => r.widgetType);
       return p.widgetType ? [p.widgetType] : [];
     };
 
-    /* 카드 모드: 기간 텍스트 */
+    /* periodText — 기간 Text */
     const periodText = (p) => {
       if (!p.dispStartDt && !p.dispEndDt) return '기간 없음';
       return `${p.dispStartDt || '∞'} ~ ${p.dispEndDt || '∞'}`;
     };
 
-    /* statusCls */
+    /* statusCls — 상태 클래스 */
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
 
-    /* padId */
+    /* padId — 패딩 Id */
     const padId = (id) => String(id || 0).padStart(4, '0');
 
-    /* 패널기본정보 title 텍스트 */
+    /* panelTitle — 패널 Title */
     const panelTitle = (p) => [
       `#${p.dispId} ${p.name}`,
       `상태: ${p.status}`,
@@ -71,6 +73,9 @@ window.DispX02Area = {
       `기간: ${periodText(p)}`,
       p.htmlDesc ? `설명: ${p.htmlDesc}` : '',
     ].filter(Boolean).join('\n');
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, codes, mode, showDesc, wLabel, wIcon, padId, panelWidgetTypes, periodText, statusCls, panelTitle };
   },

@@ -5,6 +5,8 @@ window.DpDispRelationMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -16,7 +18,9 @@ window.DpDispRelationMng = {
       date_range_opts: [],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -31,7 +35,9 @@ window.DpDispRelationMng = {
 
     const displays = reactive([]);
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시연관관리', '조회');
@@ -41,6 +47,7 @@ window.DpDispRelationMng = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
@@ -52,7 +59,7 @@ window.DpDispRelationMng = {
     /* 검색 */
   const searchParam = reactive(_initSearchParam());
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
     try {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
@@ -65,7 +72,7 @@ window.DpDispRelationMng = {
     }
   };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
     Object.assign(searchParam, _initSearchParam());
     onSearch();
@@ -83,8 +90,6 @@ window.DpDispRelationMng = {
         childCount: (ui.areas || []).length,
         children: (ui.areas || []).map(area => {
           const areaPanels = (area.panels || []);
-
-    // -- return ---------------------------------------------------------------
 
           return {
             type: 'area',
@@ -112,19 +117,19 @@ window.DpDispRelationMng = {
 
     const expandedNodes = reactive(new Set());
 
-    /* toggleNode */
+    /* toggleNode — 노드 토글 */
     const toggleNode = (key) => { if (expandedNodes.has(key)) expandedNodes.delete(key); else expandedNodes.add(key); };
 
-    /* isNodeExpanded */
+    /* isNodeExpanded — 여부 확인 */
     const isNodeExpanded = (key) => expandedNodes.has(key);
 
-    /* 공개범위 표시 */
+    /* fnGetVisibilityBadges — 유틸 */
     const fnGetVisibilityBadges = (targets) => {
       if (!targets) return [];
       return targets.split('^').filter(Boolean);
     };
 
-    /* 뱃지 색상 */
+    /* fnGetBadgeColor — 유틸 */
     const fnGetBadgeColor = (type) => {
       const colors = {
         ui: { bg: '#e8f4f8', color: '#0277bd' },
@@ -134,17 +139,22 @@ window.DpDispRelationMng = {
       return colors[type] || { bg: '#f0f0f0', color: '#666' };
     };
 
-    /* 사용여부 배지 */
+    /* fnGetUseYnBadge — 유틸 */
     const fnGetUseYnBadge = (useYn) => {
       return useYn === 'Y' ? { bg: '#c8e6c9', color: '#2e7d32', text: '사용' }
                             : { bg: '#f1f1f1', color: '#666', text: '미사용' };
     };
 
-    // -- return ---------------------------------------------------------------
+
+    // --- [컬럼 정의] ---
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const baseSearchColumns = [
       { key: 'dateStart_range', type: 'dateRange', label: '등록기간', startKey: 'dateStart', endKey: 'dateEnd' },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       codes, searchParam, baseSearchColumns,

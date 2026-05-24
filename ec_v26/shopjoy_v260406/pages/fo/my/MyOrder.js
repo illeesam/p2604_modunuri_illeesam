@@ -5,6 +5,8 @@ window.MyOrder = {
     navigate:       { type: Function, required: true },                    // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showConfirm          = window.foApp.showConfirm;  // 확인 모달
@@ -14,7 +16,9 @@ window.MyOrder = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -39,27 +43,27 @@ window.MyOrder = {
       '한진택배':   no => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${no}`,
     };
 
-    /* openTracking */
+    /* openTracking — 열기 */
     const openTracking = (courier, trackingNo) => {
       const fn = COURIER_URLS[courier];
       if (!fn) { showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
       window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes,resizable=yes');
     };
 
-    /* openTracking2 */
+    /* openTracking2 — 열기 */
     const openTracking2 = (courier, trackingNo) => {
       const fn = COURIER_URLS[courier];
       if (fn) window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes');
     };
 
-    /* showOrderPayBreakdown */
+    /* showOrderPayBreakdown — 표시 */
     const showOrderPayBreakdown = o =>
       (o.shippingFee != null && o.shippingFee > 0) ||
       (o.shippingCoupon && Number(o.shippingCoupon.discount) > 0) ||
       Number(o.cashPaid) > 0 ||
       Number(o.transferPaid) > 0;
 
-    /* -- 주문 액션 -- */
+    /* cancelOrder — 취소 */
     const cancelOrder = async orderId => {
       const ok = await showConfirm('주문 취소', '이 주문을 취소하시겠습니까?', 'warning');
       if (!ok) return;
@@ -67,7 +71,7 @@ window.MyOrder = {
       showToast('주문이 취소되었습니다.', 'success');
     };
 
-    /* confirmPurchase */
+    /* confirmPurchase — 확인 구매 */
     const confirmPurchase = async orderId => {
       const ok = await showConfirm('구매확정', '구매를 확정하시겠습니까?\n확정 후에는 교환/반품 신청이 어렵습니다.', 'warning');
       if (!ok) return;
@@ -111,7 +115,7 @@ window.MyOrder = {
       return window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
     });
 
-    /* openClaimModal */
+    /* openClaimModal — 열기 */
     const openClaimModal = (orderId, type) => {
       claimModal.show = true; claimModal.type = type; claimModal.orderId = orderId;
       claimModal.order = orders.value.find(x => x.orderId === orderId) || null;
@@ -121,7 +125,7 @@ window.MyOrder = {
       if (!coupons.value.length) myStore.handleLoadCoupons();
     };
 
-    /* submitClaimModal */
+    /* submitClaimModal — 제출 */
     const submitClaimModal = () => {
       if (!claimModal.reason) { showToast('신청 사유를 선택해주세요.', 'error'); return; }
       if (claimModal.type === 'exchange') {
@@ -139,16 +143,16 @@ window.MyOrder = {
     /* -- 공유 모달 -- */
     const cfAuthUser = computed(() => window.foAuth.state.user);
 
-    /* findProd */
+    /* findProd — 찾기 상품 */
     const findProd = name => window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
 
-    /* openProdModal */
+    /* openProdModal — 열기 */
     const openProdModal = name => {
       const p = findProd(name);
       if (p) { myStore.productModal.prod = p; myStore.productModal.show = true; }
     };
 
-    /* openCustomerModal */
+    /* openCustomerModal — 열기 */
     const openCustomerModal = order => {
       myStore.customerModal.user = cfAuthUser.value;
       myStore.customerModal.order = order || null;
@@ -159,17 +163,17 @@ window.MyOrder = {
     const reviews = reactive({});
     const reviewModal = reactive({ show: false, orderId: '', itemIdx: 0, item: null, rating: 5, text: '', isEdit: false, files: [] });
 
-    /* onReviewFileChange */
+    /* onReviewFileChange — 이벤트 */
     const onReviewFileChange = (e) => {
       const selected = Array.from(e.target.files || []);
       reviewModal.files = [...reviewModal.files, ...selected].slice(0, 5);
       e.target.value = '';
     };
 
-    /* removeReviewFile */
+    /* removeReviewFile — 제거 */
     const removeReviewFile = (idx) => { reviewModal.files.splice(idx, 1); };
 
-    /* openReviewModal */
+    /* openReviewModal — 열기 */
     const openReviewModal = (orderId, itemIdx, item) => {
       const key = `${orderId}_${itemIdx}`;
       const existing = reviews[key];
@@ -179,7 +183,7 @@ window.MyOrder = {
       reviewModal.files = existing ? (existing.files || []) : [];
     };
 
-    /* submitReview */
+    /* submitReview — 제출 */
     const submitReview = () => {
       if (!reviewModal.text.trim()) { showToast('리뷰 내용을 입력해주세요.', 'error'); return; }
       const key = `${reviewModal.orderId}_${reviewModal.itemIdx}`;
@@ -193,13 +197,13 @@ window.MyOrder = {
       showToast(reviewModal.isEdit ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다! 감사합니다 😊', 'success');
     };
 
-    /* getReview */
+    /* getReview — 조회 */
     const getReview = (orderId, itemIdx) => reviews[`${orderId}_${itemIdx}`] || null;
 
     const { dateRange, onDateSearch } = window.myDateFilterHelper();
     const flowStatusFilter = reactive([]);
 
-    /* toggleFlowStatus */
+    /* toggleFlowStatus — 토글 */
     const toggleFlowStatus = (status) => {
       const idx = flowStatusFilter.indexOf(status);
       if (idx === -1) flowStatusFilter.push(status);
@@ -211,7 +215,7 @@ window.MyOrder = {
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
-    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (orderDate 기준) */
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       const params = {
         dateType:  'order_date',
@@ -223,7 +227,9 @@ window.MyOrder = {
       myStore.handleLoadCoupons();
     };
 
-    /* 목록조회 — [조회] 버튼/기간 변경 시에만 API 호출 (검색정책 준수) */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData();
@@ -236,7 +242,8 @@ window.MyOrder = {
       handleSearchData();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       myStore, orders, claimsByOrderId, cfDateFilteredOrders, onDateSearch, onSearch,

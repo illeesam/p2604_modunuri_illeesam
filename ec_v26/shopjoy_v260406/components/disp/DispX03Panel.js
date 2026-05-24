@@ -12,11 +12,13 @@ window.DispX03Panel = {
   },
   emits: ['widget-action'],
   setup(props, { emit }) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { computed, reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
 
-    /* panelItem.rows의 각 위젯에 패널 레벨 속성 병합 */
+    /* mergedWidget — merged 위젯 */
     const mergedWidget = (w) => ({
       ...w,
       status:       props.panelItem.status,
@@ -40,8 +42,13 @@ window.DispX03Panel = {
       return 'display:flex;flex-direction:column;gap:12px;';
     });
 
-    /* onWidgetAction */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onWidgetAction — 이벤트 */
     const onWidgetAction = (payload) => emit('widget-action', payload);
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, codes, mergedWidget, cfLayoutStyle, onWidgetAction };
   },

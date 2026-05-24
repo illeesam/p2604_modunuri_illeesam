@@ -2,12 +2,16 @@
 window.XsSample07 = {
   name: 'XsSample07',
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0 });
     const codes = reactive({ http_method_opts: ['GET','POST','PUT','PATCH','DELETE'] });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -20,7 +24,7 @@ window.XsSample07 = {
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);
 
-    /* makeNode */
+    /* makeNode — 생성 */
     const makeNode = n => {
       const node = reactive({
         id: n.id, appId: n.appId || '', label: n.label, type: n.type,
@@ -33,7 +37,7 @@ window.XsSample07 = {
       return node;
     };
 
-    /* 직계 부모 label 탐색 */
+    /* findParentLabel — 찾기 상위 라벨 */
     const findParentLabel = (nodes, targetId) => {
       for (const n of nodes) {
         if (n.children) {
@@ -79,11 +83,13 @@ window.XsSample07 = {
       { label:'일괄삭제',   urlFn: t => t,              method:'DELETE' },
     ];
 
-    /* toPascal */
+    /* toPascal — → 파스칼 */
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
     let _acSeq = 0;
 
-    /* buildAutoCrudNodes */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* buildAutoCrudNodes — 빌드 */
     const buildAutoCrudNodes = () => makeNode({
       id: 'ac_root', appId: 'samples', label: 'boAutoCrud-method', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
@@ -91,7 +97,8 @@ window.XsSample07 = {
         children: tables.map(tbl => {
           const pascal = toPascal(tbl);
 
-    // -- return ---------------------------------------------------------------
+          // ===== return (템플릿 노출) ===============================================
+
 
           return {
             id: `ac_${tbl}`, label: tbl, type: 'folder', open: false,
@@ -109,7 +116,7 @@ window.XsSample07 = {
     });
     let _arSeq = 0;
 
-    /* buildAutoCrudRestNodes */
+    /* buildAutoCrudRestNodes — 빌드 */
     const buildAutoCrudRestNodes = () => makeNode({
       id: 'ar_root', appId: 'samples', label: 'boAutoCrud-rest', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
@@ -139,7 +146,7 @@ window.XsSample07 = {
     /* ===== Tree Search & Flatten ===== */
         const toggleNode = node => { if (node.type !== 'req') node.open = !node.open; };
 
-    /* flattenTree */
+    /* flattenTree — 평탄화 트리 */
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
       const searchVal = treeSearch.value.toLowerCase();
@@ -161,7 +168,7 @@ window.XsSample07 = {
     const token        = ref('');
     const defHeaders   = reactive([{ k: 'Content-Type', v: 'application/json' }, { k: '', v: '' }]);
 
-    /* saveSettings */
+    /* saveSettings — 저장 */
     const saveSettings = () => {
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify({
@@ -171,7 +178,7 @@ window.XsSample07 = {
       } catch {}
     };
 
-    /* loadSettings */
+    /* loadSettings — 로드 */
     const loadSettings = () => {
       try {
         const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
@@ -190,7 +197,7 @@ window.XsSample07 = {
     /* ===== LocalStorage Viewer ===== */
     const lsItems = reactive([]);
 
-    /* refreshLs */
+    /* refreshLs — 새로고침 */
     const refreshLs = () => {
       lsItems.splice(0);
       for (let i = 0; i < localStorage.length; i++) {
@@ -206,7 +213,7 @@ window.XsSample07 = {
 
     const cfActiveTab = computed(() => openTabs.find(t => t.tabId === uiState.activeTabId) || null);
 
-    /* makeTab */
+    /* makeTab — 생성 */
     const makeTab = (node) => {
       const parentLabel = findParentLabel(treeRoot, node.id) || '';
       const tabLabel    = [parentLabel, node.method, node.label].filter(Boolean).join(' · ');
@@ -235,7 +242,7 @@ window.XsSample07 = {
       });
     };
 
-    /* selectApiNode */
+    /* selectApiNode — 선택 */
     const selectApiNode = node => {
       if (node.type !== 'req') return;
       const existing = openTabs.find(t => t.nodeId === node.id);
@@ -257,14 +264,14 @@ window.XsSample07 = {
       }
     }, 500);
 
-    /* stopAutoRun */
+    /* stopAutoRun — 중지 자동 실행 */
     const stopAutoRun = (tabId) => {
       if (_timers[tabId]) { clearInterval(_timers[tabId]); delete _timers[tabId]; }
       delete _nextFire[tabId];
       delete countdown[tabId];
     };
 
-    /* startAutoRun */
+    /* startAutoRun — 시작 자동 실행 */
     const startAutoRun = (tab, ms, label) => {
       stopAutoRun(tab.tabId);
       tab.autoMs    = ms;
@@ -292,7 +299,7 @@ window.XsSample07 = {
       h: HOURS[i] != null ? HOURS[i] : null,
     }));
 
-    /* openAutoPopup */
+    /* openAutoPopup — 열기 */
     const openAutoPopup = (tab, evt) => {
       evt.stopPropagation();
       // 이미 자동실행 중이면 토글(끄기)
@@ -304,16 +311,16 @@ window.XsSample07 = {
       uiState.autoPopupTabId = tab.tabId;
     };
 
-    /* closeAutoPopup */
+    /* closeAutoPopup — 닫기 */
     const closeAutoPopup = () => { uiState.autoPopupTabId = null; };
 
-    /* selectAuto */
+    /* selectAuto — 선택 */
     const selectAuto = (tab, ms, label) => {
       startAutoRun(tab, ms, label);
       uiState.autoPopupTabId = null;
     };
 
-    /* closeTab */
+    /* closeTab — 닫기 */
     const closeTab = (tabId, e) => {
       e?.stopPropagation();
       stopAutoRun(tabId);
@@ -327,7 +334,7 @@ window.XsSample07 = {
       if (uiState.autoPopupTabId === tabId) uiState.autoPopupTabId = null;
     };
 
-    /* closeAllTabs */
+    /* closeAllTabs — 닫기 */
     const closeAllTabs = () => {
       openTabs.forEach(t => stopAutoRun(t.tabId));
       openTabs.splice(0);
@@ -340,10 +347,10 @@ window.XsSample07 = {
     const toasts   = reactive([]);
     let _toastSeq  = 0;
 
-    /* safeStr */
+    /* safeStr — 안전 문자열 */
     const safeStr  = v => (v != null ? String(v) : '');
 
-    /* pushToast */
+    /* pushToast — 푸시 토스트 */
     const pushToast = ({ type, tabLabel, method, url, status, resJson }) => {
       const id  = ++_toastSeq;
       const t   = reactive({ id, seq: id, type, tabLabel, method, url, status, resJson, jsonOpen: false, progress: 100 });
@@ -361,7 +368,7 @@ window.XsSample07 = {
       t._tick = tick;
     };
 
-    /* closeToast */
+    /* closeToast — 닫기 */
     const closeToast = (id) => {
       const idx = toasts.findIndex(x => x.id === id);
       if (idx !== -1) {
@@ -370,7 +377,7 @@ window.XsSample07 = {
       }
     };
 
-    /* ===== Send ===== */
+    /* buildUrl — 빌드 */
     const buildUrl = (tab) => {
       let base = tab.reqUrl.trim();
       if (!base.startsWith('http')) {
@@ -384,7 +391,7 @@ window.XsSample07 = {
       return base;
     };
 
-    /* doSend */
+    /* doSend — 실행 */
     const doSend = async (targetTab) => {
       const tab = targetTab || cfActiveTab.value;
       if (!tab || !tab.reqUrl?.trim()) return;
@@ -456,7 +463,7 @@ window.XsSample07 = {
     // 편집용 복사본 (histModal 원본은 건드리지 않음)
     const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
 
-    /* selectHistory */
+    /* selectHistory — 선택 */
     const selectHistory = (h, idx) => {
       uiState.histSelIdx   = idx;
       uiState.histModal    = h;
@@ -471,7 +478,7 @@ window.XsSample07 = {
       editReq.headers = (h.reqInfo.headers || []).map(h2 => ({k:h2.k, v:h2.v}));
     };
 
-    /* closeHistModal */
+    /* closeHistModal — 닫기 */
     const closeHistModal = () => { uiState.histModal = null; };
 
     const histResJson     = ref('');
@@ -480,7 +487,7 @@ window.XsSample07 = {
     const histResTs       = ref('');
       // 0~100, 전송 중 진행 표시
 
-    /* resendHist */
+    /* resendHist — 재전송 이력 */
     const resendHist = async () => {
       if (!cfActiveTab.value) return;
       const tab = cfActiveTab.value;
@@ -548,11 +555,12 @@ window.XsSample07 = {
       { key: 'time',    label: '응답시간', width: '64px', align: 'center', fmt: v => v + 'ms' },
       { key: 'ts',      label: '요청시간', width: '68px', align: 'center' },
     ];
-    /* 행 클릭 → selectHistory(h, idx). 행 강조 = histSelIdx 행 배경 */
+    /* onHistClick — 이벤트 */
     const onHistClick = (h) => selectHistory(h, history.indexOf(h));
+    /* fnHistRowStyle — 유틸 */
     const fnHistRowStyle = (h) => (history.indexOf(h) === uiState.histSelIdx ? 'background:#e8f0fe;' : '');
 
-    /* ===== Quick Run ===== */
+    /* quickRun — quick 실행 */
     const quickRun = (node, evt) => {
       evt.stopPropagation();
       // 기존 탭 있으면 재사용, 없으면 새 탭
@@ -565,13 +573,13 @@ window.XsSample07 = {
       doSend(tab);
     };
 
-    /* ===== Helpers ===== */
+    /* addRow — 행 추가 */
     const addRow    = arr => arr.push({ k: '', v: '' });
 
-    /* removeRow */
+    /* removeRow — 제거 */
     const removeRow = (arr, i) => { if (arr.length > 1) arr.splice(i, 1); };
 
-    /* fnMethodStyle */
+    /* fnMethodStyle — 유틸 */
     const fnMethodStyle = m => ({
       GET:    'background:#dcfce7;color:#166534;',
       POST:   'background:#dbeafe;color:#1e40af;',
@@ -580,11 +588,11 @@ window.XsSample07 = {
       DELETE: 'background:#fee2e2;color:#991b1b;',
     }[m] || 'background:#f0f0f0;color:#666;');
 
-    /* fnStatusStyle */
+    /* fnStatusStyle — 유틸 */
     const fnStatusStyle = s => !s ? '' : s < 300 ? 'color:#166534;font-weight:700;'
       : s < 400 ? 'color:#92400e;font-weight:700;' : 'color:#991b1b;font-weight:700;';
 
-    /* fnMethodDot */
+    /* fnMethodDot — 유틸 */
     const fnMethodDot = m => ({ GET:'#166534', POST:'#1e40af', PUT:'#92400e', PATCH:'#6b21a8', DELETE:'#991b1b' }[m] || '#888');
 
     /* ===== Mount ===== */
@@ -597,8 +605,6 @@ window.XsSample07 = {
       treeRoot.push(buildAutoCrudNodes());
       treeRoot.push(buildAutoCrudRestNodes());
     });
-
-    // -- return ---------------------------------------------------------------
 
     return {
       cfFlatTree, treeSearch, toggleNode, selectApiNode, appFilter, APP_META,

@@ -5,6 +5,8 @@ window.PdCategoryProdMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -21,6 +23,9 @@ window.PdCategoryProdMng = {
     });
 
     /* 카테고리-상품 매핑 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -35,7 +40,7 @@ window.PdCategoryProdMng = {
     /* 선택된 카테고리 (watch 이전에 선언 필수) */
     const cfSelectedCatId = ref(null);
 
-    /* 선택 카테고리 + 직속 자식 카테고리 ID 목록 (서버 IN 조회용 — 자식 포함 표시 보존) */
+    /* fnCatIdsWithChildren — 유틸 */
     const fnCatIdsWithChildren = (catId) => {
       if (!catId) return [];
       const childIds = categories
@@ -44,7 +49,7 @@ window.PdCategoryProdMng = {
       return [catId, ...childIds];
     };
 
-    /* 카테고리/진열유형 선택 → 상품목록 API 재조회 (클라이언트 filter 미사용) */
+    /* handleReloadByCategory — 처리 */
     const handleReloadByCategory = async () => {
       const catId = cfSelectedCatId.value;
       if (!catId) { categoryProds.splice(0, categoryProds.length); return; }
@@ -86,33 +91,36 @@ window.PdCategoryProdMng = {
       { cd: 'MARQUEE',    nm: '흐르는글자', icon: '〜' },
     ];
 
-    /* 카테고리-상품 매핑 parseEmphasis */
+    /* parseEmphasis — 파싱 Emphasis */
     const parseEmphasis  = str => str ? str.split('^').filter(Boolean) : [];
 
-    /* 카테고리-상품 매핑 hasEmphasis */
+    /* hasEmphasis — 여부 확인 */
     const hasEmphasis    = (str, cd) => parseEmphasis(str).includes(cd);
 
-    /* 카테고리-상품 매핑 toggleEmphasis */
+    /* toggleEmphasis — 토글 */
     const toggleEmphasis = (row, cd) => {
       const s = new Set(parseEmphasis(row.emphasisCd));
       if (s.has(cd)) s.delete(cd); else s.add(cd);
       row.emphasisCd = s.size ? '^' + [...s].join('^') + '^' : '';
     };
 
-    /* -- 날짜 기본값 -- */
+    /* defaultDispEndDate — 기본 Disp End 날짜 */
     const defaultDispEndDate   = () => { const y = new Date().getFullYear() + 3; return `${y}-12-31`; };
 
-    /* 카테고리-상품 매핑 defaultDispStartDate */
+    /* defaultDispStartDate — 기본 Disp 시작 날짜 */
     const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
 
     /* -- 검색 -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 카테고리-상품 매핑 _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ prodNm: '', categoryId: '', categoryIdsCsv: '', typeCd: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* 카테고리-상품 매핑 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const { prodNm, ...restParam } = searchParam;
@@ -132,20 +140,20 @@ window.PdCategoryProdMng = {
       }
     };
 
-    /* 카테고리-상품 매핑 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => {
       pager.pageNo = 1;
       Object.assign(pager.pageCond, searchParam);
       handleSearchList('DEFAULT');
     };
 
-    /* 카테고리-상품 매핑 onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       onSearch();
     };
 
-    /* 카테고리 목록 로드 (getCategoryNm 등 로컬 lookup용) */
+    /* handleSearchCategoriesList — 처리 */
     const handleSearchCategoriesList = async () => {
       try {
         const res = await boApiSvc.pdCategory.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리관리', '목록조회');
@@ -156,7 +164,7 @@ window.PdCategoryProdMng = {
       }
     };
 
-    /* 상품 목록 로드 (피커/헬퍼용) */
+    /* handleSearchProductsList — 처리 */
     const handleSearchProductsList = async () => {
       try {
         const res = await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '카테고리상품관리', '상품목록조회');
@@ -178,7 +186,7 @@ window.PdCategoryProdMng = {
       }
     });
 
-    /* 선택된 카테고리 - selectNode 헬퍼 */
+    /* selectNode — 노드 선택 */
     const selectNode = id => {
       if (id === null) { cfSelectedCatId.value = null; return; }
       cfSelectedCatId.value = (cfSelectedCatId.value === id) ? null : id;
@@ -186,13 +194,13 @@ window.PdCategoryProdMng = {
     const cfSelectedCat = computed(() => categories.find(c => c.categoryId === cfSelectedCatId.value));
     const cfIsLeafCat = computed(() => !categories.some(c => c.parentCategoryId === cfSelectedCatId.value));
 
-    /* 좌측 트리 빌드 (expanded 반영) */
+    /* fnDepthColor — 유틸 */
     const fnDepthColor = (d) => ({0:'#e8587a',1:'#1677ff',2:'#3ba87a'}[d] || '#999');
 
-    /* 카테고리-상품 매핑 fnDepthBullet */
+    /* fnDepthBullet — 유틸 */
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
 
-    /* 카테고리-상품 매핑 totalProdCount */
+    /* totalProdCount — 전체 상품 건수 */
     const totalProdCount = (catId) => categoryProds.filter(cp => cp.categoryId === catId).length;
     const cfTypeCountMap = computed(() => {
       const map = {};
@@ -205,13 +213,13 @@ window.PdCategoryProdMng = {
     const dragoverIdx = ref(null);
     let dragStartIdx = null;
 
-    /* 카테고리-상품 매핑 onDragStart */
+    /* onDragStart — 드래그 시작 */
     const onDragStart = (idx) => { dragStartIdx = idx; };
 
-    /* 카테고리-상품 매핑 onDragOver */
+    /* onDragOver — 드래그 오버 */
     const onDragOver = (idx) => { dragoverIdx.value = idx; };
 
-    /* 카테고리-상품 매핑 onDrop */
+    /* onDrop — 이벤트 */
     const onDrop = () => {
       if (dragStartIdx !== null && dragoverIdx.value !== null && dragStartIdx !== dragoverIdx.value) {
         const temp = categoryProds[dragStartIdx];
@@ -222,16 +230,16 @@ window.PdCategoryProdMng = {
       dragStartIdx = null;
     };
 
-    /* -- 상품 정보 조회 헬퍼 -- */
+    /* getProdNm — 조회 */
     const getProdNm = (prodId) => {
       const prod = products.find(p => p.prodId === prodId);
       return prod?.prodNm || `[${prodId}]`;
     };
 
-    /* 카테고리-상품 매핑 getProd */
+    /* getProd — 조회 */
     const getProd = (prodId) => products.find(p => p.prodId === prodId);
 
-    /* 카테고리-상품 매핑 getCatPath */
+    /* getCatPath — 조회 */
     const getCatPath = (catId) => {
       const cat = categories.find(c => c.categoryId === catId);
       if (!cat) return '-';
@@ -245,13 +253,13 @@ window.PdCategoryProdMng = {
       return path.join(' > ');
     };
 
-    /* -- 행 제거 -- */
+    /* removeRow — 제거 */
     const removeRow = (row) => {
       const idx = categoryProds.findIndex(r => r === row);
       if (idx !== -1) categoryProds.splice(idx, 1);
     };
 
-    /* -- 상품 추가 -- */
+    /* addProd — 추가 */
     const addProd = (prod) => {
       const exists = categoryProds.some(cp => cp.prodId === prod.prodId && cp.categoryId === cfSelectedCatId.value && cp.categoryProdTypeCd === uiState.activeTypeCd);
       if (exists) {
@@ -283,6 +291,7 @@ window.PdCategoryProdMng = {
 
     /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달 (상위 50건).
        검색대상은 백엔드 지원범위(prodNm/prodId)만 사용. [조회]/Enter/모달열기 시점에만 호출. */
+    /* onPickerSearch — 이벤트 */
     const onPickerSearch = async () => {
       try {
         const params = { pageNo: 1, pageSize: 50 };
@@ -300,7 +309,7 @@ window.PdCategoryProdMng = {
       }
     };
 
-    /* 피커 열기 — 초기 목록 서버 조회 */
+    /* openPicker — 열기 */
     const openPicker = () => {
       pickerSearchType.value = '';
       pickerSearch.value = '';
@@ -308,7 +317,7 @@ window.PdCategoryProdMng = {
       onPickerSearch();
     };
 
-    /* 카테고리-상품 매핑 저장 */
+    /* onSave — 이벤트 */
     const onSave = async () => {
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) return;
@@ -325,6 +334,9 @@ window.PdCategoryProdMng = {
     };
 
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
+        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'prodNm', label: '상품명', type: 'text', placeholder: '상품명 검색', width: '280px' },
     ];
@@ -351,6 +363,7 @@ window.PdCategoryProdMng = {
       }
       return cols;
     });
+    /* fnCatProdRowStyle — 유틸 */
     const fnCatProdRowStyle = (row, idx) => {
       if (dragoverIdx.value === idx) return 'background:#e6f4ff';
       if (row._isNew) return 'background:#f6ffed';
@@ -369,7 +382,8 @@ window.PdCategoryProdMng = {
       { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', align: 'center', fmt: v => v != null ? v : '-' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       codes, uiState, categories, categoryProds,

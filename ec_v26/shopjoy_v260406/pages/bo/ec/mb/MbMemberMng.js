@@ -5,6 +5,8 @@ window.MbMemberMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,7 +19,7 @@ window.MbMemberMng = {
     const codes = reactive({ member_statuses: [], member_grades: [] });
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 회원 _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ searchType: '', searchValue: '', grade: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     const detailModal = reactive({
@@ -31,10 +33,13 @@ window.MbMemberMng = {
     // 2️⃣ computed 선언
     const cfSelectedRow = computed(() => members.find(m => m.memberId === detailModal.dtlId) || null);
 
-    /* 회원 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     // 3️⃣ 함수 정의
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
@@ -44,7 +49,7 @@ window.MbMemberMng = {
 
     const SORT_MAP = { nm: { asc: 'memberNm asc', desc: 'memberNm desc' }, reg: { asc: 'joinDate asc', desc: 'joinDate desc' } };
 
-    /* 회원 getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
@@ -52,6 +57,9 @@ window.MbMemberMng = {
     };
 
     /* 회원 onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -61,10 +69,10 @@ window.MbMemberMng = {
       handleSearchList();
     };
 
-    /* 회원 sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
-    /* 회원 목록조회 */
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -93,10 +101,10 @@ window.MbMemberMng = {
       }
     };
 
-    /* 회원 fnFmtDate */
+    /* fnFmtDate — 유틸 */
     const fnFmtDate = v => v ? String(v).slice(0, 10) : '';
 
-    /* 회원 fnApplyForm */
+    /* fnApplyForm — 유틸 */
     const fnApplyForm = (d) => {
       Object.assign(detailModal.form, {
         memberId: d.memberId, loginId: d.loginId || '', memberNm: d.memberNm || '',
@@ -105,7 +113,7 @@ window.MbMemberMng = {
       });
     };
 
-    /* 회원 openDetail */
+    /* openDetail — 열기 */
     const openDetail = async (row) => {
       detailModal.dtlId = row.memberId;
       detailModal.isNew = false;
@@ -121,7 +129,7 @@ window.MbMemberMng = {
       }
     };
 
-    /* 회원 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => {
       Object.assign(detailModal.form, { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memberMemo: '' });
       detailModal.dtlId = '__new__';
@@ -130,13 +138,13 @@ window.MbMemberMng = {
       detailModal.reloadTrigger++;
     };
 
-    /* 회원 closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => {
       detailModal.show = false;
       detailModal.dtlId = null;
     };
 
-    /* 회원 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       if (!detailModal.form.loginId) { showToast('이메일은 필수입니다.', 'error'); return; }
       if (!detailModal.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
@@ -182,7 +190,7 @@ window.MbMemberMng = {
       }
     };
 
-    /* 회원 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async () => {
       if (!cfSelectedRow.value) return;
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.memberNm}] 회원을 삭제하시겠습니까?`);
@@ -205,25 +213,28 @@ window.MbMemberMng = {
 
     /* 회원 fnGradeBadge */
     const _MEMBER_GRADE_FB = { 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' };
+    /* fnGradeBadge — 유틸 */
     const fnGradeBadge = g => coUtil.cofCodeBadge('MEMBER_GRADE', g, _MEMBER_GRADE_FB[g] || 'badge-gray');
 
     /* 회원 fnStatusBadge */
     const _MEMBER_STATUS_FB = { '활성': 'badge-green', '정지': 'badge-red' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('MEMBER_STATUS', s, _MEMBER_STATUS_FB[s] || 'badge-gray');
 
-    /* 회원 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 회원 onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
 
-    /* 회원 setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* 회원 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -235,6 +246,8 @@ window.MbMemberMng = {
       { key: 'grade', type: 'select', label: '등급', options: () => codes.member_grades, nullLabel: '전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.member_statuses, nullLabel: '전체' },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const listGridColumns = [
       { key: 'memberNm',         label: '이름',     sortKey: 'nm',
@@ -247,6 +260,7 @@ window.MbMemberMng = {
       { key: 'orderCount',       label: '주문수',   style: 'width:80px;text-align:right', align: 'right', fmt: (v) => (v || 0) + '건' },
       { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right', align: 'right', fmt: (v) => (v || 0).toLocaleString() + '원' },
     ];
+    /* fnGridRowClass — 유틸 */
     const fnGridRowClass = (row) => (detailModal.dtlId === row.memberId ? 'active' : '');
 
     // 4️⃣ watch 선언
@@ -255,7 +269,9 @@ window.MbMemberMng = {
       handleSearchList('DEFAULT');
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
+
     return {
       selectedId: computed(() => detailModal.dtlId), members, uiState, codes,
       searchParam, pager, setPage,

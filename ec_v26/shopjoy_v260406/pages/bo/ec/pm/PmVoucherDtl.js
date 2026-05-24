@@ -11,6 +11,8 @@ window.PmVoucherDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -23,7 +25,7 @@ window.PmVoucherDtl = {
     const codes = reactive({ promo_statuses: [] });
 
     // 단건 조회
-    /* 소속업체 목록 로드 (vendor 선택 모달용) */
+    /* loadVendors — 로드 */
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -31,6 +33,7 @@ window.PmVoucherDtl = {
       } catch (e) { console.warn('[PmVoucherDtl.js] vendor load failed', e); }
     };
 
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
       if (cfIsNew.value) return;
@@ -55,10 +58,13 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmVoucherDtlState.tabMode = v; });
 
-    /* 바우처(상품권) showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 바우처(상품권) fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
@@ -76,7 +82,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     const _today = new Date();
 
-    /* 바우처(상품권) _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END = `${_today.getFullYear()+1}-12-31`;
@@ -124,7 +130,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       }
     };
 
-    /* 바우처(상품권) renderQRCode */
+    /* renderQRCode — 렌더 */
     const renderQRCode = () => {
       if (uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
         try {
@@ -141,6 +147,9 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     };
 
     /* 바우처(상품권) onTabChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onTabChange — 탭 변경 */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
       if (newTab === 'preview') {
@@ -151,7 +160,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       }
     };
 
-    /* 바우처(상품권) onPreviewTabChange */
+    /* onPreviewTabChange — 이벤트 */
     const onPreviewTabChange = (pt) => {
       uiState.previewTab = pt;
     };
@@ -162,7 +171,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       return v ? v.vendorNm : '소속업체 선택';
     });
 
-    /* 바우처(상품권) selectVendor */
+    /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -176,7 +185,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       snsModal.channel = ch;
     };
 
-    /* 바우처(상품권) sendSns */
+    /* sendSns — 전송 SNS */
     const sendSns = async () => {
       const ok = await showConfirm('SNS전송', `${form.voucherNm}을 ${snsModal.channel}로 전송하시겠습니까?`);
       if (!ok) return;
@@ -204,13 +213,13 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       return true;
     });
 
-    /* 바우처(상품권) _afterApiOk */
+    /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
 
-    /* 바우처(상품권) _afterApiErr */
+    /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -218,7 +227,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       if (showToast) showToast(errMsg, 'error', 0);
     };
 
-    /* ── 탭별 저장: info/detail 은 form 전체 저장. 그 외 탭은 저장 의미 없음 ── */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
 
@@ -277,9 +286,10 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'useDate',    label: '사용일시' },
     ];
 
-    // -- return ---------------------------------------------------------------
-
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const infoFormColumns = [
       { key: 'voucherNm',     label: '상품권명', type: 'text', required: true,
         placeholder: '예: ShopJoy 10,000원 상품권' },
@@ -297,6 +307,9 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'vendorId',      label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',   label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor, issueGridColumns, usageGridColumns, infoFormColumns };
   },

@@ -6,6 +6,8 @@
 window.XsSample05 = {
   name: 'XsSample05',
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false });
@@ -14,7 +16,9 @@ window.XsSample05 = {
       open_opts:     [{ value: '공개', label: '공개' }, { value: '비공개', label: '비공개' }],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -30,7 +34,7 @@ window.XsSample05 = {
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
 
-    /* showToast */
+    /* showToast — 표시 */
     const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
     const searchParam = reactive({ searchType: '', searchValue: '', category: '', status: '' });
     const searchParamOrg = reactive({ searchType: '', searchValue: '', category: '', status: '' });
@@ -39,26 +43,28 @@ window.XsSample05 = {
     let   _tempId    = -1;
         const EDIT_FIELDS = ['title', 'author', 'category', 'status'];
 
-    /* toRow */
+    /* toRow — → 행 */
     const toRow = d => ({ boardId: d.sample1Id, title: d.cdNm || '', author: d.col01 || '', category: d.col02 || '공지', viewCnt: Number(d.col03) || 0, status: d.useYn === 'Y' ? '공개' : '비공개', regDate: d.regDt || '' });
 
-    /* toPayload */
+    /* toPayload — → 페이로드 */
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.title, col01: r.author, col02: r.category, col03: String(r.viewCnt || 0), useYn: r.status === '공개' ? 'Y' : 'N' });
 
-    /* makeRow */
+    /* makeRow — 행 생성 */
     const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _row_org: { title: d.title, author: d.author, category: d.category, status: d.status } });
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { pager.pageTotalCount=gridRows.filter(r=>r._row_status!=='D').length; pager.pageTotalPage=Math.max(1,Math.ceil(gridRows.length/pager.pageSize)); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); };
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
 
-    /* getRealIdx */
+    /* getRealIdx — 조회 */
     const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
@@ -88,38 +94,38 @@ window.XsSample05 = {
       handleSearchList();
     });
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
-    /* setFocused */
+    /* setFocused — 포커스 설정 */
     const setFocused   = idx => { uiState.focusedIdx = idx; };
 
-    /* onCellChange */
+    /* onCellChange — 셀 변경 */
     const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N'; };
 
-    /* addRow */
+    /* addRow — 행 추가 */
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(at, 0, { boardId: _tempId--, title: '', author: '', category: '공지', viewCnt: 0, status: '공개', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
       uiState.focusedIdx = at; pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
     };
 
-    /* deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else row._row_status = 'D'; };
 
-    /* cancelRow */
+    /* cancelRow — 행 취소 */
     const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } };
 
-    /* deleteRows */
+    /* deleteRows — 선택 행 삭제 */
     const deleteRows    = () => { for (let i = gridRows.length - 1; i >= 0; i--) { if (!gridRows[i]._row_check) continue; if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1); else gridRows[i]._row_status = 'D'; } };
 
-    /* cancelChecked */
+    /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => { const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.boardId)); if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; } for (let i = gridRows.length - 1; i >= 0; i--) { const row = gridRows[i]; if (!ids.has(row.boardId)) continue; if (row._row_status === 'N') continue; if (row._row_status === 'I') gridRows.splice(i, 1); else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } } };
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
@@ -152,28 +158,29 @@ window.XsSample05 = {
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
-    /* onDragStart */
+    /* onDragStart — 드래그 시작 */
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
 
-    /* onDragOver */
+    /* onDragOver — 드래그 오버 */
     const onDragOver  = (e, idx) => { e.preventDefault(); if (uiState.dragSrc === null || uiState.dragSrc === idx) return; const m = gridRows.splice(uiState.dragSrc, 1)[0]; gridRows.splice(idx, 0, m); uiState.dragSrc = idx; uiState.dragMoved = true; };
 
-    /* onDragEnd */
+    /* onDragEnd — 드래그 종료 */
     const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
 
-    /* toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
 
-    /* rowBg */
+    /* rowBg — 행 배경 */
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
 
-    // -- return ---------------------------------------------------------------
-
     /* fo-grid-crud 컬럼 */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     /* FoSearchArea :columns 자동 렌더 정의 */
+    // --- [컬럼 정의] ---
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -196,9 +203,15 @@ window.XsSample05 = {
         options: codes.open_opts },
       { key: 'regDate',  label: '등록일', width: '100px', align: 'center' },
     ];
+    /* onReorder — 이벤트 */
     const onReorder = () => showToast('정렬이 변경되었습니다.');
+    /* onRowCancel — 이벤트 */
     const onRowCancel = (row) => cancelRow(gridRows.indexOf(row));
+    /* onRowDelete — 이벤트 */
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       toast, searchParam, baseSearchColumns, onSearch, onReset,

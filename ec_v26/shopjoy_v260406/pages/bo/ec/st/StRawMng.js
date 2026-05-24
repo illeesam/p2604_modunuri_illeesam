@@ -5,6 +5,8 @@ window.StRawMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -16,7 +18,9 @@ window.StRawMng = {
       date_range_opts: [],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -36,11 +40,9 @@ window.StRawMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // -- watch ----------------------------------------------------------------
-
             const dateEnd   = ref('');
 
-    /* handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -53,7 +55,9 @@ window.StRawMng = {
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const rawList = reactive([]);
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.loading = true;
@@ -88,7 +92,7 @@ const rawList = reactive([]);
       }
     });
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
@@ -101,45 +105,45 @@ const rawList = reactive([]);
       confirmCnt: rawList.filter(r => r.buyConfirmYn === 'Y').length,
     }));
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
     const expandedRows = reactive(new Set());
 
-    /* toggleRow */
+    /* toggleRow — 토글 */
     const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
 
-    /* isExpanded */
+    /* isExpanded — 여부 확인 */
     const isExpanded = id => expandedRows.has(id);
 
-    /* fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-purple', 'PENDING':'badge-blue' }[s] || 'badge-gray');
 
-    /* rawStatusLabel */
+    /* rawStatusLabel — 원본 상태 라벨 */
     const rawStatusLabel = s => ({ 'COLLECTED':'수집완료', 'EXCLUDED':'제외', 'SETTLED':'정산완료', 'PENDING':'대기' }[s] || s || '-');
 
-    /* fnRawStatusBadge */
+    /* fnRawStatusBadge — 유틸 */
     const fnRawStatusBadge = s => fnStatusBadge(s);
 
-    /* vendorTypeLabel */
+    /* vendorTypeLabel — 업체 유형 라벨 */
     const vendorTypeLabel = s => ({ 'SALE':'판매업체', 'DLIV':'배송업체', 'EXTERNAL':'외부업체' }[s] || s || '-');
 
-    /* orderStatusLabel */
+    /* orderStatusLabel — 주문 상태 라벨 */
     const orderStatusLabel = s => ({ 'ORDERED':'주문완료', 'PAID':'결제완료', 'PREPARING':'준비중', 'SHIPPING':'배송중', 'DELIVERED':'배송완료', 'CONFIRMED':'구매확정', 'CANCELLED':'취소' }[s] || s || '-');
 
-    /* fmtW */
+    /* fmtW — 포맷 W */
     const fmtW = n => (Number(n || 0) >= 0 ? '' : '-') + Math.abs(Number(n || 0)).toLocaleString() + '원';
 
-    /* fmtPct */
+    /* fmtPct — 포맷 퍼센트 */
     const fmtPct = n => Number(n || 0).toLocaleString() + '%';
 
     /* rawGridColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
@@ -180,7 +184,7 @@ const rawList = reactive([]);
         fmt: (v) => v === 'Y' ? '전송' : '미전송' },
     ];
 
-    /* doCollect */
+    /* doCollect — 실행 */
     const doCollect = async () => {
       const ok = await showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
       if (!ok) return;
@@ -194,7 +198,8 @@ const rawList = reactive([]);
       }
     };
 
-    // -- return ---------------------------------------------------------------
+  // ===== return (템플릿 노출) ===============================================
+
 
   return {
       uiState, handleDateRangeChange,

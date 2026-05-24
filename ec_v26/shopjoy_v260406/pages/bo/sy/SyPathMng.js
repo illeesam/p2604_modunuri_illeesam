@@ -5,6 +5,8 @@ window.SyPathMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -15,7 +17,9 @@ window.SyPathMng = {
     const codes = reactive({ use_yn: [] });
     const uiStateCode = reactive({ isPageCodeLoad: false });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -26,8 +30,9 @@ window.SyPathMng = {
       }
     };
 
-    /* -- 검색 파라미터 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
+
       return { searchType: '', searchValue: '', bizCd: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
@@ -44,10 +49,10 @@ window.SyPathMng = {
         else roots.push(map[r.pathId]);
       });
 
-      /* sort */
+      /* sort — 정렬 */
       const sort = (arr) => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
 
-      /* sortDeep */
+      /* sortDeep — 정렬 */
       const sortDeep = (nodes) => { sort(nodes).forEach(n => sortDeep(n.children)); return nodes; };
       sortDeep(roots);
       return { pathId: null, pathLabel: '전체', children: roots, count: allPaths.length };
@@ -56,26 +61,28 @@ window.SyPathMng = {
     const expanded = reactive(new Set([null]));
     const uiState = reactive({ selectedPathId: null });
 
-    /* toggleNode */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* toggleNode — 노드 토글 */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
 
-    /* selectNode */
+    /* selectNode — 노드 선택 */
     const selectNode = (id) => {
       uiState.selectedPathId = (uiState.selectedPathId === id) ? null : id;
       pager.pageNo = 1;
       handleGridSearch();
     };
 
-    /* expandAll */
+    /* expandAll — 펼치기 전체 */
     const expandAll = () => {
       expanded.clear(); expanded.add(null);
 
-      /* walk */
+      /* walk — walk */
       const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); };
       cfTree.value.children.forEach(walk);
     };
 
-    /* collapseAll */
+    /* collapseAll — 접기 전체 */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     /* -- 그리드 -- */
@@ -83,14 +90,14 @@ window.SyPathMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100], pageCond: {} });
     let _newId = -1;
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    /* -- 트리 전체 조회 (path_id / parent_path_id 기반) -- */
+    /* handleSearchTree — 처리 */
     const handleSearchTree = async () => {
       try {
         const res = await boApiSvc.syPath.getPage({ pageNo: 1, pageSize: 10000 }, '경로관리', '트리조회');
@@ -101,7 +108,7 @@ window.SyPathMng = {
       } catch (e) { console.error('[handleSearchTree]', e); }
     };
 
-    /* -- 그리드 조회 -- */
+    /* handleGridSearch — 처리 */
     const handleGridSearch = async () => {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...searchParam };
@@ -125,10 +132,11 @@ window.SyPathMng = {
       await handleGridSearch();
     });
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
+
     const onSearch = async () => { pager.pageNo = 1; await handleGridSearch(); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.selectedPathId = null;
@@ -136,18 +144,18 @@ window.SyPathMng = {
       await handleGridSearch();
     };
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage = async (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleGridSearch(); } };
 
-    /* onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = async () => { pager.pageNo = 1; await handleGridSearch(); };
 
-    /* -- 행 편집 -- BoGrid edit 자동 v-model + cell-change 만 받음 */
+    /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
       if (!row._status) row._status = 'U';
     };
 
-    /* addRow */
+    /* addRow — 행 추가 */
     const addRow = () => {
       gridRows.unshift({
         pathId: _newId--,
@@ -162,7 +170,7 @@ window.SyPathMng = {
       });
     };
 
-    /* cancelRow */
+    /* cancelRow — 행 취소 */
     const cancelRow = (row) => {
       if (row._status === 'N') {
         const idx = gridRows.findIndex(r => r.pathId === row.pathId);
@@ -172,7 +180,7 @@ window.SyPathMng = {
       }
     };
 
-    /* deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow = async (row) => {
       if (row._status === 'N') { cancelRow(row); return; }
       const ok = await showConfirm?.('삭제', `[${row.pathLabel}] 경로를 삭제하시겠습니까?`);
@@ -192,7 +200,7 @@ window.SyPathMng = {
 
     const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U'));
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const changed = cfDirtyRows.value;
       if (!changed.length) { showToast?.('변경된 내용이 없습니다.', 'info'); return; }
@@ -228,7 +236,7 @@ window.SyPathMng = {
       return { pathId: null, pathLabel: '전체', children: roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)) };
     });
 
-    /* openParentModal */
+    /* openParentModal — 열기 */
     const openParentModal = async (row) => {
       parentModal.targetRow = row;
       parentModal.expanded.clear();
@@ -238,25 +246,28 @@ window.SyPathMng = {
       parentModal.show = true;
     };
 
-    /* closeParentModal */
+    /* closeParentModal — 닫기 */
     const closeParentModal = () => { parentModal.show = false; parentModal.targetRow = null; };
 
-    /* toggleParentNode */
+    /* toggleParentNode — 토글 */
     const toggleParentNode = (id) => { if (parentModal.expanded.has(id)) parentModal.expanded.delete(id); else parentModal.expanded.add(id); };
 
-    /* selectParent */
+    /* selectParent — 선택 */
     const selectParent = (pathId) => {
       if (parentModal.targetRow) onCellChange(parentModal.targetRow, 'parentPathId', pathId);
       closeParentModal();
     };
 
-    /* getParentLabel */
+    /* getParentLabel — 조회 */
     const getParentLabel = (pathId) => {
       if (pathId == null) return '(루트)';
       return allPaths.find(r => r.pathId === pathId)?.pathLabel || String(pathId);
     };
 
     /* BoGrid 컬럼 정의 — 전 셀 슬롯 (기존 onCellChange 변경추적 보존) */
+
+        // --- [컬럼 정의] ---
+
         const baseSearchColumns = [
       { key: 'bizCd', type: 'text', label: '업무코드', placeholder: 'biz_cd 검색', width: '180px' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
@@ -268,6 +279,8 @@ window.SyPathMng = {
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '320px' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const baseGridColumns = [
       { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;', align: 'center',
@@ -285,7 +298,10 @@ window.SyPathMng = {
         edit: 'select', options: () => codes.use_yn },
       { key: 'pathRemark',   label: '비고',     style: 'width:160px;', edit: 'text', placeholder: '비고' },
     ];
+    /* fnRowClass — 유틸 */
     const fnRowClass = (r) => 'status-' + (r._status || '');
+
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, searchParam, codes,

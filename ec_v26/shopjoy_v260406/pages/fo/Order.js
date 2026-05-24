@@ -5,6 +5,8 @@ window.Order = {
     navigate:     { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, ref, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showAlert            = window.foApp.showAlert;  // 알림 모달
@@ -20,7 +22,9 @@ window.Order = {
       ],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -30,16 +34,18 @@ window.Order = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* -- 유틸 -- */
+    /* parsePrice — 파싱 가격 */
     const parsePrice = s => parseInt(String(s || '').replace(/[^0-9]/g, ''), 10) || 0;
 
-    /* fmt */
+    /* fmt — 포맷 */
     const fmt        = n => Number(n).toLocaleString('ko-KR') + '원';
 
     /* -- 쿠폰 로드 -- */
     const allCoupons  = reactive([]);
 
-    /* handleLoadCoupons */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleLoadCoupons — 처리 */
     const handleLoadCoupons = async () => {
       try {
         const res = await foApiSvc.myCoupon.getList({}, '주문', '쿠폰조회');
@@ -47,7 +53,7 @@ window.Order = {
       } catch (e) { allCoupons.length = 0; }
     };
 
-    /* 상품쿠폰: rate / amount 타입만 */
+    /* productCoupons — 상품 Coupons */
     const productCoupons = item => {
       const price = parsePrice(item.prod.price) * item.qty;
       return allCoupons.filter(c =>
@@ -60,7 +66,7 @@ window.Order = {
       allCoupons.filter(c => c.discountType === 'shipping')
     );
 
-    /* discountLabel */
+    /* discountLabel — 할인 라벨 */
     const discountLabel = c => {
       if (!c) return '';
       if (c.discountType === 'rate')     return c.discountValue + '% 할인';
@@ -68,7 +74,7 @@ window.Order = {
       return fmt(c.discountValue) + ' 할인';
     };
 
-    /* calcCouponDiscount */
+    /* calcCouponDiscount — 계산 쿠폰 할인 */
     const calcCouponDiscount = (c, item) => {
       if (!c) return 0;
       const base = parsePrice(item.prod.price) * item.qty;
@@ -81,19 +87,19 @@ window.Order = {
     const couponPopup     = reactive({ show: false, targetIdx: null });
     const selectedCoupons = reactive({});
 
-    /* openCouponPopup */
+    /* openCouponPopup — 열기 */
     const openCouponPopup  = idx => { couponPopup.targetIdx = idx; couponPopup.show = true; };
 
-    /* closeCouponPopup */
+    /* closeCouponPopup — 닫기 */
     const closeCouponPopup = () => { couponPopup.show = false; };
 
-    /* applyCoupon */
+    /* applyCoupon — 적용 */
     const applyCoupon      = c => {
       selectedCoupons[couponPopup.targetIdx] = c;
       couponPopup.show = false;
     };
 
-    /* removeCoupon */
+    /* removeCoupon — 제거 */
     const removeCoupon     = idx => {
       delete selectedCoupons[idx];
     };
@@ -101,10 +107,10 @@ window.Order = {
     /* -- 배송비 쿠폰 팝업 -- */
         const applyShipCoupon = c => { uiState.selectedShipCoupon = c; uiState.shipCouponPopup = false; };
 
-    /* removeShipCoupon */
+    /* removeShipCoupon — 제거 */
     const removeShipCoupon = () => { uiState.selectedShipCoupon = null; };
 
-    /* -- 캐쉬 -- */
+    /* handleLoadCash — 처리 */
     const handleLoadCash = async () => {
       try {
         const res = await foApiSvc.myCash.getInfo({}, '주문', '캐시조회');
@@ -141,7 +147,7 @@ window.Order = {
       postcode: '', address: '', addressDetail: '', deliveryReq: ''
     });
 
-    /* openKakaoAddr */
+    /* openKakaoAddr — 열기 */
     const openKakaoAddr = () => {
       if (typeof daum === 'undefined' || !daum.Postcode) {
         showToast('주소 검색 서비스를 불러오는 중입니다.', 'info'); return;
@@ -154,7 +160,7 @@ window.Order = {
       }).open();
     };
 
-    /* 목록조회 */
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       const u = window.foAuth?.state?.user;
       if (u) {
@@ -168,10 +174,10 @@ window.Order = {
 
     const errors   = reactive({});
 
-    /* clearErr */
+    /* clearErr — 비우기 */
     const clearErr = k => { delete errors[k]; };
 
-    /* validate */
+    /* validate — 검증 */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       let ok = true;
@@ -183,7 +189,7 @@ window.Order = {
       return ok;
     };
 
-    /* -- 주문 제출 -- */
+    /* handleSubmit — 처리 */
     const handleSubmit = async () => {
       if (!validate()) return;
       uiState.submitting = true;
@@ -220,7 +226,10 @@ window.Order = {
       handleSearchData();
     });
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     /* FoFormArea columns 정의 — 배송 주소는 slot 탈출구 사용(카카오 우편번호 버튼+3 input) */
+    // --- [컬럼 정의] ---
     const baseFormColumns = [
       { key: 'name',  label: '이름',   type: 'text', required: true, placeholder: '홍길동' },
       { key: 'tel',   label: '연락처', type: 'tel',  required: true, placeholder: '010-1234-5678' },
@@ -234,7 +243,8 @@ window.Order = {
         options: () => codes.dliv_req_opts, nullLabel: '선택 없음' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       cfOrderItems, baseFormColumns,

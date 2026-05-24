@@ -5,6 +5,8 @@ window.PdSetMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -22,7 +24,9 @@ window.PdSetMng = {
       use_yn: [],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -37,6 +41,9 @@ window.PdSetMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // onMounted에서 API 로드
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -58,7 +65,7 @@ window.PdSetMng = {
       }
     };
 
-    /* -- 검색 파라미터 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ nm: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -82,13 +89,13 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const dtlCategories   = reactive([]);
     const cfCatExcludeSet = computed(() => new Set(dtlCategories.map(c => String(c.categoryId))));
 
-    /* onCatDragStart */
+    /* onCatDragStart — 이벤트 */
     const onCatDragStart = idx => { uiState.catDragIdx = idx; };
 
-    /* onCatDragOver */
+    /* onCatDragOver — 이벤트 */
     const onCatDragOver  = idx => { uiState.catDragoverIdx = idx; };
 
-    /* onCatDrop */
+    /* onCatDrop — 이벤트 */
     const onCatDrop = () => {
       if (uiState.catDragIdx === null || uiState.catDragIdx === uiState.catDragoverIdx) {
         uiState.catDragIdx = uiState.catDragoverIdx = null; return;
@@ -100,33 +107,33 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.catDragIdx = uiState.catDragoverIdx = null;
     };
 
-    /* addCategory */
+    /* addCategory — 추가 */
     const addCategory    = cat => {
       if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(cat.categoryId))) return;
       dtlCategories.push({ categoryId: cat.categoryId, categoryNm: cat.categoryNm, depth: cat.depth || cat.categoryDepth || 1 });
       uiState.catPickerOpen = false;
     };
 
-    /* removeCategory */
+    /* removeCategory — 제거 */
     const removeCategory = idx => dtlCategories.splice(idx, 1);
 
-    /* getCategoryNm */
+    /* getCategoryNm — 조회 */
     const getCategoryNm  = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? c.categoryNm : String(id); };
 
-    /* getCategoryDepth */
+    /* getCategoryDepth — 조회 */
     const getCategoryDepth = id => { const c = (categories||[]).find(c=>c.categoryId==id); return c ? (c.depth||1) : 1; };
 
     /* -- 구성품 목록 -- */
     const dtlItems = reactive([]);
     let _seq = 1;
 
-    /* -- 드래그 -- */
+    /* onDragStart — 드래그 시작 */
     const onDragStart = idx => { uiState.dragIdx = idx; };
 
-    /* onDragOver */
+    /* onDragOver — 드래그 오버 */
     const onDragOver  = idx => { uiState.dragoverIdx = idx; };
 
-    /* onDrop */
+    /* onDrop — 이벤트 */
     const onDrop = () => {
       if (uiState.dragIdx === null || uiState.dragIdx === uiState.dragoverIdx) {
         uiState.dragIdx = uiState.dragoverIdx = null; return;
@@ -139,7 +146,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.dragIdx = uiState.dragoverIdx = null;
     };
 
-    /* BoGrid draggable 가 dtlItems 를 in-place 재정렬 후 emit. sortOrd 만 재부여 */
+    /* onItemReorder — 이벤트 */
     const onItemReorder = () => {
       window.safeArrayUtils.safeForEach(dtlItems, (item, i) => { item.sortOrd = i + 1; });
     };
@@ -148,6 +155,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달(상위 50건).
        이미 담긴 항목·자기자신은 서버결과에서 클라이언트 제외(소량). 모달열기/Enter/[조회] 시점에만 호출. */
     const pickerResults = reactive([]);
+    /* onPickerSearch — 이벤트 */
     const onPickerSearch = async () => {
       try {
         const params = { pageNo: 1, pageSize: 50 };
@@ -165,6 +173,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         pickerResults.splice(0, pickerResults.length);
       }
     };
+    /* openPicker — 열기 */
     const openPicker = () => {
       uiState.pickerOpen = true; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
       onPickerSearch();
@@ -175,19 +184,19 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       return pickerResults.filter(p => p.productId !== uiState.editSetId && !used.has(p.productId));
     });
 
-    /* -- helpers -- */
+    /* getProd — 조회 */
     const getProd   = id => id ? (products || []).find(p => p.productId === id) : null;
 
-    /* getProdNm */
+    /* getProdNm — 조회 */
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : id ? '상품#' + id : ''; };
 
-    /* getBrandNm */
+    /* getBrandNm — 조회 */
     const getBrandNm = id => { const b = (brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
 
     /* -- 세트상품 목록 -- */
     const setList = reactive([]);
 
-    /* fnBuildSetList */
+    /* fnBuildSetList — 유틸 */
     const fnBuildSetList = () => {
       const searchVal = searchParam.nm.toLowerCase();
       const ids = [...new Set((sets || []).map(s => s.setProdId))];
@@ -205,29 +214,29 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       fnBuildPagerNums();
     };
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchData();
     };
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
 
-    /* onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; };
 
-    /* -- 신규 열기 -- */
+    /* openNew — 신규 열기 */
     const openNew = () => {
       uiState.dtlMode = 'new';
       uiState.editSetId = null;
@@ -237,7 +246,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlItems.length = 0;
     };
 
-    /* -- 편집 열기 -- */
+    /* openDtl — 열기 */
     const openDtl = setProdId => {
       uiState.dtlMode = 'edit';
       uiState.editSetId = setProdId;
@@ -264,12 +273,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       dtlCategories.splice(0, dtlCategories.length, ..._catArr);
     };
 
-    /* closeDtl */
+    /* closeDtl — 닫기 */
     const closeDtl = () => { uiState.dtlMode = null; uiState.editSetId = null; dtlItems.length = 0; };
 
     const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(uiState.editSetId));
 
-    /* -- 구성품 추가 (연결상품) -- */
+    /* addItemFromProd — 추가 */
     const addItemFromProd = prod => {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
@@ -286,7 +295,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       uiState.pickerOpen = false; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
     };
 
-    /* -- 구성품 추가 (비상품 — 직접입력) -- */
+    /* addItemBlank — 추가 */
     const addItemBlank = () => {
       const maxSort = dtlItems.length ? Math.max(...dtlItems.map(d => d.sortOrd)) : 0;
       dtlItems.push({
@@ -302,10 +311,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       });
     };
 
-    /* removeItem */
+    /* removeItem — 제거 */
     const removeItem = idx => dtlItems.splice(idx, 1);
 
-    /* -- 저장 -- */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
       if (uiState.dtlMode === 'new') {
@@ -373,7 +382,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       }
     };
 
-    /* -- 삭제 -- */
+    /* handleDelete — 삭제 */
     const handleDelete = async setProdId => {
       const ok = await showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
       if (!ok) return;
@@ -394,9 +403,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'nm', label: '세트상품명', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const setGridColumns = [
       { key: 'prodNm',    label: '세트상품' },
@@ -409,6 +421,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         badge: (row) => { const pr = row.prod || {}; return (pr.status === '판매중' || pr.prodStatusCd === 'ACTIVE') ? 'badge-green' : (pr.prodStatusCd === 'DRAFT' ? 'badge-orange' : 'badge-gray'); },
         fmt: (v, row) => (row.prod ? (row.prod.status || row.prod.prodStatusCd || '-') : '-') },
     ];
+    /* fnSetRowStyle — 유틸 */
     const fnSetRowStyle = (g) => (uiState.dtlMode === 'edit' && uiState.editSetId === g.setProdId) ? 'background:#e6f4ff' : '';
 
     /* BoGrid 컬럼 — 구성품 목록 (인라인 편집 + 드래그) */
@@ -419,6 +432,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       { key: 'itemDesc',   label: '구성품 설명', edit: 'text', placeholder: '소재·용량·색상 등 부가 설명' },
       { key: 'useYn',      label: '사용',        style: 'width:60px;text-align:center', edit: 'select', options: () => codes.use_yn },
     ];
+    /* fnSetItemRowStyle — 유틸 */
     const fnSetItemRowStyle = (item, idx) => uiState.dragoverIdx === idx ? 'background:#e6f4ff' : (item.useYn === 'N' ? 'opacity:0.55' : '');
 
     /* BoGrid 컬럼 — 구성품 상품 피커 */
@@ -431,7 +445,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         fmt: (v, row) => ((row.salePrice || row.price || 0).toLocaleString() + '원') },
     ];
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 신규 세트상품 기본정보 ========
     const newSetFormColumns = [
       { key: 'prodNm',       label: '세트상품명', type: 'text', required: true,
         placeholder: '세트상품명 입력', colSpan: 2 },
@@ -445,7 +458,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       codes, uiState,

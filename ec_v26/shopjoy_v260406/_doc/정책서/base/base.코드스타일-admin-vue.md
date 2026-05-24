@@ -132,43 +132,155 @@ reactive 값이 변할 때 자동으로 반응해야 하는가?
 
 ---
 
-## 1. setup() 내부 구역 순서
+## 1. setup() 내부 구역 순서 ⭐ (2026-05-24 갱신)
 
-`setup()` 함수 안은 아래 순서로 구역을 구분한다.  
-각 구역은 `// ── 구역명 ───…` 형식의 구분선으로 시작하고, 구분선 **아래 한 줄**을 비운다.
+`setup()` 함수 안은 **4개 메인 섹션 + return 마커** 형식으로 구역을 구분한다. 기준 파일: [`pages/bo/sy/SyCodeMng.js`](../../../pages/bo/sy/SyCodeMng.js).
 
-```
-// ── 선언부 ────────────────────────────────────────────────────────────────
-// ── computed (필요한 경우에만) ────────────────────────────────────────────
-// ── watch (허용 케이스에만) ───────────────────────────────────────────────
-// ── 초기화부 ──────────────────────────────────────────────────────────────
-// ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
-// ── 일반 함수 모음 ────────────────────────────────────────────────────────
-// ── return ────────────────────────────────────────────────────────────────
-```
-
-### 구역별 포함 항목
-
-| 구역 | 포함 항목 |
-|---|---|
-| **선언부** | `reactive()`, `ref()`, 외부 상수 참조 (`DATE_RANGE_OPTIONS` 등) |
-| **computed** | `computed(() => …)` 전체 (`cf*`, `isAppReady` 등) — 허용 케이스에만 작성 |
-| **watch** | `watch(…)` 전체 — 허용 케이스(isAppReady·props·영속화)에만 작성 |
-| **초기화부** | `fn*` 유틸 함수, `onMounted` |
-| **이벤트 함수 모음** | `on*` 접두어 함수 — 버튼·입력 이벤트 직결 핸들러 |
-| **일반 함수 모음** | `handle*`, `load*`, `open*`, `close*`, `fn*` 배지/포맷 함수, `exportExcel` 등 |
-| **return** | template에 노출할 상태·함수 목록 |
-
----
-
-## 2. 구분선 형식
+### 메인 5섹션 (필수)
 
 ```js
-// ── 구역명 ────────────────────────────────────────────────────────────────
+setup(props) {
+  // ===== 초기 변수 정의 =====================================================
+  // (Vue 구조분해, window 함수 참조, reactive/ref, 상수, 임시 ID 시퀀스, 매핑 테이블)
+
+  // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+  // (fnLoadCodes, checkAndLoadCodes, watch, isAppReady, onMounted)
+
+  // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+  // (onSearch/onReset/onCell*/onDrag*, handleLoadXxx/handleSearchList/handleSave,
+  //  addRow/deleteRow/cancelRow 등 행 조작, openDtl/closeDtl 등)
+
+  // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+  // (syncDirty, codeTotal, fnXxxTitle, cfXxxSortParam, statusBadgeCls,
+  //  exportCsv, baseSearchColumns, xxxGridColumns 등)
+
+  // ===== return (템플릿 노출) ===============================================
+  return { ... };
+}
 ```
 
-- `──` + 공백 + 구역명 + 공백 + `─` 반복으로 80자 근처까지 채운다.
-- 구분선 **아래** 한 줄 공백 필수, 구분선 **위**는 이미 이전 블록 끝에 공백이 있으면 추가하지 않아도 된다.
+### 섹션별 포함 항목
+
+| 섹션 | 포함 항목 |
+|---|---|
+| **초기 변수 정의** | `const { reactive, watch, ... } = Vue`, `window.boApp.showToast` 등 전역 참조, `reactive()`/`ref()` 상태, `searchParam`, 상수 배열(`EDIT_FIELDS`, `GRP_FIELDS`), 매핑 테이블(`GRP_SORT_MAP`), 캐시 상수(`siteNm`), 임시 ID 시퀀스(`_tempId`, `_grpLoadSeq`) |
+| **초기 함수** | `fnLoadCodes`, `checkAndLoadCodes`, `watch(...)`, `isAppReady`, `onMounted(() => {...})` |
+| **내장 사용 함수** | `on*` 이벤트 핸들러 (버튼·입력 직결), `handle*` 비즈니스 핸들러, 행 조작 (`addRow`/`deleteRow`/`cancelRow`/`cancelChecked`/`deleteRows`/`handleSave`), 그룹 조작 (`addGrp`/`handleSaveGrp`), 데이터 로드 (`handleLoadAllGroups`/`handleSearchList`), 상세 패널 (`handleLoadDetail`/`closeDetail`) |
+| **사용자 함수** | 카운트 헬퍼 (`codeTotal`/`grpCount`), 타이틀 헬퍼 (`fnCodeListTitle`), 동기화 (`syncGrpDirty`), 정렬 헬퍼 (`cfGrpSortParam`/`grpSortIcon`), 트리 재구축 (`rebuildTree`), 표시 (`statusBadgeCls`), 내보내기 (`exportCsv`), 컬럼 정의 (`baseSearchColumns`/`xxxGridColumns`/`xxxFormColumns`) |
+| **return** | template에 노출할 상태·함수 — 그룹별 한 줄 인라인 주석 + 같은 그룹 변수는 한 줄로 묶기 |
+
+### 하위 세분 주석 (선택, `// --- [구분] 설명 ---` 형식)
+
+각 메인 섹션 내부를 더 세분화할 때 사용한다. 파일 내용에 맞게 자유롭게 추가하되, SyCodeMng.js의 예시 패턴을 따른다.
+
+- **초기 변수 정의 하위:**
+  - `// --- Vue API / boApp 전역 함수 참조 ---`
+  - `// --- 화면 상태 / 그리드 데이터 (reactive) ---`
+  - `// --- 검색조건 초기값 함수 + searchParam reactive ---`
+  - `// --- 트리 상태 ---` · `// --- 캐시 상수 ---`
+  - `// --- 임시 ID 시퀀스 ---` · `// --- 변경 추적 필드 / 정렬 매핑 ---`
+
+- **내장 사용 함수 하위:**
+  - `// --- [이벤트] 검색 / 초기화 / 기간 ---`
+  - `// --- [이벤트] 그리드 셀 변경 ---`
+  - `// --- [이벤트] 드래그 정렬 / 전체 체크 ---`
+  - `// --- [이벤트] 그룹그리드 정렬 ---`
+  - `// --- [데이터 로드] ---`
+  - `// --- [행 CRUD - 코드] ---` · `// --- [행 CRUD - 그룹] ---`
+  - `// --- [이벤트] 그룹/경로 선택 → 코드목록 진입 ---`
+  - `// --- [이벤트] 트리 노드 펼침/접힘 ---`
+  - `// --- [이벤트] 상세 패널 열기 / 닫기 ---`
+
+- **사용자 함수 하위:**
+  - `// --- [카운트 / 타이틀 헬퍼] ---`
+  - `// --- [정렬 파라미터 / 아이콘] ---`
+  - `// --- [트리 재구축] ---`
+  - `// --- [표시 / 내보내기] ---`
+  - `// --- [컬럼 정의 - 검색 / 그리드 / 트리 / 그룹] ---`
+
+### return 블록 정리
+
+```js
+return {
+  // 상태 / 데이터
+  uiState, pageCodes, searchParam, ...
+
+  // 컬럼 정의
+  baseSearchColumns, fnCodeGridColumns, ...
+
+  // 검색 / 조회 이벤트
+  onSearch, onReset, handleDateRangeChange,
+
+  // 그리드 셀 변경 이벤트
+  onCellChange, onGrpChange, onPathChange, ...
+
+  // 행 CRUD - 코드
+  addRow, deleteRow, cancelRow, handleSave,
+
+  // 행 CRUD - 그룹
+  addGrp, handleDeleteGrp, handleSaveGrp,
+
+  // 상세 패널
+  handleLoadDetail, closeDetail,
+  ...
+};
+```
+
+### 중요 규칙
+
+1. **함수 정의 위치를 옮기지 마라.** `const` 화살표 함수는 호이스팅이 안 된다. 그룹 주석만 적절한 위치에 삽입한다.
+2. **template 백틱은 절대 건드리지 마라.** setup() 내부 JS만 정리. ([[boapp_template_no_format]] 참조)
+3. **각 파일 정리 후 `node --check <파일>` 필수.** 실패 시 변경을 되돌린다.
+4. **이미 그룹 주석이 있는 파일은 다시 건드리지 마라.**
+5. 파일이 매우 단순한 경우 4섹션 중 적용 가능한 것만 표시. 빈 섹션은 생략.
+
+### 2026-05-24 일괄 적용 현황
+
+본 정책의 파일명은 `base.코드스타일-admin-vue.md` 지만 적용 범위는 **BO + FO + 공통 컴포넌트(single-setup)** 전체.
+
+#### 적용 완료 (총 178 파일)
+
+- **BO 121개** (`pages/bo/**/*.js`): `node --check` 121/121 통과, 마커 검증 121/121
+  - 도메인별: sy(35) · ec/dp(17) · ec/pm(16) · ec/st(14) · ec/pd(13) · ec/od(10) · ec/mb(6) · ec/cm(5) + zd(2) + bo루트(3)
+- **FO 54개** (`pages/fo/**/*.js`): `node --check` 54/54 통과
+  - 4섹션 완전 적용 40개, 단순 컴포넌트(handler 면제) 14개
+- **공통 컴포넌트 single-setup 8개** (`components/disp/DispX01~04Ui.js`, `components/modals/HelpBoModal.js`, `layout/foApp{Header,Footer,Sidebar}.js`)
+  - 4섹션 완전 적용 6개, 단순 컴포넌트(handler 면제) 2개 (`DispX02Area`, `HelpBoModal`)
+
+#### 의도 제외 (총 6 파일 — multi-setup 모음 파일)
+
+한 파일에 여러 작은 컴포넌트 setup()을 묶어둔 모음 파일. setup마다 마커를 일괄 삽입하면 패턴이 어색해지므로 **표준 적용 제외**. 향후 분리 리팩토링 시 재고:
+
+- `components/modals/BoModals.js` (31개 setup)
+- `components/comp/BoAreaComp.js` (11)
+- `components/comp/FoAreaComp.js` (6)
+- `components/comp/BoComp.js` (5)
+- `components/comp/BaseComp.js` (3)
+- `components/comp/CoWidgetComp.js` (2)
+- `components/modals/FoModals.js` (2)
+- `layout/foMyLayout.js` (3)
+
+#### 의도 제외 (template 포매팅 위험)
+
+- `base/boApp.js`, `base/foApp.js` — Vue 컴파일 깨짐 위험으로 일반 포매팅도 금지된 파일 ([[boapp_template_no_format]])
+
+#### 추가 작업 (장기)
+
+- 하위 세분 주석 + return 그룹 재정렬은 SyCodeMng.js 1개만 수적 수준 완료. 나머지 177개는 메인 마커만 있음 — 추후 파일 손볼 때 점진적으로 세분 적용.
+- 신규 BO/FO 컴포넌트 작성 시 처음부터 위 표준 적용 필수.
+- **2026-05-24 추가** — 모든 setup() 함수에 `/* 함수명 — 한글 설명 */` 주석 자동 부여 완료 (183 파일). 자동 매핑 실패한 함수명은 함수명 그대로 보존 → 추후 수작업으로 의미 있는 한글로 다듬을 것. (§4 참조)
+
+#### 단순 컴포넌트 면제 정책
+
+핸들러 함수(`on*`, `handle*`, `do*`, `nav*`, `go*`, `open*`, `close*`, `toggle*`, `select*`, `save*`, `add*`, `delete*`, `cancel*` 등)가 **하나도 없는** 정적 표시 컴포넌트는 "내장 사용 함수" 마커 생략 가능. 정책 §1 "적용 가능한 것만 표시" 조항.
+
+### (구식) 구분선 형식 — 사용 금지
+
+```js
+// ── 선언부 ────────────────────────────────────────────────────────────────  ← 폐기
+```
+
+위 `// ── 구역명 ─` 형식은 2026-05-24 이전 표준이다. 신규 작성·기존 파일 수정 시 **모두 `// ===== ... =====` 형식으로 통일**한다.
 
 ---
 
@@ -180,26 +292,96 @@ reactive 값이 변할 때 자동으로 반응해야 하는가?
 // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
 onMounted(() => { … });
 
-// ── return ────────────────────────────────────────────────────────────────
+// ===== return (템플릿 노출) ===============================================
 ```
 
 ---
 
-## 4. 함수 주석
+## 4. 함수 주석 ⭐ (2026-05-24 갱신)
 
-모든 함수 **바로 위 한 줄**에 역할 주석을 작성한다.  
-형식: `// 한 줄 설명 — 부연 설명(필요 시)`
+모든 setup() 내부 함수 **바로 위 한 줄**에 `/* 함수명 — 한글 설명 */` 형식 블럭 주석을 작성한다.
+
+### 표준 형식
 
 ```js
-// 조회 버튼 클릭 — 1페이지부터 재조회
-const onSearch = async () => { … };
+/* fnLoadCodes — 공통코드 로드 */
+const fnLoadCodes = () => { ... };
 
-// 공지사항 삭제 — 확인 후 낙관적 UI 제거 → API 호출 → 목록 갱신
-const handleDelete = async (n) => { … };
+/* onSearch — 조회 */
+const onSearch = async () => { ... };
+
+/* handleSaveGrp — 그룹 저장 */
+const handleSaveGrp = async () => { ... };
 ```
 
-- `→` 기호로 처리 흐름을 표현한다.
-- 한 줄로 표현하기 어렵더라도 **두 줄 이상의 주석 블록은 사용하지 않는다**.
+### 규칙
+
+- 함수 정의(`const xxx = () => ...` / `const xxx = async (...) => ...`) **모두**에 주석 부여.
+- 함수가 아닌 `reactive`/`ref`/`computed`/`watch` 등 **반응형 변수에는 주석 불요** (정책 §5 변수 인라인 주석 따름).
+- 형식: `/* 함수명 — 한글 설명 */` — em-dash `—` 로 구분.
+- 한글 설명은 함수명에서 자연스럽게 유추 (`on*` → 이벤트, `handle*` → 처리, `fn*` → 유틸/표시 헬퍼, `cf*` → 파생값).
+- 한 줄 블럭 주석만 사용 — 두 줄 이상의 주석 블록은 사용하지 않는다.
+- 함수 주석과 함수 정의 사이에는 **빈 줄을 두지 않는다** (마커가 끼어드는 손상 패턴 방지).
+
+### 한글 의무 (영어 주석 금지) ⭐
+
+함수 주석은 **반드시 한글을 포함**해야 한다. 영어/기호만 있는 주석은 폐기.
+
+```js
+// ❌ 금지
+/* flattenTree — flattenTree */
+/* providerLabel — providerLabel */
+
+// ✅ 권장
+/* flattenTree — 트리 평탄화 */
+/* providerLabel — SNS 공급자 라벨 */
+```
+
+### 자동화
+
+`c:/tmp/add_fn_comments.js` 스크립트가 함수명을 한글 라벨로 자동 매핑한다.
+
+**1단계: 접두어 매핑** (긴 접두어 우선) — `on*`/`handle*`/`fn*`/`cf*` 등 약 100개 사전.
+**2단계: 단어 분할 fallback** — 매핑 실패 시 함수명을 PascalCase/camelCase 단어로 쪼개고 단어 사전(약 200개)으로 변환.
+
+핵심 매핑 사전:
+
+| 접두어/함수명 | 한글 라벨 |
+|---|---|
+| `onSearch` | 조회 |
+| `onReset` | 초기화 |
+| `onCellChange` | 셀 변경 |
+| `onDrag*` | 드래그 시작/오버/종료 |
+| `onSort` | 정렬 |
+| `handleSearchList` | 목록 조회 |
+| `handleLoadDetail` | 상세 조회 |
+| `handleSave` / `handleSaveGrp` | 저장 / 그룹 저장 |
+| `handleDelete` / `handleDeleteGrp` | 삭제 / 그룹 삭제 |
+| `handle*` (기타) | 처리 |
+| `addRow` / `deleteRow` / `cancelRow` | 행 추가/삭제/취소 |
+| `addGrp` / `cancelGrp` / `handleDeleteGrp` | 그룹 추가/취소/삭제 |
+| `toggleCheckAll` / `togglePanel` | 전체 체크 토글 / 패널 토글 |
+| `openDetail` / `closeDetail` | 상세 열기/닫기 |
+| `selectNode` / `selectProduct` | 노드 선택 / 상품 선택 |
+| `loadView` / `load*` | 뷰 로드 / 로드 |
+| `exportExcel` / `exportCsv` | 엑셀/CSV 내보내기 |
+| `fnLoadCodes` | 공통코드 로드 |
+| `fnStatusBadge` / `fn*Badge` | 상태 배지 / *배지 |
+| `fnRowStyle` / `fnFormatDate` | 행 스타일 / 날짜 포맷 |
+| `cfFiltered` / `cf*` | 파생값 |
+| `setFocused` / `set*` | 포커스 설정 / 설정 |
+| `makeRow` / `make*` | 행 생성 / 생성 |
+| `syncGrpDirty` / `sync*` | 그룹 변경 동기화 / 동기화 |
+| `code*` (트리/접기/펼치기) | 코드 트리 ... |
+| `grp*` | 그룹 ... |
+
+매핑 실패한 함수명은 함수명 그대로 보존 (`/* xxx — xxx */`). 추후 수작업으로 의미 있는 한글로 다듬는다.
+
+### 적용 현황 (2026-05-24 6차 라운드)
+
+- 영어 주석 검출: 346건 → 80건 (2차) → 2건 (3차) → **0건 (최종)**
+- 주석 없는 함수: 0건 (5차 라운드에서 이미 모두 부여)
+- 최종 검증: BO+FO+공통컴포넌트 184/184 파일 모든 setup() 함수에 한글 블럭주석 부여 완료.
 
 ---
 
@@ -344,27 +526,20 @@ window.XxxMng = {
   name: 'XxxMng',
   props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
-
-    // ── 선언부 ────────────────────────────────────────────────────────────────
-
     const items   = reactive([]);          // 목록 데이터
     const uiState = reactive({ … });       // 로딩·에러 상태
-    …
 
-    // ── computed ──────────────────────────────────────────────────────────────
+    // (선택) computed — 허용 케이스에만
+    const cfXxx      = computed(() => …);  // 설명
+    const isAppReady = computed(() => …);  // 앱 초기화 완료 여부
 
-    const cfXxx      = computed(() => …); // 설명
-    const isAppReady = computed(() => {   // 앱 초기화 완료 여부
-      …
-    });
-
-    // ── watch ─────────────────────────────────────────────────────────────────
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     // 앱 준비 완료 시 코드 로드 트리거
     watch(isAppReady, (v) => { if (v) fnLoadCodes(); });
-
-    // ── 초기화부 ──────────────────────────────────────────────────────────────
 
     // 공통코드 로드
     const fnLoadCodes = async () => { … };
@@ -372,17 +547,26 @@ window.XxxMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { … });
 
-    // ── 이벤트 함수 모음 ──────────────────────────────────────────────────────
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    // --- [이벤트] 검색 / 초기화 ---
 
     // 조회 버튼 클릭
     const onSearch = async () => { … };
 
-    // ── 일반 함수 모음 ────────────────────────────────────────────────────────
+    // --- [데이터 로드] ---
 
     // 목록 페이징 조회
     const handleSearchList = async () => { … };
 
-    // ── return ────────────────────────────────────────────────────────────────
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
+
+    const baseSearchColumns = [ … ];
+    const baseGridColumns   = [ … ];
+
+    // ===== return (템플릿 노출) ===============================================
 
     return { … };
   },

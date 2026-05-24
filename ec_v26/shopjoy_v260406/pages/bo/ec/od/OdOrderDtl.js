@@ -11,6 +11,8 @@ window.OdOrderDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -28,6 +30,9 @@ window.OdOrderDtl = {
     const cfIsNew = computed(() => !props.dtlId);
 
     // 단건 GET
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -83,7 +88,7 @@ window.OdOrderDtl = {
       }
     };
 
-    /* 주문 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
@@ -109,6 +114,7 @@ window.OdOrderDtl = {
       '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
       '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
     };
+    /* fnPayStatusBadge — 유틸 */
     const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, _PAY_STATUS_FB[s] || 'badge-gray');
     const errors = reactive({});
 
@@ -124,7 +130,7 @@ window.OdOrderDtl = {
 
     const cfIsCanceled = computed(() => form.orderStatusCd === '취소됨');
 
-    /* 주문 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -158,7 +164,7 @@ window.OdOrderDtl = {
     const orderItems = reactive([]);
     const payments = reactive([]);
 
-    /* 주문 sampleOrderItems */
+    /* sampleOrderItems — 샘플 주문 Items */
     const sampleOrderItems = () => {
       const base = form.prodNm || '주문상품';
       const total = Number(form.totalAmt || 0);
@@ -176,13 +182,12 @@ window.OdOrderDtl = {
         const sale = Math.round(paid / (1 - discRates[i]));
         const disc = sale - paid;
 
-    // -- return ---------------------------------------------------------------
 
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: disc, price: paid };
       }).filter(Boolean);
     };
 
-    /* 주문 initItems — 주문항목은 handleSearchDetail에서 getById 임베드 데이터로 채움 */
+    /* initItems — 초기화 */
     const initItems = async () => {};
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -198,7 +203,7 @@ window.OdOrderDtl = {
       await handleSearchDetail();
     });
 
-    /* 주문 fmt */
+    /* fmt — 포맷 */
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     /* 판매업체 */
@@ -222,7 +227,7 @@ window.OdOrderDtl = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
 
-    /* 주문 _claimFlow */
+    /* _claimFlow — 클레임 흐름 */
     const _claimFlow = type => cfClaimStatusCodes.value
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (_TYPE_CD[type] || type) + '^'))
       .map(c => c.codeLabel)
@@ -230,7 +235,7 @@ window.OdOrderDtl = {
     const CLAIM_FLOWS = { '취소': _claimFlow('취소'), '반품': _claimFlow('반품'), '교환': _claimFlow('교환') };
     const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#FFBB00', '교환': '#3b82f6' };
 
-    /* 주문 trackingUrl */
+    /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
       if (!no) return '';
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
@@ -241,7 +246,7 @@ window.OdOrderDtl = {
       return '';
     };
 
-    /* 주문 openTracking */
+    /* openTracking — 열기 */
     const openTracking = (courier, no) => {
       const url = trackingUrl(courier, no);
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }
@@ -270,20 +275,20 @@ window.OdOrderDtl = {
 
     watch(() => uiState.tabMode2, v => { window._odOrderDtlState.tabMode = v; });
 
-    /* 주문 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.activeTab === id;
     const expandedItems = reactive(new Set());
 
-    /* 주문 toggleExpand */
+    /* toggleExpand — 토글 */
     const toggleExpand = (i) => { const s = new Set(expandedItems); if (s.has(i)) s.delete(i); else s.add(i); expandedItems = s; };
 
-    /* 주문 isExpanded */
+    /* isExpanded — 여부 확인 */
     const isExpanded = (i) => expandedItems.has(i);
-    /* bo-grid 행펼침 판정 (교환 클레임 + 펼침 상태) */
+    /* fnItemExpanded — 유틸 */
     const fnItemExpanded = (row, i) => isExpanded(i) && !!cfRelatedClaim.value && cfRelatedClaim.value.type === '교환';
     const cfAllExpanded = computed(() => orderItems.length > 0 && window.safeArrayUtils.safeEvery(orderItems, (_,i) => expandedItems.has(i)));
 
-    /* 주문 toggleExpandAll */
+    /* toggleExpandAll — 토글 */
     const toggleExpandAll = () => {
       if (cfAllExpanded.value) expandedItems = new Set();
       else expandedItems = new Set(orderItems.map((_,i) => i));
@@ -291,12 +296,10 @@ window.OdOrderDtl = {
 
     watch(orderItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
 
-    /* 주문 getExchangedItem */
+    /* getExchangedItem — 조회 */
     const getExchangedItem = (it) => {
       if (!cfRelatedClaim.value || cfRelatedClaim.value.type !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리' };
-
-    // -- return ---------------------------------------------------------------
 
       return {
         prodNm: it.prodNm + ' (교환품)',
@@ -323,6 +326,9 @@ window.OdOrderDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* 결제정보 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const paymentGridColumns = [
       { key: 'payMethod', label: '결제수단' },
       { key: 'payStatus', label: '결제상태', badge: (row) => fnPayStatusBadge(row.payStatus) },
@@ -380,9 +386,6 @@ window.OdOrderDtl = {
         } },
     ];
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
     // pay_statuses 폴백 옵션 — sy_code 로딩 전엔 PAY_STATUS_FALLBACK 사용
     const cfPayStatusOptions = computed(() => {
       if (codes.pay_statuses && codes.pay_statuses.length) return codes.pay_statuses;
@@ -410,6 +413,8 @@ window.OdOrderDtl = {
       { type: 'rowBreak' },
       { key: 'memo',         label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { cfIsNew, form, errors, handleSave, ORDER_STEPS, cfCurrentStepIdx, cfIsCanceled, activeTab, orderItems, fmt, cfRelatedClaim, cfRelatedDelivery, cfRelatedVendor, CLAIM_FLOWS, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, PAY_STATUS_FALLBACK, fnPayStatusBadge, cfDtlMode, tabMode2, showTab, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, codes, paymentGridColumns, editHistGridColumns, orderItemGridColumns, fnItemExpanded, baseFormColumns, showRefModal };
   },

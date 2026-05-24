@@ -45,6 +45,8 @@
       navigate:  { type: Function, required: true }, // 페이지 이동
     },
     setup() {
+      // ===== 초기 변수 정의 =====================================================
+
       const { ref, reactive, computed } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -72,27 +74,29 @@
         categories:  [...CATEGORIES],
       });
 
-      /* toggle */
+      /* toggle — 토글 */
       const toggle = (list, v) => {
         const i = list.indexOf(v);
         if (i >= 0) list.splice(i, 1); else list.push(v);
       };
 
-      /* toggleAll */
+      /* toggleAll — 전체 토글 */
       const toggleAll = (key, all) => {
         if (filters[key].length === all.length) filters[key] = [];
         else filters[key] = [...all];
       };
 
-      /* isSel */
+      /* isSel — 여부 확인 */
       const isSel = (list, v) => list.includes(v);
 
-      /* 목록조회 */
+      // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+      /* onSearch — 조회 */
       const onSearch = () => {
         console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
       };
 
-      /* doExcelDownload */
+      /* doExcelDownload — 엑셀 다운로드 */
       const doExcelDownload = () => {
         const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
         cfMonthLabels.value.forEach((m, i) => {
@@ -108,7 +112,7 @@
         URL.revokeObjectURL(url);
       };
 
-      /* onReset */
+      /* onReset — 초기화 */
       const onReset = () => {
         filters.startDt = startDef;
         filters.endDt   = endDef;
@@ -151,12 +155,14 @@
         { key: '3col', icon: '▭▭▭', label: '3열' },
         { key: '4col', icon: '▭▭▭▭', label: '4열' },
       ];
+      // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
       const cfBaseGridColumns = computed(() => {
         if (uiState.tabMode === 'tab') return '1fr';
         return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
       });
 
-      /* showPanel */
+      /* showPanel — 표시 */
       const showPanel = (key) => uiState.tabMode === 'tab' ? uiState.activeTab === key : true;
 
       /* -- 보조 대시보드 (원본 KPI 섹션) -- */
@@ -234,7 +240,7 @@
         { label: '유료', value: 42, color: '#9ca3af' },
       ];
 
-      /* pct */
+      /* pct — 퍼센트 */
       const pct = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
 
       /* -- 월별 레이블 (14개월) -- */
@@ -266,7 +272,7 @@
         );
       });
 
-      /* -- 월별 시드 데이터 (목업) -- */
+      /* seededBase — 시드 기본 */
       const seededBase = (seed, len, min, max) => {
         const arr = [];
         let s = seed;
@@ -308,6 +314,8 @@
           values: seededBase(97 + i * 31, months, 5000000, 28000000).map(v => Math.round(v * subFactor)),
         }));
       });
+
+      // ===== return (템플릿 노출) ===============================================
 
       return {
         fmt, pct, filters, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,

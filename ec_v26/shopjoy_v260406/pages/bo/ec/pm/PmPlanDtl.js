@@ -11,6 +11,8 @@ window.PmPlanDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -27,7 +29,7 @@ window.PmPlanDtl = {
     });
 
     // 단건 조회 + 상품목록 로드
-    /* 소속업체 목록 로드 (vendor 선택 모달용) */
+    /* loadVendors — 로드 */
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -35,6 +37,7 @@ window.PmPlanDtl = {
       } catch (e) { console.warn('[PmPlanDtl.js] vendor load failed', e); }
     };
 
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
       uiState.loading = true;
@@ -66,10 +69,13 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._ecPlanDtlState.tabMode = v; });
 
-    /* 프로모션 플랜 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 프로모션 플랜 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
 
@@ -79,7 +85,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
     const _today = new Date();
 
-    /* 프로모션 플랜 _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END = `${_today.getFullYear()+1}-12-31`;
@@ -110,6 +116,9 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     });
 
     /* 프로모션 플랜 onTabChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onTabChange — 탭 변경 */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
     };
@@ -131,31 +140,31 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       return !searchVal || p.prodNm.toLowerCase().includes(searchVal);
     }));
 
-    /* 프로모션 플랜 toggleProduct */
+    /* toggleProduct — 토글 */
     const toggleProduct = (pid) => {
       const idx = form.productIds.indexOf(pid);
       if (idx === -1) form.productIds.push(pid);
       else form.productIds.splice(idx, 1);
     };
 
-    /* 프로모션 플랜 isSelected */
+    /* isSelected — 여부 확인 */
     const isSelected = (pid) => form.productIds.includes(pid);
     const cfSelectedProducts = computed(() =>
       form.productIds.map(pid => products.find(p => p.productId === pid)).filter(Boolean)
     );
 
-    /* 프로모션 플랜 removeProduct */
+    /* removeProduct — 제거 */
     const removeProduct = (pid) => {
       const idx = form.productIds.indexOf(pid);
       if (idx !== -1) form.productIds.splice(idx, 1);
     };
 
-    /* 프로모션 플랜 hasVisibility */
+    /* hasVisibility — 여부 확인 */
     const hasVisibility = (code) => {
       return (form.visibilityTargets || '').includes('^' + code + '^');
     };
 
-    /* 프로모션 플랜 toggleVisibility */
+    /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
       const targets = (form.visibilityTargets || '').split('^').filter(Boolean);
       const idx = targets.indexOf(code);
@@ -170,7 +179,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       return v ? v.vendorNm : '소속업체 선택';
     });
 
-    /* 프로모션 플랜 selectVendor */
+    /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -181,13 +190,13 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     /* 신규 등록은 info 탭에서만 가능. 그 외 탭(banner/content/products/preview)은 ID 없으면 비활성 */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
-    /* 프로모션 플랜 _afterApiOk */
+    /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
 
-    /* 프로모션 플랜 _afterApiErr */
+    /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -195,7 +204,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       if (showToast) showToast(errMsg, 'error', 0);
     };
 
-    /* ── 탭별 저장: info=본체, banner=배너이미지, content=콘텐츠3개, products=대상상품 ── */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
 
@@ -251,9 +260,10 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // -- return ---------------------------------------------------------------
-
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (기획전 단순 필드만) ===
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const infoFormColumns = [
       { key: 'planNm',    label: '기획전명', type: 'text', required: true,
         placeholder: '기획전명을 입력하세요', colSpan: 2 },
@@ -276,6 +286,9 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { vendors, products, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch,
       cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, handleSave,

@@ -5,6 +5,8 @@ window.SyPostman = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -23,7 +25,7 @@ window.SyPostman = {
     /* ===== Tree (JSON 로딩) ===== */
     const treeRoot   = reactive([]);
 
-    /* makeNode */
+    /* makeNode — 생성 */
     const makeNode = n => {
       const node = reactive({
         id: n.id, appId: n.appId || '', label: n.label, type: n.type,
@@ -36,7 +38,7 @@ window.SyPostman = {
       return node;
     };
 
-    /* findParentLabel */
+    /* findParentLabel — 찾기 상위 라벨 */
     const findParentLabel = (nodes, targetId) => {
       for (const n of nodes) {
         if (n.children) {
@@ -82,11 +84,13 @@ window.SyPostman = {
       { label:'일괄삭제',   urlFn: t => t,              method:'DELETE' },
     ];
 
-    /* toPascal */
+    /* toPascal — → 파스칼 */
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
     let _acSeq = 0;
 
-    /* buildAutoCrudNodes */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* buildAutoCrudNodes — 빌드 */
     const buildAutoCrudNodes = () => makeNode({
       id: 'ac_root', appId: 'samples', label: 'adminAutoCrud-method', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
@@ -94,7 +98,6 @@ window.SyPostman = {
         children: tables.map(tbl => {
           const pascal = toPascal(tbl);
 
-    // -- return ---------------------------------------------------------------
 
           return {
             id: `ac_${tbl}`, label: tbl, type: 'folder', open: false,
@@ -112,7 +115,7 @@ window.SyPostman = {
     });
     let _arSeq = 0;
 
-    /* buildAutoCrudRestNodes */
+    /* buildAutoCrudRestNodes — 빌드 */
     const buildAutoCrudRestNodes = () => makeNode({
       id: 'ar_root', appId: 'samples', label: 'adminAutoCrud-rest', type: 'app', open: false,
       children: AUTO_CRUD_DOMAINS.map(({ domain, sub, label, tables }) => ({
@@ -142,7 +145,7 @@ window.SyPostman = {
     /* ===== Tree Search & Flatten ===== */
         const toggleNode = node => { if (node.type !== 'req') node.open = !node.open; };
 
-    /* flattenTree */
+    /* flattenTree — 평탄화 트리 */
     const flattenTree = (nodes, depth = 0) => {
       const result = [];
       const searchVal = uiState.treeSearch.toLowerCase();
@@ -170,7 +173,7 @@ window.SyPostman = {
     const token        = ref('');
     const defHeaders   = reactive([{ k: 'Content-Type', v: 'application/json' }, { k: '', v: '' }]);
 
-    /* saveSettings */
+    /* saveSettings — 저장 */
     const saveSettings = () => {
       try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify({
@@ -180,7 +183,7 @@ window.SyPostman = {
       } catch {}
     };
 
-    /* loadSettings */
+    /* loadSettings — 로드 */
     const loadSettings = () => {
       try {
         const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
@@ -194,14 +197,12 @@ window.SyPostman = {
       } catch {}
     };
 
-    // -- watch ----------------------------------------------------------------
-
     watch([hostUrl, token, defHeaders], saveSettings, { deep: true });
 
     /* ===== LocalStorage Viewer ===== */
     const lsItems = reactive([]);
 
-    /* refreshLs */
+    /* refreshLs — 새로고침 */
     const refreshLs = () => {
       lsItems.splice(0);
       for (let i = 0; i < localStorage.length; i++) {
@@ -217,7 +218,7 @@ window.SyPostman = {
 
     const cfActiveTab = computed(() => openTabs.find(t => t.tabId === uiState.activeTabId) || null);
 
-    /* makeTab */
+    /* makeTab — 생성 */
     const makeTab = (node) => {
       const parentLabel = findParentLabel(treeRoot, node.id) || '';
       const tabLabel    = [parentLabel, node.method, node.label].filter(Boolean).join(' · ');
@@ -245,7 +246,7 @@ window.SyPostman = {
       });
     };
 
-    /* selectApiNode */
+    /* selectApiNode — 선택 */
     const selectApiNode = node => {
       if (node.type !== 'req') return;
       const existing = openTabs.find(t => t.nodeId === node.id);
@@ -266,14 +267,14 @@ window.SyPostman = {
       }
     }, 500);
 
-    /* stopAutoRun */
+    /* stopAutoRun — 중지 자동 실행 */
     const stopAutoRun = (tabId) => {
       if (_timers[tabId]) { clearInterval(_timers[tabId]); delete _timers[tabId]; }
       delete _nextFire[tabId];
       delete countdown[tabId];
     };
 
-    /* startAutoRun */
+    /* startAutoRun — 시작 자동 실행 */
     const startAutoRun = (tab, ms, label) => {
       stopAutoRun(tab.tabId);
       tab.autoMs    = ms;
@@ -300,7 +301,7 @@ window.SyPostman = {
       h: HOURS[i] != null ? HOURS[i] : null,
     }));
 
-    /* openAutoPopup */
+    /* openAutoPopup — 열기 */
     const openAutoPopup = (tab, evt) => {
       evt.stopPropagation();
       if (tab.autoMs) { startAutoRun(tab, 0, ''); return; }
@@ -311,16 +312,16 @@ window.SyPostman = {
       uiState.autoPopupTabId = tab.tabId;
     };
 
-    /* closeAutoPopup */
+    /* closeAutoPopup — 닫기 */
     const closeAutoPopup = () => { uiState.autoPopupTabId = null; };
 
-    /* selectAuto */
+    /* selectAuto — 선택 */
     const selectAuto = (tab, ms, label) => {
       startAutoRun(tab, ms, label);
       uiState.autoPopupTabId = null;
     };
 
-    /* closeTab */
+    /* closeTab — 닫기 */
     const closeTab = (tabId, e) => {
       e?.stopPropagation();
       stopAutoRun(tabId);
@@ -334,7 +335,7 @@ window.SyPostman = {
       if (uiState.autoPopupTabId === tabId) uiState.autoPopupTabId = null;
     };
 
-    /* closeAllTabs */
+    /* closeAllTabs — 닫기 */
     const closeAllTabs = () => {
       openTabs.forEach(t => stopAutoRun(t.tabId));
       openTabs.splice(0);
@@ -347,10 +348,10 @@ window.SyPostman = {
     const toasts   = reactive([]);
     let _toastSeq  = 0;
 
-    /* safeStr */
+    /* safeStr — 안전 문자열 */
     const safeStr  = v => (v != null ? String(v) : '');
 
-    /* pushToast */
+    /* pushToast — 푸시 토스트 */
     const pushToast = ({ type, tabLabel, method, url, status, resJson }) => {
       const id  = ++_toastSeq;
       const t   = reactive({ id, seq: id, type, tabLabel, method, url, status, resJson, jsonOpen: false, progress: 100 });
@@ -368,7 +369,7 @@ window.SyPostman = {
       t._tick = tick;
     };
 
-    /* closeToast */
+    /* closeToast — 닫기 */
     const closeToast = (id) => {
       const idx = toasts.findIndex(x => x.id === id);
       if (idx !== -1) {
@@ -377,7 +378,7 @@ window.SyPostman = {
       }
     };
 
-    /* ===== Send ===== */
+    /* buildUrl — 빌드 */
     const buildUrl = (tab) => {
       let base = tab.reqUrl.trim();
       if (!base.startsWith('http')) {
@@ -391,7 +392,7 @@ window.SyPostman = {
       return base;
     };
 
-    /* doSend */
+    /* doSend — 실행 */
     const doSend = async (targetTab) => {
       const tab = targetTab || cfActiveTab.value;
       if (!tab || !tab.reqUrl?.trim()) return;
@@ -460,7 +461,7 @@ window.SyPostman = {
 
     const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
 
-    /* selectHistory */
+    /* selectHistory — 선택 */
     const selectHistory = (h, idx) => {
       uiState.histSelIdx   = idx;
       uiState.histModal    = h;
@@ -474,7 +475,7 @@ window.SyPostman = {
       editReq.headers = (h.reqInfo.headers || []).map(h2 => ({k:h2.k, v:h2.v}));
     };
 
-    /* closeHistModal */
+    /* closeHistModal — 닫기 */
     const closeHistModal = () => { uiState.histModal = null; };
 
     const histResJson     = ref('');
@@ -482,7 +483,7 @@ window.SyPostman = {
     const histResTime     = ref(null);
     const histResTs       = ref('');
 
-    /* resendHist */
+    /* resendHist — 재전송 이력 */
     const resendHist = async () => {
       if (!cfActiveTab.value) return;
       const tab = cfActiveTab.value;
@@ -514,6 +515,8 @@ window.SyPostman = {
       uiState.histResTs       = new Date().toTimeString().slice(0, 8);
     };
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     /* ===== Response Grid (active tab) ===== */
     const cfResGridColumns = computed(() => {
       const d = cfActiveTab.value?.resData;
@@ -530,7 +533,7 @@ window.SyPostman = {
       return [];
     });
 
-    /* ===== Quick Run ===== */
+    /* quickRun — quick 실행 */
     const quickRun = (node, evt) => {
       evt.stopPropagation();
       let tab = openTabs.find(t => t.nodeId === node.id);
@@ -542,13 +545,13 @@ window.SyPostman = {
       doSend(tab);
     };
 
-    /* ===== Helpers ===== */
+    /* addRow — 행 추가 */
     const addRow    = arr => arr.push({ k: '', v: '' });
 
-    /* removeRow */
+    /* removeRow — 제거 */
     const removeRow = (arr, i) => { if (arr.length > 1) arr.splice(i, 1); };
 
-    /* methodStyle */
+    /* methodStyle — 메서드 스타일 */
     const methodStyle = m => ({
       GET:    'background:#dcfce7;color:#166534;',
       POST:   'background:#dbeafe;color:#1e40af;',
@@ -557,14 +560,15 @@ window.SyPostman = {
       DELETE: 'background:#fee2e2;color:#991b1b;',
     }[m] || 'background:#f0f0f0;color:#666;');
 
-    /* statusStyle */
+    /* statusStyle — 상태 스타일 */
     const statusStyle = s => !s ? '' : s < 300 ? 'color:#166534;font-weight:700;'
       : s < 400 ? 'color:#92400e;font-weight:700;' : 'color:#991b1b;font-weight:700;';
 
-    /* methodDot */
+    /* methodDot — 메서드 점 */
     const methodDot = m => ({ GET:'#166534', POST:'#1e40af', PUT:'#92400e', PATCH:'#6b21a8', DELETE:'#991b1b' }[m] || '#888');
 
-    /* ===== Mount ===== */
+    /* handleSearchList — 목록 조회 */
+
     const handleSearchList = async (searchType = 'DEFAULT') => {
       loadSettings(); refreshLs();
       /* 샘플 데이터: 빈 상태로 시작 */
@@ -574,11 +578,12 @@ window.SyPostman = {
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+
     onMounted(() => { handleSearchList('DEFAULT'); });
 
     const autoPopupTabId = Vue.toRef(uiState, 'autoPopupTabId');
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState,

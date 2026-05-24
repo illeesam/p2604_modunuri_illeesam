@@ -5,13 +5,17 @@ window.MyCache = {
     navigate:  { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -31,7 +35,7 @@ window.MyCache = {
     // 날짜/기간 필터는 서버(API)가 처리 — cashHistory 는 이미 조회기간 내 결과.
     const cfDateFilteredHistory = computed(() => cashHistory.value);
 
-    /* addCash */
+    /* addCash — 추가 */
     const addCash = () => {
       const amount = parseInt(String(chargeAmount.value).replace(/,/g, ''), 10);
       if (!amount || amount < 1000) { showToast('최소 1,000원 이상 충전 가능합니다.', 'error'); return; }
@@ -44,21 +48,23 @@ window.MyCache = {
       showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
     };
 
-    /* openOrderModal */
+    /* openOrderModal — 열기 */
     const openOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
       if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
     };
 
-    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (reg_date 기준) */
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
       await myStore.handleLoadCash(params);
       myStore.handleLoadOrders();
     };
 
-    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData();
@@ -71,7 +77,8 @@ window.MyCache = {
       handleSearchData();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       myStore, cashBalance, cashHistory, chargeAmount,

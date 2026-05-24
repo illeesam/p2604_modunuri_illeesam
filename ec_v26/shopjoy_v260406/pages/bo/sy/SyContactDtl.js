@@ -11,6 +11,8 @@ window.SyContactDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, onMounted, ref, onBeforeUnmount, nextTick, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -28,10 +30,14 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._syContactDtlState.tabMode = v; });
 
-    /* 문의 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 문의 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.contact_categories = codeStore.sgGetGrpCodes('CONTACT_CATEGORY_KR');
@@ -52,6 +58,10 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     });
 
     /* 문의 상세조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -83,7 +93,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       await handleLoadDetail();
     });
 
-    /* 문의 onUserIdChange */
+    /* onUserIdChange — 이벤트 */
     const onUserIdChange = () => {
       const m = getMember.value(Number(form.memberId));
       if (m) form.memberNm = m.memberNm;
@@ -93,6 +103,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     const _CONTACT_STATUS_KR_FB = {
       '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
     };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('CONTACT_STATUS_KR', s, _CONTACT_STATUS_KR_FB[s] || 'badge-gray');
 
     const cfCurId       = computed(() => props.dtlId || form.contactId || null);
@@ -100,13 +111,13 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
     const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
 
-    /* 문의 _afterApiOk */
+    /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
 
-    /* 문의 _afterApiErr */
+    /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -114,7 +125,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       if (showToast) showToast(errMsg, 'error', 0);
     };
 
-    /* ── 탭별 저장: content=문의 본체(신규/수정), answer=답변만 부분 PUT ── */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
 
@@ -149,7 +160,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       if (tabId === 'answer') { await saveAnswer(); return; }
     };
 
-    /* ── 답변 부분 저장 ── */
+    /* saveAnswer — 저장 */
     const saveAnswer = async () => {
       if (!cfHasId.value) {
         showToast('먼저 문의 내용 탭에서 등록해주세요.', 'error');
@@ -181,6 +192,10 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       { type: 'rowBreak' },
       { key: 'contactContent',  label: '문의 내용', type: 'slot', name: 'contactContent', colSpan: 2 },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
+
 
     return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, tabMode2, cfDtlMode, showTab, form, errors, fnStatusBadge, handleSave, saveAnswer, onUserIdChange, cfSiteNm, contentFormColumns, siteFormColumns, showRefModal };
   },

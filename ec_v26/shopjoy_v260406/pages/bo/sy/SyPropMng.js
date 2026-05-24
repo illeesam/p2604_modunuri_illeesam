@@ -5,6 +5,8 @@ window.SyPropMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -14,6 +16,10 @@ window.SyPropMng = {
     const codes = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] });
 
     /* 시스템 속성 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
@@ -33,7 +39,7 @@ window.SyPropMng = {
     const _rawProps = reactive([]);            // 원본 (reload 복원용)
     const EDIT_FIELDS = ['pathId', 'propKey', 'propValue', 'propLabel', 'propTypeCd', 'sortOrd', 'useYn', 'propRemark'];
 
-    /* makeRow — 원본 → 그리드행 (BoGridCrud 규약) */
+    /* makeRow — 행 생성 */
     const makeRow = (p) => ({
       ...p,
       _row_status: 'N',
@@ -41,12 +47,13 @@ window.SyPropMng = {
       _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = p[f]; return acc; }, {}),
     });
 
-    /* 시스템 속성 reload */
+    /* reload — 재조회 */
     const reload = () => {
       rows.splice(0, rows.length, ..._rawProps.map(makeRow));
     };
 
     // 검색/조회 함수
+    /* fetchData — 조회 */
     const fetchData = async () => {
       try {
         const { searchType, searchValue, useFlt, typeFlt } = searchParam;
@@ -78,17 +85,17 @@ window.SyPropMng = {
       fetchData('DEFAULT');
     });
 
-    /* -- 선택 노드 -- */
+    /* selectNode — 노드 선택 */
     const selectNode = (path) => { uiState.selectedPath = path; fetchData('DEFAULT'); };
 
-    /* 시스템 속성 onCellChange — BoGridCrud 규약 (N↔U, _row_org 비교) */
+    /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
 
-    /* 시스템 속성 addRow (BoGridCrud @add) */
+    /* addRow — 행 추가 */
     const addRow = () => {
       rows.push({
         propId: uiState._newId--,
@@ -105,7 +112,7 @@ window.SyPropMng = {
       });
     };
 
-    /* 시스템 속성 deleteChecked (BoGridCrud @delete-checked) */
+    /* deleteChecked — 삭제 */
     const deleteChecked = () => {
       for (let i = rows.length - 1; i >= 0; i--) {
         if (!rows[i]._row_check) continue;
@@ -114,7 +121,7 @@ window.SyPropMng = {
       }
     };
 
-    /* 시스템 속성 cancelChecked (BoGridCrud @cancel-checked) */
+    /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
       const checked = rows.filter(r => r._row_check);
       if (!checked.length) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -127,6 +134,10 @@ window.SyPropMng = {
     };
 
     /* 시스템 속성 저장 (BoGridCrud @save) */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const dirty = rows.filter(r => ['I', 'U', 'D'].includes(r._row_status));
       if (dirty.length === 0) { showToast('변경된 행이 없습니다.', 'warning'); return; }
@@ -142,14 +153,14 @@ window.SyPropMng = {
       }
     };
 
-    /* 시스템 속성 onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       searchParam.searchValue = ''; searchParam.useFlt = ''; searchParam.typeFlt = '';
       uiState.selectedPath = '';
       reload();
     };
 
-    /* 시스템 속성 exportCsv */
+    /* exportCsv — CSV 내보내기 */
     const exportCsv = () => {
       const header = ['ID','표시경로','키','값','라벨','타입','정렬','사용','비고'];
       const lines = [header.join(',')];
@@ -164,9 +175,12 @@ window.SyPropMng = {
       URL.revokeObjectURL(url);
     };
 
-    // -- return ---------------------------------------------------------------
-
     /* BoGridCrud 컬럼 정의 (헤더는 label/style/cls 로 자동 생성, 특수셀은 #cell-{key} 슬롯 override) */
+        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+        // --- [컬럼 정의] ---
+
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -191,6 +205,9 @@ window.SyPropMng = {
       { key: 'useYn',      label: '사용',      cls: 'col-use', edit: 'select', options: codes.use_yn },
       { key: 'propRemark', label: '비고',      edit: 'text' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       uiState, codes,

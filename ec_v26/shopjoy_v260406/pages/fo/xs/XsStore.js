@@ -8,11 +8,15 @@ window.XsStore = {
     showToast: { type: Function, default: () => {} },      // 토스트 알림
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, computed, reactive, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, tabMode: 'col5'});
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -40,7 +44,9 @@ window.XsStore = {
       return stores;
     });
 
-    /* selectStore */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* selectStore — 선택 */
     const selectStore = (storeName) => {
       uiState.selectedStore = storeName;
       if (!openStores.find(s => s === storeName)) {
@@ -49,14 +55,14 @@ window.XsStore = {
       loadStoreData(storeName);
     };
 
-    /* loadAllStoreData */
+    /* loadAllStoreData — 전체 스토어 로드 */
     const loadAllStoreData = () => {
       cfStoreList.value.forEach(store => {
         loadStoreData(store.name);
       });
     };
 
-    /* loadStoreData */
+    /* loadStoreData — 스토어 데이터 로드 */
     const loadStoreData = (storeName) => {
       try {
         const storeFunc = window[storeName];
@@ -71,7 +77,7 @@ window.XsStore = {
       }
     };
 
-    /* closeTab */
+    /* closeTab — 닫기 */
     const closeTab = (storeName) => {
       const idx = openStores.indexOf(storeName);
       if (idx !== -1) openStores.splice(idx, 1);
@@ -81,7 +87,7 @@ window.XsStore = {
       }
     };
 
-    /* copyToClipboard */
+    /* copyToClipboard — 복사 */
     const copyToClipboard = () => {
       try {
         navigator.clipboard.writeText(uiState.storeInfo);
@@ -91,7 +97,7 @@ window.XsStore = {
       }
     };
 
-    /* clearStore */
+    /* clearStore — 비우기 */
     const clearStore = () => {
       if (!uiState.selectedStore) return;
       try {
@@ -106,7 +112,7 @@ window.XsStore = {
       }
     };
 
-    /* saveStore */
+    /* saveStore — 저장 */
     const saveStore = () => {
       if (!uiState.selectedStore) return;
       try {
@@ -124,7 +130,7 @@ window.XsStore = {
       }
     };
 
-    /* refreshStoreData */
+    /* refreshStoreData — 새로고침 */
     const refreshStoreData = async (storeName) => {
       if (!storeName) return;
       const store = cfStoreList.value.find(s => s.name === storeName);
@@ -165,7 +171,8 @@ window.XsStore = {
       selectStore(cfStoreList.value[0].name);
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       cfStoreList, selectStore, copyToClipboard, clearStore, openStores, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData, uiState, codes

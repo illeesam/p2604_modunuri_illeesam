@@ -5,6 +5,8 @@ window.StSettleCloseMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,6 +19,9 @@ window.StSettleCloseMng = {
     });
 
     /* 정산 마감 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -33,7 +38,7 @@ window.StSettleCloseMng = {
     const claims  = reactive([]);
     const vendorList = reactive([]);
 
-    /* 정산 마감 목록조회 */
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       try {
         const [resO, resC, resV, resCL] = await Promise.all([
@@ -62,6 +67,9 @@ window.StSettleCloseMng = {
     const applied = reactive({ searchType: '', searchValue: '', searchStatus: '' });
 
     /* 정산 마감 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSearch — 조회 */
     const onSearch = async () => {
       applied.searchType   = searchParam.searchType;
       applied.searchValue  = searchParam.searchValue;
@@ -69,7 +77,7 @@ window.StSettleCloseMng = {
       await handleSearchData('DEFAULT');
     };
 
-    /* 정산 마감 onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       searchParam.searchType = '';
       searchParam.searchValue = '';
@@ -78,6 +86,9 @@ window.StSettleCloseMng = {
     };
 
     /* 검색바 :columns 자동 렌더 정의 */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const baseSearchColumns = [
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
@@ -103,7 +114,7 @@ window.StSettleCloseMng = {
 
     const cfAlreadyClosed = computed(() => window.safeArrayUtils.safeSome(closeList, c => c.closeMon === thisMonth));
 
-    /* 정산 마감 doClose */
+    /* doClose — 실행 */
     const doClose = async () => {
       if (cfAlreadyClosed.value) { showToast('이미 마감된 월입니다.', 'error'); return; }
       const ok = await showConfirm('정산마감', `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`);
@@ -126,7 +137,7 @@ window.StSettleCloseMng = {
       }
     };
 
-    /* 정산 마감 doReopen */
+    /* doReopen — 실행 */
     const doReopen = async (r) => {
       const ok = await showConfirm('마감취소', `${r.closeMon} 정산마감을 취소하시겠습니까?`);
       if (!ok) return;
@@ -143,10 +154,10 @@ window.StSettleCloseMng = {
       }
     };
 
-    /* 정산 마감 fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ '마감완료':'badge-green', '마감예정':'badge-blue', '마감취소':'badge-red' }[s] || 'badge-gray');
 
-    /* 정산 마감 fmtW */
+    /* fmtW — 포맷 W */
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
     const cfFilteredClose = computed(() => closeList.filter(r => {
@@ -161,8 +172,6 @@ window.StSettleCloseMng = {
       return true;
     }));
 
-    // -- return ---------------------------------------------------------------
-
     const baseGridColumns = [
       { key: 'closeMon',  label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'sales',     label: '매출액', fmt: fmtW },
@@ -175,6 +184,9 @@ window.StSettleCloseMng = {
       { key: 'status',    label: '상태', badge: (row) => fnStatusBadge(row.status) },
       { key: 'regUserNm', label: '담당자' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, closeList, cfFilteredClose, baseGridColumns, baseSearchColumns, searchParam, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
   },

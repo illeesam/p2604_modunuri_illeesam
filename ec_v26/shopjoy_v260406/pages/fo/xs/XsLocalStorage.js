@@ -8,11 +8,15 @@ window.XsLocalStorage = {
     showToast: { type: Function, default: () => {} },      // 토스트 알림
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
     const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiStateGlobal.isPageCodeLoad = true;
@@ -25,7 +29,7 @@ window.XsLocalStorage = {
     const storageData = reactive([]);
                     const uiState = reactive({ isResizing: false });
 
-    /* loadStorageData */
+    /* loadStorageData — 로드 */
     const loadStorageData = () => {
       const data = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -43,7 +47,7 @@ window.XsLocalStorage = {
       return data.filter(item => item.key.toLowerCase().includes(uiStateGlobal.filterKey.toLowerCase()));
     });
 
-    /* copyValue */
+    /* copyValue — 복사 */
     const copyValue = (value) => {
       try {
         navigator.clipboard.writeText(value);
@@ -53,13 +57,13 @@ window.XsLocalStorage = {
       }
     };
 
-    /* startEdit */
+    /* startEdit — 시작 편집 */
     const startEdit = (key, value) => {
       uiStateGlobal.editingKey = key;
       uiStateGlobal.editingValue = value;
     };
 
-    /* saveEdit */
+    /* saveEdit — 저장 */
     const saveEdit = (key) => {
       if (!key) return;
       try {
@@ -73,13 +77,15 @@ window.XsLocalStorage = {
       }
     };
 
-    /* cancelEdit */
+    /* cancelEdit — 취소 */
     const cancelEdit = () => {
       uiStateGlobal.editingKey = null;
       uiStateGlobal.editingValue = '';
     };
 
-    /* 삭제 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleDelete — 삭제 */
     const handleDelete = (key) => {
       if (!confirm(`'${key}'를 삭제하시겠습니까?`)) return;
       try {
@@ -91,7 +97,7 @@ window.XsLocalStorage = {
       }
     };
 
-    /* clearAllStorage */
+    /* clearAllStorage — 비우기 */
     const clearAllStorage = () => {
       if (!confirm('localStorage의 모든 데이터를 삭제하시겠습니까?')) return;
       try {
@@ -103,7 +109,7 @@ window.XsLocalStorage = {
       }
     };
 
-    /* parseValue */
+    /* parseValue — 파싱 값 */
     const parseValue = (value) => {
       try {
         return JSON.stringify(JSON.parse(value), null, 2);
@@ -112,14 +118,14 @@ window.XsLocalStorage = {
       }
     };
 
-    /* startResize */
+    /* startResize — 시작 Resize */
     const startResize = (e) => {
       uiState.isResizing = true;
       uiStateGlobal.startX = e.clientX;
       uiStateGlobal.startWidth = uiStateGlobal.valueColWidth;
     };
 
-    /* handleMouseMove */
+    /* handleMouseMove — 처리 */
     const handleMouseMove = (e) => {
       if (!uiState.isResizing) return;
       const delta = e.clientX - uiStateGlobal.startX;
@@ -130,7 +136,7 @@ window.XsLocalStorage = {
       uiStateGlobal.valueColWidth = Math.min(maxValue, newWidth);
     };
 
-    /* stopResize */
+    /* stopResize — 중지 Resize */
     const stopResize = () => {
       uiState.isResizing = false;
     };
@@ -148,7 +154,8 @@ window.XsLocalStorage = {
 
     loadStorageData();
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       storageData, cfFilteredData, uiStateGlobal, uiState,

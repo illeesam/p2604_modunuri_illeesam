@@ -3,6 +3,8 @@ window.XsSample14 = {
   name: 'XsSample14',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5) });
     const codes = reactive({
@@ -12,7 +14,9 @@ window.XsSample14 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -37,7 +41,9 @@ window.XsSample14 = {
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
 
-    /* onCatApply */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -70,10 +76,10 @@ window.XsSample14 = {
       cache_banner:'💰', widget_embed:'🧩',
     };
 
-    /* wLabel */
+    /* wLabel — w 라벨 */
     const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
 
-    /* wIcon */
+    /* wIcon — w 아이콘 */
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
     const cfAllAreas = computed(() =>
       window.sfGetBoCodeStore()?.codes||[]
@@ -81,18 +87,19 @@ window.XsSample14 = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
 
-    /* isInRange */
+    /* isInRange — 여부 확인 */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
       const dt = `${d}T${uiState.previewTime || '00:00'}`;
+      /* _norm — _norm */
       const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
       if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) return false;
       if (panel.dispEndDt   && dt > _norm(panel.dispEndDt))   return false;
       return true;
     };
 
-    /* panelFilter */
+    /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
       if (uiState.searchStatus       && p.status !== uiState.searchStatus) return false;
       if (!isInRange(p)) return false;
@@ -117,22 +124,23 @@ window.XsSample14 = {
             .filter(p => p.area === area.codeValue && panelFilter(p))
             .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-    // -- return ---------------------------------------------------------------
+          // ===== return (템플릿 노출) ===============================================
+
 
           return { ...area, panels , uiState, codes };
         });
     });
 
-    /* 초기 펼침 */
+    /* initExpand — 초기화 */
     const initExpand = () => cfAllAreas.value.forEach(a => expandedAreas.add(a.codeValue));
 
-    /* 영역 토글 */
+    /* toggleAreaExpand — 영역 토글 */
     const toggleAreaExpand = (code) => {
       if (expandedAreas.has(code)) expandedAreas.delete(code);
       else expandedAreas.add(code);
     };
 
-    /* 패널 체크 */
+    /* togglePanel — 패널 토글 */
     const togglePanel = (p) => {
       const id = p.dispId;
       const rows = p.rows || [];
@@ -145,7 +153,7 @@ window.XsSample14 = {
       }
     };
 
-    /* 위젯 체크 */
+    /* toggleWidget — 토글 */
     const toggleWidget = (dispId, wi, e) => {
       if (e) e.stopPropagation();
       const key = `${dispId}_${wi}`;
@@ -153,19 +161,19 @@ window.XsSample14 = {
       else checkedWidgets.add(key);
     };
 
-    /* 전체 선택/해제 */
+    /* checkAll — 확인 */
     const checkAll  = () => { cfStructAreaList.value.forEach(a => a.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); })); };
 
-    /* clearAll */
+    /* clearAll — 비우기 */
     const clearAll  = () => { checkedPanels.clear(); checkedWidgets.clear(); };
 
-    /* 영역 전체 체크 */
+    /* isAreaAllChecked — 여부 확인 */
     const isAreaAllChecked = (area) =>
       area.panels.length > 0 &&
       area.panels.every(p => checkedPanels.has(p.dispId)) &&
       area.panels.every(p => (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
 
-    /* checkAreaAll */
+    /* checkAreaAll — 확인 */
     const checkAreaAll = (area) => {
       if (isAreaAllChecked(area)) {
         area.panels.forEach(p => { checkedPanels.delete(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.delete(`${p.dispId}_${wi}`)); });
@@ -174,7 +182,7 @@ window.XsSample14 = {
       }
     };
 
-    /* isPanelAllChecked */
+    /* isPanelAllChecked — 여부 확인 */
     const isPanelAllChecked = (p) =>
       checkedPanels.has(p.dispId) &&
       ((p.rows||[]).length === 0 || (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
@@ -194,16 +202,16 @@ window.XsSample14 = {
     /* 화면영역 드롭다운 */
     const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
 
-    /* toggleArea */
+    /* toggleArea — 영역 토글 */
     const toggleArea = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
 
-    /* selectAllAreas */
+    /* selectAllAreas — 선택 */
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
 
-    /* clearAllAreas */
+    /* clearAllAreas — 비우기 */
     const clearAllAreas  = () => { selectedAreas.clear(); };
 
-    /* resetDate */
+    /* resetDate — 초기화 */
     const resetDate = () => {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);
@@ -212,6 +220,7 @@ window.XsSample14 = {
     const TABS      = ['grid1', 'grid2', 'grid3', 'grid4', 'dashboard'];
         const GRID_COLS = { grid1: 1, grid2: 2, grid3: 3, grid4: 4 };
     // grid1~4 — N열 셀 배열 (초기 2행)
+    /* mkCells — 생성 셀 */
     const mkCells = (n) => Array.from({ length: n * 2 }, () => ({ widget: null }));
     const gridCells = reactive({ grid1: mkCells(1), grid2: mkCells(2), grid3: mkCells(3), grid4: mkCells(4) });
     // dashboard — 자유 배치
@@ -229,7 +238,7 @@ window.XsSample14 = {
       cache_banner:'#ef6c00',widget_embed:'#718096',
     };
 
-    /* wColor */
+    /* wColor — w 색상 */
     const wColor = (t) => WIDGET_COLORS[t] || '#888';
     // 헤더 카운트용
     const cfPreviewWidgets = computed(() => {
@@ -240,14 +249,14 @@ window.XsSample14 = {
     const dragSrcList  = ref(null);
     const dropZoneIdx  = ref(-1);
 
-    /* onWidgetDragStart */
+    /* onWidgetDragStart — 이벤트 */
     const onWidgetDragStart = (w, p, area, evt) => {
       uiState.dragSrc     = { ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel };
       uiState.dragSrcList = null;
       evt.dataTransfer.effectAllowed = 'copy';
     };
 
-    /* onAreaNodeDragStart */
+    /* onAreaNodeDragStart — 이벤트 */
     const onAreaNodeDragStart = (area, evt) => {
       const widgets = (area.panels || []).flatMap(p =>
         (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }))
@@ -258,7 +267,7 @@ window.XsSample14 = {
       evt.dataTransfer.setData('text/plain', 'area:' + widgets.length);
     };
 
-    /* onPanelNodeDragStart */
+    /* onPanelNodeDragStart — 이벤트 */
     const onPanelNodeDragStart = (p, area, evt) => {
       const widgets = (p.rows || []).map(w => ({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: area.codeLabel }));
       uiState.dragSrcList = widgets;
@@ -267,20 +276,21 @@ window.XsSample14 = {
       evt.dataTransfer.setData('text/plain', 'panel:' + widgets.length);
     };
 
-    /* onDragEnd */
+    /* onDragEnd — 드래그 종료 */
     const onDragEnd = () => { uiState.dragSrc = null; uiState.dragSrcList = null; uiState.dropZoneIdx = -1; };
     /* -- span 팝업 -- */
      // 'tab_ci' 형태 키
+    /* toggleSpanPopup — 토글 */
     const toggleSpanPopup = (e, tab, ci) => {
       e.stopPropagation();
       const key = tab + '_' + ci;
       uiState.spanPopupIdx = uiState.spanPopupIdx === key ? null : key;
     };
 
-    /* closeSpanPopup */
+    /* closeSpanPopup — 닫기 */
     const closeSpanPopup = () => { uiState.spanPopupIdx = null; };
 
-    /* setSpan */
+    /* setSpan — 설정 */
     const setSpan = (tab, ci, axis, delta) => {
       const cell = gridCells[tab][ci];
       if (!cell || !cell.widget) return;
@@ -289,7 +299,7 @@ window.XsSample14 = {
       if (axis === 'row') cell.rowSpan = Math.max(1, Math.min(4,      (cell.rowSpan || 1) + delta));
     };
 
-    /* 빈 행 2개 유지 헬퍼 */
+    /* ensureTrailingRows — ensure Trailing 행 */
     const ensureTrailingRows = (cells, cols) => {
       let emptyRows = 0;
       const totalRows = Math.ceil(cells.length / cols);
@@ -303,7 +313,7 @@ window.XsSample14 = {
       }
     };
 
-    /* grid2/3/4 */
+    /* onCellDrop — 이벤트 */
     const onCellDrop = (tab, ci, evt) => {
       evt.preventDefault();
       const cols = GRID_COLS[tab];
@@ -337,10 +347,10 @@ window.XsSample14 = {
       uiState.dropZoneIdx = -1;
     };
 
-    /* removeCellWidget */
+    /* removeCellWidget — 제거 */
     const removeCellWidget = (tab, ci) => { gridCells[tab][ci] = { widget: null }; };
 
-    /* dashboard */
+    /* onDashDrop — 이벤트 */
     const onDashDrop = (evt) => {
       evt.preventDefault();
       const rect = evt.currentTarget.getBoundingClientRect();
@@ -366,7 +376,7 @@ window.XsSample14 = {
       uiState.dropZoneIdx = -1;
     };
 
-    /* onDashItemMd */
+    /* onDashItemMd — 이벤트 */
     const onDashItemMd = (idx, evt) => {
       dashDrag.on = true; dashDrag.idx = idx;
       dashDrag.sx = evt.clientX; dashDrag.sy = evt.clientY;
@@ -374,7 +384,7 @@ window.XsSample14 = {
       evt.preventDefault();
     };
 
-    /* onDashResizeMd */
+    /* onDashResizeMd — 이벤트 */
     const onDashResizeMd = (idx, evt) => {
       dashResize.on = true; dashResize.idx = idx;
       dashResize.sx = evt.clientX; dashResize.sy = evt.clientY;
@@ -382,7 +392,7 @@ window.XsSample14 = {
       evt.preventDefault(); evt.stopPropagation();
     };
 
-    /* onDashMm */
+    /* onDashMm — 이벤트 */
     const onDashMm = (evt) => {
       if (dashDrag.on && dashDrag.idx >= 0) {
         const snap = DASH_SNAP, dx = evt.clientX - dashDrag.sx, dy = evt.clientY - dashDrag.sy;
@@ -396,16 +406,16 @@ window.XsSample14 = {
       }
     };
 
-    /* onDashMu */
+    /* onDashMu — 이벤트 */
     const onDashMu = () => {
       dashDrag.on = false; dashDrag.idx = -1;
       dashResize.on = false; dashResize.idx = -1;
     };
 
-    /* removeDashItem */
+    /* removeDashItem — 제거 */
     const removeDashItem = (idx) => { dashItems.splice(idx, 1); };
 
-    /* 탭별 초기화 */
+    /* clearPreview — 비우기 */
     const clearPreview = () => {
       const tab = uiState.activeTab;
       if (GRID_COLS[tab]) {
@@ -422,7 +432,7 @@ window.XsSample14 = {
     const popoverPanel  = ref(null);
     const popoverPos    = reactive({ top: 0, left: 0 });
 
-    /* showWidgetInfo */
+    /* showWidgetInfo — 표시 */
     const showWidgetInfo = (w, p, area, key, evt) => {
       evt.stopPropagation();
       if (uiState.popoverKey === key) { uiState.popoverKey = null; return; }
@@ -435,7 +445,7 @@ window.XsSample14 = {
       uiState.popoverKey    = key;
     };
 
-    /* closePopover */
+    /* closePopover — 닫기 */
     const closePopover = () => { uiState.popoverKey = null; };
     /* -- 반응형 뷰포트 -- */
         /* auto-fill 기반 반응형: 뷰포트 너비 제약이 걸리면 자동으로 컬럼 축소 */
@@ -456,8 +466,6 @@ window.XsSample14 = {
     /* 실제 컨텐츠 보기 토글 */
     /* 초기화 */
     initExpand();
-
-    // -- return ---------------------------------------------------------------
 
     return {
       uiState, previewDate, previewTime,

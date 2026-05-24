@@ -5,7 +5,10 @@ window.SyDashboardMng = {
     navigate:  { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { computed, reactive, watch, onMounted } = Vue;
+
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
@@ -13,7 +16,11 @@ window.SyDashboardMng = {
     const uiState = reactive({ isPageCodeLoad: false });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -66,6 +73,8 @@ window.SyDashboardMng = {
       { id: 'sySiteMng',     label: '사이트관리', icon: '🌐', color: '#2563eb' },
       { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
 
     return { uiState, codes, cfStats, shortcuts };
   },

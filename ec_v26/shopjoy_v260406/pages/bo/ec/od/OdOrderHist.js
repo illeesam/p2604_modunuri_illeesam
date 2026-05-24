@@ -7,6 +7,8 @@ window.OdOrderHist = {
     orderId:      { type: String, default: null }, // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -20,6 +22,9 @@ window.OdOrderHist = {
     const deliveries = reactive([]);
 
     // onMounted에서 API 로드
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -40,18 +45,16 @@ window.OdOrderHist = {
       }
     };
 
-    // -- watch ----------------------------------------------------------------
-
         watch(botTab, v => { window._ecOrderHistState.tab = v; });
 
-    /* 주문 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
 };
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* 주문 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
     const orderItems = reactive([]);
@@ -82,6 +85,8 @@ window.OdOrderHist = {
     const botTab = Vue.toRef(uiState, 'botTab');
 
     /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const itemGridColumns = [
       { key: 'no',         label: 'No',     style: 'width:40px;text-align:center;' },
       { key: 'prodNm',     label: '상품명' },
@@ -107,7 +112,8 @@ window.OdOrderHist = {
       { key: 'requestDate',   label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
     ];
 
-    // -- return ---------------------------------------------------------------
+
+    // ===== return (템플릿 노출) ===============================================
 
     return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries,
              itemGridColumns, dlivHistGridColumns, claimGridColumns, showRefModal, orderId: props.orderId, navigate: props.navigate,

@@ -11,6 +11,8 @@ window.OdClaimDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -24,6 +26,9 @@ window.OdClaimDtl = {
     const cfIsNew = computed(() => !props.dtlId);
 
     /* 클레임(취소/반품/교환) fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
@@ -60,6 +65,9 @@ window.OdClaimDtl = {
     const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
     // 단건 GET
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -102,7 +110,7 @@ window.OdClaimDtl = {
       await handleSearchDetail();
     });
 
-    /* 클레임(취소/반품/교환) 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -135,11 +143,11 @@ window.OdClaimDtl = {
 
         watch(() => uiState.tabMode2, v => { window._odClaimDtlState.tabMode = v; });
 
-    /* 클레임(취소/반품/교환) showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.activeTab === id;
     const claimItems = reactive([]);
 
-    /* 클레임(취소/반품/교환) sampleClaimItems */
+    /* sampleClaimItems — 샘플 클레임 Items */
     const sampleClaimItems = () => {
       const base = form.prodNm || '클레임상품';
       const amount = Number(form.refundAmt || 0) || 30000;
@@ -154,29 +162,28 @@ window.OdClaimDtl = {
         const paid = Math.round(amount * shares[i]);
         const sale = Math.round(paid / (1 - discRates[i]));
 
-    // -- return ---------------------------------------------------------------
 
         return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
       });
     };
 
-    /* 클레임(취소/반품/교환) fmt */
+    /* fmt — 포맷 */
     const fmt = (n) => Number(n||0).toLocaleString() + '원';
 
     const CLAIM_TYPE_COLOR = { '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' };
 
     const expandedItems = reactive(new Set());
 
-    /* 클레임(취소/반품/교환) toggleExpand */
+    /* toggleExpand — 토글 */
     const toggleExpand = (i) => { if (expandedItems.has(i)) expandedItems.delete(i); else expandedItems.add(i); };
 
-    /* 클레임(취소/반품/교환) isExpanded */
+    /* isExpanded — 여부 확인 */
     const isExpanded = (i) => expandedItems.has(i);
-    /* bo-grid 행펼침 판정 (교환 클레임 + 펼침 상태) */
+    /* fnItemExpanded — 유틸 */
     const fnItemExpanded = (row, i) => isExpanded(i) && form.claimTypeCd === '교환';
     const cfAllExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
 
-    /* 클레임(취소/반품/교환) toggleExpandAll */
+    /* toggleExpandAll — 토글 */
     const toggleExpandAll = () => {
       if (cfAllExpanded.value) expandedItems.clear();
       else { expandedItems.clear(); claimItems.forEach((_,i) => expandedItems.add(i)); }
@@ -184,12 +191,10 @@ window.OdClaimDtl = {
 
     watch(claimItems, (list) => { expandedItems.clear(); list.forEach((_,i) => expandedItems.add(i)); });
 
-    /* 클레임(취소/반품/교환) getExchangedItem */
+    /* getExchangedItem — 조회 */
     const getExchangedItem = (it) => {
       if (form.claimTypeCd !== '교환') return null;
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };
-
-    // -- return ---------------------------------------------------------------
 
       return {
         prodNm: it.prodNm + ' (교환품)',
@@ -200,7 +205,7 @@ window.OdClaimDtl = {
       };
     };
 
-    /* 클레임(취소/반품/교환) trackingUrl */
+    /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
       if (!no) return '';
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
@@ -211,7 +216,7 @@ window.OdClaimDtl = {
       return '';
     };
 
-    /* 클레임(취소/반품/교환) openTracking */
+    /* openTracking — 열기 */
     const openTracking = (courier, no) => {
       const url = trackingUrl(courier, no);
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }
@@ -247,6 +252,9 @@ window.OdClaimDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* 결제정보 탭 그리드 컬럼 */
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const paymentGridColumns = [
       { key: 'method',  label: '환불수단' },
       { key: 'status',  label: '환불상태', badge: () => 'badge-orange' },
@@ -300,9 +308,6 @@ window.OdClaimDtl = {
         } },
     ];
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
     const baseFormColumns = [
       { key: 'claimId',      label: '클레임ID', type: 'text', required: true,
         placeholder: 'CLM-2026-XXX', readonly: !cfIsNew.value },
@@ -322,6 +327,8 @@ window.OdClaimDtl = {
       { type: 'rowBreak' },
       { key: 'reasonDetail', label: '상세 사유', type: 'textarea', rows: 3, colSpan: 2 },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { cfIsNew, form, errors, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, handleSave, activeTab, claimItems, fmt, CLAIM_TYPE_COLOR, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, expandedItems, toggleExpand, isExpanded, getExchangedItem, cfAllExpanded, toggleExpandAll, cfDtlMode, tabMode2, showTab, codes, paymentGridColumns, editHistGridColumns, claimItemGridColumns, fnItemExpanded, baseFormColumns, showRefModal };
   },

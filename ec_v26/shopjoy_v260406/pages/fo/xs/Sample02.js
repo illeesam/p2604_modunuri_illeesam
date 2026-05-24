@@ -6,6 +6,8 @@
 window.XsSample02 = {
   name: 'XsSample02',
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, onUnmounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, visibleCount: 10, dragMoved: false, checkAll: false });
@@ -14,7 +16,9 @@ window.XsSample02 = {
       category_opts: ['상의', '하의', '아우터', '원피스', '신발', '가방'],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -32,7 +36,7 @@ window.XsSample02 = {
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
 
-    /* showToast */
+    /* showToast — 표시 */
     const showToast = (msg, type = 'success') => {
       toast.msg = msg; toast.type = type; toast.show = true;
       clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500);
@@ -50,7 +54,7 @@ window.XsSample02 = {
     let   _tempId    = -1;
         const EDIT_FIELDS = ['productNm', 'category', 'price', 'stock', 'status'];
 
-    /* toRow */
+    /* toRow — → 행 */
     const toRow = d => ({
       productId: d.sample1Id,
       productNm: d.cdNm  || '',
@@ -61,10 +65,10 @@ window.XsSample02 = {
       regDate:   d.regDt || '',
     });
 
-    /* toPayload */
+    /* toPayload — → 페이로드 */
     const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.productNm, col01: r.category, col02: String(r.price), col03: String(r.stock), useYn: r.status === '판매중지' ? 'N' : 'Y' });
 
-    /* makeRow */
+    /* makeRow — 행 생성 */
     const makeRow = d => ({
       ...d,
       _row_status: 'N', _row_check: false,
@@ -77,12 +81,12 @@ window.XsSample02 = {
     const cfVisibleRows   = computed(() => gridRows.slice(0, uiState.visibleCount));
     const cfHasMore       = computed(() => uiState.visibleCount < gridRows.length);
 
-    /* handleLoadMore */
+    /* handleLoadMore — 처리 */
     const handleLoadMore      = () => { uiState.visibleCount = Math.min(uiState.visibleCount + 10, gridRows.length); };
 
     let _observer = null;
 
-    /* setupObserver */
+    /* setupObserver — 설정 옵저버 */
     const setupObserver = () => {
       if (_observer) _observer.disconnect();
       _observer = new IntersectionObserver(entries => {
@@ -91,7 +95,9 @@ window.XsSample02 = {
       if (sentinelEl.value) _observer.observe(sentinelEl.value);
     };
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await api.get(API, { cdGrp: CD_GRP });
@@ -119,22 +125,22 @@ window.XsSample02 = {
       if (_observer) _observer.disconnect();
     });
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
-    /* setFocused */
+    /* setFocused — 포커스 설정 */
     const setFocused   = idx => { uiState.focusedIdx = idx; };
 
-    /* onCellChange */
+    /* onCellChange — 셀 변경 */
     const onCellChange = row => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
-    /* addRow */
+    /* addRow — 행 추가 */
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : Math.min(uiState.visibleCount, gridRows.length);
       gridRows.splice(at, 0, { productId: _tempId--, productNm: '', category: '상의', price: 0, stock: 0, status: '판매중', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
@@ -143,7 +149,7 @@ window.XsSample02 = {
       if (at >= uiState.visibleCount) uiState.visibleCount = at + 1;
     };
 
-    /* deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow = idx => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -153,7 +159,7 @@ window.XsSample02 = {
       } else { row._row_status = 'D'; }
     };
 
-    /* cancelRow */
+    /* cancelRow — 행 취소 */
     const cancelRow = idx => {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
@@ -163,7 +169,7 @@ window.XsSample02 = {
       } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
-    /* deleteRows */
+    /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -172,7 +178,7 @@ window.XsSample02 = {
       }
     };
 
-    /* cancelChecked */
+    /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
       const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.productId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -183,7 +189,7 @@ window.XsSample02 = {
       }
     };
 
-    /* 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
@@ -210,10 +216,10 @@ window.XsSample02 = {
       } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
     };
 
-    /* -- Drag & UI State -- */
+    /* onDragStart — 드래그 시작 */
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
 
-    /* onDragOver */
+    /* onDragOver — 드래그 오버 */
     const onDragOver  = (e, idx) => {
       e.preventDefault();
       if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
@@ -221,25 +227,26 @@ window.XsSample02 = {
       uiState.dragSrc = idx; uiState.dragMoved = true;
     };
 
-    /* onDragEnd */
+    /* onDragEnd — 드래그 종료 */
     const onDragEnd = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
 
-    /* toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
 
-    /* rowBg */
+    /* rowBg — 행 배경 */
     const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
-
-    // -- return ---------------------------------------------------------------
 
     /* fo-grid-crud 컬럼 — category_opts 는 문자열 배열 → {value,label} 매핑 */
     /* category_opts 가 문자열 배열 → {value,label} 으로 변환 (FoSearchArea select / fo-grid-crud 공유) */
     const cfCategoryOpts = Vue.computed(() => codes.category_opts.map(c => ({ value: c, label: c })));
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     /* FoSearchArea :columns 자동 렌더 정의 */
+    // --- [컬럼 정의] ---
     const baseSearchColumns = [
       { key: 'searchValue', type: 'text',   label: '상품명', placeholder: '상품명 검색', width: '180px' },
       { key: 'category',    type: 'select', label: '카테고리', options: () => cfCategoryOpts.value,   nullLabel: '카테고리 전체' },
@@ -256,9 +263,15 @@ window.XsSample02 = {
         options: codes.prod_status_opts },
       { key: 'regDate',   label: '등록일', width: '100px', align: 'center' },
     ];
+    /* onReorder — 이벤트 */
     const onReorder = () => showToast('정렬이 변경되었습니다.');
+    /* onRowCancel — 이벤트 */
     const onRowCancel = (row) => cancelRow(gridRows.indexOf(row));
+    /* onRowDelete — 이벤트 */
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       toast, searchParam, baseSearchColumns, onSearch, onReset,

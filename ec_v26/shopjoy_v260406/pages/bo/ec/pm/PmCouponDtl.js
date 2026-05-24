@@ -11,6 +11,8 @@ window.PmCouponDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -32,7 +34,7 @@ window.PmCouponDtl = {
     });
 
     // 단건 조회
-    /* 소속업체 목록 로드 (신규/수정 공통 — vendor 선택 모달용) */
+    /* loadVendors — 로드 */
     const loadVendors = async () => {
       try {
         const vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '쿠폰관리', '조회');
@@ -40,6 +42,7 @@ window.PmCouponDtl = {
       } catch (e) { console.warn('[PmCouponDtl] vendor load failed', e); }
     };
 
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
       if (cfIsNew.value) return;
@@ -69,10 +72,13 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._pmCouponDtlState.tabMode = v; });
 
-    /* 쿠폰 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 쿠폰 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.coupon_statuses_dtl = codeStore.sgGetGrpCodes('COUPON_STATUS_DTL');
@@ -94,7 +100,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     const _today = new Date();
 
-    /* 쿠폰 _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
@@ -106,7 +112,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       validTo: yup.string().required('만료일을 입력해주세요.'),
     });
 
-    /* 쿠폰 handleInitForm */
+    /* handleInitForm — 처리 */
     const handleInitForm = () => {
       if (cfIsNew.value) {
         if (!form.validFrom) form.validFrom = DEFAULT_START;
@@ -134,7 +140,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       return v ? v.vendorNm : '소속업체 선택';
     });
 
-    /* 쿠폰 selectVendor */
+    /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -176,7 +182,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       });
     };
 
-    /* 쿠폰 renderBarcode */
+    /* renderBarcode — 렌더 */
     const renderBarcode = () => {
       if (uiState.barcodeContainer && typeof JsBarcode !== 'undefined') {
         try {
@@ -191,7 +197,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       }
     };
 
-    /* 쿠폰 renderQRCode */
+    /* renderQRCode — 렌더 */
     const renderQRCode = () => {
       if (uiState.qrcodeContainer && typeof QRCode !== 'undefined') {
         try {
@@ -208,6 +214,9 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     };
 
     /* 쿠폰 onTabChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onTabChange — 탭 변경 */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
       if (newTab === 'preview') {
@@ -229,13 +238,13 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       return true;                                          // issued / used / preview 는 비활성
     });
 
-    /* 쿠폰 _afterApiOk */
+    /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
 
-    /* 쿠폰 _afterApiErr */
+    /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -243,7 +252,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       if (showToast) showToast(errMsg, 'error', 0);
     };
 
-    /* ── 탭별 저장: info/detail 은 form 전체 저장. 그 외 탭은 저장 의미 없음 ── */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
 
@@ -305,9 +314,10 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     const cfIssuedTop = computed(() => cfIssuedList.value.slice(0, 10));
     const cfUsedTop   = computed(() => cfUsedList.value.slice(0, 10));
 
-    // -- return ---------------------------------------------------------------
-
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const infoFormColumns = [
       { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
         options: () => codes.coupon_types },
@@ -348,6 +358,9 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       { key: 'useRemark',  label: '사용 제약사항', type: 'textarea', rows: 3, colSpan: 2,
         placeholder: '예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, form, errors, showTab, tabMode2, handleSave, onTabChange,
       cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer,

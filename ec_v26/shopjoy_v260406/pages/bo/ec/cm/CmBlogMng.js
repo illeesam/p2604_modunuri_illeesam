@@ -5,6 +5,8 @@ window.CmBlogMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -21,13 +23,16 @@ window.CmBlogMng = {
 const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId = ref(null);
 
-    /* 게시물 _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       return { searchType: '', searchValue: '', use: '', notice: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
     /* 게시물 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.blog_display_statuses = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
@@ -38,7 +43,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     const SORT_MAP = { nm: { asc: 'blogTitle asc', desc: 'blogTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* 게시물 getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
@@ -46,6 +51,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     };
 
     /* 게시물 onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -55,10 +63,10 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       handleSearchList();
     };
 
-    /* 게시물 sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
-    /* 게시물 목록조회 */
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -93,30 +101,30 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       handleSearchList('DEFAULT');
     });
 
-    /* 게시물 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const detailModal = reactive({ show: false, isNew: false, dtlId: null, form: {} });
 
     const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailModal.dtlId) || null);
 
-    /* 게시물 openDetail */
+    /* openDetail — 열기 */
     const openDetail = (row) => {
       if (detailModal.dtlId === row.blogId) { detailModal.show = false; detailModal.dtlId = null; return; }
       Object.assign(detailModal.form, { ...row });
       detailModal.dtlId = row.blogId; detailModal.isNew = false; detailModal.show = true;
     };
 
-    /* 게시물 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => {
       Object.assign(detailModal.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
       detailModal.dtlId = '__new__'; detailModal.isNew = true; detailModal.show = true;
     };
 
-    /* 게시물 closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
 
-    /* 게시물 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       if (!detailModal.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
       const isNewPost = detailModal.isNew;
@@ -145,7 +153,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       }
     };
 
-    /* 게시물 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async () => {
       if (!cfSelectedRow.value) return;
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
@@ -165,7 +173,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       }
     };
 
-    /* 게시물 toggleUse */
+    /* toggleUse — 토글 */
     const toggleUse = async (row) => {
       const newYn = row.useYn === 'Y' ? 'N' : 'Y';
       const ok = await showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn === 'Y' ? '공개' : '비공개'} 처리하시겠습니까?`);
@@ -184,22 +192,23 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       }
     };
 
-    /* 게시물 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 게시물 onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
 
-    /* 게시물 setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* 게시물 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 게시물 fnYnBadge */
+    /* fnYnBadge — 유틸 */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -211,6 +220,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       { key: 'use', type: 'select', label: '공개여부', options: () => codes.open_yn_opts, nullLabel: '전체' },
       { key: 'notice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const listGridColumns = [
       { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
@@ -225,11 +236,9 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       { key: 'useYn',      label: '공개',     style: 'width:70px;', align: 'center', badge: row => fnYnBadge(row.useYn), fmt: v => v==='Y' ? '공개' : '비공개' },
       { key: 'regDate',    label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
     ];
+    /* fnGridRowClass — 유틸 */
     const fnGridRowClass = (row) => (detailModal.dtlId === row.blogId ? 'active' : '');
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 블로그 detail 모달 폼 ==========
     const blogFormColumns = [
       { key: 'blogTitle',   label: '제목', type: 'text', required: true, colSpan: 2 },
       { key: 'blogAuthor',  label: '작성자', type: 'text' },
@@ -242,6 +251,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       { type: 'rowBreak' },
       { key: 'blogContent', label: '본문', type: 'slot', name: 'blogContent', colSpan: 2 },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       selectedId: computed(() => detailModal.dtlId), blogs, uiState, codes,

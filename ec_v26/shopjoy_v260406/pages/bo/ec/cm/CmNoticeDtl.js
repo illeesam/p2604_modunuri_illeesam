@@ -10,6 +10,8 @@ window.CmNoticeDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,7 +20,9 @@ window.CmNoticeDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
@@ -29,10 +33,10 @@ window.CmNoticeDtl = {
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
 
-    /* fnToday */
+    /* fnToday — 유틸 */
     const fnToday = () => new Date().toISOString().slice(0, 10);
 
-    /* fnDateAfter */
+    /* fnDateAfter — 유틸 */
     const fnDateAfter = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
     const form = reactive({
       noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: 'N',
@@ -45,7 +49,7 @@ window.CmNoticeDtl = {
       noticeTitle: yup.string().required('제목을 입력해주세요.'),
     });
 
-    /* handleSearchDetail */
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
@@ -68,7 +72,9 @@ window.CmNoticeDtl = {
       if (typeof handleSearchDetail === 'function') await handleSearchDetail();
     });
 
-    /* 저장 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -104,6 +110,9 @@ window.CmNoticeDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const baseFormColumns = [
       { key: 'noticeTitle',    label: '제목', type: 'text', required: true, placeholder: '공지 제목', colSpan: 2 },
       { key: 'noticeTypeCd',   label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '선택' },
@@ -122,6 +131,8 @@ window.CmNoticeDtl = {
 
     // ===== setup() return ===================================================
     const dtlId = Vue.computed(() => props.dtlId);
+    // ===== return (템플릿 노출) ===============================================
+
     return { cfIsNew, dtlId, form, errors, handleSave, codes, navigate: props.navigate, cfDtlMode, baseFormColumns, showToast };
   },
   template: /* html */`

@@ -5,6 +5,8 @@ window.StErpGenMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -16,7 +18,9 @@ window.StErpGenMng = {
       erp_voucher_types: [],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -36,7 +40,9 @@ window.StErpGenMng = {
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resO, resV, resH] = await Promise.all([
@@ -61,7 +67,6 @@ window.StErpGenMng = {
         const comm    = Math.round(sales * 0.10);
         const settle  = sales - comm;
 
-    // -- return ---------------------------------------------------------------
 
         return { vendorNm: v.vendorNm, debit: '미지급금', credit: '현금', debitAmt: settle, creditAmt: settle, description: `${uiState.targetMon} ${v.vendorNm} 정산지급` };
       }).filter(r => r.debitAmt > 0);
@@ -69,7 +74,7 @@ window.StErpGenMng = {
 
     const genHistory = reactive([]);
 
-    /* doGenerate */
+    /* doGenerate — 실행 */
     const doGenerate = async () => {
       if (!cfPreviewRows.value.length) { showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
       const ok = await showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
@@ -94,15 +99,16 @@ window.StErpGenMng = {
 
     /* fnStatusBadge */
     const _ERP_STATUS_FB = { '전송완료':'badge-green', '생성완료':'badge-blue', '오류':'badge-red' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_STATUS', s, _ERP_STATUS_FB[s] || 'badge-gray');
 
-    /* fmtW */
+    /* fmtW — 포맷 W */
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => { await handleSearchData('DEFAULT'); };
 
-    // -- return ---------------------------------------------------------------
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const previewGridColumns = [
       { key: 'debit',       label: '차변계정' },
@@ -111,6 +117,7 @@ window.StErpGenMng = {
       { key: 'creditAmt',   label: '대변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#27ae60' },
       { key: 'description', label: '적요', cellStyle: 'color:#666' },
     ];
+    // --- [컬럼 정의] ---
     const histGridColumns = [
       { key: 'genMon',    label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'slipType',  label: '전표유형', badge: () => 'badge-blue' },
@@ -131,6 +138,8 @@ window.StErpGenMng = {
     ];
     const settingForm = reactive({ slipType: slipType.value });
     watch(() => settingForm.slipType, (v) => { slipType.value = v; });
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, targetMon, slipType, cfPreviewRows, genHistory, previewGridColumns, histGridColumns, doGenerate, fnStatusBadge, fmtW, onSearch, codes,
              settingForm, baseFormColumns };

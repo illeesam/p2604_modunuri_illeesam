@@ -8,6 +8,8 @@ window.ZdLocalStorage = {
     adminData: { type: Object, default: () => ({}) }, // 목업 데이터
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,7 +19,9 @@ window.ZdLocalStorage = {
     const storageData = reactive([]);
                     const uiState = reactive({ isResizing: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
 
-    /* loadStorageData */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* loadStorageData — 로드 */
     const loadStorageData = () => {
       const data = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -33,7 +37,7 @@ window.ZdLocalStorage = {
       return storageData.filter(item => item.key.toLowerCase().includes(uiState.filterKey.toLowerCase()));
     });
 
-    /* copyValue */
+    /* copyValue — 복사 */
     const copyValue = (value) => {
       try {
         navigator.clipboard.writeText(value);
@@ -43,13 +47,13 @@ window.ZdLocalStorage = {
       }
     };
 
-    /* startEdit */
+    /* startEdit — 시작 편집 */
     const startEdit = (key, value) => {
       uiState.editingKey = key;
       uiState.editingValue = value;
     };
 
-    /* saveEdit */
+    /* saveEdit — 저장 */
     const saveEdit = (key) => {
       if (!key) return;
       try {
@@ -63,13 +67,13 @@ window.ZdLocalStorage = {
       }
     };
 
-    /* cancelEdit */
+    /* cancelEdit — 취소 */
     const cancelEdit = () => {
       uiState.editingKey = null;
       uiState.editingValue = '';
     };
 
-    /* deleteItem */
+    /* deleteItem — 삭제 */
     const deleteItem = (key) => {
       if (!confirm(`'${key}'를 삭제하시겠습니까?`)) return;
       try {
@@ -81,7 +85,7 @@ window.ZdLocalStorage = {
       }
     };
 
-    /* clearAllStorage */
+    /* clearAllStorage — 비우기 */
     const clearAllStorage = () => {
       if (!confirm('localStorage의 모든 데이터를 삭제하시겠습니까?')) return;
       try {
@@ -93,7 +97,7 @@ window.ZdLocalStorage = {
       }
     };
 
-    /* parseValue */
+    /* parseValue — 파싱 값 */
     const parseValue = (value) => {
       try {
         return JSON.stringify(JSON.parse(value), null, 2);
@@ -102,14 +106,14 @@ window.ZdLocalStorage = {
       }
     };
 
-    /* startResize */
+    /* startResize — 시작 Resize */
     const startResize = (e) => {
       uiState.isResizing = true;
       uiState.startX = e.clientX;
       uiState.startWidth = uiState.valueColWidth;
     };
 
-    /* handleMouseMove */
+    /* handleMouseMove — 처리 */
     const handleMouseMove = (e) => {
       if (!uiState.isResizing) return;
       const delta = e.clientX - uiState.startX;
@@ -120,10 +124,11 @@ window.ZdLocalStorage = {
       uiState.valueColWidth = Math.min(maxValue, newWidth);
     };
 
-    /* stopResize */
+    /* stopResize — 중지 Resize */
     const stopResize = () => {
       uiState.isResizing = false;
     };
+
 
     onMounted(() => {
       window.addEventListener('mousemove', handleMouseMove);
@@ -138,6 +143,8 @@ window.ZdLocalStorage = {
     loadStorageData();
 
     const isResizing = Vue.toRef(uiState, 'isResizing');
+    // ===== return (템플릿 노출) ===============================================
+
     return {
       storageData, uiState, filteredData,
       loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, deleteItem, clearAllStorage, parseValue, startResize

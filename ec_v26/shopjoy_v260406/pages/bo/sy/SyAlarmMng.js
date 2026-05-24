@@ -5,18 +5,26 @@ window.SyAlarmMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
+    // --- Vue API / boApp 전역 함수 참조 ---
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+
+    // --- 화면 상태 / 그리드 데이터 (reactive) ---
     const alarms = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ alarm_type: [], alarm_status: [], date_range_opts: [] });
 
+    // --- 정렬 매핑 ---
     const SORT_MAP = { nm: { asc: 'alarmTitle asc', desc: 'alarmTitle desc' }, reg: { asc: 'alarmSendDate asc', desc: 'alarmSendDate desc' } };
 
-    /* 알람 getSortParam */
+    // --- [정렬] ---
+
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
@@ -24,6 +32,9 @@ window.SyAlarmMng = {
     };
 
     /* 알람 onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -33,10 +44,13 @@ window.SyAlarmMng = {
       handleSearchList();
     };
 
-    /* 알람 sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
+    // --- [데이터 로드] ---
+
     // onMounted에서 API 로드
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -65,16 +79,17 @@ window.SyAlarmMng = {
         uiState.loading = false;
       }
     };
+    // --- [이벤트] 표시경로 선택 모달 (sy_path) ---
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
 
-    /* 알람 openPathPick */
+    /* openPathPick — 경로 선택 열기 */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
 
-    /* 알람 closePathPick */
+    /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
-    /* 알람 onPathPicked */
+    /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -83,13 +98,14 @@ window.SyAlarmMng = {
       }
     };
 
-    /* 알람 pathLabel */
+    /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* -- 좌측 표시경로 트리 -- */
+    // --- [이벤트] 좌측 표시경로 트리 ---
+    /* selectNode — 노드 선택 */
     const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
 
-    /* 알람 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.alarm_type = codeStore.sgGetGrpCodes('ALARM_TYPE');
@@ -107,7 +123,7 @@ window.SyAlarmMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    /* 알람 _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -115,7 +131,9 @@ window.SyAlarmMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* 알람 handleDateRangeChange */
+    // --- [이벤트] 기간 변경 ---
+
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.bofGetDateRange(searchParam.dateRange);
@@ -133,19 +151,21 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       reloadTrigger: 0 // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
     });
 
-    /* 알람 loadView */
+    // --- [이벤트] 상세 패널 / 인라인 네비게이션 ---
+
+    /* loadView — 뷰 로드 */
     const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; detailModal.reloadTrigger++; };
 
-    /* 알람 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; detailModal.reloadTrigger++; };
 
-    /* 알람 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; detailModal.reloadTrigger++; };
 
-    /* 알람 closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
 
-    /* 알람 inlineNavigate */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'syAlarmMng') { detailModal.show = false; detailModal.dtlId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
@@ -155,34 +175,45 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
-    /* 알람 fnBuildPagerNums */
+    // --- [페이지네이션 헬퍼] ---
+
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    // --- [배지 함수] ---
 
     /* 알람 fnStatusBadge */
     const _ALARM_STATUS_FB = { '발송완료': 'badge-green', '예약': 'badge-blue', '실패': 'badge-red', '임시': 'badge-gray' };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('ALARM_STATUS', s, _ALARM_STATUS_FB[s] || 'badge-gray');
 
     /* 알람 fnTypeBadge */
     const _ALARM_TYPE_FB = { '푸시': 'badge-blue', '이메일': 'badge-orange', 'SMS': 'badge-green', '인앱': 'badge-gray' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => coUtil.cofCodeBadge('ALARM_TYPE', t, _ALARM_TYPE_FB[t] || 'badge-gray');
 
     /* 알람 fnTargetBadge */
     const _ALARM_TARGET_TYPE_FB = { '전체': 'badge-red', 'VIP': 'badge-orange', '우수': 'badge-blue', '일반': 'badge-gray' };
+    /* fnTargetBadge — 유틸 */
     const fnTargetBadge = t => coUtil.cofCodeBadge('ALARM_TARGET_TYPE', t, _ALARM_TARGET_TYPE_FB[t] || 'badge-gray');
 
-    /* 알람 목록조회 */
+    // --- [이벤트] 검색 / 페이지 / 사이즈 ---
+
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 알람 onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
 
-    /* 알람 setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* 알람 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 알람 삭제 */
+    // --- [행 CRUD - 삭제 / 엑셀] ---
+
+    /* handleDelete — 삭제 */
     const handleDelete = async (a) => {
       const ok = await showConfirm('삭제', `[${a.alarmTitle}]을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -201,10 +232,11 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       }
     };
 
-    /* 알람 exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(alarms, [{label:'ID',key:'alarmId'},{label:'유형',key:'alarmTypeCd'},{label:'채널',key:'channelCd'},{label:'제목',key:'alarmTitle'},{label:'메시지',key:'alarmMsg'},{label:'상태',key:'alarmStatusCd'},{label:'발송일',key:'alarmSendDate'}], '알림목록.csv');
     /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
 
+    // --- [컬럼 정의] 검색 / 그리드 / 행 스타일 ---
     /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
@@ -222,6 +254,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
         onRangeChange: () => handleDateRangeChange() },
     ];
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const baseGridColumns = [
       { key: 'pathId',        label: '표시경로',
         pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '경로 선택...' } },
@@ -235,12 +269,39 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
       { key: 'regDate',       label: '등록일', sortKey: 'reg' },
     ];
+    /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (a) => detailModal.dtlId === a.alarmId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
-    return { alarms, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, codes, cfSiteNm, searchParam, handleDateRangeChange, pager, fnStatusBadge, fnTypeBadge, fnTargetBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, detailModal, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, baseSearchColumns, baseGridColumns, fnRowStyle };
+    return {
+      // 상태 / 데이터
+      alarms, uiState, codes, pathPickModal, searchParam, pager, detailModal,
+
+      // computed
+      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,
+
+      // 컬럼 정의
+      baseSearchColumns, baseGridColumns, fnRowStyle,
+
+      // 검색 / 페이지 / 사이즈 이벤트
+      onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
+
+      // 정렬 이벤트
+      onSort, sortIcon,
+
+      // 표시경로 모달
+      openPathPick, closePathPick, onPathPicked, pathLabel, selectNode,
+
+      // 배지 함수
+      fnStatusBadge, fnTypeBadge, fnTargetBadge,
+
+      // 행 삭제 / 엑셀
+      handleDelete, exportExcel,
+
+      // 상세 패널 / 인라인 네비
+      loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate,
+    };
   },
   template: /* html */`
 <div>

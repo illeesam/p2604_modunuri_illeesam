@@ -3,6 +3,8 @@ window.XsSample13 = {
   name: 'XsSample13',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), copiedPanel: null, previewTime: new Date().toTimeString().slice(0, 5) });
     const codes = reactive({
@@ -12,7 +14,9 @@ window.XsSample13 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -34,7 +38,9 @@ window.XsSample13 = {
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
 
-    /* onCatApply */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -56,18 +62,19 @@ window.XsSample13 = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
 
-    /* isInRange */
+    /* isInRange — 여부 확인 */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
       const dt = `${d}T${uiState.previewTime || '00:00'}`;
+      /* _norm — _norm */
       const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
       if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) return false;
       if (panel.dispEndDt   && dt > _norm(panel.dispEndDt))   return false;
       return true;
     };
 
-    /* panelFilter */
+    /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
       if (uiState.searchStatus       && p.status !== uiState.searchStatus) return false;
       if (!isInRange(p)) return false;
@@ -92,7 +99,7 @@ window.XsSample13 = {
       cache_banner:'캐시',       widget_embed:'위젯',
     };
 
-    /* fnWLabel */
+    /* fnWLabel — 유틸 */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
     const WIDGET_ICONS = {
       image_banner:'🖼', product_slider:'🛍', product:'📦',
@@ -103,7 +110,7 @@ window.XsSample13 = {
       cache_banner:'💰', widget_embed:'🧩',
     };
 
-    /* fnWIcon */
+    /* fnWIcon — 유틸 */
     const fnWIcon = (t) => WIDGET_ICONS[t] || '◻';
     const cfFilteredAreas = computed(() =>
       cfAllAreas.value.filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
@@ -115,13 +122,14 @@ window.XsSample13 = {
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-    // -- return ---------------------------------------------------------------
+        // ===== return (템플릿 노출) ===============================================
+
 
         return { area, panels , uiState, codes };
       })
     );
 
-    /* 패널 단건 소스 */
+    /* panelSource — 패널 Source */
     const panelSource = (panel) => {
       const rows = panel.rows || [];
       const attrs = [
@@ -151,7 +159,7 @@ window.XsSample13 = {
       return parts.join('\n\n');
     });
 
-    /* copySource */
+    /* copySource — 복사 */
     const copySource = () => {
       navigator.clipboard?.writeText(cfSourceText.value).then(() => {
         uiState.copied = true;
@@ -159,7 +167,7 @@ window.XsSample13 = {
       });
     };
 
-    /* copyPanel */
+    /* copyPanel — 복사 */
     const copyPanel = (panel) => {
       navigator.clipboard?.writeText(panelSource(panel)).then(() => {
         uiState.copiedPanel = panel.dispId;
@@ -167,9 +175,9 @@ window.XsSample13 = {
       });
     };
 
-    /* 구문 강조 HTML 생성 (v-html용) */
+    /* panelSourceHtml — 패널 Source Html */
     const panelSourceHtml = (panel) => {
-      /* esc */
+      /* esc — esc */
       const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
       return panelSource(panel).split('\n').map(line => {
         const el = esc(line);
@@ -185,22 +193,20 @@ window.XsSample13 = {
     /* 화면영역 드롭다운 */
     const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
 
-    /* toggleArea */
+    /* toggleArea — 영역 토글 */
     const toggleArea    = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
 
-    /* selectAllAreas */
+    /* selectAllAreas — 선택 */
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
 
-    /* clearAllAreas */
+    /* clearAllAreas — 비우기 */
     const clearAllAreas  = () => { selectedAreas.clear(); };
 
-    /* resetDate */
+    /* resetDate — 초기화 */
     const resetDate = () => {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
-
-    // -- return ---------------------------------------------------------------
 
     return {
       uiState, previewDate, previewTime,

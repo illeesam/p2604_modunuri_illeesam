@@ -5,6 +5,8 @@ window.StSettleAdjMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,6 +20,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     });
 
     /* 정산 조정 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -33,7 +38,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
             const dateEnd   = ref('');
 
-    /* 정산 조정 handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
     };
@@ -42,7 +47,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const vendorList = reactive([]);
     const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
 
-    /* 정산 조정 목록조회 */
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const [resV, resA] = await Promise.all([
@@ -81,7 +86,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 정산 조정 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
         const form = reactive({});
@@ -99,20 +104,23 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       reason:   window.yup.string().required('사유를 입력하세요.'),
     });
 
-    /* 정산 조정 openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => {
       Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '매출조정', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
       uiState.selectedId = '__new__'; uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
-    /* 정산 조정 openEdit */
+    /* openEdit — 열기 */
     const openEdit = (r) => { Object.assign(form, {...r}); uiState.selectedId = r.adjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
 
-    /* 정산 조정 closeForm */
+    /* closeForm — 닫기 */
     const closeForm = () => { uiState.selectedId = null; };
 
     /* 정산 조정 저장 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
@@ -137,7 +145,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
-    /* 정산 조정 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (r) => {
       const ok = await showConfirm('삭제', `[${r.adjId}] 정산조정을 삭제하시겠습니까?`);
       if (!ok) return;
@@ -154,7 +162,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
-    /* 정산 조정 doApprove */
+    /* doApprove — 실행 */
     const doApprove = async (r) => {
       const ok = await showConfirm('승인', '정산조정을 승인하시겠습니까?');
       if (!ok) return;
@@ -173,27 +181,31 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* 정산 조정 fnAprvBadge */
     const _SETTLE_ADJ_STATUS_FB = { '승인':'badge-green', '대기':'badge-blue', '반려':'badge-red' };
+    /* fnAprvBadge — 유틸 */
     const fnAprvBadge = s => coUtil.cofCodeBadge('SETTLE_ADJ_STATUS', s, _SETTLE_ADJ_STATUS_FB[s] || 'badge-gray');
 
-    /* 정산 조정 fnTypeBadge */
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => ({ '매출조정':'badge-blue', '수수료조정':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
 
-    /* 정산 조정 fmtW */
+    /* fmtW — 포맷 W */
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
-    /* 정산 조정 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    /* 정산 조정 onReset */
+    /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
-    /* 정산 조정 setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
 
-    /* 정산 조정 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    // -- return ---------------------------------------------------------------
+        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+        // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
       { key: 'dateRange', label: '정산일', type: 'dateRange', paramObj: uiState,
@@ -239,6 +251,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'reason',   label: '사유', type: 'text', required: true,
         placeholder: '조정 사유를 입력하세요.', colSpan: 4 },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiState, codes, handleDateRangeChange, pager, adjList, baseSearchColumns, baseGridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange, baseFormColumns };
   },

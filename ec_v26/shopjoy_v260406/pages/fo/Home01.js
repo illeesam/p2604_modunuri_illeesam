@@ -6,21 +6,25 @@ window.Home01 = {
   },
   emits: [],
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { computed, ref, onMounted, onBeforeUnmount, reactive, watch } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
 
-    /* selectProd */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* selectProd — 선택 */
     const selectProd        = (p) => window.foApp.selectProd(p);
 
-    /* toggleLike */
+    /* toggleLike — 토글 */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
 
-    /* isLiked */
+    /* isLiked — 여부 확인 */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -77,10 +81,10 @@ window.Home01 = {
     ];
     let bannerTimer = null;
 
-    /* startBannerTimer */
+    /* startBannerTimer — 시작 Banner Timer */
     const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
 
-    /* setBanner */
+    /* setBanner — 설정 */
     const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
 
     // ★ onMounted
@@ -102,9 +106,9 @@ window.Home01 = {
     });
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    // -- return ---------------------------------------------------------------
-
     const siteConfig = window.SITE_CONFIG || {};
+    // ===== return (템플릿 노출) ===============================================
+
     return { siteConfig, fnCategoryLabel, fnCatEmoji, cfNewProds, cfBestProds, cfAllHomeProds, cfSaleProds, uiState, banners, setBanner, codes, isLiked, toggleLike, selectProd };
   },
   template: /* html */ `

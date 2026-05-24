@@ -7,6 +7,8 @@ window.OdCartMng = {
     showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, onMounted } = Vue;
     const showToast   = window.boApp?.showToast   || props.showToast;
     const showConfirm = window.boApp?.showConfirm || props.showConfirm;
@@ -20,29 +22,34 @@ window.OdCartMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* openMemberPick — 열기 */
     const openMemberPick = () => { memberPick.open = true; };
+    /* onSelectMember — 이벤트 */
     const onSelectMember = (m) => { search.memberId = m.memberId; search.memberNm = m.memberNm || m.loginId || m.memberId; };
+    /* onClearMember — 이벤트 */
     const onClearMember  = () => { search.memberId = ''; search.memberNm = ''; };
 
-    /* ── 표시 함수 ── */
+    /* fnCheckedBadge — 유틸 */
     const fnCheckedBadge = (v) => v === 'Y' ? 'badge badge-green' : 'badge badge-gray';
 
-    /* 장바구니 fnCheckedBadgeCls (BoGrid badge 컬럼용 bare class) */
+    /* fnCheckedBadgeCls — 유틸 */
     const fnCheckedBadgeCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    /* 장바구니 fnCheckedNm */
+    /* fnCheckedNm — 유틸 */
     const fnCheckedNm    = (v) => v === 'Y' ? '선택' : '미선택';
 
-    /* 장바구니 fnPrice */
+    /* fnPrice — 유틸 */
     const fnPrice        = (v) => v != null ? Number(v).toLocaleString() + '원' : '-';
 
-    /* 장바구니 fnDate */
+    /* fnDate — 유틸 */
     const fnDate         = (v) => v ? String(v).substring(0, 16).replace('T', ' ') : '-';
 
-    /* 장바구니 fnAvatar */
+    /* fnAvatar — 유틸 */
     const fnAvatar       = (nm) => nm ? nm.charAt(0) : '?';
 
-    /* ── 목록 조회 ── */
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
@@ -77,7 +84,7 @@ window.OdCartMng = {
       }
     };
 
-    /* 장바구니 목록조회 */
+    /* onSearch — 조회 */
     const onSearch    = () => {
       if ((search.dateStart || search.dateEnd) && !search.dateType) {
         showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -86,7 +93,7 @@ window.OdCartMng = {
       pager.pageNo = 1; handleSearchList();
     };
 
-    /* 장바구니 onReset */
+    /* onReset — 초기화 */
     const onReset     = () => {
       search.siteId = ''; search.memberId = ''; search.memberNm = '';
       search.searchType = ''; search.searchValue = '';
@@ -94,25 +101,35 @@ window.OdCartMng = {
       onSearch();
     };
 
-    /* 장바구니 setPage / onSizeChange (bo-pager 연동) */
+    /* setPage — 설정 */
     const setPage = (no) => { if (no >= 1 && no <= pager.pageTotalPage) { pager.pageNo = no; handleSearchList(); } };
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
     /* ── BoGrid selectable 연동 ── */
     const Vue3 = Vue;
+    /* isChecked — 여부 확인 */
     const isChecked = (id) => uiState.selectedIds.includes(id);
     const cfAllChecked = Vue3.computed(() =>
       rows.length > 0 && uiState.selectedIds.length === rows.length);
+    /* toggleCheck — 토글 */
     const toggleCheck = (id) => {
       const idx = uiState.selectedIds.indexOf(id);
       if (idx >= 0) uiState.selectedIds.splice(idx, 1);
       else uiState.selectedIds.push(id);
     };
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => {
       uiState.selectedIds = cfAllChecked.value ? [] : rows.map(r => r.cartId);
     };
+    /* fnGridRowStyle — 유틸 */
     const fnGridRowStyle = (r) =>
       uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : '';
+
+
+    // --- [컬럼 정의] ---
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const baseSearchColumns = [
       { key: 'siteId', type: 'select', label: '사이트',
@@ -162,7 +179,7 @@ window.OdCartMng = {
 
     /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
 
-    /* ── 삭제 ── */
+    /* handleDelete — 삭제 */
     const handleDelete = async (cartId) => {
       const ok = await showConfirm('삭제', '장바구니 항목을 삭제하시겠습니까?');
       if (!ok) return;
@@ -175,7 +192,7 @@ window.OdCartMng = {
       }
     };
 
-    /* 장바구니 handleBulkDelete */
+    /* handleBulkDelete — 처리 */
     const handleBulkDelete = async () => {
       if (!uiState.selectedIds.length) { showToast('삭제할 항목을 선택해주세요.', 'error'); return; }
       const ok = await showConfirm('일괄삭제', `선택한 ${uiState.selectedIds.length}건을 삭제하시겠습니까?`);
@@ -192,7 +209,7 @@ window.OdCartMng = {
       }
     };
 
-    /* ── 초기 로드 ── */
+    /* loadCodes — 로드 */
     const loadCodes = async () => {
       try {
         const res = await coApiSvc.sySite.getList({}, '장바구니관리', '사이트목록');
@@ -204,7 +221,11 @@ window.OdCartMng = {
       } catch (_) {}
     };
 
+
     onMounted(() => { loadCodes(); handleSearchList(); });
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       rows, pager, search, uiState, codes,

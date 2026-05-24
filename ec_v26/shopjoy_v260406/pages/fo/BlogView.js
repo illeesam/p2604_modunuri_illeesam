@@ -6,6 +6,8 @@ window.BlogView = {
     dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, commentText: ''});
@@ -13,7 +15,9 @@ window.BlogView = {
 
     const posts = reactive([]);
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
         const res = await foApiSvc.cmBltn.getById(props.dtlId, '블로그상세', '상세조회');
@@ -24,7 +28,7 @@ window.BlogView = {
       }
     };
 
-    /* fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -70,7 +74,7 @@ window.BlogView = {
     const localComments = reactive([]);
     const cfAllComments   = computed(() => [...(cfPost.value.comments || []), ...localComments]);
 
-    /* addComment */
+    /* addComment — 추가 */
     const addComment    = () => {
       const t = searchParam.commentText.trim();
       if (!t) return;
@@ -96,7 +100,7 @@ window.BlogView = {
     /* 관련 글 */
     const cfRelatedPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
@@ -104,7 +108,7 @@ window.BlogView = {
       } catch (e) {}
     };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, searchParamOrg);
     };
@@ -115,7 +119,7 @@ window.BlogView = {
       handleSearchData();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return { cfPost, cfBodyParagraphs, commentText, cfAllComments, addComment,
              searchParam, cfLatestPosts, categories, archives, cfRecentComments, cfRelatedPosts, onSearch, onReset , uiState, codes };

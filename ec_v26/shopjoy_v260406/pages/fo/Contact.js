@@ -6,13 +6,17 @@ window.Contact = {
   },
   emits: [],
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, ref, computed, watch, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showAlert            = window.foApp.showAlert;  // 알림 모달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -31,7 +35,7 @@ window.Contact = {
     const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     const errors = reactive({});
 
-    /* validate */
+    /* validate — 검증 */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       let ok = true;
@@ -41,7 +45,9 @@ window.Contact = {
       return ok;
     };
 
-    /* handleSubmit */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSubmit — 처리 */
     const handleSubmit = async () => {
       if (!validate()) return;
       if (typeof foApi !== 'undefined') {
@@ -59,7 +65,10 @@ window.Contact = {
       Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     /* FoFormArea columns 정의 */
+    // --- [컬럼 정의] ---
     const baseFormColumns = [
       { key: 'name',        label: '이름',     type: 'text',  required: true, placeholder: '홍길동' },
       { key: 'email',       label: '이메일',   type: 'email', required: true, placeholder: 'hello@example.com' },
@@ -73,7 +82,8 @@ window.Contact = {
         rows: 5, placeholder: '문의하실 내용을 자유롭게 입력해주세요. (최소 10자)' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { form, errors, handleSubmit, cfInquiryCodes, uiState, codes, baseFormColumns };
   },

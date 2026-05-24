@@ -5,6 +5,8 @@ window.SyRoleMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -26,6 +28,10 @@ window.SyRoleMng = {
     const codes = reactive({ role_status: [], use_yn: [], perm_levels: ['없음','읽기','쓰기','관리','차단'], role_cats: [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']] });
 
     // onMounted에서 API 로드
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -45,13 +51,13 @@ window.SyRoleMng = {
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
 
-    /* 역할(권한) openPathPick */
+    /* openPathPick — 경로 선택 열기 */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
 
-    /* 역할(권한) closePathPick */
+    /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
-    /* 역할(권한) onPathPicked */
+    /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -60,16 +66,16 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) pathLabel */
+    /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 좌측 표시경로 트리 -- */
         const expanded = reactive(new Set(['']));
 
-    /* 역할(권한) toggleNode */
+    /* toggleNode — 노드 토글 */
     const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
 
-    /* 역할(권한) selectNode */
+    /* selectNode — 노드 선택 */
     const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
     const cfTree = computed(() => {
       const t = boUtil.bofBuildRoleTree();
@@ -78,7 +84,7 @@ window.SyRoleMng = {
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
       const ROOT_BY_CAT = { ADMIN:'SUPER_ADMIN', SITE:'SITE_GROUP', SALES:'SITE_MGR_ROOT', DLIV:'DLIV_ROOT' };
 
-      /* 역할(권한) enrich */
+      /* enrich — enrich */
       const enrich = (n) => {
         if (n._raw && n._raw.roleId != null) {
           let cur = n._raw;
@@ -102,14 +108,15 @@ window.SyRoleMng = {
       return coUtil.cofCollectDescendantIds(roles, 'roleId', 'parentRoleId', uiState.selectedPath);
     });
 
-    /* 역할(권한) expandAll */
+    /* expandAll — 펼치기 전체 */
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
 
-    /* 역할(권한) collapseAll */
+    /* collapseAll — 접기 전체 */
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
 
-    /* 역할(권한) fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.role_status = codeStore.sgGetGrpCodes('ROLE_STATUS');
@@ -133,7 +140,7 @@ window.SyRoleMng = {
     /* 루트 역할코드 → 자동 카테고리 매핑 */
     const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
 
-    /* 역할(권한) deriveRoleCat */
+    /* deriveRoleCat — derive 권한 카테고리 */
     const deriveRoleCat = (role) => {
       const rolesData = roles || [];
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
@@ -143,10 +150,10 @@ window.SyRoleMng = {
       return code ? [code] : [];
     };
 
-    /* 역할(권한) effectiveRoleCat */
+    /* effectiveRoleCat — effective 권한 카테고리 */
     const effectiveRoleCat = (row) => (row.roleCat && row.roleCat.length) ? row.roleCat : deriveRoleCat(row);
 
-    /* 역할(권한) toggleRoleCat */
+    /* toggleRoleCat — 토글 */
     const toggleRoleCat = (row, code) => {
       const cur = effectiveRoleCat(row);
       row.roleCat = (cur.length === 1 && cur[0] === code) ? [] : [code];
@@ -166,19 +173,20 @@ window.SyRoleMng = {
     boUtil.__roleCatColor = (code) => ROLE_CAT_COLOR[code] || '#9ca3af';
     const PERM_COLORS = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
 
-    /* 역할(권한) fnPermColor */
+    /* fnPermColor — 유틸 */
     const fnPermColor   = (p) => PERM_COLORS[p] || '#9ca3af';
     const DEPTH_BULLETS = ['●', '◦', '·', '-'];
     const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
 
-    /* 역할(권한) depthBullet */
+    /* depthBullet — 깊이 글머리 */
     const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
 
-    /* 역할(권한) depthColor */
+    /* depthColor — 깊이 색상 */
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
 
-    /* -- 검색 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
+
       return { searchType: '', searchValue: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
     };
     const searchParam = reactive(_initSearchParam());
@@ -189,7 +197,7 @@ window.SyRoleMng = {
 
     const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentRoleId', 'roleTypeCd', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'roleRemark'];
 
-    /* -- 트리 정렬 -- */
+    /* buildTreeRows — 빌드 */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(r => { map[r.roleId] = { ...r, _children: [] }; });
@@ -200,7 +208,7 @@ window.SyRoleMng = {
       });
       const result = [];
 
-      /* 역할(권한) traverse */
+      /* traverse — traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
@@ -209,11 +217,9 @@ window.SyRoleMng = {
       return result;
     };
 
-    /* 역할(권한) makeRow */
+    /* makeRow — 행 생성 */
     const makeRow = (r) => {
       const cat = Array.isArray(r.roleCat) ? [...r.roleCat] : [];
-
-    // -- return ---------------------------------------------------------------
 
       return { ...r, _depth: r._depth || 0, _row_status: 'N', _row_check: false,
         restrictPerm: r.restrictPerm || '없음',
@@ -225,18 +231,18 @@ window.SyRoleMng = {
       };
     };
 
-    /* 역할(권한) 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       await handleSearchList('DEFAULT');
     };
 
-    /* 역할(권한) onReset */
+    /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       handleSearchList();
     };
 
-    /* -- 메뉴·사용자 초기 로드 -- */
+    /* fnLoadMenusAndUsers — 유틸 */
     const fnLoadMenusAndUsers = async () => {
       try {
         const [mRes, uRes] = await Promise.all([
@@ -252,7 +258,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* -- 역할 선택 시 메뉴권한·사용자 조회 -- */
+    /* handleLoadRoleDetail — 처리 */
     const handleLoadRoleDetail = async (roleId) => {
       if (!roleId || roleId <= 0) { roleMenus.splice(0); roleUsers.splice(0); return; }
       uiState.detailLoading = true;
@@ -277,7 +283,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* -- 메뉴권한·대상사용자 설정 저장 -- */
+    /* handleSaveRoleConfig — 저장 */
     const handleSaveRoleConfig = async () => {
       if (!uiState.selectedRoleId) return;
       const ok = await showConfirm('설정 저장', '메뉴 접근권한과 대상사용자를 저장하시겠습니까?');
@@ -299,7 +305,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) setFocused */
+    /* setFocused — 포커스 설정 */
     const setFocused = (realIdx) => {
       uiState.focusedIdx = realIdx;
       const row = gridRows[realIdx];
@@ -310,10 +316,10 @@ window.SyRoleMng = {
       }
     };
 
-    /* 설정 버튼 노출 여부 (속성값 && 금지 정책상 fn 분리) */
+    /* cfShowRoleSetting — 파생값 */
     const cfShowRoleSetting = (row) => row.roleId > 0 && row._row_status !== 'D';
 
-    /* 역할(권한) onOpenSetting */
+    /* onOpenSetting — 이벤트 */
     const onOpenSetting = (idx) => {
       setFocused(idx);
       Vue.nextTick(() => {
@@ -322,7 +328,7 @@ window.SyRoleMng = {
       });
     };
 
-    /* 역할(권한) onCellChange */
+    /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') return;
       const changed = EDIT_FIELDS.some(f => {
@@ -332,7 +338,7 @@ window.SyRoleMng = {
       row._row_status = changed ? 'U' : 'N';
     };
 
-    /* 역할(권한) addRow */
+    /* addRow — 행 추가 */
     const addRow = () => {
       const ref = uiState.focusedIdx !== null ? gridRows[uiState.focusedIdx] : null;
       const newRow = {
@@ -348,7 +354,7 @@ window.SyRoleMng = {
       uiState.selectedRoleId = null;
     };
 
-    /* 역할(권한) deleteRow */
+    /* deleteRow — 행 삭제 */
     const deleteRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -357,7 +363,7 @@ window.SyRoleMng = {
       } else { row._row_status = 'D'; }
     };
 
-    /* 역할(권한) cancelRow */
+    /* cancelRow — 행 취소 */
     const cancelRow = (realIdx) => {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
@@ -369,7 +375,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) cancelChecked */
+    /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
       const checkedIds = new Set(gridRows.filter(r => r._row_check).map(r => r.roleId));
       if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
@@ -384,7 +390,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) deleteRows */
+    /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
         if (!gridRows[i]._row_check) continue;
@@ -393,7 +399,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const iRows = gridRows.filter(r => r._row_status === 'I');
       const uRows = gridRows.filter(r => r._row_status === 'U');
@@ -418,13 +424,13 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* 역할(권한) fnStatusClass */
+    /* fnStatusClass — 상태 배지 클래스 */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    /* 역할(권한) parentNm */
+    /* parentNm — 상위 Nm */
     const parentNm = (parentRoleId) => {
       if (!parentRoleId) return '';
       const p = roles.find(r => r.roleId === parentRoleId);
@@ -433,10 +439,10 @@ window.SyRoleMng = {
 
     const roleTreeModal = reactive({ show: false, targetRow: null });
 
-    /* 역할(권한) openParentModal */
+    /* openParentModal — 열기 */
     const openParentModal = async (row) => { roleTreeModal.targetRow = row; await handleSearchList('DEFAULT'); roleTreeModal.show = true; };
 
-    /* 역할(권한) onParentSelect */
+    /* onParentSelect — 이벤트 */
     const onParentSelect  = (role) => {
       if (roleTreeModal.targetRow) { roleTreeModal.targetRow.parentRoleId = role.roleId; roleTreeModal.targetRow._depth = 0; onCellChange(roleTreeModal.targetRow); }
       roleTreeModal.show = false;
@@ -450,7 +456,7 @@ window.SyRoleMng = {
         .map(m => ({ ...m, _depth: depth, _kids: buildMenuTree(items, m.menuId, depth + 1) }));
     };
 
-    /* 역할(권한) flatMenuTree */
+    /* flatMenuTree — 평탄 메뉴 트리 */
     const flatMenuTree = (nodes, result = []) => {
       nodes.forEach(n => { result.push(n); flatMenuTree(n._kids, result); });
       return result;
@@ -467,14 +473,14 @@ window.SyRoleMng = {
       return new Set(roleMenus.filter(x => x.roleId === uiState.selectedRoleId).map(x => x.menuId));
     });
 
-    /* 역할(권한) getMenuPerm */
+    /* getMenuPerm — 조회 */
     const getMenuPerm = (menuId) => {
       if (!uiState.selectedRoleId) return '없음';
       const entry = roleMenus.find(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
       return entry ? (entry.permLevel || '읽기') : '없음';
     };
 
-    /* 역할(권한) setMenuPerm */
+    /* setMenuPerm — 설정 */
     const setMenuPerm = (menuId, level) => {
       if (!uiState.selectedRoleId) return;
       const idx = roleMenus.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
@@ -486,7 +492,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) setAllMenuPerm */
+    /* setAllMenuPerm — 설정 */
     const setAllMenuPerm = (level) => {
       if (!uiState.selectedRoleId) return;
       if (level === '없음') {
@@ -500,10 +506,10 @@ window.SyRoleMng = {
       }
     };
 
-    /* 역할(권한) isMenuChecked */
+    /* isMenuChecked — 여부 확인 */
     const isMenuChecked = (menuId) => getMenuPerm(menuId) !== '없음';
 
-    /* 역할(권한) toggleAllMenus */
+    /* toggleAllMenus — 전체 토글 */
     const toggleAllMenus = (check) => { setAllMenuPerm(check ? '읽기' : '없음'); };
     const cfMenuAllChecked = computed(() => {
       if (!uiState.selectedRoleId || !cfMenuTree.value.length) return false;
@@ -519,7 +525,7 @@ window.SyRoleMng = {
         .filter(Boolean);
     });
 
-    /* 역할(권한) onUserSelect */
+    /* onUserSelect — 이벤트 */
     const onUserSelect = (users) => {
       if (!uiState.selectedRoleId) return;
       users.forEach(u => {
@@ -529,7 +535,7 @@ window.SyRoleMng = {
       uiState.userSelectOpen = false;
     };
 
-    /* 역할(권한) removeUser */
+    /* removeUser — 제거 */
     const removeUser = (boUserId) => {
       if (!uiState.selectedRoleId) return;
       const idx = roleUsers.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === boUserId);
@@ -542,17 +548,20 @@ window.SyRoleMng = {
       return r ? r.roleNm : '';
     });
 
-    /* 역할(권한) exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(
       gridRows.filter(r => r._row_status !== 'D'),
       [{label:'ID',key:'roleId'},{label:'역할코드',key:'roleCode'},{label:'역할명',key:'roleNm'},{label:'상위ID',key:'parentRoleId'},{label:'유형',key:'roleTypeCd'},{label:'순서',key:'sortOrd'},{label:'사용여부',key:'useYn'},{label:'제한',key:'restrictPerm'},{label:'비고',key:'roleRemark'}],
       '역할목록.csv'
     );
 
-    /* 역할(권한) onTreeCatChange */
+    /* onTreeCatChange — 이벤트 */
     const onTreeCatChange = () => { handleSearchList(); };
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+
+        // --- [컬럼 정의] ---
+
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -564,6 +573,8 @@ window.SyRoleMng = {
       { key: 'cat', type: 'select', label: '역할구분', options: () => codes.role_cats, nullLabel: '역할구분 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const baseGridColumns = [
       { key: 'roleCode',     label: '역할코드', style: 'width:120px;',    edit: 'text', mono: true },
@@ -593,7 +604,7 @@ window.SyRoleMng = {
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, codes, baseSearchColumns, baseGridColumns,

@@ -3,6 +3,8 @@ window.XsSample12 = {
   name: 'XsSample12',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({
@@ -12,7 +14,9 @@ window.XsSample12 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -38,7 +42,9 @@ window.XsSample12 = {
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
 
-    /* onCatApply */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
     /* 현재 사용자 인증 상태 */
     const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
@@ -71,10 +77,10 @@ window.XsSample12 = {
       cache_banner:'💰', widget_embed:'🧩',
     };
 
-    /* fnWLabel */
+    /* fnWLabel — 유틸 */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
 
-    /* fnWIcon */
+    /* fnWIcon — 유틸 */
     const fnWIcon  = (t) => WIDGET_ICONS[t] || '▪';
     const cfAllAreas = computed(() =>
       window.sfGetBoCodeStore()?.codes||[]
@@ -82,18 +88,19 @@ window.XsSample12 = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
 
-    /* isInRange */
+    /* isInRange — 여부 확인 */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
       if (!d) return true;
       const dt = `${d}T${uiState.previewTime || '00:00'}`;
+      /* _norm — _norm */
       const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
       if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) return false;
       if (panel.dispEndDt   && dt > _norm(panel.dispEndDt))   return false;
       return true;
     };
 
-    /* panelFilter */
+    /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
       if (searchStatus.value       && p.status !== searchStatus.value) return false;
       if (!isInRange(p)) return false;
@@ -118,22 +125,23 @@ window.XsSample12 = {
             .filter(p => p.area === area.codeValue && panelFilter(p))
             .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-    // -- return ---------------------------------------------------------------
+          // ===== return (템플릿 노출) ===============================================
+
 
           return { ...area, panels , uiState, codes };
         });
     });
 
-    /* 초기 펼침 */
+    /* initExpand — 초기화 */
     const initExpand = () => cfAllAreas.value.forEach(a => expandedAreas.add(a.codeValue));
 
-    /* 영역 토글 */
+    /* toggleAreaExpand — 영역 토글 */
     const toggleAreaExpand = (code) => {
       if (expandedAreas.has(code)) expandedAreas.delete(code);
       else expandedAreas.add(code);
     };
 
-    /* 패널 체크 */
+    /* togglePanel — 패널 토글 */
     const togglePanel = (p) => {
       const id = p.dispId;
       const rows = p.rows || [];
@@ -146,7 +154,7 @@ window.XsSample12 = {
       }
     };
 
-    /* 위젯 체크 */
+    /* toggleWidget — 토글 */
     const toggleWidget = (dispId, wi, e) => {
       if (e) e.stopPropagation();
       const key = `${dispId}_${wi}`;
@@ -154,19 +162,19 @@ window.XsSample12 = {
       else checkedWidgets.add(key);
     };
 
-    /* 전체 선택/해제 */
+    /* checkAll — 확인 */
     const checkAll  = () => { cfStructAreaList.value.forEach(a => a.panels.forEach(p => { checkedPanels.add(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.add(`${p.dispId}_${wi}`)); })); };
 
-    /* clearAll */
+    /* clearAll — 비우기 */
     const clearAll  = () => { checkedPanels.clear(); checkedWidgets.clear(); };
 
-    /* 영역 전체 체크 */
+    /* isAreaAllChecked — 여부 확인 */
     const isAreaAllChecked = (area) =>
       area.panels.length > 0 &&
       area.panels.every(p => checkedPanels.has(p.dispId)) &&
       area.panels.every(p => (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
 
-    /* checkAreaAll */
+    /* checkAreaAll — 확인 */
     const checkAreaAll = (area) => {
       if (isAreaAllChecked(area)) {
         area.panels.forEach(p => { checkedPanels.delete(p.dispId); (p.rows||[]).forEach((_,wi)=>checkedWidgets.delete(`${p.dispId}_${wi}`)); });
@@ -175,7 +183,7 @@ window.XsSample12 = {
       }
     };
 
-    /* isPanelAllChecked */
+    /* isPanelAllChecked — 여부 확인 */
     const isPanelAllChecked = (p) =>
       checkedPanels.has(p.dispId) &&
       ((p.rows||[]).length === 0 || (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
@@ -195,24 +203,22 @@ window.XsSample12 = {
     /* 화면영역 드롭다운 */
     const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
 
-    /* toggleArea */
+    /* toggleArea — 영역 토글 */
     const toggleArea = (code) => { if (selectedAreas.has(code)) selectedAreas.delete(code); else selectedAreas.add(code); };
 
-    /* selectAllAreas */
+    /* selectAllAreas — 선택 */
     const selectAllAreas = () => { cfAllAreas.value.forEach(a => selectedAreas.add(a.codeValue)); };
 
-    /* clearAllAreas */
+    /* clearAllAreas — 비우기 */
     const clearAllAreas  = () => { selectedAreas.clear(); };
 
-    /* resetDate */
+    /* resetDate — 초기화 */
     const resetDate = () => {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
     /* 초기화 */
     initExpand();
-
-    // -- return ---------------------------------------------------------------
 
     return {
       previewDate, previewTime, uiState,

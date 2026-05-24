@@ -10,6 +10,8 @@ window.SyBbmDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -22,6 +24,10 @@ window.SyBbmDtl = {
     });
 
     /* 게시판 마스터 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -39,8 +45,6 @@ window.SyBbmDtl = {
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ── watch ────────────────────────────────────────────────────────────────
-
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const form = reactive({
@@ -54,16 +58,16 @@ window.SyBbmDtl = {
     /* ── 표시경로 모달 ── */
     const pathPickModal = reactive({ show: false });
 
-    /* 게시판 마스터 openPathPick */
+    /* openPathPick — 경로 선택 열기 */
     const openPathPick = () => { pathPickModal.show = true; };
 
-    /* 게시판 마스터 closePathPick */
+    /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; };
 
-    /* 게시판 마스터 onPathPicked */
+    /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => { form.pathId = pathId; pathPickModal.show = false; };
 
-    /* 게시판 마스터 pathLabel */
+    /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const schema = yup.object({
@@ -72,6 +76,10 @@ window.SyBbmDtl = {
     });
 
     /* 게시판 마스터 상세조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -100,7 +108,7 @@ window.SyBbmDtl = {
       await handleLoadDetail();
     });
 
-    /* 게시판 마스터 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -130,6 +138,11 @@ window.SyBbmDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+    // --- [컬럼 정의] ---
+
     const baseFormColumns = [
       { key: 'siteNm',        label: '사이트명',    type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
       { type: 'rowBreak' },
@@ -152,6 +165,9 @@ window.SyBbmDtl = {
     ];
 
     // ===== setup() return ===================================================
+    // ===== return (템플릿 노출) ===============================================
+
+
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel, baseFormColumns };
   },

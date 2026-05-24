@@ -11,6 +11,8 @@ window.PmEventDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -25,7 +27,7 @@ window.PmEventDtl = {
     const codes = reactive({ event_statuses: [] });
 
     // 단건 조회 + 상품목록 로드
-    /* 소속업체 목록 로드 (vendor 선택 모달용) */
+    /* loadVendors — 로드 */
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -33,6 +35,7 @@ window.PmEventDtl = {
       } catch (e) { console.warn('[PmEventDtl.js] vendor load failed', e); }
     };
 
+    /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
       uiState.loading = true;
@@ -67,10 +70,13 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
         watch(() => uiState.tabMode2, v => { window._ecEventDtlState.tabMode = v; });
 
-    /* 이벤트 showTab */
+    /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 이벤트 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.event_statuses = codeStore.sgGetGrpCodes('EVENT_STATUS_KR');
@@ -80,7 +86,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     const _today = new Date();
 
-    /* 이벤트 _pad */
+    /* _pad — 패딩 */
     const _pad = n => String(n).padStart(2, '0');
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+3}-12-31`;
@@ -98,6 +104,9 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     });
 
     /* 이벤트 onTabChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onTabChange — 탭 변경 */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
     };
@@ -119,26 +128,26 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       return !searchVal || p.prodNm.toLowerCase().includes(searchVal);
     }));
 
-    /* 이벤트 toggleProduct */
+    /* toggleProduct — 토글 */
     const toggleProduct = (pid) => {
       const idx = form.targetProducts.indexOf(pid);
       if (idx === -1) form.targetProducts.push(pid);
       else form.targetProducts.splice(idx, 1);
     };
 
-    /* 이벤트 isSelected */
+    /* isSelected — 여부 확인 */
     const isSelected = (pid) => form.targetProducts.includes(pid);
     const cfSelectedProducts = computed(() =>
       form.targetProducts.map(pid => products.find(p => p.productId === pid || p.prodId === pid)).filter(Boolean)
     );
 
-    /* 이벤트 removeProduct */
+    /* removeProduct — 제거 */
     const removeProduct = (pid) => {
       const idx = form.targetProducts.indexOf(pid);
       if (idx !== -1) form.targetProducts.splice(idx, 1);
     };
 
-    /* 이벤트 확인 버튼 토스트 */
+    /* onEventConfirm — 이벤트 */
     const onEventConfirm = () => {
       showToast('이벤트 참여가 완료되었습니다! 감사합니다.', 'success');
     };
@@ -148,13 +157,13 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     /* 신규 등록은 info 탭에서만 가능. 그 외 탭(banner/content/products/preview)은 ID 없으면 비활성 */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
-    /* 이벤트 _afterApiOk */
+    /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
       if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
       if (showToast) showToast(msg, 'success');
     };
 
-    /* 이벤트 _afterApiErr */
+    /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -162,7 +171,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       if (showToast) showToast(errMsg, 'error', 0);
     };
 
-    /* ── 탭별 저장: info=본체, banner=배너이미지, content=콘텐츠5개, products=대상상품, preview=저장없음 ── */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
 
@@ -212,10 +221,10 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* 이벤트 hasVisibility */
+    /* hasVisibility — 여부 확인 */
     const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
 
-    /* 이벤트 toggleVisibility */
+    /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
       const list = window.visibilityUtil.parse(form.visibilityTargets);
       const i = list.indexOf(code);
@@ -229,7 +238,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       return v ? v.vendorNm : '소속업체 선택';
     });
 
-    /* 이벤트 selectVendor */
+    /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
       uiState.showVendorModal = false;
@@ -253,9 +262,10 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       { key: 'status',    label: '상태' },
     ];
 
-    // -- return ---------------------------------------------------------------
-
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (이벤트 제목/기간/상태) ==
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [컬럼 정의] ---
     const infoFormColumns = [
       { key: 'eventTitle',   label: '이벤트 제목', type: 'text', required: true,
         placeholder: '이벤트 제목을 입력하세요', colSpan: 2 },
@@ -273,6 +283,9 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { vendors, products, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, tab, onTabChange, form, errors, activeContentTab, prodSearch, cfFilteredProds, toggleProduct, isSelected, cfSelectedProducts, removeProduct, onEventConfirm, handleSave, cfVisibilityOptions, hasVisibility, toggleVisibility, cfDtlMode, tabMode2, showTab, cfSelectedVendorNm, selectVendor, productGridColumns, showRefModal, infoFormColumns, vendorFormColumns };
   },

@@ -10,6 +10,8 @@ window.DpDispWidgetDtl = {
   },
   emits: ['close'],
   setup(props, { emit }) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,7 +20,9 @@ window.DpDispWidgetDtl = {
     const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
@@ -32,20 +36,20 @@ window.DpDispWidgetDtl = {
     /* -- 표시경로 선택 모달 (sy_path, 다중) -- */
     const pathPickModal = reactive({ show: false });
 
-    /* openPathPick */
+    /* openPathPick — 경로 선택 열기 */
     const openPathPick = () => { pathPickModal.show = true; };
 
-    /* closePathPick */
+    /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; };
 
-    /* onPathPicked */
+    /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => { form.pathId = pathId; };
 
-    /* pathLabel */
+    /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfIsNew = computed(() => !props.dtlId);
 
-    /* -- 폼 초기값 -- */
+    /* makeForm — 생성 */
     const makeForm = () => ({
       widgetLibId: null, /* 백엔드 DTO 필드 (PK) */
       widgetCode: '', widgetNm: '', widgetTypeCd: 'image_banner', widgetLibDesc: '',
@@ -110,7 +114,9 @@ window.DpDispWidgetDtl = {
     const form   = reactive(makeForm());
     const errors = reactive({});
 
-    /* -- 기존 데이터 로드 (정책: 수정 클릭 시 항상 호출) -- */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -180,16 +186,16 @@ window.DpDispWidgetDtl = {
       }
     };
 
-    /* 위젯코드 자동 생성: DW_YYMMDD_HHMMSS */
+    /* fnGenWidgetCode — 유틸 */
     const fnGenWidgetCode = () => {
       const t = new Date();
 
-      /* p */
+      /* p — p */
       const p = n => String(n).padStart(2, '0');
       return `DW_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
     };
 
-    /* handleInitNewForm */
+    /* handleInitNewForm — 처리 */
     const handleInitNewForm = () => {
       if (!cfIsNew.value) return;
       form.libCode = fnGenWidgetCode();
@@ -244,16 +250,16 @@ window.DpDispWidgetDtl = {
       try { return JSON.parse(form.fileListJson || '[]'); } catch { return []; }
     });
 
-    /* saveFileList */
+    /* saveFileList — 저장 */
     const saveFileList   = (items) => { form.fileListJson = JSON.stringify(items); };
 
-    /* addFileItem */
+    /* addFileItem — 추가 */
     const addFileItem    = () => saveFileList([...cfFileListItems.value, { name: '', url: '' }]);
 
-    /* removeFileItem */
+    /* removeFileItem — 제거 */
     const removeFileItem = (idx) => saveFileList(window.safeArrayUtils.safeFilter(cfFileListItems, (_, i) => i !== idx));
 
-    /* updateFileItem */
+    /* updateFileItem — 갱신 */
     const updateFileItem = (idx, field, val) =>
       saveFileList(cfFileListItems.value.map((item, i) => i === idx ? { ...item, [field]: val } : item));
 
@@ -383,7 +389,7 @@ window.DpDispWidgetDtl = {
       return JSON.stringify(obj, null, 2);
     });
 
-    /* copyJson */
+    /* copyJson — 복사 */
     const copyJson = () => {
       navigator.clipboard?.writeText(cfSampleJson.value).then(() => {
         uiState.jsonCopied = true;
@@ -408,18 +414,18 @@ window.DpDispWidgetDtl = {
       uiState.previewPaneWidth = (info?.width || 420) + 40;
     });
 
-    /* onSplitDrag */
+    /* onSplitDrag — 이벤트 */
     const onSplitDrag = (e) => {
       e.preventDefault();
       const startX = e.clientX;
       const startW = uiState.previewPaneWidth;
 
-      /* onMove */
+      /* onMove — 이벤트 */
       const onMove = (ev) => {
         uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
       };
 
-      /* onUp */
+      /* onUp — 이벤트 */
       const onUp = () => {
         window.removeEventListener('mousemove', onMove);
         window.removeEventListener('mouseup', onUp);
@@ -453,7 +459,7 @@ window.DpDispWidgetDtl = {
 
     /* form (UI 별칭 포함) → 백엔드 DTO 필드 매핑 */
 
-    /* form (UI 별칭 포함) → 백엔드 DTO 필드 매핑 (dp_widget 기준) */
+    /* _toApiBody — → API 본문 */
     const _toApiBody = () => {
       const body = { ...form };
       body.widgetId     = form.widgetId    || form.libId;   /* dp_widget PK */
@@ -471,7 +477,7 @@ window.DpDispWidgetDtl = {
       return body;
     };
 
-    /* -- 저장 -- */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       /* 위젯코드 비어있거나 placeholder 그대로면 자동 생성 (검증 전) */
@@ -501,7 +507,7 @@ window.DpDispWidgetDtl = {
       }
     };
 
-    /* -- 삭제 -- */
+    /* handleDelete — 삭제 */
     const handleDelete = async () => {
       if (cfIsNew.value) return;
       const ok = await showConfirm('삭제', '이 위젯를 삭제하시겠습니까?');
@@ -521,10 +527,10 @@ window.DpDispWidgetDtl = {
 
     /* -- 위젯Lib 선택 팝업 -- */
 
-     /* 'copy' | 'ref' */
+    /* openLibPick — 열기 */
     const openLibPick = (mode) => { uiState.libPickMode = mode; uiState.libPickOpen = true; };
 
-    /* onLibPicked */
+    /* onLibPicked — 이벤트 */
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
       if (uiState.libPickMode === 'copy') {
@@ -547,12 +553,12 @@ window.DpDispWidgetDtl = {
       { code: 'PROD', label: 'PROD' },
     ];
 
-    /* hasDispEnv */
+    /* hasDispEnv — 여부 확인 */
     const hasDispEnv = (code) => {
       return form.dispEnv.includes('^' + code + '^');
     };
 
-    /* toggleDispEnv */
+    /* toggleDispEnv — 토글 */
     const toggleDispEnv = (code) => {
       const envList = form.dispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
@@ -570,6 +576,8 @@ window.DpDispWidgetDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 위젯 기본 설정 ================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const baseWidgetFormColumns = [
       { key: 'libCode', label: '위젯코드', type: 'text', required: true,
         placeholder: '비워두면 자동 생성 (예: DW_260508_191415)', mono: true },
@@ -587,7 +595,7 @@ window.DpDispWidgetDtl = {
       { key: 'clickTarget', label: '클릭 대상', type: 'text', placeholder: '/products 또는 이벤트명' },
     ];
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return {
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,

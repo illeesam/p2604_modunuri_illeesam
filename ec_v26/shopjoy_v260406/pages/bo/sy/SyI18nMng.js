@@ -5,6 +5,8 @@ window.SyI18nMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -15,17 +17,21 @@ window.SyI18nMng = {
     const uiState = reactive({ isPageCodeLoad: false, selectedId: null});
     const codes = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
-    /* 다국어 _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
+
       return { searchType: '', searchValue: '', scope: '', use: '' };
     };
     const searchParam = reactive(_initSearchParam());
     const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 다국어 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 다국어 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       try {
         const { searchType, searchValue, scope, use } = searchParam;
@@ -52,7 +58,8 @@ window.SyI18nMng = {
       }
     };
 
-    /* 다국어 fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
+
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.lang_code = codeStore.sgGetGrpCodes('LANG_CODE');
@@ -66,7 +73,7 @@ window.SyI18nMng = {
     const LANGS       = ['ko','en','ja','in'];
     const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
 
-    /* 다국어 fnScopeBadge */
+    /* fnScopeBadge — 유틸 */
     const fnScopeBadge  = s => ({ COMMON:'badge-blue', FO:'badge-green', BO:'badge-orange' }[s] || 'badge-gray');
 
     const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === uiState.selectedId) || null);
@@ -79,7 +86,7 @@ window.SyI18nMng = {
     });
     const msgForm = reactive({});
 
-    /* 다국어 openDetail */
+    /* openDetail — 열기 */
     const openDetail = (key) => {
       if (uiState.selectedId === key.i18nId) { uiState.selectedId = null; return; }
       uiState.selectedId = key.i18nId;
@@ -89,7 +96,7 @@ window.SyI18nMng = {
       Object.assign(msgForm, msgs);
     };
 
-    /* 다국어 saveMsgs */
+    /* saveMsgs — 저장 */
     const saveMsgs = async () => {
       if (!cfSelectedKey.value) return;
       const ok = await showConfirm('저장', '번역 메시지를 저장하시겠습니까?');
@@ -112,25 +119,26 @@ window.SyI18nMng = {
       }
     };
 
-    /* 다국어 getLangMsg */
+    /* getLangMsg — 조회 */
     const getLangMsg = (i18nId, lang) => {
       const m = (i18nMsgs||[]).find(m => m.i18nId === i18nId && m.langCd === lang);
       return m ? m.i18nMsg : '';
     };
 
-    /* 다국어 목록조회 */
+    /* onSearch — 조회 */
+
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData('DEFAULT'); };
 
-    /* 다국어 onReset */
+    /* onReset — 초기화 */
     const onReset  = () => { Object.assign(searchParam, _initSearchParam()); pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    /* 다국어 setPage */
+    /* setPage — 설정 */
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
 
-    /* 다국어 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* 다국어 fnYnBadge */
+    /* fnYnBadge — 유틸 */
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     // ★ onMounted
@@ -140,6 +148,9 @@ window.SyI18nMng = {
     });
 
     /* BoGrid 컬럼 정의 (특수셀은 #cell-* 슬롯으로 override) */
+
+        // --- [컬럼 정의] ---
+
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -152,6 +163,8 @@ window.SyI18nMng = {
       { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     const baseGridColumns = [
       { key: 'i18nKey',     label: '키 (i18n_key)',
         cellInnerStyle: 'font-size:12px;color:#7c3aed;font-family:monospace;' },
@@ -163,17 +176,17 @@ window.SyI18nMng = {
       { key: 'msgJa',       label: 'ja', align: 'center', cellStyle: 'font-size:11px;color:#555', fmt: (v, row) => getLangMsg(row.i18nId, 'ja') },
       { key: 'useYn',       label: '사용', align: 'center', badge: (row) => fnYnBadge(row.useYn) },
     ];
+    /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (row) => selectedId.value === row.i18nId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 언어별 번역 입력 ==============
     const msgFormColumns = LANGS.map(lang => ({
       key: lang,
       label: LANG_LABELS[lang] + ' (' + lang + ')',
       type: 'text',
       placeholder: LANG_LABELS[lang] + ' 번역 입력',
     }));
+
+    // ===== return (템플릿 노출) ===============================================
 
     return { uiState, codes, searchParam, pager, setPage, onSearch, onReset,
              i18nKeys, i18nMsgs, selectedId, cfSelectedKey, cfSelectedMsgs, msgForm, openDetail, saveMsgs, getLangMsg,

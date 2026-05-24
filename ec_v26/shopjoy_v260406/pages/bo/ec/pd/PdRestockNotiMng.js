@@ -5,6 +5,8 @@ window.PdRestockNotiMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -20,6 +22,9 @@ window.PdRestockNotiMng = {
     });
 
     /* 재입고 알림 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       try {
@@ -32,6 +37,9 @@ window.PdRestockNotiMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // onMounted에서 API 로드
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -51,7 +59,7 @@ window.PdRestockNotiMng = {
       }
     };
 
-    /* 재입고 알림 _initSearchParam */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ prod: '', noti: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -62,28 +70,28 @@ window.PdRestockNotiMng = {
     const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const checkedIds = reactive(new Set());
 
-    /* 재입고 알림 getProdNm */
+    /* getProdNm — 조회 */
     const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
 
-    /* 재입고 알림 getMemNm */
+    /* getMemNm — 조회 */
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
 
-    /* 재입고 알림 fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const allChecked    = computed(() => restockNotis.length > 0 && restockNotis.every(r => checkedIds.has(r.restockNotiId)));
 
-    /* 재입고 알림 toggleAll */
+    /* toggleAll — 전체 토글 */
     const toggleAll     = () => { if (allChecked.value) restockNotis.forEach(r => checkedIds.delete(r.restockNotiId)); else restockNotis.forEach(r => checkedIds.add(r.restockNotiId)); };
 
-    /* 재입고 알림 toggleOne */
+    /* toggleOne — 토글 */
     const toggleOne     = id => { if (checkedIds.has(id)) checkedIds.delete(id); else checkedIds.add(id); };
 
-    /* 재입고 알림 fnIsChecked — BoGrid selectable :is-checked 바인딩용 */
+    /* fnIsChecked — 유틸 */
     const fnIsChecked   = id => checkedIds.has(id);
     const checkedCount  = computed(() => checkedIds.size);
 
-    /* 재입고 알림 handleSend */
+    /* handleSend — 처리 */
     const handleSend = async () => {
       const targets = (restockNotis||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
       if (!targets.length) { showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
@@ -102,32 +110,33 @@ window.PdRestockNotiMng = {
       }
     };
 
-    /* 재입고 알림 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
-    /* 재입고 알림 onReset */
+    /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       pager.pageNo = 1;
       await handleSearchList();
     };
 
-    /* 재입고 알림 setPage */
+    /* setPage — 설정 */
     const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
-    /* 재입고 알림 onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* 재입고 알림 fnYnBadge */
+    /* fnYnBadge — 유틸 */
     const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
-
-    // -- return ---------------------------------------------------------------
 
     /* AG-Grid 식 컬럼 정의 — width/align 등 헤더·셀 속성을 컬럼 객체에 선언.
        체크박스 열은 BoGrid 의 selectable 기능이 자동 렌더하므로 컬럼에서 제외. */
+        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
       { key: 'noti', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
@@ -142,6 +151,9 @@ window.PdRestockNotiMng = {
       { key: 'notiDate', label: '발송일시', style: 'width:140px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
       { key: 'regDate',  label: '신청일',  style: 'width:140px' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { restockNotis, uiState, searchParam, pager, baseSearchColumns, baseGridColumns, setPage, onSearch, onReset,
              checkedIds, checkedCount, allChecked, toggleAll, toggleOne, fnIsChecked, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,

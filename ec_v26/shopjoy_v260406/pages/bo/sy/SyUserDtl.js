@@ -10,6 +10,8 @@ window.SyUserDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -20,6 +22,10 @@ window.SyUserDtl = {
     const codes = reactive({ active_statuses: [], user_roles: [] });
 
     /* 사용자(관리자) fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
@@ -32,8 +38,6 @@ window.SyUserDtl = {
     };
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ── watch ────────────────────────────────────────────────────────────────
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -55,6 +59,10 @@ window.SyUserDtl = {
     });
 
     /* 사용자(관리자) 상세조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) return;
       uiState.loading = true;
@@ -83,9 +91,9 @@ window.SyUserDtl = {
       await handleLoadDetail();
     });
 
-    /* ── 카카오 주소 검색 ── */
+    /* openKakaoPostcode — 열기 */
     const openKakaoPostcode = () => {
-      /* 사용자(관리자) run */
+      /* run — 실행 */
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
@@ -105,17 +113,17 @@ window.SyUserDtl = {
     /* ── 부서 선택 팝업 ── */
     const deptModal = reactive({ show: false });
 
-    /* 사용자(관리자) openDeptModal */
+    /* openDeptModal — 열기 */
     const openDeptModal = () => { deptModal.show = true; };
 
-    /* 사용자(관리자) onDeptSelect */
+    /* onDeptSelect — 이벤트 */
     const onDeptSelect = (dept) => {
       form.deptId  = dept.deptId;
       form.deptNm  = dept.deptNm;
       deptModal.show = false;
     };
 
-    /* 사용자(관리자) clearDept */
+    /* clearDept — 비우기 */
     const clearDept = () => { form.deptId = null; form.deptNm = ''; };
 
     /* ── 현재 적용 역할 목록 (빈 배열 정적 — computed 불필요) ── */
@@ -137,12 +145,12 @@ window.SyUserDtl = {
       { key: 'remark',       label: '비고', cellStyle: 'color:#666;' },
     ];
 
-    /* 사용자(관리자) fnRoleTypeBadge */
+    /* fnRoleTypeBadge — 유틸 */
     const fnRoleTypeBadge = (t) => ({
       '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
     }[t] || 'badge-gray');
 
-    /* 사용자(관리자) 저장 */
+    /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -176,6 +184,11 @@ window.SyUserDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+
+    // --- [컬럼 정의] ---
+
     const baseFormColumns = [
       { key: 'siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },
@@ -208,6 +221,9 @@ window.SyUserDtl = {
     ];
 
     // ===== setup() return ===================================================
+    // ===== return (템플릿 노출) ===============================================
+
+
     return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
              cfDtlMode, addrDetailRef, openKakaoPostcode,
              deptModal, openDeptModal, onDeptSelect, clearDept,

@@ -5,10 +5,14 @@ window.SyApiLogMng = {
     navigate: { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
+    // --- Vue API / boApp 전역 함수 참조 ---
     const { reactive, computed, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
 
+    // --- 화면 상태 / 코드 / 페이저 / 행 펼침 ---
     const uiState = reactive({
       activeTab: 'access',
       descOpen: false, srchOpen: false,
@@ -28,7 +32,9 @@ window.SyApiLogMng = {
 
     const codes = reactive({ date_range_opts: [], http_methods: [], app_types: [] });
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
@@ -45,7 +51,11 @@ window.SyApiLogMng = {
       uiState.dateEnd   = r.to;
     })();
 
-    /* onDateRangeChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    // --- [이벤트] 기간 변경 ---
+
+    /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
         const r = boUtil.bofGetDateRange(uiState.dateRange);
@@ -68,27 +78,33 @@ window.SyApiLogMng = {
     const expandedRows  = reactive(new Set());
     const allExpanded   = reactive({ value: false });
 
-    /* toggleRow */
+    // --- [이벤트] 행 펼침 ---
+
+    /* toggleRow — 토글 */
     const toggleRow     = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
 
-    /* isExpanded */
+    /* isExpanded — 여부 확인 */
     const isExpanded    = id => expandedRows.has(id);
 
-    /* toggleExpandAll */
+    /* toggleExpandAll — 토글 */
     const toggleExpandAll = () => {
       const list = uiState.activeTab === 'access' ? accessLogs : errorLogs;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
       else { list.forEach((r, i) => expandedRows.add(r.logId || i)); allExpanded.value = true; }
     };
 
-    /* fnBuildPagerNums */
+    // --- [페이지네이션 헬퍼] ---
+
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    /* buildSearchParams */
+    // --- [데이터 로드] 검색 파라미터 / 요청·오류 로그 조회 ---
+
+    /* buildSearchParams — 빌드 */
     const buildSearchParams = () => {
       const p = {
         pageNo:      pager.pageNo,
@@ -111,7 +127,7 @@ window.SyApiLogMng = {
       return p;
     };
 
-    /* handleSearchAccessLog */
+    /* handleSearchAccessLog — 접근 이력 조회 */
     const handleSearchAccessLog = async () => {
       try {
         const res = await boApiSvc.syAccessLog.getPage(buildSearchParams(), 'API로그조회', '요청로그조회');
@@ -128,7 +144,7 @@ window.SyApiLogMng = {
       }
     };
 
-    /* handleSearchErrorLog */
+    /* handleSearchErrorLog — 에러 로그 조회 */
     const handleSearchErrorLog = async () => {
       try {
         const res = await boApiSvc.syAccessErrorLog.getPage(buildSearchParams(), 'API로그조회', '오류로그조회');
@@ -145,21 +161,25 @@ window.SyApiLogMng = {
       }
     };
 
-    /* 목록조회 */
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
       if (uiState.activeTab === 'access') await handleSearchAccessLog();
       else                                await handleSearchErrorLog();
     };
+
+    // --- [라이프사이클] ---
 
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleSearchList();
     });
 
-    /* onTabChange */
+    // --- [이벤트] 탭 / 검색 / 페이지 / 사이즈 / 로그 비우기 ---
+
+    /* onTabChange — 탭 변경 */
     const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
 
-    /* handleClearLog */
+    /* handleClearLog — 로그 비우기 */
     const handleClearLog = async () => {
       const tabNm = uiState.activeTab === 'access' ? 'API요청로그' : 'API오류로그';
       const ok = await window.boApp.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
@@ -177,10 +197,10 @@ window.SyApiLogMng = {
       }
     };
 
-    /* 목록조회 */
+    /* onSearch — 조회 */
     const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
 
-    /* onReset */
+    /* onReset — 초기화 */
     const onReset      = () => {
       Object.assign(uiState, {
         searchType:'', searchValue:'', searchMethod:'', searchStatus:'', searchPath:'',
@@ -193,17 +213,22 @@ window.SyApiLogMng = {
       handleSearchList();
     };
 
-    /* setPage */
+    /* setPage — 설정 */
     const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
 
-    /* onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
+    // --- [배지 함수] ---
 
     /* fnMethodBadge — sy_code HTTP_METHOD code_opt1 우선, 없으면 FB */
     const _HTTP_METHOD_FB = { GET: 'badge-blue', POST: 'badge-green', PUT: 'badge-orange', PATCH: 'badge-purple', DELETE: 'badge-red' };
+    /* fnMethodBadge — 유틸 */
     const fnMethodBadge = m => coUtil.cofCodeBadge('HTTP_METHOD', m, _HTTP_METHOD_FB[m] || 'badge-gray');
 
-    /* fnStatusBadge */
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => {
       if (!s) return 'badge-gray';
       const n = Number(s);
@@ -214,11 +239,13 @@ window.SyApiLogMng = {
       return 'badge-gray';
     };
 
+    // --- [컴퓨티드 / 디코드 헬퍼] ---
     const cfCurrentList = computed(() => uiState.activeTab === 'access' ? accessLogs : errorLogs);
 
-    /* fnDecode */
+    /* fnDecode — 유틸 */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
+    // --- [컬럼 정의] 검색 / 펼침검색 / 요청로그 그리드 / 오류로그 그리드 ---
     /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
     const baseSearchColumns = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
@@ -269,23 +296,35 @@ window.SyApiLogMng = {
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
-    /* BoGrid isExpanded prop 래퍼 (row,idx)=>bool */
+    /* fnRowExpanded — 행 펼침 여부 */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
+    /* fnRowClickStyle — 행 클릭 스타일 */
     const fnRowClickStyle = (r, idx) => {
       const exp = isExpanded(r.logId || idx);
       const bg = uiState.activeTab === 'access' ? '#fafbff' : '#fff8f8';
       return 'cursor:pointer;' + (exp ? ('background:' + bg + ';') : '');
     };
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState, codes, pager, tabCounts, cfCurrentList,
-      onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange,
-      fnMethodBadge, fnStatusBadge, fnDecode,
-      expandedRows, toggleRow, isExpanded, toggleExpandAll, allExpanded, handleClearLog,
-      showRefModal,
+      // 상태 / 데이터
+      uiState, codes, pager, tabCounts, expandedRows, allExpanded, showRefModal,
+
+      // computed
+      cfCurrentList,
+
+      // 컬럼 정의
       baseSearchColumns, moreSearchColumns, accessGridColumns, errorGridColumns, fnRowExpanded, fnRowClickStyle,
+
+      // 탭 / 검색 / 페이지 이벤트
+      onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange,
+
+      // 행 펼침 / 로그 비우기
+      toggleRow, isExpanded, toggleExpandAll, handleClearLog,
+
+      // 표시 헬퍼
+      fnMethodBadge, fnStatusBadge, fnDecode,
     };
   },
   template: /* html */`

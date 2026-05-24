@@ -5,13 +5,17 @@ window.MyCoupon = {
     navigate:  { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -42,7 +46,7 @@ window.MyCoupon = {
     const cfUnusedCount = computed(() => coupons.value.filter(c => !c.used).length);
     const cfUsedCount   = computed(() => coupons.value.filter(c => c.used).length);
 
-    /* addCoupon */
+    /* addCoupon — 추가 */
     const addCoupon = () => {
       const code = couponCode.value.trim().toUpperCase();
       if (!code) { showToast('쿠폰 코드를 입력하세요.', 'error'); return; }
@@ -57,17 +61,19 @@ window.MyCoupon = {
       showToast('쿠폰이 등록되었습니다!', 'success');
     };
 
-    /* onTabChange */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onTabChange — 탭 변경 */
     const onTabChange = tab => { uiState.activeTab = tab; pager.page = 1; };
 
-    /* 목록조회 — 날짜 범위를 서버 검색 파라미터로 전달 (regDate=reg_date 기준) */
+    /* handleSearchData — 처리 */
     const handleSearchData = async () => {
       const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
       await myStore.handleLoadCoupons(params);
       myStore.handleLoadOrders();
     };
 
-    /* 목록조회 — [조회]/기간 변경 시에만 API 호출 (검색정책 준수) */
+    /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) onDateSearch(dateParams);
       await handleSearchData();
@@ -80,7 +86,8 @@ window.MyCoupon = {
       handleSearchData();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== return (템플릿 노출) ===============================================
+
 
     return {
       myStore, coupons, couponCode, pager, paginate,

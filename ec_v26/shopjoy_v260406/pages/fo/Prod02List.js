@@ -5,17 +5,19 @@ window.Prod02List = {
     navigate:      { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
 
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
 
-    /* selectProd */
+    /* selectProd — 선택 */
     const selectProd        = (p) => window.foApp.selectProd(p);
 
-    /* toggleLike */
+    /* toggleLike — 토글 */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
 
-    /* isLiked */
+    /* isLiked — 여부 확인 */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const pager = reactive({ pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageType: 'INFINITE_SCROLL', pageSizes: [12, 24, 48], pageCond: {} });
@@ -23,7 +25,9 @@ window.Prod02List = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768 });
     const codes = reactive({});
 
-    /* fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
         uiState.isPageCodeLoad = true;
@@ -36,7 +40,7 @@ window.Prod02List = {
     /* -- 상품 이미지 자동 할당 -- */
     const IMG_BASE = 'assets/cdn/prod/img/shop/product';
 
-    /* assignImage */
+    /* assignImage — assign 이미지 */
     const assignImage = (p) => {
       /* colors→opt1s, sizes→opt2s 호환 */
       if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
@@ -61,7 +65,7 @@ window.Prod02List = {
     /* -- 상품 데이터 -- */
     const allProds = reactive([]);
 
-    /* fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
       const t = Math.max(1, Math.ceil(allProds.length / pager.pageSize));
       pager.pageTotalPage = t;
@@ -81,7 +85,7 @@ window.Prod02List = {
       pager.pageNums = result;
     };
 
-    /* handleLoadProds */
+    /* handleLoadProds — 처리 */
     const handleLoadProds = async () => {
       uiState.loading = true;
       try {
@@ -141,27 +145,27 @@ window.Prod02List = {
     });
     const cfAllCats = computed(() => (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || []);
 
-    /* -- 할인율 / 포맷 -- */
+    /* fnDiscountRate — 유틸 */
     const fnDiscountRate = p => p.originalPrice
       ? Math.round((1 - p.priceNum / p.originalPrice) * 100) : 0;
 
-    /* fnFmtPrice */
+    /* fnFmtPrice — 유틸 */
     const fnFmtPrice = n => n ? n.toLocaleString() + '원' : '';
 
-    /* fnCategoryLabel */
+    /* fnCategoryLabel — 유틸 */
     const fnCategoryLabel = p => {
       if (!p) return '';
       const row = cfAllCats.value.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryNm : p.categoryId;
     };
 
-    /* -- 토글 함수 -- */
+    /* toggleColor — 토글 */
     const toggleColor = name => { if (selColors.has(name)) selColors.delete(name); else selColors.add(name); };
 
-    /* toggleSize */
+    /* toggleSize — 토글 */
     const toggleSize  = sz   => { if (selSizes.has(sz)) selSizes.delete(sz); else selSizes.add(sz); };
 
-    /* toggleCat */
+    /* toggleCat — 토글 */
     const toggleCat   = id   => { if (selCats.has(id)) selCats.delete(id); else selCats.add(id); };
 
     const cfHasFilter = computed(() =>
@@ -169,13 +173,13 @@ window.Prod02List = {
       selColors.size > 0 || selSizes.size > 0 || selCats.size > 0
     );
 
-    /* clearFilters */
+    /* clearFilters — 비우기 */
     const clearFilters = () => {
       uiState.searchText = ''; uiState.priceMin = ''; uiState.priceMax = '';
       selColors.clear(); selSizes.clear(); selCats.clear();
     };
 
-    /* -- 모바일 판별 -- */
+    /* onResize — 이벤트 */
     const onResize = () => { uiState.isMobile = window.innerWidth < 768; fnBuildPagerNums(); };
     window.addEventListener('resize', onResize);
 
@@ -195,7 +199,7 @@ window.Prod02List = {
     /* -- IntersectionObserver (모바일 무한스크롤) -- */
     let observer = null;
 
-    /* setupObserver */
+    /* setupObserver — 설정 옵저버 */
     const setupObserver = () => {
       if (observer) observer.disconnect();
       const el = document.getElementById('sj-sentinel');
@@ -209,14 +213,16 @@ window.Prod02List = {
       observer.observe(el);
     };
 
-    /* 목록조회 */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSearch — 조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
       await handleLoadProds();
       setupObserver();
     };
 
-    /* 목록조회 */
+    /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       await handleLoadProds();
       setupObserver();
@@ -233,12 +239,16 @@ window.Prod02List = {
       handleSearchList();
     });
 
-    // -- return ---------------------------------------------------------------
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 input 만 자동, 필터/조회는 default slot */
+    // --- [컬럼 정의] ---
     const baseSearchColumns = [
       { key: 'searchText', type: 'text', label: '상품명', placeholder: '상품명, 태그 검색...' },
     ];
+
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { pager,
       uiState, baseSearchColumns,

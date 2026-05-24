@@ -5,6 +5,8 @@ window.OdClaimMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,7 +19,7 @@ window.OdClaimMng = {
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* 클레임(취소/반품/교환) getSortParam */
+    /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) return {};
@@ -25,6 +27,9 @@ window.OdClaimMng = {
     };
 
     /* 클레임(취소/반품/교환) onSort */
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
@@ -34,10 +39,11 @@ window.OdClaimMng = {
       handleSearchData();
     };
 
-    /* 클레임(취소/반품/교환) sortIcon */
+    /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     // onMounted에서 API 로드
+    /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -67,7 +73,7 @@ window.OdClaimMng = {
       }
     };
 
-    /* -- 검색 파라미터 -- */
+    /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -75,7 +81,7 @@ window.OdClaimMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* 클레임(취소/반품/교환) handleDateRangeChange */
+    /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) {
         const r = boUtil.bofGetDateRange(searchParam.dateRange);
@@ -87,7 +93,7 @@ window.OdClaimMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 클레임(취소/반품/교환) fnLoadCodes */
+    /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
@@ -112,19 +118,19 @@ window.OdClaimMng = {
     /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
-    /* 클레임(취소/반품/교환) loadView */
+    /* loadView — 뷰 로드 */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
 
-    /* 클레임(취소/반품/교환) 상세조회 */
+    /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 클레임(취소/반품/교환) openNew */
+    /* openNew — 신규 열기 */
     const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
 
-    /* 클레임(취소/반품/교환) closeDetail */
+    /* closeDetail — 상세 닫기 */
     const closeDetail = () => { uiStateDetail.selectedId = null; };
 
-    /* 클레임(취소/반품/교환) inlineNavigate */
+    /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'odClaimMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
@@ -134,14 +140,15 @@ window.OdClaimMng = {
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    /* 클레임(취소/반품/교환) fnBuildPagerNums */
+    /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 클레임(취소/반품/교환) fnTypeBadge — 공통코드 CLAIM_TYPE_KR 우선, 미매칭 시 로컬 fallback */
     const _CLAIM_TYPE_FB = { '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' };
+    /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => coUtil.cofCodeBadge('CLAIM_TYPE_KR', t, _CLAIM_TYPE_FB[t] || 'badge-gray');
 
-    /* 클레임 타입별 배경색(통합 배지용) */
+    /* fnClaimTypeColor — 유틸 */
     const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
 
     /* 클레임(취소/반품/교환) fnStatusBadge — 공통코드 CLAIM_STATUS_KR 우선, 미매칭 시 로컬 fallback */
@@ -150,9 +157,10 @@ window.OdClaimMng = {
       '처리중': 'badge-purple', '환불대기': 'badge-orange',
       '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
     };
+    /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('CLAIM_STATUS_KR', s, _CLAIM_STATUS_FB[s] || 'badge-gray');
 
-    /* 클레임(취소/반품/교환) 목록조회 */
+    /* onSearch — 조회 */
     const onSearch = async () => {
       if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
         props.showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
@@ -162,7 +170,7 @@ window.OdClaimMng = {
       await handleSearchData('DEFAULT');
     };
 
-    /* 클레임(취소/반품/교환) onReset */
+    /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
@@ -170,13 +178,13 @@ window.OdClaimMng = {
       await handleSearchData();
     };
 
-    /* 클레임(취소/반품/교환) setPage */
+    /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
 
-    /* 클레임(취소/반품/교환) onSizeChange */
+    /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
-    /* 클레임(취소/반품/교환) 삭제 */
+    /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
       const ok = await showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
       if (!ok) return;
@@ -196,20 +204,20 @@ window.OdClaimMng = {
       }
     };
 
-    /* 클레임(취소/반품/교환) exportExcel */
+    /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(claims, [{label:'클레임ID',key:'claimId'},{label:'회원명',key:'userNm'},{label:'주문ID',key:'orderId'},{label:'유형',key:'type'},{label:'상태',key:'statusCd'},{label:'상품명',key:'prodNm'},{label:'사유',key:'reasonCd'},{label:'요청일',key:'requestDate'}], '클레임목록.csv');
 
     /* 일괄선택 */
     const checked = reactive(new Set());
 
-    /* 클레임(취소/반품/교환) toggleCheck */
+    /* toggleCheck — 토글 */
     const toggleCheck = (id) => { const s = new Set(checked); if (s.has(id)) s.delete(id); else s.add(id); checked = s; };
 
-    /* 클레임(취소/반품/교환) isChecked */
+    /* isChecked — 여부 확인 */
     const isChecked = (id) => checked.has(id);
     const cfAllChecked = computed(() => claims.length > 0 && claims.every(c => checked.has(c.claimId)));
 
-    /* 클레임(취소/반품/교환) toggleCheckAll */
+    /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => {
       const s = new Set(checked);
       if (cfAllChecked.value) claims.forEach(c => s.delete(c.claimId));
@@ -220,7 +228,7 @@ window.OdClaimMng = {
       .filter(c => c.codeGrp === 'CLAIM_STATUS' && c.useYn === 'Y')
       .sort((a, b) => a.sortOrd - b.sortOrd);
 
-    /* 클레임(취소/반품/교환) claimStatusForType */
+    /* claimStatusForType — 클레임 상태 For 유형 */
     const claimStatusForType = type => claimStatusCodes
       .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + type + '^'))
       .map(c => c.codeLabel);
@@ -234,14 +242,14 @@ window.OdClaimMng = {
       reqTarget:'추가결재', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
     });
 
-    /* 클레임(취소/반품/교환) onApprToChange */
+    /* onApprToChange — 이벤트 */
     const onApprToChange = () => {
       const m = (members).find(x => String(x.memberId) === String(bulkForm.apprToUserId));
       if (m) { bulkForm.apprToNm = m.memberNm || ''; bulkForm.apprToPhone = m.memberPhone || ''; bulkForm.apprToEmail = m.memberEmail || ''; }
       else   { bulkForm.apprToNm = ''; bulkForm.apprToPhone = ''; bulkForm.apprToEmail = ''; }
     };
 
-    /* 클레임(취소/반품/교환) onReqTargetChange */
+    /* onReqTargetChange — 이벤트 */
     const onReqTargetChange = () => {
       const ids = Array.from(checked);
       const first = window.safeArrayUtils.safeFind(Array.isArray(claims) ? claims : [], c => ids.includes(c.claimId));
@@ -264,7 +272,7 @@ window.OdClaimMng = {
       return r;
     });
 
-    /* 클레임(취소/반품/교환) openBulk */
+    /* openBulk — 열기 */
     const openBulk = () => {
       if (!checked.size) { showToast('항목을 선택하세요.', 'error'); return; }
       uiState.bulkTab = 'status';
@@ -299,7 +307,7 @@ window.OdClaimMng = {
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
 
-    /* 클레임(취소/반품/교환) saveBulk */
+    /* saveBulk — 저장 */
     const saveBulk = async () => {
       if (!checked.size) { showToast('항목을 선택하세요.', 'error'); uiState.bulkOpen = false; return; }
       if (uiState.bulkTab === 'status') {
@@ -390,11 +398,15 @@ window.OdClaimMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
+    /* openMemberPick — 열기 */
     const openMemberPick = () => { memberPick.open = true; };
+    /* onSelectMember — 이벤트 */
     const onSelectMember = m => { searchParam.memberId = m.memberId; searchParam.memberNm = m.memberNm || m.loginId || m.memberId; };
+    /* onClearMember — 이벤트 */
     const onClearMember  = () => { searchParam.memberId = ''; searchParam.memberNm = ''; };
 
     /* BoGrid 컬럼 정의 (정렬 sortKey 'reg' 는 SORT_MAP 키와 일치) */
+        // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -417,6 +429,8 @@ window.OdClaimMng = {
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => onDateRangeChange() },
     ];
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
 
     const listGridColumns = [
       { key: 'claimId',       label: '클레임ID', link: true,
@@ -435,15 +449,13 @@ window.OdClaimMng = {
         fmt: () => cfSiteNm.value,
         cellStyle: 'color:#2563eb;' },
     ];
+    /* fnGridRowStyle — 유틸 */
     const fnGridRowStyle = (c) =>
       (uiStateDetail.selectedId === c.claimId ? 'background:#fff8f9;' : '')
       + (isChecked(c.claimId) ? 'background:#eef6fd;' : '');
 
     /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
 
-    // -- return ---------------------------------------------------------------
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 일괄결재요청 모달 ============
     const apprContactFormColumns = [
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
@@ -470,6 +482,8 @@ window.OdClaimMng = {
       { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
         placeholder: '(선택)', colSpan: 2 },
     ];
+    // ===== return (템플릿 노출) ===============================================
+
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), claims, members, uiState, codes, searchParam, handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, checked, toggleCheck, isChecked, cfAllChecked, toggleCheckAll, CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS, bulkForm, cfCheckedByType, openBulk, saveBulk, cfBulkPreview, onApprToChange, onReqTargetChange, cfBuildTmplMsg, onSort, sortIcon, memberPick, openMemberPick, onSelectMember, onClearMember, showRefModal, baseSearchColumns, listGridColumns, fnGridRowStyle, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns, bulkApprovalFormColumns };
   },
