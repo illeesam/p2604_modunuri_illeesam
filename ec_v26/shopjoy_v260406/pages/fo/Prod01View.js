@@ -7,7 +7,6 @@ window.Prod01View = {
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
-
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const prod              = window.foApp.selectedProd;  // 선택된 상품
     const addToCart            = window.foApp.addToCart;  // 장바구니 추가
@@ -22,8 +21,137 @@ window.Prod01View = {
     /* isLiked — 여부 확인 */
     const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, prodApiLoaded: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false, prodApiLoaded: false });
     const codes = reactive({});
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Prod01View.js : handleBtnAction -> ', cmd, param);
+      // 페이지 이동: 홈
+      if (cmd === 'page-go-home') {
+        return props.navigate('home');
+      // 페이지 이동: 상품목록
+      } else if (cmd === 'page-go-prod-list') {
+        return props.navigate('prodList');
+      // 페이지 이동: 문의
+      } else if (cmd === 'page-go-contact') {
+        return props.navigate('contact');
+      // 장바구니 담기
+      } else if (cmd === 'cart-add') {
+        return handleAddToCart();
+      // 바로구매
+      } else if (cmd === 'order-buy-now') {
+        return execBuyNow();
+      // 드로어에서 장바구니 담기
+      } else if (cmd === 'cart-add-from-drawer') {
+        return execCartFromDrawer();
+      // 드로어 열기: 바로구매 모드
+      } else if (cmd === 'quickBuy-open-buy') {
+        return openQuickBuy();
+      // 드로어 열기: 장바구니 모드
+      } else if (cmd === 'quickBuy-open-cart') {
+        return openCartDrawer();
+      // 드로어 닫기
+      } else if (cmd === 'quickBuy-close') {
+        uiState.quickBuyOpen = false;
+        return;
+      // 찜 토글
+      } else if (cmd === 'prod-toggle-like') {
+        return toggleLike(param);
+      // 수량 +
+      } else if (cmd === 'qty-inc') {
+        uiState.qty++;
+        return;
+      // 수량 -
+      } else if (cmd === 'qty-dec') {
+        if (uiState.qty > 1) uiState.qty--;
+        return;
+      // 사이즈 가이드 모달 열기
+      } else if (cmd === 'sizeGuideModal-open') {
+        uiState.showSizeGuide = true;
+        return;
+      // 사이즈 가이드 모달 닫기
+      } else if (cmd === 'sizeGuideModal-close') {
+        uiState.showSizeGuide = false;
+        return;
+      // 줌 모달 열기
+      } else if (cmd === 'zoomModal-open') {
+        uiState.zoomOpen = true;
+        return;
+      // 줌 모달 닫기
+      } else if (cmd === 'zoomModal-close') {
+        uiState.zoomOpen = false;
+        return;
+      // 갤러리: 이전 이미지
+      } else if (cmd === 'gallery-prev') {
+        uiState.selectedImg = (uiState.selectedImg - 1 + cfMockImages.value.length) % cfMockImages.value.length;
+        return;
+      // 갤러리: 다음 이미지
+      } else if (cmd === 'gallery-next') {
+        uiState.selectedImg = (uiState.selectedImg + 1) % cfMockImages.value.length;
+        return;
+      // 포토 팝업 열기
+      } else if (cmd === 'photoModal-open') {
+        uiState.photoPopupOpen = true;
+        return;
+      // 포토 팝업 닫기
+      } else if (cmd === 'photoModal-close') {
+        uiState.photoPopupOpen = false;
+        return;
+      // 포토 그리드 페이지: 이전
+      } else if (cmd === 'photoGrid-prev') {
+        return photoGridPrev();
+      // 포토 그리드 페이지: 다음
+      } else if (cmd === 'photoGrid-next') {
+        return photoGridNext();
+      // 포토 상세 닫기
+      } else if (cmd === 'photoDetail-close') {
+        return closePhotoDetail();
+      // 포토 상세: 이전 리뷰
+      } else if (cmd === 'photoDetail-prev') {
+        return photoNavPrev();
+      // 포토 상세: 다음 리뷰
+      } else if (cmd === 'photoDetail-next') {
+        return photoNavNext();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Prod01View.js : handleSelectAction -> ', cmd, param);
+      // 색상(옵션1) 선택
+      if (cmd === 'options-color-select') {
+        return selectColor(param);
+      // 사이즈(옵션2) 선택
+      } else if (cmd === 'options-size-select') {
+        return selectSize(param);
+      // 탭 선택
+      } else if (cmd === 'tab-go') {
+        return scrollToTab(param);
+      // 이미지 썸네일 선택
+      } else if (cmd === 'gallery-row-select') {
+        uiState.selectedImg = param;
+        return;
+      // 리뷰 정렬 필터 선택
+      } else if (cmd === 'reviews-filter-select') {
+        uiState.reviewFilter = param;
+        return;
+      // 포토 그리드 페이지 번호 선택
+      } else if (cmd === 'photoGrid-row-go') {
+        uiState.photoGridPage = param;
+        return;
+      // 포토 리뷰 선택 (그리드 → 디테일)
+      } else if (cmd === 'reviews-photo-grid-row-select') {
+        return openPhotoFromGrid(param);
+      // 포토 리뷰 선택 (목록 → 디테일)
+      } else if (cmd === 'reviews-photo-list-row-select') {
+        return openPhotoFromList(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     const svProduct = reactive({});
 
@@ -842,21 +970,14 @@ window.Prod01View = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState,
-      prod: svProduct,
-      svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQna, svPromotions,
-      photoNavPrev, photoNavNext, cfPhotoNavIdx,
-      cfPhotoGridPageCount, cfPhotoGridItems, photoGridPrev, photoGridNext,
-      openPhotoFromGrid, openPhotoFromList, closePhotoDetail,
-      sizeGuideRows, sizeGuideGridColumns, sizeGuideColsShort, styleItems,
-      cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,
-      cfQuickBuyTotal, cfDisplayPrice, getSizeDelta,
-      TABS, tabBarRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef,
-      scrollToTab, fnCategoryLabel, stars, colorStatus, sizeStatus,
-      cfVisibleSizes,
-      buyBtnRef,
-      selectColor, selectSize, handleAddToCart, handleBuyNow, openQuickBuy, openCartDrawer, execBuyNow, execCartFromDrawer,
-      codes
+      uiState, codes, prod: svProduct,                                                                          // 상태 / 데이터
+      svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQna, svPromotions,                      // 데이터 (lazy)
+      handleBtnAction, handleSelectAction,                                                                      // dispatch
+      cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,            // computed - 리뷰/갤러리
+      cfQuickBuyTotal, cfDisplayPrice, cfVisibleSizes, cfPhotoNavIdx, cfPhotoGridPageCount, cfPhotoGridItems,   // computed - 가격/사이즈/포토
+      sizeGuideRows, sizeGuideGridColumns, sizeGuideColsShort, styleItems, TABS,                                // 데이터 (정적)
+      tabBarRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef, buyBtnRef,                                   // ref
+      getSizeDelta, fnCategoryLabel, stars, colorStatus, sizeStatus, isLiked, toggleLike,                       // 헬퍼
     };
   },
 
@@ -866,16 +987,31 @@ window.Prod01View = {
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품상세"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
+    </div>
     <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Prod</div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">상품 상세</h1>
+      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
+        Prod
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
+        상품 상세
+      </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
-        <span>/</span>
-        <span style="cursor:pointer;" @click="navigate('prodList')">상품목록</span>
-        <span>/</span>
-        <span style="color:#333;">상품 상세</span>
+        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+          홈
+        </span>
+        <span>
+          /
+        </span>
+        <span style="cursor:pointer;" @click="handleBtnAction('page-go-prod-list')">
+          상품목록
+        </span>
+        <span>
+          /
+        </span>
+        <span style="color:#333;">
+          상품 상세
+        </span>
       </div>
     </div>
   </div>
@@ -892,7 +1028,7 @@ window.Prod01View = {
             @mouseenter="$event.currentTarget.querySelector('.img-nav').style.opacity='1'; const ov=$event.currentTarget.querySelector('.prod-img-overlay'); if(ov) ov.style.opacity='1';"
             @mouseleave="$event.currentTarget.querySelector('.img-nav').style.opacity='0'; const ov=$event.currentTarget.querySelector('.prod-img-overlay'); if(ov) ov.style.opacity='0';">
             <div class="prod-main-img" style="border-radius:12px;border:1px solid var(--border);overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;background:var(--bg-base);cursor:pointer;"
-              @click="uiState.zoomOpen=true"
+              @click="handleBtnAction('zoomModal-open')"
               :title="cfMockImages[uiState.selectedImg]?.optTip || ''">
               <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="prod.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
@@ -904,7 +1040,9 @@ window.Prod01View = {
                   <circle cx="9" cy="9" r="2"/>
                   <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
                 </svg>
-                <span>{{ uiState.selectedColor.name }} 이미지가 등록되지 않았습니다</span>
+                <span>
+                  {{ uiState.selectedColor.name }} 이미지가 등록되지 않았습니다
+                </span>
               </div>
               <div v-if="prod.badge" style="position:absolute;top:14px;left:14px;">
                 <span v-if="prod.badge==='NEW'"
@@ -924,27 +1062,33 @@ window.Prod01View = {
               </div>
             </div>
             <!-- ===== ■.■.■.■.■.■. 확대 아이콘 (우상단) ================================== -->
-            <button @click="uiState.zoomOpen=true"
+            <button @click="handleBtnAction('zoomModal-open')"
               style="position:absolute;top:14px;right:14px;width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:2;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary);">
-                <polyline points="15 3 21 3 21 9"></polyline>
-                <polyline points="9 21 3 21 3 15"></polyline>
-                <line x1="21" y1="3" x2="14" y2="10"></line>
-                <line x1="3" y1="21" x2="10" y2="14"></line>
+                <polyline points="15 3 21 3 21 9">
+                </polyline>
+                <polyline points="9 21 3 21 3 15">
+                </polyline>
+                <line x1="21" y1="3" x2="14" y2="10">
+                </line>
+                <line x1="3" y1="21" x2="10" y2="14">
+                </line>
               </svg>
             </button>
             <!-- ===== ■.■.■.■.■.■. 좌/우 화살표 ======================================= -->
             <div class="img-nav" style="opacity:0;transition:opacity .2s;">
-              <button @click="uiState.selectedImg=(uiState.selectedImg-1+cfMockImages.length)%cfMockImages.length"
+              <button @click="handleBtnAction('gallery-prev')"
                 style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-                  <polyline points="15 18 9 12 15 6"></polyline>
+                  <polyline points="15 18 9 12 15 6">
+                  </polyline>
                 </svg>
               </button>
-              <button @click="uiState.selectedImg=(uiState.selectedImg+1)%cfMockImages.length"
+              <button @click="handleBtnAction('gallery-next')"
                 style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-                  <polyline points="9 18 15 12 9 6"></polyline>
+                  <polyline points="9 18 15 12 9 6">
+                  </polyline>
                 </svg>
               </button>
             </div>
@@ -952,7 +1096,7 @@ window.Prod01View = {
           <!-- ===== ■.■.■.■.■. 썸네일 가로 목록 (하단) ================================== -->
           <div style="display:flex;flex-direction:row;gap:8px;overflow-x:auto;scrollbar-width:none;">
             <div v-for="(img,i) in cfMockImages" :key="i"
-              @click="uiState.selectedImg=i"
+              @click="handleSelectAction('gallery-row-select', i)"
               :title="img.optTip || img.label"
               :style="{
               width:'72px',height:'72px',borderRadius:'8px',overflow:'hidden',
@@ -983,18 +1127,27 @@ window.Prod01View = {
             </div>
             <!-- ===== ■.■.■.■.■.■. 별점 미리보기 ======================================= -->
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;">
-              <span style="font-size:0.82rem;" v-html="stars(cfAvgRating)"></span>
-              <span style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">{{ cfAvgRating }}</span>
-              <span style="font-size:0.78rem;color:var(--text-muted);">({{ svReviewSummary.total || cfMockReviews.length }})</span>
+              <span style="font-size:0.82rem;" v-html="stars(cfAvgRating)">
+              </span>
+              <span style="font-size:0.8rem;font-weight:700;color:var(--text-primary);">
+                {{ cfAvgRating }}
+              </span>
+              <span style="font-size:0.78rem;color:var(--text-muted);">
+                ({{ svReviewSummary.total || cfMockReviews.length }})
+              </span>
             </div>
             <!-- ===== ■.■.■.■.■.■. 가격 ============================================ -->
-            <div style="font-size:1.7rem;font-weight:900;color:var(--blue);margin-bottom:24px;">{{ cfDisplayPrice }}</div>
+            <div style="font-size:1.7rem;font-weight:900;color:var(--blue);margin-bottom:24px;">
+              {{ cfDisplayPrice }}
+            </div>
             <!-- ===== ■.■.■.■.■.■. 색상 선택 ========================================= -->
             <div style="margin-bottom:20px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
                   {{ prod.opt1Nm || '색상' }} 선택
-                  <span style="color:var(--blue);margin-left:2px;">*</span>
+                  <span style="color:var(--blue);margin-left:2px;">
+                    *
+                  </span>
                 </label>
                 <span v-if="uiState.selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">
                   {{ uiState.selectedColor.name }}
@@ -1003,62 +1156,49 @@ window.Prod01View = {
               <div style="display:flex;flex-wrap:wrap;gap:10px;">
                 <div v-for="c in prod.opt1s" :key="c.name"
                   style="position:relative;display:flex;flex-direction:column;align-items:center;">
-                  <button @click="selectColor(c)"
-                    :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')"
-                    :style="{
-                    width:'34px',height:'34px',borderRadius:'50%',position:'relative',
-                    cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
-                    background:c.hex || '#e5e7eb',
-                    border: uiState.selectedColor&&uiState.selectedColor.name===c.name
-                    ? '3px solid #fff'
-                    : '1px solid rgba(0,0,0,0.18)',
-                    boxShadow: uiState.selectedColor&&uiState.selectedColor.name===c.name
-                    ? '0 0 0 2px var(--blue), 0 2px 8px rgba(22,119,255,0.35)'
-                    : '0 1px 2px rgba(0,0,0,0.08)',
-                    boxSizing:'border-box',transition:'all .15s',
-                    opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
-                    }">
-                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 선택 체크 아이콘 — 어두운 색상은 흰색, 밝은 색상은 검정 자동 판단 ===== -->
-                    <svg v-if="uiState.selectedColor && uiState.selectedColor.name===c.name"
-                      width="16" height="16" viewBox="0 0 24 24" fill="none"
-                      :stroke="(c.hex && /^#(f|e|d)/i.test(c.hex)) ? '#222' : '#fff'"
-                      stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"
-                      style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </button>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 대각선 취소선 (품절/중지) ========================= -->
-                  <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:4px;left:4px;width:34px;height:34px;pointer-events:none;" viewBox="0 0 34 34">
-                    <line x1="5" y1="5" x2="29" y2="29" stroke="#ef4444" stroke-width="2" />
-                  </svg>
-                  <span v-if="colorStatus(c)==='soldout'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#ef4444;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">
-                    품절
-                  </span>
-                  <span v-else-if="colorStatus(c)==='stop'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#9ca3af;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">
-                    중지
-                  </span>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 옵션 가격 delta ============================= -->
-                  <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">
-                    +{{ c.priceDelta.toLocaleString('ko-KR') }}
-                  </span>
-                </div>
-              </div>
-              <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.colorError }}</div>
+                  <button @click="handleSelectAction('options-color-select', c)" :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')" :style="{ width:'34px',height:'34px',borderRadius:'50%',position:'relative', cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed', background:c.hex || '#e5e7eb', border: uiState.selectedColor&&uiState.selectedColor.name===c.name ? '3px solid #fff' : '1px solid rgba(0,0,0,0.18)', boxShadow: uiState.selectedColor&&uiState.selectedColor.name===c.name ? '0 0 0 2px var(--blue), 0 2px 8px rgba(22,119,255,0.35)' : '0 1px 2px rgba(0,0,0,0.08)', boxSizing:'border-box',transition:'all .15s', opacity: colorStatus(c)!=='ok' ? '0.4' : '1', }">
+                  <!-- ===== ■.■.■.■.■.■.■.■.■.■. 선택 체크 아이콘 — 어두운 색상은 흰색, 밝은 색상은 검정 자동 판단 ===== -->
+                  <svg v-if="uiState.selectedColor && uiState.selectedColor.name===c.name" width="16" height="16" viewBox="0 0 24 24" fill="none" :stroke="(c.hex && /^#(f|e|d)/i.test(c.hex)) ? '#222' : '#fff'" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
+                  <polyline points="20 6 9 17 4 12">
+                  </polyline>
+                </svg>
+              </button>
+              <!-- ===== ■.■.■.■.■.■.■.■.■. 대각선 취소선 (품절/중지) ========================= -->
+              <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:4px;left:4px;width:34px;height:34px;pointer-events:none;" viewBox="0 0 34 34">
+                <line x1="5" y1="5" x2="29" y2="29" stroke="#ef4444" stroke-width="2" />
+              </svg>
+              <span v-if="colorStatus(c)==='soldout'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#ef4444;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">
+                품절
+              </span>
+              <span v-else-if="colorStatus(c)==='stop'" style="position:absolute;top:-8px;right:-10px;font-size:0.5rem;background:#9ca3af;color:#fff;padding:1px 3px;border-radius:3px;font-weight:700;line-height:1.2;">
+                중지
+              </span>
+              <!-- ===== ■.■.■.■.■.■.■.■.■. 옵션 가격 delta ============================= -->
+              <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">
+                +{{ c.priceDelta.toLocaleString('ko-KR') }}
+              </span>
             </div>
-            <!-- ===== ■.■.■.■.■.■. 사이즈 선택 (FREE 또는 미설정이면 숨김) — 선택된 색상 종속 사이즈만 표시 ===== -->
-            <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
-                  {{ prod.opt2Nm || '사이즈' }} 선택
-                  <span style="color:var(--blue);margin-left:2px;">*</span>
-                </label>
-                <button @click="uiState.showSizeGuide=true"
+          </div>
+          <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">
+            {{ uiState.colorError }}
+          </div>
+        </div>
+        <!-- ===== ■.■.■.■.■.■. 사이즈 선택 (FREE 또는 미설정이면 숨김) — 선택된 색상 종속 사이즈만 표시 ===== -->
+        <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
+            {{ prod.opt2Nm || '사이즈' }} 선택
+            <span style="color:var(--blue);margin-left:2px;">
+              *
+            </span>
+          </label>
+          <button @click="handleBtnAction('sizeGuideModal-open')"
                   style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
-                  사이즈 가이드
-                </button>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                <button v-for="s in cfVisibleSizes" :key="s" @click="selectSize(s)"
+            사이즈 가이드
+          </button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button v-for="s in cfVisibleSizes" :key="s" @click="handleSelectAction('options-size-select', s)"
                   :style="{
                   padding:'7px 14px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                   cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
@@ -1070,96 +1210,130 @@ window.Prod01View = {
                   opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
                   transition:'all .15s',
                   }">
-                  {{ s }}
-                  <span v-if="getSizeDelta(s)" style="font-size:0.62rem;font-weight:700;color:var(--blue);margin-left:2px;">
-                    (+{{ getSizeDelta(s).toLocaleString('ko-KR') }})
-                  </span>
-                  <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
-                    품절
-                  </span>
-                  <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
-                    중지
-                  </span>
-                </button>
-              </div>
-              <div v-if="uiState.sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.sizeError }}</div>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 수량 ============================================ -->
-            <div style="margin-bottom:20px;">
-              <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">수량</label>
-              <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
-                <button @click="uiState.qty>1&&uiState.qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
-                  −
-                </button>
-                <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">
-                  {{ uiState.qty }}
-                </span>
-                <button @click="uiState.qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
-                  +
-                </button>
-              </div>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 선택 요약 ========================================= -->
-            <div v-if="uiState.selectedColor||uiState.selectedSize"
-              style="background:var(--bg-base);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;">
-              <div v-if="uiState.selectedColor">
-                <span style="font-weight:600;color:var(--text-primary);">{{ prod.opt1Nm || '색상' }}:</span>
-                {{ uiState.selectedColor.name }}
-              </div>
-              <div v-if="uiState.selectedSize">
-                <span style="font-weight:600;color:var(--text-primary);">사이즈:</span>
-                {{ uiState.selectedSize }}
-              </div>
-              <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ uiState.qty }}개</div>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 버튼 ============================================ -->
-            <div ref="buyBtnRef" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-              <div style="display:flex;gap:8px;">
-                <button class="btn-blue" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleAddToCart">🛒 장바구니 담기</button>
-                <button @click="toggleLike && toggleLike(prod.prodId)"
-                  :title="isLiked && isLiked(prod.prodId) ? '찜 해제' : '찜하기'"
-                  :style="{
-                  width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px',
-                  background: isLiked && isLiked(prod.prodId) ? '#fee2e2' : 'var(--bg-card)',
-                  cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center',
-                  transition:'all .15s',
-                  }">
-                  <span :style="{ color: isLiked && isLiked(prod.prodId) ? '#ef4444' : '#9ca3af' }">
-                    {{ isLiked && isLiked(prod.prodId) ? '♥' : '♡' }}
-                  </span>
-                </button>
-              </div>
-              <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="execBuyNow">⚡ 바로구매</button>
-              <button @click="navigate('contact')"
-                style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:4px 0;text-align:center;">
-                상품 문의하기
-              </button>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 배송 안내 ========================================= -->
-            <div style="padding-top:14px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:5px;">
-              <div style="display:flex;gap:8px;">
-                <span>🚚</span>
-                <span>결제 확인 후 <strong>1~2 영업일</strong> 내 출고</span>
-              </div>
-              <div style="display:flex;gap:8px;">
-                <span>↩️</span>
-                <span>수령 후 <strong>7일 이내</strong> 교환·반품 가능</span>
-              </div>
-              <div style="display:flex;gap:8px;">
-                <span>💳</span>
-                <span>결제: <strong>계좌이체</strong></span>
-              </div>
-            </div>
-          </div>
+            {{ s }}
+            <span v-if="getSizeDelta(s)" style="font-size:0.62rem;font-weight:700;color:var(--blue);margin-left:2px;">
+              (+{{ getSizeDelta(s).toLocaleString('ko-KR') }})
+            </span>
+            <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
+              품절
+            </span>
+            <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
+              중지
+            </span>
+          </button>
         </div>
-        <!-- ===== /purchase ================================================== -->
+        <div v-if="uiState.sizeError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">
+          {{ uiState.sizeError }}
+        </div>
       </div>
+      <!-- ===== ■.■.■.■.■.■. 수량 ============================================ -->
+      <div style="margin-bottom:20px;">
+        <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">
+          수량
+        </label>
+        <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
+          <button @click="handleBtnAction('qty-dec')" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
+            −
+          </button>
+          <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">
+            {{ uiState.qty }}
+          </span>
+          <button @click="handleBtnAction('qty-inc')" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
+            +
+          </button>
+        </div>
+      </div>
+      <!-- ===== ■.■.■.■.■.■. 선택 요약 ========================================= -->
+      <div v-if="uiState.selectedColor||uiState.selectedSize"
+              style="background:var(--bg-base);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;">
+        <div v-if="uiState.selectedColor">
+          <span style="font-weight:600;color:var(--text-primary);">
+            {{ prod.opt1Nm || '색상' }}:
+          </span>
+          {{ uiState.selectedColor.name }}
+        </div>
+        <div v-if="uiState.selectedSize">
+          <span style="font-weight:600;color:var(--text-primary);">
+            사이즈:
+          </span>
+          {{ uiState.selectedSize }}
+        </div>
+        <div>
+          <span style="font-weight:600;color:var(--text-primary);">
+            수량:
+          </span>
+          {{ uiState.qty }}개
+        </div>
+      </div>
+      <!-- ===== ■.■.■.■.■.■. 버튼 ============================================ -->
+      <div ref="buyBtnRef" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+        <div style="display:flex;gap:8px;">
+          <button class="btn-blue" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleBtnAction('cart-add')">
+            🛒 장바구니 담기
+          </button>
+          <button @click="handleBtnAction('prod-toggle-like', prod.prodId)" :title="isLiked && isLiked(prod.prodId) ? '찜 해제' : '찜하기'" :style="{ width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px', background: isLiked && isLiked(prod.prodId) ? '#fee2e2' : 'var(--bg-card)', cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center', transition:'all .15s', }">
+          <span :style="{ color: isLiked && isLiked(prod.prodId) ? '#ef4444' : '#9ca3af' }">
+          {{ isLiked && isLiked(prod.prodId) ? '♥' : '♡' }}
+        </span>
+      </button>
     </div>
-    <!-- ===== /page-wrap top ============================================= -->
-    <!-- ===== □.□. ══ 상단: 갤러리 + 구매 옵션 ══ ================================= -->
-    <!-- ===== ■.■. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->
-    <div v-if="uiState.tabFixed" :style="{ height: uiState.tabPlaceholderH + 'px', marginTop:'24px' }"></div>
-    <div ref="tabBarRef"
+    <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleBtnAction('order-buy-now')">
+      ⚡ 바로구매
+    </button>
+    <button @click="handleBtnAction('page-go-contact')"
+                style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:4px 0;text-align:center;">
+      상품 문의하기
+    </button>
+  </div>
+  <!-- ===== ■.■.■.■.■.■. 배송 안내 ========================================= -->
+  <div style="padding-top:14px;border-top:1px solid var(--border);font-size:0.8rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:5px;">
+    <div style="display:flex;gap:8px;">
+      <span>
+        🚚
+      </span>
+      <span>
+        결제 확인 후
+        <strong>
+          1~2 영업일
+        </strong>
+        내 출고
+      </span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <span>
+        ↩️
+      </span>
+      <span>
+        수령 후
+        <strong>
+          7일 이내
+        </strong>
+        교환·반품 가능
+      </span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <span>
+        💳
+      </span>
+      <span>
+        결제:
+        <strong>
+          계좌이체
+        </strong>
+      </span>
+    </div>
+  </div>
+</div>
+</div>
+<!-- ===== /purchase ================================================== -->
+</div>
+</div>
+<!-- ===== /page-wrap top ============================================= -->
+<!-- ===== □.□. ══ 상단: 갤러리 + 구매 옵션 ══ ================================= -->
+<!-- ===== ■.■. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->
+<div v-if="uiState.tabFixed" :style="{ height: uiState.tabPlaceholderH + 'px', marginTop:'24px' }">
+</div>
+<div ref="tabBarRef"
       :style="uiState.tabFixed ? {
       position:'fixed', top:uiState.tabFixedTop+'px', left:uiState.tabFixedLeft+'px', width:uiState.tabFixedW+'px',
       zIndex:55,
@@ -1175,8 +1349,8 @@ window.Prod01View = {
       borderTop:'1px solid var(--border)', borderBottom:'1px solid var(--border)',
       marginTop:'24px',
       }">
-      <div class="page-wrap" style="padding-top:0;padding-bottom:0;display:flex;justify-content:center;">
-        <button v-for="tab in TABS" :key="tab.id" @click="scrollToTab(tab.id)"
+  <div class="page-wrap" style="padding-top:0;padding-bottom:0;display:flex;justify-content:center;">
+    <button v-for="tab in TABS" :key="tab.id" @click="handleSelectAction('tab-go', tab.id)"
           :style="{
           padding:'13px 22px',background:'none',cursor:'pointer',
           border:'none',
@@ -1186,162 +1360,182 @@ window.Prod01View = {
           fontSize:'0.88rem',transition:'all .15s',whiteSpace:'nowrap',
           marginBottom:'-2px',
           }">
-          {{ tab.label }}
-          <!-- ===== ■.■.■.■.■. 조건부 영역 ========================================== -->
-          <span v-if="tab.id==='review' && (svReviewSummary.total || cfMockReviews.length)"
-            :style="{
-            display:'inline-flex',alignItems:'center',justifyContent:'center',
-            minWidth:'18px',height:'18px',borderRadius:'9px',
-            background:uiState.activeTab==='review'?'var(--blue)':'var(--text-muted)',
-            color:'#fff',fontSize:'0.68rem',fontWeight:'700',
-            marginLeft:'4px',padding:'0 4px',verticalAlign:'middle',
-            }">
-            {{ svReviewSummary.total || cfMockReviews.length }}
-          </span>
-          <span v-if="tab.id==='qna' && svQna.length"
-            :style="{
-            display:'inline-flex',alignItems:'center',justifyContent:'center',
-            minWidth:'18px',height:'18px',borderRadius:'9px',
-            background:uiState.activeTab==='qna'?'var(--blue)':'var(--text-muted)',
-            color:'#fff',fontSize:'0.68rem',fontWeight:'700',
-            marginLeft:'4px',padding:'0 4px',verticalAlign:'middle',
-            }">
-            {{ svQna.length }}
-          </span>
-        </button>
+      {{ tab.label }}
+      <!-- ===== ■.■.■.■.■. 조건부 영역 ========================================== -->
+      <span v-if="tab.id==='review' && (svReviewSummary.total || cfMockReviews.length)" :style="{ display:'inline-flex',alignItems:'center',justifyContent:'center', minWidth:'18px',height:'18px',borderRadius:'9px', background:uiState.activeTab==='review'?'var(--blue)':'var(--text-muted)', color:'#fff',fontSize:'0.68rem',fontWeight:'700', marginLeft:'4px',padding:'0 4px',verticalAlign:'middle', }">
+      {{ svReviewSummary.total || cfMockReviews.length }}
+    </span>
+    <span v-if="tab.id==='qna' && svQna.length" :style="{ display:'inline-flex',alignItems:'center',justifyContent:'center', minWidth:'18px',height:'18px',borderRadius:'9px', background:uiState.activeTab==='qna'?'var(--blue)':'var(--text-muted)', color:'#fff',fontSize:'0.68rem',fontWeight:'700', marginLeft:'4px',padding:'0 4px',verticalAlign:'middle', }">
+    {{ svQna.length }}
+  </span>
+</button>
+</div>
+</div>
+<!-- ===== □.□. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->
+<!-- ===== ■.■. ══ 탭 섹션들 ══ =========================================== -->
+<div style="padding-top:0;">
+  <!-- ===== ■.■.■. 상세정보 ================================================ -->
+  <div ref="detailSecRef" style="padding-top:32px;">
+    <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
+      상세정보
+    </div>
+    <div class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
+      <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">
+        📋 상품 설명
+      </h2>
+      <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.9;margin-bottom:16px;">
+        {{ prod.desc }}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span v-for="t in prod.tags" :key="t"
+              style="padding:4px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:20px;font-size:0.78rem;color:var(--text-secondary);">
+          # {{ t }}
+        </span>
       </div>
     </div>
-    <!-- ===== □.□. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->
-    <!-- ===== ■.■. ══ 탭 섹션들 ══ =========================================== -->
-    <div style="padding-top:0;">
-      <!-- ===== ■.■.■. 상세정보 ================================================ -->
-      <div ref="detailSecRef" style="padding-top:32px;">
-        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
-          상세정보
-        </div>
-        <div class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
-          <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📋 상품 설명</h2>
-          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.9;margin-bottom:16px;">{{ prod.desc }}</p>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span v-for="t in prod.tags" :key="t"
-              style="padding:4px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:20px;font-size:0.78rem;color:var(--text-secondary);">
-              # {{ t }}
-            </span>
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. BO 등록 상품설명 블록 (HTML / IMAGE / URL) ================ -->
-        <div v-if="svContents.length" class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
-          <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📝 상세 설명</h2>
-          <div style="display:flex;flex-direction:column;gap:16px;">
-            <div v-for="(blk, bi) in svContents" :key="blk?.prodContentId || bi">
-              <!-- ===== ■.■.■.■.■.■.■. HTML 블록 ===================================== -->
-              <div v-if="(blk.contentTypeCd||'').toUpperCase()==='HTML'"
+    <!-- ===== ■.■.■.■. BO 등록 상품설명 블록 (HTML / IMAGE / URL) ================ -->
+    <div v-if="svContents.length" class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
+      <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">
+        📝 상세 설명
+      </h2>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div v-for="(blk, bi) in svContents" :key="blk?.prodContentId || bi">
+          <!-- ===== ■.■.■.■.■.■.■. HTML 블록 ===================================== -->
+          <div v-if="(blk.contentTypeCd||'').toUpperCase()==='HTML'"
                 style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);"
-                v-html="blk.contentHtml"></div>
-              <!-- ===== ■.■.■.■.■.■.■. IMAGE / FILE(첨부 base64) 블록 ================== -->
-              <img v-else-if="['IMAGE','FILE'].includes((blk.contentTypeCd||'').toUpperCase())"
+                v-html="blk.contentHtml">
+          </div>
+          <!-- ===== ■.■.■.■.■.■.■. IMAGE / FILE(첨부 base64) 블록 ================== -->
+          <img v-else-if="['IMAGE','FILE'].includes((blk.contentTypeCd||'').toUpperCase())"
                 :src="blk.contentHtml" alt="상품설명 이미지"
                 style="max-width:100%;height:auto;border-radius:8px;display:block;" />
-              <!-- ===== ■.■.■.■.■.■.■. URL 블록 (외부 링크 또는 외부 이미지) ==================== -->
-              <div v-else-if="(blk.contentTypeCd||'').toUpperCase()==='URL'">
-                <img v-if="/\.(jpe?g|png|gif|webp|svg)$/i.test(blk.contentHtml||'')"
+          <!-- ===== ■.■.■.■.■.■.■. URL 블록 (외부 링크 또는 외부 이미지) ==================== -->
+          <div v-else-if="(blk.contentTypeCd||'').toUpperCase()==='URL'">
+            <img v-if="/\.(jpe?g|png|gif|webp|svg)$/i.test(blk.contentHtml||'')"
                   :src="blk.contentHtml" alt="상품설명 이미지"
                   style="max-width:100%;height:auto;border-radius:8px;display:block;" />
-                <a v-else :href="blk.contentHtml" target="_blank"
+            <a v-else :href="blk.contentHtml" target="_blank"
                   style="color:var(--blue);text-decoration:underline;">
-                  {{ blk.contentHtml }}
-                </a>
-              </div>
-              <!-- ===== ■.■.■.■.■.■.■. 기타 — 원시 HTML 로 폴백 =========================== -->
-              <div v-else style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);" v-html="blk.contentHtml"></div>
-            </div>
+              {{ blk.contentHtml }}
+            </a>
+          </div>
+          <!-- ===== ■.■.■.■.■.■.■. 기타 — 원시 HTML 로 폴백 =========================== -->
+          <div v-else style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);" v-html="blk.contentHtml">
           </div>
         </div>
-        <div class="card" style="padding:28px;">
-          <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">🧺 세탁 및 관리</h2>
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <div v-for="item in [
+      </div>
+    </div>
+    <div class="card" style="padding:28px;">
+      <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">
+        🧺 세탁 및 관리
+      </h2>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div v-for="item in [
               {icon:'💧',label:'세탁 방법',val:'찬물 손세탁 또는 세탁기 약세탁 권장'},
               {icon:'🌡️',label:'건조 방법',val:'그늘에서 자연 건조 (드라이기 금지)'},
               {icon:'👕',label:'다림질',val:'낮은 온도로 뒤집어 다림질'},
               {icon:'🚫',label:'주의사항',val:'표백제 사용 금지, 드라이클리닝 권장 안함'},
               ]" :key="item.label" style="display:flex;gap:12px;align-items:flex-start;">
-              <span style="font-size:1.05rem;flex-shrink:0;width:26px;text-align:center;">{{ item.icon }}</span>
-              <div>
-                <div style="font-size:0.76rem;color:var(--text-muted);margin-bottom:2px;">{{ item.label }}</div>
-                <div style="font-size:0.87rem;color:var(--text-secondary);">{{ item.val }}</div>
-              </div>
+          <span style="font-size:1.05rem;flex-shrink:0;width:26px;text-align:center;">
+            {{ item.icon }}
+          </span>
+          <div>
+            <div style="font-size:0.76rem;color:var(--text-muted);margin-bottom:2px;">
+              {{ item.label }}
+            </div>
+            <div style="font-size:0.87rem;color:var(--text-secondary);">
+              {{ item.val }}
             </div>
           </div>
         </div>
       </div>
-      <!-- ===== ■.■.■. 사이즈 ================================================= -->
-      <div ref="sizeSecRef" style="padding-top:40px;">
-        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
-          사이즈
-        </div>
-        <div class="card" style="padding:28px;">
-          <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">📏 사이즈 가이드</div>
-          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-          <fo-grid bare :columns="sizeGuideGridColumns" :rows="sizeGuideRows"
+    </div>
+  </div>
+  <!-- ===== ■.■.■. 사이즈 ================================================= -->
+  <div ref="sizeSecRef" style="padding-top:40px;">
+    <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
+      사이즈
+    </div>
+    <div class="card" style="padding:28px;">
+      <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">
+        📏 사이즈 가이드
+      </div>
+      <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
+      <fo-grid bare :columns="sizeGuideGridColumns" :rows="sizeGuideRows"
             :show-row-no="false" min-width="320px" />
-          <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
+      <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
+        * 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.
+      </p>
+    </div>
+  </div>
+  <!-- ===== ■.■.■. 상품평 ================================================= -->
+  <div ref="reviewSecRef" style="padding-top:40px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
+      <span style="font-size:1rem;font-weight:800;color:var(--text-primary);">
+        상품평
+      </span>
+      <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">
+        {{ svReviewSummary.total || cfMockReviews.length }}
+      </span>
+    </div>
+    <!-- ===== ■.■.■.■. 평점 요약 ============================================= -->
+    <div class="card" style="padding:24px;margin-bottom:14px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
+      <div style="text-align:center;flex-shrink:0;min-width:90px;">
+        <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">
+          {{ cfAvgRating }}
+        </div>
+        <div style="font-size:1rem;margin:6px 0;" v-html="stars(cfAvgRating)">
+        </div>
+        <div style="font-size:0.76rem;color:var(--text-muted);">
+          {{ svReviewSummary.total || cfMockReviews.length }}개 리뷰
         </div>
       </div>
-      <!-- ===== ■.■.■. 상품평 ================================================= -->
-      <div ref="reviewSecRef" style="padding-top:40px;">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
-          <span style="font-size:1rem;font-weight:800;color:var(--text-primary);">상품평</span>
-          <span style="font-size:0.85rem;color:var(--text-muted);font-weight:400;">
-            {{ svReviewSummary.total || cfMockReviews.length }}
+      <div style="flex:1;min-width:180px;">
+        <div v-for="d in cfRatingDist" :key="d.star" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+          <span style="font-size:0.76rem;color:var(--text-muted);width:28px;text-align:right;flex-shrink:0;">
+            {{ d.star }}
+            <span style="color:#f59e0b;">
+              ★
+            </span>
+          </span>
+          <div style="flex:1;height:7px;background:var(--bg-base);border-radius:4px;overflow:hidden;">
+            <div :style="{width:d.pct+'%',height:'100%',background:'#f59e0b',borderRadius:'4px'}">
+            </div>
+          </div>
+          <span style="font-size:0.76rem;color:var(--text-muted);width:36px;flex-shrink:0;">
+            {{ d.pct }}%
           </span>
         </div>
-        <!-- ===== ■.■.■.■. 평점 요약 ============================================= -->
-        <div class="card" style="padding:24px;margin-bottom:14px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
-          <div style="text-align:center;flex-shrink:0;min-width:90px;">
-            <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">{{ cfAvgRating }}</div>
-            <div style="font-size:1rem;margin:6px 0;" v-html="stars(cfAvgRating)"></div>
-            <div style="font-size:0.76rem;color:var(--text-muted);">{{ svReviewSummary.total || cfMockReviews.length }}개 리뷰</div>
-          </div>
-          <div style="flex:1;min-width:180px;">
-            <div v-for="d in cfRatingDist" :key="d.star" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
-              <span style="font-size:0.76rem;color:var(--text-muted);width:28px;text-align:right;flex-shrink:0;">
-                {{ d.star }}
-                <span style="color:#f59e0b;">★</span>
-              </span>
-              <div style="flex:1;height:7px;background:var(--bg-base);border-radius:4px;overflow:hidden;">
-                <div :style="{width:d.pct+'%',height:'100%',background:'#f59e0b',borderRadius:'4px'}"></div>
-              </div>
-              <span style="font-size:0.76rem;color:var(--text-muted);width:36px;flex-shrink:0;">{{ d.pct }}%</span>
-            </div>
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. 포토 리뷰 목록 ========================================== -->
-        <div v-if="cfReviewsWithPhoto.length" class="card" style="padding:20px;margin-bottom:14px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
-              포토&동영상 상품평
-              <span style="color:var(--blue);">{{ cfReviewsWithPhoto.length }}</span>
-            </span>
-            <button @click="uiState.photoPopupOpen=true"
+      </div>
+    </div>
+    <!-- ===== ■.■.■.■. 포토 리뷰 목록 ========================================== -->
+    <div v-if="cfReviewsWithPhoto.length" class="card" style="padding:20px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
+          포토&동영상 상품평
+          <span style="color:var(--blue);">
+            {{ cfReviewsWithPhoto.length }}
+          </span>
+        </span>
+        <button @click="handleBtnAction('photoModal-open')"
               style="background:none;border:1px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78rem;color:var(--text-secondary);display:flex;align-items:center;gap:4px;">
-              모아보기
-            </button>
-          </div>
-          <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
-            <div v-for="r in cfReviewsWithPhoto" :key="r.id"
-              @click="openPhotoFromList(r)"
+          모아보기
+        </button>
+      </div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
+        <div v-for="r in cfReviewsWithPhoto" :key="r.id"
+              @click="handleSelectAction('reviews-photo-list-row-select', r)"
               style="width:80px;height:80px;flex-shrink:0;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
               @mouseenter="$event.currentTarget.style.opacity='.75'"
               @mouseleave="$event.currentTarget.style.opacity='1'">
-              <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
-            </div>
-          </div>
+          <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
         </div>
-        <!-- ===== ■.■.■.■. 정렬 ================================================ -->
-        <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
-          <button v-for="f in ['최신순','별점높은순','별점낮은순','도움순']" :key="f"
-            @click="uiState.reviewFilter=f"
+      </div>
+    </div>
+    <!-- ===== ■.■.■.■. 정렬 ================================================ -->
+    <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
+      <button v-for="f in ['최신순','별점높은순','별점낮은순','도움순']" :key="f"
+            @click="handleSelectAction('reviews-filter-select', f)"
             :style="{
             padding:'5px 14px',border:uiState.reviewFilter===f?'1.5px solid var(--blue)':'1.5px solid var(--border)',
             borderRadius:'20px',cursor:'pointer',fontSize:'0.8rem',
@@ -1349,343 +1543,390 @@ window.Prod01View = {
             color:uiState.reviewFilter===f?'var(--blue)':'var(--text-secondary)',
             fontWeight:uiState.reviewFilter===f?'700':'400',
             }">
-            {{ f }}
-          </button>
-        </div>
-        <!-- ===== ■.■.■.■. 리뷰 목록 ============================================= -->
-        <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-          <div v-for="(r,i) in cfFilteredReviews" :key="r.id"
+        {{ f }}
+      </button>
+    </div>
+    <!-- ===== ■.■.■.■. 리뷰 목록 ============================================= -->
+    <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div v-for="(r,i) in cfFilteredReviews" :key="r.id"
             :style="{padding:'20px',borderTop:i===0?'none':'1px solid var(--border)',background:'var(--bg-card)'}">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;">
-              <span style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">{{ r.maskedName }}</span>
-              <span style="font-size:0.82rem;" v-html="stars(r.rating)"></span>
-              <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ r.date }}</span>
-            </div>
-            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-              <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
-                사이즈: {{ r.sizeInfo }}
-              </span>
-              <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
-                색상: {{ r.colorInfo }}
-              </span>
-            </div>
-            <div v-if="r.hasPhoto" style="margin-bottom:10px;">
-              <div @click="openPhotoFromList(r)"
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap;">
+          <span style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">
+            {{ r.maskedName }}
+          </span>
+          <span style="font-size:0.82rem;" v-html="stars(r.rating)">
+          </span>
+          <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">
+            {{ r.date }}
+          </span>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+          <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
+            사이즈: {{ r.sizeInfo }}
+          </span>
+          <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
+            색상: {{ r.colorInfo }}
+          </span>
+        </div>
+        <div v-if="r.hasPhoto" style="margin-bottom:10px;">
+          <div @click="handleSelectAction('reviews-photo-list-row-select', r)"
                 style="width:72px;height:72px;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);display:inline-block;">
-                <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
-              </div>
-            </div>
-            <p style="font-size:0.87rem;color:var(--text-secondary);line-height:1.75;margin-bottom:10px;">{{ r.text }}</p>
-            <div style="font-size:0.75rem;color:var(--text-muted);">
-              도움이 돼요
-              <span style="font-weight:700;color:var(--text-secondary);">({{ r.helpful }})</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. Q&A ================================================= -->
-      <div ref="qnaSecRef" style="padding-top:40px;padding-bottom:20px;">
-        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
-          Q&A
-          <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted);margin-left:8px;">({{ svQna.length }})</span>
-        </div>
-        <div v-if="!svQna.length" class="card" style="padding:40px;text-align:center;color:var(--text-muted);">등록된 Q&A가 없습니다.</div>
-        <div v-else style="display:flex;flex-direction:column;gap:12px;">
-          <div v-for="q in svQna" :key="q.qnaId"
-            class="card" style="padding:20px;">
-            <div style="display:flex;align-items:flex-start;gap:12px;">
-              <div style="min-width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0;">
-                Q
-              </div>
-              <div style="flex:1;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                  <span style="font-size:0.82rem;font-weight:600;color:var(--text-primary);">
-                    {{ q.memberId ? q.memberId[0]+'**' : '비회원' }}
-                  </span>
-                  <span style="font-size:0.76rem;color:var(--text-muted);">{{ String(q.regDate||'').slice(0,10).replace(/-/g,'.') }}</span>
-                </div>
-                <div style="font-size:0.88rem;color:var(--text-primary);line-height:1.6;white-space:pre-wrap;">
-                  {{ q.qnaTitle || q.qnaContent }}
-                </div>
-                <div v-if="q.answYn === 'Y' && q.answContent" style="margin-top:12px;padding:12px;background:var(--bg-base);border-radius:8px;display:flex;gap:10px;">
-                  <div style="min-width:28px;height:28px;border-radius:50%;background:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;flex-shrink:0;">
-                    A
-                  </div>
-                  <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;white-space:pre-wrap;">{{ q.answContent }}</div>
-                </div>
-                <div v-else style="margin-top:8px;">
-                  <span style="font-size:0.76rem;color:var(--text-muted);background:var(--bg-base);padding:3px 8px;border-radius:4px;">
-                    답변 대기중
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 스타일 ================================================= -->
-      <div ref="styleSecRef" style="padding-top:40px;padding-bottom:20px;">
-        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
-          스타일
-        </div>
-        <div class="card" style="padding:28px;">
-          <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">🎨 이런 코디 어때요?</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
-            <div v-for="s in styleItems" :key="s.label"
-              style="background:var(--bg-base);border-radius:10px;padding:18px;text-align:center;">
-              <div style="font-size:2rem;margin-bottom:8px;">{{ s.emoji }}</div>
-              <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;">{{ s.label }}</div>
-              <div style="font-size:0.77rem;color:var(--text-muted);">{{ s.desc }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- ===== /page-wrap sections ======================================== -->
-  </template>
-    <!-- ===== □.□. ══ 탭 섹션들 ══ =========================================== -->
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. ══ 이미지 확대 모달 ══ ========================================= -->
-  <teleport to="body">
-    <div v-if="uiState.zoomOpen && prod" @click="uiState.zoomOpen=false"
-      style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
-      <!-- ===== ■.■.■. 닫기 ================================================== -->
-      <button @click.stop="uiState.zoomOpen=false"
-        style="position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.8);color:#fff;font-size:1.4rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1510;">
-        ✕
-      </button>
-      <!-- ===== ■.■.■. 메인 확대 이미지 =========================================== -->
-      <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-        <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="prod.prodNm"
-          style="max-width:95vw;max-height:85vh;object-fit:contain;display:block;" />
-        <!-- ===== ■.■.■.■. 좌/우 화살표 =========================================== -->
-        <button @click.stop="uiState.selectedImg=(uiState.selectedImg-1+cfMockImages.length)%cfMockImages.length"
-          style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-        <button @click.stop="uiState.selectedImg=(uiState.selectedImg+1)%cfMockImages.length"
-          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-      </div>
-      <!-- ===== ■.■.■. 하단 썸네일 ============================================== -->
-      <div @click.stop style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;">
-        <div v-for="(img,i) in cfMockImages" :key="i" @click.stop="uiState.selectedImg=i"
-          :style="{ width:'56px', height:'56px', borderRadius:'8px', overflow:'hidden', cursor:'pointer',
-          border: uiState.selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
-          <img :src="img.src" style="width:100%;height:100%;object-fit:cover;" />
-        </div>
-      </div>
-    </div>
-  </teleport>
-  <!-- ===== □. ══ 이미지 확대 모달 ══ ========================================= -->
-  <!-- ===== ■. ══ 포토 전체 팝업 ══ ========================================== -->
-  <teleport to="body">
-    <div v-if="uiState.photoPopupOpen && prod" @click.self="uiState.photoPopupOpen=false"
-      style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;">
-      <!-- ===== ■.■.■. 좌 화살표 =============================================== -->
-      <button v-if="cfPhotoGridPageCount > 1" @click="photoGridPrev"
-        style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <div @click.stop style="background:var(--bg-card);border-radius:16px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;padding:24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-          <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">포토&동영상 상품평 {{ cfReviewsWithPhoto.length }}</span>
-          <button @click="uiState.photoPopupOpen=false" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">
-            ✕
-          </button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
-          <div v-for="r in cfPhotoGridItems" :key="r.id"
-            @click="openPhotoFromGrid(r)"
-            style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
-            @mouseenter="$event.currentTarget.style.opacity='.75'"
-            @mouseleave="$event.currentTarget.style.opacity='1'">
             <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
           </div>
         </div>
-        <!-- ===== ■.■.■.■. 페이지네이션 ============================================ -->
-        <div v-if="cfPhotoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
-          <button v-for="p in cfPhotoGridPageCount" :key="p" @click="uiState.photoGridPage=p"
-            :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: uiState.photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: uiState.photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: uiState.photoGridPage===p ? 700 : 400 }">
-            {{ p }}
-          </button>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 우 화살표 =============================================== -->
-      <button v-if="cfPhotoGridPageCount > 1" @click="photoGridNext"
-        style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
-    </div>
-  </teleport>
-  <!-- ===== □. ══ 포토 전체 팝업 ══ ========================================== -->
-  <!-- ===== ■. ══ 포토 리뷰 개별 팝업 ══ ======================================= -->
-  <teleport to="body">
-    <div v-if="uiState.selectedReview && prod" @click.self="closePhotoDetail"
-      style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1501;display:flex;align-items:center;justify-content:center;padding:20px;">
-      <!-- ===== ■.■.■. 좌 화살표 =============================================== -->
-      <button @click="photoNavPrev"
-        style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <!-- ===== ■.■.■. 본문 ================================================== -->
-      <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;padding:24px;position:relative;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-          <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
-            포토&동영상 상품평
-            <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;margin-left:6px;">
-              {{ cfPhotoNavIdx + 1 }} / {{ cfReviewsWithPhoto.length }}
-            </span>
-          </span>
-          <button @click="closePhotoDetail"
-            style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">
-            ✕
-          </button>
-        </div>
-        <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1/1;margin-bottom:20px;background:var(--bg-base);">
-          <img :src="uiState.selectedReview.photoImg" style="width:100%;height:100%;object-fit:contain;" />
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-          <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ uiState.selectedReview.maskedName }}</span>
-          <span style="font-size:0.85rem;" v-html="stars(uiState.selectedReview.rating)"></span>
-          <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">{{ uiState.selectedReview.date }}</span>
-        </div>
-        <div style="display:flex;gap:6px;margin-bottom:14px;">
-          <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
-            사이즈: {{ uiState.selectedReview.sizeInfo }}
-          </span>
-          <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
-            색상: {{ uiState.selectedReview.colorInfo }}
-          </span>
-        </div>
-        <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">{{ uiState.selectedReview.text }}</p>
-        <div style="font-size:0.78rem;color:var(--text-muted);">
+        <p style="font-size:0.87rem;color:var(--text-secondary);line-height:1.75;margin-bottom:10px;">
+          {{ r.text }}
+        </p>
+        <div style="font-size:0.75rem;color:var(--text-muted);">
           도움이 돼요
-          <span style="font-weight:700;color:var(--text-secondary);">({{ uiState.selectedReview.helpful }})</span>
+          <span style="font-weight:700;color:var(--text-secondary);">
+            ({{ r.helpful }})
+          </span>
         </div>
-      </div>
-      <!-- ===== ■.■.■. 우 화살표 =============================================== -->
-      <button @click="photoNavNext"
-        style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
-    </div>
-  </teleport>
-  <!-- ===== □. ══ 포토 리뷰 개별 팝업 ══ ======================================= -->
-  <!-- ===== ■. ══ 사이즈 가이드 모달 ══ ======================================== -->
-  <fo-modal :show="uiState.showSizeGuide" title="📏 사이즈 가이드" width="480px"
-    @close="uiState.showSizeGuide=false">
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <fo-grid bare :columns="sizeGuideColsShort" :rows="sizeGuideRows" :show-row-no="false" />
-    <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
-    <button class="btn-blue" @click="uiState.showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
-  </fo-modal>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. ══ 사이즈 가이드 모달 ══ ======================================== -->
-  <!-- ===== ■. ══ 고정 하단 바 ══ =========================================== -->
-  <div v-if="prod && uiState.showBottomBar"
-    style="position:fixed;bottom:0;left:0;right:0;z-index:100;padding:10px 24px;display:flex;justify-content:center;align-items:center;background:linear-gradient(to top, var(--bg-card) 0%, rgba(245,248,255,0.98) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(80,100,160,0.08);">
-    <div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
-      <div style="flex:1;min-width:0;overflow:hidden;">
-        <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          {{ prod.prodNm }}
-        </div>
-        <div style="font-size:1.05rem;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-          {{ cfDisplayPrice }}
-        </div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0;">
-        <button class="btn-outline" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="openCartDrawer">담기</button>
-        <button class="btn-blue"    style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="openQuickBuy">구매하기</button>
       </div>
     </div>
   </div>
-  <!-- ===== □. ══ 고정 하단 바 ══ =========================================== -->
-  <!-- ===== ■. ══ 바로구매 드로어 (우측) ══ ===================================== -->
-  <template v-if="uiState.quickBuyOpen && prod">
-    <!-- ===== ■.■. 딤 오버레이 ================================================ -->
-    <div @click="uiState.quickBuyOpen=false"
-      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:150;transition:opacity .25s;"></div>
-    <!-- ===== ■.■. 드로어 패널 ================================================ -->
-    <div style="position:fixed;top:0;right:0;bottom:0;width:360px;max-width:92vw;z-index:151;background:var(--bg-card);box-shadow:-8px 0 32px rgba(0,0,0,0.14);display:flex;flex-direction:column;overflow:hidden;">
-      <!-- ===== ■.■.■. 헤더 ================================================== -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">
-          {{ uiState.drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}
-        </span>
-        <button @click="uiState.quickBuyOpen=false" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">
-          ✕
-        </button>
-      </div>
-      <!-- ===== ■.■.■. 스크롤 영역 ============================================== -->
-      <div style="flex:1;overflow-y:auto;padding:20px;">
-        <!-- ===== ■.■.■.■. 색상 ================================================ -->
-        <div style="margin-bottom:20px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
-              {{ prod.opt1Nm || '색상' }}
-              <span style="color:var(--blue);margin-left:2px;">*</span>
-            </span>
-            <span v-if="uiState.selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">
-              {{ uiState.selectedColor.name }}
-            </span>
+  <!-- ===== ■.■.■. Q&A ================================================= -->
+  <div ref="qnaSecRef" style="padding-top:40px;padding-bottom:20px;">
+    <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
+      Q&A
+      <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted);margin-left:8px;">
+        ({{ svQna.length }})
+      </span>
+    </div>
+    <div v-if="!svQna.length" class="card" style="padding:40px;text-align:center;color:var(--text-muted);">
+      등록된 Q&A가 없습니다.
+    </div>
+    <div v-else style="display:flex;flex-direction:column;gap:12px;">
+      <div v-for="q in svQna" :key="q.qnaId"
+            class="card" style="padding:20px;">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="min-width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0;">
+            Q
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
-              <button @click="selectColor(c)" :title="c.name"
-                :style="{
-                width:'30px',height:'30px',borderRadius:'50%',
-                cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed',
-                background:c.hex,
-                border:uiState.selectedColor&&uiState.selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)',
-                outline:uiState.selectedColor&&uiState.selectedColor.name===c.name?'2px solid white':'none',
-                outlineOffset:'-4px',boxSizing:'border-box',
-                opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
-                }"></button>
-              <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
-                <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
-              </svg>
-              <!-- ===== ■.■.■.■.■.■.■. 옵션 가격 delta ================================= -->
-              <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">
-                +{{ c.priceDelta.toLocaleString('ko-KR') }}
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.82rem;font-weight:600;color:var(--text-primary);">
+                {{ q.memberId ? q.memberId[0]+'**' : '비회원' }}
+              </span>
+              <span style="font-size:0.76rem;color:var(--text-muted);">
+                {{ String(q.regDate||'').slice(0,10).replace(/-/g,'.') }}
               </span>
             </div>
+            <div style="font-size:0.88rem;color:var(--text-primary);line-height:1.6;white-space:pre-wrap;">
+              {{ q.qnaTitle || q.qnaContent }}
+            </div>
+            <div v-if="q.answYn === 'Y' && q.answContent" style="margin-top:12px;padding:12px;background:var(--bg-base);border-radius:8px;display:flex;gap:10px;">
+            <div style="min-width:28px;height:28px;border-radius:50%;background:var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;flex-shrink:0;">
+              A
+            </div>
+            <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;white-space:pre-wrap;">
+              {{ q.answContent }}
+            </div>
           </div>
-          <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">{{ uiState.colorError }}</div>
+          <div v-else style="margin-top:8px;">
+            <span style="font-size:0.76rem;color:var(--text-muted);background:var(--bg-base);padding:3px 8px;border-radius:4px;">
+              답변 대기중
+            </span>
+          </div>
         </div>
-        <!-- ===== ■.■.■.■. 사이즈 (FREE면 숨김) — 선택된 색상 종속 사이즈만 표시 ================ -->
-        <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">
-                {{ prod.opt2Nm || '사이즈' }}
-                <span style="margin-left:2px;">*</span>
-              </span>
-              <span v-if="sizeError" style="font-size:0.75rem;color:#ef4444;font-weight:500;">필수 선택</span>
-            </div>
-            <button @click="uiState.showSizeGuide=true" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
-              사이즈 안내
-            </button>
-          </div>
-          <div :style="{
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== ■.■.■. 스타일 ================================================= -->
+<div ref="styleSecRef" style="padding-top:40px;padding-bottom:20px;">
+  <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
+    스타일
+  </div>
+  <div class="card" style="padding:28px;">
+    <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">
+      🎨 이런 코디 어때요?
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+      <div v-for="s in styleItems" :key="s.label"
+              style="background:var(--bg-base);border-radius:10px;padding:18px;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:8px;">
+          {{ s.emoji }}
+        </div>
+        <div style="font-size:0.85rem;font-weight:700;color:var(--text-primary);margin-bottom:4px;">
+          {{ s.label }}
+        </div>
+        <div style="font-size:0.77rem;color:var(--text-muted);">
+          {{ s.desc }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- ===== /page-wrap sections ======================================== -->
+</template>
+<!-- ===== □.□. ══ 탭 섹션들 ══ =========================================== -->
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. ══ 이미지 확대 모달 ══ ========================================= -->
+<teleport to="body">
+  <div v-if="uiState.zoomOpen && prod" @click="handleBtnAction('zoomModal-close')" style="position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <!-- ===== ■.■.■. 닫기 ================================================== -->
+  <button @click.stop="handleBtnAction('zoomModal-close')"
+        style="position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.6);border:2px solid rgba(255,255,255,0.8);color:#fff;font-size:1.4rem;width:48px;height:48px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1510;">
+    ✕
+  </button>
+  <!-- ===== ■.■.■. 메인 확대 이미지 =========================================== -->
+  <div @click.stop style="position:relative;width:95vw;height:85vh;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+    <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="prod.prodNm"
+          style="max-width:95vw;max-height:85vh;object-fit:contain;display:block;" />
+    <!-- ===== ■.■.■.■. 좌/우 화살표 =========================================== -->
+    <button @click.stop="handleBtnAction('gallery-prev')"
+          style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
+        <polyline points="15 18 9 12 15 6">
+        </polyline>
+      </svg>
+    </button>
+    <button @click.stop="handleBtnAction('gallery-next')"
+          style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:none;background:rgba(255,255,255,0.85);box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
+        <polyline points="9 18 15 12 9 6">
+        </polyline>
+      </svg>
+    </button>
+  </div>
+  <!-- ===== ■.■.■. 하단 썸네일 ============================================== -->
+  <div @click.stop style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;">
+    <div v-for="(img,i) in cfMockImages" :key="i" @click.stop="handleSelectAction('gallery-row-select', i)"
+          :style="{ width:'56px', height:'56px', borderRadius:'8px', overflow:'hidden', cursor:'pointer',
+          border: uiState.selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
+      <img :src="img.src" style="width:100%;height:100%;object-fit:cover;" />
+    </div>
+  </div>
+</div>
+</teleport>
+<!-- ===== □. ══ 이미지 확대 모달 ══ ========================================= -->
+<!-- ===== ■. ══ 포토 전체 팝업 ══ ========================================== -->
+<teleport to="body">
+  <div v-if="uiState.photoPopupOpen && prod" @click.self="handleBtnAction('photoModal-close')" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1500;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <!-- ===== ■.■.■. 좌 화살표 =============================================== -->
+  <button v-if="cfPhotoGridPageCount > 1" @click="handleBtnAction('photoGrid-prev')"
+        style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
+      <polyline points="15 18 9 12 15 6">
+      </polyline>
+    </svg>
+  </button>
+  <div @click.stop style="background:var(--bg-card);border-radius:16px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);">
+        포토&동영상 상품평 {{ cfReviewsWithPhoto.length }}
+      </span>
+      <button @click="handleBtnAction('photoModal-close')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">
+        ✕
+      </button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div v-for="r in cfPhotoGridItems" :key="r.id"
+            @click="handleSelectAction('reviews-photo-grid-row-select', r)"
+            style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
+            @mouseenter="$event.currentTarget.style.opacity='.75'"
+            @mouseleave="$event.currentTarget.style.opacity='1'">
+        <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
+      </div>
+    </div>
+    <!-- ===== ■.■.■.■. 페이지네이션 ============================================ -->
+    <div v-if="cfPhotoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
+      <button v-for="p in cfPhotoGridPageCount" :key="p" @click="handleSelectAction('photoGrid-row-go', p)"
+            :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: uiState.photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: uiState.photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: uiState.photoGridPage===p ? 700 : 400 }">
+        {{ p }}
+      </button>
+    </div>
+  </div>
+  <!-- ===== ■.■.■. 우 화살표 =============================================== -->
+  <button v-if="cfPhotoGridPageCount > 1" @click="handleBtnAction('photoGrid-next')"
+        style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
+      <polyline points="9 18 15 12 9 6">
+      </polyline>
+    </svg>
+  </button>
+</div>
+</teleport>
+<!-- ===== □. ══ 포토 전체 팝업 ══ ========================================== -->
+<!-- ===== ■. ══ 포토 리뷰 개별 팝업 ══ ======================================= -->
+<teleport to="body">
+  <div v-if="uiState.selectedReview && prod" @click.self="handleBtnAction('photoDetail-close')" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1501;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <!-- ===== ■.■.■. 좌 화살표 =============================================== -->
+  <button @click="handleBtnAction('photoDetail-prev')"
+        style="position:fixed;left:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
+      <polyline points="15 18 9 12 15 6">
+      </polyline>
+    </svg>
+  </button>
+  <!-- ===== ■.■.■. 본문 ================================================== -->
+  <div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;padding:24px;position:relative;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
+        포토&동영상 상품평
+        <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;margin-left:6px;">
+          {{ cfPhotoNavIdx + 1 }} / {{ cfReviewsWithPhoto.length }}
+        </span>
+      </span>
+      <button @click="handleBtnAction('photoDetail-close')"
+            style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted);">
+        ✕
+      </button>
+    </div>
+    <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1/1;margin-bottom:20px;background:var(--bg-base);">
+      <img :src="uiState.selectedReview.photoImg" style="width:100%;height:100%;object-fit:contain;" />
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+      <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
+        {{ uiState.selectedReview.maskedName }}
+      </span>
+      <span style="font-size:0.85rem;" v-html="stars(uiState.selectedReview.rating)">
+      </span>
+      <span style="font-size:0.75rem;color:var(--text-muted);margin-left:auto;">
+        {{ uiState.selectedReview.date }}
+      </span>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
+        사이즈: {{ uiState.selectedReview.sizeInfo }}
+      </span>
+      <span style="font-size:0.74rem;color:var(--text-muted);background:var(--bg-base);padding:2px 8px;border-radius:4px;">
+        색상: {{ uiState.selectedReview.colorInfo }}
+      </span>
+    </div>
+    <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.8;margin-bottom:16px;">
+      {{ uiState.selectedReview.text }}
+    </p>
+    <div style="font-size:0.78rem;color:var(--text-muted);">
+      도움이 돼요
+      <span style="font-weight:700;color:var(--text-secondary);">
+        ({{ uiState.selectedReview.helpful }})
+      </span>
+    </div>
+  </div>
+  <!-- ===== ■.■.■. 우 화살표 =============================================== -->
+  <button @click="handleBtnAction('photoDetail-next')"
+        style="position:fixed;right:clamp(8px,3vw,36px);top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,0.92);box-shadow:0 2px 10px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1502;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5">
+      <polyline points="9 18 15 12 9 6">
+      </polyline>
+    </svg>
+  </button>
+</div>
+</teleport>
+<!-- ===== □. ══ 포토 리뷰 개별 팝업 ══ ======================================= -->
+<!-- ===== ■. ══ 사이즈 가이드 모달 ══ ======================================== -->
+<fo-modal :show="uiState.showSizeGuide" title="📏 사이즈 가이드" width="480px"
+    @close="handleBtnAction('sizeGuideModal-close')">
+  <!-- ===== ■.■. 목록 영역 ================================================= -->
+  <fo-grid bare :columns="sizeGuideColsShort" :rows="sizeGuideRows" :show-row-no="false" />
+  <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">
+    * 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.
+  </p>
+  <button class="btn-blue" @click="handleBtnAction('sizeGuideModal-close')" style="width:100%;margin-top:16px;padding:10px;">
+    확인
+  </button>
+</fo-modal>
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. ══ 사이즈 가이드 모달 ══ ======================================== -->
+<!-- ===== ■. ══ 고정 하단 바 ══ =========================================== -->
+<div v-if="prod && uiState.showBottomBar" style="position:fixed;bottom:0;left:0;right:0;z-index:100;padding:10px 24px;display:flex;justify-content:center;align-items:center;background:linear-gradient(to top, var(--bg-card) 0%, rgba(245,248,255,0.98) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(80,100,160,0.08);">
+<div style="display:flex;align-items:center;gap:10px;max-width:760px;width:100%;">
+  <div style="flex:1;min-width:0;overflow:hidden;">
+    <div style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+      {{ prod.prodNm }}
+    </div>
+    <div style="font-size:1.05rem;font-weight:900;color:var(--blue);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+      {{ cfDisplayPrice }}
+    </div>
+  </div>
+  <div style="display:flex;gap:4px;flex-shrink:0;">
+    <button class="btn-outline" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-open-cart')">
+      담기
+    </button>
+    <button class="btn-blue"    style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-open-buy')">
+      구매하기
+    </button>
+  </div>
+</div>
+</div>
+<!-- ===== □. ══ 고정 하단 바 ══ =========================================== -->
+<!-- ===== ■. ══ 바로구매 드로어 (우측) ══ ===================================== -->
+<template v-if="uiState.quickBuyOpen && prod">
+<!-- ===== ■.■. 딤 오버레이 ================================================ -->
+<div @click="handleBtnAction('quickBuy-close')"
+      style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:150;transition:opacity .25s;">
+</div>
+<!-- ===== ■.■. 드로어 패널 ================================================ -->
+<div style="position:fixed;top:0;right:0;bottom:0;width:360px;max-width:92vw;z-index:151;background:var(--bg-card);box-shadow:-8px 0 32px rgba(0,0,0,0.14);display:flex;flex-direction:column;overflow:hidden;">
+  <!-- ===== ■.■.■. 헤더 ================================================== -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <span style="font-size:0.9rem;font-weight:800;color:var(--text-primary);">
+      {{ uiState.drawerMode==='cart' ? '🛒 장바구니 담기' : '⚡ 바로구매' }}
+    </span>
+    <button @click="handleBtnAction('quickBuy-close')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);line-height:1;padding:0;">
+      ✕
+    </button>
+  </div>
+  <!-- ===== ■.■.■. 스크롤 영역 ============================================== -->
+  <div style="flex:1;overflow-y:auto;padding:20px;">
+    <!-- ===== ■.■.■.■. 색상 ================================================ -->
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
+          {{ prod.opt1Nm || '색상' }}
+          <span style="color:var(--blue);margin-left:2px;">
+            *
+          </span>
+        </span>
+        <span v-if="uiState.selectedColor" style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">
+          {{ uiState.selectedColor.name }}
+        </span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <button @click="handleSelectAction('options-color-select', c)" :title="c.name" :style="{ width:'30px',height:'30px',borderRadius:'50%', cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed', background:c.hex, border:uiState.selectedColor&&uiState.selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)', outline:uiState.selectedColor&&uiState.selectedColor.name===c.name?'2px solid white':'none', outlineOffset:'-4px',boxSizing:'border-box', opacity: colorStatus(c)!=='ok' ? '0.4' : '1', }">
+        </button>
+        <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
+          <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
+        </svg>
+        <!-- ===== ■.■.■.■.■.■.■. 옵션 가격 delta ================================= -->
+        <span v-if="c.priceDelta" style="font-size:0.58rem;font-weight:700;color:var(--blue);white-space:nowrap;line-height:1;">
+          +{{ c.priceDelta.toLocaleString('ko-KR') }}
+        </span>
+      </div>
+    </div>
+    <div v-if="uiState.colorError" style="margin-top:6px;font-size:0.78rem;color:#ef4444;">
+      {{ uiState.colorError }}
+    </div>
+  </div>
+  <!-- ===== ■.■.■.■. 사이즈 (FREE면 숨김) — 선택된 색상 종속 사이즈만 표시 ================ -->
+  <div v-if="cfVisibleSizes.length && !(cfVisibleSizes.length===1 && cfVisibleSizes[0]==='FREE')" style="margin-bottom:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span :style="{ fontSize:'0.82rem', fontWeight:'600', color: sizeError ? '#ef4444' : 'var(--text-secondary)' }">
+        {{ prod.opt2Nm || '사이즈' }}
+        <span style="margin-left:2px;">
+          *
+        </span>
+      </span>
+      <span v-if="sizeError" style="font-size:0.75rem;color:#ef4444;font-weight:500;">
+        필수 선택
+      </span>
+    </div>
+    <button @click="handleBtnAction('sizeGuideModal-open')" style="background:none;border:none;cursor:pointer;color:var(--blue);font-size:0.75rem;font-weight:600;padding:0;text-decoration:underline;">
+      사이즈 안내
+    </button>
+  </div>
+  <div :style="{
             display:'flex', flexWrap:'wrap', gap:'6px', padding:'8px',
             border: uiState.sizeError ? '1px solid #ef4444' : '1px solid transparent',
             borderRadius:'6px', transition:'border-color .2s',
             }">
-            <button v-for="s in cfVisibleSizes" :key="s" @click="selectSize(s)"
+    <button v-for="s in cfVisibleSizes" :key="s" @click="handleSelectAction('options-size-select', s)"
               :style="{
               padding:'7px 16px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
               cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
@@ -1696,65 +1937,80 @@ window.Prod01View = {
               textDecoration: sizeStatus(s)!=='ok' ? 'line-through' : 'none',
               opacity: sizeStatus(s)!=='ok' ? '0.7' : '1',
               }">
-              {{ s }}
-              <span v-if="getSizeDelta(s)" style="font-size:0.62rem;font-weight:700;color:var(--blue);margin-left:2px;">
-                (+{{ getSizeDelta(s).toLocaleString('ko-KR') }})
-              </span>
-              <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
-                품절
-              </span>
-              <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
-                중지
-              </span>
-            </button>
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. 수량 ================================================ -->
-        <div style="margin-bottom:24px;">
-          <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">수량</span>
-          <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
-            <button @click="uiState.qty>1&&uiState.qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
-              −
-            </button>
-            <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">
-              {{ uiState.qty }}
-            </span>
-            <button @click="uiState.qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
-              +
-            </button>
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. 선택 요약 ============================================= -->
-        <div v-if="uiState.selectedColor||uiState.selectedSize"
-          style="background:var(--bg-base);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;border:1px solid var(--border);">
-          <div v-if="uiState.selectedColor">
-            <span style="font-weight:600;color:var(--text-primary);">색상:</span>
-            {{ uiState.selectedColor.name }}
-          </div>
-          <div v-if="uiState.selectedSize">
-            <span style="font-weight:600;color:var(--text-primary);">사이즈:</span>
-            {{ uiState.selectedSize }}
-          </div>
-          <div><span style="font-weight:600;color:var(--text-primary);">수량:</span> {{ uiState.qty }}개</div>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 하단: 총액 + 버튼 ========================================= -->
-      <div style="flex-shrink:0;padding:16px 20px;border-top:1px solid var(--border);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <span style="font-size:0.85rem;color:var(--text-muted);">총 주문금액</span>
-          <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">{{ cfQuickBuyTotal }}</span>
-        </div>
-        <button v-if="uiState.drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execCartFromDrawer">
-          🛒 장바구니 담기
-        </button>
-        <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="execBuyNow">
-          ⚡ 바로구매
-        </button>
-      </div>
-    </div>
-  </template>
+      {{ s }}
+      <span v-if="getSizeDelta(s)" style="font-size:0.62rem;font-weight:700;color:var(--blue);margin-left:2px;">
+        (+{{ getSizeDelta(s).toLocaleString('ko-KR') }})
+      </span>
+      <span v-if="sizeStatus(s)==='soldout'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#ef4444;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
+        품절
+      </span>
+      <span v-else-if="sizeStatus(s)==='stop'" style="position:absolute;top:-7px;right:-4px;font-size:0.55rem;background:#9ca3af;color:#fff;padding:1px 4px;border-radius:3px;font-weight:700;line-height:1.2;">
+        중지
+      </span>
+    </button>
+  </div>
 </div>
-
-    <!-- ===== □.□. 드로어 패널 ================================================ -->
-  <!-- ===== □. ══ 바로구매 드로어 (우측) ══ ===================================== -->`,
+<!-- ===== ■.■.■.■. 수량 ================================================ -->
+<div style="margin-bottom:24px;">
+  <span style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:10px;">
+    수량
+  </span>
+  <div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content;">
+    <button @click="uiState.qty>1&&uiState.qty--" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
+    −
+  </button>
+  <span style="min-width:44px;text-align:center;font-size:0.9rem;font-weight:700;color:var(--text-primary);">
+    {{ uiState.qty }}
+  </span>
+  <button @click="uiState.qty++" style="width:36px;height:36px;border:none;background:var(--bg-base);cursor:pointer;font-size:1.1rem;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;">
+    +
+  </button>
+</div>
+</div>
+<!-- ===== ■.■.■.■. 선택 요약 ============================================= -->
+<div v-if="uiState.selectedColor||uiState.selectedSize"
+          style="background:var(--bg-base);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--text-secondary);line-height:1.9;border:1px solid var(--border);">
+  <div v-if="uiState.selectedColor">
+    <span style="font-weight:600;color:var(--text-primary);">
+      색상:
+    </span>
+    {{ uiState.selectedColor.name }}
+  </div>
+  <div v-if="uiState.selectedSize">
+    <span style="font-weight:600;color:var(--text-primary);">
+      사이즈:
+    </span>
+    {{ uiState.selectedSize }}
+  </div>
+  <div>
+    <span style="font-weight:600;color:var(--text-primary);">
+      수량:
+    </span>
+    {{ uiState.qty }}개
+  </div>
+</div>
+</div>
+<!-- ===== ■.■.■. 하단: 총액 + 버튼 ========================================= -->
+<div style="flex-shrink:0;padding:16px 20px;border-top:1px solid var(--border);">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <span style="font-size:0.85rem;color:var(--text-muted);">
+      총 주문금액
+    </span>
+    <span style="font-size:1.2rem;font-weight:900;color:var(--blue);">
+      {{ cfQuickBuyTotal }}
+    </span>
+  </div>
+  <button v-if="uiState.drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('cart-add-from-drawer')">
+    🛒 장바구니 담기
+  </button>
+  <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('order-buy-now')">
+    ⚡ 바로구매
+  </button>
+</div>
+</div>
+</template>
+</div>
+<!-- ===== □.□. 드로어 패널 ================================================ -->
+<!-- ===== □. ══ 바로구매 드로어 (우측) ══ ===================================== -->
+`,
 };

@@ -232,19 +232,55 @@ window.XsSample04 = {
       { id: 'dispPreview',     icon: '👁',  name: '전시 미리보기',     desc: 'DispPreviewModal — 위젯 미리보기',     color: '#b91c1c' },
     ];
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample04.js : handleBtnAction -> ', cmd, param);
+      // 모달 닫기
+      if (cmd === 'modal-close') {
+        return closeModal();
+      // 확인 처리
+      } else if (cmd === 'modal-confirm') {
+        return doConfirm();
+      // 로딩 데모
+      } else if (cmd === 'modal-loading-demo') {
+        return loadingDemo();
+      // 폼 제출
+      } else if (cmd === 'modal-form-submit') {
+        return submitForm();
+      // 중첩 2단 모달 열기
+      } else if (cmd === 'modal-nested2-open') {
+        uiState.nested2 = true;
+      // 중첩 2단 모달 닫기
+      } else if (cmd === 'modal-nested2-close') {
+        uiState.nested2 = false;
+      // 중첩 backdrop 클릭 (2단 우선)
+      } else if (cmd === 'modal-nested-backdrop') {
+        if (uiState.nested2) { uiState.nested2 = false; }
+        else { closeModal(); }
+      // BaseModal 닫기
+      } else if (cmd === 'bmodal-close') {
+        return closeBModal();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      uiState, members, form, formErrors, CATALOG,
+      uiState, codes,                                                        // 상태 / 데이터
+      handleBtnAction,                                                       // dispatch
+      // ===== modals 영역 ======================================================
+      members, form, formErrors, CATALOG,
       sample04GridColumns, sample04Top3,
-      openModal, closeModal, doConfirm, loadingDemo, submitForm, openEditConfirm,
+      openModal,                                                             // 다양한 variant 인자가 있어 인라인 호출 유지
+      openEditConfirm,                                                       // 상세 모달 내부 인라인 호출
       fnGradeBadge, fnStatusBadge, fnAlertMeta,
-      /* BaseModal */
-      boData, bModal, openBModal, closeBModal, bShowToast, bShowConfirm,
+      // ===== bmodal 영역 (BaseModal) ==========================================
+      boData, bModal, openBModal, bShowToast, bShowConfirm,
       demoOrder, demoProduct, demoUser, demoTmpl, demoSampleParams, catSelIds,
       CATALOG2_COMMON, CATALOG2_FO, CATALOG2_BO,
-      uiState, codes };
+    };
   },
 
   template: /* html */`
@@ -252,7 +288,9 @@ window.XsSample04 = {
   <!-- ===== ■. 제목 ====================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:16px;">
     04. 모달 / 팝업
-    <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">Modal &amp; Popup 전시관 — 커스텀 10종 + BaseModal 17종</span>
+    <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">
+      Modal &amp; Popup 전시관 — 커스텀 10종 + BaseModal 17종
+    </span>
   </div>
   <!-- ===== □. 제목 ====================================================== -->
   <!-- ===== ■. ━━━ 카탈로그 카드 그리드 ━━━ ===================================== -->
@@ -260,10 +298,16 @@ window.XsSample04 = {
     <div v-for="item in CATALOG" :key="item.id"
       style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:24px;width:30px;text-align:center;flex-shrink:0;line-height:1;">{{ item.icon }}</span>
+        <span style="font-size:24px;width:30px;text-align:center;flex-shrink:0;line-height:1;">
+          {{ item.icon }}
+        </span>
         <div>
-          <div style="font-size:12px;font-weight:800;color:#222;">{{ item.name }}</div>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.4;">{{ item.desc }}</div>
+          <div style="font-size:12px;font-weight:800;color:#222;">
+            {{ item.name }}
+          </div>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.4;">
+            {{ item.desc }}
+          </div>
         </div>
       </div>
       <!-- ===== ■.■.■. Alert: 4 variant 버튼 ================================= -->
@@ -299,572 +343,715 @@ window.XsSample04 = {
         열기 →
       </button>
       <!-- ===== ■.■.■. Detail: 첫 번째 회원 데이터로 오픈 ============================= -->
-      <button v-else-if="item.id==='detail' && members.length"
-        @click="openModal('detail',{data:members[0]})"
+      <button v-else-if="item.id==='detail' && members.length" @click="openModal('detail',{data:members[0]})" style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;" :style="'background:'+item.color">
+      열기 →
+    </button>
+    <!-- ===== ■.■.■. 그 외 ================================================= -->
+    <button v-else-if="item.id!=='detail'" @click="openModal(item.id)"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
         :style="'background:'+item.color">
-        열기 →
-      </button>
-      <!-- ===== ■.■.■. 그 외 ================================================= -->
-      <button v-else-if="item.id!=='detail'" @click="openModal(item.id)"
-        style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
-        :style="'background:'+item.color">
-        열기 →
-      </button>
+      열기 →
+    </button>
+  </div>
+</div>
+<!-- ===== □. ━━━ 카탈로그 카드 그리드 ━━━ ===================================== -->
+<!-- ===== ■. ━━━ BaseModals.js 공통 모달 (17종) ━━━ ======================= -->
+<div style="margin-top:22px;display:flex;flex-direction:column;gap:14px;">
+  <!-- ===== ■.■. 섹션 헤더 ================================================= -->
+  <div>
+    <div style="font-size:13px;font-weight:700;color:#333;">
+      BaseModals.js 공통 모달
+      <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px;">
+        components/modals/BaseModals.js — 17가지 패턴
+      </span>
     </div>
   </div>
-  <!-- ===== □. ━━━ 카탈로그 카드 그리드 ━━━ ===================================== -->
-  <!-- ===== ■. ━━━ BaseModals.js 공통 모달 (17종) ━━━ ======================= -->
-  <div style="margin-top:22px;display:flex;flex-direction:column;gap:14px;">
-    <!-- ===== ■.■. 섹션 헤더 ================================================= -->
-    <div>
-      <div style="font-size:13px;font-weight:700;color:#333;">
-        BaseModals.js 공통 모달
-        <span style="font-size:11px;font-weight:400;color:#888;margin-left:6px;">components/modals/BaseModals.js — 17가지 패턴</span>
-      </div>
+  <!-- ===== /* ① FO + BO 공통 (3종) ======================================= -->
+  <div style="border:1px solid #dbeafe;border-radius:10px;padding:14px 16px;background:#f0f7ff;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:800;background:#2563eb;color:#fff;padding:2px 10px;border-radius:20px;">
+        FO + BO 공통
+      </span>
+      <span style="font-size:11px;color:#2563eb;font-weight:600;">
+        3종
+      </span>
+      <span style="font-size:11px;color:#93c5fd;">
+        — show prop 방식, boData 의존성 없음
+      </span>
     </div>
-    <!-- ===== /* ① FO + BO 공통 (3종) ======================================= -->
-    <div style="border:1px solid #dbeafe;border-radius:10px;padding:14px 16px;background:#f0f7ff;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:800;background:#2563eb;color:#fff;padding:2px 10px;border-radius:20px;">FO + BO 공통</span>
-        <span style="font-size:11px;color:#2563eb;font-weight:600;">3종</span>
-        <span style="font-size:11px;color:#93c5fd;">— show prop 방식, boData 의존성 없음</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
-        <div v-for="item in CATALOG2_COMMON" :key="item.id"
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+      <div v-for="item in CATALOG2_COMMON" :key="item.id"
           style="background:#fff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:20px;flex-shrink:0;line-height:1;">{{ item.icon }}</span>
-            <div>
-              <div style="font-size:12px;font-weight:800;color:#1e3a8a;">{{ item.name }}</div>
-              <div style="font-size:10px;color:#93c5fd;margin-top:1px;line-height:1.4;">{{ item.desc }}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:20px;flex-shrink:0;line-height:1;">
+            {{ item.icon }}
+          </span>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#1e3a8a;">
+              {{ item.name }}
+            </div>
+            <div style="font-size:10px;color:#93c5fd;margin-top:1px;line-height:1.4;">
+              {{ item.desc }}
             </div>
           </div>
-          <button @click="openBModal(item.id)"
+        </div>
+        <button @click="openBModal(item.id)"
             style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
             :style="'background:'+item.color">
-            열기 →
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- ===== /* ② FO 전용 (1종) ============================================ -->
-    <div style="border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;background:#f0fdf4;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:800;background:#16a34a;color:#fff;padding:2px 10px;border-radius:20px;">FO 전용</span>
-        <span style="font-size:11px;color:#16a34a;font-weight:600;">1종</span>
-        <span style="font-size:11px;color:#86efac;">— window._foCats||[] 직접 참조, 사용자 카테고리 필터</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
-        <div v-for="item in CATALOG2_FO" :key="item.id"
-          style="background:#fff;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:20px;flex-shrink:0;line-height:1;">{{ item.icon }}</span>
-            <div>
-              <div style="font-size:12px;font-weight:800;color:#14532d;">{{ item.name }}</div>
-              <div style="font-size:10px;color:#86efac;margin-top:1px;line-height:1.4;">{{ item.desc }}</div>
-            </div>
-          </div>
-          <button @click="openBModal(item.id)"
-            style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
-            :style="'background:'+item.color">
-            열기 →
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- ===== □.□. 섹션 헤더 ================================================= -->
-    <!-- ===== ■.■. ③ BO 전용 (13종) ========================================= -->
-    <div style="border:1px solid #fecaca;border-radius:10px;padding:14px 16px;background:#fff7f7;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:800;background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;">BO 전용</span>
-        <span style="font-size:11px;color:#dc2626;font-weight:600;">13종</span>
-        <span style="font-size:11px;color:#fca5a5;">— boData prop 필수, 관리 기능 전용</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
-        <div v-for="item in CATALOG2_BO" :key="item.id"
-          style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:20px;flex-shrink:0;line-height:1;">{{ item.icon }}</span>
-            <div>
-              <div style="font-size:12px;font-weight:800;color:#7f1d1d;">{{ item.name }}</div>
-              <div style="font-size:10px;color:#fca5a5;margin-top:1px;line-height:1.4;">{{ item.desc }}</div>
-            </div>
-          </div>
-          <button @click="openBModal(item.id)"
-            style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
-            :style="'background:'+item.color">
-            열기 →
-          </button>
-        </div>
+          열기 →
+        </button>
       </div>
     </div>
   </div>
-    <!-- ===== □.□. ③ BO 전용 (13종) ========================================= -->
-  <!-- ===== □. ━━━ BaseModals.js 공통 모달 (17종) ━━━ ======================= -->
-  <!-- ===== ■. ━━━ 회원 그리드 (상세보기 클릭) ━━━ ================================ -->
-  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:22px;">
-    <div style="padding:8px 14px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:6px;">
-      <span style="font-size:12px;font-weight:800;color:#333;">회원 목록</span>
-      <span style="font-size:12px;font-weight:700;color:#e8587a;">{{ members.length }}명 중 3행</span>
-      <span style="font-size:11px;color:#aaa;margin-left:4px;">— 행 클릭 → 상세보기 모달</span>
+  <!-- ===== /* ② FO 전용 (1종) ============================================ -->
+  <div style="border:1px solid #bbf7d0;border-radius:10px;padding:14px 16px;background:#f0fdf4;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:800;background:#16a34a;color:#fff;padding:2px 10px;border-radius:20px;">
+        FO 전용
+      </span>
+      <span style="font-size:11px;color:#16a34a;font-weight:600;">
+        1종
+      </span>
+      <span style="font-size:11px;color:#86efac;">
+        — window._foCats||[] 직접 참조, 사용자 카테고리 필터
+      </span>
     </div>
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <fo-grid bare :columns="sample04GridColumns" :rows="sample04Top3"
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+      <div v-for="item in CATALOG2_FO" :key="item.id"
+          style="background:#fff;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:20px;flex-shrink:0;line-height:1;">
+            {{ item.icon }}
+          </span>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#14532d;">
+              {{ item.name }}
+            </div>
+            <div style="font-size:10px;color:#86efac;margin-top:1px;line-height:1.4;">
+              {{ item.desc }}
+            </div>
+          </div>
+        </div>
+        <button @click="openBModal(item.id)"
+            style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
+            :style="'background:'+item.color">
+          열기 →
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ===== □.□. 섹션 헤더 ================================================= -->
+  <!-- ===== ■.■. ③ BO 전용 (13종) ========================================= -->
+  <div style="border:1px solid #fecaca;border-radius:10px;padding:14px 16px;background:#fff7f7;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:11px;font-weight:800;background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;">
+        BO 전용
+      </span>
+      <span style="font-size:11px;color:#dc2626;font-weight:600;">
+        13종
+      </span>
+      <span style="font-size:11px;color:#fca5a5;">
+        — boData prop 필수, 관리 기능 전용
+      </span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+      <div v-for="item in CATALOG2_BO" :key="item.id"
+          style="background:#fff;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:20px;flex-shrink:0;line-height:1;">
+            {{ item.icon }}
+          </span>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#7f1d1d;">
+              {{ item.name }}
+            </div>
+            <div style="font-size:10px;color:#fca5a5;margin-top:1px;line-height:1.4;">
+              {{ item.desc }}
+            </div>
+          </div>
+        </div>
+        <button @click="openBModal(item.id)"
+            style="align-self:flex-start;font-size:11px;padding:4px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:600;color:#fff;"
+            :style="'background:'+item.color">
+          열기 →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== □.□. ③ BO 전용 (13종) ========================================= -->
+<!-- ===== □. ━━━ BaseModals.js 공통 모달 (17종) ━━━ ======================= -->
+<!-- ===== ■. ━━━ 회원 그리드 (상세보기 클릭) ━━━ ================================ -->
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:22px;">
+  <div style="padding:8px 14px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:6px;">
+    <span style="font-size:12px;font-weight:800;color:#333;">
+      회원 목록
+    </span>
+    <span style="font-size:12px;font-weight:700;color:#e8587a;">
+      {{ members.length }}명 중 3행
+    </span>
+    <span style="font-size:11px;color:#aaa;margin-left:4px;">
+      — 행 클릭 → 상세보기 모달
+    </span>
+  </div>
+  <!-- ===== ■.■. 목록 영역 ================================================= -->
+  <fo-grid bare :columns="sample04GridColumns" :rows="sample04Top3"
       row-key="memberId" :show-row-no="false" min-width="680px" row-actions
       empty-text="데이터 로딩 중…"
       :row-click="m => openModal('detail',{data:m})">
-      <template #row-actions="{ row }">
-        <button @click.stop="openModal('detail',{data:row})"
+    <template #row-actions="{ row }">
+      <button @click.stop="openModal('detail',{data:row})"
           style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:4px;background:#f8f9fa;cursor:pointer;color:#555;">
-          상세
-        </button>
-      </template>
-    </fo-grid>
-  </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. ━━━ 회원 그리드 (상세보기 클릭) ━━━ ================================ -->
-  <!-- ===== ■. ━━━━━━ MODALS ━━━━━━ ==================================== -->
-  <!-- ===== ■. ① Alert 모달 ============================================== -->
-  <template v-if="uiState.modalType==='alert'">
-    <div @click="closeModal"
+        상세
+      </button>
+    </template>
+  </fo-grid>
+</div>
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. ━━━ 회원 그리드 (상세보기 클릭) ━━━ ================================ -->
+<!-- ===== ■. ━━━━━━ MODALS ━━━━━━ ==================================== -->
+<!-- ===== ■. ① Alert 모달 ============================================== -->
+<template v-if="uiState.modalType==='alert'">
+  <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
-      <div @click.stop
+    <div @click.stop
         style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:340px;max-width:90vw;overflow:hidden;">
-        <div style="height:4px;" :style="'background:'+fnAlertMeta(uiState.modalVariant).bar"></div>
-        <div style="padding:22px 20px 18px;">
-          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;">
-            <span style="font-size:30px;line-height:1;flex-shrink:0;">{{ fnAlertMeta(uiState.modalVariant).icon }}</span>
-            <div>
-              <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:5px;">{{ fnAlertMeta(uiState.modalVariant).label }}</div>
-              <div style="font-size:12px;color:#555;line-height:1.65;">{{ uiState.modalData?.msg }}</div>
+      <div style="height:4px;" :style="'background:'+fnAlertMeta(uiState.modalVariant).bar">
+      </div>
+      <div style="padding:22px 20px 18px;">
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;">
+          <span style="font-size:30px;line-height:1;flex-shrink:0;">
+            {{ fnAlertMeta(uiState.modalVariant).icon }}
+          </span>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:5px;">
+              {{ fnAlertMeta(uiState.modalVariant).label }}
+            </div>
+            <div style="font-size:12px;color:#555;line-height:1.65;">
+              {{ uiState.modalData?.msg }}
             </div>
           </div>
-          <button @click="closeModal"
+        </div>
+        <button @click="closeModal"
             style="width:100%;padding:9px;border:none;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;"
             :style="'background:'+fnAlertMeta(uiState.modalVariant).bg">
-            확인
-          </button>
-        </div>
+          확인
+        </button>
       </div>
     </div>
-  </template>
-  <!-- ===== □. ① Alert 모달 ============================================== -->
-  <!-- ===== ■. ② Confirm 다이얼로그 ========================================= -->
-  <template v-if="uiState.modalType==='confirm'">
-    <div @click="closeModal"
+  </div>
+</template>
+<!-- ===== □. ① Alert 모달 ============================================== -->
+<!-- ===== ■. ② Confirm 다이얼로그 ========================================= -->
+<template v-if="uiState.modalType==='confirm'">
+  <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
-      <div @click.stop
-        style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:340px;max-width:90vw;padding:24px 22px 20px;">
-        <div style="font-size:26px;margin-bottom:10px;">🤔</div>
-        <div style="font-size:14px;font-weight:800;color:#111;margin-bottom:8px;">확인이 필요합니다</div>
-        <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:22px;">
-          이 작업을 진행하시겠습니까?
-          <br>
-          작업 후에는 되돌릴 수 없습니다.
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button @click="closeModal"
-            style="flex:1;padding:9px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;font-size:13px;color:#666;">
-            취소
-          </button>
-          <button @click="doConfirm"
-            style="flex:1;padding:9px;border:none;border-radius:7px;background:#ef4444;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
-            확인
-          </button>
-        </div>
-      </div>
-    </div>
-  </template>
-  <!-- ===== □. ② Confirm 다이얼로그 ========================================= -->
-  <!-- ===== ■. ③ 폼 입력 모달 =============================================== -->
-  <template v-if="uiState.modalType==='form'">
-    <div @click="closeModal"
-      style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
-      <div @click.stop
-        style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:420px;max-width:92vw;">
-        <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;">
-          <span style="font-size:13px;font-weight:800;color:#333;">📝 신규 회원 등록</span>
-          <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">✕</button>
-        </div>
-        <div style="padding:18px 20px;">
-          <div style="margin-bottom:13px;">
-            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
-              이름
-              <span style="color:#ef4444;">*</span>
-            </label>
-            <input v-model="form.name" placeholder="홍길동"
-              style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border-radius:6px;outline:none;"
-              :style="formErrors.name?'border:1.5px solid #ef4444;':'border:1px solid #ddd;'" />
-            <div v-if="formErrors.name" style="font-size:11px;color:#ef4444;margin-top:3px;">{{ formErrors.name }}</div>
-          </div>
-          <div style="margin-bottom:13px;">
-            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
-              이메일
-              <span style="color:#ef4444;">*</span>
-            </label>
-            <input v-model="form.email" placeholder="example@shopjoy.kr" type="email"
-              style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border-radius:6px;outline:none;"
-              :style="formErrors.email?'border:1.5px solid #ef4444;':'border:1px solid #ddd;'" />
-            <div v-if="formErrors.email" style="font-size:11px;color:#ef4444;margin-top:3px;">{{ formErrors.email }}</div>
-          </div>
-          <div style="margin-bottom:13px;">
-            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">연락처</label>
-            <input v-model="form.phone" placeholder="010-0000-0000"
-              style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;outline:none;" />
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">등급</label>
-            <select v-model="form.grade"
-              style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;outline:none;">
-              <option v-for="o in codes.grade_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-            </select>
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. 영역 ================================================ -->
-        <div style="padding:10px 20px 16px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0;">
-          <button @click="closeModal" style="padding:8px 18px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
-            취소
-          </button>
-          <button @click="submitForm" style="padding:8px 18px;border:none;border-radius:6px;background:#34a853;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
-            등록
-          </button>
-        </div>
-      </div>
-    </div>
-  </template>
-  <!-- ===== □. ③ 폼 입력 모달 =============================================== -->
-  <!-- ===== ■. ④ 상세보기 모달 =============================================== -->
-  <template v-if="uiState.modalType==='detail' && uiState.modalData">
-    <div @click="closeModal"
-      style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
-      <div @click.stop
-        style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:500px;max-width:92vw;">
-        <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;background:#f8f9fa;">
-          <span style="font-size:18px;">👤</span>
-          <span style="font-size:13px;font-weight:800;color:#222;">회원 상세 정보</span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(uiState.modalData.grade)">
-            {{ uiState.modalData.grade }}
-          </span>
-          <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="fnStatusBadge(uiState.modalData.status)">
-            {{ uiState.modalData.status }}
-          </span>
-          <span style="flex:1;"></span>
-          <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">✕</button>
-        </div>
-        <div style="padding:16px 20px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:14px;">
-            <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
-                이름
-              </div>
-              <div style="font-size:16px;font-weight:800;color:#111;">{{ uiState.modalData.name }}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
-                회원번호
-              </div>
-              <div style="font-size:14px;font-weight:700;color:#555;">#{{ uiState.modalData.memberId }}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
-                이메일
-              </div>
-              <div style="font-size:11px;color:#333;font-family:monospace;">{{ uiState.modalData.email }}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
-                연락처
-              </div>
-              <div style="font-size:12px;color:#333;">{{ uiState.modalData.phone }}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
-                가입일
-              </div>
-              <div style="font-size:12px;color:#333;">{{ uiState.modalData.joinDate }}</div>
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
-                주소
-              </div>
-              <div style="font-size:11px;color:#333;">{{ uiState.modalData.address }}</div>
-            </div>
-          </div>
-          <!-- ===== ■.■.■.■.■. 구매 통계 =========================================== -->
-          <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;display:flex;gap:0;margin-bottom:10px;">
-            <div style="flex:1;text-align:center;border-right:1px solid #e5e7eb;">
-              <div style="font-size:10px;color:#aaa;margin-bottom:4px;">총 주문</div>
-              <div style="font-size:20px;font-weight:800;color:#333;">{{ uiState.modalData.orders }}</div>
-              <div style="font-size:10px;color:#aaa;">건</div>
-            </div>
-            <div style="flex:1;text-align:center;padding:0 12px;">
-              <div style="font-size:10px;color:#aaa;margin-bottom:4px;">총 구매액</div>
-              <div style="font-size:18px;font-weight:800;color:#e8587a;">{{ uiState.modalData.totalAmt.toLocaleString() }}</div>
-              <div style="font-size:10px;color:#aaa;">원</div>
-            </div>
-          </div>
-          <div v-if="uiState.modalData.memo"
-            style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 12px;font-size:11px;color:#92400e;">
-            📌 {{ uiState.modalData.memo }}
-          </div>
-        </div>
-        <div style="padding:10px 20px 14px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0;">
-          <button @click="openEditConfirm(uiState.modalData)"
-            style="padding:7px 16px;border:none;border-radius:6px;background:#7c3aed;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
-            ✏ 수정
-          </button>
-          <button @click="closeModal"
-            style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
-            닫기
-          </button>
-        </div>
-      </div>
-    </div>
-  </template>
-  <!-- ===== □. ④ 상세보기 모달 =============================================== -->
-  <!-- ===== ■. ⑤ 이미지 팝업 ================================================ -->
-  <template v-if="uiState.modalType==='image'">
-    <div @click="closeModal"
-      style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
-      <button @click="closeModal"
-        style="position:absolute;top:18px;right:22px;border:none;background:rgba(255,255,255,.15);cursor:pointer;font-size:16px;color:#fff;padding:6px 10px;border-radius:6px;line-height:1;">
-        ✕ 닫기
-      </button>
-      <div @click.stop
-        style="width:480px;max-width:88vw;height:320px;border-radius:12px;overflow:hidden;box-shadow:0 8px 48px rgba(0,0,0,.6);background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f64f59 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-        <span style="font-size:56px;">🛍️</span>
-        <div style="color:#fff;font-size:20px;font-weight:800;letter-spacing:.08em;">ShopJoy</div>
-        <div style="color:rgba(255,255,255,.65);font-size:12px;">이미지 뷰어 데모 — 480 × 320</div>
-      </div>
-      <div style="color:rgba(255,255,255,.45);font-size:11px;">배경 또는 ✕ 클릭 시 닫기</div>
-    </div>
-  </template>
-  <!-- ===== □. ⑤ 이미지 팝업 ================================================ -->
-  <!-- ===== ■. ⑥ 우측 Drawer ============================================= -->
-  <template v-if="uiState.modalType==='drawer'">
-    <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
     <div @click.stop
-      style="position:fixed;top:0;right:0;bottom:0;z-index:9001;width:360px;max-width:88vw;background:#fff;box-shadow:-4px 0 28px rgba(0,0,0,.18);display:flex;flex-direction:column;animation:s04_slideRight .22s ease;">
-      <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#0f766e;color:#fff;">
-        <span style="font-size:13px;font-weight:800;">◧ 우측 Drawer</span>
-        <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.8);line-height:1;">
+        style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:340px;max-width:90vw;padding:24px 22px 20px;">
+      <div style="font-size:26px;margin-bottom:10px;">
+        🤔
+      </div>
+      <div style="font-size:14px;font-weight:800;color:#111;margin-bottom:8px;">
+        확인이 필요합니다
+      </div>
+      <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:22px;">
+        이 작업을 진행하시겠습니까?
+        <br>
+        작업 후에는 되돌릴 수 없습니다.
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button @click="closeModal"
+            style="flex:1;padding:9px;border:1px solid #ddd;border-radius:7px;background:#fff;cursor:pointer;font-size:13px;color:#666;">
+          취소
+        </button>
+        <button @click="doConfirm"
+            style="flex:1;padding:9px;border:none;border-radius:7px;background:#ef4444;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+<!-- ===== □. ② Confirm 다이얼로그 ========================================= -->
+<!-- ===== ■. ③ 폼 입력 모달 =============================================== -->
+<template v-if="uiState.modalType==='form'">
+  <div @click="closeModal"
+      style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
+    <div @click.stop
+        style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:420px;max-width:92vw;">
+      <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;">
+        <span style="font-size:13px;font-weight:800;color:#333;">
+          📝 신규 회원 등록
+        </span>
+        <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">
           ✕
         </button>
       </div>
-      <div style="flex:1;overflow-y:auto;padding:18px;">
-        <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:16px;">
-          화면 우측에서 슬라이드인하는 Drawer 패턴입니다.
-          <br>
-          필터, 설정, 보조 정보 표시 등에 활용합니다.
+      <div style="padding:18px 20px;">
+        <div style="margin-bottom:13px;">
+          <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
+            이름
+            <span style="color:#ef4444;">
+              *
+            </span>
+          </label>
+          <input v-model="form.name" placeholder="홍길동"
+              style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border-radius:6px;outline:none;"
+              :style="formErrors.name?'border:1.5px solid #ef4444;':'border:1px solid #ddd;'" />
+          <div v-if="formErrors.name" style="font-size:11px;color:#ef4444;margin-top:3px;">
+            {{ formErrors.name }}
+          </div>
         </div>
-        <div v-for="i in 8" :key="i"
+        <div style="margin-bottom:13px;">
+          <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
+            이메일
+            <span style="color:#ef4444;">
+              *
+            </span>
+          </label>
+          <input v-model="form.email" placeholder="example@shopjoy.kr" type="email"
+              style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border-radius:6px;outline:none;"
+              :style="formErrors.email?'border:1.5px solid #ef4444;':'border:1px solid #ddd;'" />
+          <div v-if="formErrors.email" style="font-size:11px;color:#ef4444;margin-top:3px;">
+            {{ formErrors.email }}
+          </div>
+        </div>
+        <div style="margin-bottom:13px;">
+          <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
+            연락처
+          </label>
+          <input v-model="form.phone" placeholder="010-0000-0000"
+              style="width:100%;box-sizing:border-box;font-size:12px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;outline:none;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:4px;">
+            등급
+          </label>
+          <select v-model="form.grade"
+              style="width:100%;font-size:12px;padding:8px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;outline:none;">
+            <option v-for="o in codes.grade_opts" :key="o.value" :value="o.value">
+              {{ o.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <!-- ===== ■.■.■.■. 영역 ================================================ -->
+      <div style="padding:10px 20px 16px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0;">
+        <button @click="closeModal" style="padding:8px 18px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
+          취소
+        </button>
+        <button @click="submitForm" style="padding:8px 18px;border:none;border-radius:6px;background:#34a853;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
+          등록
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+<!-- ===== □. ③ 폼 입력 모달 =============================================== -->
+<!-- ===== ■. ④ 상세보기 모달 =============================================== -->
+<template v-if="uiState.modalType==='detail' && uiState.modalData">
+<div @click="closeModal"
+      style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
+  <div @click.stop
+        style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:500px;max-width:92vw;">
+    <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;background:#f8f9fa;">
+      <span style="font-size:18px;">
+        👤
+      </span>
+      <span style="font-size:13px;font-weight:800;color:#222;">
+        회원 상세 정보
+      </span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;" :style="fnGradeBadge(uiState.modalData.grade)">
+        {{ uiState.modalData.grade }}
+      </span>
+      <span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-left:2px;" :style="fnStatusBadge(uiState.modalData.status)">
+        {{ uiState.modalData.status }}
+      </span>
+      <span style="flex:1;">
+      </span>
+      <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">
+        ✕
+      </button>
+    </div>
+    <div style="padding:16px 20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;margin-bottom:14px;">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+            이름
+          </div>
+          <div style="font-size:16px;font-weight:800;color:#111;">
+            {{ uiState.modalData.name }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+            회원번호
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#555;">
+            #{{ uiState.modalData.memberId }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+            이메일
+          </div>
+          <div style="font-size:11px;color:#333;font-family:monospace;">
+            {{ uiState.modalData.email }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+            연락처
+          </div>
+          <div style="font-size:12px;color:#333;">
+            {{ uiState.modalData.phone }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+            가입일
+          </div>
+          <div style="font-size:12px;color:#333;">
+            {{ uiState.modalData.joinDate }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">
+            주소
+          </div>
+          <div style="font-size:11px;color:#333;">
+            {{ uiState.modalData.address }}
+          </div>
+        </div>
+      </div>
+      <!-- ===== ■.■.■.■.■. 구매 통계 =========================================== -->
+      <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;display:flex;gap:0;margin-bottom:10px;">
+        <div style="flex:1;text-align:center;border-right:1px solid #e5e7eb;">
+          <div style="font-size:10px;color:#aaa;margin-bottom:4px;">
+            총 주문
+          </div>
+          <div style="font-size:20px;font-weight:800;color:#333;">
+            {{ uiState.modalData.orders }}
+          </div>
+          <div style="font-size:10px;color:#aaa;">
+            건
+          </div>
+        </div>
+        <div style="flex:1;text-align:center;padding:0 12px;">
+          <div style="font-size:10px;color:#aaa;margin-bottom:4px;">
+            총 구매액
+          </div>
+          <div style="font-size:18px;font-weight:800;color:#e8587a;">
+            {{ uiState.modalData.totalAmt.toLocaleString() }}
+          </div>
+          <div style="font-size:10px;color:#aaa;">
+            원
+          </div>
+        </div>
+      </div>
+      <div v-if="uiState.modalData.memo"
+            style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 12px;font-size:11px;color:#92400e;">
+        📌 {{ uiState.modalData.memo }}
+      </div>
+    </div>
+    <div style="padding:10px 20px 14px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid #f0f0f0;">
+      <button @click="openEditConfirm(uiState.modalData)"
+            style="padding:7px 16px;border:none;border-radius:6px;background:#7c3aed;color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
+        ✏ 수정
+      </button>
+      <button @click="closeModal"
+            style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
+        닫기
+      </button>
+    </div>
+  </div>
+</div>
+</template>
+<!-- ===== □. ④ 상세보기 모달 =============================================== -->
+<!-- ===== ■. ⑤ 이미지 팝업 ================================================ -->
+<template v-if="uiState.modalType==='image'">
+  <div @click="closeModal"
+      style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+    <button @click="closeModal"
+        style="position:absolute;top:18px;right:22px;border:none;background:rgba(255,255,255,.15);cursor:pointer;font-size:16px;color:#fff;padding:6px 10px;border-radius:6px;line-height:1;">
+      ✕ 닫기
+    </button>
+    <div @click.stop
+        style="width:480px;max-width:88vw;height:320px;border-radius:12px;overflow:hidden;box-shadow:0 8px 48px rgba(0,0,0,.6);background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f64f59 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+      <span style="font-size:56px;">
+        🛍️
+      </span>
+      <div style="color:#fff;font-size:20px;font-weight:800;letter-spacing:.08em;">
+        ShopJoy
+      </div>
+      <div style="color:rgba(255,255,255,.65);font-size:12px;">
+        이미지 뷰어 데모 — 480 × 320
+      </div>
+    </div>
+    <div style="color:rgba(255,255,255,.45);font-size:11px;">
+      배경 또는 ✕ 클릭 시 닫기
+    </div>
+  </div>
+</template>
+<!-- ===== □. ⑤ 이미지 팝업 ================================================ -->
+<!-- ===== ■. ⑥ 우측 Drawer ============================================= -->
+<template v-if="uiState.modalType==='drawer'">
+  <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);">
+  </div>
+  <div @click.stop
+      style="position:fixed;top:0;right:0;bottom:0;z-index:9001;width:360px;max-width:88vw;background:#fff;box-shadow:-4px 0 28px rgba(0,0,0,.18);display:flex;flex-direction:column;animation:s04_slideRight .22s ease;">
+    <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#0f766e;color:#fff;">
+      <span style="font-size:13px;font-weight:800;">
+        ◧ 우측 Drawer
+      </span>
+      <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.8);line-height:1;">
+        ✕
+      </button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:18px;">
+      <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:16px;">
+        화면 우측에서 슬라이드인하는 Drawer 패턴입니다.
+        <br>
+        필터, 설정, 보조 정보 표시 등에 활용합니다.
+      </div>
+      <div v-for="i in 8" :key="i"
           style="padding:10px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:background .1s;"
           @mouseenter="e=>e.currentTarget.style.background='#f0fdfa'"
           @mouseleave="e=>e.currentTarget.style.background=''">
-          <div style="font-size:12px;font-weight:700;color:#0f766e;">항목 {{ i }}</div>
-          <div style="font-size:11px;color:#aaa;margin-top:2px;">Drawer 내 스크롤 가능한 콘텐츠</div>
+        <div style="font-size:12px;font-weight:700;color:#0f766e;">
+          항목 {{ i }}
         </div>
-      </div>
-      <div style="padding:12px 18px 18px;border-top:1px solid #f0f0f0;">
-        <button @click="closeModal" style="width:100%;padding:10px;border:none;border-radius:8px;background:#0f766e;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
-          닫기
-        </button>
+        <div style="font-size:11px;color:#aaa;margin-top:2px;">
+          Drawer 내 스크롤 가능한 콘텐츠
+        </div>
       </div>
     </div>
-  </template>
-  <!-- ===== □. ⑥ 우측 Drawer ============================================= -->
-  <!-- ===== ■. ⑦ 바텀시트 ================================================== -->
-  <template v-if="uiState.modalType==='bottom'">
-    <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
-    <div @click.stop
+    <div style="padding:12px 18px 18px;border-top:1px solid #f0f0f0;">
+      <button @click="closeModal" style="width:100%;padding:10px;border:none;border-radius:8px;background:#0f766e;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
+        닫기
+      </button>
+    </div>
+  </div>
+</template>
+<!-- ===== □. ⑥ 우측 Drawer ============================================= -->
+<!-- ===== ■. ⑦ 바텀시트 ================================================== -->
+<template v-if="uiState.modalType==='bottom'">
+  <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);">
+  </div>
+  <div @click.stop
       style="position:fixed;left:0;right:0;bottom:0;z-index:9001;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -4px 28px rgba(0,0,0,.2);max-height:68vh;display:flex;flex-direction:column;animation:s04_slideBottom .22s ease;">
-      <div style="padding:10px 0 4px;text-align:center;flex-shrink:0;">
-        <div style="width:38px;height:4px;border-radius:2px;background:#e0e0e0;margin:0 auto;cursor:grab;" @click="closeModal"></div>
+    <div style="padding:10px 0 4px;text-align:center;flex-shrink:0;">
+      <div style="width:38px;height:4px;border-radius:2px;background:#e0e0e0;margin:0 auto;cursor:grab;" @click="closeModal">
       </div>
-      <div style="padding:4px 20px 12px;font-size:14px;font-weight:800;color:#111;flex-shrink:0;">⬆ 바텀시트</div>
-      <div style="flex:1;overflow-y:auto;padding:0 20px;">
-        <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px;">
-          화면 하단에서 슬라이드업하는 바텀시트 패턴입니다.
-          <br>
-          모바일 UX에서 자주 활용합니다.
-        </div>
-        <div v-for="(label,i) in ['배송지 변경','쿠폰 적용','포인트 사용','결제 수단 변경','주문 메모 추가','취소/반품 신청']" :key="i"
+    </div>
+    <div style="padding:4px 20px 12px;font-size:14px;font-weight:800;color:#111;flex-shrink:0;">
+      ⬆ 바텀시트
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:0 20px;">
+      <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px;">
+        화면 하단에서 슬라이드업하는 바텀시트 패턴입니다.
+        <br>
+        모바일 UX에서 자주 활용합니다.
+      </div>
+      <div v-for="(label,i) in ['배송지 변경','쿠폰 적용','포인트 사용','결제 수단 변경','주문 메모 추가','취소/반품 신청']" :key="i"
           style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;"
           @mouseenter="e=>e.currentTarget.style.color='#9333ea'"
           @mouseleave="e=>e.currentTarget.style.color=''">
-          <span style="font-size:13px;font-weight:600;color:inherit;">{{ label }}</span>
-          <span style="color:#d1d5db;font-size:14px;">›</span>
-        </div>
-      </div>
-      <div style="padding:14px 20px 22px;flex-shrink:0;">
-        <button @click="closeModal" style="width:100%;padding:12px;border:none;border-radius:10px;background:#9333ea;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">
-          닫기
-        </button>
+        <span style="font-size:13px;font-weight:600;color:inherit;">
+          {{ label }}
+        </span>
+        <span style="color:#d1d5db;font-size:14px;">
+          ›
+        </span>
       </div>
     </div>
-  </template>
-  <!-- ===== □. ⑦ 바텀시트 ================================================== -->
-  <!-- ===== ■. ⑧ 전체화면 모달 =============================================== -->
-  <template v-if="uiState.modalType==='fullscreen'">
-    <div style="position:fixed;inset:0;z-index:9000;background:#fff;display:flex;flex-direction:column;animation:s04_fadeIn .18s ease;">
-      <div style="padding:12px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#9f1239;color:#fff;flex-shrink:0;">
-        <span style="font-size:13px;font-weight:800;">⛶ 전체화면 모달</span>
-        <button @click="closeModal" style="border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);cursor:pointer;font-size:12px;color:#fff;padding:5px 14px;border-radius:6px;">
-          ✕ 닫기
-        </button>
-      </div>
-      <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#fafafa;">
-        <span style="font-size:64px;">🚀</span>
-        <div style="font-size:20px;font-weight:800;color:#222;">전체화면 모달</div>
-        <div style="font-size:13px;color:#888;text-align:center;max-width:400px;line-height:1.8;">
-          화면 전체를 덮는 모달 패턴입니다.
-          <br>
-          에디터, 전체 편집 화면, 임시 대시보드 등에 활용됩니다.
-        </div>
-        <button @click="closeModal" style="margin-top:8px;padding:11px 36px;border:none;border-radius:8px;background:#9f1239;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">
-          닫기
-        </button>
-      </div>
+    <div style="padding:14px 20px 22px;flex-shrink:0;">
+      <button @click="closeModal" style="width:100%;padding:12px;border:none;border-radius:10px;background:#9333ea;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">
+        닫기
+      </button>
     </div>
-  </template>
-  <!-- ===== □. ⑧ 전체화면 모달 =============================================== -->
-  <!-- ===== ■. ⑨ 중첩 모달 ================================================= -->
-  <template v-if="uiState.modalType==='nested'">
-    <div @click="uiState.nested2 ? uiState.nested2=false : closeModal()"
+  </div>
+</template>
+<!-- ===== □. ⑦ 바텀시트 ================================================== -->
+<!-- ===== ■. ⑧ 전체화면 모달 =============================================== -->
+<template v-if="uiState.modalType==='fullscreen'">
+  <div style="position:fixed;inset:0;z-index:9000;background:#fff;display:flex;flex-direction:column;animation:s04_fadeIn .18s ease;">
+    <div style="padding:12px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#9f1239;color:#fff;flex-shrink:0;">
+      <span style="font-size:13px;font-weight:800;">
+        ⛶ 전체화면 모달
+      </span>
+      <button @click="closeModal" style="border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.15);cursor:pointer;font-size:12px;color:#fff;padding:5px 14px;border-radius:6px;">
+        ✕ 닫기
+      </button>
+    </div>
+    <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#fafafa;">
+      <span style="font-size:64px;">
+        🚀
+      </span>
+      <div style="font-size:20px;font-weight:800;color:#222;">
+        전체화면 모달
+      </div>
+      <div style="font-size:13px;color:#888;text-align:center;max-width:400px;line-height:1.8;">
+        화면 전체를 덮는 모달 패턴입니다.
+        <br>
+        에디터, 전체 편집 화면, 임시 대시보드 등에 활용됩니다.
+      </div>
+      <button @click="closeModal" style="margin-top:8px;padding:11px 36px;border:none;border-radius:8px;background:#9f1239;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">
+        닫기
+      </button>
+    </div>
+  </div>
+</template>
+<!-- ===== □. ⑧ 전체화면 모달 =============================================== -->
+<!-- ===== ■. ⑨ 중첩 모달 ================================================= -->
+<template v-if="uiState.modalType==='nested'">
+  <div @click="uiState.nested2 ? uiState.nested2=false : closeModal()"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
-      <div @click.stop
+    <div @click.stop
         style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.22);width:420px;max-width:92vw;">
-        <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;">
-          <span style="font-size:13px;font-weight:800;color:#333;">⧉ 중첩 모달 (1단계)</span>
-          <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">✕</button>
+      <div style="padding:13px 18px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;">
+        <span style="font-size:13px;font-weight:800;color:#333;">
+          ⧉ 중첩 모달 (1단계)
+        </span>
+        <button @click="closeModal" style="border:none;background:none;cursor:pointer;font-size:18px;color:#bbb;line-height:1;">
+          ✕
+        </button>
+      </div>
+      <div style="padding:20px 20px 16px;">
+        <div style="font-size:12px;color:#555;line-height:1.75;margin-bottom:16px;">
+          이 모달 위에 2단계 모달을 추가로 오픈할 수 있습니다.
+          <br>
+          배경 클릭 시 가장 상단 모달부터 닫힙니다.
         </div>
-        <div style="padding:20px 20px 16px;">
-          <div style="font-size:12px;color:#555;line-height:1.75;margin-bottom:16px;">
-            이 모달 위에 2단계 모달을 추가로 오픈할 수 있습니다.
-            <br>
-            배경 클릭 시 가장 상단 모달부터 닫힙니다.
-          </div>
-          <button @click="uiState.nested2=true"
+        <button @click="uiState.nested2=true"
             style="font-size:12px;padding:7px 18px;border:none;border-radius:6px;background:#1e40af;color:#fff;cursor:pointer;font-weight:700;">
-            + 2단계 모달 열기
-          </button>
-        </div>
-        <div style="padding:10px 18px 14px;border-top:1px solid #f0f0f0;text-align:right;">
-          <button @click="closeModal" style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
-            닫기
-          </button>
-        </div>
+          + 2단계 모달 열기
+        </button>
+      </div>
+      <div style="padding:10px 18px 14px;border-top:1px solid #f0f0f0;text-align:right;">
+        <button @click="closeModal" style="padding:7px 16px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#666;">
+          닫기
+        </button>
       </div>
     </div>
-    <!-- ===== ■.■. 2단계 inner 모달 ========================================== -->
-    <template v-if="uiState.nested2">
-      <div @click="uiState.nested2=false"
+  </div>
+  <!-- ===== ■.■. 2단계 inner 모달 ========================================== -->
+  <template v-if="uiState.nested2">
+    <div @click="uiState.nested2=false"
         style="position:fixed;inset:0;z-index:9010;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;">
-        <div @click.stop
+      <div @click.stop
           style="background:#fff;border-radius:12px;box-shadow:0 12px 48px rgba(0,0,0,.35);width:300px;max-width:86vw;padding:22px 20px 18px;">
-          <div style="font-size:22px;margin-bottom:10px;">✅</div>
-          <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:8px;">2단계 모달</div>
-          <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:18px;">
-            모달 위에 표시되는 중첩 모달입니다.
-            <br>
-            z-index를 높여 최상단에 렌더링됩니다.
-          </div>
-          <button @click="uiState.nested2=false"
-            style="width:100%;padding:9px;border:none;border-radius:7px;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
-            닫기
-          </button>
+        <div style="font-size:22px;margin-bottom:10px;">
+          ✅
         </div>
+        <div style="font-size:13px;font-weight:800;color:#111;margin-bottom:8px;">
+          2단계 모달
+        </div>
+        <div style="font-size:12px;color:#666;line-height:1.7;margin-bottom:18px;">
+          모달 위에 표시되는 중첩 모달입니다.
+          <br>
+          z-index를 높여 최상단에 렌더링됩니다.
+        </div>
+        <button @click="uiState.nested2=false"
+            style="width:100%;padding:9px;border:none;border-radius:7px;background:#1e40af;color:#fff;cursor:pointer;font-size:13px;font-weight:700;">
+          닫기
+        </button>
       </div>
-    </template>
-  </template>
-    <!-- ===== □.□. 2단계 inner 모달 ========================================== -->
-  <!-- ===== □. ⑨ 중첩 모달 ================================================= -->
-  <!-- ===== ■. ⑩ 로딩 모달 ================================================= -->
-  <template v-if="uiState.modalType==='loading'">
-    <div style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
-      <div style="width:56px;height:56px;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:s04_spin .75s linear infinite;"></div>
-      <div style="color:#fff;font-size:14px;font-weight:700;">처리 중입니다…</div>
-      <div style="color:rgba(255,255,255,.45);font-size:11px;">2.5초 후 자동으로 닫힙니다</div>
     </div>
   </template>
-  <!-- ===== □. ⑩ 로딩 모달 ================================================= -->
-  <!-- ===== ■. ━━━━━━ BaseModal 17종 ━━━━━━ ============================= -->
-  <!-- ===== ■. ① 주문상세 / ② 상품상세 / ③ 주문자 — show prop 방식 ================== -->
-  <order-detail-modal
+</template>
+<!-- ===== □.□. 2단계 inner 모달 ========================================== -->
+<!-- ===== □. ⑨ 중첩 모달 ================================================= -->
+<!-- ===== ■. ⑩ 로딩 모달 ================================================= -->
+<template v-if="uiState.modalType==='loading'">
+  <div style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
+    <div style="width:56px;height:56px;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:s04_spin .75s linear infinite;">
+    </div>
+    <div style="color:#fff;font-size:14px;font-weight:700;">
+      처리 중입니다…
+    </div>
+    <div style="color:rgba(255,255,255,.45);font-size:11px;">
+      2.5초 후 자동으로 닫힙니다
+    </div>
+  </div>
+</template>
+<!-- ===== □. ⑩ 로딩 모달 ================================================= -->
+<!-- ===== ■. ━━━━━━ BaseModal 17종 ━━━━━━ ============================= -->
+<!-- ===== ■. ① 주문상세 / ② 상품상세 / ③ 주문자 — show prop 방식 ================== -->
+<order-detail-modal
     :show="bModal.type==='orderDetail'"
     :order="demoOrder"
     @close="closeBModal" />
-  <!-- ===== □. ① 주문상세 / ② 상품상세 / ③ 주문자 — show prop 방식 ================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <product-modal
+<!-- ===== □. ① 주문상세 / ② 상품상세 / ③ 주문자 — show prop 방식 ================== -->
+<!-- ===== ■. 영역 ====================================================== -->
+<product-modal
     :show="bModal.type==='productModal'"
     :product="demoProduct"
     @close="closeBModal" />
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <customer-modal
+<!-- ===== □. 영역 ====================================================== -->
+<!-- ===== ■. 영역 ====================================================== -->
+<customer-modal
     :show="bModal.type==='customerModal'"
     :user="demoUser"
     :order="demoOrder"
     @close="closeBModal" />
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. ④~⑨ 선택 모달 — 조건부 마운트 방식 ================================== -->
-  <template v-if="bModal.type==='siteSelect'">
-    <site-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <!-- ===== □. ④~⑨ 선택 모달 — 조건부 마운트 방식 ================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="bModal.type==='vendorSelect'">
-    <vendor-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <template v-if="bModal.type==='boUserSelect'">
-    <bo-user-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="bModal.type==='memberSelect'">
-    <member-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <template v-if="bModal.type==='orderSelect'">
-    <order-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.orderId,'success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="bModal.type==='bbmSelect'">
-    <bbm-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. ⑩~⑪ 템플릿 모달 ============================================== -->
-  <template v-if="bModal.type==='tmplPreview'">
-    <template-preview-modal :tmpl="demoTmpl" :sample-params="demoSampleParams" @close="closeBModal" />
-  </template>
-  <!-- ===== □. ⑩~⑪ 템플릿 모달 ============================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="bModal.type==='tmplSend'">
-    <template-send-modal :tmpl="demoTmpl" :bo-data="boData" :show-toast="bShowToast" :show-confirm="bShowConfirm" @close="closeBModal" />
-  </template>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. ⑫~⑮ 트리 모달 =============================================== -->
-  <template v-if="bModal.type==='roleTree'">
-    <role-tree-modal :bo-data="boData" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <!-- ===== □. ⑫~⑮ 트리 모달 =============================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="bModal.type==='menuTree'">
-    <menu-tree-modal :bo-data="boData" @select="bShowToast($event.menuId?'선택: '+$event.menuNm:'상위없음 선택','success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <template v-if="bModal.type==='deptTree'">
-    <dept-tree-modal :bo-data="boData" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="bModal.type==='categoryTree'">
-    <bo-category-tree-modal :bo-data="boData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
-  </template>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. ⑯ 전시 미리보기 =============================================== -->
-  <disp-preview-modal
+<!-- ===== □. 영역 ====================================================== -->
+<!-- ===== ■. ④~⑨ 선택 모달 — 조건부 마운트 방식 ================================== -->
+<template v-if="bModal.type==='siteSelect'">
+  <site-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
+</template>
+<!-- ===== □. ④~⑨ 선택 모달 — 조건부 마운트 방식 ================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<template v-if="bModal.type==='vendorSelect'">
+  <vendor-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
+</template>
+<template v-if="bModal.type==='boUserSelect'">
+  <bo-user-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
+</template>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<template v-if="bModal.type==='memberSelect'">
+  <member-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />
+</template>
+<template v-if="bModal.type==='orderSelect'">
+  <order-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.orderId,'success'); closeBModal()" @close="closeBModal" />
+</template>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<template v-if="bModal.type==='bbmSelect'">
+  <bbm-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
+</template>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. ⑩~⑪ 템플릿 모달 ============================================== -->
+<template v-if="bModal.type==='tmplPreview'">
+  <template-preview-modal :tmpl="demoTmpl" :sample-params="demoSampleParams" @close="closeBModal" />
+</template>
+<!-- ===== □. ⑩~⑪ 템플릿 모달 ============================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<template v-if="bModal.type==='tmplSend'">
+  <template-send-modal :tmpl="demoTmpl" :bo-data="boData" :show-toast="bShowToast" :show-confirm="bShowConfirm" @close="closeBModal" />
+</template>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. ⑫~⑮ 트리 모달 =============================================== -->
+<template v-if="bModal.type==='roleTree'">
+  <role-tree-modal :bo-data="boData" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
+</template>
+<!-- ===== □. ⑫~⑮ 트리 모달 =============================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<template v-if="bModal.type==='menuTree'">
+  <menu-tree-modal :bo-data="boData" @select="bShowToast($event.menuId?'선택: '+$event.menuNm:'상위없음 선택','success'); closeBModal()" @close="closeBModal" />
+</template>
+<template v-if="bModal.type==='deptTree'">
+  <dept-tree-modal :bo-data="boData" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
+</template>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<template v-if="bModal.type==='categoryTree'">
+  <bo-category-tree-modal :bo-data="boData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
+</template>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. ⑯ 전시 미리보기 =============================================== -->
+<disp-preview-modal
     :show="bModal.type==='dispPreview'"
     mode="all"
     tab-label="전시 미리보기 데모"
@@ -872,16 +1059,16 @@ window.XsSample04 = {
     :widgets="[]"
     :widget="{}"
     @close="closeBModal" />
-  <!-- ===== □. ⑯ 전시 미리보기 =============================================== -->
-  <!-- ===== ■. ⑰ 카테고리 멀티선택 ============================================= -->
-  <category-select-modal
+<!-- ===== □. ⑯ 전시 미리보기 =============================================== -->
+<!-- ===== ■. ⑰ 카테고리 멀티선택 ============================================= -->
+<category-select-modal
     :show="bModal.type==='catSelect'"
     :selected-ids="catSelIds"
     @close="closeBModal"
     @apply="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
-  <!-- ===== □. ⑰ 카테고리 멀티선택 ============================================= -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <style>
+<!-- ===== □. ⑰ 카테고리 멀티선택 ============================================= -->
+<!-- ===== ■. 영역 ====================================================== -->
+<style>
     @keyframes s04_slideRight  { from { transform:translateX(100%); } to { transform:translateX(0); } }
     @keyframes s04_slideBottom { from { transform:translateY(100%); } to { transform:translateY(0); } }
     @keyframes s04_spin        { to   { transform:rotate(360deg); } }
@@ -930,6 +1117,6 @@ window.XsSample04 = {
     .badge-xs      { padding:1px 5px !important;font-size:10px !important;border-radius:4px !important;font-weight:700 !important; }
   </style>
 </div>
-
-  <!-- ===== □. 영역 ====================================================== -->`,
+<!-- ===== □. 영역 ====================================================== -->
+`,
 };

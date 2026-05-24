@@ -210,17 +210,62 @@ window.XsSample05 = {
     /* onRowDelete — 이벤트 */
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample05.js : handleBtnAction -> ', cmd, param);
+      // 조회 (검색)
+      if (cmd === 'search-search') {
+        return onSearch();
+      // 검색 초기화
+      } else if (cmd === 'search-reset') {
+        return onReset();
+      // 행 추가
+      } else if (cmd === 'boards-add') {
+        return addRow();
+      // 일괄 저장
+      } else if (cmd === 'boards-save') {
+        return handleSave();
+      // 선택 행 삭제
+      } else if (cmd === 'boards-delete-checked') {
+        return deleteRows();
+      // 선택 행 취소
+      } else if (cmd === 'boards-cancel-checked') {
+        return cancelChecked();
+      // 정렬 변경 알림
+      } else if (cmd === 'boards-reorder') {
+        return onReorder();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample05.js : handleSelectAction -> ', cmd, param);
+      // 행 셀 변경
+      if (cmd === 'boards-row-cell-change') {
+        return onCellChange(param);
+      // 행 취소
+      } else if (cmd === 'boards-row-cancel') {
+        return onRowCancel(param);
+      // 행 삭제
+      } else if (cmd === 'boards-row-delete') {
+        return onRowDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      toast, searchParam, baseSearchColumns, onSearch, onReset,
-      gridRows, baseGridColumns, pager, setPage, getRealIdx,
-      setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
-      addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
-      onDragStart, onDragOver, onDragEnd,
-      uiState, toggleCheckAll, fnStatusBadge, rowBg,
-      codes };
+      uiState, codes,                                                        // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                   // dispatch
+      // ===== search 영역 ======================================================
+      toast, searchParam, baseSearchColumns,
+      // ===== boards 영역 ======================================================
+      gridRows, baseGridColumns, pager,
+    };
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
@@ -233,16 +278,18 @@ window.XsSample05 = {
   <!-- ===== ■. 헤더 영역 =================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     05. 게시판 관리
-    <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span>
+    <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">
+      CRUD Grid 예제
+    </span>
   </div>
   <!-- ===== □. 헤더 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area :columns="baseSearchColumns" :param="searchParam"
-      @search="onSearch" @reset="onReset" />
+      @search="handleBtnAction('search-search')" @reset="handleBtnAction('search-reset')" />
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <fo-grid-crud
@@ -250,14 +297,14 @@ window.XsSample05 = {
     :columns="baseGridColumns" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
-    @add="addRow" @save="handleSave"
-    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-    @reorder="onReorder" @cell-change="onCellChange">
+    @add="handleBtnAction('boards-add')" @save="handleBtnAction('boards-save')"
+    @delete-checked="handleBtnAction('boards-delete-checked')" @cancel-checked="handleBtnAction('boards-cancel-checked')"
+    @reorder="handleBtnAction('boards-reorder')" @cell-change="handleSelectAction('boards-row-cell-change', $event)">
     <template #row-actions="{ row }">
-      <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
+      <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('boards-row-cancel', row)" @delete="handleSelectAction('boards-row-delete', row)" />
     </template>
   </fo-grid-crud>
 </div>
-
-  <!-- ===== □. 목록 영역 =================================================== -->`,
+<!-- ===== □. 목록 영역 =================================================== -->
+`,
 };

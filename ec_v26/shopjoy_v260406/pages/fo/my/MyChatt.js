@@ -51,13 +51,29 @@ window.MyChatt = {
       await handleSearchData();
     };
 
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MyChatt.js : handleSelectAction -> ', cmd, param);
+      // 채팅 열기
+      if (cmd === 'chatts-open') {
+        return myStore.openChat(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats, onDateSearch, onSearch, uiState, codes };
+    return {
+      uiState, codes,                                                        // 상태 / 데이터
+      handleSelectAction,                                                    // dispatch
+      // ===== chatts 영역 ======================================================
+      myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats,
+      onDateSearch, onSearch,
+    };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
@@ -65,17 +81,21 @@ window.MyChatt = {
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredChats.length" :pager="chatPager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="!cfDateFilteredChats.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">채팅 내역이 없습니다.</div>
+  <div v-if="!cfDateFilteredChats.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+    채팅 내역이 없습니다.
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div v-for="c in paginate(cfDateFilteredChats, chatPager)" :key="c.chatId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
-    <div style="padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;" @click="myStore.openChat(c)">
+    <div style="padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;" @click="handleSelectAction('chatts-open', c)">
       <div style="width:40px;height:40px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
         💬
       </div>
       <div style="flex:1;min-width:0;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">{{ c.subject }}</span>
+          <span style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">
+            {{ c.subject }}
+          </span>
           <span v-if="c.unread>0" style="background:var(--blue);color:#fff;font-size:0.7rem;padding:1px 7px;border-radius:20px;font-weight:700;">
             {{ c.unread }}
           </span>
@@ -88,7 +108,9 @@ window.MyChatt = {
           {{ c.lastMsg || '새 채팅' }}
         </div>
       </div>
-      <div style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0;">{{ c.date }}</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0;">
+        {{ c.date }}
+      </div>
     </div>
     <div v-if="expandedChat===c.chatId" style="padding:0 16px 16px;border-top:1px solid var(--border);">
       <div v-for="(msg, mi) in c.messages" :key="mi"
@@ -96,7 +118,9 @@ window.MyChatt = {
         :style="msg.from==='user'?'justify-content:flex-end;':''">
         <div style="max-width:75%;padding:10px 14px;border-radius:16px;font-size:0.85rem;line-height:1.5;"
           :style="msg.from==='user'?'background:var(--blue);color:#fff;border-bottom-right-radius:4px;':'background:var(--bg-base);color:var(--text-primary);border-bottom-left-radius:4px;'">
-          <div>{{ msg.text }}</div>
+          <div>
+            {{ msg.text }}
+          </div>
           <div style="font-size:0.72rem;margin-top:4px;text-align:right;"
             :style="msg.from==='user'?'color:rgba(255,255,255,0.7);':'color:var(--text-muted);'">
             {{ msg.time }}
@@ -109,8 +133,8 @@ window.MyChatt = {
   <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="chats.length" :pager="chatPager" />
 </fo-my-layout>
-
-  <!-- ===== □. 영역 ====================================================== -->`,
+<!-- ===== □. 영역 ====================================================== -->
+`,
   components: {
     FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,

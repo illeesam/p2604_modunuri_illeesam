@@ -1,4 +1,4 @@
-﻿/* ShopJoy - Home */
+/* ShopJoy - Home */
 window.Home03 = {
   name: 'Home',
   props: {
@@ -10,20 +10,73 @@ window.Home03 = {
 
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
-
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
-    /* selectProd — 선택 */
     const selectProd        = (p) => window.foApp.selectProd(p);
-
-    /* toggleLike — 토글 */
-    const toggleLike           = (id) => window.foApp.toggleLike(id);
-
-    /* isLiked — 여부 확인 */
-    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
+    const toggleLike        = (id) => window.foApp.toggleLike(id);
+    const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, quickViewProduct: null, bannerIdx: 0, cartModalMode: false});
     const codes = reactive({});
+
+    /* -- 배너 슬라이더 -- */
+    const banners = [
+      { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
+      { img: 'assets/cdn/prod/img/slider/slider-2.jpg', title: '2026 S/S', sub: '신상품 컬렉션', desc: '올 봄·여름 시즌을 빛낼 새로운 컬렉션이 도착했습니다. 지금 만나보세요.' },
+      { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
+    ];
+    let bannerTimer = null;
+
+    const siteConfig = window.SITE_CONFIG || {};
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Home03.js : handleBtnAction -> ', cmd, param);
+      // 페이지 이동: 홈
+      if (cmd === 'page-go-home') {
+        return props.navigate('home');
+      // 페이지 이동: 상품목록
+      } else if (cmd === 'page-go-prod-list') {
+        return props.navigate('prodList');
+      // 페이지 이동: 블로그
+      } else if (cmd === 'page-go-blog') {
+        return props.navigate('blog');
+      // 히어로 배너 인디케이터 클릭
+      } else if (cmd === 'hero-set') {
+        return setBanner(param);
+      // 빠른보기 모달: 장바구니 모드 열기
+      } else if (cmd === 'quickViewModal-open-cart') {
+        uiState.quickViewProduct = param; uiState.cartModalMode = true;
+        return;
+      // 빠른보기 모달: 미리보기 모드 열기
+      } else if (cmd === 'quickViewModal-open-view') {
+        uiState.quickViewProduct = param; uiState.cartModalMode = false;
+        return;
+      // 빠른보기 모달: 닫기
+      } else if (cmd === 'quickViewModal-close') {
+        uiState.quickViewProduct = null; uiState.cartModalMode = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Home03.js : handleSelectAction -> ', cmd, param);
+      // 카테고리 선택 → 상품목록 이동
+      if (cmd === 'categories-row-select') {
+        return props.navigate('prodList');
+      // 상품 카드 선택
+      } else if (cmd === 'prods-row-select') {
+        return selectProd(param);
+      // 좋아요 토글
+      } else if (cmd === 'prods-row-like') {
+        return toggleLike(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -34,6 +87,32 @@ window.Home03 = {
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    /* startBannerTimer — 시작 Banner Timer */
+    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
+
+    /* setBanner — 설정 */
+    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      if (!document.getElementById('home-grid-styles')) {
+        const s = document.createElement('style');
+        s.id = 'home-grid-styles';
+        s.textContent = `
+          .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+          .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+          .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+        `;
+        document.head.appendChild(s);
+      }
+      startBannerTimer();
+    });
+    onBeforeUnmount(() => clearInterval(bannerTimer));
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더) =================================
 
     function fnCategoryLabel(p) {
       if (!p) { return ''; }
@@ -60,56 +139,21 @@ window.Home03 = {
       (prods || []).filter(p => p.originalPrice && p.priceNum && p.originalPrice > p.priceNum).slice(0, 4)
     );
 
-    /* -- 빠른보기 모달 -- */
-
-    /* -- 홈 그리드 반응형 CSS 주입 -- */
-    /* max-width 컨테이너가 최대 열 수를 자연 제한:
-       카테고리 max-width:820px  / minmax(240px) → 최대 3열, 좁아지면 2→1열
-       상품     max-width:1080px / minmax(220px) → 최대 4열, 좁아지면 3→2→1열
-       블로그   max-width:1080px / minmax(300px) → 최대 3열, 좁아지면 2→1열  */
     /* -- 홈 상품 8개 -- */
     const cfAllHomeProds = computed(() => {
       const all = prods || [];
       return all.slice(0, 8);
     });
 
-    /* -- 배너 슬라이더 -- */
-        const banners = [
-      { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
-      { img: 'assets/cdn/prod/img/slider/slider-2.jpg', title: '2026 S/S', sub: '신상품 컬렉션', desc: '올 봄·여름 시즌을 빛낼 새로운 컬렉션이 도착했습니다. 지금 만나보세요.' },
-      { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
-    ];
-    let bannerTimer = null;
-
-    /* startBannerTimer — 시작 Banner Timer */
-    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
-
-    /* setBanner — 설정 */
-    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      // 컴포넌트 remount 시 동일 ID style 누적 방지
-      if (!document.getElementById('home-grid-styles')) {
-        const s = document.createElement('style');
-        s.id = 'home-grid-styles';
-        s.textContent = `
-        .home-cat-grid  { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-        .home-prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-        .home-sale-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
-        .home-blog-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
-        `;
-        document.head.appendChild(s);
-      }
-      startBannerTimer();
-    });
-    onBeforeUnmount(() => clearInterval(bannerTimer));
-
-    const siteConfig = window.SITE_CONFIG || {};
     // ===== return (템플릿 노출) ===============================================
 
-    return { siteConfig, fnCategoryLabel, fnCatEmoji, cfNewProds, cfBestProds, cfAllHomeProds, cfSaleProds, uiState, banners, setBanner, codes, isLiked, toggleLike, selectProd };
+    return {
+      uiState, codes, banners, siteConfig,                                 // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                 // dispatch
+      cfNewProds, cfBestProds, cfAllHomeProds, cfSaleProds,                // computed
+      fnCategoryLabel, fnCatEmoji, isLiked,                                // 헬퍼
+      selectProd, toggleLike,                                              // 모달 전달용
+    };
   },
   template: /* html */ `
 <div>
@@ -118,8 +162,12 @@ window.Home03 = {
     <span style="font-size:10px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(255,255,255,0.5);border-radius:2px;">
       👑 LUXE EDITION
     </span>
-    <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;">✨ 로얄 퍼플 프리미엄 컬렉션 — 한정 수량</span>
-    <span style="margin-left:auto;font-size:11px;opacity:0.9;">FO_SITE_NO=03</span>
+    <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;">
+      ✨ 로얄 퍼플 프리미엄 컬렉션 — 한정 수량
+    </span>
+    <span style="margin-left:auto;font-size:11px;opacity:0.9;">
+      FO_SITE_NO=03
+    </span>
   </div>
   <!-- ===== □. ══ Site 03 Edition Ribbon ══ ============================ -->
   <!-- ===== ■. ══ Hero Banner Slider ══ ================================ -->
@@ -129,10 +177,14 @@ window.Home03 = {
       <h1 style="font-size:clamp(1.4rem,3.5vw,2.6rem);font-weight:300;line-height:1.3;color:#1a1a1a;margin-bottom:16px;letter-spacing:-0.5px;">
         {{ banners[uiState.bannerIdx].title }}
         <br>
-        <span style="font-weight:700;">{{ banners[uiState.bannerIdx].sub }}</span>
+        <span style="font-weight:700;">
+          {{ banners[uiState.bannerIdx].sub }}
+        </span>
       </h1>
-      <p style="font-size:0.85rem;color:#888;line-height:1.8;margin-bottom:28px;max-width:360px;">{{ banners[uiState.bannerIdx].desc }}</p>
-      <button @click="navigate('prodList')"
+      <p style="font-size:0.85rem;color:#888;line-height:1.8;margin-bottom:28px;max-width:360px;">
+        {{ banners[uiState.bannerIdx].desc }}
+      </p>
+      <button @click="handleBtnAction('page-go-prod-list')"
         style="padding:12px 28px;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;cursor:pointer;transition:all .25s;"
         @mouseenter="$event.target.style.background='#1a1a1a';$event.target.style.color='#fff'"
         @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#1a1a1a'">
@@ -140,11 +192,12 @@ window.Home03 = {
       </button>
       <!-- ===== ■.■.■. 인디케이터 (클릭 가능) ======================================= -->
       <div style="display:flex;gap:8px;margin-top:28px;">
-        <span v-for="(b, i) in banners" :key="i" @click="setBanner(i)"
+        <span v-for="(b, i) in banners" :key="i" @click="handleBtnAction('hero-set', i)"
           :style="{
           width: '24px', height: '3px', borderRadius: '2px', cursor: 'pointer', transition: 'background .3s',
           background: uiState.bannerIdx === i ? '#1a1a1a' : '#ccc',
-          }"></span>
+          }">
+        </span>
       </div>
     </div>
     <!-- ===== □.□. 좌: 텍스트 (슬라이드별) ======================================== -->
@@ -159,13 +212,13 @@ window.Home03 = {
         }" />
     </div>
   </section>
-    <!-- ===== □.□. 우: 이미지 (페이드 전환) ======================================= -->
+  <!-- ===== □.□. 우: 이미지 (페이드 전환) ======================================= -->
   <!-- ===== □. ══ Hero Banner Slider ══ ================================ -->
   <!-- ===== ■. ══ Category Cards (Outstock 스타일) ══ ===================== -->
   <div style="padding:0 clamp(12px,3vw,32px);margin:-40px auto 0;max-width:820px;position:relative;z-index:3;">
     <div class="home-cat-grid">
       <div v-for="(cat, ci) in (siteConfig.categorys || []).slice(0,3)" :key="cat.categoryId"
-        @click="navigate('prodList')"
+        @click="handleSelectAction('categories-row-select', cat)"
         style="background:#fff;border-radius:14px;padding:clamp(14px,3vw,24px);cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,0.09);display:flex;align-items:center;gap:clamp(10px,2vw,20px);transition:transform .2s,box-shadow .2s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,0.14)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 4px 24px rgba(0,0,0,0.09)'">
@@ -173,8 +226,12 @@ window.Home03 = {
           <img :src="'assets/cdn/prod/img/shop/prod/sm/pro-sm-' + (ci*3+1) + '.jpg'" style="width:100%;height:100%;object-fit:cover;" />
         </div>
         <div>
-          <div style="font-size:clamp(0.88rem,2vw,1.05rem);font-weight:700;color:#1a1a1a;margin-bottom:4px;">{{ cat.categoryNm }}</div>
-          <div style="font-size:clamp(0.7rem,1.5vw,0.8rem);color:#999;">바로가기 →</div>
+          <div style="font-size:clamp(0.88rem,2vw,1.05rem);font-weight:700;color:#1a1a1a;margin-bottom:4px;">
+            {{ cat.categoryNm }}
+          </div>
+          <div style="font-size:clamp(0.7rem,1.5vw,0.8rem);color:#999;">
+            바로가기 →
+          </div>
         </div>
       </div>
     </div>
@@ -183,15 +240,19 @@ window.Home03 = {
   <!-- ===== ■. ══ 인기 상품 (8개) ══ ======================================== -->
   <div style="max-width:1080px;margin:0 auto;padding:48px clamp(12px,3vw,32px) 40px;">
     <div style="text-align:center;margin-bottom:28px;">
-      <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">인기 상품</h2>
-      <p style="font-size:0.85rem;color:#999;">고객들이 사랑하는 트렌디한 아이템을 만나보세요</p>
+      <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;margin-bottom:8px;">
+        인기 상품
+      </h2>
+      <p style="font-size:0.85rem;color:#999;">
+        고객들이 사랑하는 트렌디한 아이템을 만나보세요
+      </p>
     </div>
     <div class="home-prod-grid">
       <div v-for="p in cfAllHomeProds" :key="p.prodId"
         style="cursor:pointer;transition:transform .25s,box-shadow .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
-        @click="selectProd(p)">
+        @click="handleSelectAction('prods-row-select', p)">
         <div style="background:#f5f5f5;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
           @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
           @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0'">
@@ -201,187 +262,205 @@ window.Home03 = {
             {{ p.badge }}
           </span>
           <!-- ===== ■.■.■.■.■. 좋아요 (좋아요 상태면 항상 표시) ============================= -->
-          <button @click.stop="toggleLike(p.prodId)"
+          <button @click.stop="handleSelectAction('prods-row-like', p.prodId)"
             :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }"
             class="prod-like" title="위시리스트">
             <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.prodId)?'#ef4444':'none'" :stroke="isLiked(p.prodId)?'#ef4444':'#555'" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
             </svg>
           </button>
           <!-- ===== ■.■.■.■.■. 장바구니 + 빠른보기 (hover 시에만) ========================= -->
           <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
-            <button @click.stop="uiState.quickViewProduct=p; uiState.cartModalMode=true" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
+            <button @click.stop="handleBtnAction('quickViewModal-open-cart', p)" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                <circle cx="9" cy="21" r="1">
+                </circle>
+                <circle cx="20" cy="21" r="1">
+                </circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6">
+                </path>
               </svg>
             </button>
-            <button @click.stop="uiState.quickViewProduct=p; uiState.cartModalMode=false" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
+            <button @click.stop="handleBtnAction('quickViewModal-open-view', p)" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <circle cx="11" cy="11" r="8">
+                </circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65">
+                </line>
               </svg>
             </button>
           </div>
         </div>
-        <div style="font-size:0.88rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">{{ p.prodNm }}</div>
+        <div style="font-size:0.88rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">
+          {{ p.prodNm }}
+        </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <span style="font-size:0.88rem;font-weight:700;color:#1a1a1a;">{{ p.price }}</span>
+          <span style="font-size:0.88rem;font-weight:700;color:#1a1a1a;">
+            {{ p.price }}
+          </span>
           <span v-if="p.originalPrice" style="font-size:0.78rem;color:#bbb;text-decoration:line-through;">
             {{ p.originalPrice.toLocaleString ? p.originalPrice.toLocaleString() + '원' : p.originalPrice }}
           </span>
           <span v-if="p.originalPrice && p.priceNum" style="font-size:0.75rem;font-weight:700;color:#ef4444;">
-            {{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
-          </span>
-        </div>
+          {{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
+        </span>
       </div>
     </div>
-    <div style="text-align:center;margin-top:32px;">
-      <button @click="navigate('prodList')"
+  </div>
+  <div style="text-align:center;margin-top:32px;">
+    <button @click="handleBtnAction('page-go-prod-list')"
         style="padding:12px 40px;font-size:0.82rem;font-weight:600;letter-spacing:0.5px;border:1.5px solid #ddd;background:transparent;color:#666;cursor:pointer;transition:all .2s;"
         @mouseenter="$event.target.style.borderColor='#1a1a1a';$event.target.style.color='#1a1a1a'"
         @mouseleave="$event.target.style.borderColor='#ddd';$event.target.style.color='#666'">
-        더 보기
-      </button>
-    </div>
+      더 보기
+    </button>
   </div>
-  <!-- ===== □. ══ 인기 상품 (8개) ══ ======================================== -->
-  <!-- ===== ■. ══ 2열 프로모션 배너 ══ ======================================== -->
-  <div style="max-width:1100px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 48px;">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);">
-      <!-- ===== ■.■.■. 배너 1 ================================================ -->
-      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
-        <img src="assets/cdn/prod/img/shop/banner/banner-big-1.jpg" alt="프로모션"
+</div>
+<!-- ===== □. ══ 인기 상품 (8개) ══ ======================================== -->
+<!-- ===== ■. ══ 2열 프로모션 배너 ══ ======================================== -->
+<div style="max-width:1100px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 48px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);">
+    <!-- ===== ■.■.■. 배너 1 ================================================ -->
+    <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
+      <img src="assets/cdn/prod/img/shop/banner/banner-big-1.jpg" alt="프로모션"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
-        <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
-          <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">
-            프리미엄 컬렉션
-          </div>
-          <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">
-            핸드메이드
-            <br>
-            프리미엄 아이템
-          </h3>
-          <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">
-            장인의 손길이 담긴
-            <br>
-            특별한 컬렉션을 만나보세요.
-          </p>
-          <button @click="navigate('prodList')"
+      <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">
+          프리미엄 컬렉션
+        </div>
+        <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">
+          핸드메이드
+          <br>
+          프리미엄 아이템
+        </h3>
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">
+          장인의 손길이 담긴
+          <br>
+          특별한 컬렉션을 만나보세요.
+        </p>
+        <button @click="handleBtnAction('page-go-prod-list')"
             style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
             @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
             @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
-            쇼핑하기 →
-          </button>
-        </div>
+          쇼핑하기 →
+        </button>
       </div>
-      <!-- ===== ■.■.■. 배너 2 ================================================ -->
-      <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
-        <img src="assets/cdn/prod/img/shop/banner/banner-big-2.jpg" alt="프로모션"
+    </div>
+    <!-- ===== ■.■.■. 배너 2 ================================================ -->
+    <div style="position:relative;overflow:hidden;border-radius:4px;display:flex;align-items:flex-end;min-height:300px;">
+      <img src="assets/cdn/prod/img/shop/banner/banner-big-2.jpg" alt="프로모션"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
-        <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
-          <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">
-            시즌 한정 상품
-          </div>
-          <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">
-            2026 S/S
-            <br>
-            신상품 컬렉션
-          </h3>
-          <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">
-            올 봄·여름 시즌을 빛낼
-            <br>
-            새로운 아이템이 도착했습니다.
-          </p>
-          <button @click="navigate('prodList')"
+      <div style="position:relative;z-index:1;padding:40px;background:linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 100%);width:100%;">
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">
+          시즌 한정 상품
+        </div>
+        <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.3;">
+          2026 S/S
+          <br>
+          신상품 컬렉션
+        </h3>
+        <p style="font-size:0.85rem;color:rgba(255,255,255,0.8);margin-bottom:20px;line-height:1.6;">
+          올 봄·여름 시즌을 빛낼
+          <br>
+          새로운 아이템이 도착했습니다.
+        </p>
+        <button @click="handleBtnAction('page-go-prod-list')"
             style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
             @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
             @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
-            쇼핑하기 →
-          </button>
-        </div>
+          쇼핑하기 →
+        </button>
       </div>
     </div>
   </div>
-  <!-- ===== □. ══ 2열 프로모션 배너 ══ ======================================== -->
-  <!-- ===== ■. ══ 할인 상품 (Sale Off) ══ ================================== -->
-  <div style="max-width:1080px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 40px;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">할인 상품</h2>
-      <p style="font-size:0.85rem;color:#999;">특별 할인 중인 인기 상품을 놓치지 마세요</p>
-    </div>
-    <div class="home-sale-grid">
-      <div v-for="p in cfSaleProds" :key="'sale'+p.prodId"
+</div>
+<!-- ===== □. ══ 2열 프로모션 배너 ══ ======================================== -->
+<!-- ===== ■. ══ 할인 상품 (Sale Off) ══ ================================== -->
+<div style="max-width:1080px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 40px;">
+  <div style="text-align:center;margin-bottom:28px;">
+    <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">
+      할인 상품
+    </h2>
+    <p style="font-size:0.85rem;color:#999;">
+      특별 할인 중인 인기 상품을 놓치지 마세요
+    </p>
+  </div>
+  <div class="home-sale-grid">
+    <div v-for="p in cfSaleProds" :key="'sale'+p.prodId"
         style="cursor:pointer;text-align:center;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="selectProd(p)">
-        <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
-          <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
-          <span v-if="p.originalPrice && p.priceNum" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
-            -{{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
-          </span>
-        </div>
-        <div style="font-size:0.85rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">{{ p.prodNm }}</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-          <span style="font-size:0.85rem;font-weight:700;color:#1a1a1a;">{{ p.price }}</span>
-          <span style="font-size:0.75rem;color:#bbb;text-decoration:line-through;">
-            {{ p.originalPrice.toLocaleString ? p.originalPrice.toLocaleString() + '원' : p.originalPrice }}
-          </span>
-        </div>
-      </div>
+        @click="handleSelectAction('prods-row-select', p)">
+      <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
+        <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
+        <span v-if="p.originalPrice && p.priceNum" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
+        -{{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
+      </span>
+    </div>
+    <div style="font-size:0.85rem;font-weight:500;color:#1a1a1a;margin-bottom:4px;">
+      {{ p.prodNm }}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+      <span style="font-size:0.85rem;font-weight:700;color:#1a1a1a;">
+        {{ p.price }}
+      </span>
+      <span style="font-size:0.75rem;color:#bbb;text-decoration:line-through;">
+        {{ p.originalPrice.toLocaleString ? p.originalPrice.toLocaleString() + '원' : p.originalPrice }}
+      </span>
     </div>
   </div>
-  <!-- ===== □. ══ 할인 상품 (Sale Off) ══ ================================== -->
-  <!-- ===== ■. ══ 브랜드 로고 ══ ============================================ -->
-  <div style="max-width:900px;margin:0 auto;padding:20px clamp(12px,3vw,32px) 40px;border-top:1px solid #eee;border-bottom:1px solid #eee;">
-    <div style="display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,48px);flex-wrap:wrap;opacity:0.45;">
-      <img v-for="i in 5" :key="i" :src="'assets/cdn/prod/img/client/brand-' + i + '.webp'" style="height:30px;object-fit:contain;filter:grayscale(1);" />
-    </div>
+</div>
+</div>
+<!-- ===== □. ══ 할인 상품 (Sale Off) ══ ================================== -->
+<!-- ===== ■. ══ 브랜드 로고 ══ ============================================ -->
+<div style="max-width:900px;margin:0 auto;padding:20px clamp(12px,3vw,32px) 40px;border-top:1px solid #eee;border-bottom:1px solid #eee;">
+  <div style="display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,48px);flex-wrap:wrap;opacity:0.45;">
+    <img v-for="i in 5" :key="i" :src="'assets/cdn/prod/img/client/brand-' + i + '.webp'" style="height:30px;object-fit:contain;filter:grayscale(1);" />
   </div>
-  <!-- ===== □. ══ 브랜드 로고 ══ ============================================ -->
-  <!-- ===== ■. ══ 블로그 포스트 ══ =========================================== -->
-  <div style="max-width:1080px;margin:0 auto;padding:40px clamp(12px,3vw,32px) 48px;">
-    <div style="text-align:center;margin-bottom:28px;">
-      <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">블로그</h2>
-      <p style="font-size:0.85rem;color:#999;">스타일링 팁과 패션 트렌드를 확인해보세요</p>
-    </div>
-    <div class="home-blog-grid">
-      <div v-for="i in 3" :key="'blog'+i"
+</div>
+<!-- ===== □. ══ 브랜드 로고 ══ ============================================ -->
+<!-- ===== ■. ══ 블로그 포스트 ══ =========================================== -->
+<div style="max-width:1080px;margin:0 auto;padding:40px clamp(12px,3vw,32px) 48px;">
+  <div style="text-align:center;margin-bottom:28px;">
+    <h2 style="font-size:1.5rem;font-weight:700;color:#1a1a1a;font-style:italic;margin-bottom:8px;">
+      블로그
+    </h2>
+    <p style="font-size:0.85rem;color:#999;">
+      스타일링 팁과 패션 트렌드를 확인해보세요
+    </p>
+  </div>
+  <div class="home-blog-grid">
+    <div v-for="i in 3" :key="'blog'+i"
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="navigate('blog')">
-        <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;margin-bottom:14px;">
-          <img :src="'assets/cdn/prod/img/blog/blog-' + i + '.jpg'" :alt="'블로그 ' + i"
+        @click="handleBtnAction('page-go-blog')">
+      <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;margin-bottom:14px;">
+        <img :src="'assets/cdn/prod/img/blog/blog-' + i + '.jpg'" :alt="'블로그 ' + i"
             style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
             @mouseenter="$event.target.style.transform='scale(1.05)'"
             @mouseleave="$event.target.style.transform=''" />
-        </div>
-        <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">{{ ['2026.04.10', '2026.04.08', '2026.04.05'][i-1] }}</div>
-        <h3 style="font-size:0.95rem;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.4;">
-          {{ ['봄 시즌 스타일링 가이드', '트렌드 컬러 활용법', '미니멀 옷장 정리법'][i-1] }}
-        </h3>
-        <p style="font-size:0.8rem;color:#888;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-          {{ ['올봄 트렌디한 코디를 완성하는 핵심 아이템과 스타일링 팁을 소개합니다.', '시즌 컬러를 활용한 다양한 코디 방법을 알아봅니다.', '효율적인 옷장 정리법과 캡슐 워드로브 구성 팁을 공개합니다.'][i-1] }}
-        </p>
-        <span style="font-size:0.78rem;font-weight:600;color:#1a1a1a;text-decoration:underline;">자세히 보기 →</span>
       </div>
+      <div style="font-size:0.72rem;color:#999;margin-bottom:6px;">
+        {{ ['2026.04.10', '2026.04.08', '2026.04.05'][i-1] }}
+      </div>
+      <h3 style="font-size:0.95rem;font-weight:600;color:#1a1a1a;margin-bottom:8px;line-height:1.4;">
+        {{ ['봄 시즌 스타일링 가이드', '트렌드 컬러 활용법', '미니멀 옷장 정리법'][i-1] }}
+      </h3>
+      <p style="font-size:0.8rem;color:#888;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+        {{ ['올봄 트렌디한 코디를 완성하는 핵심 아이템과 스타일링 팁을 소개합니다.', '시즌 컬러를 활용한 다양한 코디 방법을 알아봅니다.', '효율적인 옷장 정리법과 캡슐 워드로브 구성 팁을 공개합니다.'][i-1] }}
+      </p>
+      <span style="font-size:0.78rem;font-weight:600;color:#1a1a1a;text-decoration:underline;">
+        자세히 보기 →
+      </span>
     </div>
   </div>
-  <!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
-  <!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
-  <prod-modal
-    :show="!!uiState.quickViewProduct"
-    :prod="uiState.quickViewProduct"
-    :cart-mode="uiState.cartModalMode"
-    :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }"
-    :toggle-like="toggleLike"
-    :is-liked="isLiked"
-    @close="uiState.quickViewProduct=null; uiState.cartModalMode=false"
-    />
 </div>
-
-  <!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->`
+<!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
+<!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
+<prod-modal :show="!!uiState.quickViewProduct" :prod="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" @close="handleBtnAction('quickViewModal-close')" />
+</div>
+<!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
+`
 };

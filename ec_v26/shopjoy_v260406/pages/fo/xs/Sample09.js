@@ -210,17 +210,32 @@ window.XsSample09 = {
     /* onRowDelete — 이벤트 */
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
 
+    // ===== dispatch (template 이벤트 통합) ===================================
+
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, payload) => {
+      if (cmd === 'faqs-add')           { addRow(); }
+      else if (cmd === 'faqs-save')     { handleSave(); }
+      else if (cmd === 'faqs-delete-checked') { deleteRows(); }
+      else if (cmd === 'faqs-cancel-checked') { cancelChecked(); }
+      else if (cmd === 'faqs-row-cancel')     { onRowCancel(payload); }
+      else if (cmd === 'faqs-row-delete')     { onRowDelete(payload); }
+      else if (cmd === 'faqs-reorder')        { onReorder(); }
+      else if (cmd === 'search-search') { onSearch(); }
+      else if (cmd === 'search-reset')  { onReset(); }
+    };
+
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      toast, searchParam, baseSearchColumns, onSearch, onReset,
+      toast, searchParam, baseSearchColumns,
       gridRows, baseGridColumns, pager, setPage, getRealIdx,
-      setFocused, onCellChange, onReorder, onRowCancel, onRowDelete,
-      addRow, deleteRow, cancelRow, deleteRows, cancelChecked, handleSave,
+      setFocused, onCellChange,
       onDragStart, onDragOver, onDragEnd,
       uiState, toggleCheckAll, fnStatusBadge, rowBg,
-      codes };
+      codes,
+      handleBtnAction,
+    };
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
@@ -233,16 +248,18 @@ window.XsSample09 = {
   <!-- ===== ■. 헤더 영역 =================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     09. FAQ 관리
-    <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span>
+    <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">
+      CRUD Grid 예제
+    </span>
   </div>
   <!-- ===== □. 헤더 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area :columns="baseSearchColumns" :param="searchParam"
-      @search="onSearch" @reset="onReset" />
+      @search="handleBtnAction('search-search')" @reset="handleBtnAction('search-reset')" />
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <fo-grid-crud
@@ -250,14 +267,14 @@ window.XsSample09 = {
     :columns="baseGridColumns" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
-    @add="addRow" @save="handleSave"
-    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-    @reorder="onReorder" @cell-change="onCellChange">
+    @add="handleBtnAction('faqs-add')" @save="handleBtnAction('faqs-save')"
+    @delete-checked="handleBtnAction('faqs-delete-checked')" @cancel-checked="handleBtnAction('faqs-cancel-checked')"
+    @reorder="handleBtnAction('faqs-reorder')" @cell-change="onCellChange">
     <template #row-actions="{ row }">
-      <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
+      <fo-row-cancel-delete :row="row" @cancel="handleBtnAction('faqs-row-cancel', row)" @delete="handleBtnAction('faqs-row-delete', row)" />
     </template>
   </fo-grid-crud>
 </div>
-
-  <!-- ===== □. 목록 영역 =================================================== -->`,
+<!-- ===== □. 목록 영역 =================================================== -->
+`,
 };

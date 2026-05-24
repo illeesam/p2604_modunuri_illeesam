@@ -16,6 +16,36 @@ window.EventPage = {
 
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Event.js : handleBtnAction -> ', cmd, param);
+      // 홈으로 이동
+      if (cmd === 'page-go-home') {
+        return props.navigate('home');
+      // 탭 변경 (param: 'ongoing' | 'ended')
+      } else if (cmd === 'tab-change') {
+        uiState.activeTab = param;
+        return;
+      // 정렬 변경 (param: 'latest' | 'deadline')
+      } else if (cmd === 'sort-change') {
+        uiState.sortBy = param;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Event.js : handleSelectAction -> ', cmd, param);
+      // 이벤트 카드 클릭 (param: eventId)
+      if (cmd === 'events-row-view') {
+        return props.navigate('eventView', { eventId: param });
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
@@ -69,10 +99,15 @@ window.EventPage = {
       handleSearchList();
     });
 
-
     // ===== return (템플릿 노출) ===============================================
 
-    return { pager, setPage, onSizeChange, events, cfOngoingCount, cfEndedCount, uiState, codes };
+    return {
+      uiState, codes,                                  // 상태
+      handleBtnAction, handleSelectAction,             // dispatch
+      pager, setPage, onSizeChange,                    // 페이징
+      events,                                          // 데이터
+      cfOngoingCount, cfEndedCount,                    // computed
+    };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -80,14 +115,25 @@ window.EventPage = {
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="이벤트"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
+    </div>
     <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Promotion</div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">이벤트</h1>
+      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
+        Promotion
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
+        이벤트
+      </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
-        <span>/</span>
-        <span style="color:#333;">이벤트</span>
+        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+          홈
+        </span>
+        <span>
+          /
+        </span>
+        <span style="color:#333;">
+          이벤트
+        </span>
       </div>
     </div>
   </div>
@@ -96,7 +142,7 @@ window.EventPage = {
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:28px;">
     <!-- ===== ■.■. 탭 ===================================================== -->
     <div style="display:flex;gap:0;">
-      <button @click="uiState.activeTab='ongoing'"
+      <button @click="handleBtnAction('tab-change', 'ongoing')"
         :style="{
         padding:'12px 24px', background:'none', border:'none', cursor:'pointer',
         fontSize:'0.88rem', fontWeight: uiState.activeTab==='ongoing' ? '700' : '500',
@@ -106,7 +152,7 @@ window.EventPage = {
         }">
         진행중 ({{ cfOngoingCount }})
       </button>
-      <button @click="uiState.activeTab='ended'"
+      <button @click="handleBtnAction('tab-change', 'ended')"
         :style="{
         padding:'12px 24px', background:'none', border:'none', cursor:'pointer',
         fontSize:'0.88rem', fontWeight: uiState.activeTab==='ended' ? '700' : '500',
@@ -120,7 +166,7 @@ window.EventPage = {
     <!-- ===== □.□. 탭 ===================================================== -->
     <!-- ===== ■.■. 정렬 ==================================================== -->
     <div style="display:flex;gap:0;padding-bottom:2px;">
-      <button @click="uiState.sortBy='latest'"
+      <button @click="handleBtnAction('sort-change', 'latest')"
         :style="{
         padding:'6px 14px', background:'none', border:'none', cursor:'pointer',
         fontSize:'0.8rem',
@@ -130,7 +176,7 @@ window.EventPage = {
         }">
         최근등록순
       </button>
-      <button @click="uiState.sortBy='deadline'"
+      <button @click="handleBtnAction('sort-change', 'deadline')"
         :style="{
         padding:'6px 14px', background:'none', border:'none', cursor:'pointer',
         fontSize:'0.8rem',
@@ -141,13 +187,13 @@ window.EventPage = {
       </button>
     </div>
   </div>
-    <!-- ===== □.□. 정렬 ==================================================== -->
+  <!-- ===== □.□. 정렬 ==================================================== -->
   <!-- ===== □. 탭 + 정렬 ================================================== -->
   <!-- ===== ■. 이벤트 그리드 ================================================= -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
     <div v-for="ev in events" :key="ev.id"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
-      @click="navigate('eventView', { eventId: ev.id })"
+      @click="handleSelectAction('events-row-view', ev.id)"
       @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'"
       @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
       <!-- ===== ■.■.■. 이벤트 배너 썸네일 ========================================== -->
@@ -158,8 +204,12 @@ window.EventPage = {
           <div style="font-size:0.72rem;opacity:0.7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">
             {{ ev.startDate }} ~ {{ ev.endDate }}
           </div>
-          <div :style="{ fontSize:'1.05rem', fontWeight:'900', lineHeight:'1.25', letterSpacing:'-0.5px' }">{{ ev.bannerLine1 }}</div>
-          <div :style="{ fontSize:'1.45rem', fontWeight:'900', lineHeight:'1.2', letterSpacing:'-0.5px' }">{{ ev.bannerLine2 }}</div>
+          <div :style="{ fontSize:'1.05rem', fontWeight:'900', lineHeight:'1.25', letterSpacing:'-0.5px' }">
+            {{ ev.bannerLine1 }}
+          </div>
+          <div :style="{ fontSize:'1.45rem', fontWeight:'900', lineHeight:'1.2', letterSpacing:'-0.5px' }">
+            {{ ev.bannerLine2 }}
+          </div>
         </div>
         <!-- ===== ■.■.■.■. 종료 오버레이 =========================================== -->
         <div v-if="ev.status==='ended'"
@@ -179,17 +229,23 @@ window.EventPage = {
         <div style="font-size:0.87rem;font-weight:600;color:var(--text-primary);line-height:1.45;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
           {{ ev.title }}
         </div>
-        <div style="font-size:0.75rem;color:var(--text-muted);">{{ ev.startDate }} ~ {{ ev.endDate }}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);">
+          {{ ev.startDate }} ~ {{ ev.endDate }}
+        </div>
       </div>
     </div>
   </div>
   <!-- ===== □. 이벤트 그리드 ================================================= -->
   <!-- ===== ■. 빈 상태 ==================================================== -->
   <div v-if="events.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
-    <div style="font-size:2rem;margin-bottom:12px;">📭</div>
-    <div style="font-size:0.95rem;">{{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>
+    <div style="font-size:2rem;margin-bottom:12px;">
+      📭
+    </div>
+    <div style="font-size:0.95rem;">
+      {{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}
+    </div>
   </div>
 </div>
-
-  <!-- ===== □. 빈 상태 ==================================================== -->`
+<!-- ===== □. 빈 상태 ==================================================== -->
+`
 };

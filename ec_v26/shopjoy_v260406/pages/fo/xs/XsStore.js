@@ -14,6 +14,48 @@ window.XsStore = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, tabMode: 'col5'});
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ XsStore.js : handleBtnAction -> ', cmd, param);
+      // 전체 스토어 재로드
+      if (cmd === 'stores-reload-all') {
+        return loadAllStoreData();
+      // 뷰모드 변경 (param: 'tab' | 'col1' | 'col2' | 'col3' | 'col4' | 'col5')
+      } else if (cmd === 'tab-mode-change') {
+        uiState.tabMode = param;
+        return;
+      // 스토어 조회 (param: storeName)
+      } else if (cmd === 'stores-refresh') {
+        return refreshStoreData(param);
+      // 스토어 저장 (param: storeName)
+      } else if (cmd === 'stores-save') {
+        uiState.selectedStore = param;
+        return saveStore();
+      // 클립보드 복사
+      } else if (cmd === 'stores-copy') {
+        return copyToClipboard();
+      // 스토어 비우기
+      } else if (cmd === 'stores-clear') {
+        return clearStore();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ XsStore.js : handleSelectAction -> ', cmd, param);
+      // 스토어 탭 선택 (param: storeName)
+      if (cmd === 'stores-row-select') {
+        return selectStore(param);
+      // 탭 닫기 (param: storeName)
+      } else if (cmd === 'stores-row-close') {
+        return closeTab(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -173,9 +215,11 @@ window.XsStore = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      cfStoreList, selectStore, copyToClipboard, clearStore, openStores, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData, uiState, codes
+      uiState, codes,                                                       // 상태
+      handleBtnAction, handleSelectAction,                                  // dispatch
+      cfStoreList,                                                          // computed
+      openStores, editedStoreInfo,                                          // 데이터
     };
   },
   template: `
@@ -183,10 +227,14 @@ window.XsStore = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
     <div>
-      <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">Store 정보 관리</h1>
-      <p style="margin: 0; font-size: 13px; color: #666;">Pinia 스토어 상태 조회 및 편집</p>
+      <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">
+        Store 정보 관리
+      </h1>
+      <p style="margin: 0; font-size: 13px; color: #666;">
+        Pinia 스토어 상태 조회 및 편집
+      </p>
     </div>
-    <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
+    <button @click="handleBtnAction('stores-reload-all')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
       🔄 재로드
     </button>
   </div>
@@ -196,7 +244,7 @@ window.XsStore = {
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
       <div style="display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0;">
         <button v-for="store in cfStoreList" :key="store.name"
-          @click="selectStore(store.name)"
+          @click="handleSelectAction('stores-row-select', store.name)"
           :style="{
           padding: '8px 14px',
           background: uiState.selectedStore === store.name ? '#fff0f4' : 'transparent',
@@ -215,7 +263,7 @@ window.XsStore = {
       <!-- ===== ■.■.■. 뷰모드 버튼 (탭바 우측) ====================================== -->
       <div style="display: flex; gap: 4px; padding-left: 16px; flex-shrink: 0;">
         <button
-          @click="uiState.tabMode = 'tab'"
+          @click="handleBtnAction('tab-mode-change', 'tab')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -231,7 +279,7 @@ window.XsStore = {
           📑
         </button>
         <button
-          @click="uiState.tabMode = 'col1'"
+          @click="handleBtnAction('tab-mode-change', 'col1')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -248,7 +296,7 @@ window.XsStore = {
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
-          @click="uiState.tabMode = 'col2'"
+          @click="handleBtnAction('tab-mode-change', 'col2')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -265,7 +313,7 @@ window.XsStore = {
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
-          @click="uiState.tabMode = 'col3'"
+          @click="handleBtnAction('tab-mode-change', 'col3')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -281,7 +329,7 @@ window.XsStore = {
           3
         </button>
         <button
-          @click="uiState.tabMode = 'col4'"
+          @click="handleBtnAction('tab-mode-change', 'col4')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -298,7 +346,7 @@ window.XsStore = {
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
-          @click="uiState.tabMode = 'col5'"
+          @click="handleBtnAction('tab-mode-change', 'col5')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -332,24 +380,26 @@ window.XsStore = {
         {{ store.label }}
       </div>
       <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 320px;">
-        <label style="display: block; padding: 8px 12px 4px; font-weight: 600; font-size: 11px; color: #666;">Store State (JSON)</label>
+        <label style="display: block; padding: 8px 12px 4px; font-weight: 600; font-size: 11px; color: #666;">
+          Store State (JSON)
+        </label>
         <textarea
           :value="editedStoreInfo[store.name] || ''"
           @input="editedStoreInfo[store.name] = $event.target.value"
           style="flex: 1; margin: 0 8px 8px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 10px; background: #f9f9f9; resize: none; color: #333; line-height: 1.6;">
         </textarea>
-      </div>
-      <div style="display: flex; gap: 4px; padding: 8px 12px; border-top: 1px solid #e5e7eb; background: #fafafa;">
-        <button v-if="store.api" @click="refreshStoreData(store.name)" style="flex: 1; padding: 6px 10px; font-size: 11px; border: 1px solid #d0e8f2; background: #f0f8fc; color: #0369a1; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
-          조회
-        </button>
-        <button @click="uiState.selectedStore = store.name; saveStore()" style="flex: 1; padding: 6px 10px; font-size: 11px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
-          저장
-        </button>
+        </div>
+        <div style="display: flex; gap: 4px; padding: 8px 12px; border-top: 1px solid #e5e7eb; background: #fafafa;">
+          <button v-if="store.api" @click="handleBtnAction('stores-refresh', store.name)" style="flex: 1; padding: 6px 10px; font-size: 11px; border: 1px solid #d0e8f2; background: #f0f8fc; color: #0369a1; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+            조회
+          </button>
+          <button @click="handleBtnAction('stores-save', store.name)" style="flex: 1; padding: 6px 10px; font-size: 11px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
+            저장
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-  <!-- ===== □. 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) ================================ -->`
+  <!-- ===== □. 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) ================================ -->
+`
 };

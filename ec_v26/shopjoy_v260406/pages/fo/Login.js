@@ -14,6 +14,100 @@ window.Login = {
     const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false, step: 'login', snsProvider: null, loginErr: '', signupErr: '', _ec: '', _pc: '', snsNickname: '', snsPhoneCode: '', snsPhoneCodeSent: false, _spc: '', snsErr: ''});;
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Login.js : handleBtnAction -> ', cmd, param);
+      // 모달 닫기
+      if (cmd === 'page-close') {
+        return emit('close');
+      // 로그인 실행
+      } else if (cmd === 'form-login') {
+        return doLogin();
+      // 소셜 로그인 (param: 'google' | 'kakao' | 'naver')
+      } else if (cmd === 'form-social-login') {
+        return doSocial(param);
+      // SNS 회원가입 시작 (param: provider)
+      } else if (cmd === 'form-start-sns-signup') {
+        return startSnsSignup(param);
+      // 회원선택 모달 열기
+      } else if (cmd === 'memberPickModal-open') {
+        return onOpenMemberPick();
+      // 회원선택 모달 닫기
+      } else if (cmd === 'memberPickModal-close') {
+        memberPick.show = false;
+        return;
+      // 회원선택 모달 조회
+      } else if (cmd === 'memberPickModal-search') {
+        return onMemberPickSearch();
+      // 회원선택 페이지 이동 (param: 페이지번호)
+      } else if (cmd === 'memberPickModal-page') {
+        return onMemberPickPage(param);
+      // 약관: step 이동 (param: 'login' | 'terms')
+      } else if (cmd === 'tab-step') {
+        uiState.snsProvider = null;
+        uiState.step = param;
+        return;
+      // 약관 step → signup/sns-signup
+      } else if (cmd === 'tab-next-from-terms') {
+        return goNextFromTerms();
+      // 회원가입 step → terms 되돌리기
+      } else if (cmd === 'tab-back-to-terms') {
+        uiState.step = 'terms';
+        return;
+      // 이메일 인증코드 발송
+      } else if (cmd === 'form-send-email-code') {
+        return sendEmailCode();
+      // 이메일 인증
+      } else if (cmd === 'form-verify-email') {
+        return verifyEmail();
+      // 휴대폰 인증코드 발송
+      } else if (cmd === 'form-send-phone-code') {
+        return sendPhoneCode();
+      // 휴대폰 인증
+      } else if (cmd === 'form-verify-phone') {
+        return verifyPhone();
+      // 이메일 회원가입 제출
+      } else if (cmd === 'form-signup') {
+        return doSignup();
+      // 카카오 주소 검색 열기 (이메일 가입)
+      } else if (cmd === 'form-open-addr') {
+        return openKakaoAddr();
+      // 카카오 주소 검색 열기 (SNS 가입)
+      } else if (cmd === 'form-open-addr-sns') {
+        return openKakaoAddrSns();
+      // SNS 휴대폰 인증코드 발송
+      } else if (cmd === 'form-send-sns-phone-code') {
+        return sendSnsPhoneCode();
+      // SNS 휴대폰 인증
+      } else if (cmd === 'form-verify-sns-phone') {
+        return verifySnsPhone();
+      // SNS 회원가입 제출
+      } else if (cmd === 'form-sns-signup') {
+        return doSnsSignup();
+      // 성별 선택 (param: { type:'email'|'sns', value:'M'|'F'|'' })
+      } else if (cmd === 'form-select-gender') {
+        if (param.type === 'sns') { snsSf.gender = param.value; }
+        else { sf.gender = param.value; }
+        return;
+      // 전체 약관 토글
+      } else if (cmd === 'form-toggle-all-terms') {
+        return toggleAll();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Login.js : handleSelectAction -> ', cmd, param);
+      // 회원 선택 (param: member 객체)
+      if (cmd === 'members-row-pick') {
+        return onPickMember(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -325,78 +419,96 @@ window.Login = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      uiState, form, doLogin, doSocial, startSnsSignup,
-      terms, toggleAll, goNextFromTerms,
-      sf, sendEmailCode, verifyEmail, sendPhoneCode, verifyPhone, doSignup, openKakaoAddr,
-      snsPhone,
-      sendSnsPhoneCode, verifySnsPhone, doSnsSignup, snsSf, openKakaoAddrSns,
-      providerLabel, providerColor, providerTextColor, IS, codes,
-      foAuth: window.foAuth,
-      memberPick, memberPickGridColumns, onOpenMemberPick, onMemberPickSearch, onMemberPickPage, onPickMember,
+      uiState, codes,                                                          // 상태
+      handleBtnAction, handleSelectAction,                                     // dispatch
+      form, sf, snsSf, snsPhone, terms,                                        // 폼/약관
+      IS,                                                                      // 스타일
+      providerLabel, providerColor, providerTextColor,                         // 헬퍼
+      foAuth: window.foAuth,                                                   // 인증 상태
+      memberPick, memberPickGridColumns,                                       // 회원선택 모달
     };
   },
   template: /* html */ `
-<div class="modal-overlay" @click.self="$emit('close')" style="z-index:200;">
+<div class="modal-overlay" @click.self="handleBtnAction('page-close')" style="z-index:200;">
   <!-- ===== ■. 로그인 화면 ================================================== -->
   <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">
-    <button @click="$emit('close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
+    <button @click="handleBtnAction('page-close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
       ✕
     </button>
     <!-- ===== ■.■. ════ 로그인 ════ ========================================= -->
     <template v-if="uiState.step==='login'">
       <div style="text-align:center;margin-bottom:24px;">
-        <div style="font-size:2rem;">👗</div>
-        <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-top:6px;">로그인</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">기본 계정: user1@demo.com / demo1234</div>
+        <div style="font-size:2rem;">
+          👗
+        </div>
+        <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-top:6px;">
+          로그인
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">
+          기본 계정: user1@demo.com / demo1234
+        </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;">
-        <input v-model="form.email" type="email" placeholder="이메일" @keyup.enter="doLogin" :style="IS">
-        <input v-model="form.password" type="password" placeholder="비밀번호" @keyup.enter="doLogin" :style="IS">
-        <div v-if="uiState.loginErr" style="color:#e8587a;font-size:0.82rem;text-align:center;">{{ uiState.loginErr }}</div>
-        <button @click="doLogin" :disabled="foAuth.state.loading" class="btn-blue" style="width:100%;padding:12px;">
+        <input v-model="form.email" type="email" placeholder="이메일" @keyup.enter="handleBtnAction('form-login')" :style="IS">
+        <input v-model="form.password" type="password" placeholder="비밀번호" @keyup.enter="handleBtnAction('form-login')" :style="IS">
+        <div v-if="uiState.loginErr" style="color:#e8587a;font-size:0.82rem;text-align:center;">
+          {{ uiState.loginErr }}
+        </div>
+        <button @click="handleBtnAction('form-login')" :disabled="foAuth.state.loading" class="btn-blue" style="width:100%;padding:12px;">
           {{ foAuth.state.loading ? '로그인 중...' : '로그인' }}
         </button>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--text-muted);font-size:0.8rem;">
-        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <div style="flex:1;height:1px;background:var(--border);">
+        </div>
         소셜 로그인
-        <div style="flex:1;height:1px;background:var(--border);"></div>
+        <div style="flex:1;height:1px;background:var(--border);">
+        </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:9px;">
-        <button @click="doSocial('google')"
+        <button @click="handleBtnAction('form-social-login', 'google')"
           style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text-primary);font-weight:600;">
-          <span style="font-size:1.1rem;">🌐</span>
+          <span style="font-size:1.1rem;">
+            🌐
+          </span>
           Google로 로그인
         </button>
-        <button @click="doSocial('kakao')"
+        <button @click="handleBtnAction('form-social-login', 'kakao')"
           style="width:100%;padding:11px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#3C1E1E;font-weight:700;">
-          <span style="font-size:1.1rem;">💬</span>
+          <span style="font-size:1.1rem;">
+            💬
+          </span>
           카카오로 로그인
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
-        <button @click="doSocial('naver')"
+        <button @click="handleBtnAction('form-social-login', 'naver')"
           style="width:100%;padding:11px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#fff;font-weight:700;">
-          <span style="font-size:1.1rem;font-weight:900;">N</span>
+          <span style="font-size:1.1rem;font-weight:900;">
+            N
+          </span>
           네이버로 로그인
         </button>
       </div>
-      <div style="text-align:center;margin-top:22px;"><span style="font-size:0.85rem;color:var(--text-muted);">아직 회원이 아니신가요?</span></div>
+      <div style="text-align:center;margin-top:22px;">
+        <span style="font-size:0.85rem;color:var(--text-muted);">
+          아직 회원이 아니신가요?
+        </span>
+      </div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
-        <button @click="uiState.snsProvider=null; uiState.step='terms'" class="btn-outline" style="width:100%;padding:10px;font-size:0.85rem;font-weight:700;">
+        <button @click="handleBtnAction('tab-step', 'terms')" class="btn-outline" style="width:100%;padding:10px;font-size:0.85rem;font-weight:700;">
           📧 이메일로 회원가입
         </button>
         <div style="display:flex;gap:8px;">
-          <button @click="startSnsSignup('google')"
+          <button @click="handleBtnAction('form-start-sns-signup', 'google')"
             style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-secondary);">
             🌐 Google
           </button>
-          <button @click="startSnsSignup('kakao')"
+          <button @click="handleBtnAction('form-start-sns-signup', 'kakao')"
             style="flex:1;padding:9px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;font-size:0.8rem;font-weight:700;color:#3C1E1E;">
             💬 카카오
           </button>
-          <button @click="startSnsSignup('naver')"
+          <button @click="handleBtnAction('form-start-sns-signup', 'naver')"
             style="flex:1;padding:9px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;font-size:0.8rem;font-weight:700;color:#fff;">
             N 네이버
           </button>
@@ -405,7 +517,7 @@ window.Login = {
       <!-- ===== ■.■.■. 회원선택 바로 로그인 (개발용) =================================== -->
       <!-- ===== ■.■.■. 영역 ================================================== -->
       <div style="text-align:center;margin-top:18px;">
-        <button @click="onOpenMemberPick"
+        <button @click="handleBtnAction('memberPickModal-open')"
           style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:var(--text-muted);text-decoration:underline;padding:0;">
           회원 선택하여 로그인 (개발)
         </button>
@@ -413,18 +525,24 @@ window.Login = {
     </template>
     <!-- ===== □.□. ════ 로그인 ════ ========================================= -->
     <!-- ===== ■.■. ════ 회원선택 모달 ════ ===================================== -->
-    <div v-if="memberPick.show" class="modal-overlay" @click.self="memberPick.show=false" style="z-index:300;">
+    <div v-if="memberPick.show" class="modal-overlay" @click.self="handleBtnAction('memberPickModal-close')" style="z-index:300;">
       <div style="background:#fff;border-radius:16px;overflow:hidden;max-width:820px;width:96%;display:flex;flex-direction:column;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.18);">
         <!-- ===== ■.■.■.■. 헤더 ================================================ -->
         <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffc8d6;flex-shrink:0;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:18px;">👥</span>
+            <span style="font-size:18px;">
+              👥
+            </span>
             <div>
-              <div style="font-size:14px;font-weight:800;color:#1a1a2e;">회원 선택</div>
-              <div style="font-size:10px;color:#e8587a;margin-top:1px;">선택 시 마스터 패스워드(1111)로 자동 로그인</div>
+              <div style="font-size:14px;font-weight:800;color:#1a1a2e;">
+                회원 선택
+              </div>
+              <div style="font-size:10px;color:#e8587a;margin-top:1px;">
+                선택 시 마스터 패스워드(1111)로 자동 로그인
+              </div>
             </div>
           </div>
-          <button @click="memberPick.show=false" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">
+          <button @click="handleBtnAction('memberPickModal-close')" style="background:none;border:none;cursor:pointer;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;color:#e8587a;" onmouseover="this.style.background='#ffd5e1'" onmouseout="this.style.background='none'">
             ✕
           </button>
         </div>
@@ -433,7 +551,9 @@ window.Login = {
           <!-- ===== ■.■.■.■.■. 검색바 ============================================= -->
           <div style="display:flex;gap:6px;margin-bottom:10px;">
             <div style="position:relative;flex:1;">
-              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
+              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">
+                🔍
+              </span>
               <bo-multi-check-select
                 v-model="memberPick.searchType"
                 :options="[
@@ -445,11 +565,11 @@ window.Login = {
                 all-label="전체 선택"
                 min-width="140px" />
               <input v-model="memberPick.searchValue" type="text" placeholder="검색어 입력..."
-                @keyup.enter="onMemberPickSearch"
+                @keyup.enter="handleBtnAction('memberPickModal-search')"
                 style="width:100%;padding:7px 10px 7px 32px;border:1.5px solid #f0c8d8;border-radius:8px;font-size:12px;outline:none;box-sizing:border-box;">
             </div>
             <!-- ===== ■.■.■.■.■.■. 버튼 영역 ========================================= -->
-            <button @click="onMemberPickSearch"
+            <button @click="handleBtnAction('memberPickModal-search')"
               style="padding:0 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
               조회
             </button>
@@ -457,7 +577,9 @@ window.Login = {
           <!-- ===== ■.■.■.■.■. 건수 ============================================== -->
           <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:left;">
             총
-            <b style="color:#e8587a;">{{ memberPick.total }}</b>
+            <b style="color:#e8587a;">
+              {{ memberPick.total }}
+            </b>
             명
           </div>
           <!-- ===== ■.■.■.■.■. 테이블 ============================================= -->
@@ -466,9 +588,9 @@ window.Login = {
             <fo-grid bare :columns="memberPickGridColumns" :rows="memberPick.rows" :pager="memberPick"
               row-key="memberId" row-actions
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
-              :row-click="onPickMember">
+              :row-click="(row) => handleSelectAction('members-row-pick', row)">
               <template #row-actions="{ row }">
-                <button @click.stop="onPickMember(row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
+                <button @click.stop="handleSelectAction('members-row-pick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
                   선택
                 </button>
               </template>
@@ -477,17 +599,17 @@ window.Login = {
         </div>
         <!-- ===== ■.■.■.■. 페이지네이션 (고정) ======================================= -->
         <div v-if="memberPick.totalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
-          <button @click="onMemberPickPage(1)" :disabled="memberPick.pageNo===1"
+          <button @click="handleBtnAction('memberPickModal-page', 1)" :disabled="memberPick.pageNo===1"
             style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">
             «
           </button>
-          <button @click="onMemberPickPage(memberPick.pageNo-1)" :disabled="memberPick.pageNo===1"
+          <button @click="handleBtnAction('memberPickModal-page', memberPick.pageNo-1)" :disabled="memberPick.pageNo===1"
             style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">
             ‹
           </button>
           <template v-for="p in memberPick.totalPage" :key="p">
             <button v-if="Math.abs(p-memberPick.pageNo)<=2||p===1||p===memberPick.totalPage"
-              @click="onMemberPickPage(p)"
+              @click="handleBtnAction('memberPickModal-page', p)"
               :style="memberPick.pageNo===p
               ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
               : 'background:#fff;color:#888;border:1px solid #eee;'"
@@ -495,11 +617,11 @@ window.Login = {
               {{ p }}
             </button>
           </template>
-          <button @click="onMemberPickPage(memberPick.pageNo+1)" :disabled="memberPick.pageNo===memberPick.totalPage"
+          <button @click="handleBtnAction('memberPickModal-page', memberPick.pageNo+1)" :disabled="memberPick.pageNo===memberPick.totalPage"
             style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">
             ›
           </button>
-          <button @click="onMemberPickPage(memberPick.totalPage)" :disabled="memberPick.pageNo===memberPick.totalPage"
+          <button @click="handleBtnAction('memberPickModal-page', memberPick.totalPage)" :disabled="memberPick.pageNo===memberPick.totalPage"
             style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===memberPick.totalPage?'opacity:.35;cursor:default;':''">
             »
           </button>
@@ -514,13 +636,19 @@ window.Login = {
           :style="'background:'+providerColor(uiState.snsProvider)+';color:'+providerTextColor(uiState.snsProvider)+';font-size:0.82rem;font-weight:700;'">
           {{ providerLabel(uiState.snsProvider) }}로 가입
         </div>
-        <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">이용약관 동의</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">서비스 이용을 위해 약관에 동의해 주세요</div>
+        <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">
+          이용약관 동의
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">
+          서비스 이용을 위해 약관에 동의해 주세요
+        </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:0;">
         <label style="display:flex;align-items:center;gap:10px;padding:14px;background:var(--blue-dim);border-radius:8px;cursor:pointer;margin-bottom:10px;">
-          <input type="checkbox" v-model="terms.all" @change="toggleAll" style="width:16px;height:16px;accent-color:var(--blue);">
-          <span style="font-weight:700;color:var(--text-primary);">전체 동의</span>
+          <input type="checkbox" v-model="terms.all" @change="handleBtnAction('form-toggle-all-terms')" style="width:16px;height:16px;accent-color:var(--blue);">
+          <span style="font-weight:700;color:var(--text-primary);">
+            전체 동의
+          </span>
         </label>
         <label v-for="(t,i) in [
           {key:'t1',req:true, text:'서비스 이용약관'},
@@ -530,210 +658,246 @@ window.Login = {
           ]" :key="i" style="display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid var(--border);cursor:pointer;">
           <input type="checkbox" v-model="terms[t.key]" style="width:15px;height:15px;accent-color:var(--blue);">
           <span style="font-size:0.88rem;color:var(--text-secondary);">
-            <span v-if="t.req" style="color:var(--blue);font-weight:700;">[필수]</span>
-            <span v-else style="color:var(--text-muted);">[선택]</span>
+            <span v-if="t.req" style="color:var(--blue);font-weight:700;">
+              [필수]
+            </span>
+            <span v-else style="color:var(--text-muted);">
+              [선택]
+            </span>
             {{ t.text }}
           </span>
         </label>
       </div>
       <div style="display:flex;gap:10px;margin-top:24px;">
-        <button @click="uiState.snsProvider=null; uiState.step='login'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
-        <button @click="goNextFromTerms" :disabled="!(terms.t1&&terms.t2&&terms.t3)"
-          class="btn-blue" style="flex:2;padding:12px;"
-          :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">
-          다음
+        <button @click="handleBtnAction('tab-step', 'login')" class="btn-outline" style="flex:1;padding:12px;">
+          이전
         </button>
+        <button @click="handleBtnAction('tab-next-from-terms')" :disabled="!(terms.t1&&terms.t2&&terms.t3)" class="btn-blue" style="flex:2;padding:12px;" :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">
+        다음
+      </button>
+    </div>
+  </template>
+  <!-- ===== □.□. ════ 약관 ════ ========================================== -->
+  <!-- ===== ■.■. ════ 이메일 회원가입 ════ ==================================== -->
+  <template v-else-if="uiState.step==='signup'">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">
+        회원가입
       </div>
-    </template>
-    <!-- ===== □.□. ════ 약관 ════ ========================================== -->
-    <!-- ===== ■.■. ════ 이메일 회원가입 ════ ==================================== -->
-    <template v-else-if="uiState.step==='signup'">
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary);">회원가입</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">정보를 입력하고 인증을 완료해 주세요</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">
+        정보를 입력하고 인증을 완료해 주세요
       </div>
-      <!-- ===== ■.■.■. 필수 ================================================== -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">
-        필수 정보
-      </div>
-      <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-        <input v-model="sf.memberNm" type="text" placeholder="이름 *" :style="IS">
-        <!-- ===== ■.■.■.■. 이메일 인증 ============================================ -->
-        <div>
-          <div style="display:flex;gap:8px;">
-            <input v-model="sf.email" type="email" placeholder="이메일 *" :disabled="sf.emailVerified"
+    </div>
+    <!-- ===== ■.■.■. 필수 ================================================== -->
+    <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">
+      필수 정보
+    </div>
+    <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
+      <input v-model="sf.memberNm" type="text" placeholder="이름 *" :style="IS">
+      <!-- ===== ■.■.■.■. 이메일 인증 ============================================ -->
+      <div>
+        <div style="display:flex;gap:8px;">
+          <input v-model="sf.email" type="email" placeholder="이메일 *" :disabled="sf.emailVerified"
               style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="sendEmailCode" :disabled="sf.emailVerified"
+          <button @click="handleBtnAction('form-send-email-code')" :disabled="sf.emailVerified"
               style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
               :style="sf.emailVerified?'opacity:0.4;cursor:not-allowed;':''">
-              {{ sf.emailVerified ? '✓ 인증됨' : '코드 발송' }}
-            </button>
-          </div>
-          <div v-if="sf.emailSent && !sf.emailVerified" style="display:flex;gap:8px;margin-top:8px;">
-            <input v-model="sf.emailCode" type="text" placeholder="인증코드 6자리"
-              style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="verifyEmail" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
-              확인
-            </button>
-          </div>
-          <div v-if="sf.emailVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 이메일 인증 완료</div>
+            {{ sf.emailVerified ? '✓ 인증됨' : '코드 발송' }}
+          </button>
         </div>
-        <!-- ===== ■.■.■.■. 휴대폰 인증 ============================================ -->
-        <div>
-          <div style="display:flex;gap:8px;">
-            <input v-model="sf.phone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="sf.phoneVerified"
+        <div v-if="sf.emailSent && !sf.emailVerified" style="display:flex;gap:8px;margin-top:8px;">
+        <input v-model="sf.emailCode" type="text" placeholder="인증코드 6자리"
+              style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
+        <button @click="handleBtnAction('form-verify-email')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+          확인
+        </button>
+      </div>
+      <div v-if="sf.emailVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">
+        ✓ 이메일 인증 완료
+      </div>
+    </div>
+    <!-- ===== ■.■.■.■. 휴대폰 인증 ============================================ -->
+    <div>
+      <div style="display:flex;gap:8px;">
+        <input v-model="sf.phone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="sf.phoneVerified"
               style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="sendPhoneCode" :disabled="sf.phoneVerified"
+        <button @click="handleBtnAction('form-send-phone-code')" :disabled="sf.phoneVerified"
               style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
               :style="sf.phoneVerified?'opacity:0.4;cursor:not-allowed;':''">
-              {{ sf.phoneVerified ? '✓ 인증됨' : '코드 발송' }}
-            </button>
-          </div>
-          <div v-if="sf.phoneSent && !sf.phoneVerified" style="display:flex;gap:8px;margin-top:8px;">
-            <input v-model="sf.phoneCode" type="text" placeholder="인증코드 6자리"
+          {{ sf.phoneVerified ? '✓ 인증됨' : '코드 발송' }}
+        </button>
+      </div>
+      <div v-if="sf.phoneSent && !sf.phoneVerified" style="display:flex;gap:8px;margin-top:8px;">
+      <input v-model="sf.phoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="verifyPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
-              확인
-            </button>
-          </div>
-          <div v-if="sf.phoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 휴대폰 인증 완료</div>
-        </div>
-        <input v-model="sf.password"  type="password" placeholder="비밀번호 (6자 이상) *" :style="IS">
-        <input v-model="sf.password2" type="password" placeholder="비밀번호 확인 *" :style="IS">
-      </div>
-      <!-- ===== ■.■.■. 선택 ================================================== -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">
-        선택 정보 (입력하면 주문 시 자동 완성)
-      </div>
-      <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-        <!-- ===== ■.■.■.■. 주소 ================================================ -->
-        <div>
-          <div style="display:flex;gap:8px;margin-bottom:6px;">
-            <input v-model="sf.postcode" placeholder="우편번호" readonly
+      <button @click="handleBtnAction('form-verify-phone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+        확인
+      </button>
+    </div>
+    <div v-if="sf.phoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">
+      ✓ 휴대폰 인증 완료
+    </div>
+  </div>
+  <input v-model="sf.password"  type="password" placeholder="비밀번호 (6자 이상) *" :style="IS">
+  <input v-model="sf.password2" type="password" placeholder="비밀번호 확인 *" :style="IS">
+</div>
+<!-- ===== ■.■.■. 선택 ================================================== -->
+<div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">
+  선택 정보 (입력하면 주문 시 자동 완성)
+</div>
+<div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
+  <!-- ===== ■.■.■.■. 주소 ================================================ -->
+  <div>
+    <div style="display:flex;gap:8px;margin-bottom:6px;">
+      <input v-model="sf.postcode" placeholder="우편번호" readonly
               style="width:100px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;">
-            <button @click="openKakaoAddr" type="button"
+      <button @click="handleBtnAction('form-open-addr')" type="button"
               style="padding:0 14px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
-              📮 주소 검색
-            </button>
-          </div>
-          <input v-model="sf.address" placeholder="도로명 주소" readonly
+        📮 주소 검색
+      </button>
+    </div>
+    <input v-model="sf.address" placeholder="도로명 주소" readonly
             style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;margin-bottom:6px;">
-          <input v-model="sf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
-        </div>
-        <!-- ===== ■.■.■.■. 생년월일 + 성별 ========================================= -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
-          <div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">생년월일</div>
-            <input v-model="sf.birthdate" type="date"
+    <input v-model="sf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
+  </div>
+  <!-- ===== ■.■.■.■. 생년월일 + 성별 ========================================= -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+    <div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">
+        생년월일
+      </div>
+      <input v-model="sf.birthdate" type="date"
               style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.85rem;outline:none;">
-          </div>
-          <div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">성별</div>
-            <div style="display:flex;gap:6px;">
-              <button v-for="g in [{v:'M',l:'남성'},{v:'F',l:'여성'},{v:'',l:'선택안함'}]" :key="g.v"
-                @click="sf.gender=g.v" type="button"
+    </div>
+    <div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">
+        성별
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button v-for="g in [{v:'M',l:'남성'},{v:'F',l:'여성'},{v:'',l:'선택안함'}]" :key="g.v"
+                @click="handleBtnAction('form-select-gender', { type:'email', value: g.v })" type="button"
                 style="flex:1;padding:9px 4px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;"
                 :style="sf.gender===g.v ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);'">
-                {{ g.l }}
-              </button>
-            </div>
-          </div>
-        </div>
+          {{ g.l }}
+        </button>
       </div>
-      <div v-if="uiState.signupErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">
-        {{ uiState.signupErr }}
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button @click="uiState.step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
-        <button @click="doSignup" class="btn-blue" style="flex:2;padding:12px;">가입 완료</button>
-      </div>
-    </template>
-    <!-- ===== □.□. ════ 이메일 회원가입 ════ ==================================== -->
-    <!-- ===== ■.■. ════ SNS 회원가입 추가 정보 ════ ============================== -->
-    <template v-else-if="uiState.step==='sns-signup'">
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;margin-bottom:10px;"
-          :style="'background:'+providerColor(uiState.snsProvider)+';color:'+providerTextColor(uiState.snsProvider)+';font-size:0.85rem;font-weight:700;'">
-          {{ providerLabel(uiState.snsProvider) }}로 가입
-        </div>
-        <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">추가 정보 입력</div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">가입 완료를 위해 추가 정보를 입력하세요</div>
-      </div>
-      <!-- ===== ■.■.■. 필수 ================================================== -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">
-        필수 정보
-      </div>
-      <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-        <input v-model="uiState.snsNickname" type="text" placeholder="이름 / 닉네임 *" :style="IS">
-        <!-- ===== ■.■.■.■. 휴대폰 인증 ============================================ -->
-        <div>
-          <div style="display:flex;gap:8px;">
-            <input v-model="snsPhone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="uiState.snsPhoneVerified"
-              style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="sendSnsPhoneCode" :disabled="uiState.snsPhoneVerified"
-              style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
-              :style="uiState.snsPhoneVerified?'opacity:0.4;cursor:not-allowed;':''">
-              {{ uiState.snsPhoneVerified ? '✓ 인증됨' : '코드 발송' }}
-            </button>
-          </div>
-          <div v-if="uiState.snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
-            <input v-model="uiState.snsPhoneCode" type="text" placeholder="인증코드 6자리"
-              style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-            <button @click="verifySnsPhone" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
-              확인
-            </button>
-          </div>
-          <div v-if="uiState.snsPhoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">✓ 휴대폰 인증 완료</div>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 선택 ================================================== -->
-      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">
-        선택 정보
-      </div>
-      <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
-        <!-- ===== ■.■.■.■. 주소 ================================================ -->
-        <div>
-          <div style="display:flex;gap:8px;margin-bottom:6px;">
-            <input v-model="snsSf.postcode" placeholder="우편번호" readonly
-              style="width:100px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;">
-            <button @click="openKakaoAddrSns" type="button"
-              style="padding:0 14px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
-              📮 주소 검색
-            </button>
-          </div>
-          <input v-model="snsSf.address" placeholder="도로명 주소" readonly
-            style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;margin-bottom:6px;">
-          <input v-model="snsSf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
-        </div>
-        <!-- ===== ■.■.■.■. 생년월일 + 성별 ========================================= -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
-          <div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">생년월일</div>
-            <input v-model="snsSf.birthdate" type="date"
-              style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.85rem;outline:none;">
-          </div>
-          <div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">성별</div>
-            <div style="display:flex;gap:6px;">
-              <button v-for="g in [{v:'M',l:'남성'},{v:'F',l:'여성'},{v:'',l:'선택안함'}]" :key="g.v"
-                @click="snsSf.gender=g.v" type="button"
-                style="flex:1;padding:9px 4px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;"
-                :style="snsSf.gender===g.v ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);'">
-                {{ g.l }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div v-if="uiState.snsErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">{{ uiState.snsErr }}</div>
-      <div style="display:flex;gap:10px;">
-        <button @click="uiState.step='terms'" class="btn-outline" style="flex:1;padding:12px;">이전</button>
-        <button @click="doSnsSignup" class="btn-blue" style="flex:2;padding:12px;">가입 완료</button>
-      </div>
-    </template>
+    </div>
   </div>
 </div>
-
-    <!-- ===== □.□. ════ SNS 회원가입 추가 정보 ════ ============================== -->
-  <!-- ===== □. 로그인 화면 ================================================== -->`
+<div v-if="uiState.signupErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">
+  {{ uiState.signupErr }}
+</div>
+<div style="display:flex;gap:10px;">
+  <button @click="handleBtnAction('tab-back-to-terms')" class="btn-outline" style="flex:1;padding:12px;">
+    이전
+  </button>
+  <button @click="handleBtnAction('form-signup')" class="btn-blue" style="flex:2;padding:12px;">
+    가입 완료
+  </button>
+</div>
+</template>
+<!-- ===== □.□. ════ 이메일 회원가입 ════ ==================================== -->
+<!-- ===== ■.■. ════ SNS 회원가입 추가 정보 ════ ============================== -->
+<template v-else-if="uiState.step==='sns-signup'">
+  <div style="text-align:center;margin-bottom:16px;">
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;margin-bottom:10px;"
+          :style="'background:'+providerColor(uiState.snsProvider)+';color:'+providerTextColor(uiState.snsProvider)+';font-size:0.85rem;font-weight:700;'">
+      {{ providerLabel(uiState.snsProvider) }}로 가입
+    </div>
+    <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">
+      추가 정보 입력
+    </div>
+    <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">
+      가입 완료를 위해 추가 정보를 입력하세요
+    </div>
+  </div>
+  <!-- ===== ■.■.■. 필수 ================================================== -->
+  <div style="font-size:0.78rem;font-weight:700;color:var(--blue);margin-bottom:8px;padding:6px 10px;background:var(--blue-dim);border-radius:6px;">
+    필수 정보
+  </div>
+  <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
+    <input v-model="uiState.snsNickname" type="text" placeholder="이름 / 닉네임 *" :style="IS">
+    <!-- ===== ■.■.■.■. 휴대폰 인증 ============================================ -->
+    <div>
+      <div style="display:flex;gap:8px;">
+        <input v-model="snsPhone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="uiState.snsPhoneVerified"
+              style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
+        <button @click="handleBtnAction('form-send-sns-phone-code')" :disabled="uiState.snsPhoneVerified"
+              style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
+              :style="uiState.snsPhoneVerified?'opacity:0.4;cursor:not-allowed;':''">
+          {{ uiState.snsPhoneVerified ? '✓ 인증됨' : '코드 발송' }}
+        </button>
+      </div>
+      <div v-if="uiState.snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
+      <input v-model="uiState.snsPhoneCode" type="text" placeholder="인증코드 6자리"
+              style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
+      <button @click="handleBtnAction('form-verify-sns-phone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+        확인
+      </button>
+    </div>
+    <div v-if="uiState.snsPhoneVerified" style="font-size:0.8rem;color:#22c55e;margin-top:4px;">
+      ✓ 휴대폰 인증 완료
+    </div>
+  </div>
+</div>
+<!-- ===== ■.■.■. 선택 ================================================== -->
+<div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:var(--bg-base);border-radius:6px;">
+  선택 정보
+</div>
+<div style="display:flex;flex-direction:column;gap:11px;margin-bottom:16px;">
+  <!-- ===== ■.■.■.■. 주소 ================================================ -->
+  <div>
+    <div style="display:flex;gap:8px;margin-bottom:6px;">
+      <input v-model="snsSf.postcode" placeholder="우편번호" readonly
+              style="width:100px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;">
+      <button @click="handleBtnAction('form-open-addr-sns')" type="button"
+              style="padding:0 14px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+        📮 주소 검색
+      </button>
+    </div>
+    <input v-model="snsSf.address" placeholder="도로명 주소" readonly
+            style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;margin-bottom:6px;">
+    <input v-model="snsSf.addressDetail" placeholder="상세 주소 (동/호수 등)" :style="IS.replace('0.9rem','0.88rem')">
+  </div>
+  <!-- ===== ■.■.■.■. 생년월일 + 성별 ========================================= -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+    <div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">
+        생년월일
+      </div>
+      <input v-model="snsSf.birthdate" type="date"
+              style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.85rem;outline:none;">
+    </div>
+    <div>
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">
+        성별
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button v-for="g in [{v:'M',l:'남성'},{v:'F',l:'여성'},{v:'',l:'선택안함'}]" :key="g.v"
+                @click="handleBtnAction('form-select-gender', { type:'sns', value: g.v })" type="button"
+                style="flex:1;padding:9px 4px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;"
+                :style="snsSf.gender===g.v ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);'">
+          {{ g.l }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div v-if="uiState.snsErr" style="color:#e8587a;font-size:0.82rem;text-align:center;margin-bottom:10px;">
+  {{ uiState.snsErr }}
+</div>
+<div style="display:flex;gap:10px;">
+  <button @click="handleBtnAction('tab-back-to-terms')" class="btn-outline" style="flex:1;padding:12px;">
+    이전
+  </button>
+  <button @click="handleBtnAction('form-sns-signup')" class="btn-blue" style="flex:2;padding:12px;">
+    가입 완료
+  </button>
+</div>
+</template>
+</div>
+</div>
+<!-- ===== □.□. ════ SNS 회원가입 추가 정보 ════ ============================== -->
+<!-- ===== □. 로그인 화면 ================================================== -->
+`
 };

@@ -8,6 +8,23 @@ window.XsSample03 = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ XsSample03.js : handleBtnAction -> ', cmd, param);
+      // 홈으로 이동
+      if (cmd === 'page-go-home') {
+        return props && props.navigate && props.navigate('home');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ XsSample03.js : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -25,10 +42,11 @@ window.XsSample03 = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { uiState, codes };
+    return { uiState, codes, handleBtnAction, handleSelectAction };
   },
   template: `
-<div style="padding:40px;">pages/fo/xs/Sample03.js</div>
+<div style="padding:40px;">
+  pages/fo/xs/Sample03.js
+</div>
 `,
 };

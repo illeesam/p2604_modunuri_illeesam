@@ -26,6 +26,32 @@ window.Blog = {
 
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Blog.js : handleBtnAction -> ', cmd, param);
+      // 홈으로 이동
+      if (cmd === 'page-go-home') {
+        return props.navigate('home');
+      // 카테고리 선택 (param: 카테고리 ID)
+      } else if (cmd === 'category-select') {
+        searchParam.cat = param;
+        return onSearch();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Blog.js : handleSelectAction -> ', cmd, param);
+      // 블로그 포스트 클릭 (param: postId)
+      if (cmd === 'blogs-row-view') {
+        return props.navigate('blogView', { dtlId: param });
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
@@ -101,8 +127,15 @@ window.Blog = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { pager, setPage, onSizeChange, searchParam, baseSearchColumns, categories, posts, cfLatestPosts, postBg, onSearch, onReset, uiState, codes };
+    return {
+      uiState, codes,                                  // 상태
+      handleBtnAction, handleSelectAction,             // dispatch
+      pager, setPage, onSizeChange,                    // 페이징
+      searchParam, baseSearchColumns,                  // 검색
+      categories, posts,                               // 데이터
+      cfLatestPosts,                                   // computed
+      postBg, onSearch, onReset,                       // 헬퍼/이벤트
+    };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -110,14 +143,25 @@ window.Blog = {
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="블로그"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
+    </div>
     <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">ShopJoy</div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">News & Blog</h1>
+      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
+        ShopJoy
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
+        News & Blog
+      </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
-        <span>/</span>
-        <span style="color:#333;">Blog</span>
+        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+          홈
+        </span>
+        <span>
+          /
+        </span>
+        <span style="color:#333;">
+          Blog
+        </span>
       </div>
     </div>
   </div>
@@ -129,7 +173,7 @@ window.Blog = {
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 레이아웃: 사이드바 + 본문 ========================================= -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,3vw,32px);" class="blog-grid">
@@ -142,7 +186,7 @@ window.Blog = {
         </h3>
         <ul style="list-style:none;padding:0;margin:0;">
           <li v-for="cat in categories" :key="cat.id"
-            @click="searchParam.cat=cat.id;onSearch()"
+            @click="handleBtnAction('category-select', cat.id)"
             :style="{
             padding:'8px 0', cursor:'pointer', fontSize:'0.84rem',
             color: searchParam.cat===cat.id ? 'var(--blue)' : 'var(--text-secondary)',
@@ -159,7 +203,7 @@ window.Blog = {
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
           Latest Posts
         </h3>
-        <div v-for="p in cfLatestPosts" :key="p.id" @click="navigate('blogView', { dtlId: p.id })"
+        <div v-for="p in cfLatestPosts" :key="p.id" @click="handleSelectAction('blogs-row-view', p.id)"
           style="display:flex;gap:10px;margin-bottom:14px;cursor:pointer;padding:6px 0;"
           @mouseenter="$event.currentTarget.style.opacity='0.7'"
           @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -170,7 +214,9 @@ window.Blog = {
             <div style="font-size:0.78rem;font-weight:600;color:var(--text-primary);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
               {{ p.title }}
             </div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px;">{{ p.date }}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:3px;">
+              {{ p.date }}
+            </div>
           </div>
         </div>
       </div>
@@ -180,7 +226,7 @@ window.Blog = {
     <div>
       <div v-for="post in posts" :key="post.id"
         class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
-        @click="navigate('blogView', { dtlId: post.id })"
+        @click="handleSelectAction('blogs-row-view', post.id)"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.boxShadow=''">
         <!-- ===== ■.■.■.■. 썸네일 =============================================== -->
@@ -195,28 +241,44 @@ window.Blog = {
               {{ categories.find(c => c.id === post.category)?.name || post.category }}
             </span>
           </div>
-          <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:10px;line-height:1.4;">{{ post.title }}</h2>
+          <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:10px;line-height:1.4;">
+            {{ post.title }}
+          </h2>
           <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
             {{ post.excerpt }}
           </p>
           <div style="display:flex;align-items:center;gap:12px;font-size:0.75rem;color:var(--text-muted);">
-            <span>By {{ post.author }}</span>
-            <span>·</span>
-            <span>{{ post.date }}</span>
-            <span>·</span>
-            <span>{{ post.readTime }} 읽기</span>
+            <span>
+              By {{ post.author }}
+            </span>
+            <span>
+              ·
+            </span>
+            <span>
+              {{ post.date }}
+            </span>
+            <span>
+              ·
+            </span>
+            <span>
+              {{ post.readTime }} 읽기
+            </span>
           </div>
         </div>
       </div>
       <!-- ===== ■.■.■. 빈 상태 ================================================ -->
       <div v-if="posts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
-        <div style="font-size:2rem;margin-bottom:12px;">📝</div>
-        <div style="font-size:0.95rem;">검색 결과가 없습니다.</div>
+        <div style="font-size:2rem;margin-bottom:12px;">
+          📝
+        </div>
+        <div style="font-size:0.95rem;">
+          검색 결과가 없습니다.
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-    <!-- ===== □.□. 포스트 목록 ================================================ -->
-  <!-- ===== □. 레이아웃: 사이드바 + 본문 ========================================= -->`
+<!-- ===== □.□. 포스트 목록 ================================================ -->
+<!-- ===== □. 레이아웃: 사이드바 + 본문 ========================================= -->
+`
 };

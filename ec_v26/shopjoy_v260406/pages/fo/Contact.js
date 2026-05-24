@@ -14,6 +14,35 @@ window.Contact = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Contact.js : handleBtnAction -> ', cmd, param);
+      // 홈으로 이동
+      if (cmd === 'page-go-home') {
+        return props.navigate('home');
+      // FAQ로 이동
+      } else if (cmd === 'page-go-faq') {
+        return props.navigate('faq');
+      // 문의 접수
+      } else if (cmd === 'form-submit') {
+        return handleSubmit();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Contact.js : handleSelectAction -> ', cmd, param);
+      // FAQ 항목 토글 (param: 'c0' | 'c1' | 'c2')
+      if (cmd === 'faqs-row-toggle') {
+        uiState.openFaq = (uiState.openFaq === param ? null : param);
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -84,8 +113,13 @@ window.Contact = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { form, errors, handleSubmit, cfInquiryCodes, uiState, codes, baseFormColumns };
+    return {
+      uiState, codes,                                  // 상태
+      handleBtnAction, handleSelectAction,             // dispatch
+      form, errors, baseFormColumns,                   // 폼
+      cfInquiryCodes,                                  // computed
+      handleSubmit,                                    // 이벤트 (호환)
+    };
   },
   template: /* html */ `
 <div class="page-wrap">
@@ -93,14 +127,25 @@ window.Contact = {
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="고객센터"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);"></div>
+    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
+    </div>
     <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Support</div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">고객센터</h1>
+      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
+        Support
+      </div>
+      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
+        고객센터
+      </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
-        <span>/</span>
-        <span style="color:#333;">고객센터</span>
+        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+          홈
+        </span>
+        <span>
+          /
+        </span>
+        <span style="color:#333;">
+          고객센터
+        </span>
       </div>
     </div>
   </div>
@@ -109,64 +154,108 @@ window.Contact = {
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(14px,2.5vw,28px);align-items:start;" class="contact-grid">
     <!-- ===== ■.■. 문의 폼 ================================================== -->
     <div class="card" style="padding:clamp(16px,4vw,32px);">
-      <h2 style="font-size:1rem;font-weight:700;margin-bottom:22px;color:var(--text-primary);">✉️ 문의 양식</h2>
+      <h2 style="font-size:1rem;font-weight:700;margin-bottom:22px;color:var(--text-primary);">
+        ✉️ 문의 양식
+      </h2>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
       <div style="margin-bottom:22px;">
-        <label class="form-label">첨부파일 (준비중)</label>
-        <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#666;font-size:0.9rem;">파일 업로드 기능은 별도로 구현 예정입니다.</div>
+        <label class="form-label">
+          첨부파일 (준비중)
+        </label>
+        <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#666;font-size:0.9rem;">
+          파일 업로드 기능은 별도로 구현 예정입니다.
+        </div>
       </div>
-      <button class="btn-blue" @click="handleSubmit" style="width:100%;padding:13px;">문의 접수하기</button>
+      <button class="btn-blue" @click="handleBtnAction('form-submit')" style="width:100%;padding:13px;">
+        문의 접수하기
+      </button>
     </div>
     <!-- ===== □.□. 문의 폼 ================================================== -->
     <!-- ===== ■.■. 연락처 + 미니 FAQ ========================================== -->
     <div style="display:flex;flex-direction:column;gap:18px;">
       <div class="card" style="padding:24px;">
-        <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:16px;color:var(--text-primary);">📋 연락처</h3>
+        <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:16px;color:var(--text-primary);">
+          📋 연락처
+        </h3>
         <div class="info-row">
-          <span class="info-icon">📞</span>
+          <span class="info-icon">
+            📞
+          </span>
           <div>
-            <div class="info-label">전화</div>
-            <div class="info-val">{{ config.tel }}</div>
+            <div class="info-label">
+              전화
+            </div>
+            <div class="info-val">
+              {{ config.tel }}
+            </div>
           </div>
         </div>
         <div class="info-row">
-          <span class="info-icon">📧</span>
+          <span class="info-icon">
+            📧
+          </span>
           <div>
-            <div class="info-label">이메일</div>
-            <div class="info-val">{{ config.email }}</div>
+            <div class="info-label">
+              이메일
+            </div>
+            <div class="info-val">
+              {{ config.email }}
+            </div>
           </div>
         </div>
         <div class="info-row">
-          <span class="info-icon">🕘</span>
+          <span class="info-icon">
+            🕘
+          </span>
           <div>
-            <div class="info-label">운영 시간</div>
-            <div class="info-val">평일 09:00 – 18:00</div>
+            <div class="info-label">
+              운영 시간
+            </div>
+            <div class="info-val">
+              평일 09:00 – 18:00
+            </div>
           </div>
         </div>
         <div class="info-row">
-          <span class="info-icon">🚚</span>
+          <span class="info-icon">
+            🚚
+          </span>
           <div>
-            <div class="info-label">배송 안내</div>
-            <div class="info-val">결제 확인 후 1~2 영업일 출고</div>
+            <div class="info-label">
+              배송 안내
+            </div>
+            <div class="info-val">
+              결제 확인 후 1~2 영업일 출고
+            </div>
           </div>
         </div>
       </div>
       <div class="card" style="padding:24px;">
-        <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:4px;color:var(--text-primary);">❓ 자주 묻는 질문</h3>
+        <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:4px;color:var(--text-primary);">
+          ❓ 자주 묻는 질문
+        </h3>
         <div v-for="(faq, idx) in config.faqs.slice(0,3)" :key="idx" class="faq-item">
-          <button class="faq-question" @click="uiState.openFaq=(uiState.openFaq===('c'+idx)?null:('c'+idx))">
-            <span>{{ faq.q }}</span>
-            <span class="chevron" :class="{open: uiState.openFaq===('c'+idx)}">▼</span>
+          <button class="faq-question" @click="handleSelectAction('faqs-row-toggle', 'c'+idx)">
+            <span>
+              {{ faq.q }}
+            </span>
+            <span class="chevron" :class="{open: uiState.openFaq===('c'+idx)}">
+              ▼
+            </span>
           </button>
-          <div v-show="uiState.openFaq===('c'+idx)" class="faq-answer">{{ faq.a }}</div>
+          <div v-show="uiState.openFaq===('c'+idx)" class="faq-answer">
+            {{ faq.a }}
+          </div>
         </div>
-        <button class="btn-outline btn-sm" @click="navigate('faq')" style="margin-top:12px;width:100%;">전체 FAQ 보기</button>
+        <button class="btn-outline btn-sm" @click="handleBtnAction('page-go-faq')" style="margin-top:12px;width:100%;">
+          전체 FAQ 보기
+        </button>
       </div>
     </div>
   </div>
 </div>
-
-    <!-- ===== □.□. 연락처 + 미니 FAQ ========================================== -->
-  <!-- ===== □. 본문 영역 =================================================== -->`
+<!-- ===== □.□. 연락처 + 미니 FAQ ========================================== -->
+<!-- ===== □. 본문 영역 =================================================== -->
+`
 };

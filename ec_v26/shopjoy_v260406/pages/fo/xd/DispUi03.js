@@ -11,6 +11,18 @@ window.DispUi03 = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DispUi03.js : handleBtnAction -> ', cmd, param);
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DispUi03.js : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -56,23 +68,28 @@ window.DispUi03 = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { params, dispDataset, dispOpt, cfTotalPanels , uiState, codes };
+    return { params, dispDataset, dispOpt, cfTotalPanels , uiState, codes, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 헤더 ================================================== -->
   <div style="background:linear-gradient(135deg,#7b1fa2,#6a1b9a);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.2);">
     <div>
-      <span style="font-size:16px;font-weight:700;">🛍️ DispUi03 - PRODUCT 영역</span>
-      <span style="font-size:11px;opacity:.7;margin-left:12px;">PRODUCT_TOP, PRODUCT_BTM</span>
+      <span style="font-size:16px;font-weight:700;">
+        🛍️ DispUi03 - PRODUCT 영역
+      </span>
+      <span style="font-size:11px;opacity:.7;margin-left:12px;">
+        PRODUCT_TOP, PRODUCT_BTM
+      </span>
     </div>
-    <span style="font-size:13px;opacity:.8;">패널 {{ cfTotalPanels }}개</span>
+    <span style="font-size:13px;opacity:.8;">
+      패널 {{ cfTotalPanels }}개
+    </span>
   </div>
   <!-- ===== □. 페이지 헤더 ================================================== -->
   <!-- ===== ■. 본문: DispUi 컴포넌트 ========================================= -->
   <disp-x01-ui :params="params" :disp-dataset="dispDataset" :disp-opt="dispOpt" />
 </div>
-
-  <!-- ===== □. 본문: DispUi 컴포넌트 ========================================= -->`,
+<!-- ===== □. 본문: DispUi 컴포넌트 ========================================= -->
+`,
 };

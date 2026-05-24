@@ -24,6 +24,34 @@ window.BlogEdit = {
     });
     const errors = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BlogEdit.js : handleBtnAction -> ', cmd, param);
+      // 저장 / 수정
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 취소 — 블로그 목록 이동
+      } else if (cmd === 'form-cancel') {
+        return cancel();
+      // 이미지 추가
+      } else if (cmd === 'form-add-image') {
+        return addImage();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BlogEdit.js : handleSelectAction -> ', cmd, param);
+      // 이미지 행 삭제 (param: imageId)
+      if (cmd === 'form-row-remove-image') {
+        return removeImage(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const categories = [
       { id: 'fashion', name: '패션' },
       { id: 'lifestyle', name: '라이프스타일' },
@@ -108,18 +136,25 @@ window.BlogEdit = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { cfIsEdit, form, errors, categories, baseFormColumns, images, handleSave, cancel, addImage, removeImage , uiState, codes };
+    return {
+      uiState, codes,                                                  // 상태
+      handleBtnAction, handleSelectAction,                             // dispatch
+      cfIsEdit, form, errors, baseFormColumns,                         // 폼
+      categories, images,                                              // 데이터
+      handleSave, cancel, addImage, removeImage,                       // 이벤트 (호환)
+    };
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:760px;">
   <!-- ===== ■. 헤더 ====================================================== -->
   <div style="margin-bottom:28px;">
-    <button @click="cancel"
+    <button @click="handleBtnAction('form-cancel')"
       style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:16px;padding:0;">
       ← 블로그 목록으로
     </button>
-    <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">{{ cfIsEdit ? '글 수정' : '새 글 작성' }}</h1>
+    <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">
+      {{ cfIsEdit ? '글 수정' : '새 글 작성' }}
+    </h1>
   </div>
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 폼 ======================================================= -->
@@ -128,12 +163,18 @@ window.BlogEdit = {
     <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
     <!-- ===== ■.■. 이미지 첨부 ================================================ -->
     <div style="margin-bottom:20px;">
-      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">이미지 첨부</label>
-      <button @click="addImage" class="btn-outline" style="padding:8px 16px;font-size:0.82rem;margin-bottom:10px;">+ 이미지 추가</button>
+      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">
+        이미지 첨부
+      </label>
+      <button @click="handleBtnAction('form-add-image')" class="btn-outline" style="padding:8px 16px;font-size:0.82rem;margin-bottom:10px;">
+        + 이미지 추가
+      </button>
       <div v-for="img in images" :key="img.id"
         style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-base);border-radius:6px;margin-bottom:6px;border:1px solid var(--border);">
-        <span style="font-size:0.82rem;color:var(--text-secondary);flex:1;">📎 {{ img.name }} ({{ img.size }})</span>
-        <button @click="removeImage(img.id)"
+        <span style="font-size:0.82rem;color:var(--text-secondary);flex:1;">
+          📎 {{ img.name }} ({{ img.size }})
+        </span>
+        <button @click="handleSelectAction('form-row-remove-image', img.id)"
           style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.78rem;font-weight:600;">
           삭제
         </button>
@@ -142,7 +183,9 @@ window.BlogEdit = {
     <!-- ===== □.□. 이미지 첨부 ================================================ -->
     <!-- ===== ■.■. 태그 ==================================================== -->
     <div style="margin-bottom:28px;">
-      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">태그 (쉼표로 구분)</label>
+      <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">
+        태그 (쉼표로 구분)
+      </label>
       <input v-model="form.tags" type="text" placeholder="패션, 트렌드, 2026SS"
         style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;outline:none;background:var(--bg-card);color:var(--text-primary);" />
       <div v-if="form.tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
@@ -155,12 +198,16 @@ window.BlogEdit = {
     <!-- ===== □.□. 태그 ==================================================== -->
     <!-- ===== ■.■. 버튼 ==================================================== -->
     <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button class="btn-outline" @click="cancel" style="padding:11px 28px;font-size:0.88rem;">취소</button>
-      <button class="btn-blue" @click="handleSave" style="padding:11px 28px;font-size:0.88rem;">{{ cfIsEdit ? '수정' : '등록' }}</button>
+      <button class="btn-outline" @click="handleBtnAction('form-cancel')" style="padding:11px 28px;font-size:0.88rem;">
+        취소
+      </button>
+      <button class="btn-blue" @click="handleBtnAction('form-save')" style="padding:11px 28px;font-size:0.88rem;">
+        {{ cfIsEdit ? '수정' : '등록' }}
+      </button>
     </div>
   </div>
 </div>
-
-    <!-- ===== □.□. 버튼 ==================================================== -->
-  <!-- ===== □. 폼 ======================================================= -->`
+<!-- ===== □.□. 버튼 ==================================================== -->
+<!-- ===== □. 폼 ======================================================= -->
+`
 };

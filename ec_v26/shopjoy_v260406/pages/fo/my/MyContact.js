@@ -61,16 +61,33 @@ window.MyContact = {
       await handleSearchData();
     };
 
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MyContact.js : handleSelectAction -> ', cmd, param);
+      // 문의 펼침 토글
+      if (cmd === 'contacts-toggle') {
+        expandedInquiry.value = expandedInquiry.value === param ? null : param;
+      // 문의 취소
+      } else if (cmd === 'contacts-cancel') {
+        return cancelInquiry(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
+      uiState, codes,                                                        // 상태 / 데이터
+      handleSelectAction,                                                    // dispatch
+      // ===== contacts 영역 ====================================================
       myStore, inquiries, expandedInquiry,
-      inquiryPager, paginate, cancelInquiry, cfDateFilteredInquiries, onDateSearch, onSearch,
-      uiState, codes };
+      inquiryPager, paginate, cfDateFilteredInquiries,
+      onDateSearch, onSearch,
+    };
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
@@ -78,23 +95,31 @@ window.MyContact = {
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredInquiries.length" :pager="inquiryPager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="!cfDateFilteredInquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">문의 내역이 없습니다.</div>
+  <div v-if="!cfDateFilteredInquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+    문의 내역이 없습니다.
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div v-for="q in paginate(cfDateFilteredInquiries, inquiryPager)" :key="q.inquiryId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;">
     <div style="display:flex;align-items:flex-start;gap:12px;">
-      <div style="flex:1;cursor:pointer;" @click="expandedInquiry = expandedInquiry===q.inquiryId ? null : q.inquiryId">
+      <div style="flex:1;cursor:pointer;" @click="handleSelectAction('contacts-toggle', q.inquiryId)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
           <span style="font-size:0.75rem;font-weight:700;padding:3px 8px;border-radius:20px;color:#fff;"
             :style="'background:'+myStore.inquiryStatusColor(q.status)">
             {{ q.status }}
           </span>
-          <span style="font-size:0.78rem;color:var(--text-muted);">{{ q.category }}</span>
-          <span style="font-size:0.78rem;color:var(--text-muted);">{{ q.date }}</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);">
+            {{ q.category }}
+          </span>
+          <span style="font-size:0.78rem;color:var(--text-muted);">
+            {{ q.date }}
+          </span>
         </div>
-        <div style="font-weight:600;font-size:0.9rem;color:var(--text-primary);">{{ q.title }}</div>
+        <div style="font-weight:600;font-size:0.9rem;color:var(--text-primary);">
+          {{ q.title }}
+        </div>
       </div>
-      <button v-if="q.status==='요청'" @click="cancelInquiry(q.inquiryId)"
+      <button v-if="q.status==='요청'" @click="handleSelectAction('contacts-cancel', q.inquiryId)"
         style="padding:6px 14px;border:1.5px solid #ef4444;border-radius:6px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.8rem;font-weight:600;white-space:nowrap;">
         취소
       </button>
@@ -104,7 +129,9 @@ window.MyContact = {
         {{ q.content }}
       </div>
       <div v-if="q.answer" style="background:var(--blue-dim);border-radius:6px;padding:12px;font-size:0.85rem;color:var(--text-primary);">
-        <span style="font-size:0.78rem;font-weight:700;color:var(--blue);display:block;margin-bottom:4px;">📩 답변</span>
+        <span style="font-size:0.78rem;font-weight:700;color:var(--blue);display:block;margin-bottom:4px;">
+          📩 답변
+        </span>
         {{ q.answer }}
       </div>
     </div>
@@ -113,8 +140,8 @@ window.MyContact = {
   <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="inquiries.length" :pager="inquiryPager" />
 </fo-my-layout>
-
-  <!-- ===== □. 영역 ====================================================== -->`,
+<!-- ===== □. 영역 ====================================================== -->
+`,
   components: {
     FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,

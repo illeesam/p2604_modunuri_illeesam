@@ -99,7 +99,6 @@ window.XsSample07 = {
 
           // ===== return (템플릿 노출) ===============================================
 
-
           return {
             id: `ac_${tbl}`, label: tbl, type: 'folder', open: false,
             children: CRUD_OPS.map(op => ({
@@ -606,19 +605,77 @@ window.XsSample07 = {
       treeRoot.push(buildAutoCrudRestNodes());
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample07.js : handleBtnAction -> ', cmd, param);
+      // 전체 탭 닫기
+      if (cmd === 'tabs-close-all') {
+        return closeAllTabs();
+      // 요청 전송
+      } else if (cmd === 'tab-send') {
+        return doSend();
+      // 이력 모달 닫기
+      } else if (cmd === 'hist-modal-close') {
+        return closeHistModal();
+      // 이력 재전송
+      } else if (cmd === 'hist-resend') {
+        return resendHist();
+      // 자동 실행 팝업 닫기
+      } else if (cmd === 'auto-popup-close') {
+        return closeAutoPopup();
+      // localStorage 새로고침
+      } else if (cmd === 'ls-refresh') {
+        return refreshLs();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample07.js : handleSelectAction -> ', cmd, param);
+      // 트리 노드 토글
+      if (cmd === 'tree-toggle') {
+        return toggleNode(param);
+      // API 노드 선택
+      } else if (cmd === 'tree-select-api') {
+        return selectApiNode(param);
+      // 탭 닫기
+      } else if (cmd === 'tabs-close') {
+        return closeTab(param.tabId, param.event);
+      // 토스트 닫기
+      } else if (cmd === 'toast-close') {
+        return closeToast(param);
+      // 이력 선택
+      } else if (cmd === 'hist-select') {
+        return selectHistory(param.h, param.idx);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     return {
+      uiState, codes,                                                        // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                   // dispatch
+      // ===== tree / tabs 영역 =================================================
       cfFlatTree, treeSearch, toggleNode, selectApiNode, appFilter, APP_META,
       openTabs, activeTabId, cfActiveTab, closeTab, closeAllTabs,
-      uiState, hostUrl, token, defHeaders, lsItems, refreshLs,
+      // ===== settings / ls 영역 ===============================================
+      hostUrl, token, defHeaders, lsItems, refreshLs,
+      // ===== toast 영역 =======================================================
       toasts, closeToast,
-      doSend, history, histSelIdx, histModal, histModalTab, editReq, histResJson, histResStatus, histResTime, histResTs, histResProgress, selectHistory, closeHistModal, resendHist,
+      // ===== history / response 영역 ==========================================
+      doSend, history, histSelIdx, histModal, histModalTab, editReq,
+      histResJson, histResStatus, histResTime, histResTs, histResProgress,
+      selectHistory, closeHistModal, resendHist,
       cfResGridColumns, cfResGridRows, cfResColDefs,
       historyGridColumns, onHistClick, fnHistRowStyle,
+      // ===== shared (헬퍼) ====================================================
       addRow, removeRow, fnMethodStyle, fnStatusStyle, fnMethodDot, quickRun,
-      // 자동실행
+      // ===== auto-run 영역 ====================================================
       autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
-      uiState, codes };
+    };
   },
 
   template: /* html */`
@@ -628,7 +685,9 @@ window.XsSample07 = {
     <!-- ===== ■.■. Header ================================================ -->
     <div style="padding:7px 10px 6px;border-bottom:1px solid #e0e0e0;background:#f0f2f5;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:11px;font-weight:800;color:#333;">API Endpoints</span>
+        <span style="font-size:11px;font-weight:800;color:#333;">
+          API Endpoints
+        </span>
         <button @click="uiState.settingsOpen=!settingsOpen" title="공통 설정"
           style="border:none;background:none;cursor:pointer;font-size:15px;padding:0;line-height:1;"
           :style="uiState.settingsOpen?'color:#1a73e8;':'color:#999;'">
@@ -649,7 +708,9 @@ window.XsSample07 = {
     <!-- ===== □.□. Header ================================================ -->
     <!-- ===== ■.■. Tree ================================================== -->
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
-      <div v-if="!uiState.treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">로딩 중…</div>
+      <div v-if="!uiState.treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">
+        로딩 중…
+      </div>
       <div v-for="item in cfFlatTree" :key="item.n.id"
         @click="item.n.type==='req' ? selectApiNode(item.n) : toggleNode(item.n)"
         style="display:flex;align-items:center;gap:3px;padding:3px 6px;cursor:pointer;white-space:nowrap;overflow:hidden;transition:background .1s;user-select:none;"
@@ -657,9 +718,15 @@ window.XsSample07 = {
         @mouseenter="e=>{ e.currentTarget.style.background='#eef2ff'; const b=e.currentTarget.querySelector('.tree-run-btn'); if(b) b.style.opacity='1'; }"
         @mouseleave="e=>{ e.currentTarget.style.background=''; const b=e.currentTarget.querySelector('.tree-run-btn'); if(b) b.style.opacity='0'; }">
         <span style="flex-shrink:0;font-size:9px;color:#bbb;width:8px;text-align:center;">
-          <template v-if="item.n.type==='app'">{{ item.n.open?'▼':'▶' }}</template>
-          <template v-else-if="item.n.type==='folder'">{{ item.n.open?'▾':'▸' }}</template>
-          <template v-else>·</template>
+          <template v-if="item.n.type==='app'">
+            {{ item.n.open?'▼':'▶' }}
+          </template>
+          <template v-else-if="item.n.type==='folder'">
+            {{ item.n.open?'▾':'▸' }}
+          </template>
+          <template v-else>
+            ·
+          </template>
         </span>
         <template v-if="item.n.type==='app'">
           <span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:3px;background:#333;color:#fff;">
@@ -667,13 +734,17 @@ window.XsSample07 = {
           </span>
         </template>
         <template v-else-if="item.n.type==='folder'">
-          <span style="font-size:11px;font-weight:700;color:#444;overflow:hidden;text-overflow:ellipsis;">📁 {{ item.n.label }}</span>
+          <span style="font-size:11px;font-weight:700;color:#444;overflow:hidden;text-overflow:ellipsis;">
+            📁 {{ item.n.label }}
+          </span>
         </template>
         <template v-else>
           <span style="font-size:9px;padding:1px 3px;border-radius:2px;font-weight:700;flex-shrink:0;min-width:38px;text-align:center;" :style="fnMethodStyle(item.n.method)">
             {{ item.n.method }}
           </span>
-          <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;flex:1;" :title="item.n.url">{{ item.n.label }}</span>
+          <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;flex:1;" :title="item.n.url">
+            {{ item.n.label }}
+          </span>
           <button @click.stop="quickRun(item.n, $event)" title="바로 실행"
             style="flex-shrink:0;border:none;background:none;cursor:pointer;font-size:10px;color:#bbb;padding:1px 3px;border-radius:3px;line-height:1;opacity:0;transition:opacity .1s;"
             class="tree-run-btn">
@@ -683,14 +754,16 @@ window.XsSample07 = {
       </div>
     </div>
   </div>
-    <!-- ===== □.□. Tree ================================================== -->
+  <!-- ===== □.□. Tree ================================================== -->
   <!-- ===== □. ━━━ 1. Tree Panel (좌측) ━━━ ============================== -->
   <!-- ===== ■. ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ =============================== -->
   <div style="width:172px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f4f5f7;overflow:hidden;">
     <div style="padding:5px 8px 4px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;background:#eeeff2;">
       <span style="font-size:10px;font-weight:800;color:#555;">
         열린 탭
-        <span style="font-weight:400;color:#aaa;margin-left:2px;">{{ openTabs.length }}</span>
+        <span style="font-weight:400;color:#aaa;margin-left:2px;">
+          {{ openTabs.length }}
+        </span>
       </span>
       <button v-if="openTabs.length" @click="closeAllTabs" title="전체 닫기"
         style="border:none;background:none;cursor:pointer;font-size:10px;color:#aaa;padding:0;">
@@ -699,7 +772,9 @@ window.XsSample07 = {
     </div>
     <!-- ===== ■.■. 탭 없을 때 ================================================ -->
     <div v-if="!openTabs.length" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#ccc;">
-      <span style="font-size:22px;">📂</span>
+      <span style="font-size:22px;">
+        📂
+      </span>
       <span style="font-size:10px;text-align:center;line-height:1.4;">
         좌측 API 목록을
         <br>
@@ -745,25 +820,30 @@ window.XsSample07 = {
         </div>
         <!-- ===== ■.■.■.■. 하단 상태 ============================================= -->
         <div style="display:flex;align-items:center;gap:4px;margin-top:2px;min-height:13px;">
-          <span v-if="tab.sending" style="font-size:9px;color:#1a73e8;">전송 중…</span>
+          <span v-if="tab.sending" style="font-size:9px;color:#1a73e8;">
+            전송 중…
+          </span>
           <span v-else-if="tab.resStatus" style="font-size:9px;" :style="fnStatusStyle(tab.resStatus)">
             {{ tab.resStatus }} · {{ tab.resTime }}ms
           </span>
           <!-- ===== ■.■.■.■.■. 자동실행 라벨 + 카운트다운 ================================= -->
           <span v-if="tab.autoMs" style="font-size:9px;color:#22a84a;margin-left:auto;font-weight:600;white-space:nowrap;">
             ⏱ {{ tab.autoLabel }}
-            <span style="color:#aaa;font-weight:400;">({{ countdown[tab.tabId] != null ? countdown[tab.tabId] : '-' }}초)</span>
+            <span style="color:#aaa;font-weight:400;">
+              ({{ countdown[tab.tabId] != null ? countdown[tab.tabId] : '-' }}초)
+            </span>
           </span>
         </div>
       </div>
     </div>
   </div>
-    <!-- ===== □.□. 탭 목록 ================================================== -->
+  <!-- ===== □.□. 탭 목록 ================================================== -->
   <!-- ===== □. ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ =============================== -->
   <!-- ===== ■. ━━━ 자동실행 주기 선택 팝업 ━━━ =================================== -->
   <template v-if="autoPopupTabId">
     <!-- ===== ■.■. backdrop ============================================== -->
-    <div @click="closeAutoPopup" style="position:fixed;inset:0;z-index:8000;"></div>
+    <div @click="closeAutoPopup" style="position:fixed;inset:0;z-index:8000;">
+    </div>
     <!-- ===== ■.■. popup ================================================= -->
     <div style="position:fixed;z-index:8001;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:230px;overflow:hidden;"
       :style="'top:'+autoPopupPos.top+'px;left:'+autoPopupPos.left+'px;'">
@@ -772,7 +852,9 @@ window.XsSample07 = {
         style="padding:8px 14px;font-size:11px;font-weight:700;color:#555;border-bottom:1px solid #eee;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
         @mouseenter="e=>e.currentTarget.style.background='#f5f5f5'"
         @mouseleave="e=>e.currentTarget.style.background=''">
-        <span>🚫 자동실행 없음</span>
+        <span>
+          🚫 자동실행 없음
+        </span>
         <span v-if="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===0||!openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs" style="font-size:10px;color:#34a853;">
           ✔ 현재
         </span>
@@ -832,7 +914,7 @@ window.XsSample07 = {
       </div>
     </div>
   </template>
-    <!-- ===== □.□. popup ================================================= -->
+  <!-- ===== □.□. popup ================================================= -->
   <!-- ===== □. ━━━ 자동실행 주기 선택 팝업 ━━━ =================================== -->
   <!-- ===== ■. ━━━ 3. Main Panel (우측) ━━━ ============================== -->
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
@@ -840,24 +922,34 @@ window.XsSample07 = {
     <div v-show="settingsOpen" style="border-bottom:2px solid #1a73e8;background:#fff;flex-shrink:0;padding:10px 14px 12px;">
       <div style="font-size:11px;font-weight:800;color:#1a73e8;margin-bottom:8px;">
         ⚙ 공통 설정
-        <span style="font-size:10px;font-weight:400;color:#aaa;margin-left:6px;">변경사항은 localStorage에 자동 저장</span>
+        <span style="font-size:10px;font-weight:400;color:#aaa;margin-left:6px;">
+          변경사항은 localStorage에 자동 저장
+        </span>
       </div>
       <!-- ===== ■.■.■. 1행: HOST URL + BEARER TOKEN ========================= -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
         <div>
-          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">Host URL</div>
+          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">
+            Host URL
+          </div>
           <input v-model="hostUrl" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;font-family:monospace;" />
         </div>
         <div>
-          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">🔑 Bearer Token</div>
+          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">
+            🔑 Bearer Token
+          </div>
           <input v-model="token" placeholder="eyJhbGci…" style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;font-family:monospace;" />
-          <div v-if="token" style="font-size:10px;color:#1a73e8;margin-top:3px;">✔ Authorization 헤더에 자동 추가</div>
+          <div v-if="token" style="font-size:10px;color:#1a73e8;margin-top:3px;">
+            ✔ Authorization 헤더에 자동 추가
+          </div>
         </div>
       </div>
       <!-- ===== ■.■.■. 2행: 기본 Headers + LocalStorage ======================= -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
         <div>
-          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">기본 Headers</div>
+          <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;text-transform:uppercase;">
+            기본 Headers
+          </div>
           <div v-for="(h,i) in defHeaders" :key="i" style="display:flex;gap:3px;margin-bottom:3px;">
             <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
             <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
@@ -871,7 +963,9 @@ window.XsSample07 = {
         </div>
         <div>
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
-            <span style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;">LocalStorage</span>
+            <span style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;">
+              LocalStorage
+            </span>
             <button @click="refreshLs" style="font-size:10px;padding:1px 5px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#666;">
               ↻
             </button>
@@ -895,9 +989,15 @@ window.XsSample07 = {
     <!-- ===== □.□. ⚙ Settings Panel ====================================== -->
     <!-- ===== ■.■. 탭 없을 때 빈 상태 =========================================== -->
     <div v-if="!cfActiveTab" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#ccc;background:#fafafa;">
-      <span style="font-size:40px;">🚀</span>
-      <div style="font-size:14px;font-weight:600;color:#bbb;">좌측 API Endpoints에서 항목을 선택하세요</div>
-      <div style="font-size:11px;color:#ccc;">선택하면 여기에 탭으로 열립니다</div>
+      <span style="font-size:40px;">
+        🚀
+      </span>
+      <div style="font-size:14px;font-weight:600;color:#bbb;">
+        좌측 API Endpoints에서 항목을 선택하세요
+      </div>
+      <div style="font-size:11px;color:#ccc;">
+        선택하면 여기에 탭으로 열립니다
+      </div>
     </div>
     <!-- ===== □.□. 탭 없을 때 빈 상태 =========================================== -->
     <!-- ===== ■.■. 활성 탭 내용 =============================================== -->
@@ -907,13 +1007,17 @@ window.XsSample07 = {
         <!-- ===== ■.■.■.■. 탭 풀 네임 표시 ========================================= -->
         <div style="font-size:10px;color:#aaa;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="cfActiveTab.tabLabel">
           📌 {{ cfActiveTab.tabLabel }}
-          <span v-if="cfActiveTab.desc" style="margin-left:6px;color:#ccc;">— {{ cfActiveTab.desc }}</span>
+          <span v-if="cfActiveTab.desc" style="margin-left:6px;color:#ccc;">
+            — {{ cfActiveTab.desc }}
+          </span>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
           <select v-model="cfActiveTab.reqMethod"
             style="font-size:12px;padding:5px 6px;border:1px solid #ddd;border-radius:5px;font-weight:700;width:90px;cursor:pointer;"
             :style="fnMethodStyle(cfActiveTab.reqMethod)">
-            <option v-for="m in codes.http_method_opts" :key="m">{{ m }}</option>
+            <option v-for="m in codes.http_method_opts" :key="m">
+              {{ m }}
+            </option>
           </select>
           <input v-model="cfActiveTab.reqUrl" placeholder="URL" @keyup.enter="doSend()"
             style="flex:1;font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:5px;outline:none;font-family:monospace;min-width:0;" />
@@ -926,7 +1030,9 @@ window.XsSample07 = {
             :style="cfActiveTab.resStatus<300?'background:#dcfce7;color:#166534;':cfActiveTab.resStatus<400?'background:#fef3c7;color:#92400e;':'background:#fee2e2;color:#991b1b;'">
             {{ cfActiveTab.resStatus }}
           </span>
-          <span v-if="cfActiveTab.resTime!==null" style="font-size:11px;color:#aaa;flex-shrink:0;">{{ cfActiveTab.resTime }}ms</span>
+          <span v-if="cfActiveTab.resTime!==null" style="font-size:11px;color:#aaa;flex-shrink:0;">
+            {{ cfActiveTab.resTime }}ms
+          </span>
         </div>
       </div>
       <!-- ===== ■.■.■. Middle: Params + Response =========================== -->
@@ -969,295 +1075,376 @@ window.XsSample07 = {
             <template v-if="cfActiveTab.reqTab==='body'">
               <textarea v-model="cfActiveTab.reqBody" placeholder='{\n  "key": "value"\n}'
                 style="width:100%;box-sizing:border-box;font-size:11px;font-family:monospace;padding:7px 8px;border:1px solid #ddd;border-radius:4px;outline:none;resize:vertical;line-height:1.55;min-height:180px;"></textarea>
-            </template>
+              </template>
+            </div>
           </div>
-        </div>
-        <!-- ===== ■.■.■.■. Response ========================================== -->
-        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
-          <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;align-items:center;">
-            <button v-for="t in [{id:'json',nm:'응답 JSON'},{id:'grid',nm:'Grid'}]" :key="t.id"
+          <!-- ===== ■.■.■.■. Response ========================================== -->
+          <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
+            <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;align-items:center;">
+              <button v-for="t in [{id:'json',nm:'응답 JSON'},{id:'grid',nm:'Grid'}]" :key="t.id"
               @click="cfActiveTab.resTab=t.id"
               style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
               :style="cfActiveTab.resTab===t.id?'background:#fff;border-bottom-color:#1a73e8;color:#1a73e8;':'background:transparent;color:#999;'">
-              {{ t.nm }}
-              <span v-if="t.id==='grid'&&cfResGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">
+                {{ t.nm }}
+                <span v-if="t.id==='grid'&&cfResGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">
                 {{ cfResGridRows.length }}
               </span>
             </button>
-            <span v-if="cfActiveTab.sending" style="margin-left:auto;padding:0 12px;font-size:11px;color:#aaa;">전송 중…</span>
+            <span v-if="cfActiveTab.sending" style="margin-left:auto;padding:0 12px;font-size:11px;color:#aaa;">
+              전송 중…
+            </span>
           </div>
           <div style="flex:1;overflow:auto;padding:8px;">
             <template v-if="cfActiveTab.resTab==='json'">
               <pre v-if="cfActiveTab.resJson" style="font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;margin:0;color:#333;line-height:1.55;">{{ cfActiveTab.resJson }}</pre>
-              <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:#ccc;gap:6px;">
-                <span style="font-size:22px;">📭</span>
-                <span style="font-size:12px;">응답이 여기에 표시됩니다</span>
-              </div>
-            </template>
-            <template v-if="cfActiveTab.resTab==='grid'">
-              <div v-if="!cfResGridRows.length" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:#ccc;gap:6px;">
-                <span style="font-size:22px;">📊</span>
-                <span style="font-size:12px;">{{ cfActiveTab.resData ? 'Array 데이터가 없습니다' : '응답이 여기에 표시됩니다' }}</span>
-              </div>
-              <div v-else>
-                <div style="font-size:10px;color:#aaa;margin-bottom:5px;">총 {{ cfResGridRows.length }}건</div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 목록 영역 ===================================== -->
-                <fo-grid bare :columns="cfResColDefs" :rows="cfResGridRows" min-width="100%" />
-              </div>
-            </template>
+                <div v-else style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:#ccc;gap:6px;">
+                  <span style="font-size:22px;">
+                    📭
+                  </span>
+                  <span style="font-size:12px;">
+                    응답이 여기에 표시됩니다
+                  </span>
+                </div>
+              </template>
+              <template v-if="cfActiveTab.resTab==='grid'">
+                <div v-if="!cfResGridRows.length" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:#ccc;gap:6px;">
+                  <span style="font-size:22px;">
+                    📊
+                  </span>
+                  <span style="font-size:12px;">
+                    {{ cfActiveTab.resData ? 'Array 데이터가 없습니다' : '응답이 여기에 표시됩니다' }}
+                  </span>
+                </div>
+                <div v-else>
+                  <div style="font-size:10px;color:#aaa;margin-bottom:5px;">
+                    총 {{ cfResGridRows.length }}건
+                  </div>
+                  <!-- ===== ■.■.■.■.■.■.■.■. 목록 영역 ===================================== -->
+                  <fo-grid bare :columns="cfResColDefs" :rows="cfResGridRows" min-width="100%" />
+                </div>
+              </template>
+            </div>
           </div>
         </div>
-      </div>
-    </template>
-    <!-- ===== □.□. 활성 탭 내용 =============================================== -->
-    <!-- ===== ■.■. History =============================================== -->
-    <div style="border-top:2px solid #e0e0e0;background:#fafafa;flex-shrink:0;">
-      <div style="padding:4px 12px;border-bottom:1px solid #ebebeb;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:11px;font-weight:700;color:#555;">
-          전송 이력
-          <span style="font-weight:400;color:#e8587a;margin-left:3px;">{{ history.length }}</span>
-        </span>
-        <button @click="history.splice(0);histSelIdx=null;" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#888;">
-          전체 삭제
-        </button>
-      </div>
-      <div style="max-height:228px;overflow-y:auto;">
-        <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-        <fo-grid bare :columns="historyGridColumns" :rows="history" row-key="id"
-          :show-row-no="false" empty-text="전송 이력이 없습니다"
-          :row-click="onHistClick" :row-style="fnHistRowStyle">
-          <template #cell-_seq="{ row, idx }">
-            <td style="text-align:center;padding:2px 6px;">
-              <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#999;">
-                <span v-if="row.status && row.status<300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;"></span>
-                <span v-else-if="row.status && row.status>=300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>
-                {{ history.length - idx }}
-              </span>
-            </td>
-          </template>
-        </fo-grid>
-      </div>
-    </div>
-    <!-- ===== □.□. History =============================================== -->
-    <!-- ===== ■.■. History 상세 모달 ========================================= -->
-    <template v-if="histModal">
-      <div @click="closeHistModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);"></div>
-      <div style="position:fixed;z-index:9001;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;max-width:96vw;max-height:86vh;background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;">
-        <!-- ===== ■.■.■.■. 제목 헤더 ============================================= -->
-        <div style="padding:10px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px;flex-shrink:0;background:#f8f9fa;">
-          <span style="font-size:12px;font-weight:800;color:#555;">전송이력상세</span>
-          <span style="position:relative;font-size:11px;font-weight:700;color:#888;padding:0 6px;">
-            <span v-if="histModal.status && histModal.status<300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#22c55e;"></span>
-            <span v-else-if="histModal.status && histModal.status>=300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#ef4444;"></span>
-            #{{ history.length - histSelIdx }}
+      </template>
+      <!-- ===== □.□. 활성 탭 내용 =============================================== -->
+      <!-- ===== ■.■. History =============================================== -->
+      <div style="border-top:2px solid #e0e0e0;background:#fafafa;flex-shrink:0;">
+        <div style="padding:4px 12px;border-bottom:1px solid #ebebeb;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:11px;font-weight:700;color:#555;">
+            전송 이력
+            <span style="font-weight:400;color:#e8587a;margin-left:3px;">
+              {{ history.length }}
+            </span>
           </span>
-          <span style="font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;" :style="fnMethodStyle(histModal.method)">
-            {{ histModal.method }}
-          </span>
-          <span style="font-size:11px;font-family:monospace;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="histModal.url">
-            {{ histModal.url }}
-          </span>
-          <button @click="closeHistModal" style="border:none;background:none;cursor:pointer;font-size:16px;color:#aaa;padding:0;line-height:1;flex-shrink:0;">
-            ✕
+          <button @click="history.splice(0);histSelIdx=null;" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#888;">
+            전체 삭제
           </button>
         </div>
-        <!-- ===== ■.■.■.■. 탭명 ================================================ -->
-        <div v-if="histModal.tabLabel" style="padding:3px 16px;background:#fff;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa;flex-shrink:0;">
-          탭:
-          <span style="color:#666;">{{ histModal.tabLabel }}</span>
-        </div>
-        <!-- ===== ■.■.■.■. 좌/우 2컬럼 본문 ======================================== -->
-        <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
-          <!-- ===== ■.■.■.■.■. 좌: 요청 (편집 가능) =================================== -->
-          <div style="width:50%;flex-shrink:0;border-right:1px solid #e8e8e8;overflow-y:auto;padding:12px 14px;background:#fafafa;">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
-              <span style="font-size:10px;font-weight:800;color:#1a73e8;text-transform:uppercase;letter-spacing:.05em;">요청</span>
-              <span style="font-size:10px;color:#aaa;">{{ histModal.ts }}</span>
-              <span style="flex:1;"></span>
-              <button @click="resendHist" :disabled="uiState.histResSending"
+        <div style="max-height:228px;overflow-y:auto;">
+          <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
+          <fo-grid bare :columns="historyGridColumns" :rows="history" row-key="id"
+          :show-row-no="false" empty-text="전송 이력이 없습니다"
+          :row-click="onHistClick" :row-style="fnHistRowStyle">
+            <template #cell-_seq="{ row, idx }">
+              <td style="text-align:center;padding:2px 6px;">
+                <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#999;">
+                  <span v-if="row.status && row.status<300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;">
+                </span>
+                <span v-else-if="row.status && row.status>=300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;">
+              </span>
+              {{ history.length - idx }}
+            </span>
+          </td>
+        </template>
+      </fo-grid>
+    </div>
+  </div>
+  <!-- ===== □.□. History =============================================== -->
+  <!-- ===== ■.■. History 상세 모달 ========================================= -->
+  <template v-if="histModal">
+    <div @click="closeHistModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);">
+    </div>
+    <div style="position:fixed;z-index:9001;top:50%;left:50%;transform:translate(-50%,-50%);width:900px;max-width:96vw;max-height:86vh;background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.28);display:flex;flex-direction:column;overflow:hidden;">
+      <!-- ===== ■.■.■.■. 제목 헤더 ============================================= -->
+      <div style="padding:10px 16px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:8px;flex-shrink:0;background:#f8f9fa;">
+        <span style="font-size:12px;font-weight:800;color:#555;">
+          전송이력상세
+        </span>
+        <span style="position:relative;font-size:11px;font-weight:700;color:#888;padding:0 6px;">
+          <span v-if="histModal.status && histModal.status<300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#22c55e;">
+        </span>
+        <span v-else-if="histModal.status && histModal.status>=300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#ef4444;">
+      </span>
+      #{{ history.length - histSelIdx }}
+    </span>
+    <span style="font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;" :style="fnMethodStyle(histModal.method)">
+      {{ histModal.method }}
+    </span>
+    <span style="font-size:11px;font-family:monospace;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="histModal.url">
+      {{ histModal.url }}
+    </span>
+    <button @click="closeHistModal" style="border:none;background:none;cursor:pointer;font-size:16px;color:#aaa;padding:0;line-height:1;flex-shrink:0;">
+      ✕
+    </button>
+  </div>
+  <!-- ===== ■.■.■.■. 탭명 ================================================ -->
+  <div v-if="histModal.tabLabel" style="padding:3px 16px;background:#fff;border-bottom:1px solid #f0f0f0;font-size:10px;color:#aaa;flex-shrink:0;">
+    탭:
+    <span style="color:#666;">
+      {{ histModal.tabLabel }}
+    </span>
+  </div>
+  <!-- ===== ■.■.■.■. 좌/우 2컬럼 본문 ======================================== -->
+  <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
+    <!-- ===== ■.■.■.■.■. 좌: 요청 (편집 가능) =================================== -->
+    <div style="width:50%;flex-shrink:0;border-right:1px solid #e8e8e8;overflow-y:auto;padding:12px 14px;background:#fafafa;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+        <span style="font-size:10px;font-weight:800;color:#1a73e8;text-transform:uppercase;letter-spacing:.05em;">
+          요청
+        </span>
+        <span style="font-size:10px;color:#aaa;">
+          {{ histModal.ts }}
+        </span>
+        <span style="flex:1;">
+        </span>
+        <button @click="resendHist" :disabled="uiState.histResSending"
                 style="font-size:11px;font-weight:700;padding:4px 14px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;white-space:nowrap;"
                 :style="uiState.histResSending?'opacity:.55;cursor:not-allowed;':''">
-                {{ uiState.histResSending ? '전송 중…' : '▶ 재전송' }}
-              </button>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 메서드 =========================================== -->
-            <div style="margin-bottom:7px;">
-              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">메서드</div>
-              <select v-model="editReq.method"
-                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;font-weight:700;color:#333;outline:none;cursor:pointer;">
-                <option v-for="m in codes.http_method_opts" :key="m">{{ m }}</option>
-              </select>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. HOST ========================================== -->
-            <div style="margin-bottom:7px;">
-              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">HOST</div>
-              <input v-model="editReq.host"
-                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#555;outline:none;" />
-            </div>
-            <!-- ===== ■.■.■.■.■.■. URL =========================================== -->
-            <div style="margin-bottom:7px;">
-              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">URL</div>
-              <input v-model="editReq.url"
-                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#333;outline:none;" />
-            </div>
-            <!-- ===== ■.■.■.■.■.■. TOKEN ========================================= -->
-            <div style="margin-bottom:7px;">
-              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">🔑 Bearer Token</div>
-              <input v-model="editReq.token" placeholder="(없음)"
-                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#555;outline:none;" />
-            </div>
-            <!-- ===== ■.■.■.■.■.■. HEADERS ======================================= -->
-            <div style="margin-bottom:7px;">
-              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
-                <span>Headers <span style="font-size:9px;font-weight:400;color:#aaa;">({{ editReq.headers.length }}개)</span></span>
-                <button @click="editReq.headers.push({k:'',v:''})"
-                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
-                  + 추가
-                </button>
-              </div>
-              <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
-                <div v-if="!editReq.headers.length" style="padding:6px 10px;font-size:11px;color:#bbb;">(없음)</div>
-                <div v-for="(h,i) in editReq.headers" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
-                  <input v-model="h.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
-                  <input v-model="h.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-                  <button @click="editReq.headers.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. PARAMS ======================================== -->
-            <div style="margin-bottom:7px;">
-              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
-                <span>Parameters <span style="font-size:9px;font-weight:400;color:#aaa;">({{ editReq.params.length }}개)</span></span>
-                <button @click="editReq.params.push({k:'',v:''})"
-                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
-                  + 추가
-                </button>
-              </div>
-              <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
-                <div v-if="!editReq.params.length" style="padding:6px 10px;font-size:11px;color:#bbb;">(없음)</div>
-                <div v-for="(p,i) in editReq.params" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
-                  <input v-model="p.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
-                  <input v-model="p.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-                  <button @click="editReq.params.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
-                    ✕
-                  </button>
-                </div>
-              </div>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. BODY ========================================== -->
-            <div>
-              <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">Body</div>
-              <textarea v-model="editReq.body" placeholder="(없음)"
-                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#333;outline:none;resize:vertical;min-height:60px;line-height:1.5;"></textarea>
-            </div>
-          </div>
-          <!-- ===== ■.■.■.■.■. 우: 응답 =========================================== -->
-          <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#fff;overflow:hidden;">
-            <!-- ===== ■.■.■.■.■.■. 응답 헤더 + progress bar (고정) ===================== -->
-            <div style="flex-shrink:0;padding:12px 14px 0;border-bottom:1px solid #f0f0f0;">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:10px;font-weight:800;color:#e8587a;text-transform:uppercase;letter-spacing:.05em;">응답</span>
-                <span style="flex:1;"></span>
-                <template v-if="uiState.histResSending">
-                  <span style="font-size:10px;color:#1a73e8;font-weight:600;">전송 중… {{ histResProgress }}%</span>
-                </template>
-                <template v-else-if="histResStatus">
-                  <span style="font-size:12px;font-weight:800;" :style="histResStatus<300?'color:#166534;':histResStatus<400?'color:#92400e;':'color:#991b1b;'">
-                    {{ histResStatus }}
-                  </span>
-                  <span style="font-size:10px;color:#888;">{{ histResTime }}ms</span>
-                  <span style="font-size:10px;color:#aaa;">{{ histResTs }}</span>
-                  <span style="font-size:9px;color:#1a73e8;background:#e8f0fe;padding:1px 5px;border-radius:3px;font-weight:600;">재전송</span>
-                </template>
-                <template v-else-if="histModal.status">
-                  <span style="font-size:12px;font-weight:800;" :style="histModal.status<300?'color:#166534;':histModal.status<400?'color:#92400e;':'color:#991b1b;'">
-                    {{ histModal.status }}
-                  </span>
-                  <span style="font-size:10px;color:#888;">{{ histModal.time }}ms</span>
-                  <span style="font-size:10px;color:#aaa;">{{ histModal.ts }}</span>
-                </template>
-              </div>
-              <!-- ===== ■.■.■.■.■.■.■. progress bar ================================ -->
-              <div style="height:6px;background:#f0f0f0;border-radius:0;margin:0 -14px;overflow:hidden;">
-                <div style="height:100%;transition:width .08s linear;"
-                  :style="uiState.histResSending ? 'background:#e8587a;width:'+histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
-                  ></div>
-              </div>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 응답 본문 스크롤 영역 ================================== -->
-            <div style="flex:1;overflow-y:auto;padding:12px 14px;">
-              <pre v-if="!uiState.histResSending && histResJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histResJson }}</pre>
-              <pre v-else-if="!uiState.histResSending && !histResJson && histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">{{ histModal.resJson }}</pre>
-              <div v-else-if="!uiState.histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">
-                응답 본문 없음
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-  <!-- ===== /Main Panel ================================================ -->
-    <!-- ===== □.□. History 상세 모달 ========================================= -->
-  <!-- ===== □. ━━━ 3. Main Panel (우측) ━━━ ============================== -->
-  <!-- ===== ■. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->
-  <div style="position:fixed;right:16px;bottom:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;">
-    <div v-for="t in toasts" :key="t.id"
-      style="pointer-events:all;width:380px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.22);overflow:hidden;font-size:11px;"
-      :style="t.type==='error'?'border:1px solid #fca5a5;':'border:1px solid #86efac;'">
-      <!-- ===== ■.■.■. 헤더바 ================================================= -->
-      <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;"
-        :style="t.type==='error'?'background:#fee2e2;':'background:#dcfce7;'">
-        <!-- ===== ■.■.■.■. 번호 배지 ============================================= -->
-        <span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;flex-shrink:0;"
-          :style="t.type==='error'?'background:#ef4444;color:#fff;':'background:#22c55e;color:#fff;'">
-          {{ t.seq }}
-        </span>
-        <span style="font-size:13px;flex-shrink:0;">{{ t.type==='error' ? '🔴' : '🟢' }}</span>
-        <span style="font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:11px;"
-          :title="t.tabLabel">
-          {{ t.tabLabel }}
-        </span>
-        <button @click="closeToast(t.id)"
-          style="border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">
-          ✕
+          {{ uiState.histResSending ? '전송 중…' : '▶ 재전송' }}
         </button>
       </div>
-      <!-- ===== ■.■.■. progress bar ======================================== -->
-      <div style="height:3px;background:#e5e7eb;">
-        <div style="height:100%;transition:width .2s linear;"
-          :style="(t.type==='error'?'background:#ef4444;':'background:#22c55e;')+'width:'+t.progress+'%;'"></div>
-      </div>
-      <!-- ===== ■.■.■. URL 행 =============================================== -->
-      <div style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:#fff;border-bottom:1px solid #f0f0f0;">
-        <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;flex-shrink:0;"
-          :style="t.method==='GET'?'background:#dcfce7;color:#166534;':t.method==='POST'?'background:#dbeafe;color:#1e40af;':t.method==='PUT'?'background:#fef3c7;color:#92400e;':t.method==='DELETE'?'background:#fee2e2;color:#991b1b;':'background:#f3e8ff;color:#6b21a8;'">
-          {{ t.method }}
-        </span>
-        <span style="font-family:monospace;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px;" :title="t.url">
-          {{ t.url }}
-        </span>
-        <span style="font-weight:700;flex-shrink:0;font-size:12px;"
-          :style="t.status<300?'color:#166534;':t.status<400?'color:#92400e;':'color:#991b1b;'">
-          {{ t.status }}
-        </span>
-      </div>
-      <!-- ===== ■.■.■. JSON 접힌/펼친 ========================================== -->
-      <div style="background:#f9f9f9;">
-        <div @click="t.jsonOpen=!t.jsonOpen"
-          style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;color:#888;font-size:10px;">
-          <span>응답 JSON</span>
-          <span style="font-size:9px;">{{ t.jsonOpen ? '▲ 접기' : '▼ 펼치기' }}</span>
+      <!-- ===== ■.■.■.■.■.■. 메서드 =========================================== -->
+      <div style="margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">
+          메서드
         </div>
-        <div v-if="t.jsonOpen" style="max-height:160px;overflow:auto;padding:0 10px 8px;">
-          <pre style="margin:0;font-size:10px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.5;">{{ t.resJson || '(없음)' }}</pre>
+        <select v-model="editReq.method"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;font-weight:700;color:#333;outline:none;cursor:pointer;">
+          <option v-for="m in codes.http_method_opts" :key="m">
+            {{ m }}
+          </option>
+        </select>
+      </div>
+      <!-- ===== ■.■.■.■.■.■. HOST ========================================== -->
+      <div style="margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">
+          HOST
+        </div>
+        <input v-model="editReq.host"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#555;outline:none;" />
+      </div>
+      <!-- ===== ■.■.■.■.■.■. URL =========================================== -->
+      <div style="margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">
+          URL
+        </div>
+        <input v-model="editReq.url"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#333;outline:none;" />
+      </div>
+      <!-- ===== ■.■.■.■.■.■. TOKEN ========================================= -->
+      <div style="margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">
+          🔑 Bearer Token
+        </div>
+        <input v-model="editReq.token" placeholder="(없음)"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#555;outline:none;" />
+      </div>
+      <!-- ===== ■.■.■.■.■.■. HEADERS ======================================= -->
+      <div style="margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
+          <span>
+            Headers
+            <span style="font-size:9px;font-weight:400;color:#aaa;">
+              ({{ editReq.headers.length }}개)
+            </span>
+          </span>
+          <button @click="editReq.headers.push({k:'',v:''})"
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
+            + 추가
+          </button>
+        </div>
+        <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
+          <div v-if="!editReq.headers.length" style="padding:6px 10px;font-size:11px;color:#bbb;">
+            (없음)
+          </div>
+          <div v-for="(h,i) in editReq.headers" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
+            <input v-model="h.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
+            <input v-model="h.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
+            <button @click="editReq.headers.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- ===== ■.■.■.■.■.■. PARAMS ======================================== -->
+      <div style="margin-bottom:7px;">
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;">
+          <span>
+            Parameters
+            <span style="font-size:9px;font-weight:400;color:#aaa;">
+              ({{ editReq.params.length }}개)
+            </span>
+          </span>
+          <button @click="editReq.params.push({k:'',v:''})"
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
+            + 추가
+          </button>
+        </div>
+        <div style="border:1px solid #c8d6f0;border-radius:4px;overflow:hidden;background:#fff;">
+          <div v-if="!editReq.params.length" style="padding:6px 10px;font-size:11px;color:#bbb;">
+            (없음)
+          </div>
+          <div v-for="(p,i) in editReq.params" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
+            <input v-model="p.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
+            <input v-model="p.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
+            <button @click="editReq.params.splice(i,1)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- ===== ■.■.■.■.■.■. BODY ========================================== -->
+      <div>
+        <div style="font-size:10px;font-weight:700;color:#888;margin-bottom:3px;">
+          Body
+        </div>
+        <textarea v-model="editReq.body" placeholder="(없음)"
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#333;outline:none;resize:vertical;min-height:60px;line-height:1.5;"></textarea>
+        </div>
+      </div>
+      <!-- ===== ■.■.■.■.■. 우: 응답 =========================================== -->
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#fff;overflow:hidden;">
+        <!-- ===== ■.■.■.■.■.■. 응답 헤더 + progress bar (고정) ===================== -->
+        <div style="flex-shrink:0;padding:12px 14px 0;border-bottom:1px solid #f0f0f0;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <span style="font-size:10px;font-weight:800;color:#e8587a;text-transform:uppercase;letter-spacing:.05em;">
+              응답
+            </span>
+            <span style="flex:1;">
+            </span>
+            <template v-if="uiState.histResSending">
+              <span style="font-size:10px;color:#1a73e8;font-weight:600;">
+                전송 중… {{ histResProgress }}%
+              </span>
+            </template>
+            <template v-else-if="histResStatus">
+              <span style="font-size:12px;font-weight:800;" :style="histResStatus<300?'color:#166534;':histResStatus<400?'color:#92400e;':'color:#991b1b;'">
+                {{ histResStatus }}
+              </span>
+              <span style="font-size:10px;color:#888;">
+                {{ histResTime }}ms
+              </span>
+              <span style="font-size:10px;color:#aaa;">
+                {{ histResTs }}
+              </span>
+              <span style="font-size:9px;color:#1a73e8;background:#e8f0fe;padding:1px 5px;border-radius:3px;font-weight:600;">
+                재전송
+              </span>
+            </template>
+            <template v-else-if="histModal.status">
+              <span style="font-size:12px;font-weight:800;" :style="histModal.status<300?'color:#166534;':histModal.status<400?'color:#92400e;':'color:#991b1b;'">
+                {{ histModal.status }}
+              </span>
+              <span style="font-size:10px;color:#888;">
+                {{ histModal.time }}ms
+              </span>
+              <span style="font-size:10px;color:#aaa;">
+                {{ histModal.ts }}
+              </span>
+            </template>
+          </div>
+          <!-- ===== ■.■.■.■.■.■.■. progress bar ================================ -->
+          <div style="height:6px;background:#f0f0f0;border-radius:0;margin:0 -14px;overflow:hidden;">
+            <div style="height:100%;transition:width .08s linear;"
+                  :style="uiState.histResSending ? 'background:#e8587a;width:'+histResProgress+'%;' : (histResStatus ? 'background:#22c55e;width:100%;' : 'width:0;')"
+                  >
+            </div>
+          </div>
+        </div>
+        <!-- ===== ■.■.■.■.■.■. 응답 본문 스크롤 영역 ================================== -->
+        <div style="flex:1;overflow-y:auto;padding:12px 14px;">
+          <pre v-if="!uiState.histResSending && histResJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">
+          {{ histResJson }}
+        </pre>
+        <pre v-else-if="!uiState.histResSending && !histResJson && histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">
+        {{ histModal.resJson }}
+      </pre>
+      <div v-else-if="!uiState.histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">
+        응답 본문 없음
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</template>
+</div>
+<!-- ===== /Main Panel ================================================ -->
+<!-- ===== □.□. History 상세 모달 ========================================= -->
+<!-- ===== □. ━━━ 3. Main Panel (우측) ━━━ ============================== -->
+<!-- ===== ■. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->
+<div style="position:fixed;right:16px;bottom:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;">
+  <div v-for="t in toasts" :key="t.id"
+      style="pointer-events:all;width:380px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.22);overflow:hidden;font-size:11px;"
+      :style="t.type==='error'?'border:1px solid #fca5a5;':'border:1px solid #86efac;'">
+    <!-- ===== ■.■.■. 헤더바 ================================================= -->
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;"
+        :style="t.type==='error'?'background:#fee2e2;':'background:#dcfce7;'">
+      <!-- ===== ■.■.■.■. 번호 배지 ============================================= -->
+      <span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;flex-shrink:0;"
+          :style="t.type==='error'?'background:#ef4444;color:#fff;':'background:#22c55e;color:#fff;'">
+        {{ t.seq }}
+      </span>
+      <span style="font-size:13px;flex-shrink:0;">
+        {{ t.type==='error' ? '🔴' : '🟢' }}
+      </span>
+      <span style="font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-size:11px;"
+          :title="t.tabLabel">
+        {{ t.tabLabel }}
+      </span>
+      <button @click="closeToast(t.id)"
+          style="border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">
+        ✕
+      </button>
+    </div>
+    <!-- ===== ■.■.■. progress bar ======================================== -->
+    <div style="height:3px;background:#e5e7eb;">
+      <div style="height:100%;transition:width .2s linear;"
+          :style="(t.type==='error'?'background:#ef4444;':'background:#22c55e;')+'width:'+t.progress+'%;'">
+      </div>
+    </div>
+    <!-- ===== ■.■.■. URL 행 =============================================== -->
+    <div style="display:flex;align-items:center;gap:5px;padding:5px 10px;background:#fff;border-bottom:1px solid #f0f0f0;">
+      <span style="font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;flex-shrink:0;"
+          :style="t.method==='GET'?'background:#dcfce7;color:#166534;':t.method==='POST'?'background:#dbeafe;color:#1e40af;':t.method==='PUT'?'background:#fef3c7;color:#92400e;':t.method==='DELETE'?'background:#fee2e2;color:#991b1b;':'background:#f3e8ff;color:#6b21a8;'">
+        {{ t.method }}
+      </span>
+      <span style="font-family:monospace;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px;" :title="t.url">
+        {{ t.url }}
+      </span>
+      <span style="font-weight:700;flex-shrink:0;font-size:12px;"
+          :style="t.status<300?'color:#166534;':t.status<400?'color:#92400e;':'color:#991b1b;'">
+        {{ t.status }}
+      </span>
+    </div>
+    <!-- ===== ■.■.■. JSON 접힌/펼친 ========================================== -->
+    <div style="background:#f9f9f9;">
+      <div @click="t.jsonOpen=!t.jsonOpen"
+          style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;color:#888;font-size:10px;">
+        <span>
+          응답 JSON
+        </span>
+        <span style="font-size:9px;">
+          {{ t.jsonOpen ? '▲ 접기' : '▼ 펼치기' }}
+        </span>
+      </div>
+      <div v-if="t.jsonOpen" style="max-height:160px;overflow:auto;padding:0 10px 8px;">
+        <pre style="margin:0;font-size:10px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.5;">{{ t.resJson || '(없음)' }}</pre>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-  <!-- ===== □. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->`,
+<!-- ===== □. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->
+`,
 };

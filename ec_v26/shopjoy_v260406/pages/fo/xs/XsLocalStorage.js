@@ -141,6 +141,46 @@ window.XsLocalStorage = {
       uiState.isResizing = false;
     };
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ XsLocalStorage.js : handleBtnAction -> ', cmd, param);
+      // 목록 새로고침
+      if (cmd === 'lsItems-reload') {
+        return loadStorageData();
+      // 전체 삭제
+      } else if (cmd === 'lsItems-clear-all') {
+        return clearAllStorage();
+      // 편집 취소
+      } else if (cmd === 'lsItems-edit-cancel') {
+        return cancelEdit();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ XsLocalStorage.js : handleSelectAction -> ', cmd, param);
+      // 값 복사
+      if (cmd === 'lsItems-row-copy') {
+        return copyValue(param);
+      // 편집 시작 ({ key, value })
+      } else if (cmd === 'lsItems-row-edit') {
+        return startEdit(param.key, param.value);
+      // 편집 저장
+      } else if (cmd === 'lsItems-row-save') {
+        return saveEdit(param);
+      // 행 삭제
+      } else if (cmd === 'lsItems-row-delete') {
+        return handleDelete(param);
+      // 리사이즈 시작
+      } else if (cmd === 'lsItems-resize') {
+        return startResize(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
@@ -156,25 +196,34 @@ window.XsLocalStorage = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      storageData, cfFilteredData, uiStateGlobal, uiState,
-      loadStorageData, copyValue, startEdit, saveEdit, cancelEdit, handleDelete, clearAllStorage, parseValue, startResize, codes
+      uiStateGlobal, uiState, codes,                                         // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                   // dispatch
+      // ===== lsItems 영역 =====================================================
+      storageData, cfFilteredData,
+      // ===== shared (헬퍼) ====================================================
+      parseValue,
     };
   },
   template: `
 <div style="padding: 20px;">
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="margin-bottom: 24px;">
-    <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">localStorage 정보 관리</h1>
-    <p style="margin: 0; font-size: 13px; color: #666;">브라우저 로컬 저장소 데이터 조회 및 편집</p>
+    <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">
+      localStorage 정보 관리
+    </h1>
+    <p style="margin: 0; font-size: 13px; color: #666;">
+      브라우저 로컬 저장소 데이터 조회 및 편집
+    </p>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 검색 및 액션 바 =============================================== -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px; align-items: flex-end;">
       <div style="flex: 1;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: #333;">키 검색</label>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: #333;">
+          키 검색
+        </label>
         <input
           v-model="uiStateGlobal.filterKey"
           type="text"
@@ -182,10 +231,10 @@ window.XsLocalStorage = {
           style="width: 100%; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 13px; background: white; color: #333; transition: all 0.2s;">
       </div>
       <div style="display: flex; gap: 8px;">
-        <button @click="loadStorageData" style="padding: 10px 16px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
+        <button @click="handleBtnAction('lsItems-reload')" style="padding: 10px 16px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
           🔄 새로고침
         </button>
-        <button @click="clearAllStorage" style="padding: 10px 16px; font-size: 12px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
+        <button @click="handleBtnAction('lsItems-clear-all')" style="padding: 10px 16px; font-size: 12px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
           🗑️ 전체 삭제
         </button>
       </div>
@@ -199,13 +248,16 @@ window.XsLocalStorage = {
       <table style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr style="background: #fafafa; border-bottom: 1px solid #e5e7eb;">
-            <th style="width: 25%; text-align: left; padding: 12px 16px; font-weight: 600; font-size: 13px; color: #666;">Key</th>
+            <th style="width: 25%; text-align: left; padding: 12px 16px; font-weight: 600; font-size: 13px; color: #666;">
+              Key
+            </th>
             <th :style="{ width: uiStateGlobal.valueColWidth + '%', textAlign: 'left', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666', position: 'relative' }">
               Value
               <div
-                @mousedown="startResize"
+                @mousedown="handleSelectAction('lsItems-resize', $event)"
                 style="position: absolute; right: -5px; top: 0; width: 10px; height: 100%; cursor: col-resize; background: transparent; display: flex; align-items: center;">
-                <div style="width: 1px; height: 80%; background: #ff6b9d; opacity: 0; transition: opacity 0.2s;"></div>
+                <div style="width: 1px; height: 80%; background: #ff6b9d; opacity: 0; transition: opacity 0.2s;">
+                </div>
               </div>
             </th>
             <th :style="{ width: (100 - 25 - uiStateGlobal.valueColWidth) + '%', textAlign: 'center', padding: '12px 16px', fontWeight: '600', fontSize: '13px', color: '#666' }">
@@ -225,49 +277,53 @@ window.XsLocalStorage = {
                   @input="uiStateGlobal.editingValue = $event.target.value"
                   style="width: 100%; height: 80px; padding: 10px; border: 1.5px solid #ff6b9d; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; resize: vertical; color: #333;">
                 </textarea>
-                <div style="display: flex; gap: 8px; margin-top: 8px;">
-                  <button @click="saveEdit(item.key)" style="flex: 1; padding: 6px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
-                    저장
-                  </button>
-                  <button @click="cancelEdit" style="flex: 1; padding: 6px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
-                    취소
-                  </button>
-                </div>
-              </template>
-              <template v-else>
-                <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; border: 1px solid #e5e7eb; color: #333;">
-                  {{ parseValue(item.value) }}
-                </div>
-              </template>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
-            <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
-              <button @click="copyValue(item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
-                복사
-              </button>
-              <button v-if="uiStateGlobal.editingKey !== item.key" @click="startEdit(item.key, item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
-                수정
-              </button>
-              <button @click="handleDelete(item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
-                삭제
-              </button>
-            </td>
-          </tr>
-          <tr v-if="cfFilteredData.length === 0">
-            <td colspan="3" style="text-align: center; padding: 40px; color: #999; font-size: 13px;">데이터가 없습니다.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <!-- ===== ■.■. 푸터: 항목 수 ============================================== -->
-    <div style="padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fafafa; font-size: 12px; color: #666;">
-      총
-      <strong>{{ cfFilteredData.length }}</strong>
-      개 항목
+                  <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button @click="handleSelectAction('lsItems-row-save', item.key)" style="flex: 1; padding: 6px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
+                      저장
+                    </button>
+                    <button @click="handleBtnAction('lsItems-edit-cancel')" style="flex: 1; padding: 6px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+                      취소
+                    </button>
+                  </div>
+                </template>
+                <template v-else>
+                  <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 11px; white-space: pre-wrap; word-break: break-all; border: 1px solid #e5e7eb; color: #333;">
+                    {{ parseValue(item.value) }}
+                  </div>
+                </template>
+              </td>
+              <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
+              <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
+                <button @click="handleSelectAction('lsItems-row-copy', item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
+                  복사
+                </button>
+                <button v-if="uiStateGlobal.editingKey !== item.key" @click="handleSelectAction('lsItems-row-edit', { key: item.key, value: item.value })" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
+                  수정
+                </button>
+                <button @click="handleSelectAction('lsItems-row-delete', item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+                  삭제
+                </button>
+              </td>
+            </tr>
+            <tr v-if="cfFilteredData.length === 0">
+              <td colspan="3" style="text-align: center; padding: 40px; color: #999; font-size: 13px;">
+                데이터가 없습니다.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- ===== ■.■. 푸터: 항목 수 ============================================== -->
+      <div style="padding: 12px 16px; border-top: 1px solid #e5e7eb; background: #fafafa; font-size: 12px; color: #666;">
+        총
+        <strong>
+          {{ cfFilteredData.length }}
+        </strong>
+        개 항목
+      </div>
     </div>
   </div>
-</div>
-
-    <!-- ===== □.□. 푸터: 항목 수 ============================================== -->
-  <!-- ===== □. 테이블 ===================================================== -->`
+  <!-- ===== □.□. 푸터: 항목 수 ============================================== -->
+  <!-- ===== □. 테이블 ===================================================== -->
+`
 };
