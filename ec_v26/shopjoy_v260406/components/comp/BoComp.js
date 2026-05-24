@@ -867,3 +867,90 @@ window.BoPathPickField = {
 </component>
 `,
 };
+
+/* -- BoPropTreeNode — 속성관리(SyPropMng) 트리 노드 재귀 컴포넌트 -- */
+window.BoPropTreeNode = {
+  name: 'BoPropTreeNode',
+  props: {
+    node:     { type: Object, default: () => ({}) }, // 전달값
+    expanded: { type: Boolean, default: false }, // 전달값
+    selected: { type: Boolean, default: false }, // 전달값
+    onToggle: { type: Function, default: () => {} }, // 콜백 함수
+    onSelect: { type: Function, default: () => {} }, // 콜백 함수
+    depth:    { type: Number, default: 0 }, // 전달값
+  },
+  template: /* html */`
+<div>
+  <!-- ===== ■. 영역 ====================================================== -->
+  <div :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',
+    paddingLeft: (8 + depth*14) + 'px',
+    background: selected===node.path ? '#fff0f4' : 'transparent',
+    color:      selected===node.path ? '#e8587a' : '#444',
+    fontWeight: selected===node.path ? 700 : 400}"
+    @mouseover="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : '#f8f9fb'"
+    @mouseout="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : 'transparent'">
+    <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;"
+      @click.stop="onToggle(node.path)">
+      {{ expanded.has(node.path) ? '▼' : '▶' }}
+    </span>
+    <span v-else style="width:14px;"></span>
+    <span style="font-size:13px;flex:1;" @click="onSelect(node.path)">{{ node.name || '전체' }}</span>
+    <span v-if="node._badge"
+      :style="{fontSize:'9px',padding:'1px 5px',borderRadius:'7px',color:'#fff',fontWeight:700,background:node._badge[1]}">
+      {{ node._badge[0] }}
+    </span>
+    <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
+  </div>
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
+  <div v-if="expanded.has(node.path) && node.children.length>0">
+    <bo-path-tree-node v-for="ch in node.children" :key="ch.path"
+      :node="ch" :expanded="expanded" :selected="selected"
+      :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
+  </div>
+</div>
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
+};
+
+/* -- BoDeptTreeNode — 부서관리(SyDeptMng) 트리 노드 재귀 컴포넌트 -- */
+window.BoDeptTreeNode = {
+  name: 'BoDeptTreeNode',
+  props: {
+    node:     { type: Object, default: () => ({}) }, // 전달값
+    expanded: { type: Boolean, default: false }, // 전달값
+    selected: { type: Boolean, default: false }, // 전달값
+    onToggle: { type: Function, default: () => {} }, // 콜백 함수
+    onSelect: { type: Function, default: () => {} }, // 콜백 함수
+    depth:    { type: Number, default: 0 }, // 전달값
+  },
+  components: { 'bo-dept-tree-node': null },
+  created() { this.$options.components['bo-dept-tree-node'] = window.BoDeptTreeNode; },
+  template: `
+<div>
+  <!-- ===== ■. 영역 ====================================================== -->
+  <div :style="{ paddingLeft: (depth * 14) + 'px', display:'flex', alignItems:'center',
+    cursor:'pointer', padding:'4px 6px 4px ' + (depth*14+6) + 'px',
+    borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
+    fontWeight: selected === node.deptId ? '600' : 'normal',
+    color: selected === node.deptId ? '#e8587a' : '#333' }"
+    @click.stop="onSelect(node.deptId)">
+    <span v-if="node.children && node.children.length"
+      @click.stop="onToggle(node.deptId)"
+      style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
+      {{ expanded.has(node.deptId) ? '▼' : '▶' }}
+    </span>
+    <span v-else style="margin-right:4px;width:14px;flex-shrink:0;"></span>
+    <span style="font-size:13px;">{{ node.deptNm }}</span>
+  </div>
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
+  <template v-if="node.children && node.children.length && expanded.has(node.deptId)">
+    <bo-dept-tree-node v-for="child in node.children" :key="child.deptId"
+      :node="child" :expanded="expanded" :selected="selected"
+      :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" />
+  </template>
+</div>
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`
+};

@@ -815,3 +815,163 @@ const fnB = () => { ... };
   - 모두 `node --check` 통과 + 토큰 동등성 검증 통과
   - `boApp.js` 예외 적용 (자동 포매팅 제외)
 
+---
+
+## 13. 조건문/반복문 블록 `{ }` 강제 ⭐ (2026-05-24)
+
+**모든 조건문/반복문은 본문이 한 줄이라도 블록 `{ }` 로 감싼다.**
+
+### 예시
+
+```js
+// ✅ 권장 — 한 줄 본문도 블록
+if (cond) { doX(); }
+if (cond) { return value; }
+for (const x of list) { use(x); }
+while (cond) { tick(); }
+if (cond) { doX(); } else { doY(); }
+
+// ❌ 비권장 — 블록 없는 단일 statement
+if (cond) doX();
+if (cond) return value;
+for (const x of list) use(x);
+```
+
+### 이유
+
+- **버그 예방** — 본문이 한 줄일 때 누군가 두 번째 statement 를 추가하면 들여쓰기는 그대로지만 의미는 바뀌는 dangling-else 류 버그.
+- **diff 가독성** — 본문이 늘어날 때 블록 추가 노이즈가 없음.
+- **자동 변환 도구 안전** — regex 기반 자동 변환이 한 줄 if 의 본문을 잘못 매치하는 사고 방지.
+- **린터/포매터 일관성** — eslint `curly: 'all'`, prettier 등 표준 도구의 기본값.
+
+### 자동화
+
+- `c:/tmp/force_block_statements.js` ⭐ — `if/else if/for/while` 단일 라인 본문에 `{ }` 자동 적용. paren balancing + 문자열 리터럴 회피 + 한 줄 if-else / 멀티 statement 라인 안전 skip.
+- 2026-05-24 일괄 적용: BO+FO+공통컴포넌트 197개 파일 (+약 2861 blocks). `node --check` 184/184 통과.
+
+### 예외 (수작업으로 유지)
+
+- **한 줄 if-else** 동일 라인: `if (cond) a; else b;` — 자동 변환 위험으로 skip. 의도적으로 두는 케이스만 허용. 가능하면 두 줄로 분리 후 블록화 권장.
+- template 백틱 안의 HTML/Vue 표현식은 변환 대상 X.
+
+---
+
+## 14. cmd dispatch 패턴 (`baseBtnAction` / `baseSelectAction`) ⭐ (2026-05-24 PoC)
+
+화면 안의 다수 버튼/행 액션을 **단일 dispatch 함수로 라우팅**하는 선택 패턴.
+
+### 설계
+
+```js
+/**
+ * baseBtnAction — 버튼 액션 dispatch
+ * cmd 네이밍: '영역명-기능명' (소문자 + kebab-case, 영역명은 부모-자식 hierarchy 반영)
+ *   영역: search / grid / config / parent / ...
+ *   기능: list / reset / save / add / delete-checked / cancel-checked / excel / reload
+ * @typedef {'search-list'|'search-reset'|'grid-save'|'grid-add'|'grid-delete-checked'|...} BtnCmd
+ * @param {BtnCmd} cmd
+ * @param {*} [param] — 액션별 추가 파라미터
+ */
+const baseBtnAction = (cmd, param = {}) => {
+  console.log(' :: SyRoleMng.js : baseBtnAction : cmd, param -> ', cmd, param);
+  if (cmd === 'search-list')         { return onSearch(); }
+  if (cmd === 'search-reset')        { return onReset(); }
+  if (cmd === 'grid-save')           { return handleSave(); }
+  if (cmd === 'grid-add')            { return addRow(); }
+  if (cmd === 'grid-delete-checked') { return deleteRows(); }
+  if (cmd === 'grid-cancel-checked') { return cancelChecked(); }
+  if (cmd === 'grid-excel')          { return exportExcel(); }
+  if (cmd === 'grid-reload')         { return handleSearchList('RELOAD'); }
+  if (cmd === 'config-save')         { return handleSaveRoleConfig(); }
+  console.warn('[baseBtnAction] unknown cmd:', cmd);
+};
+
+/**
+ * baseSelectAction — 그리드 행/노드 선택 액션 dispatch
+ * cmd 네이밍: '영역명-기능명' (영역명은 부모-자식 hierarchy 반영)
+ *   영역: grid-row / parent / ...
+ * @typedef {'grid-row-edit'|'grid-row-delete'|'grid-row-cancel'|'grid-row-cell-change'|'grid-row-check-all'|'grid-row-open-setting'|'parent-open'} SelectCmd
+ */
+const baseSelectAction = (cmd, param = {}) => {
+  console.log(' :: SyRoleMng.js : baseSelectAction : cmd, param -> ', cmd, param);
+  if (cmd === 'grid-row-edit')        { return handleLoadRoleDetail(param); }
+  if (cmd === 'grid-row-delete')      { return deleteRow(param); }
+  ...
+};
+```
+
+### cmd 네이밍 규칙
+
+- 형식: **`영역명-기능명`** (소문자 + kebab-case)
+- 영역명은 화면 구조의 hierarchy 를 반영. 예:
+  - `search` — 검색바
+  - `grid` — 메인 그리드 전체 (저장/삭제/엑셀)
+  - `grid-row` — 그리드 행 단위 액션 (수정/삭제/취소)
+  - `config` — 상세 설정 패널
+  - `parent` — 상위 선택 모달
+- 기능명: `list` (조회), `reset` (초기화), `save`, `add`, `delete`, `cancel`, `edit`, `excel`, `reload`, `open`, `close`, `cell-change` 등
+
+### 작성 규칙
+
+1. **첫 줄에 console.log**: `console.log(' :: 파일명 : 함수명 : cmd, param -> ', cmd, param);`
+2. **param 기본값**: `(cmd, param = {}) => ...` — 인자 없이 호출도 안전
+3. **switch 사용 금지** — `if (cmd === '...') { return ...; }` 형식 (블록 강제 §13 따름)
+4. **각 케이스 한 줄**: 본문이 단순 함수 호출이면 한 줄. 복잡하면 별도 함수로 분리 후 호출만.
+5. **알 수 없는 cmd**: `console.warn` 으로 표시 (silent fail 방지)
+6. **JSDoc `@typedef`** 로 cmd union type 명시 → TS 전환 시 그대로 type alias 됨, VS Code checkJs 에서도 오타 검출
+7. **return 객체에 노출**: `return { baseBtnAction, baseSelectAction, ... }`
+8. **기존 핸들러는 유지**: dispatch 도입 후에도 onSearch/handleSave 등 기존 함수는 그대로 사용 가능 (점진적 마이그레이션)
+
+### 장단점
+
+| 항목 | dispatch 도입 시 |
+|---|---|
+| template 일관성 | ⬆ (모든 버튼이 `@click="baseBtnAction('xx')"` 한 형태) |
+| 공통 처리 (권한/로깅/감사) | ⬆ dispatch 한 곳에서 일괄 |
+| 디버깅 (Cmd+Click 정의 이동) | ⬇ cmd 문자열 우회로 grep 필요 |
+| 자동완성 (IDE) | △ JSDoc `@typedef BtnCmd` 입히면 ⬆ |
+| TS 전환 | ⬆ literal union type 으로 type safety 강화 |
+| 학습 비용 | ⬇ 신규 진입 시 cmd 표 익혀야 함 |
+
+### 적용 범위
+
+- **권장**: 화면 표준 5종 + 그리드 행 액션까지 (옵션 B)
+- **PoC**: [SyRoleMng.js:608-643](../../../pages/bo/sy/SyRoleMng.js#L608) 1개 파일 적용 완료
+- **확장 전 검토 필요**: 적용은 신규 파일 또는 손볼 때 점진적으로. 184 파일 전면 재작업 비추천.
+
+---
+
+## 15. 보조 컴포넌트는 components/comp/ 로 분리 ⭐ (2026-05-24)
+
+**페이지 컴포넌트(`Mng/Dtl/Hist` 등)와 별개로 정의되는 보조 컴포넌트**(트리 노드, 카드, 위젯 등)는 화면 파일 안에 인라인 정의하지 말고 `components/comp/BoComp.js` 또는 `FoComp.js` 로 분리한다.
+
+### 기준
+
+- 화면 컴포넌트 = `window.{화면명}Mng/Dtl/Hist` 한 개. 파일명과 일치.
+- 그 외 `window.XxxNode`, `window.XxxCard`, `window.XxxItem` 같은 정의는 **공통 컴포넌트** 로 분류.
+- 한 파일에서만 쓰는 보조 컴포넌트라도 BoComp.js 로 보낸다 (재사용성 X 이라도 위치 일관성 유지).
+
+### 예외
+
+- **FO 페이지 컴포넌트 명명 차이**: `pages/fo/Event.js` 의 `window.EventPage` 처럼 파일명(`Event`)과 export 명(`EventPage`)이 다른 경우는 그대로 둠 (페이지 자체 컴포넌트).
+- **Sample 페이지** (`pages/fo/xs/Sample01.js` 의 `window.XsSample01`) 도 페이지 자체 컴포넌트 → 그대로 둠.
+
+### 등록
+
+- BoComp.js / FoComp.js 의 컴포넌트는 `base/boApp.js` 또는 `base/foApp.js` 에서 `app.component('Name', window.Name)` 로 등록한다.
+- 보조 컴포넌트 이동 후에도 등록 코드는 그대로 유지 (등록은 boApp.js 가 담당).
+
+### 명명 규칙 — `Bo` 프리픽스 통일 ⭐
+
+BoComp.js 로 이동한 컴포넌트는 **`Bo` 프리픽스 + PascalCase** 로 통일.
+- `PropTreeNode` → `BoPropTreeNode` (태그: `<bo-prop-tree-node>`)
+- `DeptTreeNode` → `BoDeptTreeNode` (태그: `<bo-dept-tree-node>`)
+- 재귀 컴포넌트 (자기 자식 참조)는 `components: { 'bo-xxx-tree-node': null }` + `created()` 훅에서 자기 자신 등록.
+
+### 2026-05-24 적용 이력
+
+- `BoPropTreeNode` (구 PropTreeNode, SyPropMng → BoComp.js L872)
+- `BoDeptTreeNode` (구 DeptTreeNode, SyDeptMng → BoComp.js L917)
+- 영향 파일 7개 일괄 갱신: BoComp.js (정의 + 재귀 태그), boApp.js (등록 2건), BoModals.js (사용), SyDeptMng.js (사용 + 안내 주석), SyUserMng.js (사용), SyPropMng.js (안내 주석)
+- node --check 6/6 PASS.
+

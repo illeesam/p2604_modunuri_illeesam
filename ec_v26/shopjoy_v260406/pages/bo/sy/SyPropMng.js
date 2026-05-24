@@ -254,47 +254,4 @@ window.SyPropMng = {
   <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->`,
 };
 
-/* -- 트리 노드 재귀 컴포넌트 -- */
-window.PropTreeNode = {
-  name: 'PropTreeNode',
-  props: {
-    node:     { type: Object, default: () => ({}) }, // 전달값
-    expanded: { type: Boolean, default: false }, // 전달값
-    selected: { type: Boolean, default: false }, // 전달값
-    onToggle: { type: Function, default: () => {} }, // 콜백 함수
-    onSelect: { type: Function, default: () => {} }, // 콜백 함수
-    depth:    { type: Number, default: 0 }, // 전달값
-  },
-  template: /* html */`
-<div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',
-    paddingLeft: (8 + depth*14) + 'px',
-    background: selected===node.path ? '#fff0f4' : 'transparent',
-    color:      selected===node.path ? '#e8587a' : '#444',
-    fontWeight: selected===node.path ? 700 : 400}"
-    @mouseover="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : '#f8f9fb'"
-    @mouseout="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : 'transparent'">
-    <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;"
-      @click.stop="onToggle(node.path)">
-      {{ expanded.has(node.path) ? '▼' : '▶' }}
-    </span>
-    <span v-else style="width:14px;"></span>
-    <span style="font-size:13px;flex:1;" @click="onSelect(node.path)">{{ node.name || '전체' }}</span>
-    <span v-if="node._badge"
-      :style="{fontSize:'9px',padding:'1px 5px',borderRadius:'7px',color:'#fff',fontWeight:700,background:node._badge[1]}">
-      {{ node._badge[0] }}
-    </span>
-    <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="expanded.has(node.path) && node.children.length>0">
-    <bo-path-tree-node v-for="ch in node.children" :key="ch.path"
-      :node="ch" :expanded="expanded" :selected="selected"
-      :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
-  </div>
-</div>
-
-  <!-- ===== □. 조건부 영역 ================================================== -->`,
-};
+/* BoPropTreeNode (구 PropTreeNode) 는 components/comp/BoComp.js 로 이동. 태그: <bo-prop-tree-node> */

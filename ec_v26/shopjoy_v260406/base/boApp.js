@@ -2877,7 +2877,7 @@
     .component('SimpleProdPickModal', window.SimpleProdPickModal)
     .component('OdMemberPickModal', window.OdMemberPickModal)
     .component('PathPickTreeNode', window.PathPickTreeNode)
-    .component('PropTreeNode', window.PropTreeNode)
+    .component('BoPropTreeNode', window.BoPropTreeNode)
     .component('SyAlarmDtl', window.SyAlarmDtl)
     .component('SyBbmMng', window.SyBbmMng)
     .component('SyBbmDtl', window.SyBbmDtl)
@@ -2903,7 +2903,7 @@
     /* ── components/modals/ — 트리 모달 ── */
     .component('CategoryTreeModal', window.CategoryTreeModal)
     .component('DeptTreeModal', window.DeptTreeModal)
-    .component('DeptTreeNode', window.DeptTreeNode)
+    .component('BoDeptTreeNode', window.BoDeptTreeNode)
     .component('MenuTreeModal', window.MenuTreeModal)
     .component('RoleTreeModal', window.RoleTreeModal)
     /* ── components/modals/ — 미리보기/전송 모달 ── */

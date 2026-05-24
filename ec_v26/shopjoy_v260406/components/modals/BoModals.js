@@ -3718,7 +3718,7 @@ window.BizPickModal = {
       <!-- 좌측 표시경로 트리 -->
       <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;padding:8px;">
         <div style="font-size:11px;font-weight:700;color:#666;margin-bottom:6px;padding:0 4px;">📂 표시경로</div>
-        <prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPathId"
+        <bo-prop-tree-node :node="cfTree" :expanded="expanded" :selected="selectedPathId"
           :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
       <!-- 우측 사업자 목록 -->

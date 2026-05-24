@@ -374,7 +374,7 @@ window.SyDeptMng = {
         <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
       </div>
     </div>
     <div>
@@ -403,43 +403,4 @@ window.SyDeptMng = {
   <!-- ===== □. 본문 영역 =================================================== -->`,
 };
 
-window.DeptTreeNode = {
-  name: 'DeptTreeNode',
-  props: {
-    node:     { type: Object, default: () => ({}) }, // 전달값
-    expanded: { type: Boolean, default: false }, // 전달값
-    selected: { type: Boolean, default: false }, // 전달값
-    onToggle: { type: Function, default: () => {} }, // 콜백 함수
-    onSelect: { type: Function, default: () => {} }, // 콜백 함수
-    depth:    { type: Number, default: 0 }, // 전달값
-  },
-  components: { 'dept-tree-node': null },
-  created() { this.$options.components['dept-tree-node'] = window.DeptTreeNode; },
-  template: `
-<div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div :style="{ paddingLeft: (depth * 14) + 'px', display:'flex', alignItems:'center',
-    cursor:'pointer', padding:'4px 6px 4px ' + (depth*14+6) + 'px',
-    borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
-    fontWeight: selected === node.deptId ? '600' : 'normal',
-    color: selected === node.deptId ? '#e8587a' : '#333' }"
-    @click.stop="onSelect(node.deptId)">
-    <span v-if="node.children && node.children.length"
-      @click.stop="onToggle(node.deptId)"
-      style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
-      {{ expanded.has(node.deptId) ? '▼' : '▶' }}
-    </span>
-    <span v-else style="margin-right:4px;width:14px;flex-shrink:0;"></span>
-    <span style="font-size:13px;">{{ node.deptNm }}</span>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="node.children && node.children.length && expanded.has(node.deptId)">
-    <dept-tree-node v-for="child in node.children" :key="child.deptId"
-      :node="child" :expanded="expanded" :selected="selected"
-      :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" />
-  </template>
-</div>
-
-  <!-- ===== □. 조건부 영역 ================================================== -->`
-};
+/* BoDeptTreeNode (구 DeptTreeNode) 는 components/comp/BoComp.js 로 이동. 태그: <bo-dept-tree-node> */
