@@ -166,7 +166,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
         // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
         // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
@@ -195,7 +194,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
       uiState, codes, pager, reconList, searchParam,                                  // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
@@ -207,11 +205,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">ERP 전표대사</div>
+  <div class="page-title">
+    ERP 전표대사
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다.</span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다. • 차이 상태: 일치 / 차이발생 / 오류 • [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다. • 유형 필터: 정산지급 / 수수료 / 조정 / 기타
     </div>
@@ -227,20 +231,36 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">일치</div>
-        <div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div>
+        <div style="font-size:11px;color:#888">
+          일치
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#27ae60">
+          {{ cfSummary.match }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
-        <div style="font-size:11px;color:#888">금액 차이</div>
-        <div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.diff }}건</div>
+        <div style="font-size:11px;color:#888">
+          금액 차이
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#e67e22">
+          {{ cfSummary.diff }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
-        <div style="font-size:11px;color:#888">미반영</div>
-        <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.noReflect }}건</div>
+        <div style="font-size:11px;color:#888">
+          미반영
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#e74c3c">
+          {{ cfSummary.noReflect }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888">차이금액 합계</div>
-        <div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div>
+        <div style="font-size:11px;color:#888">
+          차이금액 합계
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#333">
+          {{ fmtW(cfSummary.diffAmt) }}
+        </div>
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
@@ -248,14 +268,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseGridColumns" :rows="reconList" :pager="pager" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('recons-set-page', n)" @size-change="handleSelectAction('recons-size-change')">
-      <template #head-actions>액션</template>
+      <template #head-actions>
+        액션
+      </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="handleSelectAction('recons-row-fix', r)">조정</button>
+        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="handleSelectAction('recons-row-fix', r)">
+          조정
+        </button>
       </template>
     </bo-grid>
   </div>
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->`,
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. 카드 영역 =================================================== -->
+`,
 };

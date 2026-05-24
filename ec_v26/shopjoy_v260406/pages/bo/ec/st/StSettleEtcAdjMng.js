@@ -227,7 +227,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
         // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
         // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
@@ -277,7 +276,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
       uiState, codes, pager, etcAdjList, searchParam, form, errors,
       baseSearchColumns, baseGridColumns, baseFormColumns,
@@ -289,11 +287,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">정산기타조정</div>
+  <div class="page-title">
+    정산기타조정
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">판촉비·위약금·보증금 등 정산조정 외 기타 항목을 별도 관리합니다.</span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      판촉비·위약금·보증금 등 정산조정 외 기타 항목을 별도 관리합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다. • 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등 • 승인 후 정산마감 집계에 포함됩니다. • 승인 상태: 대기 / 승인 / 반려
     </div>
@@ -308,9 +312,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
-      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
+      <span class="list-count">
+        총 {{ pager.pageTotalCount }}건
+      </span>
       <div style="margin-left:auto">
-        <button class="btn btn-primary" @click="handleBtnAction('etcAdjs-add')">+ 기타조정 추가</button>
+        <button class="btn btn-primary" @click="handleBtnAction('etcAdjs-add')">
+          + 기타조정 추가
+        </button>
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
@@ -319,26 +327,34 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
       @set-page="n => handleSelectAction('etcAdjs-set-page', n)" @size-change="handleSelectAction('etcAdjs-size-change')">
-      <template #head-actions>액션</template>
+      <template #head-actions>
+        액션
+      </template>
       <template #row-actions="{ row: r }">
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('etcAdjs-row-edit', r)">수정</button>
-        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('etcAdjs-row-delete', r)">삭제</button>
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('etcAdjs-row-edit', r)">
+          수정
+        </button>
+        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('etcAdjs-row-delete', r)">
+          삭제
+        </button>
       </template>
     </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 편집 폼 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 상세 패널 =================================================== -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
-    <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}</div>
+    <div style="font-weight:700;margin-bottom:16px">
+      {{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}
+    </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :cols="4"
       @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </div>
 </div>
-
-    <!-- ===== □.□. 폼 영역 ================================================== -->
-  <!-- ===== □. 상세 패널 =================================================== -->`,
+<!-- ===== □.□. 폼 영역 ================================================== -->
+<!-- ===== □. 상세 패널 =================================================== -->
+`,
 };

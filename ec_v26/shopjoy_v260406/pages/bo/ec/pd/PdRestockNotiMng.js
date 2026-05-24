@@ -182,7 +182,9 @@ window.PdRestockNotiMng = {
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">재입고알림관리</div>
+  <div class="page-title">
+    재입고알림관리
+  </div>
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -192,8 +194,12 @@ window.PdRestockNotiMng = {
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">재입고알림 목록</span>
-      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
+      <span class="list-title">
+        재입고알림 목록
+      </span>
+      <span class="list-count">
+        총 {{ pager.pageTotalCount }}건
+      </span>
       <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleBtnAction('restockNotis-send')">
         📣 알림발송 ({{ checkedCount }}건)
       </button>
@@ -204,7 +210,8 @@ window.PdRestockNotiMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
       @set-page="n => handleSelectAction('restockNotis-set-page', n)" @size-change="handleSelectAction('restockNotis-size-change')"
-      @toggle-check="id => handleSelectAction('restockNotis-row-toggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggle-all')"></bo-grid>
+      @toggle-check="id => handleSelectAction('restockNotis-row-toggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggle-all')">
+    </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>

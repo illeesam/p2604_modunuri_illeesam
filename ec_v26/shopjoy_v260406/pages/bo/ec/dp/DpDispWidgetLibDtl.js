@@ -20,7 +20,75 @@ window.DpDispWidgetLibDtl = {
     const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetLibDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 삭제
+      } else if (cmd === 'form-delete') {
+        return handleDelete();
+      // 패널 닫기
+      } else if (cmd === 'form-close') {
+        return emit('close');
+      // 위젯Lib 선택 팝업 열기
+      } else if (cmd === 'libPickModal-open') {
+        return openLibPick();
+      // 위젯Lib 선택 팝업 닫기
+      } else if (cmd === 'libPickModal-close') {
+        uiState.libPickOpen = false;
+        return;
+      // 표시경로 선택 모달 열기 (param: idx)
+      } else if (cmd === 'pathModal-open') {
+        return openPathPick(param);
+      // 표시경로 선택 모달 닫기
+      } else if (cmd === 'pathModal-close') {
+        return closePathPick();
+      // 경로 추가 (form.usedPathIds 에 null 푸시 + 모달 열기)
+      } else if (cmd === 'usedPaths-add') {
+        (form.usedPathIds = form.usedPathIds || []).push(null);
+        return openPathPick(form.usedPathIds.length - 1);
+      // 경로 제거 (param: idx)
+      } else if (cmd === 'usedPaths-remove') {
+        form.usedPathIds.splice(param, 1);
+        return;
+      // 파일목록 - 항목 추가
+      } else if (cmd === 'fileList-add') {
+        return addFileItem();
+      // 파일목록 - 항목 제거 (param: idx)
+      } else if (cmd === 'fileList-remove') {
+        return removeFileItem(param);
+      // JSON 복사
+      } else if (cmd === 'jsonView-copy') {
+        return copyJson();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetLibDtl.js : handleSelectAction -> ', cmd, param);
+      // 미리보기 디바이스 모드 변경
+      if (cmd === 'preview-mode') {
+        uiState.previewMode = param;
+        return;
+      // 스플리터 드래그
+      } else if (cmd === 'preview-split') {
+        return onSplitDrag(param);
+      // 위젯Lib 픽 모달에서 라이브러리 선택
+      } else if (cmd === 'libPickModal-select') {
+        return onLibPicked(param);
+      // 표시경로 모달에서 경로 선택
+      } else if (cmd === 'pathModal-pick') {
+        return onPathPicked(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -36,14 +104,22 @@ window.DpDispWidgetLibDtl = {
     /* -- 표시경로 선택 모달 (sy_path, 다중) -- */
     const pathPickModal = reactive({ show: false });
 
-    /* openPathPick — 경로 선택 열기 */
-    const openPathPick = () => { pathPickModal.show = true; };
+    /* openPathPick — 경로 선택 열기 (target: form 또는 usedPathIds idx) */
+    const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
 
     /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; };
 
-    /* onPathPicked — 이벤트 */
-    const onPathPicked = (pathId) => { form.pathId = pathId; };
+    /* onPathPicked — 이벤트. target 이 숫자면 usedPathIds[idx], 아니면 form.pathId 변경 */
+    const onPathPicked = (pathId) => {
+      const t = pathPickModal.target;
+      if (typeof t === 'number') {
+        if (!form.usedPathIds) { form.usedPathIds = []; }
+        form.usedPathIds[t] = pathId;
+      } else {
+        form.pathId = pathId;
+      }
+    };
 
     /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -572,16 +648,17 @@ window.DpDispWidgetLibDtl = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      uiState, libPickOpen, showComponentTooltip, jsonCopied,
-      openLibPick, onLibPicked,
-      cfDtlMode, cfIsNew, form, errors, codes,
-      cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,
-      cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor, cfIsEvent, cfIsCache, cfIsEmbed,
-      cfDisplayRows, cfFileListItems, addFileItem, removeFileItem, updateFileItem,
-      cfPreviewWidget, cfSampleJson, copyJson, handleSave, handleDelete,
-      previewMode, PREVIEW_MODES, cfPreviewFrameWidth, previewPaneWidth, onSplitDrag,
-      baseLibFormColumns, clickActionFormColumns,
+      pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터
+      baseLibFormColumns, clickActionFormColumns,                                    // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems,                            // computed
+      cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth,                            // computed
+      cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,        // computed (위젯 유형 분기)
+      cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor,                 // computed
+      cfIsEvent, cfIsCache, cfIsEmbed,                                               // computed
+      previewMode, libPickOpen, showComponentTooltip, jsonCopied, previewPaneWidth,  // toRef
+      PREVIEW_MODES,                                                                  // 상수
+      pathLabel, updateFileItem,                                                      // 헬퍼 (template 직접 호출 유지)
     };
   },
   template: /* html */`
@@ -595,19 +672,19 @@ window.DpDispWidgetLibDtl = {
       </span>
     </div>
     <div class="form-actions" v-if="!cfDtlMode" style="margin:0;gap:8px;">
-      <button @click="openLibPick" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
+      <button @click="handleBtnAction('libPickModal-open')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
         📋 전시위젯Lib 내용복사
       </button>
-      <button @click="handleSave"   class="btn btn-primary" style="font-size:13px;">저장</button>
-      <button v-if="!cfIsNew" @click="handleDelete" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
+      <button @click="handleBtnAction('form-save')"   class="btn btn-primary" style="font-size:13px;">저장</button>
+      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
         삭제
       </button>
-      <button @click="$emit('close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
+      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </div>
     <widget-lib-pick-modal v-if="libPickOpen" mode="copy"
       :widget-libs="[] || []"
-      @close="libPickOpen=false"
-      @pick="onLibPicked" />
+      @close="handleBtnAction('libPickModal-close')"
+      @pick="lib => handleSelectAction('libPickModal-select', lib)" />
   </div>
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -632,17 +709,17 @@ window.DpDispWidgetLibDtl = {
           style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
           <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:_id!=null?'#374151':'#9ca3af',fontWeight:_id!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
             <span style="flex:1;">{{ pathLabel(_id) || '경로 선택...' }}</span>
-            <button type="button" @click="openPathPick(pi)" title="표시경로 선택"
+            <button type="button" @click="handleBtnAction('pathModal-open', pi)" title="표시경로 선택"
               :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',padding:'0'}">
               🔍
             </button>
           </div>
-          <button @click="form.usedPathIds.splice(pi,1)"
+          <button @click="handleBtnAction('usedPaths-remove', pi)"
             style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0;">
             ✕
           </button>
         </div>
-        <button @click="(form.usedPathIds = form.usedPathIds || []).push(null); openPathPick(form.usedPathIds.length-1);"
+        <button @click="handleBtnAction('usedPaths-add')"
           style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;cursor:pointer;font-size:12px;">
           + 경로 추가
         </button>
@@ -718,11 +795,11 @@ window.DpDispWidgetLibDtl = {
               class="form-control" placeholder="파일명" style="margin:0;flex:1;" />
             <input :value="item.url" @input="updateFileItem(idx,'url',$event.target.value)"
               class="form-control" placeholder="파일 URL" style="margin:0;flex:2;" />
-            <button @click="removeFileItem(idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;cursor:pointer;font-size:16px;">
+            <button @click="handleBtnAction('fileList-remove', idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;cursor:pointer;font-size:16px;">
               ×
             </button>
           </div>
-          <button @click="addFileItem" class="btn btn-outline" style="font-size:12px;padding:4px 14px;">+ 파일 추가</button>
+          <button @click="handleBtnAction('fileList-add')" class="btn btn-outline" style="font-size:12px;padding:4px 14px;">+ 파일 추가</button>
         </div>
         <div v-else style="font-size:12px;color:#aaa;text-align:center;padding:10px;">위젯 유형을 선택하면 입력 필드가 표시됩니다.</div>
       </div>
@@ -730,7 +807,7 @@ window.DpDispWidgetLibDtl = {
     </div>
     <!-- ===== □.□. 왼쪽: 폼 ================================================= -->
     <!-- ===== ■.■. 스플리터 ================================================== -->
-    <div @mousedown="onSplitDrag"
+    <div @mousedown="e => handleSelectAction('preview-split', e)"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
       title="드래그로 폭 조절">
       <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
@@ -748,7 +825,7 @@ window.DpDispWidgetLibDtl = {
       <!-- ===== ■.■.■. 디바이스 모드 버튼 ========================================== -->
       <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
         <button v-for="m in PREVIEW_MODES" :key="m?.value"
-          @click="previewMode = m.value"
+          @click="handleSelectAction('preview-mode', m.value)"
           :style="{
           flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
           background: previewMode===m.value ? '#fff' : 'transparent',
@@ -776,7 +853,7 @@ window.DpDispWidgetLibDtl = {
       <div style="margin-top:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
           <span style="font-size:12px;font-weight:700;color:#555;">📋 샘플 JSON</span>
-          <button @click="copyJson"
+          <button @click="handleBtnAction('jsonView-copy')"
             style="font-size:10px;padding:2px 8px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;transition:all .15s;"
             :style="jsonCopied ? 'background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;' : ''">
             {{ jsonCopied ? '✓ 복사됨' : '복사' }}
@@ -792,7 +869,7 @@ window.DpDispWidgetLibDtl = {
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget_lib"
     :value="form.pathId"
     title="위젯 표시경로 선택"
-    @select="onPathPicked" @close="closePathPick" />
+    @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
 </div>
 
   <!-- ===== □. 조건부 영역 ================================================== -->`

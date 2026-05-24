@@ -17,12 +17,79 @@ window.PmGiftMng = {
 
     // ===== 상태(reactive) 선언 =============================================
     const gifts = reactive([]);
-        const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, giftList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, giftList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       gift_statuses: [],
       gift_cond_types: [],
       date_range_opts: [],
     });
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmGiftMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        uiState.sortKey = ''; uiState.sortDir = 'asc';
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      // 사은품 신규 등록
+      } else if (cmd === 'gifts-add') {
+        return openNew();
+      // 사은품 엑셀 내보내기
+      } else if (cmd === 'gifts-excel') {
+        return exportExcel();
+      // 탭 모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode = param;
+        return;
+      // 상세 인라인 패널 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDetail();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmGiftMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 정렬
+      if (cmd === 'gifts-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'gifts-set-page') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'gifts-size-change') {
+        return onSizeChange();
+      // 행 클릭 → 상세 편집
+      } else if (cmd === 'gifts-row-edit') {
+        return handleLoadDetail(param);
+      // 행 삭제
+      } else if (cmd === 'gifts-row-delete') {
+        return handleDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     // ===== 공통코드 로딩 ===================================================
     /* 사은품 fnLoadCodes */
@@ -43,7 +110,6 @@ window.PmGiftMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ===== 정렬 처리 =======================================================
-    // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'giftNm asc', desc: 'giftNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* getSortParam — 조회 */
@@ -75,7 +141,6 @@ window.PmGiftMng = {
       uiState.loading = true;
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'giftNm,giftId';
         }
@@ -97,14 +162,10 @@ window.PmGiftMng = {
 
     // ===== 검색 파라미터 + 라이프사이클 ====================================
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
-    };
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');    });
+      handleSearchList('DEFAULT');
+    });
 
     // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
     /* handleDateRangeChange — 기간 변경 */
@@ -112,34 +173,29 @@ window.PmGiftMng = {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-     // 'list' | 'card'
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
-  const searchParam = reactive(_initSearchParam());
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* loadView — 뷰 로드 */
-    const loadView   = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+    const loadView   = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { uiStateDetail.selectedId = null; };
+    const closeDetail = () => { detailPanel.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmGiftMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
+      if (pg === 'pmGiftMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
-    const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
+    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfIsViewMode   = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+    const cfDetailKey    = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
 
     // ===== 페이저 번호 빌더 ================================================
     /* fnBuildPagerNums — 유틸 */
@@ -156,20 +212,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _GIFT_STATUS_FB[s] || 'badge-gray');
 
-    // ===== 검색 / 리셋 / 페이지 변경 =======================================
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchList('DEFAULT');
-    };
-
-    /* onReset — 초기화 */
-    const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
-      uiState.sortKey = ''; uiState.sortDir = 'asc';
-      onSearch();
-    };
-
     /* setPage — 설정 */
     const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
@@ -183,7 +225,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       if (!ok) { return; }
       const idx = (gifts || []).findIndex(x => x.giftId === g.giftId);
       if (idx !== -1) { gifts.splice(idx, 1); }
-      if (uiStateDetail.selectedId === g.giftId) { uiStateDetail.selectedId = null; }
+      if (detailPanel.selectedId === g.giftId) { detailPanel.selectedId = null; }
       try {
         const res = await boApiSvc.pmGift.remove(g.giftId, '사은품관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -204,9 +246,10 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     // ===== 탭 모드 (리스트/카드) ===========================================
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
-        // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+    const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'giftNm', label: '사은품명' },
@@ -219,15 +262,12 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'dateRange', type: 'dateRange', label: '시작일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => onDateRangeChange() },
+        onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
-
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
 
     const baseGridColumns = [
       { key: 'giftNm',       label: '사은품명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'giftTypeCd',   label: '조건유형', badge: (row) => fnTypeBadge(row.giftTypeCd) },
       { key: 'condVal',      label: '조건값',
         fmt: (v, row) => row.giftTypeCd === '금액조건' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
@@ -241,20 +281,28 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), gifts, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
-      get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
+    return {
+      gifts, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
+      tabMode,                                                                       // toRef
+      fnTypeBadge, fnStatusBadge, sortIcon,                                          // 헬퍼
+      inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,               // 콜백 / 전역
+    };
   },
   // ===== 템플릿 ===========================================================
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">사은품관리</div>
+  <div class="page-title">
+    사은품관리
+  </div>
   <!-- ===== ■. 검색영역 ==================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
@@ -263,23 +311,31 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     <!-- ===== ■.■. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
     <div class="toolbar">
       <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+          ●
+        </span>
         사은품목록
-        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+        <span class="list-count">
+          {{ pager.pageTotalCount }}건
+        </span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-          <button @click="tabMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
             :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ☰ 리스트
           </button>
-          <button @click="tabMode='card'" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊞ 카드
           </button>
         </div>
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+        <button class="btn btn-green btn-sm" @click="handleBtnAction('gifts-excel')">
+          📥 엑셀
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('gifts-add')">
+          + 신규
+        </button>
       </div>
     </div>
     <!-- ===== □.□. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
@@ -289,59 +345,87 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       :columns="baseGridColumns" :rows="gifts" :pager="pager" row-key="giftId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(g) => selectedId===g.giftId ? 'background:#fff8f9;' : ''"
-      @sort="onSort" @row-click="g => handleLoadDetail(g.giftId)">
-      <template #head-actions>관리</template>
+      :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''"
+      @sort="key => handleSelectAction('gifts-sort', key)" @row-click="g => handleSelectAction('gifts-row-edit', g.giftId)">
+      <template #head-actions>
+        관리
+      </template>
       <template #row-actions="{ row: g }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(g.giftId)">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(g)">삭제</button>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('gifts-row-edit', g.giftId)">
+            수정
+          </button>
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('gifts-row-delete', g)">
+            삭제
+          </button>
         </div>
       </template>
     </bo-grid>
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
-      <div v-if="gifts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-if="gifts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
+        데이터가 없습니다.
+      </div>
       <div v-for="g in gifts" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
-        :style="selectedId===g.giftId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleLoadDetail(g.giftId)">
+        :style="detailPanel.selectedId===g.giftId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
+        @click="handleSelectAction('gifts-row-edit', g.giftId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
-          <div style="font-size:12px;color:#999;margin-bottom:6px;">사은품 #{{ g.giftId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(g.giftId)" :style="selectedId===g.giftId?{color:'#e8587a'}:{}">
+          <div style="font-size:12px;color:#999;margin-bottom:6px;">
+            사은품 #{{ g.giftId }}
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('gifts-row-edit', g.giftId)" :style="detailPanel.selectedId===g.giftId?{color:'#e8587a'}:{}">
             {{ g.giftNm }}
-            <span v-if="selectedId===g.giftId" style="font-size:10px;margin-left:4px;">▼</span>
+            <span v-if="detailPanel.selectedId===g.giftId" style="font-size:10px;margin-left:4px;">
+              ▼
+            </span>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnTypeBadge(g.giftTypeCd)" style="font-size:11px;">{{ g.giftTypeCd }}</span>
-            <span class="badge" :class="fnStatusBadge(g.giftStatusCd)" style="font-size:11px;">{{ g.giftStatusCd }}</span>
+            <span class="badge" :class="fnTypeBadge(g.giftTypeCd)" style="font-size:11px;">
+              {{ g.giftTypeCd }}
+            </span>
+            <span class="badge" :class="fnStatusBadge(g.giftStatusCd)" style="font-size:11px;">
+              {{ g.giftStatusCd }}
+            </span>
           </div>
           <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div style="font-size:12px;color:#666;line-height:1.5;">
             <div>
               🎯 {{ g.giftTypeCd === '금액조건' ? (g.minOrderAmt||0).toLocaleString() + '원↑' : g.giftTypeCd === '수량조건' ? (g.minOrderQty||0) + '개↑' : '-' }}
             </div>
-            <div>📅 {{ g.startDate }} ~ {{ g.endDate }}</div>
-            <div style="color:#999;margin-top:4px;">재고 {{ (g.giftStock||0).toLocaleString() }}개</div>
+            <div>
+              📅 {{ g.startDate }} ~ {{ g.endDate }}
+            </div>
+            <div style="color:#999;margin-top:4px;">
+              재고 {{ (g.giftStock||0).toLocaleString() }}개
+            </div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(g.giftId)" style="font-size:11px;padding:4px 12px;">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(g)" style="font-size:11px;padding:4px 12px;">삭제</button>
-          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ g.giftId }}</span>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('gifts-row-edit', g.giftId)" style="font-size:11px;padding:4px 12px;">
+            수정
+          </button>
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('gifts-row-delete', g)" style="font-size:11px;padding:4px 12px;">
+            삭제
+          </button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">
+            #{{ g.giftId }}
+          </span>
         </div>
       </div>
     </div>
     <!-- ===== □.□. 카드 뷰 ================================================== -->
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('gifts-set-page', n)" :on-size-change="() => handleSelectAction('gifts-size-change')" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="selectedId" style="margin-top:4px;">
+  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        ✕ 닫기
+      </button>
     </div>
     <pm-gift-dtl
       :key="cfDetailKey"
@@ -350,13 +434,13 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      :on-list-reload="handleSearchList"
+      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+
+      :reload-trigger="detailPanel.reloadTrigger"
+      :on-list-reload="handleBtnAction"
       />
   </div>
 </div>
-
-  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->`
+<!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+`
 };

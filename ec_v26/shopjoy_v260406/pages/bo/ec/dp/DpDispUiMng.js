@@ -231,7 +231,9 @@ window.DpDispUiMng = {
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">전시 UI 관리</div>
+  <div class="page-title">
+    전시 UI 관리
+  </div>
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -244,9 +246,13 @@ window.DpDispUiMng = {
       <div class="toolbar" style="margin-bottom:6px;">
         <span class="list-title" style="font-size:13px;">
           📂 표시경로
-          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_ui</span>
+          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+            #ec_disp_ui
+          </span>
         </span>
-        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
+        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
+          전체보기
+        </span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
         <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
@@ -265,11 +271,17 @@ window.DpDispUiMng = {
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
         </span>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('uis-add')">✚ 신규등록</button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('uis-add')">
+          ✚ 신규등록
+        </button>
       </template>
       <template #row-actions="{ row }">
-        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('uis-row-view', row.uiId)">상세</button>
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('uis-row-edit', row.uiId)">수정</button>
+        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('uis-row-view', row.uiId)">
+          상세
+        </button>
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('uis-row-edit', row.uiId)">
+          수정
+        </button>
       </template>
     </bo-grid>
   </div>

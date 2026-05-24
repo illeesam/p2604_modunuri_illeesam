@@ -16,10 +16,9 @@ window.ZdStore = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ storeInfo: '', isPageCodeLoad: false, selectedStore: null, tabMode: 'col5' });
-    const tab = Vue.toRef(uiState, 'tab');
 
-            const openStores = reactive([]);
-        const editedStoreInfo = reactive({});
+    const openStores = reactive([]);
+    const editedStoreInfo = reactive({});
 
     const storeList = computed(() => {
       const stores = [];
@@ -42,6 +41,49 @@ window.ZdStore = {
       if (window.useFoMyStore) { stores.push({ name: 'useFoMyStore', label: 'foMyStore.js', api: null, hasLocalStorage: false }); }
       return stores;
     });
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ ZdStore.js : handleBtnAction -> ', cmd, param);
+      // 전체 스토어 데이터 재로드
+      if (cmd === 'stores-reload-all') {
+        return loadAllStoreData();
+      // 현재 선택 스토어 클립보드 복사
+      } else if (cmd === 'selectedStore-copy') {
+        return copyToClipboard();
+      // 스토어 비우기 (param: storeName, 미지정 시 현재 선택)
+      } else if (cmd === 'selectedStore-clear') {
+        if (param) { uiState.selectedStore = param; }
+        return clearStore();
+      // 스토어 저장 (param: storeName, 미지정 시 현재 선택)
+      } else if (cmd === 'selectedStore-save') {
+        if (param) { uiState.selectedStore = param; }
+        return saveStore();
+      // 스토어 API 재조회 (param: storeName)
+      } else if (cmd === 'selectedStore-refresh') {
+        return refreshStoreData(param);
+      // 스토어 탭 닫기 (param: storeName)
+      } else if (cmd === 'stores-close-tab') {
+        return closeTab(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ ZdStore.js : handleSelectAction -> ', cmd, param);
+      // 좌측 스토어 탭 선택 (param: storeName)
+      if (cmd === 'stores-select') {
+        return selectStore(param);
+      // 뷰모드 변경 (param: 'tab' | 'col1'~'col5')
+      } else if (cmd === 'tabMode-set') {
+        uiState.tabMode = param;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
@@ -177,7 +219,7 @@ window.ZdStore = {
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
-};
+    };
 
     onMounted(() => {
       // storeList 는 computed 이므로 .value 필요. 잘못된 .length 검사가 무한 호출 유발 가능 → 안전 가드.
@@ -188,11 +230,12 @@ window.ZdStore = {
       loadAllStoreData();
     });
 
-
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState, storeList, selectStore, copyToClipboard, clearStore, openStores, closeTab, editedStoreInfo, saveStore, loadAllStoreData, refreshStoreData
+      uiState, openStores, editedStoreInfo,                                // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      storeList,                                                             // computed
     };
   },
   template: `
@@ -201,7 +244,7 @@ window.ZdStore = {
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
     <!-- ===== ■.■. 페이지 타이틀 =============================================== -->
     <div class="page-title" style="margin: 0;">Store 정보 관리</div>
-    <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
+    <button @click="handleBtnAction('stores-reload-all')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
       🔄 재로드
     </button>
   </div>
@@ -213,7 +256,7 @@ window.ZdStore = {
     <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; flex: 1; border-bottom: 1px solid #e5e7eb;">
       <div v-for="store in storeList" :key="store.name"
         :class="['tab-btn', {active: uiState.selectedStore === store.name}]"
-        @click="selectStore(store.name)"
+        @click="handleSelectAction('stores-select', store.name)"
         style="padding: 12px 16px; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; transition: all 0.15s;">
         {{ store.label }}
       </div>
@@ -222,21 +265,21 @@ window.ZdStore = {
     <div class="tab-modes" style="display: flex; gap: 2px; padding-left: 16px;">
       <button
         :class="{active: uiState.tabMode === 'tab'}"
-        @click="uiState.tabMode = 'tab'"
+        @click="handleSelectAction('tabMode-set', 'tab')"
         title="탭 뷰"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
         📑
       </button>
       <button
         :class="{active: uiState.tabMode === 'col1'}"
-        @click="uiState.tabMode = 'col1'"
+        @click="handleSelectAction('tabMode-set', 'col1')"
         title="1열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
         1
       </button>
       <button
         :class="{active: uiState.tabMode === 'col2'}"
-        @click="uiState.tabMode = 'col2'"
+        @click="handleSelectAction('tabMode-set', 'col2')"
         title="2열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
         2
@@ -244,21 +287,21 @@ window.ZdStore = {
       <!-- ===== ■.■.■. 버튼 영역 =============================================== -->
       <button
         :class="{active: uiState.tabMode === 'col3'}"
-        @click="uiState.tabMode = 'col3'"
+        @click="handleSelectAction('tabMode-set', 'col3')"
         title="3열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
         3
       </button>
       <button
         :class="{active: uiState.tabMode === 'col4'}"
-        @click="uiState.tabMode = 'col4'"
+        @click="handleSelectAction('tabMode-set', 'col4')"
         title="4열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
         4
       </button>
       <button
         :class="{active: uiState.tabMode === 'col5'}"
-        @click="uiState.tabMode = 'col5'"
+        @click="handleSelectAction('tabMode-set', 'col5')"
         title="5열 보기"
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
         5
@@ -286,13 +329,13 @@ window.ZdStore = {
         </textarea>
       </div>
       <div style="display: flex; gap: 4px; justify-content: flex-end; padding-top: 6px; border-top: 1px solid #e5e7eb;">
-        <button @click="uiState.selectedStore = store.name; clearStore()" style="padding: 6px 12px; font-size: 11px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+        <button @click="handleBtnAction('selectedStore-clear', store.name)" style="padding: 6px 12px; font-size: 11px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
           지우기
         </button>
-        <button v-if="store.api" @click="refreshStoreData(store.name)" style="padding: 6px 12px; font-size: 11px; background: #3b82f6; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+        <button v-if="store.api" @click="handleBtnAction('selectedStore-refresh', store.name)" style="padding: 6px 12px; font-size: 11px; background: #3b82f6; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
           조회
         </button>
-        <button @click="uiState.selectedStore = store.name; saveStore()" style="padding: 6px 12px; font-size: 11px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+        <button @click="handleBtnAction('selectedStore-save', store.name)" style="padding: 6px 12px; font-size: 11px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
           저장
         </button>
       </div>

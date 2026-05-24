@@ -403,6 +403,8 @@ window.DpDispWidgetPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, ref, watch, onMounted, nextTick, watchEffect } = Vue;
     const codes = reactive({ disp_widget_types: [], active_statuses: [], disp_envs: [], visibility_opts: [
       { value: '', label: '전체' },
@@ -418,7 +420,72 @@ window.DpDispWidgetPreview = {
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null });
     const widgetLibs = reactive([]);
 
-    // 코드 주입
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetPreview.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 필터링
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 트리 전체 펼치기
+      } else if (cmd === 'pathTree-expand-all') {
+        return expandAll();
+      // 트리 전체 닫기
+      } else if (cmd === 'pathTree-collapse-all') {
+        return collapseAll();
+      // 실제컨텐츠 토글
+      } else if (cmd === 'preview-toggle-real') {
+        gridState.showRealContent = !gridState.showRealContent;
+        return;
+      // 현재 그리드 / 대시보드 초기화
+      } else if (cmd === 'preview-reset') {
+        return resetCurrent();
+      // span 팝업 닫기
+      } else if (cmd === 'spanPopup-close') {
+        return closeSpanPopup();
+      // 슬롯 제거 (param: idx)
+      } else if (cmd === 'slot-remove') {
+        return removeSlot(param);
+      // 대시보드 항목 제거 (param: id)
+      } else if (cmd === 'dashItem-remove') {
+        return removeDashItem(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetPreview.js : handleSelectAction -> ', cmd, param);
+      // 트리 노드 토글 (param: key)
+      if (cmd === 'pathTree-toggle') {
+        return toggleNode(param);
+      // 트리에서 위젯 선택 (param: lib)
+      } else if (cmd === 'pathTree-select') {
+        return onTreeSelect(param);
+      // 그리드 탭 전환 (param: tabId)
+      } else if (cmd === 'preview-tab') {
+        gridState.previewGrid = param;
+        return;
+      // 뷰포트 모드 변경 (param: key)
+      } else if (cmd === 'preview-viewport') {
+        gridState.viewportMode = param;
+        return;
+      // span 설정 (param: { idx, axis, delta })
+      } else if (cmd === 'slot-span-set') {
+        return setSpan(param.idx, param.axis, param.delta);
+      // span 팝업 토글 (param: { e, idx })
+      } else if (cmd === 'slot-span-popup') {
+        return toggleSpanPopup(param.e, param.idx);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -863,25 +930,21 @@ window.DpDispWidgetPreview = {
       }
     };
 
+    // ===== return (템플릿 노출) ===============================================
+
     return {
-      cfSiteNm, today, codes,
-      VIEWPORT,
-      wIcon, wTypeLabel,
-      searchParam,
-      applied, onSearch, onReset,
-      cfFilteredLibs,
-      onTreeSelect,
-      cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
-      onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
-      uiState, gridState, GRID_TABS,
-      cfAutoGridColumns,
-      tabSlots, cfCurrentSlots,
-      dragState, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
-      toggleSpanPopup, closeSpanPopup,
-      dashItems,
-      onDashDragOver, onDashDragLeave, onDashDrop,
-      removeDashItem, startItemMove, startItemResize,
-      cfPlacedCount, resetCurrent,
+      uiState, codes, searchParam, applied, gridState, dragState,                    // 상태 / 데이터
+      tabSlots, dashItems,                                                            // 상태 (그리드/대시보드)
+      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSiteNm, cfFilteredLibs, cfTree, cfAutoGridColumns, cfCurrentSlots,           // computed
+      cfPlacedCount,                                                                  // computed
+      VIEWPORT, GRID_TABS, GRID_COLS, today,                                          // 상수
+      wIcon, wTypeLabel,                                                              // 헬퍼
+      isOpen,                                                                         // 헬퍼 (template 사용)
+      onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,                 // 드래그 이벤트 (직접 바인딩)
+      onDragOver, onDragLeave, onDrop,                                                // 그리드 드래그 (직접 바인딩)
+      onDashDragOver, onDashDragLeave, onDashDrop,                                    // 대시보드 드래그 (직접 바인딩)
+      startItemMove, startItemResize,                                                 // 대시보드 마우스 이동/리사이즈 (직접 바인딩)
     };
   },
   template: /* html */`
@@ -943,11 +1006,11 @@ window.DpDispWidgetPreview = {
         placeholder="검색대상 전체"
         all-label="전체 선택"
         min-width="130px" />
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-list')" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-        <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
-        <button @click="onReset" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
+        <button @click="handleBtnAction('searchParam-list')" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
+        <button @click="handleBtnAction('searchParam-reset')" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
       </div>
     </div>
   </div>
@@ -964,18 +1027,18 @@ window.DpDispWidgetPreview = {
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
       <div style="padding:6px 12px;display:flex;gap:4px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;">
-        <button @click="expandAll"
+        <button @click="handleBtnAction('pathTree-expand-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▼ 전체펼치기
         </button>
-        <button @click="collapseAll"
+        <button @click="handleBtnAction('pathTree-collapse-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▶ 전체닫기
         </button>
       </div>
       <div style="flex:1;overflow-y:auto;padding:4px 0;">
         <!-- ===== ■.■.■.■. 루트 노드 ============================================= -->
-        <div @click="toggleNode('__root__')"
+        <div @click="handleSelectAction('pathTree-toggle', '__root__')"
           style="display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:700;color:#222;user-select:none;background:#f8f9fb;border-radius:4px;margin:1px 4px;"
           :style="isOpen('__root__') ? 'background:#f0f4ff;' : ''">
           <span style="font-size:10px;color:#9ca3af;transition:transform .2s;"
@@ -987,7 +1050,7 @@ window.DpDispWidgetPreview = {
         </div>
         <div v-if="isOpen('__root__')" style="padding-left:8px;">
         <div v-for="node in cfTree" :key="node?.label">
-          <div @click="toggleNode(node.label)"
+          <div @click="handleSelectAction('pathTree-toggle', node.label)"
             draggable="true"
             @dragstart="onNodeDragStart($event, node.children.flatMap(c => c.libs))"
             @dragend="onNodeDragEnd"
@@ -1002,7 +1065,7 @@ window.DpDispWidgetPreview = {
           </div>
           <template v-if="isOpen(node.label)">
             <div v-for="sub in node.children" :key="node.label+'_'+sub.label">
-              <div @click="toggleNode(node.label+'_'+sub.label)"
+              <div @click="handleSelectAction('pathTree-toggle', node.label+'_'+sub.label)"
                 draggable="true"
                 @dragstart="onNodeDragStart($event, sub.libs)"
                 @dragend="onNodeDragEnd"
@@ -1019,7 +1082,7 @@ window.DpDispWidgetPreview = {
                   draggable="true"
                   @dragstart="onItemDragStart($event, lib)"
                   @dragend="onItemDragEnd"
-                  @click="onTreeSelect(lib)"
+                  @click="handleSelectAction('pathTree-select', lib)"
                   style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
                   :style="uiState.selectedLibId===(lib.widgetLibId||lib.libId) ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
                   <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
@@ -1043,7 +1106,7 @@ window.DpDispWidgetPreview = {
       <!-- ===== ■.■.■. 탭바 + 뷰포트 토글 + 배치수 =================================== -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">
-          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="gridState.previewGrid=tab.id"
+          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="handleSelectAction('preview-tab', tab.id)"
             style="padding:5px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:-1px;"
             :style="gridState.previewGrid===tab.id
               ? 'background:#fff;border-color:#e8e8e8;border-bottom-color:#fff;color:#1d4ed8;z-index:1;'
@@ -1053,13 +1116,13 @@ window.DpDispWidgetPreview = {
         </div>
         <!-- ===== ■.■.■.■. 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ===================== -->
         <div v-if="gridState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="gridState.showRealContent=!gridState.showRealContent"
+          <button @click="handleBtnAction('preview-toggle-real')"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="gridState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
             {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="gridState.viewportMode=key"
+          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="handleSelectAction('preview-viewport', key)"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="gridState.viewportMode===key
               ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -1069,13 +1132,13 @@ window.DpDispWidgetPreview = {
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:0 0 0 12px;">
           <span style="font-size:12px;color:#555;font-weight:600;">{{ cfPlacedCount }}개</span>
-          <button @click="resetCurrent"
+          <button @click="handleBtnAction('preview-reset')"
             style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;white-space:nowrap;">초기화</button>
         </div>
       </div>
 
       <!-- ===== ■.■.■. 그리드 캔버스 (grid1~4) =================================== -->
-      <div v-if="gridState.previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
+      <div v-if="gridState.previewGrid!=='dashboard'" @click="handleBtnAction('spanPopup-close')" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
         <!-- ===== ■.■.■.■. 뷰포트 래퍼 ============================================ -->
         <div :style="{
           width: VIEWPORT[gridState.viewportMode].width || '100%',
@@ -1137,11 +1200,11 @@ window.DpDispWidgetPreview = {
                     <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetTypeCd || slot.widgetType) }}</span>
                     <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.widgetNm || slot.name }}</span>
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. span 설정 아이콘 =========================== -->
-                    <button @click="toggleSpanPopup($event, idx)"
+                    <button @click="handleSelectAction('slot-span-popup', { e: $event, idx })"
                       :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                       style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                       :style="gridState.spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">⚙</button>
-                    <button @click="removeSlot(idx)"
+                    <button @click="handleBtnAction('slot-remove', idx)"
                       style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
 
@@ -1151,16 +1214,16 @@ window.DpDispWidgetPreview = {
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 닫기 ==================================== -->
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                       <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
-                      <button @click="closeSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">✕</button>
+                      <button @click="handleBtnAction('spanPopup-close')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">✕</button>
                     </div>
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 열(colspan) ============================ -->
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
                       <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
-                      <button @click="setSpan(idx,'col',-1)" :disabled="(slot.colSpan||1)<=1"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'col', delta:-1 })" :disabled="(slot.colSpan||1)<=1"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
-                      <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'col', delta:+1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
                       <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[gridState.previewGrid]||1 }}</span>
@@ -1168,11 +1231,11 @@ window.DpDispWidgetPreview = {
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 행(rowspan) ============================ -->
                     <div style="display:flex;align-items:center;gap:6px;">
                       <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
-                      <button @click="setSpan(idx,'row',-1)" :disabled="(slot.rowSpan||1)<=1"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'row', delta:-1 })" :disabled="(slot.rowSpan||1)<=1"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.rowSpan||1 }}</span>
-                      <button @click="setSpan(idx,'row',+1)" :disabled="(slot.rowSpan||1)>=4"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'row', delta:+1 })" :disabled="(slot.rowSpan||1)>=4"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">+</button>
                       <span style="font-size:10px;color:#9ca3af;">/ 4</span>
@@ -1180,7 +1243,7 @@ window.DpDispWidgetPreview = {
                   </div>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×버튼만 ========================== -->
                   <div v-else style="position:relative;">
-                    <button @click="removeSlot(idx)"
+                    <button @click="handleBtnAction('slot-remove', idx)"
                       style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 위젯미리보기 ================================== -->
@@ -1239,7 +1302,7 @@ window.DpDispWidgetPreview = {
               <span style="font-size:12px;">{{ wIcon(item.lib.widgetTypeCd || item.lib.widgetType) }}</span>
               <span style="font-size:11px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;flex-shrink:0;">{{ wTypeLabel(item.lib.widgetTypeCd || item.lib.widgetType) }}</span>
               <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">{{ item.lib.widgetNm || item.lib.name }}</span>
-              <button @mousedown.stop @click="removeDashItem(item.id)"
+              <button @mousedown.stop @click="handleBtnAction('dashItem-remove', item.id)"
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
             </div>
 

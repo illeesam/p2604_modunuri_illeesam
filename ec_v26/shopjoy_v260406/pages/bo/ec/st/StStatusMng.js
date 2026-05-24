@@ -129,7 +129,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
         // ===== return (템플릿 노출) ===============================================
 
-
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
       }).filter(r => !applied.vendorSearchValue || r.vendorNm.includes(applied.vendorSearchValue));
     });
@@ -416,10 +415,68 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'statusCd',  label: '상태', badge: (row) => fnStatusBadge(row.statusCd) },
     ];
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StStatusMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return onDateRangeChange();
+      // 탭 전환
+      } else if (cmd === 'tab-select') {
+        uiState.activeTab = param;
+        return;
+      // 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      // 엑셀 내보내기
+      } else if (cmd === 'statuses-export') {
+        return exportTab();
+      // 페이지 크기 변경 — 영역별
+      } else if (cmd === 'statuses-vendor-size-change') {
+        return onVendorSizeChange();
+      } else if (cmd === 'statuses-order-size-change') {
+        return onOrderSizeChange();
+      } else if (cmd === 'statuses-claim-size-change') {
+        return onClaimSizeChange();
+      } else if (cmd === 'statuses-promo-size-change') {
+        return onPromoSizeChange();
+      } else if (cmd === 'statuses-settle-size-change') {
+        return onSettleSizeChange();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 페이지/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StStatusMng.js : handleSelectAction -> ', cmd, param);
+      // 페이지 번호 클릭 — 영역별
+      if (cmd === 'statuses-vendor-set-page') {
+        return setVendorPage(param);
+      } else if (cmd === 'statuses-order-set-page') {
+        return setOrderPage(param);
+      } else if (cmd === 'statuses-claim-set-page') {
+        return setClaimPage(param);
+      } else if (cmd === 'statuses-promo-set-page') {
+        return setPromoPage(param);
+      } else if (cmd === 'statuses-settle-set-page') {
+        return setSettlePage(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* 검색바 :columns 자동 렌더 정의 — 모두 uiState 공유 */
     const dateSearchColumns = [
       { key: 'dateRange', label: '기간', type: 'select', options: () => codes.date_range_opts,
-        nullLabel: '기간 선택', onChange: () => onDateRangeChange() },
+        nullLabel: '기간 선택', onChange: () => handleBtnAction('searchParam-date-range') },
       { key: 'dateStart', type: 'date' },
       { type: 'label', label: '~' },
       { key: 'dateEnd',   type: 'date' },
@@ -444,31 +501,32 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     return {
-      uiState, TABS,
-      vendorGridColumns, orderGridColumns, claimGridColumns, promoGridColumns, settleGridColumns,
-      dateSearchColumns, vendorSearchColumns, orderSearchColumns, claimSearchColumns, promoSearchColumns, settleSearchColumns,
-      onDateRangeChange,
-      /* vendor */ vendorPager, cfVendorRows, cfVendorTotal, cfVendorPages, cfVendorPageList, cfVendorSummary,
-      /* order  */ orderPager, cfOrderRows, cfOrderTotal, cfOrderPages, cfOrderPageList, cfOrderSummary,
-      /* claim  */ claimPager, cfClaimRows, cfClaimTotal, cfClaimPages, cfClaimPageList, cfClaimSummary,
-      /* promo  */ promoPager, cfPromoRows, cfPromoTotal, cfPromoPages, cfPromoPageList, cfPromoSummary,
-      /* settle */ settlePager, cfSettleRows, cfSettleTotal, cfSettlePages, cfSettlePageList, cfSettleSummary,
-      fmt, fmtW, fnStatusBadge, fnTypeBadge, onSearch, onReset, pageNums, exportTab, COMM_RATE, codes,
-      setVendorPage, onVendorSizeChange,
-      setOrderPage, onOrderSizeChange,
-      setClaimPage, onClaimSizeChange,
-      setPromoPage, onPromoSizeChange,
-      setSettlePage, onSettleSizeChange,
+      uiState, codes, TABS,                                                         // 상태 / 데이터
+      vendorGridColumns, orderGridColumns, claimGridColumns, promoGridColumns, settleGridColumns,             // 컬럼 정의
+      dateSearchColumns, vendorSearchColumns, orderSearchColumns, claimSearchColumns, promoSearchColumns, settleSearchColumns, // 검색 컬럼 정의
+      handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+      vendorPager, cfVendorTotal, cfVendorPageList, cfVendorSummary,                // vendor
+      orderPager, cfOrderTotal, cfOrderPageList, cfOrderSummary,                    // order
+      claimPager, cfClaimRows, cfClaimTotal, cfClaimPageList, cfClaimSummary,       // claim
+      promoPager, cfPromoTotal, cfPromoPageList, cfPromoSummary,                    // promo
+      settlePager, cfSettleTotal, cfSettlePageList, cfSettleSummary,                // settle
+      fmt, fmtW, fnStatusBadge, fnTypeBadge,                                        // 헬퍼
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">정산현황</div>
+  <div class="page-title">
+    정산현황
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계 • 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계 • 정산집계 탭: 마감 기준 월별 최종 정산액 목록 • CSV 내보내기를 지원합니다.
     </div>
@@ -479,18 +537,20 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'"
       :columns="dateSearchColumns" :param="uiState"
-      @search="onSearch" @reset="onReset">
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
-        <button class="btn btn-secondary" @click="exportTab">📥 Excel</button>
+        <button class="btn btn-secondary" @click="handleBtnAction('statuses-export')">
+          📥 Excel
+        </button>
       </template>
     </bo-search-area>
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 공통 날짜 필터 ================================================ -->
   <!-- ===== ■. 탭 ======================================================= -->
   <div class="tab-bar-row" style="margin-bottom:0">
     <div class="tab-nav">
-      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: uiState.activeTab===t.id}" @click="uiState.activeTab=t.id">
+      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: uiState.activeTab===t.id}" @click="handleBtnAction('tab-select', t.id)">
         {{ t.label }}
       </button>
     </div>
@@ -501,27 +561,43 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <!-- ===== ■.■. 요약 카드 ================================================= -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">총 매출</div>
-        <div style="font-size:18px;font-weight:700;color:#333">{{ fmtW(cfVendorSummary.sales) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          총 매출
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#333">
+          {{ fmtW(cfVendorSummary.sales) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fff8f8">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">환불액</div>
-        <div style="font-size:18px;font-weight:700;color:#e74c3c">{{ fmtW(cfVendorSummary.refund) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          환불액
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#e74c3c">
+          {{ fmtW(cfVendorSummary.refund) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fffbf0">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">수수료 (10%)</div>
-        <div style="font-size:18px;font-weight:700;color:#e67e22">{{ fmtW(cfVendorSummary.comm) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          수수료 (10%)
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#e67e22">
+          {{ fmtW(cfVendorSummary.comm) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0fff4">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">정산예정액</div>
-        <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfVendorSummary.settle) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          정산예정액
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#27ae60">
+          {{ fmtW(cfVendorSummary.settle) }}
+        </div>
       </div>
     </div>
     <!-- ===== □.□. 요약 카드 ================================================= -->
     <!-- ===== ■.■. 검색 ==================================================== -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="vendorSearchColumns" :param="uiState"
-      @search="onSearch" />
+      @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 ==================================================== -->
     <!-- ===== ■.■. 테이블 =================================================== -->
     <bo-grid
@@ -532,35 +608,52 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="업체별현황"
       :count-text="'총 ' + cfVendorTotal + '개 업체'"
       empty-text="데이터가 없습니다."
-      @set-page="setVendorPage"
-      @size-change="onVendorSizeChange"></bo-grid>
+      @set-page="n => handleSelectAction('statuses-vendor-set-page', n)"
+      @size-change="handleBtnAction('statuses-vendor-size-change')">
+    </bo-grid>
   </div>
-    <!-- ===== □.□. 테이블 =================================================== -->
+  <!-- ===== □.□. 테이블 =================================================== -->
   <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 2. 주문별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">유효 주문수</div>
-        <div style="font-size:18px;font-weight:700;color:#333">{{ cfOrderSummary.cnt }}건</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          유효 주문수
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#333">
+          {{ cfOrderSummary.cnt }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0f4ff">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">주문 매출</div>
-        <div style="font-size:18px;font-weight:700;color:#3498db">{{ fmtW(cfOrderSummary.sales) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          주문 매출
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#3498db">
+          {{ fmtW(cfOrderSummary.sales) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fffbf0">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">수수료 합계</div>
-        <div style="font-size:18px;font-weight:700;color:#e67e22">{{ fmtW(cfOrderSummary.comm) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          수수료 합계
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#e67e22">
+          {{ fmtW(cfOrderSummary.comm) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0fff4">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">정산 합계</div>
-        <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfOrderSummary.settle) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          정산 합계
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#27ae60">
+          {{ fmtW(cfOrderSummary.settle) }}
+        </div>
       </div>
     </div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="orderSearchColumns" :param="uiState"
-      @search="onSearch" />
+      @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
@@ -572,31 +665,46 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfOrderTotal + '건'"
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
       empty-text="데이터가 없습니다."
-      @set-page="setOrderPage"
-      @size-change="onOrderSizeChange"></bo-grid>
+      @set-page="n => handleSelectAction('statuses-order-set-page', n)"
+      @size-change="handleBtnAction('statuses-order-size-change')">
+    </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 3. 클레임별현황 ══ ========================================= -->
   <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">클레임 건수</div>
-        <div style="font-size:18px;font-weight:700;color:#333">{{ cfClaimSummary.cnt }}건</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          클레임 건수
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#333">
+          {{ cfClaimSummary.cnt }}건
+        </div>
         <div style="font-size:11px;color:#999;margin-top:4px">
           취소 {{ cfClaimSummary.cancel }} / 반품 {{ cfClaimSummary.return_ }} / 교환 {{ cfClaimSummary.exchange }}
         </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fff8f8">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">환불요청액</div>
-        <div style="font-size:18px;font-weight:700;color:#e74c3c">{{ fmtW(cfClaimSummary.refund) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          환불요청액
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#e74c3c">
+          {{ fmtW(cfClaimSummary.refund) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fff0f8">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">정산 차감액</div>
-        <div style="font-size:18px;font-weight:700;color:#c0392b">{{ fmtW(Math.abs(cfClaimSummary.impact)) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          정산 차감액
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#c0392b">
+          {{ fmtW(Math.abs(cfClaimSummary.impact)) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0f4ff">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">처리율</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          처리율
+        </div>
         <div style="font-size:18px;font-weight:700;color:#3498db">
           {{ cfClaimSummary.cnt > 0 ? Math.round(cfClaimRows.filter(r=>r.isCompleted).length / cfClaimSummary.cnt * 100) : 0 }}%
         </div>
@@ -605,7 +713,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="claimSearchColumns" :param="uiState"
-      @search="onSearch" />
+      @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
@@ -616,31 +724,44 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="클레임별현황"
       :count-text="'총 ' + cfClaimTotal + '건'"
       empty-text="데이터가 없습니다."
-      @set-page="setClaimPage"
-      @size-change="onClaimSizeChange"></bo-grid>
+      @set-page="n => handleSelectAction('statuses-claim-set-page', n)"
+      @size-change="handleBtnAction('statuses-claim-size-change')">
+    </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 3. 클레임별현황 ══ ========================================= -->
   <!-- ===== ■. ══ 4. 프로모션별현황 ══ ======================================== -->
   <div v-if="uiState.activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">프로모션 수</div>
-        <div style="font-size:18px;font-weight:700;color:#333">{{ cfPromoSummary.cnt }}개</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          프로모션 수
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#333">
+          {{ cfPromoSummary.cnt }}개
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fdf5ff">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">총 사용건수</div>
-        <div style="font-size:18px;font-weight:700;color:#9b59b6">{{ cfPromoSummary.totalUse }}건</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          총 사용건수
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#9b59b6">
+          {{ cfPromoSummary.totalUse }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fff8f8">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">총 할인/지원액</div>
-        <div style="font-size:18px;font-weight:700;color:#e74c3c">{{ fmtW(cfPromoSummary.totalDiscount) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          총 할인/지원액
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#e74c3c">
+          {{ fmtW(cfPromoSummary.totalDiscount) }}
+        </div>
       </div>
     </div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="promoSearchColumns" :param="uiState"
-      @search="onSearch" />
+      @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
@@ -651,35 +772,52 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="프로모션별현황"
       :count-text="'총 ' + cfPromoTotal + '개'"
       empty-text="데이터가 없습니다."
-      @set-page="setPromoPage"
-      @size-change="onPromoSizeChange"></bo-grid>
+      @set-page="n => handleSelectAction('statuses-promo-set-page', n)"
+      @size-change="handleBtnAction('statuses-promo-size-change')">
+    </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
   <!-- ===== ■. ══ 5. 정산별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px 8px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">총 매출</div>
-        <div style="font-size:18px;font-weight:700;color:#333">{{ fmtW(cfSettleSummary.sales) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          총 매출
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#333">
+          {{ fmtW(cfSettleSummary.sales) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fff8f8">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">총 환불</div>
-        <div style="font-size:18px;font-weight:700;color:#e74c3c">{{ fmtW(cfSettleSummary.refund) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          총 환불
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#e74c3c">
+          {{ fmtW(cfSettleSummary.refund) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#fffbf0">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">수수료 합계</div>
-        <div style="font-size:18px;font-weight:700;color:#e67e22">{{ fmtW(cfSettleSummary.comm) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          수수료 합계
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#e67e22">
+          {{ fmtW(cfSettleSummary.comm) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px 8px;background:#f0fff4">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">순 정산액</div>
-        <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfSettleSummary.settle) }}</div>
+        <div style="font-size:11px;color:#888;margin-bottom:4px">
+          순 정산액
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#27ae60">
+          {{ fmtW(cfSettleSummary.settle) }}
+        </div>
       </div>
     </div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="settleSearchColumns" :param="uiState"
-      @search="onSearch" />
+      @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
@@ -690,11 +828,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="정산별현황"
       :count-text="'총 ' + cfSettleTotal + '개월'"
       empty-text="데이터가 없습니다."
-      @set-page="setSettlePage"
-      @size-change="onSettleSizeChange"></bo-grid>
+      @set-page="n => handleSelectAction('statuses-settle-set-page', n)"
+      @size-change="handleBtnAction('statuses-settle-size-change')">
+    </bo-grid>
   </div>
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. ══ 5. 정산별현황 ══ ========================================== -->`,
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. ══ 5. 정산별현황 ══ ========================================== -->
+`,
 };

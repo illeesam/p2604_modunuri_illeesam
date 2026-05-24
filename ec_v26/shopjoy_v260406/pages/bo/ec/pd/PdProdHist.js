@@ -242,7 +242,6 @@ window.PdProdHist = {
       if (v !== 'tab') { ALL_TABS.forEach(t => handleLoadTab(t)); }
     });
 
-
     // ===== return (템플릿 노출) ===============================================
 
     return {
@@ -257,9 +256,13 @@ window.PdProdHist = {
 <div>
   <!-- ===== ■. 이력 화면 =================================================== -->
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
-    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+      ●
+    </span>
     이력정보
-    <span v-if="uiState.loading" style="margin-left:8px;font-size:11px;color:#aaa;">조회 중...</span>
+    <span v-if="uiState.loading" style="margin-left:8px;font-size:11px;color:#aaa;">
+      조회 중...
+    </span>
   </div>
   <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
@@ -267,39 +270,63 @@ window.PdProdHist = {
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:botTab==='qna'}"     :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'qna')">
         💬 상품 Q&amp;A
-        <span class="tab-count">{{ qnaList.length }}</span>
+        <span class="tab-count">
+          {{ qnaList.length }}
+        </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='review'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'review')">
         ⭐ 리뷰
-        <span class="tab-count">{{ reviewList.length }}</span>
+        <span class="tab-count">
+          {{ reviewList.length }}
+        </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'orders')">
         🛒 연관 주문
-        <span class="tab-count">{{ relatedOrders.length }}</span>
+        <span class="tab-count">
+          {{ relatedOrders.length }}
+        </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'stock')">
         📦 재고 이력
-        <span class="tab-count">{{ stockHistory.length }}</span>
+        <span class="tab-count">
+          {{ stockHistory.length }}
+        </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'price')">
         💰 가격변경이력
-        <span class="tab-count">{{ priceHistory.length }}</span>
+        <span class="tab-count">
+          {{ priceHistory.length }}
+        </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'status')">
         🏷 상품상태 이력
-        <span class="tab-count">{{ statusHistory.length }}</span>
+        <span class="tab-count">
+          {{ statusHistory.length }}
+        </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'changes')">
         📝 상품정보 변경이력
-        <span class="tab-count">{{ changeHistory.length }}</span>
+        <span class="tab-count">
+          {{ changeHistory.length }}
+        </span>
       </button>
     </div>
     <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="handleBtnAction('tabMode-change', 'tab')"  title="탭으로 보기">📑</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tabMode-change', '1col')" title="1열로 보기">1▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tabMode-change', '2col')" title="2열로 보기">2▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tabMode-change', '3col')" title="3열로 보기">3▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tabMode-change', '4col')" title="4열로 보기">4▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="handleBtnAction('tabMode-change', 'tab')"  title="탭으로 보기">
+        📑
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tabMode-change', '1col')" title="1열로 보기">
+        1▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tabMode-change', '2col')" title="2열로 보기">
+        2▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tabMode-change', '3col')" title="3열로 보기">
+        3▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tabMode-change', '4col')" title="4열로 보기">
+        4▭
+      </button>
     </div>
   </div>
   <!-- ===== □. 탭 영역 ==================================================== -->
@@ -307,59 +334,102 @@ window.PdProdHist = {
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 상품 Q&A ================================================ -->
     <div class="card" v-show="showTab('qna')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 상품 Q&amp;A <span class="tab-count">{{ qnaList.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        💬 상품 Q&amp;A
+        <span class="tab-count">
+          {{ qnaList.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="qnaGridColumns" :rows="qnaList" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다."></bo-grid>
+      <bo-grid bare :columns="qnaGridColumns" :rows="qnaList" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
+      </bo-grid>
     </div>
     <!-- ===== □.□. 상품 Q&A ================================================ -->
     <!-- ===== ■.■. 리뷰 ==================================================== -->
     <div class="card" v-show="showTab('review')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⭐ 리뷰 <span class="tab-count">{{ reviewList.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        ⭐ 리뷰
+        <span class="tab-count">
+          {{ reviewList.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="reviewGridColumns" :rows="reviewList" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다."></bo-grid>
+      <bo-grid bare :columns="reviewGridColumns" :rows="reviewList" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
+      </bo-grid>
     </div>
     <!-- ===== □.□. 리뷰 ==================================================== -->
     <!-- ===== ■.■. 연관 주문 ================================================= -->
     <div class="card" v-show="showTab('orders')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        🛒 연관 주문
+        <span class="tab-count">
+          {{ relatedOrders.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-ref-click', { type, id })" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-row-detail', row)">상세</button>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-row-detail', row)">
+            상세
+          </button>
         </template>
       </bo-grid>
     </div>
     <!-- ===== □.□. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 재고 이력 ================================================= -->
     <div class="card" v-show="showTab('stock')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 재고 이력 <span class="tab-count">{{ stockHistory.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        📦 재고 이력
+        <span class="tab-count">
+          {{ stockHistory.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="stockGridColumns" :rows="stockHistory" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다."></bo-grid>
+      <bo-grid bare :columns="stockGridColumns" :rows="stockHistory" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
+      </bo-grid>
     </div>
     <!-- ===== □.□. 재고 이력 ================================================= -->
     <!-- ===== ■.■. 가격변경이력 ================================================ -->
     <div class="card" v-show="showTab('price')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 가격변경이력 <span class="tab-count">{{ priceHistory.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        💰 가격변경이력
+        <span class="tab-count">
+          {{ priceHistory.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="priceGridColumns" :rows="priceHistory" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다."></bo-grid>
+      <bo-grid bare :columns="priceGridColumns" :rows="priceHistory" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
+      </bo-grid>
     </div>
     <!-- ===== □.□. 가격변경이력 ================================================ -->
     <!-- ===== ■.■. 상품상태 이력 =============================================== -->
     <div class="card" v-show="showTab('status')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🏷 상품상태 이력 <span class="tab-count">{{ statusHistory.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        🏷 상품상태 이력
+        <span class="tab-count">
+          {{ statusHistory.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="statusGridColumns" :rows="statusHistory" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다."></bo-grid>
+      <bo-grid bare :columns="statusGridColumns" :rows="statusHistory" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
+      </bo-grid>
     </div>
     <!-- ===== □.□. 상품상태 이력 =============================================== -->
     <!-- ===== ■.■. 상품정보 변경이력 ============================================= -->
     <div class="card" v-show="showTab('changes')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상품정보 변경이력 <span class="tab-count">{{ changeHistory.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        📝 상품정보 변경이력
+        <span class="tab-count">
+          {{ changeHistory.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="changeGridColumns" :rows="changeHistory" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다."></bo-grid>
+      <bo-grid bare :columns="changeGridColumns" :rows="changeHistory" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
+      </bo-grid>
     </div>
   </div>
 </div>
-
-    <!-- ===== □.□. 상품정보 변경이력 ============================================= -->
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->`,
+<!-- ===== □.□. 상품정보 변경이력 ============================================= -->
+<!-- ===== □. 탭 컨텐츠 =================================================== -->
+`,
 };

@@ -46,6 +46,63 @@ window.PmDiscntMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmDiscntMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        uiState.sortKey = ''; uiState.sortDir = 'asc';
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      // 할인 신규 등록 (인라인 패널)
+      } else if (cmd === 'discnts-add') {
+        return openNew();
+      // 할인 목록 엑셀 내보내기
+      } else if (cmd === 'discnts-excel') {
+        return exportExcel();
+      // 탭 모드 변경 (list/card)
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode = param;
+        return;
+      // 상세 인라인 패널 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDetail();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmDiscntMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 정렬 헤더 클릭
+      if (cmd === 'discnts-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'discnts-set-page') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'discnts-size-change') {
+        return onSizeChange();
+      // 행 클릭 → 상세 편집
+      } else if (cmd === 'discnts-row-edit') {
+        return handleLoadDetail(param);
+      // 행 삭제
+      } else if (cmd === 'discnts-row-delete') {
+        return handleDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 정렬 처리 =======================================================
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'discntNm asc', desc: 'discntNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -229,7 +286,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
     const baseGridColumns = [
       { key: 'discntNm',       label: '할인명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -247,7 +303,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
@@ -255,7 +310,9 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">할인관리</div>
+  <div class="page-title">
+    할인관리
+  </div>
   <!-- ===== ■. 검색영역 ==================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
@@ -269,9 +326,13 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     <!-- ===== ■.■. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
     <div class="toolbar">
       <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+          ●
+        </span>
         할인목록
-        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+        <span class="list-count">
+          {{ pager.pageTotalCount }}건
+        </span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
@@ -284,8 +345,12 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
             ⊞ 카드
           </button>
         </div>
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+        <button class="btn btn-green btn-sm" @click="exportExcel">
+          📥 엑셀
+        </button>
+        <button class="btn btn-primary btn-sm" @click="openNew">
+          + 신규
+        </button>
       </div>
     </div>
     <!-- ===== □.□. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
@@ -297,41 +362,69 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"
       @sort="onSort" @row-click="d => handleLoadDetail(d.discntId)">
-      <template #head-actions>관리</template>
+      <template #head-actions>
+        관리
+      </template>
       <template #row-actions="{ row: d }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(d)">삭제</button>
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)">
+            수정
+          </button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(d)">
+            삭제
+          </button>
         </div>
       </template>
     </bo-grid>
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
-      <div v-if="discounts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-if="discounts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
+        데이터가 없습니다.
+      </div>
       <div v-for="d in discounts" :key="d?.discntId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===d.discntId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleLoadDetail(d.discntId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
-          <div style="font-size:12px;color:#999;margin-bottom:6px;">할인 #{{ d.discntId }}</div>
+          <div style="font-size:12px;color:#999;margin-bottom:6px;">
+            할인 #{{ d.discntId }}
+          </div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(d.discntId)" :style="selectedId===d.discntId?{color:'#e8587a'}:{}">
             {{ d.discntNm }}
-            <span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:4px;">▼</span>
+            <span v-if="selectedId===d.discntId" style="font-size:10px;margin-left:4px;">
+              ▼
+            </span>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-            <span class="badge" :class="fnTypeBadge(d.discntTypeCd)" style="font-size:11px;">{{ d.discntTypeCd }}</span>
-            <span class="badge" :class="fnStatusBadge(d.discntStatusCd)" style="font-size:11px;">{{ d.discntStatusCd }}</span>
+            <span class="badge" :class="fnTypeBadge(d.discntTypeCd)" style="font-size:11px;">
+              {{ d.discntTypeCd }}
+            </span>
+            <span class="badge" :class="fnStatusBadge(d.discntStatusCd)" style="font-size:11px;">
+              {{ d.discntStatusCd }}
+            </span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>🎯 {{ d.discntTypeCd === '정률' ? (d.discntValue + '%') : (d.discntValue||0).toLocaleString() + '원' }}</div>
-            <div>📅 {{ d.startDate }} ~ {{ d.endDate }}</div>
-            <div style="color:#999;margin-top:4px;">{{ d.discntTargetCd || '전체상품' }}</div>
+            <div>
+              🎯 {{ d.discntTypeCd === '정률' ? (d.discntValue + '%') : (d.discntValue||0).toLocaleString() + '원' }}
+            </div>
+            <div>
+              📅 {{ d.startDate }} ~ {{ d.endDate }}
+            </div>
+            <div style="color:#999;margin-top:4px;">
+              {{ d.discntTargetCd || '전체상품' }}
+            </div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(d)" style="font-size:11px;padding:4px 12px;">삭제</button>
-          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ d.discntId }}</span>
+          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">
+            수정
+          </button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete(d)" style="font-size:11px;padding:4px 12px;">
+            삭제
+          </button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">
+            #{{ d.discntId }}
+          </span>
         </div>
       </div>
     </div>
@@ -344,7 +437,9 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      <button class="btn btn-secondary btn-sm" @click="closeDetail">
+        ✕ 닫기
+      </button>
     </div>
     <pm-discnt-dtl
       :key="cfDetailKey"
@@ -360,6 +455,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       />
   </div>
 </div>
-
-  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->`
+<!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+`
 };

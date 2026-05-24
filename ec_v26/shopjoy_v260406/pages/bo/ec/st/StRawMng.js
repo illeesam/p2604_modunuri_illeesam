@@ -40,6 +40,43 @@ window.StRawMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StRawMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else if (cmd === 'searchParam-more-toggle') {
+        uiState.searchMoreOpen = !uiState.searchMoreOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StRawMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'rawData-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      } else if (cmd === 'rawData-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
@@ -200,12 +237,11 @@ const rawList = reactive([]);
 
   // ===== return (템플릿 노출) ===============================================
 
-
   return {
       uiState, handleDateRangeChange,
       searchParam,
       pager, rawList, cfSummary,
-      setPage, onSizeChange, onSearch, onReset,
+      handleBtnAction, handleSelectAction,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
       fmtW, fmtPct, doCollect, codes, rawGridColumns,
@@ -214,11 +250,17 @@ const rawList = reactive([]);
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">정산수집원장</div>
+  <div class="page-title">
+    정산수집원장
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다. • 수집 단위: od_order_item / od_claim_item (상품 행 단위) • [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다. • 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)
     </div>
@@ -227,23 +269,37 @@ const rawList = reactive([]);
   <!-- ===== ■. 검색 카드 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'" @search="onSearch" @reset="onReset">
+    <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <!-- ===== ■.■.■. 1행: 기간 + 기본 필터 ====================================== -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px">
         <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
-          <option value="">기간 선택</option>
-          <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">{{ opt.codeLabel }}</option>
+          <option value="">
+            기간 선택
+          </option>
+          <option v-for="opt in codes.date_range_opts" :key="opt.codeValue" :value="opt.codeValue">
+            {{ opt.codeLabel }}
+          </option>
         </select>
         <input type="date" v-model="uiState.dateStart" style="width:140px" />
-        <span style="line-height:32px">~</span>
+        <span style="line-height:32px">
+          ~
+        </span>
         <input type="date" v-model="uiState.dateEnd" style="width:140px" />
         <select v-model="searchParam.type" style="width:100px">
-          <option value="">유형 전체</option>
-          <option v-for="c in codes.raw_types" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            유형 전체
+          </option>
+          <option v-for="c in codes.raw_types" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
         <select v-model="searchParam.status" style="width:110px">
-          <option value="">수집상태 전체</option>
-          <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            수집상태 전체
+          </option>
+          <option v-for="c in codes.raw_collect_statuses" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
         <bo-multi-check-select
           v-model="searchParam.searchType"
@@ -257,41 +313,69 @@ const rawList = reactive([]);
           placeholder="검색대상 전체"
           all-label="전체 선택"
           min-width="160px" />
-        <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:230px" @keyup.enter="() => onSearch?.()" />
+        <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:230px" @keyup.enter="handleBtnAction('searchParam-list')" />
       </div>
       <!-- ===== ■.■.■. 2행: 추가 필터 =========================================== -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px">
         <select v-model="searchParam.vendorType" style="width:110px">
-          <option value="">업체구분 전체</option>
-          <option v-for="c in codes.raw_vendor_divs" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            업체구분 전체
+          </option>
+          <option v-for="c in codes.raw_vendor_divs" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
         <select v-model="searchParam.payMethod" style="width:120px">
-          <option value="">결제수단 전체</option>
-          <option v-for="c in codes.pay_methods" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            결제수단 전체
+          </option>
+          <option v-for="c in codes.pay_methods" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
         <select v-model="searchParam.buyConfirm" style="width:110px">
-          <option value="">구매확정 전체</option>
-          <option v-for="o in codes.confirm_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+          <option value="">
+            구매확정 전체
+          </option>
+          <option v-for="o in codes.confirm_yn_opts" :key="o.codeValue" :value="o.codeValue">
+            {{ o.codeLabel }}
+          </option>
         </select>
         <select v-model="searchParam.closeYn" style="width:110px">
-          <option value="">마감여부 전체</option>
-          <option v-for="o in codes.close_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+          <option value="">
+            마감여부 전체
+          </option>
+          <option v-for="o in codes.close_yn_opts" :key="o.codeValue" :value="o.codeValue">
+            {{ o.codeLabel }}
+          </option>
         </select>
         <select v-model="searchParam.erpSend" style="width:110px">
-          <option value="">ERP전송 전체</option>
-          <option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+          <option value="">
+            ERP전송 전체
+          </option>
+          <option v-for="o in codes.send_yn_opts" :key="o.codeValue" :value="o.codeValue">
+            {{ o.codeLabel }}
+          </option>
         </select>
         <input v-model="searchParam.period" placeholder="정산기간(YYYY-MM)" style="width:150px" maxlength="7" />
       </div>
       <!-- ===== ■.■.■. 3행: 상세검색 펼치기 ======================================== -->
       <div v-if="uiState.searchMoreOpen" style="display:flex;flex-wrap:wrap;gap:8px;width:100%;padding-top:8px;border-top:1px solid #f0f0f0">
         <select v-model="searchParam.orderStatus" style="width:120px">
-          <option value="">주문상태 전체</option>
-          <option v-for="c in codes.order_statuses_kr" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            주문상태 전체
+          </option>
+          <option v-for="c in codes.order_statuses_kr" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
-        <span style="line-height:32px;font-size:12px;color:#888">수집금액</span>
+        <span style="line-height:32px;font-size:12px;color:#888">
+          수집금액
+        </span>
         <input v-model="searchParam.amtFrom" type="number" placeholder="최솟값(원)" style="width:120px" />
-        <span style="line-height:32px">~</span>
+        <span style="line-height:32px">
+          ~
+        </span>
         <input v-model="searchParam.amtTo" type="number" placeholder="최댓값(원)" style="width:120px" />
       </div>
       <template #actions-after>
@@ -301,39 +385,65 @@ const rawList = reactive([]);
       </template>
     </bo-search-area>
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 카드 =================================================== -->
   <!-- ===== ■. 집계 카드 =================================================== -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
-      <div style="font-size:11px;color:#888">수집건수</div>
-      <div style="font-size:18px;font-weight:700;color:#3498db">{{ pager.pageTotalCount.toLocaleString() }}건</div>
+      <div style="font-size:11px;color:#888">
+        수집건수
+      </div>
+      <div style="font-size:18px;font-weight:700;color:#3498db">
+        {{ pager.pageTotalCount.toLocaleString() }}건
+      </div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f0fff4;margin-bottom:0">
-      <div style="font-size:11px;color:#888">정산대상</div>
-      <div style="font-size:18px;font-weight:700;color:#27ae60">{{ cfSummary.collectCnt.toLocaleString() }}건</div>
+      <div style="font-size:11px;color:#888">
+        정산대상
+      </div>
+      <div style="font-size:18px;font-weight:700;color:#27ae60">
+        {{ cfSummary.collectCnt.toLocaleString() }}건
+      </div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#fff8f0;margin-bottom:0">
-      <div style="font-size:11px;color:#888">구매확정</div>
-      <div style="font-size:18px;font-weight:700;color:#e67e22">{{ cfSummary.confirmCnt.toLocaleString() }}건</div>
+      <div style="font-size:11px;color:#888">
+        구매확정
+      </div>
+      <div style="font-size:18px;font-weight:700;color:#e67e22">
+        {{ cfSummary.confirmCnt.toLocaleString() }}건
+      </div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f5f0ff;margin-bottom:0">
-      <div style="font-size:11px;color:#888">마감완료</div>
-      <div style="font-size:18px;font-weight:700;color:#8e44ad">{{ cfSummary.closeCnt.toLocaleString() }}건</div>
+      <div style="font-size:11px;color:#888">
+        마감완료
+      </div>
+      <div style="font-size:18px;font-weight:700;color:#8e44ad">
+        {{ cfSummary.closeCnt.toLocaleString() }}건
+      </div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f8f9fa;margin-bottom:0">
-      <div style="font-size:11px;color:#888">수집금액 합계</div>
+      <div style="font-size:11px;color:#888">
+        수집금액 합계
+      </div>
       <div style="font-size:15px;font-weight:700" :style="cfSummary.totalAmt>=0?'color:#333':'color:#e74c3c'">
         {{ fmtW(cfSummary.totalAmt) }}
       </div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#fff0f0;margin-bottom:0">
-      <div style="font-size:11px;color:#888">수수료 합계</div>
-      <div style="font-size:15px;font-weight:700;color:#e74c3c">{{ fmtW(cfSummary.feeAmt) }}</div>
+      <div style="font-size:11px;color:#888">
+        수수료 합계
+      </div>
+      <div style="font-size:15px;font-weight:700;color:#e74c3c">
+        {{ fmtW(cfSummary.feeAmt) }}
+      </div>
     </div>
     <div class="card" style="text-align:center;padding:10px;background:#f0f8ff;margin-bottom:0">
-      <div style="font-size:11px;color:#888">정산금액 합계</div>
-      <div style="font-size:15px;font-weight:700;color:#2980b9">{{ fmtW(cfSummary.settleAmt) }}</div>
+      <div style="font-size:11px;color:#888">
+        정산금액 합계
+      </div>
+      <div style="font-size:15px;font-weight:700;color:#2980b9">
+        {{ fmtW(cfSummary.settleAmt) }}
+      </div>
     </div>
   </div>
   <!-- ===== □. 집계 카드 =================================================== -->
@@ -346,8 +456,8 @@ const rawList = reactive([]);
     list-title="정산수집원장"
     :is-expanded="(r) => isExpanded(r.settleRawId)"
     empty-text="데이터가 없습니다." row-clickable
-    @set-page="setPage"
-    @size-change="onSizeChange"
+    @set-page="n => handleSelectAction('rawData-set-page', n)"
+    @size-change="handleSelectAction('rawData-size-change')"
     @row-click="(r) => toggleRow(r.settleRawId)">
     <template #toolbar-actions>
       <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
@@ -356,116 +466,210 @@ const rawList = reactive([]);
       <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
         ▲ 전체접기
       </button>
-      <button class="btn btn-blue btn-sm" @click="doCollect">🔄 재수집</button>
+      <button class="btn btn-blue btn-sm" @click="doCollect">
+        🔄 재수집
+      </button>
     </template>
     <template #row-expand="{ row: r, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
           <!-- ===== ■.■.■.■.■. 주문정보 ============================================ -->
           <div>
-            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">주문 정보</div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">
+              주문 정보
+            </div>
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문ID</td>
-                <td style="padding:2px 0">{{ r.orderId }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">거래일자</td>
-                <td>{{ r.orderDate }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문상태</td>
-                <td>{{ orderStatusLabel(r.orderItemStatusCd) }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">결제수단</td>
-                <td>{{ r.payMethodCd }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">구매확정</td>
-                <td>
-                  <span class="badge" :class="r.buyConfirmYn==='Y'?'badge-green':'badge-gray'">{{ r.buyConfirmYn==='Y'?'확정':'미확정' }}</span>
-                  <span v-if="r.buyConfirmDate" style="color:#888;margin-left:4px">{{ r.buyConfirmDate }}</span>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  주문ID
+                </td>
+                <td style="padding:2px 0">
+                  {{ r.orderId }}
                 </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산기간</td>
-                <td>{{ r.settlePeriod }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  거래일자
+                </td>
+                <td>
+                  {{ r.orderDate }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  주문상태
+                </td>
+                <td>
+                  {{ orderStatusLabel(r.orderItemStatusCd) }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  결제수단
+                </td>
+                <td>
+                  {{ r.payMethodCd }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  구매확정
+                </td>
+                <td>
+                  <span class="badge" :class="r.buyConfirmYn==='Y'?'badge-green':'badge-gray'">
+                    {{ r.buyConfirmYn==='Y'?'확정':'미확정' }}
+                  </span>
+                  <span v-if="r.buyConfirmDate" style="color:#888;margin-left:4px">
+                    {{ r.buyConfirmDate }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  정산기간
+                </td>
+                <td>
+                  {{ r.settlePeriod }}
+                </td>
               </tr>
             </table>
           </div>
           <!-- ===== ■.■.■.■.■. 상품/가격 정보 ======================================== -->
           <div>
-            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">상품 · 가격</div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">
+              상품 · 가격
+            </div>
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">상품명</td>
-                <td>{{ r.prodNm }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  상품명
+                </td>
+                <td>
+                  {{ r.prodNm }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">브랜드</td>
-                <td>{{ r.brandNm }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  브랜드
+                </td>
+                <td>
+                  {{ r.brandNm }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">SKU ID</td>
-                <td style="font-size:11px;color:#888">{{ r.skuId }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  SKU ID
+                </td>
+                <td style="font-size:11px;color:#888">
+                  {{ r.skuId }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정상가</td>
-                <td>{{ fmtW(r.normalPrice) }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  정상가
+                </td>
+                <td>
+                  {{ fmtW(r.normalPrice) }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">단가</td>
-                <td>{{ fmtW(r.unitPrice) }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  단가
+                </td>
+                <td>
+                  {{ fmtW(r.unitPrice) }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수량</td>
-                <td>{{ (r.orderQty||0).toLocaleString() }}개</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  수량
+                </td>
+                <td>
+                  {{ (r.orderQty||0).toLocaleString() }}개
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">소계</td>
-                <td style="font-weight:600">{{ fmtW(r.itemPrice) }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  소계
+                </td>
+                <td style="font-weight:600">
+                  {{ fmtW(r.itemPrice) }}
+                </td>
               </tr>
             </table>
           </div>
           <!-- ===== ■.■.■.■.■. 할인/혜택 =========================================== -->
           <div>
-            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">할인 · 혜택</div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">
+              할인 · 혜택
+            </div>
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">직접할인</td>
-                <td style="color:#e74c3c">{{ r.discntAmt ? '- ' + fmtW(r.discntAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  직접할인
+                </td>
+                <td style="color:#e74c3c">
+                  {{ r.discntAmt ? '- ' + fmtW(r.discntAmt) : '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">쿠폰할인</td>
-                <td style="color:#e74c3c">{{ r.couponDiscntAmt ? '- ' + fmtW(r.couponDiscntAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  쿠폰할인
+                </td>
+                <td style="color:#e74c3c">
+                  {{ r.couponDiscntAmt ? '- ' + fmtW(r.couponDiscntAmt) : '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">프로모션할인</td>
-                <td style="color:#e74c3c">{{ r.promoDiscntAmt ? '- ' + fmtW(r.promoDiscntAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  프로모션할인
+                </td>
+                <td style="color:#e74c3c">
+                  {{ r.promoDiscntAmt ? '- ' + fmtW(r.promoDiscntAmt) : '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">캐쉬사용</td>
-                <td style="color:#e74c3c">{{ r.cacheUseAmt ? '- ' + fmtW(r.cacheUseAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  캐쉬사용
+                </td>
+                <td style="color:#e74c3c">
+                  {{ r.cacheUseAmt ? '- ' + fmtW(r.cacheUseAmt) : '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">마일리지</td>
-                <td style="color:#e74c3c">{{ r.mileageUseAmt ? '- ' + fmtW(r.mileageUseAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  마일리지
+                </td>
+                <td style="color:#e74c3c">
+                  {{ r.mileageUseAmt ? '- ' + fmtW(r.mileageUseAmt) : '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">상품권</td>
-                <td style="color:#e74c3c">{{ r.voucherUseAmt ? '- ' + fmtW(r.voucherUseAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  상품권
+                </td>
+                <td style="color:#e74c3c">
+                  {{ r.voucherUseAmt ? '- ' + fmtW(r.voucherUseAmt) : '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">사은품원가</td>
-                <td style="color:#e74c3c">{{ r.giftAmt ? '- ' + fmtW(r.giftAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  사은품원가
+                </td>
+                <td style="color:#e74c3c">
+                  {{ r.giftAmt ? '- ' + fmtW(r.giftAmt) : '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">적립예정</td>
-                <td style="color:#27ae60">{{ r.saveSchdAmt ? fmtW(r.saveSchdAmt) : '-' }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  적립예정
+                </td>
+                <td style="color:#27ae60">
+                  {{ r.saveSchdAmt ? fmtW(r.saveSchdAmt) : '-' }}
+                </td>
               </tr>
             </table>
           </div>
@@ -477,37 +681,67 @@ const rawList = reactive([]);
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산대상금액</td>
-                <td style="font-weight:600">{{ fmtW(r.settleTargetAmt) }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수수료율</td>
-                <td>{{ fmtPct(r.settleFeeRate) }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">수수료금액</td>
-                <td style="color:#e74c3c">{{ fmtW(r.settleFeeAmt) }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산금액</td>
-                <td style="font-weight:700;color:#2980b9">{{ fmtW(r.settleAmt) }}</td>
-              </tr>
-              <tr style="border-top:1px dashed #ddd">
-                <td style="color:#888;padding:4px 4px 2px 0;white-space:nowrap">마감여부</td>
-                <td style="padding-top:4px">
-                  <span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">{{ r.closeYn==='Y'?'마감완료':'미마감' }}</span>
-                  <span v-if="r.closeDate" style="color:#888;font-size:11px;margin-left:4px">{{ r.closeDate }}</span>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  정산대상금액
+                </td>
+                <td style="font-weight:600">
+                  {{ fmtW(r.settleTargetAmt) }}
                 </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">ERP전송</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  수수료율
+                </td>
                 <td>
-                  <span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">{{ r.erpSendYn==='Y'?'전송완료':'미전송' }}</span>
+                  {{ fmtPct(r.settleFeeRate) }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  수수료금액
+                </td>
+                <td style="color:#e74c3c">
+                  {{ fmtW(r.settleFeeAmt) }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  정산금액
+                </td>
+                <td style="font-weight:700;color:#2980b9">
+                  {{ fmtW(r.settleAmt) }}
+                </td>
+              </tr>
+              <tr style="border-top:1px dashed #ddd">
+                <td style="color:#888;padding:4px 4px 2px 0;white-space:nowrap">
+                  마감여부
+                </td>
+                <td style="padding-top:4px">
+                  <span class="badge" :class="r.closeYn==='Y'?'badge-purple':'badge-gray'">
+                    {{ r.closeYn==='Y'?'마감완료':'미마감' }}
+                  </span>
+                  <span v-if="r.closeDate" style="color:#888;font-size:11px;margin-left:4px">
+                    {{ r.closeDate }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  ERP전송
+                </td>
+                <td>
+                  <span class="badge" :class="r.erpSendYn==='Y'?'badge-green':'badge-gray'">
+                    {{ r.erpSendYn==='Y'?'전송완료':'미전송' }}
+                  </span>
                 </td>
               </tr>
               <tr v-if="r.remark">
-                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">비고</td>
-                <td style="color:#888">{{ r.remark }}</td>
+                <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">
+                  비고
+                </td>
+                <td style="color:#888">
+                  {{ r.remark }}
+                </td>
               </tr>
             </table>
           </div>
@@ -516,6 +750,6 @@ const rawList = reactive([]);
     </template>
   </bo-grid>
 </div>
-
-  <!-- ===== □. 목록 카드 =================================================== -->`,
+<!-- ===== □. 목록 카드 =================================================== -->
+`,
 };

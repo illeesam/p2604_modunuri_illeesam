@@ -23,7 +23,6 @@ const _WP_DispAreaPreview2 = {
     });
     const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
 
-
     // ===== return (템플릿 노출) ===============================================
 
     return { cfChartBars };
@@ -34,125 +33,183 @@ const _WP_DispAreaPreview2 = {
   <template v-if="lib.widgetType==='image_banner'">
     <div style="border-radius:6px;overflow:hidden;background:#f0f0f0;">
       <img v-if="lib.imageUrl" :src="lib.imageUrl" style="width:100%;display:block;max-height:130px;object-fit:cover;" />
-      <div v-else style="height:80px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;">🖼 이미지 배너</div>
+      <div v-else style="height:80px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;">
+        🖼 이미지 배너
+      </div>
     </div>
-    <div v-if="lib.linkUrl" style="font-size:10px;color:#aaa;margin-top:4px;">🔗 {{ lib.linkUrl }}</div>
+    <div v-if="lib.linkUrl" style="font-size:10px;color:#aaa;margin-top:4px;">
+      🔗 {{ lib.linkUrl }}
+    </div>
   </template>
   <!-- ===== □. 이미지 배너 ================================================== -->
   <!-- ===== ■. 상품 슬라이더 / 상품 ============================================ -->
   <template v-else-if="lib.widgetType==='product_slider'||lib.widgetType==='product'">
-    <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:7px;">{{ lib.name }}</div>
+    <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:7px;">
+      {{ lib.name }}
+    </div>
     <div style="display:flex;gap:6px;overflow-x:auto;">
       <div v-for="i in 4" :key="Math.random()" style="flex-shrink:0;width:64px;text-align:center;">
         <div style="height:56px;background:#f5f5f5;border-radius:5px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;font-size:16px;">
           👗
         </div>
-        <div style="font-size:10px;color:#888;">상품{{ i }}</div>
+        <div style="font-size:10px;color:#888;">
+          상품{{ i }}
+        </div>
       </div>
     </div>
   </template>
   <!-- ===== □. 상품 슬라이더 / 상품 ============================================ -->
   <!-- ===== ■. 차트 ====================================================== -->
   <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
-    <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
-    <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
-      <div v-for="(bar,i) in cfChartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
-        <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}"></div>
-        <div style="font-size:9px;color:#aaa;">{{ bar.label }}</div>
+  <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">
+    {{ lib.chartTitle||lib.name }}
+  </div>
+  <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
+    <div v-for="(bar,i) in cfChartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}">
+      </div>
+      <div style="font-size:9px;color:#aaa;">
+        {{ bar.label }}
       </div>
     </div>
-    <div v-else style="height:50px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:11px;">데이터 없음</div>
-  </template>
-  <!-- ===== □. 차트 ====================================================== -->
-  <!-- ===== ■. 텍스트 배너 ================================================== -->
-  <template v-else-if="lib.widgetType==='text_banner'">
-    <div :style="{background:lib.bgColor||'#fff',color:lib.textColor||'#222',padding:'10px',borderRadius:'5px',border:'1px solid #eee',fontSize:'12px'}">
-      <span v-if="lib.textContent" v-html="lib.textContent"></span>
-      <span v-else style="color:#ccc;">텍스트 배너</span>
+  </div>
+  <div v-else style="height:50px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:11px;">
+    데이터 없음
+  </div>
+</template>
+<!-- ===== □. 차트 ====================================================== -->
+<!-- ===== ■. 텍스트 배너 ================================================== -->
+<template v-else-if="lib.widgetType==='text_banner'">
+  <div :style="{background:lib.bgColor||'#fff',color:lib.textColor||'#222',padding:'10px',borderRadius:'5px',border:'1px solid #eee',fontSize:'12px'}">
+    <span v-if="lib.textContent" v-html="lib.textContent">
+    </span>
+    <span v-else style="color:#ccc;">
+      텍스트 배너
+    </span>
+  </div>
+</template>
+<!-- ===== □. 텍스트 배너 ================================================== -->
+<!-- ===== ■. 정보 카드 =================================================== -->
+<template v-else-if="lib.widgetType==='info_card'">
+  <div style="background:#f8f9fa;border-radius:5px;padding:10px;border:1px solid #eee;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:4px;">
+      {{ lib.infoTitle||'카드 제목' }}
     </div>
-  </template>
-  <!-- ===== □. 텍스트 배너 ================================================== -->
-  <!-- ===== ■. 정보 카드 =================================================== -->
-  <template v-else-if="lib.widgetType==='info_card'">
-    <div style="background:#f8f9fa;border-radius:5px;padding:10px;border:1px solid #eee;">
-      <div style="font-size:12px;font-weight:700;margin-bottom:4px;">{{ lib.infoTitle||'카드 제목' }}</div>
-      <div style="font-size:11px;color:#666;white-space:pre-line;">{{ (lib.infoBody||'카드 내용').slice(0,100) }}</div>
+    <div style="font-size:11px;color:#666;white-space:pre-line;">
+      {{ (lib.infoBody||'카드 내용').slice(0,100) }}
     </div>
-  </template>
-  <!-- ===== □. 정보 카드 =================================================== -->
-  <!-- ===== ■. 쿠폰 ====================================================== -->
-  <template v-else-if="lib.widgetType==='coupon'">
-    <div style="background:linear-gradient(135deg,#e8587a,#f97316);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <div>
-        <div style="font-size:10px;opacity:.8;">쿠폰</div>
-        <div style="font-size:14px;font-weight:700;">{{ lib.couponCode||'CODE' }}</div>
-        <div v-if="lib.couponDesc" style="font-size:10px;opacity:.8;">{{ lib.couponDesc }}</div>
+  </div>
+</template>
+<!-- ===== □. 정보 카드 =================================================== -->
+<!-- ===== ■. 쿠폰 ====================================================== -->
+<template v-else-if="lib.widgetType==='coupon'">
+  <div style="background:linear-gradient(135deg,#e8587a,#f97316);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    <div>
+      <div style="font-size:10px;opacity:.8;">
+        쿠폰
       </div>
-      <span style="font-size:22px;">🎟</span>
-      <div style="border:2px dashed rgba(255,255,255,.5);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
-        쿠폰 발기
+      <div style="font-size:14px;font-weight:700;">
+        {{ lib.couponCode||'CODE' }}
       </div>
-    </div>
-  </template>
-  <!-- ===== □. 쿠폰 ====================================================== -->
-  <!-- ===== ■. 캐시 배너 =================================================== -->
-  <template v-else-if="lib.widgetType==='cache_banner'">
-    <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;gap:10px;">
-      <span style="font-size:22px;">💰</span>
-      <div>
-        <div style="font-size:10px;opacity:.8;">적립 캐시</div>
-        <div style="font-size:16px;font-weight:800;">{{ lib.cacheAmount ? lib.cacheAmount.toLocaleString()+'원' : '-' }}</div>
-        <div v-if="lib.cacheDesc" style="font-size:10px;opacity:.8;">{{ lib.cacheDesc }}</div>
-      </div>
-    </div>
-  </template>
-  <!-- ===== □. 캐시 배너 =================================================== -->
-  <!-- ===== ■. HTML 에디터 ================================================ -->
-  <template v-else-if="lib.widgetType==='html_editor'">
-    <div v-if="lib.htmlContent" v-html="lib.htmlContent" style="font-size:12px;overflow:hidden;max-height:120px;"></div>
-    <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">HTML 미리보기</div>
-  </template>
-  <!-- ===== □. HTML 에디터 ================================================ -->
-  <!-- ===== ■. 위젯 임베드 ================================================== -->
-  <template v-else-if="lib.widgetType==='widget_embed'">
-    <div v-if="lib.embedCode" v-html="lib.embedCode" style="overflow:hidden;max-height:140px;"></div>
-    <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">임베드 미리보기</div>
-  </template>
-  <!-- ===== □. 위젯 임베드 ================================================== -->
-  <!-- ===== ■. 팝업 ====================================================== -->
-  <template v-else-if="lib.widgetType==='popup'">
-    <div style="border:2px solid #e0e0e0;border-radius:6px;overflow:hidden;">
-      <div style="background:#444;color:#fff;padding:5px 10px;font-size:11px;display:flex;justify-content:space-between;">
-        <span>팝업</span>
-        <span>✕</span>
-      </div>
-      <div style="height:60px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;">
-        {{ lib.popupWidth||600 }}×{{ lib.popupHeight||400 }}
+      <div v-if="lib.couponDesc" style="font-size:10px;opacity:.8;">
+        {{ lib.couponDesc }}
       </div>
     </div>
-  </template>
-  <!-- ===== □. 팝업 ====================================================== -->
-  <!-- ===== ■. 파일 ====================================================== -->
-  <template v-else-if="lib.widgetType==='file'">
-    <div style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;">
-      <span style="font-size:20px;">📎</span>
-      <div>
-        <div style="font-size:12px;font-weight:600;color:#222;">{{ lib.fileLabel||'파일 다운로드' }}</div>
-        <div v-if="lib.fileUrl" style="font-size:10px;color:#aaa;">{{ lib.fileUrl.split('/').pop() }}</div>
+    <span style="font-size:22px;">
+      🎟
+    </span>
+    <div style="border:2px dashed rgba(255,255,255,.5);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
+      쿠폰 발기
+    </div>
+  </div>
+</template>
+<!-- ===== □. 쿠폰 ====================================================== -->
+<!-- ===== ■. 캐시 배너 =================================================== -->
+<template v-else-if="lib.widgetType==='cache_banner'">
+  <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;gap:10px;">
+    <span style="font-size:22px;">
+      💰
+    </span>
+    <div>
+      <div style="font-size:10px;opacity:.8;">
+        적립 캐시
+      </div>
+      <div style="font-size:16px;font-weight:800;">
+        {{ lib.cacheAmount ? lib.cacheAmount.toLocaleString()+'원' : '-' }}
+      </div>
+      <div v-if="lib.cacheDesc" style="font-size:10px;opacity:.8;">
+        {{ lib.cacheDesc }}
       </div>
     </div>
-  </template>
-  <!-- ===== □. 파일 ====================================================== -->
-  <!-- ===== ■. 기타 ====================================================== -->
-  <template v-else>
-    <div style="background:#f5f5f5;border-radius:6px;padding:16px;text-align:center;color:#bbb;">
-      <div style="font-size:24px;margin-bottom:4px;">▪</div>
-      <div style="font-size:11px;">{{ lib.name }}</div>
+  </div>
+</template>
+<!-- ===== □. 캐시 배너 =================================================== -->
+<!-- ===== ■. HTML 에디터 ================================================ -->
+<template v-else-if="lib.widgetType==='html_editor'">
+  <div v-if="lib.htmlContent" v-html="lib.htmlContent" style="font-size:12px;overflow:hidden;max-height:120px;">
+  </div>
+  <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">
+    HTML 미리보기
+  </div>
+</template>
+<!-- ===== □. HTML 에디터 ================================================ -->
+<!-- ===== ■. 위젯 임베드 ================================================== -->
+<template v-else-if="lib.widgetType==='widget_embed'">
+  <div v-if="lib.embedCode" v-html="lib.embedCode" style="overflow:hidden;max-height:140px;">
+  </div>
+  <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">
+    임베드 미리보기
+  </div>
+</template>
+<!-- ===== □. 위젯 임베드 ================================================== -->
+<!-- ===== ■. 팝업 ====================================================== -->
+<template v-else-if="lib.widgetType==='popup'">
+  <div style="border:2px solid #e0e0e0;border-radius:6px;overflow:hidden;">
+    <div style="background:#444;color:#fff;padding:5px 10px;font-size:11px;display:flex;justify-content:space-between;">
+      <span>
+        팝업
+      </span>
+      <span>
+        ✕
+      </span>
     </div>
-  </template>
+    <div style="height:60px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px;">
+      {{ lib.popupWidth||600 }}×{{ lib.popupHeight||400 }}
+    </div>
+  </div>
+</template>
+<!-- ===== □. 팝업 ====================================================== -->
+<!-- ===== ■. 파일 ====================================================== -->
+<template v-else-if="lib.widgetType==='file'">
+  <div style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;">
+    <span style="font-size:20px;">
+      📎
+    </span>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:#222;">
+        {{ lib.fileLabel||'파일 다운로드' }}
+      </div>
+      <div v-if="lib.fileUrl" style="font-size:10px;color:#aaa;">
+        {{ lib.fileUrl.split('/').pop() }}
+      </div>
+    </div>
+  </div>
+</template>
+<!-- ===== □. 파일 ====================================================== -->
+<!-- ===== ■. 기타 ====================================================== -->
+<template v-else>
+  <div style="background:#f5f5f5;border-radius:6px;padding:16px;text-align:center;color:#bbb;">
+    <div style="font-size:24px;margin-bottom:4px;">
+      ▪
+    </div>
+    <div style="font-size:11px;">
+      {{ lib.name }}
+    </div>
+  </div>
+</template>
 </div>
-
-  <!-- ===== □. 기타 ====================================================== -->`,
+<!-- ===== □. 기타 ====================================================== -->
+`,
 };
 
 /* -- 메인 컴포넌트 -- */
@@ -162,7 +219,13 @@ window.DpDispAreaPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const codes = reactive({ disp_widget_types: [], disp_area: [], active_statuses: [], disp_envs: [], visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
@@ -177,6 +240,70 @@ window.DpDispAreaPreview = {
     const widgetLibs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
     const tab = Vue.toRef(uiState, 'tab');
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispAreaPreview.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 적용
+      if (cmd === 'searchParam-apply') {
+        return onSearch();
+      // 검색조건 초기화 + 재적용
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 좌측 트리 전체 펼치기
+      } else if (cmd === 'pathTree-expand-all') {
+        return expandAll();
+      // 좌측 트리 전체 접기
+      } else if (cmd === 'pathTree-collapse-all') {
+        return collapseAll();
+      // 현재 그리드 초기화
+      } else if (cmd === 'preview-reset') {
+        return onResetCurrent();
+      // 실제컨텐츠 토글
+      } else if (cmd === 'preview-toggle-real') {
+        gridState.showRealContent = !gridState.showRealContent;
+        return;
+      // 스팬 팝업 닫기
+      } else if (cmd === 'preview-close-span') {
+        return closeSpanPopup();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispAreaPreview.js : handleSelectAction -> ', cmd, param);
+      // 좌측 트리 노드 토글
+      if (cmd === 'pathTree-toggle') {
+        return toggleNode(param);
+      // 좌측 트리 위젯 선택
+      } else if (cmd === 'pathTree-select') {
+        return onTreeSelect(param);
+      // 미리보기 그리드 탭 변경
+      } else if (cmd === 'preview-grid') {
+        gridState.previewGrid = param;
+        return;
+      // 미리보기 뷰포트 모드 변경
+      } else if (cmd === 'preview-viewport') {
+        gridState.viewportMode = param;
+        return;
+      // 슬롯 위치 스팬 팝업 토글
+      } else if (cmd === 'preview-span-popup') {
+        return toggleSpanPopup(param.e, param.idx);
+      // 슬롯 스팬 변경
+      } else if (cmd === 'preview-span-set') {
+        return setSpan(param.idx, param.axis, param.delta);
+      // 슬롯 제거
+      } else if (cmd === 'preview-slot-remove') {
+        return removeSlot(param);
+      // 대시보드 아이템 제거
+      } else if (cmd === 'preview-dash-remove') {
+        return removeDashItem(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -599,32 +726,32 @@ window.DpDispAreaPreview = {
       }
     };
 
+    // ===== return (템플릿 노출) ===============================================
+
     return {
-      cfSiteNm, today,
-      VIEWPORT,
-      wIcon, wTypeLabel,
-      searchParam,
-      applied, onSearch, onReset,
-      cfFilteredLibs,
-      onTreeSelect,
-      cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
-      onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
-      uiState, gridState, GRID_TABS,
-      cfAutoGridColumns,
-      tabSlots, cfCurrentSlots,
-      dragState, onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
-      toggleSpanPopup, closeSpanPopup,
-      dashCanvas, dashItems,
-      onDashDragOver, onDashDragLeave, onDashDrop,
-      removeDashItem, startItemMove, startItemResize,
-      cfPlacedCount, onResetCurrent, codes,
+      codes, searchParam, applied, widgetLibs, uiState, gridState,                  // 상태 / 데이터
+      tabSlots, dashCanvas, dashItems, openNodes, dragState,                        // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSiteNm, cfFilteredLibs, cfTree, cfAutoGridColumns, cfCurrentSlots, cfPlacedCount, // computed
+      GRID_TABS, GRID_COLS, VIEWPORT, today,                                        // 상수
+      wIcon, wTypeLabel, isOpen, allChildrenOpen,                                   // 헬퍼
+      toggleAllChildren,                                                            // 헬퍼 (이벤트인자 인라인)
+      onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,               // dnd 핸들러
+      onDragOver, onDragLeave, onDrop,                                              // dnd 핸들러
+      onDashDragOver, onDashDragLeave, onDashDrop,                                  // dnd 핸들러
+      startItemMove, startItemResize,                                               // mouse 핸들러
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
-    <div>전시영역미리보기 <span style="font-size:13px;font-weight:400;color:#888;">영역 트리 & 드래그하여 배치</span></div>
+    <div>
+      전시영역미리보기
+      <span style="font-size:13px;font-weight:400;color:#888;">
+        영역 트리 & 드래그하여 배치
+      </span>
+    </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
       🌐 {{ cfSiteNm }}
     </span>
@@ -634,37 +761,61 @@ window.DpDispAreaPreview = {
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          📅 전시일시
+        </span>
         <bo-date-time-picker v-model:date="searchParam.previewDate" v-model:time="searchParam.previewTime"
           :show-clear="false" date-width="136px" time-width="90px" />
       </div>
-      <div style="width:1px;height:24px;background:#e0e0e0;"></div>
+      <div style="width:1px;height:24px;background:#e0e0e0;">
+      </div>
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          상태
+        </span>
         <select v-model="searchParam.filterStatus" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            전체
+          </option>
+          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">환경</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          환경
+        </span>
         <select v-model="searchParam.filterDispEnv" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option v-for="c in codes.disp_envs" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            전체
+          </option>
+          <option v-for="c in codes.disp_envs" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          공개대상
+        </span>
         <select v-model="searchParam.filterVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
-          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">
+            {{ o.label }}
+          </option>
         </select>
       </div>
-      <div style="width:1px;height:24px;background:#e0e0e0;"></div>
+      <div style="width:1px;height:24px;background:#e0e0e0;">
+      </div>
       <!-- ===== ■.■.■. 영역 ================================================== -->
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          위젯유형
+        </span>
         <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
-          <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
+          <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">
+            {{ t.codeLabel }}
+          </option>
         </select>
       </div>
       <bo-multi-check-select
@@ -677,11 +828,21 @@ window.DpDispAreaPreview = {
         placeholder="검색대상 전체"
         all-label="전체 선택"
         min-width="130px" />
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="onSearch" />
-      <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-apply')" />
+      <span style="font-size:12px;color:#888;">
+        총
+        <b>
+          {{ cfFilteredLibs.length }}
+        </b>
+        건
+      </span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-        <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
-        <button @click="onReset" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
+        <button @click="handleBtnAction('searchParam-apply')" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">
+          검색
+        </button>
+        <button @click="handleBtnAction('searchParam-reset')" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">
+          초기화
+        </button>
       </div>
     </div>
   </div>
@@ -691,37 +852,43 @@ window.DpDispAreaPreview = {
     <!-- ===== ■.■. 왼쪽: 트리 (카드) =========================================== -->
     <div class="card" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;padding:0;overflow:hidden;">
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
-        <span>표시경로</span>
-        <span style="font-size:10px;color:#aaa;font-weight:400;">⠿ 드래그하여 배치</span>
+        <span>
+          표시경로
+        </span>
+        <span style="font-size:10px;color:#aaa;font-weight:400;">
+          ⠿ 드래그하여 배치
+        </span>
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
       <div style="padding:6px 12px;display:flex;gap:4px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;">
-        <button @click="expandAll"
+        <button @click="handleBtnAction('pathTree-expand-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▼ 전체펼치기
         </button>
-        <button @click="collapseAll"
+        <button @click="handleBtnAction('pathTree-collapse-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▶ 전체닫기
         </button>
       </div>
       <div style="flex:1;overflow-y:auto;padding:4px 0;">
         <!-- ===== ■.■.■.■. 루트 노드 ============================================= -->
-        <div @click="toggleNode('__root__')"
+        <div @click="handleSelectAction('pathTree-toggle', '__root__')"
           style="display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:700;color:#222;user-select:none;background:#f8f9fb;border-radius:4px;margin:1px 4px;"
           :style="isOpen('__root__') ? 'background:#f0f4ff;' : ''">
           <span style="font-size:10px;color:#9ca3af;transition:transform .2s;"
             :style="isOpen('__root__') ? 'transform:rotate(90deg);' : ''">
             ▶
           </span>
-          <span>📂 전체</span>
+          <span>
+            📂 전체
+          </span>
           <span style="margin-left:auto;font-size:10px;background:#fff;color:#555;border:1px solid #ddd;border-radius:8px;padding:0 6px;">
             {{ cfTree.reduce((acc,n)=>acc+n.children.reduce((a,c)=>a+c.libs.length,0),0) }}
           </span>
         </div>
         <div v-if="isOpen('__root__')" style="padding-left:8px;">
           <div v-for="node in cfTree" :key="node?.label">
-            <div @click="toggleNode(node.label)"
+            <div @click="handleSelectAction('pathTree-toggle', node.label)"
               draggable="true"
               @dragstart="onNodeDragStart($event, node.children.flatMap(c => c.libs))"
               @dragend="onNodeDragEnd"
@@ -731,7 +898,9 @@ window.DpDispAreaPreview = {
                 :style="isOpen(node.label) ? 'transform:rotate(90deg);' : ''">
                 ▶
               </span>
-              <span>{{ node.label }}</span>
+              <span>
+                {{ node.label }}
+              </span>
               <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 6px;">
                 {{ node.children.reduce((acc,c)=>acc+c.libs.length,0) }}
               </span>
@@ -739,7 +908,7 @@ window.DpDispAreaPreview = {
             <!-- ===== ■.■.■.■.■.■. 조건부 영역 ======================================== -->
             <template v-if="isOpen(node.label)">
               <div v-for="sub in node.children" :key="node.label+'_'+sub.label">
-                <div @click="toggleNode(node.label+'_'+sub.label)"
+                <div @click="handleSelectAction('pathTree-toggle', node.label+'_'+sub.label)"
                   draggable="true"
                   @dragstart="onNodeDragStart($event, sub.libs)"
                   @dragend="onNodeDragEnd"
@@ -749,7 +918,9 @@ window.DpDispAreaPreview = {
                     :style="isOpen(node.label+'_'+sub.label) ? 'transform:rotate(90deg);' : ''">
                     ▶
                   </span>
-                  <span>{{ sub.label }}</span>
+                  <span>
+                    {{ sub.label }}
+                  </span>
                   <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 5px;">
                     {{ sub.libs.length }}
                   </span>
@@ -759,19 +930,27 @@ window.DpDispAreaPreview = {
                     draggable="true"
                     @dragstart="onItemDragStart($event, lib)"
                     @dragend="onItemDragEnd"
-                    @click="onTreeSelect(lib)"
+                    @click="handleSelectAction('pathTree-select', lib)"
                     style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
                     :style="uiState.selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
-                    <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
-                    <span style="font-size:13px;flex-shrink:0;">{{ wIcon(lib.widgetType) }}</span>
+                    <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">
+                      ⠿
+                    </span>
+                    <span style="font-size:13px;flex-shrink:0;">
+                      {{ wIcon(lib.widgetType) }}
+                    </span>
                     <span style="font-size:9px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:3px;padding:0 4px;white-space:nowrap;flex-shrink:0;">
                       {{ lib.widgetType ? lib.widgetType.replace('_',' ') : '-' }}
                     </span>
                     <span style="font-size:9px;background:#e8f0fe;color:#1a73e8;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0;white-space:nowrap;">
                       (영역)
                     </span>
-                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ lib.name }}</span>
-                    <span style="font-size:9px;color:#9ca3af;flex-shrink:0;">#{{ String(lib.libId).padStart(4,'0') }}</span>
+                    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                      {{ lib.name }}
+                    </span>
+                    <span style="font-size:9px;color:#9ca3af;flex-shrink:0;">
+                      #{{ String(lib.libId).padStart(4,'0') }}
+                    </span>
                   </div>
                 </template>
               </div>
@@ -779,7 +958,9 @@ window.DpDispAreaPreview = {
           </div>
         </div>
         <!-- ===== /root children ============================================= -->
-        <div v-if="!cfTree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">위젯이 없습니다.</div>
+        <div v-if="!cfTree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">
+          위젯이 없습니다.
+        </div>
       </div>
     </div>
     <!-- ===== □.□. 왼쪽: 트리 (카드) =========================================== -->
@@ -788,7 +969,7 @@ window.DpDispAreaPreview = {
       <!-- ===== ■.■.■. 탭바 + 뷰포트 토글 + 배치수 =================================== -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">
-          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="gridState.previewGrid=tab.id"
+          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="handleSelectAction('preview-grid', tab.id)"
             style="padding:5px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:-1px;"
             :style="gridState.previewGrid===tab.id
             ? 'background:#fff;border-color:#e8e8e8;border-bottom-color:#fff;color:#1d4ed8;z-index:1;'
@@ -798,13 +979,14 @@ window.DpDispAreaPreview = {
         </div>
         <!-- ===== ■.■.■.■. 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ===================== -->
         <div v-if="gridState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="gridState.showRealContent=!gridState.showRealContent"
+          <button @click="handleBtnAction('preview-toggle-real')"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="gridState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
             {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
-          <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="gridState.viewportMode=key"
+          <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;">
+          </div>
+          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="handleSelectAction('preview-viewport', key)"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="gridState.viewportMode===key
             ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -813,15 +995,17 @@ window.DpDispAreaPreview = {
           </button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:0 0 0 12px;">
-          <span style="font-size:12px;color:#555;font-weight:600;">{{ cfPlacedCount }}개</span>
-          <button @click="onResetCurrent"
+          <span style="font-size:12px;color:#555;font-weight:600;">
+            {{ cfPlacedCount }}개
+          </span>
+          <button @click="handleBtnAction('preview-reset')"
             style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;white-space:nowrap;">
             초기화
           </button>
         </div>
       </div>
       <!-- ===== ■.■.■. 그리드 캔버스 (grid1~4) =================================== -->
-      <div v-if="gridState.previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
+      <div v-if="gridState.previewGrid!=='dashboard'" @click="handleBtnAction('preview-close-span')" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
         <!-- ===== ■.■.■.■. 뷰포트 래퍼 ============================================ -->
         <div :style="{
           width: VIEWPORT[gridState.viewportMode].width || '100%',
@@ -847,152 +1031,148 @@ window.DpDispAreaPreview = {
               gap: '10px',
               }">
               <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
-                <div v-if="!gridState.showRealContent || slot"
-                  @dragover="onDragOver($event, idx)"
-                  @dragleave="onDragLeave"
-                  @drop="onDrop($event, idx)"
-                  style="border-radius:8px;transition:all .15s;position:relative;"
-                  :style="[
-                  dragState.dragOverIdx===idx
-                  ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;'
-                  : slot
-                  ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;')
-                  : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
-                  slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {},
-                  slot && (slot.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
-                  ]">
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 비어있음 ==================================== -->
-                  <div v-if="!slot && dragState.dragOverIdx!==idx"
-                    style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
-                    <span style="font-size:20px;">+</span>
-                    <span style="font-size:11px;">드래그하여 추가</span>
-                  </div>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 드롭 오버 =================================== -->
-                  <div v-else-if="!slot && dragState.dragOverIdx===idx"
-                    style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
-                    ▼ 여기에 추가
-                  </div>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 배치됨 ===================================== -->
-                  <template v-else-if="slot">
-                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 슬롯 헤더 (실제컨텐츠 OFF) ===================== -->
-                    <div v-if="!gridState.showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
-                      <span style="font-size:12px;">{{ wIcon(slot.widgetType) }}</span>
-                      <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">
-                        {{ wTypeLabel(slot.widgetType) }}
-                      </span>
-                      <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                        {{ slot.name }}
-                      </span>
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. span 설정 아이콘 ========================= -->
-                      <button @click="toggleSpanPopup($event, idx)"
+                <div v-if="!gridState.showRealContent || slot" @dragover="onDragOver($event, idx)" @dragleave="onDragLeave" @drop="onDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ dragState.dragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;' : slot ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {}, slot && (slot.rowSpan||1) > 1 ? { gridRow: 'span ' + slot.rowSpan } : {}, ]">
+                <!-- ===== ■.■.■.■.■.■.■.■.■. 비어있음 ==================================== -->
+                <div v-if="!slot && dragState.dragOverIdx!==idx" style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
+                <span style="font-size:20px;">
+                  +
+                </span>
+                <span style="font-size:11px;">
+                  드래그하여 추가
+                </span>
+              </div>
+              <!-- ===== ■.■.■.■.■.■.■.■.■. 드롭 오버 =================================== -->
+              <div v-else-if="!slot && dragState.dragOverIdx===idx" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
+              ▼ 여기에 추가
+            </div>
+            <!-- ===== ■.■.■.■.■.■.■.■.■. 배치됨 ===================================== -->
+            <template v-else-if="slot">
+              <!-- ===== ■.■.■.■.■.■.■.■.■.■. 슬롯 헤더 (실제컨텐츠 OFF) ===================== -->
+              <div v-if="!gridState.showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
+                <span style="font-size:12px;">
+                  {{ wIcon(slot.widgetType) }}
+                </span>
+                <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">
+                  {{ wTypeLabel(slot.widgetType) }}
+                </span>
+                <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ slot.name }}
+                </span>
+                <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. span 설정 아이콘 ========================= -->
+                <button @click="handleSelectAction('preview-span-popup', { e: $event, idx })"
                         :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                         style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                         :style="gridState.spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">
-                        ⚙
-                      </button>
-                      <button @click="removeSlot(idx)"
+                  ⚙
+                </button>
+                <button @click="handleSelectAction('preview-slot-remove', idx)"
                         style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
-                        ✕
-                      </button>
-                    </div>
-                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. span 설정 레이어 팝업 ======================== -->
-                    <div v-if="gridState.spanPopupIdx===idx" @click.stop
+                  ✕
+                </button>
+              </div>
+              <!-- ===== ■.■.■.■.■.■.■.■.■.■. span 설정 레이어 팝업 ======================== -->
+              <div v-if="gridState.spanPopupIdx===idx" @click.stop
                       style="position:absolute;top:36px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 닫기 ================================== -->
-                      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                        <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
-                        <button @click="closeSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
-                          ✕
-                        </button>
-                      </div>
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 열(colspan) ========================== -->
-                      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-                        <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
-                        <button @click="setSpan(idx,'col',-1)" :disabled="(slot.colSpan||1)<=1"
+                <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 닫기 ================================== -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                  <span style="font-size:11px;font-weight:700;color:#374151;">
+                    그리드 스팬 설정
+                  </span>
+                  <button @click="handleBtnAction('preview-close-span')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
+                    ✕
+                  </button>
+                </div>
+                <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 열(colspan) ========================== -->
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                  <span style="font-size:11px;color:#6b7280;width:36px;">
+                    열 span
+                  </span>
+                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">
-                          −
-                        </button>
-                        <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
-                          {{ slot.colSpan||1 }}
-                        </span>
-                        <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
+                    −
+                  </button>
+                  <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
+                    {{ slot.colSpan||1 }}
+                  </span>
+                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">
-                          +
-                        </button>
-                        <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[gridState.previewGrid]||1 }}</span>
-                      </div>
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 행(rowspan) ========================== -->
-                      <div style="display:flex;align-items:center;gap:6px;">
-                        <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
-                        <button @click="setSpan(idx,'row',-1)" :disabled="(slot.rowSpan||1)<=1"
+                    +
+                  </button>
+                  <span style="font-size:10px;color:#9ca3af;">
+                    / {{ GRID_COLS[gridState.previewGrid]||1 }}
+                  </span>
+                </div>
+                <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 행(rowspan) ========================== -->
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:11px;color:#6b7280;width:36px;">
+                    행 span
+                  </span>
+                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">
-                          −
-                        </button>
-                        <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
-                          {{ slot.rowSpan||1 }}
-                        </span>
-                        <button @click="setSpan(idx,'row',+1)" :disabled="(slot.rowSpan||1)>=4"
+                    −
+                  </button>
+                  <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
+                    {{ slot.rowSpan||1 }}
+                  </span>
+                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'row', delta: +1 })" :disabled="(slot.rowSpan||1)>=4"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">
-                          +
-                        </button>
-                        <span style="font-size:10px;color:#9ca3af;">/ 4</span>
-                      </div>
-                    </div>
-                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×버튼만 ======================== -->
-                    <div v-else style="position:relative;">
-                      <button @click="removeSlot(idx)"
-                        style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
-                        ✕
-                      </button>
-                    </div>
-                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 위젯미리보기 ================================ -->
-                    <disp-x02-area v-if="slot.areaCode"
-                      :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                      :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
-                      :area-item="{
-                      code: slot.areaCode,
-                      label: slot.areaLabel,
-                      info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===slot.areaCode) || {},
-                      panels: ([]||[]).filter(p => p.area===slot.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))
-                      }" />
-                    <widget-preview v-else :lib="slot" />
-                  </template>
+                    +
+                  </button>
+                  <span style="font-size:10px;color:#9ca3af;">
+                    / 4
+                  </span>
                 </div>
-                <!-- ===== /slot ====================================================== -->
-              </template>
-            </div>
-            <!-- ===== /grid ====================================================== -->
+              </div>
+              <!-- ===== ■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×버튼만 ======================== -->
+              <div v-else style="position:relative;">
+                <button @click="handleSelectAction('preview-slot-remove', idx)"
+
+                        style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
+                  ✕
+                </button>
+              </div>
+              <!-- ===== ■.■.■.■.■.■.■.■.■.■. 위젯미리보기 ================================ -->
+              <disp-x02-area v-if="slot.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: slot.areaCode, label: slot.areaLabel, info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===slot.areaCode) || {}, panels: ([]||[]).filter(p => p.area===slot.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)) }" />
+              <widget-preview v-else :lib="slot" />
+            </template>
           </div>
-          <!-- ===== /device frame ============================================== -->
-        </div>
-        <!-- ===== /viewport wrapper ========================================== -->
+          <!-- ===== /slot ====================================================== -->
+        </template>
       </div>
-      <!-- ===== /grid canvas =============================================== -->
-      <!-- ===== ■.■.■. 대시보드 캔버스 (자유 배치) ==================================== -->
-      <div v-else style="flex:1;overflow:auto;padding:16px;">
-        <div
+      <!-- ===== /grid ====================================================== -->
+    </div>
+    <!-- ===== /device frame ============================================== -->
+  </div>
+  <!-- ===== /viewport wrapper ========================================== -->
+</div>
+<!-- ===== /grid canvas =============================================== -->
+<!-- ===== ■.■.■. 대시보드 캔버스 (자유 배치) ==================================== -->
+<div v-else style="flex:1;overflow:auto;padding:16px;">
+  <div
           ref="dashCanvas"
           @dragover="onDashDragOver"
           @dragleave="onDashDragLeave"
           @drop="onDashDrop"
           style="position:relative;min-height:560px;min-width:600px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
           :style="gridState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
-          <!-- ===== ■.■.■.■.■. 빈 상태 ============================================ -->
-          <div v-if="!dashItems.length && !gridState.dashDragOver"
-            style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
-            <span style="font-size:48px;">🧩</span>
-            <span style="font-size:13px;">왼쪽 트리에서 위젯을 드래그하여 배치하세요</span>
-          </div>
-          <div v-if="gridState.dashDragOver && !dashItems.length"
-            style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
-            ▼ 여기에 배치
-          </div>
-          <!-- ===== ■.■.■.■.■. 배치된 아이템 ========================================= -->
-          <div v-for="item in dashItems" :key="item?.id"
+    <!-- ===== ■.■.■.■.■. 빈 상태 ============================================ -->
+    <div v-if="!dashItems.length && !gridState.dashDragOver" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
+    <span style="font-size:48px;">
+      🧩
+    </span>
+    <span style="font-size:13px;">
+      왼쪽 트리에서 위젯을 드래그하여 배치하세요
+    </span>
+  </div>
+  <div v-if="gridState.dashDragOver && !dashItems.length" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
+  ▼ 여기에 배치
+</div>
+<!-- ===== ■.■.■.■.■. 배치된 아이템 ========================================= -->
+<div v-for="item in dashItems" :key="item?.id"
             :style="{
             position:'absolute',
             left: item.x+'px',
@@ -1006,59 +1186,56 @@ window.DpDispAreaPreview = {
             userSelect:'none',
             zIndex: 1,
             }">
-            <!-- ===== ■.■.■.■.■.■. 이동 핸들 헤더 ====================================== -->
-            <div
+  <!-- ===== ■.■.■.■.■.■. 이동 핸들 헤더 ====================================== -->
+  <div
               @mousedown="startItemMove($event, item)"
               style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;border-radius:8px 8px 0 0;cursor:move;">
-              <span style="font-size:10px;color:#c4c4c4;letter-spacing:1px;">⠿⠿</span>
-              <span style="font-size:12px;">{{ wIcon(item.lib.widgetType) }}</span>
-              <span style="font-size:11px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;flex-shrink:0;">
-                {{ wTypeLabel(item.lib.widgetType) }}
-              </span>
-              <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">
-                {{ item.lib.name }}
-              </span>
-              <button @mousedown.stop @click="removeDashItem(item.id)"
+    <span style="font-size:10px;color:#c4c4c4;letter-spacing:1px;">
+      ⠿⠿
+    </span>
+    <span style="font-size:12px;">
+      {{ wIcon(item.lib.widgetType) }}
+    </span>
+    <span style="font-size:11px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;flex-shrink:0;">
+      {{ wTypeLabel(item.lib.widgetType) }}
+    </span>
+    <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">
+      {{ item.lib.name }}
+    </span>
+    <button @mousedown.stop @click="handleSelectAction('preview-dash-remove', item.id)"
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
-                ✕
-              </button>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 위젯미리보기 ======================================== -->
-            <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
-              <disp-x02-area v-if="item.lib.areaCode"
-                :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
-                :area-item="{
-                code: item.lib.areaCode,
-                label: item.lib.areaLabel,
-                info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===item.lib.areaCode) || {},
-                panels: ([]||[]).filter(p => p.area===item.lib.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0))
-                }" />
-              <widget-preview v-else :lib="item.lib" />
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 크기 조절 핸들 ====================================== -->
-            <div
+      ✕
+    </button>
+  </div>
+  <!-- ===== ■.■.■.■.■.■. 위젯미리보기 ======================================== -->
+  <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
+    <disp-x02-area v-if="item.lib.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: item.lib.areaCode, label: item.lib.areaLabel, info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===item.lib.areaCode) || {}, panels: ([]||[]).filter(p => p.area===item.lib.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)) }" />
+    <widget-preview v-else :lib="item.lib" />
+  </div>
+  <!-- ===== ■.■.■.■.■.■. 크기 조절 핸들 ====================================== -->
+  <div
               @mousedown="startItemResize($event, item)"
               style="position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:se-resize;border-radius:0 0 8px 0;overflow:hidden;">
-              <div style="width:0;height:0;border-style:solid;border-width:0 0 18px 18px;border-color:transparent transparent #d1d5db transparent;position:absolute;right:0;bottom:0;"></div>
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 크기 표시 ========================================= -->
-            <div style="position:absolute;right:22px;bottom:3px;font-size:9px;color:#c4c4c4;pointer-events:none;user-select:none;">
-              {{ Math.round(item.w) }}×{{ Math.round(item.h) }}
-            </div>
-          </div>
-        </div>
-        <!-- ===== /dashCanvas ================================================ -->
-      </div>
-      <!-- ===== /dashboard ================================================= -->
+    <div style="width:0;height:0;border-style:solid;border-width:0 0 18px 18px;border-color:transparent transparent #d1d5db transparent;position:absolute;right:0;bottom:0;">
     </div>
-    <!-- ===== /오른쪽 ======================================================= -->
   </div>
-  <!-- ===== /2단 ======================================================== -->
+  <!-- ===== ■.■.■.■.■.■. 크기 표시 ========================================= -->
+  <div style="position:absolute;right:22px;bottom:3px;font-size:9px;color:#c4c4c4;pointer-events:none;user-select:none;">
+    {{ Math.round(item.w) }}×{{ Math.round(item.h) }}
+  </div>
 </div>
-
-    <!-- ===== □.□. 오른쪽 (카드) ============================================== -->
-  <!-- ===== □. 2단 레이아웃 ================================================= -->`,
+</div>
+<!-- ===== /dashCanvas ================================================ -->
+</div>
+<!-- ===== /dashboard ================================================= -->
+</div>
+<!-- ===== /오른쪽 ======================================================= -->
+</div>
+<!-- ===== /2단 ======================================================== -->
+</div>
+<!-- ===== □.□. 오른쪽 (카드) ============================================== -->
+<!-- ===== □. 2단 레이아웃 ================================================= -->
+`,
   components: {
     WidgetPreview: _WP_DispAreaPreview2,
   },

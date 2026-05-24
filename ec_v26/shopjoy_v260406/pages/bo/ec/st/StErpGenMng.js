@@ -85,7 +85,6 @@ window.StErpGenMng = {
         const comm    = Math.round(sales * 0.10);
         const settle  = sales - comm;
 
-
         return { vendorNm: v.vendorNm, debit: '미지급금', credit: '현금', debitAmt: settle, creditAmt: settle, description: `${uiState.targetMon} ${v.vendorNm} 정산지급` };
       }).filter(r => r.debitAmt > 0);
     });
@@ -158,7 +157,6 @@ window.StErpGenMng = {
     watch(() => settingForm.slipType, (v) => { slipType.value = v; });
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
       uiState, codes, targetMon, slipType, genHistory, settingForm,                  // 상태 / 데이터
       previewGridColumns, histGridColumns, baseFormColumns,                           // 컬럼 정의
@@ -170,11 +168,17 @@ window.StErpGenMng = {
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">ERP 전표생성</div>
+  <div class="page-title">
+    ERP 전표생성
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다.</span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다. • 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다. • 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다. • 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.
     </div>
@@ -182,7 +186,9 @@ window.StErpGenMng = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 생성 설정 =================================================== -->
   <div class="card">
-    <div style="font-weight:700;margin-bottom:12px">전표 생성 설정</div>
+    <div style="font-weight:700;margin-bottom:12px">
+      전표 생성 설정
+    </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="settingForm" :cols="3" :show-actions="false">
       <template #targetMon>
@@ -190,8 +196,12 @@ window.StErpGenMng = {
       </template>
       <template #actions>
         <div style="display:flex;align-items:center;gap:8px;min-height:34px;">
-          <button class="btn btn-secondary" @click="handleBtnAction('preview-search')">조회</button>
-          <button class="btn btn-primary" @click="handleBtnAction('preview-generate')">📋 ERP 전표생성</button>
+          <button class="btn btn-secondary" @click="handleBtnAction('preview-search')">
+            조회
+          </button>
+          <button class="btn btn-primary" @click="handleBtnAction('preview-generate')">
+            📋 ERP 전표생성
+          </button>
         </div>
       </template>
     </bo-form-area>
@@ -201,21 +211,25 @@ window.StErpGenMng = {
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
         :columns="previewGridColumns" :rows="cfPreviewRows"
-        :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'"></bo-grid>
+        :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'">
+      </bo-grid>
     </div>
-    <div v-else style="color:#999;margin-top:12px">해당 월의 생성 대상 전표가 없습니다.</div>
+    <div v-else style="color:#999;margin-top:12px">
+      해당 월의 생성 대상 전표가 없습니다.
+    </div>
   </div>
-    <!-- ===== □.□. 미리보기 ================================================== -->
+  <!-- ===== □.□. 미리보기 ================================================== -->
   <!-- ===== □. 생성 설정 =================================================== -->
   <!-- ===== ■. 생성 이력 =================================================== -->
   <div class="card" style="margin-top:12px">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="histGridColumns" :rows="genHistory" row-key="genId"
-      list-title="전표생성 이력" :count-text="genHistory.length + '건'"></bo-grid>
+      list-title="전표생성 이력" :count-text="genHistory.length + '건'">
+    </bo-grid>
   </div>
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 생성 이력 =================================================== -->`,
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. 생성 이력 =================================================== -->
+`,
 };

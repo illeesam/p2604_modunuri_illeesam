@@ -1171,10 +1171,51 @@ pathModal-pick            ← 경로 선택 모달 선택
 
 ### 적용 범위
 
-- **권장**: 새 화면 작성 시 dispatch 패턴 채택, 기존 화면은 손볼 때 점진적 마이그레이션.
+- **권장**: 새 화면 작성 시 dispatch 패턴 채택.
 - **기준 PoC**: [SyRoleMng.js:32-132](../../../pages/bo/sy/SyRoleMng.js#L32) — handleBtnAction 19 cmd + handleSelectAction 13 cmd, **9개 도메인 영역** (`searchParam`, `roles`, `roles-row`, `pathTree`, `config`, `roleMenus`, `roleUsers`, `parentModal`, `pathModal`). 모든 영역명이 setup() 안 reactive 변수명과 일치. template + 컬럼 콜백 안 모든 이벤트가 dispatch 경유. 각 if 위 + return 아래 한글 주석 부여.
 - **return 객체 단순화 효과**: SyRoleMng 기준 55개 → 17개 (-69%). [SyRoleMng.js:711-720](../../../pages/bo/sy/SyRoleMng.js#L711) 참조.
-- **확장 전 검토 필요**: 기존 184 파일 전면 재작업 비추천. 신규 작성 또는 손볼 때 점진적으로.
+
+### BO 전체 일괄 적용 이력 (2026-05-24) ⭐
+
+**BO 121개 파일 100% dispatch 패턴 적용 완료** — sy + ec/{cm,mb,od,pd,pm,dp,st} + zd + Dashboard 전 도메인.
+
+| 도메인 | 파일 수 | 비고 |
+|---|---|---|
+| sy | 34 | SyRoleMng(PoC) + 33개 (User/Site/Role/Dept/Menu/Code/Path/Brand/Prop/I18n/Template/Alarm/Batch/Bbs/Bbm/Attach/ApiLog/Contact/Vendor/VendorUser/Dashboard/Postman/Hist) |
+| ec/cm | 5 | Blog/Chatt/Notice |
+| ec/mb | 6 | Member(Mng/Dtl/Hist) + MemGrade/Group + CustInfo |
+| ec/od | 10 | Order/Claim/Dliv (각 Mng/Dtl/Hist) + Cart |
+| ec/pd | 13 | Prod(Mng/Dtl/Hist) + Category(Mng/Dtl) + CategoryProd + Bundle/Set/DlivTmplt/Qna/Review/RestockNoti/Tag |
+| ec/pm | 16 | Cache/Coupon/Discnt/Event/Gift/Plan/Save/Voucher (각 Mng/Dtl) |
+| ec/dp | 17 | UI/Area/Panel/Widget/WidgetLib (각 Mng/Dtl/Preview) + UiSimul + RelationMng |
+| ec/st | 14 | Config/ErpGen/ErpRecon/ErpView/Raw/ReconClaim/ReconOrder/ReconPay/ReconVendor/SettleAdj/SettleClose/SettleEtcAdj/SettlePay/StatusMng |
+| zd | 2 | ZdStore/ZdLocalStorage |
+| (root) | 3 | DashboardBoEc01/02/03 |
+| **합계** | **120** + SyRoleMng(PoC) = **121** | |
+
+**검증 결과**: 121/121 `node --check` PASS + template_format.js / js_format_simple.js 통과.
+
+**작업 방식**:
+- 작은 도메인은 main 직접 처리 (sy/ec/cm/ec/mb/ec/od)
+- 큰 도메인은 general-purpose Agent 병렬 처리 (ec/pd, ec/pm, ec/dp, ec/st, 기타)
+- 각 Agent 에 기준 파일 (SyRoleMng/SySiteMng/SySiteDtl/PmCacheMng 등) + 영역명 가이드 + 도메인 특수 사항 명시
+- Agent 완료 후 main 에서 `node --check` + 포맷팅 일괄 검증
+
+**큰 파일 처리 (1000+ lines)**:
+- PdProdDtl (2453 lines), DpDispUiSimul (1989), DpDispPanelDtl (1845), DpDispWidgetPreview (1276) 등
+- **dispatch 는 상위 레벨 이벤트만** (탭/저장/취소/미리보기) 적용
+- SKU 동적 행, 카테고리 다중 매핑, Quill 에디터, 드래그 앤 드롭, 위젯 유형별 분기 등 복잡 영역은 **기존 함수 그대로 유지** + closure 작동
+
+**영역명 표준 (도메인별)**:
+- 데이터: reactive 변수명 그대로 (`members`, `orders`, `claims`, `prods`, `coupons`, `widgets` 등)
+- 검색바: `searchParam`
+- 트리: `xxxTree` (`pathTree`, `categoryTree`, `menuTree`, `deptTree`)
+- 모달: `xxxModal` (`pathModal`, `parentModal`, `prodPickModal`, `memberPickModal`, `vendorModal`)
+- 인라인 Dtl: `detailPanel`
+- 일괄작업 모달: `actionsModal`
+- 폼: `form`
+- 탭/뷰모드: `tab`, `tabMode`, `viewMode`
+- 행 단위: `{영역명}-row-기능명`
 
 ### 인자 전달 규약
 

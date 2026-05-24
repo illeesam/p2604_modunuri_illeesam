@@ -280,25 +280,41 @@ window.PmCacheDtl = {
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ form.cacheId }}
+    </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭바 + 뷰모드 아이콘 ============================================ -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
-      <button v-if="form.memberId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="tab='history'">
+      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'info')">
+        📋 기본정보
+      </button>
+      <button v-if="form.memberId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'history')">
         🕒 회원 캐쉬 내역
-        <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
+        <span class="tab-count">
+          {{ cfMemberCacheHistory.length }}
+        </span>
       </button>
     </div>
     <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="handleBtnAction('tab-mode', 'tab')" title="탭으로 보기">
+        📑
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tab-mode', '1col')" title="1열로 보기">
+        1▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tab-mode', '2col')" title="2열로 보기">
+        2▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tab-mode', '3col')" title="3열로 보기">
+        3▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tab-mode', '4col')" title="4열로 보기">
+        4▭
+      </button>
     </div>
   </div>
   <!-- ===== □. 탭 영역 ==================================================== -->
@@ -307,25 +323,33 @@ window.PmCacheDtl = {
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        📋 기본정보
+      </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
         <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
-            <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-member-change')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-member-ref')">
+              보기
+            </span>
           </div>
         </template>
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-              <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
-              <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
+            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
+              <span style="padding:8px 12px;flex:1;">
+                {{ cfSelectedVendorNm }}
+              </span>
+              <span style="padding:8px 12px;color:#999;font-size:12px;">
+                ▼
+              </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendor-clear')">
               초기화
             </button>
           </div>
@@ -333,16 +357,24 @@ window.PmCacheDtl = {
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
-        @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
+        @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
       <!-- ===== ■.■.■. 폼 액션 버튼 (수정/저장/취소/닫기) =============================== -->
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-          <button class="btn btn-secondary" @click="navigate('pmCacheMng')">닫기</button>
+          <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+            수정
+          </button>
+          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+            닫기
+          </button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="handleSave">저장</button>
-          <button class="btn btn-secondary" @click="navigate('pmCacheMng')">취소</button>
+          <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+            저장
+          </button>
+          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+            취소
+          </button>
         </template>
       </div>
     </div>
@@ -352,22 +384,29 @@ window.PmCacheDtl = {
       <!-- ===== ■.■.■. 조건부 영역 ============================================== -->
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🕒 회원 캐쉬 내역
-        <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
+        <span class="tab-count">
+          {{ cfMemberCacheHistory.length }}
+        </span>
       </div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="showRefModal('member', Number(form.memberId))">{{ form.memberNm }}</span>
+          <span class="ref-link" @click="handleBtnAction('form-member-ref')">
+            {{ form.memberNm }}
+          </span>
           현재 잔액
         </span>
-        <span style="font-size:20px;font-weight:700;color:#e8587a;">{{ cfTotalBalance.toLocaleString() }}원</span>
+        <span style="font-size:20px;font-weight:700;color:#e8587a;">
+          {{ cfTotalBalance.toLocaleString() }}원
+        </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="cacheHistGridColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
-        empty-text="캐쉬 내역이 없습니다."></bo-grid>
+        empty-text="캐쉬 내역이 없습니다.">
+      </bo-grid>
     </div>
   </div>
 </div>
-
-    <!-- ===== □.□. 회원 캐쉬 내역 탭 ============================================ -->
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->`
+<!-- ===== □.□. 회원 캐쉬 내역 탭 ============================================ -->
+<!-- ===== □. 탭 컨텐츠 =================================================== -->
+`
 };

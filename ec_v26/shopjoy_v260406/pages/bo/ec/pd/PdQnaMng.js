@@ -170,7 +170,9 @@ window.PdQnaMng = {
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">상품 Q&A 관리</div>
+  <div class="page-title">
+    상품 Q&A 관리
+  </div>
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -181,13 +183,19 @@ window.PdQnaMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+          ●
+        </span>
         Q&A 목록
-        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+        <span class="list-count">
+          {{ pager.pageTotalCount }}건
+        </span>
       </span>
       <div class="pager-right">
         <select class="size-select" v-model.number="pager.pageSize" @change="handleSelectAction('qnas-size-change')">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">{{ s }}개</option>
+          <option v-for="s in pager.pageSizes" :key="s" :value="s">
+            {{ s }}개
+          </option>
         </select>
       </div>
     </div>
@@ -198,7 +206,8 @@ window.PdQnaMng = {
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
-      @sort="key => handleSelectAction('qnas-sort', key)" @set-page="n => handleSelectAction('qnas-set-page', n)" @size-change="handleSelectAction('qnas-size-change')"></bo-grid>
+      @sort="key => handleSelectAction('qnas-sort', key)" @set-page="n => handleSelectAction('qnas-set-page', n)" @size-change="handleSelectAction('qnas-size-change')">
+    </bo-grid>
     <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('qnas-set-page', n)" :on-size-change="() => handleSelectAction('qnas-size-change')" />
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->

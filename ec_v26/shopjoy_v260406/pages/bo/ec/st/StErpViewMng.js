@@ -157,7 +157,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
         // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
         // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
@@ -193,7 +192,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
       uiState, codes, pager, slips, searchParam,                                     // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
@@ -204,11 +202,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">ERP 전표조회</div>
+  <div class="page-title">
+    ERP 전표조회
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.</span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 전표 유형: 정산지급 / 수수료 / 조정 / 기타 • 전송 상태: 미전송 / 전송완료 / 오류 • [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다. • 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.
     </div>
@@ -227,14 +231,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseGridColumns" :rows="slips" :pager="pager" row-key="slipId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('slips-set-page', n)" @size-change="handleSelectAction('slips-size-change')">
-      <template #head-actions>액션</template>
+      <template #head-actions>
+        액션
+      </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="handleSelectAction('slips-row-resend', r)">재전송</button>
+        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="handleSelectAction('slips-row-resend', r)">
+          재전송
+        </button>
       </template>
     </bo-grid>
   </div>
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->`,
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. 카드 영역 =================================================== -->
+`,
 };

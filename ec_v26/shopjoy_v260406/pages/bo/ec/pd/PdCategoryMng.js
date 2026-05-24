@@ -376,15 +376,105 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       await handleGridSearch();   // 그리드 갱신
     };
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdCategoryMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 그리드 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 카테고리 그리드 행 추가 (상단)
+      } else if (cmd === 'categories-add') {
+        return addRow();
+      // 카테고리 그리드 저장
+      } else if (cmd === 'categories-save') {
+        return handleSave();
+      // 체크된 행 일괄 삭제
+      } else if (cmd === 'categories-delete-checked') {
+        return deleteRows();
+      // 체크된 행 일괄 취소
+      } else if (cmd === 'categories-cancel-checked') {
+        return cancelChecked();
+      // 좌측 트리 전체 보기 (선택 해제)
+      } else if (cmd === 'categoryTree-clear') {
+        uiState.selectedCatId = null;
+        return;
+      // 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      // 상위카테고리 모달 닫기
+      } else if (cmd === 'parentModal-close') {
+        catPickerModal.show = false;
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'categories-size-change') {
+        return onSizeChange();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
 
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdCategoryMng.js : handleSelectAction -> ', cmd, param);
+      // 좌측 트리 노드 선택
+      if (cmd === 'categoryTree-select') {
+        return selectNode(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'categories-set-page') {
+        return setPage(param);
+      // 그리드 행 포커스
+      } else if (cmd === 'categories-row-focus') {
+        return setFocused(param);
+      // 그리드 행 셀 변경
+      } else if (cmd === 'categories-row-cell-change') {
+        return onCellChange(param);
+      // 하위 행 추가
+      } else if (cmd === 'categories-row-add-child') {
+        return addChildRow(param.row, param.idx);
+      // 행 취소
+      } else if (cmd === 'categories-row-cancel') {
+        return cancelRow(param);
+      // 행 삭제
+      } else if (cmd === 'categories-row-delete') {
+        return deleteRow(param);
+      // 행 체크 토글 (전체 체크)
+      } else if (cmd === 'categories-row-check-all') {
+        return toggleCheckAll();
+      // 그리드 행 드래그 시작
+      } else if (cmd === 'categories-row-drag-start') {
+        return onRowDragStart(param);
+      // 그리드 행 드래그 오버
+      } else if (cmd === 'categories-row-drag-over') {
+        return onRowDragOver(param);
+      // 그리드 행 드롭
+      } else if (cmd === 'categories-row-drop') {
+        return onRowDrop();
+      // 상위카테고리 모달 열기
+      } else if (cmd === 'parentModal-open') {
+        return openParentModal(param);
+      // 상위카테고리 모달에서 선택
+      } else if (cmd === 'parentModal-select') {
+        return onParentSelect(param);
+      // 사이트 변경
+      } else if (cmd === 'searchParam-site-change') {
+        return onSiteChange();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     // --- [컬럼 정의] ---
 
     const baseSearchColumns = [
       { key: 'siteId', label: '사이트 *', type: 'select', nullable: false,
         options: () => sites.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
-        onChange: () => onSiteChange() },
+        onChange: () => handleSelectAction('searchParam-site-change') },
       { key: 'searchValue', label: '카테고리명', type: 'text', placeholder: '카테고리명 검색' },
       { key: 'categoryDepth', label: '단계', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
       { key: 'categoryStatusCd', label: '상태', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
@@ -392,29 +482,31 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      codes, uiState, sites, onSiteChange, baseSearchColumns,
-      selectNode, handleGridSearch,
-      searchParam,
-      gridRows, pager, setPage, onSizeChange, getRealIdx,
-      onSearch, onReset,
-      catPickerModal, cfCatPickerList, onParentSelect, openParentModal, fnDepthColor, fnDepthBullet, parentNm,
-      focusedIdx, setFocused, addRow, addChildRow, cancelRow, cancelChecked, deleteRow, deleteRows, handleSave,
-      fnStatusClass, onCellChange,
-      checkAll, toggleCheckAll,
-      dragoverRowIdx, onRowDragStart, onRowDragOver, onRowDrop,
+      codes, uiState, sites, searchParam, gridRows, pager, catPickerModal,           // 상태 / 데이터
+      baseSearchColumns,                                                             // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      cfCatPickerList,                                                               // computed
+      fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx,              // 헬퍼
+      focusedIdx, checkAll, dragoverRowIdx,                                          // ref
     };
   },
 
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">카테고리관리</div>
+  <div class="page-title">
+    카테고리관리
+  </div>
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
-    <span><strong style="color:#1a7a52">카테고리관리</strong>는 상품 분류를 위한 3단계 계층(대/중/소) 카테고리를 관리합니다.</span>
-    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
+    <span>
+      <strong style="color:#1a7a52">
+        카테고리관리
+      </strong>
+      는 상품 분류를 위한 3단계 계층(대/중/소) 카테고리를 관리합니다.
+    </span>
+    <button @click="handleBtnAction('desc-toggle')" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
       {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
     </button>
     <div v-if="uiState.descOpen" style="margin-top:6px">
@@ -424,14 +516,16 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       <br>
       ✔ 카테고리 삭제 시 하위 카테고리와 연결 상품을 함께 확인합니다.
       <br>
-      <span style="color:#888;font-size:12px">예) 의류 &gt; 상의 &gt; 티셔츠, 전자기기 &gt; 스마트폰</span>
+      <span style="color:#888;font-size:12px">
+        예) 의류 &gt; 상의 &gt; 티셔츠, 전자기기 &gt; 스마트폰
+      </span>
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
@@ -439,10 +533,14 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     <!-- ===== ■.■. 좌측: 카테고리 트리 =========================================== -->
     <div class="card" style="padding:12px;position:sticky;top:0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
-        <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="selectNode(null)">전체보기</div>
+        <span style="font-size:13px;font-weight:600;color:#555">
+          📁 카테고리
+        </span>
+        <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="handleBtnAction('categoryTree-clear')">
+          전체보기
+        </div>
       </div>
-      <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" @select="selectNode" />
+      <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" @select="id => handleSelectAction('categoryTree-select', id)" />
     </div>
     <!-- ===== □.□. 좌측: 카테고리 트리 =========================================== -->
     <!-- ===== ■.■. 우측: 카테고리 그리드 ========================================== -->
@@ -453,13 +551,23 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           <span v-if="uiState.selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
             — {{ [].find(c=>c.categoryId===uiState.selectedCatId)&&[].find(c=>c.categoryId===uiState.selectedCatId).categoryNm }} 하위
           </span>
-          <span class="list-count">{{ gridRows.filter(r => r._row_status !== 'D').length }}건</span>
+          <span class="list-count">
+            {{ gridRows.filter(r => r._row_status !== 'D').length }}건
+          </span>
         </span>
         <div style="display:flex;gap:6px">
-          <button class="btn btn-green btn-sm" @click="addRow">+ 행추가</button>
-          <button class="btn btn-danger btn-sm" @click="deleteRows">행삭제</button>
-          <button class="btn btn-secondary btn-sm" @click="cancelChecked">취소</button>
-          <button class="btn btn-primary btn-sm" @click="handleSave">저장</button>
+          <button class="btn btn-green btn-sm" @click="handleBtnAction('categories-add')">
+            + 행추가
+          </button>
+          <button class="btn btn-danger btn-sm" @click="handleBtnAction('categories-delete-checked')">
+            행삭제
+          </button>
+          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('categories-cancel-checked')">
+            취소
+          </button>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('categories-save')">
+            저장
+          </button>
         </div>
       </div>
       <!-- ===== ■.■.■. 테이블 ================================================= -->
@@ -492,20 +600,38 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         </colgroup>
         <thead>
           <tr>
-            <th style="width:36px;text-align:center;">번호</th>
-            <th></th>
-            <th>상태</th>
-            <th>
-              <input type="checkbox" v-model="checkAll" @change="toggleCheckAll">
+            <th style="width:36px;text-align:center;">
+              번호
             </th>
-            <th>카테고리명</th>
-            <th>상위카테고리</th>
-            <th style="text-align:center">순서</th>
-            <th>설명</th>
-            <th style="text-align:center">활성</th>
-            <th></th>
-            <th></th>
-            <th></th>
+            <th>
+            </th>
+            <th>
+              상태
+            </th>
+            <th>
+              <input type="checkbox" v-model="checkAll" @change="handleSelectAction('categories-row-check-all')">
+            </th>
+            <th>
+              카테고리명
+            </th>
+            <th>
+              상위카테고리
+            </th>
+            <th style="text-align:center">
+              순서
+            </th>
+            <th>
+              설명
+            </th>
+            <th style="text-align:center">
+              활성
+            </th>
+            <th>
+            </th>
+            <th>
+            </th>
+            <th>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -514,131 +640,136 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-else v-for="(row, idx) in pager.pageList" :key="(row && row.categoryId)"
-            :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]"
-            draggable="true"
-            @dragstart="onRowDragStart(getRealIdx(idx))"
-            @dragover.prevent="onRowDragOver(getRealIdx(idx))"
-            @drop="onRowDrop()"
-            :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''"
-            @click="setFocused(getRealIdx(idx))">
-            <!-- ===== ■.■.■.■.■.■. 번호 ============================================ -->
-            <td style="text-align:center;font-size:11px;color:#999;">{{ getRealIdx(idx) + 1 }}</td>
-            <!-- ===== ■.■.■.■.■.■. 드래그 핸들 ======================================== -->
-            <td style="text-align:center;cursor:grab;color:#ccc;font-size:16px;user-select:none">≡</td>
-            <!-- ===== ■.■.■.■.■.■. 행 상태 뱃지 ======================================= -->
-            <td style="text-align:center">
-              <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">{{ row._row_status }}</span>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 체크박스 ========================================== -->
-            <td style="text-align:center">
-              <input type="checkbox" v-model="row._row_check" @click.stop>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 카테고리명 (들여쓰기 트리 표현) ============================ -->
-            <td style="padding:3px 6px">
-              <div style="display:flex;align-items:center">
-                <span :style="{ marginLeft:(row._depth*12)+'px', marginRight:'5px', fontWeight:700,
-                  fontSize: row._depth===0?'8px':'11px', flexShrink:0, color:fnDepthColor(row._depth) }">
-                  {{ fnDepthBullet(row._depth) }}
-                </span>
-                <input class="grid-input" v-model="row.categoryNm" :disabled="row._row_status==='D'"
-                  @input="onCellChange(row)" style="flex:1" placeholder="카테고리명">
-              </div>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 상위카테고리 ======================================== -->
-            <td style="padding:3px 8px">
-              <div style="display:flex;align-items:center;gap:4px">
-                <span style="flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-                  :style="row.parentCategoryId ? 'color:#444' : 'color:#bbb;font-style:italic'">
-                  {{ row.parentCategoryId ? parentNm(row.parentCategoryId) : '최상위' }}
-                </span>
-                <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
-                  style="flex-shrink:0;padding:1px 6px;font-size:11px;color:#e8587a"
-                  @click.stop="openParentModal(row)" title="상위 선택">
-                  🔍
-                </button>
-              </div>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 순서 ============================================ -->
-            <td style="padding:3px 4px">
-              <input class="grid-input grid-num" type="number" v-model.number="row.sortOrd"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)" style="text-align:center">
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 설명 ============================================ -->
-            <td style="padding:3px 6px">
-              <input class="grid-input" v-model="row.categoryDesc"
-                :disabled="row._row_status==='D'" @input="onCellChange(row)" placeholder="설명">
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 활성 ============================================ -->
-            <td style="padding:3px 4px;text-align:center">
-              <select class="grid-select" v-model="row.categoryStatusCd"
-                :disabled="row._row_status==='D'" @change="onCellChange(row)" style="width:58px">
-                <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-              </select>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 하위 추가 ========================================= -->
-            <td style="text-align:center;padding:2px">
-              <button v-if="row._row_status!=='D' && row.categoryId>0"
-                class="btn btn-xs" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff"
-                title="하위 카테고리 추가" @click.stop="addChildRow(row, getRealIdx(idx))">
-                +하위
-              </button>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 취소 ============================================ -->
-            <td style="text-align:center;padding:2px">
-              <button v-if="['U','I','D'].includes(row._row_status)"
-                class="btn btn-secondary btn-xs" @click.stop="cancelRow(getRealIdx(idx))">
-                취소
-              </button>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 삭제 ============================================ -->
-            <td style="text-align:center;padding:2px">
-              <button v-if="row._row_status !== 'D'"
-                class="btn btn-danger btn-xs" @click.stop="deleteRow(getRealIdx(idx))">
-                삭제
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
-      <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
-    </div>
-  </div>
-    <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
-  <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
-  <!-- ===== ■. 상위카테고리 선택 모달 ============================================ -->
-  <teleport to="body" v-if="catPickerModal.show">
-    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-      @click.self="catPickerModal.show=false">
-      <div style="background:#fff;border-radius:14px;padding:22px;width:460px;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.22)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <strong style="font-size:15px">상위 카테고리 선택</strong>
-          <button class="btn btn-secondary btn-xs" @click="catPickerModal.show=false">닫기</button>
-        </div>
-        <input class="form-control" v-model="catPickerModal.search" placeholder="카테고리명 검색" style="margin-bottom:10px">
-        <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
-            @click="onParentSelect(null)">
-            최상위 (상위없음)
-          </div>
-          <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)"
-            style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px"
-            :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }"
-            @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''"
-            @click="onParentSelect(c)">
-            <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
-              {{ fnDepthBullet((c.categoryDepth||1)-1) }}
+          <tr v-else v-for="(row, idx) in pager.pageList" :key="(row && row.categoryId)" :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]" draggable="true" @dragstart="handleSelectAction('categories-row-drag-start', getRealIdx(idx))" @dragover.prevent="handleSelectAction('categories-row-drag-over', getRealIdx(idx))" @drop="handleSelectAction('categories-row-drop')" :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''" @click="handleSelectAction('categories-row-focus', getRealIdx(idx))">
+          <!-- ===== ■.■.■.■.■.■. 번호 ============================================ -->
+          <td style="text-align:center;font-size:11px;color:#999;">
+            {{ getRealIdx(idx) + 1 }}
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 드래그 핸들 ======================================== -->
+          <td style="text-align:center;cursor:grab;color:#ccc;font-size:16px;user-select:none">
+            ≡
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 행 상태 뱃지 ======================================= -->
+          <td style="text-align:center">
+            <span class="badge badge-xs" :class="fnStatusClass(row._row_status)">
+              {{ row._row_status }}
             </span>
-            <span>{{ c.categoryNm }}</span>
-            <span style="font-size:11px;color:#aaa;margin-left:auto">depth {{ c.categoryDepth }}</span>
-          </div>
-          <div v-if="!cfCatPickerList.length" style="text-align:center;padding:20px;color:#aaa">검색 결과 없음</div>
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 체크박스 ========================================== -->
+          <td style="text-align:center">
+            <input type="checkbox" v-model="row._row_check" @click.stop>
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 카테고리명 (들여쓰기 트리 표현) ============================ -->
+          <td style="padding:3px 6px">
+            <div style="display:flex;align-items:center">
+              <span :style="{ marginLeft:(row._depth*12)+'px', marginRight:'5px', fontWeight:700,
+                  fontSize: row._depth===0?'8px':'11px', flexShrink:0, color:fnDepthColor(row._depth) }">
+                {{ fnDepthBullet(row._depth) }}
+              </span>
+              <input class="grid-input" v-model="row.categoryNm" :disabled="row._row_status==='D'"
+                  @input="handleSelectAction('categories-row-cell-change', row)" style="flex:1" placeholder="카테고리명">
+            </div>
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 상위카테고리 ======================================== -->
+          <td style="padding:3px 8px">
+            <div style="display:flex;align-items:center;gap:4px">
+              <span style="flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+                  :style="row.parentCategoryId ? 'color:#444' : 'color:#bbb;font-style:italic'">
+                {{ row.parentCategoryId ? parentNm(row.parentCategoryId) : '최상위' }}
+              </span>
+              <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs"
+                  style="flex-shrink:0;padding:1px 6px;font-size:11px;color:#e8587a"
+                  @click.stop="handleSelectAction('parentModal-open', row)" title="상위 선택">
+                🔍
+              </button>
+            </div>
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 순서 ============================================ -->
+          <td style="padding:3px 4px">
+            <input class="grid-input grid-num" type="number" v-model.number="row.sortOrd"
+                :disabled="row._row_status==='D'" @input="handleSelectAction('categories-row-cell-change', row)" style="text-align:center">
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 설명 ============================================ -->
+          <td style="padding:3px 6px">
+            <input class="grid-input" v-model="row.categoryDesc"
+                :disabled="row._row_status==='D'" @input="handleSelectAction('categories-row-cell-change', row)" placeholder="설명">
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 활성 ============================================ -->
+          <td style="padding:3px 4px;text-align:center">
+            <select class="grid-select" v-model="row.categoryStatusCd"
+                :disabled="row._row_status==='D'" @change="handleSelectAction('categories-row-cell-change', row)" style="width:58px">
+              <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">
+                {{ c.codeLabel }}
+              </option>
+            </select>
+          </td>
+          <!-- ===== ■.■.■.■.■.■. 하위 추가 ========================================= -->
+          <td style="text-align:center;padding:2px">
+            <button v-if="row._row_status!=='D' && row.categoryId>0" class="btn btn-xs" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff" title="하위 카테고리 추가" @click.stop="handleSelectAction('categories-row-add-child', { row, idx: getRealIdx(idx) })">
+            +하위
+          </button>
+        </td>
+        <!-- ===== ■.■.■.■.■.■. 취소 ============================================ -->
+        <td style="text-align:center;padding:2px">
+          <button v-if="['U','I','D'].includes(row._row_status)"
+                class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('categories-row-cancel', getRealIdx(idx))">
+            취소
+          </button>
+        </td>
+        <!-- ===== ■.■.■.■.■.■. 삭제 ============================================ -->
+        <td style="text-align:center;padding:2px">
+          <button v-if="row._row_status !== 'D'"
+                class="btn btn-danger btn-xs" @click.stop="handleSelectAction('categories-row-delete', getRealIdx(idx))">
+            삭제
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
+  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('categories-set-page', n)" :on-size-change="() => handleBtnAction('categories-size-change')" />
+</div>
+</div>
+<!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
+<!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
+<!-- ===== ■. 상위카테고리 선택 모달 ============================================ -->
+<teleport to="body" v-if="catPickerModal.show">
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
+      @click.self="handleBtnAction('parentModal-close')">
+    <div style="background:#fff;border-radius:14px;padding:22px;width:460px;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.22)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <strong style="font-size:15px">
+          상위 카테고리 선택
+        </strong>
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('parentModal-close')">
+          닫기
+        </button>
+      </div>
+      <input class="form-control" v-model="catPickerModal.search" placeholder="카테고리명 검색" style="margin-bottom:10px">
+      <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
+        <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
+            @click="handleSelectAction('parentModal-select', null)">
+          최상위 (상위없음)
         </div>
+        <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
+        <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
+          {{ fnDepthBullet((c.categoryDepth||1)-1) }}
+        </span>
+        <span>
+          {{ c.categoryNm }}
+        </span>
+        <span style="font-size:11px;color:#aaa;margin-left:auto">
+          depth {{ c.categoryDepth }}
+        </span>
+      </div>
+      <div v-if="!cfCatPickerList.length" style="text-align:center;padding:20px;color:#aaa">
+        검색 결과 없음
       </div>
     </div>
-  </teleport>
+  </div>
 </div>
-
-  <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->`
+</teleport>
+</div>
+<!-- ===== □. 상위카테고리 선택 모달 ============================================ -->
+`
 };

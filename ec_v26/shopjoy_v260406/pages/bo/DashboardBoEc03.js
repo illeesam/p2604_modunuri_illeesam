@@ -124,10 +124,50 @@
       };
 
       /* -- UI 상태 -- */
-      const uiState = reactive({ filterExpand: false, activeTab: 'sales', tabMode: '4col'});;
-    const tab = Vue.toRef(uiState, 'tab');
-      const activeTab    = ref('sales');
-      const tabMode     = ref('4col'); // tab | 1col | 2col | 3col | 4col
+      const uiState = reactive({ filterExpand: false, activeTab: 'sales', tabMode: '4col' });
+
+      /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+      const handleBtnAction = (cmd, param = {}) => {
+        console.log(' ■■ DashboardBoEc03.js : handleBtnAction -> ', cmd, param);
+        // 검색조건으로 대시보드 재조회
+        if (cmd === 'filters-search') {
+          return onSearch();
+        // 검색조건 초기화
+        } else if (cmd === 'filters-reset') {
+          return onReset();
+        // 엑셀 다운로드
+        } else if (cmd === 'stats-excel') {
+          return doExcelDownload();
+        // 상세필터 펼침 토글
+        } else if (cmd === 'filters-toggle-expand') {
+          uiState.filterExpand = !uiState.filterExpand;
+          return;
+        // 그룹 전체 선택/해제 (param: { key, all })
+        } else if (cmd === 'filters-toggle-all') {
+          return toggleAll(param.key, param.all);
+        // 그룹 단일 토글 (param: { key, v })
+        } else if (cmd === 'filters-toggle') {
+          return toggle(filters[param.key], param.v);
+        } else {
+          console.warn('[handleBtnAction] unknown cmd:', cmd);
+        }
+      };
+
+      /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+      const handleSelectAction = (cmd, param = {}) => {
+        console.log(' ■■ DashboardBoEc03.js : handleSelectAction -> ', cmd, param);
+        // 탭 선택 (param: tabKey)
+        if (cmd === 'tabs-select') {
+          if (uiState.tabMode === 'tab') { uiState.activeTab = param; }
+          return;
+        // 뷰모드 변경 (param: 'tab' | '1col' | '2col' | '3col' | '4col')
+        } else if (cmd === 'tabMode-set') {
+          uiState.tabMode = param;
+          return;
+        } else {
+          console.warn('[handleSelectAction] unknown cmd:', cmd);
+        }
+      };
       const TABS = [
         { key: 'sales',    label: '월별 매출',        icon: '💰' },
         { key: 'member',   label: '가입/탈퇴',        icon: '👥' },
@@ -315,20 +355,23 @@
       // ===== return (템플릿 노출) ===============================================
 
       return {
-        fmt, pct, filters, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
-        toggle, toggleAll, isSel, onReset, onSearch, doExcelDownload,
-        filterExpand, activeTab, TABS, tabMode, VIEW_MODES, cfBaseGridColumns, showPanel,
-        cfMonthLabels, cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave, cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly,
-        linePoints, areaPath, maxOf,
-        cfTotalSales, cfTotalQtyComp, marginRate, cfAvgOrderValue,
-        topProducts, salesByChannel, salesByDevice, salesByTime,
-        regionSales, hourlyTrend, radarValues, cfRadarPath, cfRadarAxes,
-        economySales, shippingTypes,
+        uiState, filters,                                                            // 상태 / 데이터
+        handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+        cfBaseGridColumns, cfMonthLabels,                                             // computed
+        cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave,                                // computed
+        cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly,                           // computed
+        cfTotalSales, cfTotalQtyComp, cfAvgOrderValue,                                // computed
+        cfRadarPath, cfRadarAxes,                                                     // computed
+        TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,          // 상수
+        marginRate, topProducts, salesByChannel, salesByDevice, salesByTime,          // 상수
+        regionSales, hourlyTrend, radarValues, economySales, shippingTypes,           // 상수
+        fmt, pct, isSel, showPanel,                                                   // 헬퍼 (template)
+        linePoints, areaPath, maxOf,                                                  // 헬퍼 (SVG)
       };
     },
 
     template: /* html */`
-<div :class="(tabMode==='3col'||tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
+<div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
   <!-- ===== ■. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
@@ -348,18 +391,18 @@
       <input type="date" v-model="filters.startDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
       <span style="color:#999;">~</span>
       <input type="date" v-model="filters.endDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
-      <button @click="filterExpand=!filterExpand"
+      <button @click="handleBtnAction('filters-toggle-expand')"
         style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;cursor:pointer;">
-        {{ filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
+        {{ uiState.filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
       <span style="flex:1;"></span>
-      <button class="btn btn-sm btn-primary" @click="onSearch" style="font-size:11px;">🔍 검색</button>
-      <button class="btn btn-sm" @click="doExcelDownload" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">
+      <button class="btn btn-sm btn-primary" @click="handleBtnAction('filters-search')" style="font-size:11px;">🔍 검색</button>
+      <button class="btn btn-sm" @click="handleBtnAction('stats-excel')" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">
         📥 엑셀다운로드
       </button>
-      <button class="btn btn-sm" @click="onReset" style="font-size:11px;">🔄 초기화</button>
+      <button class="btn btn-sm" @click="handleBtnAction('filters-reset')" style="font-size:11px;">🔄 초기화</button>
     </div>
-    <div v-if="filterExpand" style="display:flex;flex-direction:column;gap:8px;border-top:1px dashed #eee;padding-top:10px;">
+    <div v-if="uiState.filterExpand" style="display:flex;flex-direction:column;gap:8px;border-top:1px dashed #eee;padding-top:10px;">
       <div v-for="grp in [
         {key:'channels',    label:'판매채널',  all:CHANNELS},
         {key:'ages',        label:'나이대',    all:AGES},
@@ -368,14 +411,14 @@
         {key:'categories',  label:'카테고리',  all:CATEGORIES},
         ]" :key="grp.key" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:11px;font-weight:700;color:#666;width:74px;">{{ grp.label }}</span>
-        <button @click="toggleAll(grp.key, grp.all)"
+        <button @click="handleBtnAction('filters-toggle-all', { key: grp.key, all: grp.all })"
           :style="{fontSize:'11px',padding:'3px 10px',borderRadius:'12px',border:'1px solid',cursor:'pointer',
           background: filters[grp.key].length===grp.all.length ? '#1a1a2e' : '#fff',
           color:       filters[grp.key].length===grp.all.length ? '#fff'    : '#555',
           borderColor: filters[grp.key].length===grp.all.length ? '#1a1a2e' : '#ddd'}">
           전체
         </button>
-        <button v-for="v in grp.all" :key="v" @click="toggle(filters[grp.key], v)"
+        <button v-for="v in grp.all" :key="v" @click="handleBtnAction('filters-toggle', { key: grp.key, v })"
           :style="{fontSize:'11px',padding:'3px 10px',borderRadius:'12px',border:'1px solid',cursor:'pointer',
           background: isSel(filters[grp.key], v) ? '#fff0f4' : '#fafbfc',
           color:       isSel(filters[grp.key], v) ? '#e8587a' : '#888',
@@ -392,21 +435,21 @@
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
       <button v-for="t in TABS" :key="t.key" class="tab-btn"
-        :class="{active: activeTab===t.key && tabMode==='tab'}"
-        :disabled="tabMode!=='tab'"
-        @click="tabMode==='tab' ? (activeTab=t.key) : null"
-        :style="tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
+        :class="{active: uiState.activeTab===t.key && uiState.tabMode==='tab'}"
+        :disabled="uiState.tabMode!=='tab'"
+        @click="handleSelectAction('tabs-select', t.key)"
+        :style="uiState.tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
         <span style="margin-right:4px;">{{ t.icon }}</span>
         {{ t.label }}
       </button>
     </div>
     <div style="display:flex;gap:4px;background:#fff;padding:4px;border:1px solid #eef0f3;border-radius:8px;flex-shrink:0;">
-      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="tabMode=vm.key"
+      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="handleSelectAction('tabMode-set', vm.key)"
         :title="vm.label+'로 보기'"
         :style="{fontSize:'11px',padding:'4px 8px',borderRadius:'5px',border:'none',cursor:'pointer',minWidth:'34px',
-        background: tabMode===vm.key ? '#fff0f4' : 'transparent',
-        color:       tabMode===vm.key ? '#e8587a' : '#888',
-        fontWeight:  tabMode===vm.key ? 700 : 400}">
+        background: uiState.tabMode===vm.key ? '#fff0f4' : 'transparent',
+        color:       uiState.tabMode===vm.key ? '#e8587a' : '#888',
+        fontWeight:  uiState.tabMode===vm.key ? 700 : 400}">
         {{ vm.icon }}
       </button>
     </div>

@@ -271,25 +271,38 @@ window.PdDlivTmpltMng = {
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">배송템플릿관리</div>
+  <div class="page-title">
+    배송템플릿관리
+  </div>
   <!-- ===== ■. 안내 설명 박스 (접기/펼치기) ================================== -->
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
-    <span><strong style="color:#1a7a52">배송템플릿</strong>은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다.</span>
+    <span>
+      <strong style="color:#1a7a52">
+        배송템플릿
+      </strong>
+      은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다.
+    </span>
     <button @click="handleBtnAction('desc-toggle')" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
       {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
     </button>
     <div v-if="uiState.descOpen" style="margin-top:6px">
       ✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고
-      <strong>상품 등록 시 템플릿을 연결</strong>
+      <strong>
+        상품 등록 시 템플릿을 연결
+      </strong>
       해 재사용합니다.
       <br>
       ✔ 도서·산간 지역 추가 배송비,
-      <strong>반품지 주소</strong>
+      <strong>
+        반품지 주소
+      </strong>
       를 함께 관리합니다.
       <br>
       ✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.
       <br>
-      <span style="color:#888;font-size:12px">예) 3만원 이상 무료배송, 제주·도서 추가 3,000원</span>
+      <span style="color:#888;font-size:12px">
+        예) 3만원 이상 무료배송, 제주·도서 추가 3,000원
+      </span>
     </div>
   </div>
   <!-- ===== □. 안내 설명 박스 ================================================ -->
@@ -302,9 +315,15 @@ window.PdDlivTmpltMng = {
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">배송템플릿 목록</span>
-      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="handleBtnAction('dlivTmplts-add')">+ 신규</button>
+      <span class="list-title">
+        배송템플릿 목록
+      </span>
+      <span class="list-count">
+        총 {{ pager.pageTotalCount }}건
+      </span>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="handleBtnAction('dlivTmplts-add')">
+        + 신규
+      </button>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
@@ -312,18 +331,27 @@ window.PdDlivTmpltMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
-      @sort="key => handleSelectAction('dlivTmplts-sort', key)" @row-click="row => handleSelectAction('dlivTmplts-row-open', row)" @set-page="n => handleSelectAction('dlivTmplts-set-page', n)" @size-change="handleSelectAction('dlivTmplts-size-change')"></bo-grid>
+      @sort="key => handleSelectAction('dlivTmplts-sort', key)" @row-click="row => handleSelectAction('dlivTmplts-row-open', row)" @set-page="n => handleSelectAction('dlivTmplts-set-page', n)" @size-change="handleSelectAction('dlivTmplts-size-change')">
+    </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (신규/수정 폼) ====================================== -->
   <div class="card" v-if="uiState.selectedId">
     <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 ============================ -->
     <div class="toolbar">
-      <span class="list-title">{{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}</span>
+      <span class="list-title">
+        {{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}
+      </span>
       <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">저장</button>
-        <button v-if="!uiState.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">
+          저장
+        </button>
+        <button v-if="!uiState.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">
+          삭제
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
       </div>
     </div>
     <!-- ===== □.□. 상세 툴바 ================================================ -->

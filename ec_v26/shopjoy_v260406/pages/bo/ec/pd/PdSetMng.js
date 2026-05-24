@@ -401,6 +401,97 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       }
     };
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdSetMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 세트상품 신규 등록 (인라인 Dtl 열기)
+      } else if (cmd === 'sets-add') {
+        return openNew();
+      // 세트상품 Dtl 저장
+      } else if (cmd === 'detailPanel-save') {
+        return handleSave();
+      // 세트상품 Dtl 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDtl();
+      // 페이지 크기 변경
+      } else if (cmd === 'sets-size-change') {
+        return onSizeChange();
+      // 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      // 카테고리 피커 모달 열기
+      } else if (cmd === 'categoryModal-open') {
+        uiState.catPickerOpen = true;
+        return;
+      // 카테고리 피커 모달 닫기
+      } else if (cmd === 'categoryModal-close') {
+        uiState.catPickerOpen = false;
+        return;
+      // 상품 피커 모달 열기
+      } else if (cmd === 'prodPickModal-open') {
+        return openPicker();
+      // 상품 피커 모달 닫기
+      } else if (cmd === 'prodPickModal-close') {
+        uiState.pickerOpen = false;
+        return;
+      // 상품 피커 검색
+      } else if (cmd === 'prodPickModal-search') {
+        return onPickerSearch();
+      // 비상품 구성품 추가
+      } else if (cmd === 'detailPanel-item-add-blank') {
+        return addItemBlank();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdSetMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 행 클릭 → Dtl 열기
+      if (cmd === 'sets-row-edit') {
+        return openDtl(param);
+      // 그리드 행 삭제
+      } else if (cmd === 'sets-row-delete') {
+        return handleDelete(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'sets-set-page') {
+        return setPage(param);
+      // 카테고리 행 삭제
+      } else if (cmd === 'detailPanel-category-remove') {
+        return removeCategory(param);
+      // 카테고리 행 드래그
+      } else if (cmd === 'detailPanel-category-drag-start') {
+        return onCatDragStart(param);
+      } else if (cmd === 'detailPanel-category-drag-over') {
+        return onCatDragOver(param);
+      } else if (cmd === 'detailPanel-category-drop') {
+        return onCatDrop();
+      // 구성품 행 삭제
+      } else if (cmd === 'detailPanel-item-remove') {
+        return removeItem(param);
+      // 구성품 행 연결해제
+      } else if (cmd === 'detailPanel-item-unlink') {
+        param.itemProdId = null;
+        return;
+      // 카테고리 모달에서 선택
+      } else if (cmd === 'categoryModal-select') {
+        return addCategory(param);
+      // 구성품 피커 모달에서 선택
+      } else if (cmd === 'prodPickModal-add') {
+        return addItemFromProd(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
         // --- [컬럼 정의] ---
@@ -408,7 +499,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       { key: 'nm', label: '세트상품명', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
     ];
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
 
     const setGridColumns = [
       { key: 'prodNm',    label: '세트상품' },
@@ -460,64 +550,79 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      codes, uiState,
-      newSetFormColumns,
-      setList, cfSetPageRows, baseSearchColumns, setGridColumns, fnSetRowStyle,
-      setItemGridColumns, fnSetItemRowStyle, pickerGridColumns,
-      searchParam, pager, setPage,
-      onSearch, onReset, getProdNm, getProd, getBrandNm,
-      getCategoryNm, getCategoryDepth,
-      dtlCategories, cfCatExcludeSet,
-      addCategory, removeCategory, onCatDragStart, onCatDragOver, onCatDrop,
-      newForm, newErrors, cfDtlProdNm,
-      dtlItems, openNew, openDtl, closeDtl, handleSave, handleDelete,
-      addItemFromProd, addItemBlank, removeItem,
-      cfPickerList, pickerResults, onPickerSearch, openPicker,
-      onDragStart, onDragOver, onDrop, onItemReorder, onSizeChange };
+      codes, uiState, setList, searchParam, pager,                                          // 상태 / 데이터
+      dtlCategories, dtlItems, newForm, newErrors, pickerResults,                           // 상태 / 데이터
+      baseSearchColumns, setGridColumns, setItemGridColumns, pickerGridColumns, newSetFormColumns, // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList,                            // computed
+      fnSetRowStyle, fnSetItemRowStyle,                                                     // 헬퍼
+      getProdNm, getProd, getBrandNm, getCategoryNm, getCategoryDepth,                      // 헬퍼
+      onItemReorder,                                                                        // BoGrid 콜백 (closure 필요)
+    };
   },
 
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">세트상품관리</div>
+  <div class="page-title">
+    세트상품관리
+  </div>
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#fff4ec;border-left:3px solid #e3803b;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
-    <span><strong style="color:#bf5a1a">세트상품</strong>은 여러 구성품을 하나의 세트로 판매하는 방식입니다.</span>
-    <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#e3803b;background:none;border:none;cursor:pointer;padding:0">
+    <span>
+      <strong style="color:#bf5a1a">
+        세트상품
+      </strong>
+      은 여러 구성품을 하나의 세트로 판매하는 방식입니다.
+    </span>
+    <button @click="handleBtnAction('desc-toggle')" style="margin-left:8px;font-size:12px;color:#e3803b;background:none;border:none;cursor:pointer;padding:0">
       {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
     </button>
     <div v-if="uiState.descOpen" style="margin-top:6px">
       ✔ 안분율 없이
-      <strong>세트 전체 단일 가격</strong>
+      <strong>
+        세트 전체 단일 가격
+      </strong>
       으로 판매·정산합니다.
       <br>
       ✔ 클레임은
-      <strong>세트 전체 단위</strong>
+      <strong>
+        세트 전체 단위
+      </strong>
       로만 가능합니다 (부분 취소·교환·반품 불가).
       <br>
       ✔ 구성품은 등록 상품 연결 없이
-      <strong>비상품 항목</strong>
+      <strong>
+        비상품 항목
+      </strong>
       도 추가할 수 있습니다.
       <br>
-      <span style="color:#888;font-size:12px">예) 선물세트, 패키지 구성품, 사은품 포함 세트</span>
+      <span style="color:#888;font-size:12px">
+        예) 선물세트, 패키지 구성품, 사은품 포함 세트
+      </span>
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">세트상품 목록</span>
-      <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
+      <span class="list-title">
+        세트상품 목록
+      </span>
+      <span class="list-count">
+        총 {{ pager.pageTotalCount }}건
+      </span>
       <div class="pager-right">
-        <button class="btn btn-green btn-sm" @click="openNew">+ 신규등록</button>
+        <button class="btn btn-green btn-sm" @click="handleBtnAction('sets-add')">
+          + 신규등록
+        </button>
       </div>
     </div>
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
@@ -528,14 +633,20 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <template #cell-prodNm="{ row }">
           <td>
             <div style="display:flex;align-items:flex-start;gap:6px">
-              <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">세트</span>
+              <span class="badge badge-orange" style="flex-shrink:0;margin-top:1px">
+                세트
+              </span>
               <div>
-                <span class="title-link" @click="openDtl(row.setProdId)">{{ row.prodNm }}</span>
+                <span class="title-link" @click="handleSelectAction('sets-row-edit', row.setProdId)">
+                  {{ row.prodNm }}
+                </span>
                 <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
                   <span v-for="(item,i) in row.items" :key="item.setItemId||i"
                     style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
                     {{ item.itemNm }}
-                    <span style="color:#1677ff">×{{ item.itemQty }}</span>
+                    <span style="color:#1677ff">
+                      ×{{ item.itemQty }}
+                    </span>
                     <span v-if="coUtil.cofAnd(!item.itemProdId, !item.componentProdId)" style="color:#f59e0b;margin-left:2px" title="비상품구성품">
                       ◆
                     </span>
@@ -546,8 +657,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           </td>
         </template>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-xs" @click="openDtl(row.setProdId)">수정</button>
-          <button class="btn btn-danger btn-xs" @click="handleDelete(row.setProdId)">삭제</button>
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('sets-row-edit', row.setProdId)">
+            수정
+          </button>
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('sets-row-delete', row.setProdId)">
+            삭제
+          </button>
         </template>
       </bo-grid>
     </div>
@@ -555,11 +670,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sets-set-page', n)" :on-size-change="() => handleBtnAction('sets-size-change')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
-    <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
+  <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
   <!-- ===== □. 목록 ====================================================== -->
   <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
   <div v-if="uiState.dtlMode !== null" class="card"
@@ -570,128 +685,172 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-orange']">
           {{ uiState.dtlMode==='new' ? '신규' : '세트' }}
         </span>
-        <strong style="font-size:15px">{{ cfDtlProdNm }}</strong>
-        <span style="font-size:12px;color:#aaa">{{ uiState.dtlMode==='new' ? '세트상품 등록' : '구성품 관리' }}</span>
+        <strong style="font-size:15px">
+          {{ cfDtlProdNm }}
+        </strong>
+        <span style="font-size:12px;color:#aaa">
+          {{ uiState.dtlMode==='new' ? '세트상품 등록' : '구성품 관리' }}
+        </span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:12px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:3px 10px">
           🔒 세트 전체 단위로만 클레임 가능
         </span>
-        <button class="btn btn-secondary btn-sm" @click="closeDtl">닫기</button>
-        <button class="btn btn-primary btn-sm" @click="handleSave">{{ uiState.dtlMode==='new' ? '등록' : '저장' }}</button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+          닫기
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('detailPanel-save')">
+          {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
+        </button>
       </div>
     </div>
     <!-- ===== □.□. Dtl 헤더 ================================================ -->
     <!-- ===== ■.■. 신규 세트상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) ============= -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
-      <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">세트상품 기본정보 (pd_prod)</div>
+      <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">
+        세트상품 기본정보 (pd_prod)
+      </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="newSetFormColumns" :form="newForm" :errors="newErrors"
         :cols="3" :show-actions="false">
         <template #brand>
           <select class="form-control" v-model="newForm.brandId">
-            <option value="">선택</option>
+            <option value="">
+              선택
+            </option>
             <option v-for="b in ([]||[])" :key="(b && b.brandId)" :value="b.brandId">
-              {{ b.brandNm || b.brandName }}
-            </option>
-          </select>
-        </template>
-        <template #vendor>
-          <select class="form-control" v-model="newForm.vendorId">
-            <option value="">선택</option>
-            <option v-for="v in ([]||[])" :key="(v && v.vendorId)" :value="v.vendorId">
-              {{ v.vendorNm || v.vendorName }}
-            </option>
-          </select>
-        </template>
-      </bo-form-area>
-    </div>
-    <!-- ===== □.□. 신규 세트상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) ============= -->
-    <!-- ===== ■.■. ② 카테고리 ================================================ -->
-    <div class="form-row" style="margin-bottom:16px">
-      <div class="form-group">
-        <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
-        <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px">
-          <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px">카테고리를 추가해주세요</div>
-          <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)"
-            draggable="true" @dragstart="onCatDragStart(idx)" @dragover.prevent="onCatDragOver(idx)" @drop.prevent="onCatDrop()"
-            :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''"
-            style="display:flex;align-items:center;gap:4px;padding:2px 0">
-            <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0">≡</span>
-            <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0">
-              대표
-            </span>
-            <span style="font-size:11px;color:#94a3b8;flex-shrink:0">{{ ['','대','중','소'][cat.depth]||cat.depth }}▸</span>
-            <span style="font-size:13px;flex:1">{{ cat.categoryNm }}</span>
-            <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">
-              ✕
-            </button>
-          </div>
-          <button type="button" @click="uiState.catPickerOpen=true"
-            style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%">
-            + 카테고리 추가
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- ===== □.□. ② 카테고리 ================================================ -->
-    <!-- ===== ■.■. ③ 구성품 목록 ============================================== -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <span style="font-size:13px;font-weight:600;color:#555">구성품 목록 (pd_prod_set_item)</span>
-      <span style="font-size:11px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 8px">
-        표시 목적 · 재고 개별 차감 없음 · 안분율 없음
+            {{ b.brandNm || b.brandName }}
+          </option>
+        </select>
+      </template>
+      <template #vendor>
+        <select class="form-control" v-model="newForm.vendorId">
+          <option value="">
+            선택
+          </option>
+          <option v-for="v in ([]||[])" :key="(v && v.vendorId)" :value="v.vendorId">
+          {{ v.vendorNm || v.vendorName }}
+        </option>
+      </select>
+    </template>
+  </bo-form-area>
+</div>
+<!-- ===== □.□. 신규 세트상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) ============= -->
+<!-- ===== ■.■. ② 카테고리 ================================================ -->
+<div class="form-row" style="margin-bottom:16px">
+  <div class="form-group">
+    <label class="form-label">
+      카테고리
+      <span style="font-size:11px;color:#aaa;font-weight:400">
+        N개 등록 · 첫 번째 = 대표
       </span>
+    </label>
+    <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px">
+      <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px">
+        카테고리를 추가해주세요
+      </div>
+      <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)" draggable="true" @dragstart="handleSelectAction('detailPanel-category-drag-start', idx)" @dragover.prevent="handleSelectAction('detailPanel-category-drag-over', idx)" @drop.prevent="handleSelectAction('detailPanel-category-drop')" :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''" style="display:flex;align-items:center;gap:4px;padding:2px 0">
+      <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0">
+        ≡
+      </span>
+      <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0">
+        대표
+      </span>
+      <span style="font-size:11px;color:#94a3b8;flex-shrink:0">
+        {{ ['','대','중','소'][cat.depth]||cat.depth }}▸
+      </span>
+      <span style="font-size:13px;flex:1">
+        {{ cat.categoryNm }}
+      </span>
+      <button type="button" @click="handleSelectAction('detailPanel-category-remove', idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">
+        ✕
+      </button>
     </div>
-    <!-- ===== □.□. ③ 구성품 목록 ============================================== -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="setItemGridColumns" :rows="dtlItems" row-key="_id"
+    <button type="button" @click="handleBtnAction('categoryModal-open')"
+            style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%">
+      + 카테고리 추가
+    </button>
+  </div>
+</div>
+</div>
+<!-- ===== □.□. ② 카테고리 ================================================ -->
+<!-- ===== ■.■. ③ 구성품 목록 ============================================== -->
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+  <span style="font-size:13px;font-weight:600;color:#555">
+    구성품 목록 (pd_prod_set_item)
+  </span>
+  <span style="font-size:11px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 8px">
+    표시 목적 · 재고 개별 차감 없음 · 안분율 없음
+  </span>
+</div>
+<!-- ===== □.□. ③ 구성품 목록 ============================================== -->
+<!-- ===== ■.■. 목록 영역 ================================================= -->
+<bo-grid bare :columns="setItemGridColumns" :rows="dtlItems" row-key="_id"
       draggable row-actions :row-style="fnSetItemRowStyle"
       empty-text="구성품이 없습니다. 아래 버튼으로 추가하세요."
       @reorder="onItemReorder">
-      <template #cell-itemProdId="{ row }">
-        <td>
-          <div v-if="row.itemProdId" style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:11px;color:#aaa;background:#f5f5f5;padding:1px 6px;border-radius:4px">#{{ row.itemProdId }}</span>
-            <span style="font-size:13px;color:#333">{{ getProdNm(row.itemProdId) }}</span>
-            <button type="button" @click="row.itemProdId=null"
+  <template #cell-itemProdId="{ row }">
+    <td>
+      <div v-if="row.itemProdId" style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:11px;color:#aaa;background:#f5f5f5;padding:1px 6px;border-radius:4px">
+          #{{ row.itemProdId }}
+        </span>
+        <span style="font-size:13px;color:#333">
+          {{ getProdNm(row.itemProdId) }}
+        </span>
+        <button type="button" @click="handleSelectAction('detailPanel-item-unlink', row)"
               style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 2px">
-              ✕ 연결해제
-            </button>
-          </div>
-          <div v-else style="display:flex;align-items:center;gap:6px">
-            <span class="badge badge-orange" style="font-size:10px">비상품</span>
-            <span style="font-size:12px;color:#aaa">상품 미연결 (예: 증정품·박스)</span>
-          </div>
-        </td>
-      </template>
-      <template #row-actions="{ idx }">
-        <td style="text-align:center">
-          <button class="btn btn-danger btn-xs" @click="removeItem(idx)">✕</button>
-        </td>
-      </template>
-    </bo-grid>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-    <!-- ===== ■.■. 구성품 추가 버튼 ============================================= -->
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn btn-secondary btn-sm" @click="openPicker()">+ 상품 구성품 추가</button>
-      <button class="btn btn-secondary btn-sm" @click="addItemBlank">
-        + 비상품 구성품 추가
-        <span style="font-size:11px;color:#aaa">(박스·엽서 등)</span>
+          ✕ 연결해제
+        </button>
+      </div>
+      <div v-else style="display:flex;align-items:center;gap:6px">
+        <span class="badge badge-orange" style="font-size:10px">
+          비상품
+        </span>
+        <span style="font-size:12px;color:#aaa">
+          상품 미연결 (예: 증정품·박스)
+        </span>
+      </div>
+    </td>
+  </template>
+  <template #row-actions="{ idx }">
+    <td style="text-align:center">
+      <button class="btn btn-danger btn-xs" @click="handleSelectAction('detailPanel-item-remove', idx)">
+        ✕
       </button>
-    </div>
-  </div>
-    <!-- ===== □.□. 구성품 추가 버튼 ============================================= -->
-  <!-- ===== □. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
-  <!-- ===== ■. 상품 피커 모달 ================================================ -->
-  <teleport to="body" v-if="uiState.pickerOpen">
-    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-      @click.self="uiState.pickerOpen=false">
-      <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <strong style="font-size:15px">구성품 상품 선택</strong>
-          <button class="btn btn-secondary btn-xs" @click="uiState.pickerOpen=false">닫기</button>
-        </div>
-        <bo-multi-check-select
+    </td>
+  </template>
+</bo-grid>
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== ■.■. 구성품 추가 버튼 ============================================= -->
+<div style="margin-top:12px;display:flex;gap:8px">
+  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('prodPickModal-open')">
+    + 상품 구성품 추가
+  </button>
+  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-item-add-blank')">
+    + 비상품 구성품 추가
+    <span style="font-size:11px;color:#aaa">
+      (박스·엽서 등)
+    </span>
+  </button>
+</div>
+</div>
+<!-- ===== □.□. 구성품 추가 버튼 ============================================= -->
+<!-- ===== □. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
+<!-- ===== ■. 상품 피커 모달 ================================================ -->
+<teleport to="body" v-if="uiState.pickerOpen">
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
+      @click.self="handleBtnAction('prodPickModal-close')">
+    <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <strong style="font-size:15px">
+          구성품 상품 선택
+        </strong>
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('prodPickModal-close')">
+          닫기
+        </button>
+      </div>
+      <bo-multi-check-select
           v-model="uiState.pickerSearchType"
           :options="[
           { value: 'prodNm', label: '상품명' },
@@ -700,29 +859,33 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           placeholder="검색대상 전체"
           all-label="전체 선택"
           min-width="100%" />
-        <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
-          <input class="form-control" v-model="uiState.pickerSearch"
+      <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
+        <input class="form-control" v-model="uiState.pickerSearch"
             placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
-            @keyup.enter="onPickerSearch">
-          <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
-        </div>
-        <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-          <bo-grid bare :columns="pickerGridColumns" :rows="cfPickerList" row-key="productId"
+            @keyup.enter="handleBtnAction('prodPickModal-search')">
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('prodPickModal-search')">
+          조회
+        </button>
+      </div>
+      <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
+        <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
+        <bo-grid bare :columns="pickerGridColumns" :rows="cfPickerList" row-key="productId"
             empty-text="검색 결과가 없습니다." row-actions>
-            <template #row-actions="{ row }">
-              <button class="btn btn-blue btn-xs" @click="addItemFromProd(row)">선택</button>
-            </template>
-          </bo-grid>
-        </div>
+          <template #row-actions="{ row }">
+            <button class="btn btn-blue btn-xs" @click="handleSelectAction('prodPickModal-add', row)">
+              선택
+            </button>
+          </template>
+        </bo-grid>
       </div>
     </div>
-  </teleport>
-  <!-- ===== □. 상품 피커 모달 ================================================ -->
-  <!-- ===== ■. 카테고리 피커 모달 ============================================== -->
-  <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
-    @select="addCategory" @close="uiState.catPickerOpen=false" />
+  </div>
+</teleport>
+<!-- ===== □. 상품 피커 모달 ================================================ -->
+<!-- ===== ■. 카테고리 피커 모달 ============================================== -->
+<bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
+    @select="cat => handleSelectAction('categoryModal-select', cat)" @close="handleBtnAction('categoryModal-close')" />
 </div>
-
-  <!-- ===== □. 카테고리 피커 모달 ============================================== -->`
+<!-- ===== □. 카테고리 피커 모달 ============================================== -->
+`
 };

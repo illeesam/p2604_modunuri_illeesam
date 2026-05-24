@@ -165,10 +165,37 @@ window.StConfigMng = {
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StConfigMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'configs-add') {
+        return openNew();
+      } else if (cmd === 'form-save') {
+        return handleSave();
+      } else if (cmd === 'form-cancel') {
+        return closeForm();
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StConfigMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'configs-row-edit') {
+        return openEdit(param);
+      } else if (cmd === 'configs-row-delete') {
+        return handleDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     // --- [컬럼 정의] ---
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
 
     const baseGridColumns = [
       { key: 'siteNm',             label: '사이트' },
@@ -202,17 +229,27 @@ window.StConfigMng = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { uiState, configs, baseGridColumns, codes, form, errors, openEdit, openNew, closeForm, handleSave, handleDelete, fnCycleBadge, fnCycleCdToLabel, handleLoadList, fnMapUiToApi, fnMapApiToUi, baseFormColumns };
+    return {
+      uiState, codes, configs, form, errors,
+      baseGridColumns, baseFormColumns,
+      handleBtnAction, handleSelectAction,
+      fnCycleBadge, fnCycleCdToLabel,
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">정산기준관리</div>
+  <div class="page-title">
+    정산기준관리
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 정산 주기: 월정산 / 주정산 / 건별정산 • 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다. • 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다. • 설정 변경은 변경 이후 수집분부터 적용됩니다.
     </div>
@@ -221,10 +258,16 @@ window.StConfigMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">정산기준 목록</span>
-      <span class="list-count">총 {{ configs.length }}건</span>
+      <span class="list-title">
+        정산기준 목록
+      </span>
+      <span class="list-count">
+        총 {{ configs.length }}건
+      </span>
       <div style="margin-left:auto">
-        <button class="btn btn-primary" @click="openNew">+ 기준 추가</button>
+        <button class="btn btn-primary" @click="handleBtnAction('configs-add')">
+          + 기준 추가
+        </button>
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
@@ -232,26 +275,34 @@ window.StConfigMng = {
       :columns="baseGridColumns" :rows="configs" row-key="settleConfigId"
       list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
-      <template #head-actions>액션</template>
+      <template #head-actions>
+        액션
+      </template>
       <template #row-actions="{ row: c }">
-        <button class="btn btn-sm btn-primary" @click="openEdit(c)">수정</button>
-        <button class="btn btn-sm btn-danger"  @click="handleDelete(c)">삭제</button>
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('configs-row-edit', c)">
+          수정
+        </button>
+        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('configs-row-delete', c)">
+          삭제
+        </button>
       </template>
     </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 편집 폼 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 상세 패널 =================================================== -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
-    <div class="card-title" style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}</div>
+    <div class="card-title" style="font-weight:700;margin-bottom:16px">
+      {{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}
+    </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :cols="4"
-      @save="handleSave" @cancel="closeForm" />
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </div>
 </div>
-
-    <!-- ===== □.□. 폼 영역 ================================================== -->
-  <!-- ===== □. 상세 패널 =================================================== -->`,
+<!-- ===== □.□. 폼 영역 ================================================== -->
+<!-- ===== □. 상세 패널 =================================================== -->
+`,
 };

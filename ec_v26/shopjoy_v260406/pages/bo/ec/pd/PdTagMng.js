@@ -188,7 +188,9 @@ window.PdTagMng = {
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">태그관리</div>
+  <div class="page-title">
+    태그관리
+  </div>
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -201,11 +203,17 @@ window.PdTagMng = {
     list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-row-new' : (row._row_status==='U' ? 'table-row-mod' : '')"
     @set-page="n => handleSelectAction('tags-set-page', n)" @size-change="handleSelectAction('tags-size-change')" @cell-change="row => handleSelectAction('tags-row-cell-change', row)">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">+ 행추가</button>
-      <button class="btn btn-blue btn-sm" @click="handleBtnAction('tags-save')">저장</button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
+        + 행추가
+      </button>
+      <button class="btn btn-blue btn-sm" @click="handleBtnAction('tags-save')">
+        저장
+      </button>
     </template>
     <template #row-actions="{ idx }">
-      <button class="btn btn-danger btn-xs" @click="handleSelectAction('tags-row-delete', idx)">삭제</button>
+      <button class="btn btn-danger btn-xs" @click="handleSelectAction('tags-row-delete', idx)">
+        삭제
+      </button>
     </template>
   </bo-grid>
   <!-- ===== □. 목록 그리드 =================================================== -->

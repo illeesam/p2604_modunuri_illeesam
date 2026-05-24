@@ -267,6 +267,64 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmVoucherDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 취소 (목록으로)
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('pmVoucherMng');
+      // 탭 전환
+      } else if (cmd === 'tab-select') {
+        return onTabChange(param);
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode2 = param;
+        return;
+      // 미리보기 서브탭 변경
+      } else if (cmd === 'previewTab-select') {
+        return onPreviewTabChange(param);
+      // 판매업체 모달 열기
+      } else if (cmd === 'vendorModal-open') {
+        uiState.showVendorModal = true;
+        return;
+      // 판매업체 모달 닫기
+      } else if (cmd === 'vendorModal-close') {
+        uiState.showVendorModal = false;
+        return;
+      // 판매업체 초기화
+      } else if (cmd === 'form-vendor-clear') {
+        form.vendorId = '';
+        form.chargeStaff = '';
+        return;
+      // SNS 모달 열기 (param: 'kakao' | 'email')
+      } else if (cmd === 'snsModal-open') {
+        return openSnsModal(param);
+      // SNS 모달 닫기
+      } else if (cmd === 'snsModal-close') {
+        snsModal.show = false;
+        return;
+      // SNS 전송
+      } else if (cmd === 'snsModal-send') {
+        return sendSns();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmVoucherDtl.js : handleSelectAction -> ', cmd, param);
+      // 판매업체 선택
+      if (cmd === 'vendorModal-select') {
+        return selectVendor(param.vendorId, param.vendorNm);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* BoGrid(bare) 컬럼 정의 — 발급내역 / 사용내역 */
     const issueGridColumns = [
       { key: 'issueNo',     label: '발급번호' },
@@ -310,25 +368,43 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { vendors, showVendorModal, uiState, codes, cfIsNew, cfHasId, cfSaveDisabled, form, errors, handleSave, DEFAULT_START, DEFAULT_END, tab, cfDtlMode, tabMode2, showTab, onTabChange, cfIssuedList, cfUsedList, previewTab, onPreviewTabChange, barcodeContainer, qrcodeContainer, snsModal, snsMsg, openSnsModal, sendSns, cfSelectedVendorNm, selectVendor, issueGridColumns, usageGridColumns, infoFormColumns };
+    return {
+      vendors, showVendorModal, uiState, codes, form, errors, snsModal, snsMsg,        // 상태 / 데이터
+      infoFormColumns, issueGridColumns, usageGridColumns,                             // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfIssuedList, cfUsedList, cfSelectedVendorNm, // computed
+      tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer,                    // toRef
+      showTab, DEFAULT_START, DEFAULT_END,                                             // 헬퍼
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '상품권 등록' : '상품권 수정' }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.voucherId }}</span>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ form.voucherId }}
+    </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;justify-content:flex-end;">
     <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭">📑</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열">1▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열">2▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열">3▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="handleBtnAction('tab-mode', 'tab')" title="탭">
+        📑
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tab-mode', '1col')" title="1열">
+        1▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tab-mode', '2col')" title="2열">
+        2▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tab-mode', '3col')" title="3열">
+        3▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tab-mode', '4col')" title="4열">
+        4▭
+      </button>
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
@@ -336,7 +412,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <div class="tab-nav">
     <button v-for="t in ['info','detail','issueHist','useHist','preview']" :key="Math.random()"
       :class="['tab-btn', {active:tab===t}]"
-      @click="onTabChange(t)">
+      @click="handleBtnAction('tab-select', t)">
       {{ {info:'기본정보',detail:'상세정보',issueHist:'발급내역',useHist:'사용내역',preview:'미리보기'}[t] }}
     </button>
   </div>
@@ -344,18 +420,24 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== ■. 기본정보 탭 (BoFormArea 자동 렌더) =============================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      기본정보
+    </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
       <!-- ===== ■.■.■. 판매업체 picker ========================================= -->
       <template #vendor>
         <div style="display:flex;gap:8px;align-items:center;">
-          <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
-            <span style="padding:8px 12px;flex:1;">{{ cfSelectedVendorNm }}</span>
-            <span style="padding:8px 12px;color:#999;font-size:12px;">▼</span>
+          <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
+            <span style="padding:8px 12px;flex:1;">
+              {{ cfSelectedVendorNm }}
+            </span>
+            <span style="padding:8px 12px;color:#999;font-size:12px;">
+              ▼
+            </span>
           </div>
-          <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="form.vendorId='';form.chargeStaff=''">
+          <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendor-clear')">
             초기화
           </button>
         </div>
@@ -364,19 +446,23 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     <!-- ===== □.□. 폼 영역 ================================================== -->
     <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
     <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
-      @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
+      @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
     <div class="form-actions" v-if="!cfDtlMode">
-      <button @click="handleSave" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">
+      <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">
         {{ cfIsNew ? '등록' : '저장' }}
       </button>
-      <button @click="navigate('pmVoucherMng')" class="btn btn-secondary">취소</button>
+      <button @click="handleBtnAction('form-cancel')" class="btn btn-secondary">
+        취소
+      </button>
     </div>
   </div>
-    <!-- ===== □.□. 판매업체 선택 모달 ============================================ -->
+  <!-- ===== □.□. 판매업체 선택 모달 ============================================ -->
   <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 미리보기 탭 ================================================== -->
   <div v-if="showTab('preview')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">미리보기</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      미리보기
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
       <!-- ===== ■.■.■. 좌측 컬럼 =============================================== -->
       <div style="display:flex;flex-direction:column;gap:16px;">
@@ -389,11 +475,21 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
             📊 바코드
           </div>
           <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
-            <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.voucherNm }}</div>
-            <div style="font-size:9px;">💳 V{{ form.voucherId || 'SAMPLE' }}</div>
-            <div style="font-weight:600;color:#e8587a;margin:4px 0;">{{ (form.voucherAmt||0).toLocaleString() }}원</div>
-            <div style="font-size:9px;">판매가: {{ (form.salePrice||0).toLocaleString() }}원</div>
-            <div style="font-size:9px;color:#999;">📅 {{ form.startDate }} ~ {{ form.endDate }}</div>
+            <div style="font-weight:600;margin-bottom:4px;color:#222;">
+              {{ form.voucherNm }}
+            </div>
+            <div style="font-size:9px;">
+              💳 V{{ form.voucherId || 'SAMPLE' }}
+            </div>
+            <div style="font-weight:600;color:#e8587a;margin:4px 0;">
+              {{ (form.voucherAmt||0).toLocaleString() }}원
+            </div>
+            <div style="font-size:9px;">
+              판매가: {{ (form.salePrice||0).toLocaleString() }}원
+            </div>
+            <div style="font-size:9px;color:#999;">
+              📅 {{ form.startDate }} ~ {{ form.endDate }}
+            </div>
           </div>
           <div ref="barcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:1px solid #ddd;border-radius:4px;width:100%;position:relative;z-index:1;">
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:45px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
@@ -413,12 +509,24 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
               ShopJoy
             </div>
-            <div style="font-weight:600;margin-bottom:6px;">🎁 {{ form.voucherNm }}</div>
-            <div style="color:#666;margin:3px 0;">상품권번호: V{{ form.voucherId || 'SAMPLE' }}</div>
-            <div style="color:#666;margin:3px 0;">액면가: {{ (form.voucherAmt||0).toLocaleString() }}원</div>
-            <div style="color:#666;margin:3px 0;">판매가: {{ (form.salePrice||0).toLocaleString() }}원</div>
-            <div style="color:#666;margin:3px 0;">유효기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
-            <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
+            <div style="font-weight:600;margin-bottom:6px;">
+              🎁 {{ form.voucherNm }}
+            </div>
+            <div style="color:#666;margin:3px 0;">
+              상품권번호: V{{ form.voucherId || 'SAMPLE' }}
+            </div>
+            <div style="color:#666;margin:3px 0;">
+              액면가: {{ (form.voucherAmt||0).toLocaleString() }}원
+            </div>
+            <div style="color:#666;margin:3px 0;">
+              판매가: {{ (form.salePrice||0).toLocaleString() }}원
+            </div>
+            <div style="color:#666;margin:3px 0;">
+              유효기간: {{ form.startDate }} ~ {{ form.endDate }}
+            </div>
+            <div style="color:#999;font-size:9px;margin-top:6px;">
+              ShopJoy에서 확인하기 &gt;
+            </div>
           </div>
         </div>
         <!-- ===== ■.■.■.■. 이메일 내용 ============================================ -->
@@ -427,26 +535,50 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
             📧 이메일 내용
           </div>
           <div style="background:linear-gradient(180deg, #f9f9f9 0%, #fafbfc 100%);padding:12px;border:1px solid #e8e8e8;border-radius:6px;text-align:left;font-size:9px;line-height:1.6;color:#333;width:100%;position:relative;overflow:hidden;">
-            <div style="position:absolute;top:-10px;right:-10px;font-size:50px;opacity:0.03;transform:rotate(20deg);">📧</div>
+            <div style="position:absolute;top:-10px;right:-10px;font-size:50px;opacity:0.03;transform:rotate(20deg);">
+              📧
+            </div>
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
               ShopJoy
             </div>
             <div style="background:linear-gradient(135deg, #e8587a 0%, #ff7a9a 100%);color:#fff;padding:8px;border-radius:4px;margin:-12px -12px 8px -12px;text-align:center;position:relative;z-index:1;">
-              <div style="font-weight:600;font-size:10px;">🛍️ ShopJoy 상품권 알림</div>
+              <div style="font-weight:600;font-size:10px;">
+                🛍️ ShopJoy 상품권 알림
+              </div>
             </div>
             <div style="position:relative;z-index:1;">
-              <div style="font-weight:600;margin-bottom:8px;">제목: {{ form.voucherNm }}</div>
-              <div style="color:#666;margin:4px 0;">보낸 사람: ShopJoy (noreply@shopjoy.com)</div>
-              <div style="color:#666;margin:6px 0;">안녕하세요, 송지선 회원님!</div>
-              <div style="color:#666;margin:6px 0;">ShopJoy에서 특별한 상품권을 준비했습니다.</div>
-              <div style="background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;margin:8px 0;">
-                <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">🎁 {{ form.voucherNm }}</div>
-                <div style="color:#666;font-size:8px;margin:3px 0;">상품권번호: V{{ form.voucherId || 'SAMPLE' }}</div>
-                <div style="color:#666;font-size:8px;margin:3px 0;">액면가: {{ (form.voucherAmt||0).toLocaleString() }}원</div>
-                <div style="color:#666;font-size:8px;margin:3px 0;">판매가: {{ (form.salePrice||0).toLocaleString() }}원</div>
-                <div style="color:#666;font-size:8px;margin:3px 0;">유효기간: {{ form.startDate }} ~ {{ form.endDate }}</div>
+              <div style="font-weight:600;margin-bottom:8px;">
+                제목: {{ form.voucherNm }}
               </div>
-              <div style="color:#666;margin:6px 0;">지금 바로 ShopJoy에서 확인하세요!</div>
+              <div style="color:#666;margin:4px 0;">
+                보낸 사람: ShopJoy (noreply@shopjoy.com)
+              </div>
+              <div style="color:#666;margin:6px 0;">
+                안녕하세요, 송지선 회원님!
+              </div>
+              <div style="color:#666;margin:6px 0;">
+                ShopJoy에서 특별한 상품권을 준비했습니다.
+              </div>
+              <div style="background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;margin:8px 0;">
+                <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">
+                  🎁 {{ form.voucherNm }}
+                </div>
+                <div style="color:#666;font-size:8px;margin:3px 0;">
+                  상품권번호: V{{ form.voucherId || 'SAMPLE' }}
+                </div>
+                <div style="color:#666;font-size:8px;margin:3px 0;">
+                  액면가: {{ (form.voucherAmt||0).toLocaleString() }}원
+                </div>
+                <div style="color:#666;font-size:8px;margin:3px 0;">
+                  판매가: {{ (form.salePrice||0).toLocaleString() }}원
+                </div>
+                <div style="color:#666;font-size:8px;margin:3px 0;">
+                  유효기간: {{ form.startDate }} ~ {{ form.endDate }}
+                </div>
+              </div>
+              <div style="color:#666;margin:6px 0;">
+                지금 바로 ShopJoy에서 확인하세요!
+              </div>
               <div style="color:#999;font-size:8px;margin-top:8px;text-align:center;padding-top:8px;border-top:1px solid #e8e8e8;">
                 © 2026 ShopJoy | 문의: 010-1234-5678 | demo@mail.com
               </div>
@@ -458,16 +590,28 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <div style="display:flex;flex-direction:column;gap:16px;">
         <!-- ===== ■.■.■.■. QR코드 ============================================== -->
         <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(135deg, #fff 0%, rgba(232,88,122,0.01) 100%);">
-          <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">📱</div>
+          <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">
+            📱
+          </div>
           <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">
             📱 QR코드
           </div>
           <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
-            <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.voucherNm }}</div>
-            <div style="font-size:9px;">💳 V{{ form.voucherId || 'SAMPLE' }}</div>
-            <div style="font-weight:600;color:#e8587a;margin:4px 0;">{{ (form.voucherAmt||0).toLocaleString() }}원</div>
-            <div style="font-size:9px;">판매가: {{ (form.salePrice||0).toLocaleString() }}원</div>
-            <div style="font-size:9px;color:#999;">📦 {{ (form.issueQty||0).toLocaleString() }}개</div>
+            <div style="font-weight:600;margin-bottom:4px;color:#222;">
+              {{ form.voucherNm }}
+            </div>
+            <div style="font-size:9px;">
+              💳 V{{ form.voucherId || 'SAMPLE' }}
+            </div>
+            <div style="font-weight:600;color:#e8587a;margin:4px 0;">
+              {{ (form.voucherAmt||0).toLocaleString() }}원
+            </div>
+            <div style="font-size:9px;">
+              판매가: {{ (form.salePrice||0).toLocaleString() }}원
+            </div>
+            <div style="font-size:9px;color:#999;">
+              📦 {{ (form.issueQty||0).toLocaleString() }}개
+            </div>
           </div>
           <div ref="qrcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;width:100%;position:relative;z-index:1;">
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
@@ -488,13 +632,23 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
               VOUCHER
             </div>
             <div>
-              <div style="font-size:8px;color:#999;">💳 ShopJoy</div>
-              <div style="font-size:11px;font-weight:700;color:#e8587a;margin:2px 0;">{{ form.voucherNm }}</div>
+              <div style="font-size:8px;color:#999;">
+                💳 ShopJoy
+              </div>
+              <div style="font-size:11px;font-weight:700;color:#e8587a;margin:2px 0;">
+                {{ form.voucherNm }}
+              </div>
             </div>
             <div style="text-align:center;background:rgba(255,255,255,0.5);padding:4px;border-radius:4px;">
-              <div style="font-size:13px;font-weight:600;color:#222;">{{ (form.voucherAmt||0).toLocaleString() }}원</div>
-              <div style="font-size:8px;color:#666;">{{ form.startDate }} ~ {{ form.endDate }}</div>
-              <div style="font-size:7px;color:#999;margin-top:2px;">번호: V{{ form.voucherId || 'SAMPLE' }}</div>
+              <div style="font-size:13px;font-weight:600;color:#222;">
+                {{ (form.voucherAmt||0).toLocaleString() }}원
+              </div>
+              <div style="font-size:8px;color:#666;">
+                {{ form.startDate }} ~ {{ form.endDate }}
+              </div>
+              <div style="font-size:7px;color:#999;margin-top:2px;">
+                번호: V{{ form.voucherId || 'SAMPLE' }}
+              </div>
             </div>
             <div style="display:flex;gap:6px;font-size:7px;color:#999;">
               <div style="flex:1;height:20px;background:#fff;border:1px solid #ddd;border-radius:2px;display:flex;align-items:center;justify-content:center;">
@@ -512,35 +666,49 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== □. 미리보기 탭 ================================================== -->
   <!-- ===== ■. 발급내역 탭 ================================================== -->
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      발급내역
+    </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare :columns="issueGridColumns" :rows="cfIssuedList" row-key="issueNo"
-      empty-text="발급내역이 없습니다."></bo-grid>
+      empty-text="발급내역이 없습니다.">
+    </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 발급내역 탭 ================================================== -->
   <!-- ===== ■. 사용내역 탭 ================================================== -->
   <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      사용내역
+    </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare :columns="usageGridColumns" :rows="cfUsedList" row-key="usageNo"
-      empty-text="사용내역이 없습니다."></bo-grid>
+      empty-text="사용내역이 없습니다.">
+    </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 사용내역 탭 ================================================== -->
   <!-- ===== ■. 상세정보 탭 ================================================== -->
   <div v-if="showTab('detail')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      📋 상세정보
+    </div>
     <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #e8e8e8;">
-      <h3 style="font-size:13px;font-weight:700;color:#222;">💬 SNS전송</h3>
+      <h3 style="font-size:13px;font-weight:700;color:#222;">
+        💬 SNS전송
+      </h3>
     </div>
     <div style="padding:20px;">
-      <div style="font-size:12px;color:#666;margin-bottom:16px;">상품권 정보를 SNS 채널로 공유합니다.</div>
+      <div style="font-size:12px;color:#666;margin-bottom:16px;">
+        상품권 정보를 SNS 채널로 공유합니다.
+      </div>
       <div style="display:flex;gap:12px;margin-bottom:20px;">
-        <button @click="openSnsModal('kakao')" class="btn btn-primary" style="background:#FFE812;color:#381818;border:none;">
+        <button @click="handleBtnAction('snsModal-open', 'kakao')" class="btn btn-primary" style="background:#FFE812;color:#381818;border:none;">
           💬 카카오톡
         </button>
-        <button @click="openSnsModal('email')" class="btn btn-secondary">📧 이메일</button>
+        <button @click="handleBtnAction('snsModal-open', 'email')" class="btn btn-secondary">
+          📧 이메일
+        </button>
       </div>
     </div>
   </div>
@@ -548,17 +716,23 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== ■. SNS 전송 모달 =============================================== -->
   <bo-modal :show="snsModal.show"
     :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"
-    width="500px" @close="snsModal.show=false">
+    width="500px" @close="handleBtnAction('snsModal-close')">
     <div style="margin-bottom:12px;">
-      <label class="form-label">전송 메시지</label>
+      <label class="form-label">
+        전송 메시지
+      </label>
       <textarea v-model="snsMsg" class="form-control" style="height:120px;"></textarea>
-    </div>
-    <template #footer>
-      <button @click="snsModal.show=false" class="btn btn-secondary btn-sm">취소</button>
-      <button @click="sendSns" class="btn btn-primary btn-sm">전송</button>
-    </template>
-  </bo-modal>
-</div>
-
-  <!-- ===== □. SNS 전송 모달 =============================================== -->`
+      </div>
+      <template #footer>
+        <button @click="handleBtnAction('snsModal-close')" class="btn btn-secondary btn-sm">
+          취소
+        </button>
+        <button @click="handleBtnAction('snsModal-send')" class="btn btn-primary btn-sm">
+          전송
+        </button>
+      </template>
+    </bo-modal>
+  </div>
+  <!-- ===== □. SNS 전송 모달 =============================================== -->
+`
 };

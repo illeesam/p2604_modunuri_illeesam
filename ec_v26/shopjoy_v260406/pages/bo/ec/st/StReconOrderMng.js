@@ -145,7 +145,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
     // --- [컬럼 정의] ---
 
     const baseSearchColumns = [
@@ -177,7 +176,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
       uiState, codes, pager, rows, searchParam,                                       // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
@@ -189,11 +187,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">주문-정산 대사</div>
+  <div class="page-title">
+    주문-정산 대사
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">주문 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다.</span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      주문 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 주문금액(order_amt) vs 정산수집 금액(recon_amt) 차이를 자동 비교합니다. • 차이 상태: 일치 / 차이발생 / 검토중 / 처리완료 • 차이 발생 건은 원인 파악 후 조정(StSettleAdjMng)으로 처리하거나 수동 대사 확인합니다.
     </div>
@@ -206,36 +210,53 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseSearchColumns" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">일치</div>
-        <div style="font-size:20px;font-weight:700;color:#27ae60">{{ cfSummary.match }}건</div>
+        <div style="font-size:11px;color:#888">
+          일치
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#27ae60">
+          {{ cfSummary.match }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
-        <div style="font-size:11px;color:#888">정산과다</div>
-        <div style="font-size:20px;font-weight:700;color:#e74c3c">{{ cfSummary.over }}건</div>
+        <div style="font-size:11px;color:#888">
+          정산과다
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#e74c3c">
+          {{ cfSummary.over }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
-        <div style="font-size:11px;color:#888">정산부족</div>
-        <div style="font-size:20px;font-weight:700;color:#e67e22">{{ cfSummary.under }}건</div>
+        <div style="font-size:11px;color:#888">
+          정산부족
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#e67e22">
+          {{ cfSummary.under }}건
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888">차이금액 합계</div>
-        <div style="font-size:20px;font-weight:700;color:#333">{{ fmtW(cfSummary.diffAmt) }}</div>
+        <div style="font-size:11px;color:#888">
+          차이금액 합계
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#333">
+          {{ fmtW(cfSummary.diffAmt) }}
+        </div>
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      @set-page="n => handleSelectAction('reconOrders-set-page', n)" @size-change="handleSelectAction('reconOrders-size-change')"></bo-grid>
+      @set-page="n => handleSelectAction('reconOrders-set-page', n)" @size-change="handleSelectAction('reconOrders-size-change')">
+    </bo-grid>
   </div>
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->`,
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. 카드 영역 =================================================== -->
+`,
 };

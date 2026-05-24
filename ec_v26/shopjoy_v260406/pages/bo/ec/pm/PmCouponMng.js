@@ -49,6 +49,63 @@ window.PmCouponMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmCouponMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        uiState.sortKey = ''; uiState.sortDir = 'asc';
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      // 쿠폰 신규 등록 (인라인 패널)
+      } else if (cmd === 'coupons-add') {
+        return openNew();
+      // 쿠폰 목록 엑셀 내보내기
+      } else if (cmd === 'coupons-excel') {
+        return exportExcel();
+      // 탭 모드 변경 (list/card)
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode = param;
+        return;
+      // 상세 인라인 패널 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDetail();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmCouponMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 정렬 헤더 클릭
+      if (cmd === 'coupons-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'coupons-set-page') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'coupons-size-change') {
+        return onSizeChange();
+      // 행 클릭 → 상세 편집
+      } else if (cmd === 'coupons-row-edit') {
+        return handleLoadDetail(param);
+      // 행 삭제
+      } else if (cmd === 'coupons-row-delete') {
+        return handleDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* 쿠폰 handleDateRangeChange */
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
@@ -188,7 +245,6 @@ window.PmCouponMng = {
 
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
-
         // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
@@ -206,7 +262,6 @@ window.PmCouponMng = {
         onRangeChange: () => onDateRangeChange() },
     ];
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
 
     const baseGridColumns = [
       { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm', link: true,
@@ -227,42 +282,58 @@ window.PmCouponMng = {
     ];
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), coupons, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, discountLabel, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    return {
+      coupons, uiState, codes, searchParam, pager, uiStateDetail,                  // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
+      discountLabel, fnStatusBadge, sortIcon,                                      // 헬퍼
+      inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,             // 콜백 / 전역
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
-      get selectedId() { return uiStateDetail.selectedId; } };
+      get selectedId() { return uiStateDetail.selectedId; }
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">쿠폰관리</div>
+  <div class="page-title">
+    쿠폰관리
+  </div>
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+          ●
+        </span>
         쿠폰목록
-        <span class="list-count">{{ pager.pageTotalCount }}건</span>
+        <span class="list-count">
+          {{ pager.pageTotalCount }}건
+        </span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-          <button @click="tabMode='list'" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
             :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ☰ 리스트
           </button>
-          <button @click="tabMode='card'" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊞ 카드
           </button>
         </div>
-        <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-        <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+        <button class="btn btn-green btn-sm" @click="handleBtnAction('coupons-excel')">
+          📥 엑셀
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('coupons-add')">
+          + 신규
+        </button>
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
@@ -271,27 +342,39 @@ window.PmCouponMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
-      @sort="onSort" @row-click="c => handleLoadDetail(c.couponId)">
-      <template #head-actions>관리</template>
+      @sort="key => handleSelectAction('coupons-sort', key)" @row-click="c => handleSelectAction('coupons-row-edit', c.couponId)">
+      <template #head-actions>
+        관리
+      </template>
       <template #row-actions="{ row: c }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(c)">삭제</button>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('coupons-row-edit', c.couponId)">
+            수정
+          </button>
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('coupons-row-delete', c)">
+            삭제
+          </button>
         </div>
       </template>
     </bo-grid>
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
-      <div v-if="coupons.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
+      <div v-if="coupons.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
+        데이터가 없습니다.
+      </div>
       <div v-for="c in coupons" :key="c?.couponId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===c.couponId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleLoadDetail(c.couponId)">
+        @click="handleSelectAction('coupons-row-edit', c.couponId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
-          <div style="font-size:12px;color:#999;margin-bottom:6px;">쿠폰 #{{ c.couponId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleLoadDetail(c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">
+          <div style="font-size:12px;color:#999;margin-bottom:6px;">
+            쿠폰 #{{ c.couponId }}
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('coupons-row-edit', c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">
             {{ c.couponNm }}
-            <span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:4px;">▼</span>
+            <span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:4px;">
+              ▼
+            </span>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnStatusBadge(c.couponStatusCdNm || c.couponStatusCd)" style="font-size:11px;">
@@ -299,26 +382,40 @@ window.PmCouponMng = {
             </span>
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
-            <div>💰 {{ discountLabel(c) }}</div>
-            <div>📅 {{ c.validFrom }} ~ {{ c.validTo }}</div>
-            <div style="color:#999;margin-top:4px;">만료 {{ c.validTo }}</div>
+            <div>
+              💰 {{ discountLabel(c) }}
+            </div>
+            <div>
+              📅 {{ c.validFrom }} ~ {{ c.validTo }}
+            </div>
+            <div style="color:#999;margin-top:4px;">
+              만료 {{ c.validTo }}
+            </div>
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(c.couponId)" style="font-size:11px;padding:4px 12px;">수정</button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(c)" style="font-size:11px;padding:4px 12px;">삭제</button>
-          <span style="font-size:11px;color:#999;margin-left:auto;">#{{ c.couponId }}</span>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('coupons-row-edit', c.couponId)" style="font-size:11px;padding:4px 12px;">
+            수정
+          </button>
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('coupons-row-delete', c)" style="font-size:11px;padding:4px 12px;">
+            삭제
+          </button>
+          <span style="font-size:11px;color:#999;margin-left:auto;">
+            #{{ c.couponId }}
+          </span>
         </div>
       </div>
     </div>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('coupons-set-page', n)" :on-size-change="() => handleSelectAction('coupons-size-change')" />
   </div>
-    <!-- ===== □.□. 카드 뷰 ================================================== -->
+  <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: CouponDtl 임베드 ==================================== -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        ✕ 닫기
+      </button>
     </div>
     <pm-coupon-dtl
       :key="selectedId"
@@ -334,6 +431,6 @@ window.PmCouponMng = {
       />
   </div>
 </div>
-
-  <!-- ===== □. 하단 상세: CouponDtl 임베드 ==================================== -->`
+<!-- ===== □. 하단 상세: CouponDtl 임베드 ==================================== -->
+`
 };

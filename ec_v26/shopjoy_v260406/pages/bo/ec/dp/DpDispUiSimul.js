@@ -28,6 +28,194 @@ window.DpDispUiSimul = {
     const members = reactive([]);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiSimul.js : handleBtnAction -> ', cmd, param);
+      // 검색조건 초기화
+      if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 검색 일시 현재 시각 복귀
+      } else if (cmd === 'searchParam-reset-date') {
+        return resetDate();
+      // 영역 선택 전체
+      } else if (cmd === 'selectedAreas-all') {
+        return selectAllAreas();
+      // 영역 선택 비우기
+      } else if (cmd === 'selectedAreas-clear') {
+        return clearAllAreas();
+      // 영역 체크 일괄
+      } else if (cmd === 'simul-check-all-panels') {
+        return checkAllPanels();
+      // 패널 체크 비우기
+      } else if (cmd === 'simul-clear-checked-panels') {
+        return clearCheckedPanels();
+      // 위젯 체크 일괄
+      } else if (cmd === 'simul-check-all-widgets') {
+        return checkAllWidgets();
+      // 위젯 체크 비우기
+      } else if (cmd === 'simul-clear-checked-widgets') {
+        return clearCheckedWidgets();
+      // 구조 그리드 초기화
+      } else if (cmd === 'simul-reset-struct-grid') {
+        if (uiState.structLayoutType === 'dashboard') { structDashItems.splice(0); }
+        else { resetStructGrid(); }
+        return;
+      // 스팬 팝업 닫기
+      } else if (cmd === 'simul-close-span-popup') {
+        return closeStructSpanPopup();
+      // 소스 복사
+      } else if (cmd === 'simul-copy-source') {
+        return copySource();
+      // UI 미리보기 레이어 열기
+      } else if (cmd === 'simul-open-disp-ui-layer') {
+        return openDispUiLayer();
+      // UI 미리보기 레이어 닫기
+      } else if (cmd === 'simul-close-disp-ui-layer') {
+        uiState.dispUiLayerOpen = false;
+        return;
+      // UI 미리보기 폼 초기화
+      } else if (cmd === 'simul-reset-disp-ui-form') {
+        return resetDispUiForm();
+      // UI 미리보기 모달 열기
+      } else if (cmd === 'simul-open-disp-ui-modal') {
+        return openDispUiModal();
+      // UI 미리보기 새 창 열기 (FO/BO)
+      } else if (cmd === 'simul-open-disp-ui-popup') {
+        return openDispUiPopup(param);
+      // UI 미리보기 기타 메뉴 열기
+      } else if (cmd === 'simul-open-disp-ui-other') {
+        return openDispUiOther();
+      // 기타 메뉴 닫기
+      } else if (cmd === 'simul-close-other-menu') {
+        return closeOtherMenu();
+      // 사이트 모달 열기
+      } else if (cmd === 'simul-open-site-modal') {
+        uiState.dispUiSiteModalOpen = true;
+        uiState.dispUiSiteSearch = '';
+        return;
+      // 사이트 모달 닫기
+      } else if (cmd === 'simul-close-site-modal') {
+        uiState.dispUiSiteModalOpen = false;
+        return;
+      // 사이트 비우기
+      } else if (cmd === 'simul-clear-site') {
+        dispUiForm.siteId = ''; dispUiForm.siteNm = '';
+        return;
+      // 회원 모달 열기
+      } else if (cmd === 'simul-open-member-modal') {
+        uiState.dispUiMemberModalOpen = true;
+        uiState.dispUiMemberSearch = '';
+        return;
+      // 회원 모달 닫기
+      } else if (cmd === 'simul-close-member-modal') {
+        uiState.dispUiMemberModalOpen = false;
+        return;
+      // 회원 비우기
+      } else if (cmd === 'simul-clear-member') {
+        dispUiForm.memberId = ''; dispUiForm.memberNm = '';
+        uiState.dispUiMemberModalOpen = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiSimul.js : handleSelectAction -> ', cmd, param);
+      // 메인 탭 변경 (preview/struct/source)
+      if (cmd === 'tab-select') {
+        return switchTab(param);
+      // 뷰모드 변경
+      } else if (cmd === 'simul-tabmode-set') {
+        uiState.tabMode = param;
+        return;
+      // 표시영역 토글
+      } else if (cmd === 'selectedAreas-toggle') {
+        return toggleArea(param);
+      // 영역 확장 토글
+      } else if (cmd === 'simul-expand-area') {
+        return toggleAreaExpand(param);
+      // 패널 체크 토글
+      } else if (cmd === 'simul-toggle-panel-check') {
+        return togglePanelCheck(param);
+      // 영역 패널 일괄 체크
+      } else if (cmd === 'simul-check-area-panels') {
+        return checkAreaPanels(param);
+      // 위젯 체크 토글
+      } else if (cmd === 'simul-toggle-widget-check') {
+        return toggleWidgetCheck(param.dispId, param.wi, param.event);
+      // 구조 레이아웃 변경
+      } else if (cmd === 'simul-set-struct-layout') {
+        uiState.structLayoutType = param;
+        return;
+      // 구조 열 개수 변경
+      } else if (cmd === 'simul-set-struct-cols') {
+        uiState.structColCount = param;
+        return resetStructGrid();
+      // 구조 뷰포트 변경
+      } else if (cmd === 'simul-set-struct-viewport') {
+        uiState.structViewport = param;
+        return;
+      // 구조 실제컨텐츠 토글
+      } else if (cmd === 'simul-toggle-struct-real') {
+        uiState.structShowReal = !uiState.structShowReal;
+        return;
+      // 구조 스팬 토글
+      } else if (cmd === 'simul-toggle-struct-span-popup') {
+        return toggleStructSpanPopup(param.e, param.idx);
+      // 구조 스팬 변경
+      } else if (cmd === 'simul-set-struct-span') {
+        return setStructSpan(param.idx, param.axis, param.delta);
+      // 구조 슬롯 제거
+      } else if (cmd === 'simul-remove-struct-slot') {
+        return removeStructSlot(param);
+      // 구조 대시 아이템 제거
+      } else if (cmd === 'simul-remove-struct-dash') {
+        return removeStructDashItem(param);
+      // 사이트 선택
+      } else if (cmd === 'simul-select-site') {
+        return selectDispUiSite(param);
+      // 회원 선택
+      } else if (cmd === 'simul-select-member') {
+        return selectDispUiMember(param);
+      // UI 미리보기 영역 토글
+      } else if (cmd === 'simul-disp-ui-toggle-area') {
+        return dispUiToggleArea(param);
+      // UI 미리보기 영역 전체 선택
+      } else if (cmd === 'simul-disp-ui-select-all-areas') {
+        return dispUiSelectAllAreas();
+      // UI 미리보기 영역 전체 해제
+      } else if (cmd === 'simul-disp-ui-clear-all-areas') {
+        return dispUiClearAllAreas();
+      // 기타 페이지 선택
+      } else if (cmd === 'simul-pick-other-page') {
+        return pickOtherPage(param);
+      // showDesc 토글
+      } else if (cmd === 'simul-toggle-show-desc') {
+        uiState.showDesc = !uiState.showDesc;
+        return;
+      // showAreaDrop 토글
+      } else if (cmd === 'simul-toggle-area-drop') {
+        uiState.showAreaDrop = !uiState.showAreaDrop;
+        return;
+      // showAreaDrop 닫기
+      } else if (cmd === 'simul-close-area-drop') {
+        uiState.showAreaDrop = false;
+        return;
+      // dispUiAreaDrop 토글
+      } else if (cmd === 'simul-toggle-disp-ui-area-drop') {
+        uiState.dispUiAreaDrop = !uiState.dispUiAreaDrop;
+        return;
+      // dispUiAreaDrop 닫기
+      } else if (cmd === 'simul-close-disp-ui-area-drop') {
+        uiState.dispUiAreaDrop = false;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
@@ -193,7 +381,6 @@ window.DpDispUiSimul = {
     });
 
     // ===== return (템플릿 노출) ===============================================
-
 
     return { ...area, panels };
       }).filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
@@ -896,6 +1083,7 @@ window.DpDispUiSimul = {
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
     return {
+      handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       today, cfSiteNm, codes,
       uiState, switchTab,
       searchParam,
@@ -940,7 +1128,12 @@ window.DpDispUiSimul = {
 <div>
   <!-- ===== ■. 페이지 제목 ================================================== -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
-    <div>전시UI시뮬레이션 <span style="font-size:13px;font-weight:400;color:#888;">화면영역별 전시패널 분석 및 영역미리보기</span></div>
+    <div>
+      전시UI시뮬레이션
+      <span style="font-size:13px;font-weight:400;color:#888;">
+        화면영역별 전시패널 분석 및 영역미리보기
+      </span>
+    </div>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
       🌐 {{ cfSiteNm }}
     </span>
@@ -951,1039 +1144,1389 @@ window.DpDispUiSimul = {
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <!-- ===== ■.■.■. 전시일시 ================================================ -->
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">📅 전시일시</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          📅 전시일시
+        </span>
         <bo-date-time-picker v-model:date="searchParam.previewDate" v-model:time="searchParam.previewTime"
           :show-clear="false" date-width="148px" time-width="145px" />
       </div>
-      <div style="width:1px;height:28px;background:#e0e0e0;"></div>
+      <div style="width:1px;height:28px;background:#e0e0e0;">
+      </div>
       <!-- ===== ■.■.■. 상태 ================================================== -->
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">상태</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          상태
+        </span>
         <select v-model="searchParam.status" class="form-control" style="width:90px;margin:0;font-size:12px;">
-          <option value="">전체</option>
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+          <option value="">
+            전체
+          </option>
+          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">
+            {{ c.codeLabel }}
+          </option>
         </select>
       </div>
       <!-- ===== ■.■.■. 공개대상 ================================================ -->
       <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">공개대상</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          공개대상
+        </span>
         <select v-model="searchParam.visibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
-          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
+          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">
+            {{ o.label }}
+          </option>
         </select>
       </div>
-      <div style="width:1px;height:28px;background:#e0e0e0;"></div>
+      <div style="width:1px;height:28px;background:#e0e0e0;">
+      </div>
       <!-- ===== ■.■.■. 보기모드 (Tab1에서만 활성) =================================== -->
       <div style="display:flex;align-items:center;gap:6px;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;pointer-events:none;' : ''">
-        <span style="font-size:12px;font-weight:600;color:#555;">보기</span>
+        <span style="font-size:12px;font-weight:600;color:#555;">
+          보기
+        </span>
         <div style="display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
-          <button @click="tabMode='list'" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmode-set', 'list')" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
             :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ☰ 패널리스트목록형식
           </button>
-          <button @click="tabMode='card'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmode-set', 'card')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             🖼 패널목록카드형식
           </button>
-          <button @click="tabMode='expand'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmode-set', 'expand')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='expand' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊞ 패널-위젯 상세보기
           </button>
-          <button @click="tabMode='area_detail'" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmode-set', 'area_detail')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='area_detail' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊟ 영역-위젯 상세보기
           </button>
         </div>
       </div>
-      <div style="width:1px;height:28px;background:#e0e0e0;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;' : ''"></div>
+      <div style="width:1px;height:28px;background:#e0e0e0;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;' : ''">
+      </div>
       <!-- ===== ■.■.■. 설명보기 (Tab1에서만) ====================================== -->
-      <button v-if="uiState.mainTab==='preview'" @click="uiState.showDesc=!uiState.showDesc"
+      <button v-if="uiState.mainTab==='preview'" @click="handleSelectAction('simul-toggle-show-desc')"
         style="font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid #ddd;cursor:pointer;transition:all .15s;"
         :style="showDesc ? 'background:#e3f2fd;border-color:#90caf9;color:#1565c0;' : 'background:#fff;color:#999;'">
         {{ showDesc ? '📋 설명 숨기기' : '📋 설명 보기' }}
       </button>
       <!-- ===== ■.■.■. 화면 영역 멀티선택 (오른쪽) ==================================== -->
       <div style="margin-left:auto;position:relative;">
-        <button @click="showAreaDrop=!showAreaDrop"
+        <button @click="handleSelectAction('simul-toggle-area-drop')"
           style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
           :style="selectedAreas.size>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
-          <span>🗂 {{ cfAreaBtnLabel }}</span>
-          <span style="font-size:10px;">{{ showAreaDrop ? '▲' : '▼' }}</span>
+          <span>
+            🗂 {{ cfAreaBtnLabel }}
+          </span>
+          <span style="font-size:10px;">
+            {{ showAreaDrop ? '▲' : '▼' }}
+          </span>
         </button>
-        <div v-if="showAreaDrop" @click="showAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
+        <div v-if="showAreaDrop" @click="handleSelectAction('simul-close-area-drop')" style="position:fixed;inset:0;z-index:99;">
+        </div>
         <div v-if="showAreaDrop" style="position:absolute;right:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:320px;overflow-y:auto;padding:10px 0;">
           <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
-            <button @click.stop="selectAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            <button @click.stop="handleBtnAction('selectedAreas-all')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
               전체선택
             </button>
-            <button @click.stop="clearAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+            <button @click.stop="handleBtnAction('selectedAreas-clear')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
               전체해제
             </button>
             <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">
               {{ selectedAreas.size }}/{{ cfAllAreaListRaw.length }}
             </span>
           </div>
-          <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="toggleArea(area.codeValue)"
+          <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="handleSelectAction('selectedAreas-toggle', area.codeValue)"
             style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
             :style="selectedAreas.has(area.codeValue) ? 'background:#fff8f8;' : ''">
             <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
               :style="selectedAreas.has(area.codeValue) ? 'border-color:#e8587a;background:#e8587a;' : 'border-color:#ccc;background:#fff;'">
-              <span v-if="selectedAreas.has(area.codeValue)" style="color:#fff;font-size:11px;line-height:1;">✓</span>
-            </div>
-            <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">{{ area.codeValue }}</code>
-            <span style="font-size:12px;color:#333;">{{ area.codeLabel }}</span>
-          </div>
-          <div style="border-top:1px solid #f0f0f0;padding:8px 14px;">
-            <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;cursor:pointer;">
-              닫기
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- ===== ■.■. 선택 영역 배지 ============================================== -->
-    <div v-if="selectedAreas.size>0" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;">
-      <span style="font-size:11px;color:#aaa;">선택 영역:</span>
-      <span v-for="code in [...selectedAreas]" :key="code"
-        style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
-        {{ code }}
-        <span @click="toggleArea(code)" style="cursor:pointer;font-weight:700;">×</span>
-      </span>
-    </div>
-    <!-- ===== □.□. 선택 영역 배지 ============================================== -->
-    <!-- ===== ■.■. 조건 요약 ================================================= -->
-    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;" :style="selectedAreas.size>0?'margin-top:6px;':''">
-      <span style="font-size:11px;color:#aaa;">조회 조건:</span>
-      <span style="font-size:12px;background:#fff8e1;color:#f57c00;border-radius:10px;padding:2px 10px;">
-        📅 {{ previewDate }} {{ previewTime }}
-      </span>
-      <span v-if="searchStatus" style="font-size:12px;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 10px;">
-        상태: {{ searchStatus }}
-      </span>
-      <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">
-        공개: {{ window.safeArrayUtils.safeFind(codes.visibility_opts, o => o.value === searchVisibility)?.label }}
-      </span>
-      <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-        <button @click="openDispUiLayer"
-          style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
-          :style="uiState.dispUiLayerOpen?'background:#ede7f6;color:#4a148c;':'background:#f3e5f5;color:#6a1b9a;'">
-          🖥 DispUi미리보기
-        </button>
-        <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 10px;">패널 {{ cfTotalPanels }}개 해당</span>
-      </div>
-    </div>
-    <!-- ===== □.□. 조건 요약 ================================================= -->
-    <!-- ===== ■.■. Ui미리보기 파라미터 레이어 ======================================= -->
-    <div v-if="uiState.dispUiLayerOpen"
-      style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
-      <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-        🖥 DispUi미리보기 조회조건
-        <button @click="resetDispUiForm"
-          style="font-size:11px;padding:2px 10px;border-radius:6px;border:1px solid #ce93d8;background:#f3e5f5;color:#7b1fa2;cursor:pointer;font-weight:500;margin-left:4px;">
-          초기화
-        </button>
-      </div>
-      <!-- ===== ■.■.■. ① 전시영역 (필수) — 메인 필터와 동일한 드롭다운 방식 ==================== -->
-      <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span style="font-size:11px;font-weight:600;color:#555;white-space:nowrap;">
-          전시영역
-          <span style="font-size:10px;background:#fce4ec;color:#c62828;border-radius:4px;padding:1px 5px;margin-left:4px;">필수</span>
-        </span>
-        <!-- ===== ■.■.■.■. 드롭다운 버튼 =========================================== -->
-        <div style="position:relative;">
-          <button @click="dispUiAreaDrop=!dispUiAreaDrop"
-            style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
-            :style="dispUiForm.areas.length>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
-            <span>🗂 {{ cfDispUiAreaBtnLabel }}</span>
-            <span style="font-size:10px;">{{ dispUiAreaDrop ? '▲' : '▼' }}</span>
-          </button>
-          <div v-if="dispUiAreaDrop" @click="dispUiAreaDrop=false" style="position:fixed;inset:0;z-index:99;"></div>
-          <div v-if="dispUiAreaDrop" style="position:absolute;left:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:280px;overflow-y:auto;padding:10px 0;">
-            <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
-              <button @click.stop="dispUiSelectAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
-                전체선택
-              </button>
-              <button @click.stop="dispUiClearAllAreas" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
-                전체해제
-              </button>
-              <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">
-                {{ dispUiForm.areas.length }}/{{ cfAllAreaListRaw.length }}
+              <span v-if="selectedAreas.has(area.codeValue)" style="color:#fff;font-size:11px;line-height:1;">
+                ✓
               </span>
             </div>
-            <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="dispUiToggleArea(area.codeValue)"
-              style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
-              :style="dispUiForm.areas.includes(area.codeValue) ? 'background:#fff8f8;' : ''">
-              <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-                :style="dispUiForm.areas.includes(area.codeValue) ? 'border-color:#e8587a;background:#e8587a;' : 'border-color:#ccc;background:#fff;'">
-                <span v-if="dispUiForm.areas.includes(area.codeValue)" style="color:#fff;font-size:11px;line-height:1;">✓</span>
-              </div>
-              <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">{{ area.codeValue }}</code>
-              <span style="font-size:12px;color:#333;">{{ area.codeLabel }}</span>
+            <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">{{ area.codeValue }}</code>
+              <span style="font-size:12px;color:#333;">
+                {{ area.codeLabel }}
+              </span>
             </div>
             <div style="border-top:1px solid #f0f0f0;padding:8px 14px;">
-              <button @click.stop="dispUiAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;cursor:pointer;">
+              <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;cursor:pointer;">
                 닫기
               </button>
             </div>
           </div>
         </div>
-        <!-- ===== ■.■.■.■. 선택된 영역 태그 ========================================= -->
-        <span v-for="code in dispUiForm.areas" :key="code"
-          style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
-          {{ code }}
-          <span @click="dispUiToggleArea(code)" style="cursor:pointer;font-weight:700;">×</span>
+      </div>
+      <!-- ===== ■.■. 선택 영역 배지 ============================================== -->
+      <div v-if="selectedAreas.size>0" style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:11px;color:#aaa;">
+          선택 영역:
         </span>
-        <span v-if="uiState.dispUiAreaErr" style="font-size:11px;color:#e8587a;">⚠ 1개 이상 선택하세요</span>
+        <span v-for="code in [...selectedAreas]" :key="code"
+        style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
+          {{ code }}
+          <span @click="handleSelectAction('selectedAreas-toggle', code)" style="cursor:pointer;font-weight:700;">
+            ×
+          </span>
+        </span>
       </div>
-      <!-- ===== ■.■.■. ② 조건 행 1: 전시일시 · 상태 · 노출조건 · 인증필요 · 등급제한 ============ -->
-      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
-        <span class="search-label" style="font-size:11px;">전시일시</span>
-        <bo-date-time-picker v-model:date="dispUiForm.date" v-model:time="dispUiForm.time"
+      <!-- ===== □.□. 선택 영역 배지 ============================================== -->
+      <!-- ===== ■.■. 조건 요약 ================================================= -->
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;" :style="selectedAreas.size>0?'margin-top:6px;':''">
+        <span style="font-size:11px;color:#aaa;">
+          조회 조건:
+        </span>
+        <span style="font-size:12px;background:#fff8e1;color:#f57c00;border-radius:10px;padding:2px 10px;">
+          📅 {{ previewDate }} {{ previewTime }}
+        </span>
+        <span v-if="searchStatus" style="font-size:12px;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 10px;">
+          상태: {{ searchStatus }}
+        </span>
+        <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">
+          공개: {{ window.safeArrayUtils.safeFind(codes.visibility_opts, o => o.value === searchVisibility)?.label }}
+        </span>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+          <button @click="handleBtnAction('simul-open-disp-ui-layer')"
+          style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
+          :style="uiState.dispUiLayerOpen?'background:#ede7f6;color:#4a148c;':'background:#f3e5f5;color:#6a1b9a;'">
+            🖥 DispUi미리보기
+          </button>
+          <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 10px;">
+            패널 {{ cfTotalPanels }}개 해당
+          </span>
+        </div>
+      </div>
+      <!-- ===== □.□. 조건 요약 ================================================= -->
+      <!-- ===== ■.■. Ui미리보기 파라미터 레이어 ======================================= -->
+      <div v-if="uiState.dispUiLayerOpen"
+      style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
+        <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          🖥 DispUi미리보기 조회조건
+          <button @click="handleBtnAction('simul-reset-disp-ui-form')"
+          style="font-size:11px;padding:2px 10px;border-radius:6px;border:1px solid #ce93d8;background:#f3e5f5;color:#7b1fa2;cursor:pointer;font-weight:500;margin-left:4px;">
+            초기화
+          </button>
+        </div>
+        <!-- ===== ■.■.■. ① 전시영역 (필수) — 메인 필터와 동일한 드롭다운 방식 ==================== -->
+        <div style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:11px;font-weight:600;color:#555;white-space:nowrap;">
+            전시영역
+            <span style="font-size:10px;background:#fce4ec;color:#c62828;border-radius:4px;padding:1px 5px;margin-left:4px;">
+              필수
+            </span>
+          </span>
+          <!-- ===== ■.■.■.■. 드롭다운 버튼 =========================================== -->
+          <div style="position:relative;">
+            <button @click="handleSelectAction('simul-toggle-disp-ui-area-drop')"
+            style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
+            :style="dispUiForm.areas.length>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
+              <span>
+                🗂 {{ cfDispUiAreaBtnLabel }}
+              </span>
+              <span style="font-size:10px;">
+                {{ dispUiAreaDrop ? '▲' : '▼' }}
+              </span>
+            </button>
+            <div v-if="dispUiAreaDrop" @click="handleSelectAction('simul-close-disp-ui-area-drop')" style="position:fixed;inset:0;z-index:99;">
+            </div>
+            <div v-if="dispUiAreaDrop" style="position:absolute;left:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:280px;overflow-y:auto;padding:10px 0;">
+              <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
+                <button @click.stop="handleSelectAction('simul-disp-ui-select-all-areas')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+                  전체선택
+                </button>
+                <button @click.stop="handleSelectAction('simul-disp-ui-clear-all-areas')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+                  전체해제
+                </button>
+                <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">
+                  {{ dispUiForm.areas.length }}/{{ cfAllAreaListRaw.length }}
+                </span>
+              </div>
+              <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="handleSelectAction('simul-disp-ui-toggle-area', area.codeValue)"
+              style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
+              :style="dispUiForm.areas.includes(area.codeValue) ? 'background:#fff8f8;' : ''">
+                <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+                :style="dispUiForm.areas.includes(area.codeValue) ? 'border-color:#e8587a;background:#e8587a;' : 'border-color:#ccc;background:#fff;'">
+                  <span v-if="dispUiForm.areas.includes(area.codeValue)" style="color:#fff;font-size:11px;line-height:1;">
+                    ✓
+                  </span>
+                </div>
+                <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">{{ area.codeValue }}</code>
+                  <span style="font-size:12px;color:#333;">
+                    {{ area.codeLabel }}
+                  </span>
+                </div>
+                <div style="border-top:1px solid #f0f0f0;padding:8px 14px;">
+                  <button @click.stop="dispUiAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;cursor:pointer;">
+                    닫기
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- ===== ■.■.■.■. 선택된 영역 태그 ========================================= -->
+            <span v-for="code in dispUiForm.areas" :key="code"
+          style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
+              {{ code }}
+              <span @click="handleSelectAction('simul-disp-ui-toggle-area', code)" style="cursor:pointer;font-weight:700;">
+                ×
+              </span>
+            </span>
+            <span v-if="uiState.dispUiAreaErr" style="font-size:11px;color:#e8587a;">
+              ⚠ 1개 이상 선택하세요
+            </span>
+          </div>
+          <!-- ===== ■.■.■. ② 조건 행 1: 전시일시 · 상태 · 노출조건 · 인증필요 · 등급제한 ============ -->
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
+            <span class="search-label" style="font-size:11px;">
+              전시일시
+            </span>
+            <bo-date-time-picker v-model:date="dispUiForm.date" v-model:time="dispUiForm.time"
           :show-now="false" :show-clear="false" input-class="" date-width="130px" time-width="90px" />
-        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
-        <span class="search-label" style="font-size:11px;">상태</span>
-        <select v-model="dispUiForm.status"
+            <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;">
+            </div>
+            <span class="search-label" style="font-size:11px;">
+              상태
+            </span>
+            <select v-model="dispUiForm.status"
           style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option value="">전체</option>
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
-        </select>
-        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;"></div>
-        <span class="search-label" style="font-size:11px;">공개대상</span>
-        <select v-model="dispUiForm.visibility"
+              <option value="">
+                전체
+              </option>
+              <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">
+                {{ c.codeLabel }}
+              </option>
+            </select>
+            <div style="width:1px;height:20px;background:#e0e0e0;margin:0 2px;">
+            </div>
+            <span class="search-label" style="font-size:11px;">
+              공개대상
+            </span>
+            <select v-model="dispUiForm.visibility"
           style="font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;">
-          <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">{{ o.label }}</option>
-        </select>
-      </div>
-      <!-- ===== ■.■.■. ③ 조건 행 2: 사이트 · 회원 ================================== -->
-      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
-        <!-- ===== ■.■.■.■. 사이트 =============================================== -->
-        <span class="search-label" style="font-size:11px;">사이트</span>
-        <div style="display:flex;align-items:center;gap:5px;">
-          <span v-if="dispUiForm.siteNm"
+              <option v-for="o in codes.visibility_opts" :key="o?.value" :value="o.value">
+                {{ o.label }}
+              </option>
+            </select>
+          </div>
+          <!-- ===== ■.■.■. ③ 조건 행 2: 사이트 · 회원 ================================== -->
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #ece8f8;">
+            <!-- ===== ■.■.■.■. 사이트 =============================================== -->
+            <span class="search-label" style="font-size:11px;">
+              사이트
+            </span>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <span v-if="dispUiForm.siteNm"
             style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:2px 8px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-            {{ dispUiForm.siteNm }}
-          </span>
-          <span v-else style="font-size:11px;color:#bbb;">미선택</span>
-          <button @click="uiState.dispUiSiteModalOpen=true;uiState.dispUiSiteSearch=''"
+                {{ dispUiForm.siteNm }}
+              </span>
+              <span v-else style="font-size:11px;color:#bbb;">
+                미선택
+              </span>
+              <button @click="handleBtnAction('simul-open-site-modal')"
             style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
-            📋 선택
-          </button>
-          <button v-if="dispUiForm.siteId" @click="dispUiForm.siteId='';dispUiForm.siteNm=''"
+                📋 선택
+              </button>
+              <button v-if="dispUiForm.siteId" @click="handleBtnAction('simul-clear-site')"
             style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">
-            ×
-          </button>
-        </div>
-        <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;"></div>
-        <!-- ===== ■.■.■.■. 회원 ================================================ -->
-        <span class="search-label" style="font-size:11px;">회원</span>
-        <div style="display:flex;align-items:center;gap:5px;">
-          <span v-if="dispUiForm.memberNm"
+                ×
+              </button>
+            </div>
+            <div style="width:1px;height:20px;background:#e0e0e0;margin:0 4px;">
+            </div>
+            <!-- ===== ■.■.■.■. 회원 ================================================ -->
+            <span class="search-label" style="font-size:11px;">
+              회원
+            </span>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <span v-if="dispUiForm.memberNm"
             style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:2px 8px;">
-            {{ dispUiForm.memberNm }}
-          </span>
-          <span v-else style="font-size:11px;color:#bbb;">미선택 (비로그인)</span>
-          <button @click="uiState.dispUiMemberModalOpen=true;uiState.dispUiMemberSearch=''"
+                {{ dispUiForm.memberNm }}
+              </span>
+              <span v-else style="font-size:11px;color:#bbb;">
+                미선택 (비로그인)
+              </span>
+              <button @click="handleBtnAction('simul-open-member-modal')"
             style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
-            👤 선택
-          </button>
-          <button v-if="dispUiForm.memberId" @click="dispUiForm.memberId='';dispUiForm.memberNm=''"
+                👤 선택
+              </button>
+              <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clear-member')"
             style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">
-            ×
-          </button>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 보기옵션 ================================================ -->
-      <div style="padding:8px 0;border-top:1px solid #e8e0f8;margin-top:4px;">
-        <div style="font-size:11px;font-weight:700;color:#6a1b9a;margin-bottom:6px;">
-          📑 보기옵션
-          <span style="font-weight:400;color:#aaa;">— 없으면 내용보기만 탭없이 표시</span>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+                ×
+              </button>
+            </div>
+          </div>
+          <!-- ===== ■.■.■. 보기옵션 ================================================ -->
+          <div style="padding:8px 0;border-top:1px solid #e8e0f8;margin-top:4px;">
+            <div style="font-size:11px;font-weight:700;color:#6a1b9a;margin-bottom:6px;">
+              📑 보기옵션
+              <span style="font-weight:400;color:#aaa;">
+                — 없으면 내용보기만 탭없이 표시
+              </span>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
             :style="dispUiViewOpts.content?'border-color:#90caf9;background:#e3f2fd;color:#1565c0;':''">
-            <input type="checkbox" v-model="dispUiViewOpts.content" />
-            내용보기
-          </label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+                <input type="checkbox" v-model="dispUiViewOpts.content" />
+                내용보기
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
             :style="dispUiViewOpts.struct?'border-color:#a5d6a7;background:#e8f5e9;color:#2e7d32;':''">
-            <input type="checkbox" v-model="dispUiViewOpts.struct" />
-            구조보기
-          </label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+                <input type="checkbox" v-model="dispUiViewOpts.struct" />
+                구조보기
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
             :style="dispUiViewOpts.source?'border-color:#b39ddb;background:#ede7f6;color:#4a148c;':''">
-            <input type="checkbox" v-model="dispUiViewOpts.source" />
-            소스보기
-          </label>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 실행 버튼 =============================================== -->
-      <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid #e8e0f8;">
-        <button @click="uiState.dispUiLayerOpen=false"
+                <input type="checkbox" v-model="dispUiViewOpts.source" />
+                소스보기
+              </label>
+            </div>
+          </div>
+          <!-- ===== ■.■.■. 실행 버튼 =============================================== -->
+          <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid #e8e0f8;">
+            <button @click="handleBtnAction('simul-close-disp-ui-layer')"
           style="font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">
-          닫기
-        </button>
-        <button @click="openDispUiModal"
+              닫기
+            </button>
+            <button @click="handleBtnAction('simul-open-disp-ui-modal')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
-          🗔 모달오픈
-        </button>
-        <button @click="openDispUiPopup('fo')"
+              🗔 모달오픈
+            </button>
+            <button @click="handleBtnAction('simul-open-disp-ui-popup', 'fo')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #bae6fd;background:#e0f2fe;color:#0369a1;cursor:pointer;font-weight:600;">
-          🔗 사용자 팝업
-        </button>
-        <button @click="openDispUiPopup('bo')"
+              🔗 사용자 팝업
+            </button>
+            <button @click="handleBtnAction('simul-open-disp-ui-popup', 'bo')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #f5e8de;background:#fef3eb;color:#c2410c;cursor:pointer;font-weight:600;">
-          🔗 관리자 팝업
-        </button>
-        <div style="position:relative;">
-          <button @click="openDispUiOther"
+              🔗 관리자 팝업
+            </button>
+            <div style="position:relative;">
+              <button @click="handleBtnAction('simul-open-disp-ui-other')"
             style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
-            🌐 기타오픈
-            <span style="font-size:10px;margin-left:2px;">▾</span>
-          </button>
-          <!-- ===== ■.■.■.■.■. 드롭다운 layer ====================================== -->
-          <div v-if="uiState.otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="closeOtherMenu"></div>
-          <div v-if="uiState.otherMenuOpen" @click.stop
+                🌐 기타오픈
+                <span style="font-size:10px;margin-left:2px;">
+                  ▾
+                </span>
+              </button>
+              <!-- ===== ■.■.■.■.■. 드롭다운 layer ====================================== -->
+              <div v-if="uiState.otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="handleBtnAction('simul-close-other-menu')">
+              </div>
+              <div v-if="uiState.otherMenuOpen" @click.stop
             style="position:absolute;top:calc(100% + 4px);right:0;z-index:5000;background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.15);min-width:320px;padding:6px;max-height:400px;overflow-y:auto;">
-            <div style="font-size:10px;color:#888;padding:6px 10px;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">오픈할 페이지를 선택하세요</div>
-            <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="Math.random()"
-              @click="pickOtherPage(u)"
+                <div style="font-size:10px;color:#888;padding:6px 10px;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">
+                  오픈할 페이지를 선택하세요
+                </div>
+                <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="Math.random()"
+              @click="handleSelectAction('simul-pick-other-page', u)"
               style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:11px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-family:monospace;color:#333;"
               @mouseenter="$event.currentTarget.style.background='#e3f2fd'"
               @mouseleave="$event.currentTarget.style.background='transparent'">
-              <span style="color:#1565c0;font-weight:700;margin-right:6px;">{{ i+1 }}.</span>
-              {{ u }}
-            </button>
+                  <span style="color:#1565c0;font-weight:700;margin-right:6px;">
+                    {{ i+1 }}.
+                  </span>
+                  {{ u }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-    <!-- ===== □.□. Ui미리보기 파라미터 레이어 ======================================= -->
-  <!-- ===== □. 공통 필터 바 ================================================= -->
-  <!-- ===== ■. DispUi 모달 =============================================== -->
-  <disp-ui-modal
+      <!-- ===== □.□. Ui미리보기 파라미터 레이어 ======================================= -->
+      <!-- ===== □. 공통 필터 바 ================================================= -->
+      <!-- ===== ■. DispUi 모달 =============================================== -->
+      <disp-ui-modal
     :show="uiState.dispUiModalOpen"
     :params="cfDispUiParamObj" :disp-opt="cfDispOpt"
     title="DispUi미리보기"
     @close="uiState.dispUiModalOpen=false"
     @open-popup="(scope) => { openDispUiPopup(scope || 'fo'); uiState.dispUiModalOpen=false; }"
     />
-  <!-- ===== □. DispUi 모달 =============================================== -->
-  <!-- ===== ■. DispUi 사이트 선택 모달 ======================================== -->
-  <div v-if="dispUiSiteModalOpen"
+      <!-- ===== □. DispUi 모달 =============================================== -->
+      <!-- ===== ■. DispUi 사이트 선택 모달 ======================================== -->
+      <div v-if="dispUiSiteModalOpen"
     @click.self="dispUiSiteModalOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:10000;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
-      <!-- ===== ■.■.■. 헤더 ================================================== -->
-      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:14px;font-weight:700;color:#1565c0;">🌐 사이트 선택</span>
-        <button @click="dispUiSiteModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
-          ×
-        </button>
-      </div>
-      <!-- ===== ■.■.■. 검색 ================================================== -->
-      <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
-        <input v-model="uiState.dispUiSiteSearch" type="text" placeholder="사이트명 또는 도메인 검색..."
+        <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
+          <!-- ===== ■.■.■. 헤더 ================================================== -->
+          <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:700;color:#1565c0;">
+              🌐 사이트 선택
+            </span>
+            <button @click="handleBtnAction('simul-close-site-modal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
+              ×
+            </button>
+          </div>
+          <!-- ===== ■.■.■. 검색 ================================================== -->
+          <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
+            <input v-model="uiState.dispUiSiteSearch" type="text" placeholder="사이트명 또는 도메인 검색..."
           style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
-      </div>
-      <!-- ===== ■.■.■. 목록 ================================================== -->
-      <div style="overflow-y:auto;flex:1;padding:6px 0;">
-        <div v-if="cfDispUiSiteList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
-        <div v-for="site in cfDispUiSiteList" :key="site?.siteId"
-          @click="selectDispUiSite(site)"
+          </div>
+          <!-- ===== ■.■.■. 목록 ================================================== -->
+          <div style="overflow-y:auto;flex:1;padding:6px 0;">
+            <div v-if="cfDispUiSiteList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">
+              검색 결과 없음
+            </div>
+            <div v-for="site in cfDispUiSiteList" :key="site?.siteId"
+          @click="handleSelectAction('simul-select-site', site)"
           style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-              {{ site.siteNm }}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ site.siteNm }}
+                </div>
+                <div style="font-size:11px;color:#888;margin-top:1px;">
+                  {{ site.domain || '-' }}
+                </div>
+              </div>
+              <span v-if="site.siteType" style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:5px;padding:1px 6px;flex-shrink:0;">
+                {{ site.siteType }}
+              </span>
+              <span :style="String(site.siteId)===dispUiForm.siteId?'color:#1565c0;font-weight:700;':'color:#ccc;'">
+                ✓
+              </span>
             </div>
-            <div style="font-size:11px;color:#888;margin-top:1px;">{{ site.domain || '-' }}</div>
           </div>
-          <span v-if="site.siteType" style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:5px;padding:1px 6px;flex-shrink:0;">
-            {{ site.siteType }}
-          </span>
-          <span :style="String(site.siteId)===dispUiForm.siteId?'color:#1565c0;font-weight:700;':'color:#ccc;'">✓</span>
+          <!-- ===== ■.■.■. 푸터 ================================================== -->
+          <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;">
+            <button @click="handleBtnAction('simul-close-site-modal')" class="btn btn-secondary btn-sm">
+              닫기
+            </button>
+          </div>
         </div>
       </div>
-      <!-- ===== ■.■.■. 푸터 ================================================== -->
-      <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;">
-        <button @click="dispUiSiteModalOpen=false" class="btn btn-secondary btn-sm">닫기</button>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □. DispUi 사이트 선택 모달 ======================================== -->
-  <!-- ===== ■. DispUi 회원 선택 모달 ========================================= -->
-  <div v-if="dispUiMemberModalOpen"
+      <!-- ===== □. DispUi 사이트 선택 모달 ======================================== -->
+      <!-- ===== ■. DispUi 회원 선택 모달 ========================================= -->
+      <div v-if="dispUiMemberModalOpen"
     @click.self="dispUiMemberModalOpen=false"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.52);z-index:10000;display:flex;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
-      <!-- ===== ■.■.■. 헤더 ================================================== -->
-      <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:14px;font-weight:700;color:#1565c0;">👤 회원 선택</span>
-        <button @click="dispUiMemberModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
-          ×
-        </button>
-      </div>
-      <!-- ===== ■.■.■. 검색 ================================================== -->
-      <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
-        <input v-model="uiState.dispUiMemberSearch" type="text" placeholder="이름 또는 이메일 검색..."
+        <div style="background:#fff;border-radius:12px;width:520px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 16px 56px rgba(0,0,0,0.36);">
+          <!-- ===== ■.■.■. 헤더 ================================================== -->
+          <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:700;color:#1565c0;">
+              👤 회원 선택
+            </span>
+            <button @click="handleBtnAction('simul-close-member-modal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
+              ×
+            </button>
+          </div>
+          <!-- ===== ■.■.■. 검색 ================================================== -->
+          <div style="padding:10px 18px;border-bottom:1px solid #f0f0f0;">
+            <input v-model="uiState.dispUiMemberSearch" type="text" placeholder="이름 또는 이메일 검색..."
           style="width:100%;font-size:12px;padding:6px 10px;border:1px solid #d0d0d0;border-radius:7px;outline:none;" />
-      </div>
-      <!-- ===== ■.■.■. 목록 ================================================== -->
-      <div style="overflow-y:auto;flex:1;padding:6px 0;">
-        <div v-if="cfDispUiMemberList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">검색 결과 없음</div>
-        <div v-for="m in cfDispUiMemberList" :key="m?.userId"
-          @click="selectDispUiMember(m)"
+          </div>
+          <!-- ===== ■.■.■. 목록 ================================================== -->
+          <div style="overflow-y:auto;flex:1;padding:6px 0;">
+            <div v-if="cfDispUiMemberList.length===0" style="text-align:center;padding:30px;color:#bbb;font-size:13px;">
+              검색 결과 없음
+            </div>
+            <div v-for="m in cfDispUiMemberList" :key="m?.userId"
+          @click="handleSelectAction('simul-select-member', m)"
           style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-              {{ m.memberNm || m.email }}
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  {{ m.memberNm || m.email }}
+                </div>
+                <div style="font-size:11px;color:#888;margin-top:1px;">
+                  {{ m.email }}
+                </div>
+              </div>
+              <span v-if="m.grade" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">
+                {{ m.grade }}
+              </span>
+              <span :style="String(m.userId)===dispUiForm.memberId?'color:#1565c0;font-weight:700;':'color:#ccc;'">
+                ✓
+              </span>
             </div>
-            <div style="font-size:11px;color:#888;margin-top:1px;">{{ m.email }}</div>
           </div>
-          <span v-if="m.grade" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">
-            {{ m.grade }}
-          </span>
-          <span :style="String(m.userId)===dispUiForm.memberId?'color:#1565c0;font-weight:700;':'color:#ccc;'">✓</span>
+          <!-- ===== ■.■.■. 푸터 ================================================== -->
+          <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+            <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clear-member')"
+          style="font-size:11px;padding:4px 12px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;cursor:pointer;">
+              비로그인으로 초기화
+            </button>
+            <span v-else>
+            </span>
+            <button @click="handleBtnAction('simul-close-member-modal')" class="btn btn-secondary btn-sm">
+              닫기
+            </button>
+          </div>
         </div>
       </div>
-      <!-- ===== ■.■.■. 푸터 ================================================== -->
-      <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
-        <button v-if="dispUiForm.memberId" @click="dispUiForm.memberId='';dispUiForm.memberNm='';dispUiMemberModalOpen=false;"
-          style="font-size:11px;padding:4px 12px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;cursor:pointer;">
-          비로그인으로 초기화
-        </button>
-        <span v-else></span>
-        <button @click="dispUiMemberModalOpen=false" class="btn btn-secondary btn-sm">닫기</button>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □. DispUi 회원 선택 모달 ========================================= -->
-  <!-- ===== ■. 탭 헤더 ==================================================== -->
-  <div style="display:flex;border:1px solid #e0e0e0;border-top:none;background:#f5f5f5;">
-    <button @click="switchTab('preview')"
+      <!-- ===== □. DispUi 회원 선택 모달 ========================================= -->
+      <!-- ===== ■. 탭 헤더 ==================================================== -->
+      <div style="display:flex;border:1px solid #e0e0e0;border-top:none;background:#f5f5f5;">
+        <button @click="handleSelectAction('tab-select', 'preview')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
       :style="uiState.mainTab==='preview' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-      🖼 영역미리보기
-    </button>
-    <button @click="switchTab('struct')"
+          🖼 영역미리보기
+        </button>
+        <button @click="handleSelectAction('tab-select', 'struct')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
       :style="uiState.mainTab==='struct' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-      🌲 영역-위젯 구조 보기
-    </button>
-    <button @click="switchTab('source')"
+          🌲 영역-위젯 구조 보기
+        </button>
+        <button @click="handleSelectAction('tab-select', 'source')"
       style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;"
       :style="uiState.mainTab==='source' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-      &lt;/&gt; 영역-위젯 소스보기
-    </button>
-  </div>
-  <!-- ═══════════════════════════════════════
+          &lt;/&gt; 영역-위젯 소스보기
+        </button>
+      </div>
+      <!-- ═══════════════════════════════════════
        Tab1: 영역미리보기
   ═══════════════════════════════════════ -->
-  <!-- ===== □. 탭 헤더 ==================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="uiState.mainTab==='preview'">
-    <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">기준 날짜를 선택해주세요.</div>
-    <div v-else>
-      <div v-for="area in cfAreaList" :key="area?.codeValue" style="margin-bottom:4px;">
-        <disp-x02-area
+      <!-- ===== □. 탭 헤더 ==================================================== -->
+      <!-- ===== ■. 조건부 영역 ================================================== -->
+      <div v-if="uiState.mainTab==='preview'">
+        <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">
+          기준 날짜를 선택해주세요.
+        </div>
+        <div v-else>
+          <div v-for="area in cfAreaList" :key="area?.codeValue" style="margin-bottom:4px;">
+            <disp-x02-area
           :params="cfFilterParams"
           :disp-opt="cfDispOpt"
           :area-item="{ code: area.codeValue, label: area.codeLabel, info: areaInfo(area.codeValue), panels: panelsForArea(area.codeValue) }"
           />
+          </div>
+          <div v-if="cfAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:14px;">
+            등록된 화면영역이 없습니다.
+          </div>
+        </div>
       </div>
-      <div v-if="cfAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:14px;">등록된 화면영역이 없습니다.</div>
-    </div>
-  </div>
-  <!-- ═══════════════════════════════════════
+      <!-- ═══════════════════════════════════════
        Tab2: 구조 선택 영역미리보기
   ═══════════════════════════════════════ -->
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div v-else-if="uiState.mainTab==='struct'" style="margin-top:4px;">
-    <div style="display:flex;gap:12px;align-items:stretch;">
-      <!-- ===== ■.■.■. 좌: 구조 트리 ============================================ -->
-      <div style="flex:4;min-width:0;">
-        <!-- ===== ■.■.■.■. 트리 조작 바 =========================================== -->
-        <div class="card" style="padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:12px;font-weight:600;color:#555;">패널 선택</span>
-          <button @click="checkAllPanels" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
-            전체선택
-          </button>
-          <button @click="clearCheckedPanels" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
-            전체해제
-          </button>
-          <span style="font-size:11px;color:#aaa;">{{ cfCheckedCount }}개 선택됨</span>
-          <span style="width:1px;height:20px;background:#e0e0e0;display:inline-block;"></span>
-          <span style="font-size:12px;font-weight:600;color:#555;">위젯 선택</span>
-          <button @click="checkAllWidgets" style="font-size:11px;padding:3px 10px;border:1px solid #e65100;border-radius:8px;background:#fff3e0;color:#e65100;cursor:pointer;">
-            전체선택
-          </button>
-          <button @click="clearCheckedWidgets" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
-            전체해제
-          </button>
-          <span style="font-size:11px;color:#aaa;">{{ cfCheckedWidgetCount }}개 선택됨</span>
-        </div>
-        <!-- ===== ■.■.■.■. 트리 ================================================ -->
-        <div v-if="cfStructAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">등록된 영역이 없습니다.</div>
-        <div v-for="area in cfStructAreaList" :key="area?.codeValue" class="card" style="padding:0;margin-bottom:8px;overflow:hidden;">
-          <!-- ===== ■.■.■.■.■. 영역 헤더 =========================================== -->
-          <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:grab;user-select:none;"
+      <!-- ===== □. 조건부 영역 ================================================== -->
+      <!-- ===== ■. 영역 ====================================================== -->
+      <div v-else-if="uiState.mainTab==='struct'" style="margin-top:4px;">
+        <div style="display:flex;gap:12px;align-items:stretch;">
+          <!-- ===== ■.■.■. 좌: 구조 트리 ============================================ -->
+          <div style="flex:4;min-width:0;">
+            <!-- ===== ■.■.■.■. 트리 조작 바 =========================================== -->
+            <div class="card" style="padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:12px;font-weight:600;color:#555;">
+                패널 선택
+              </span>
+              <button @click="handleBtnAction('simul-check-all-panels')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+                전체선택
+              </button>
+              <button @click="handleBtnAction('simul-clear-checked-panels')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+                전체해제
+              </button>
+              <span style="font-size:11px;color:#aaa;">
+                {{ cfCheckedCount }}개 선택됨
+              </span>
+              <span style="width:1px;height:20px;background:#e0e0e0;display:inline-block;">
+              </span>
+              <span style="font-size:12px;font-weight:600;color:#555;">
+                위젯 선택
+              </span>
+              <button @click="handleBtnAction('simul-check-all-widgets')" style="font-size:11px;padding:3px 10px;border:1px solid #e65100;border-radius:8px;background:#fff3e0;color:#e65100;cursor:pointer;">
+                전체선택
+              </button>
+              <button @click="handleBtnAction('simul-clear-checked-widgets')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+                전체해제
+              </button>
+              <span style="font-size:11px;color:#aaa;">
+                {{ cfCheckedWidgetCount }}개 선택됨
+              </span>
+            </div>
+            <!-- ===== ■.■.■.■. 트리 ================================================ -->
+            <div v-if="cfStructAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;font-size:13px;">
+              등록된 영역이 없습니다.
+            </div>
+            <div v-for="area in cfStructAreaList" :key="area?.codeValue" class="card" style="padding:0;margin-bottom:8px;overflow:hidden;">
+              <!-- ===== ■.■.■.■.■. 영역 헤더 =========================================== -->
+              <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:grab;user-select:none;"
             draggable="true"
             @dragstart="onAreaDragStart($event, area)"
             @dragend="onAreaDragEnd"
-            @click="toggleAreaExpand(area.codeValue)">
-            <!-- ===== ■.■.■.■.■.■. 영역 전체 체크 ====================================== -->
-            <div @click.stop="checkAreaPanels(area)" style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+            @click="handleSelectAction('simul-expand-area', area.codeValue)">
+                <!-- ===== ■.■.■.■.■.■. 영역 전체 체크 ====================================== -->
+                <div @click.stop="handleSelectAction('simul-check-area-panels', area)" style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
               :style="isAreaAllChecked(area) ? 'border-color:#f6ad55;background:#f6ad55;' : 'border-color:rgba(255,255,255,.5);background:transparent;'">
-              <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:11px;line-height:1;">✓</span>
-            </div>
-            <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">
-              DispX02Area
-            </span>
-            <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;">{{ area.codeValue }}</code>
-            <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
-            <!-- ===== ■.■.■.■.■.■. 레이아웃 배지 ======================================= -->
-            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,.15);color:#e2e8f0;white-space:nowrap;">
-              {{ area.layoutType==='dashboard' ? '🧩 대시보드' : ('🔲 grid ' + (area.gridCols||1) + '열') }}
-            </span>
-            <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ area.panels.length }}개</span>
-            <!-- ===== ■.■.■.■.■.■. 캔버스 적용 버튼 ===================================== -->
-            <button @click.stop="applyAreaLayout(area)"
+                  <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:11px;line-height:1;">
+                    ✓
+                  </span>
+                </div>
+                <span style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;flex-shrink:0;">
+                  DispX02Area
+                </span>
+                <code style="font-size:11px;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:4px;">{{ area.codeValue }}</code>
+                  <span style="font-size:13px;font-weight:700;">
+                    {{ area.codeLabel }}
+                  </span>
+                  <!-- ===== ■.■.■.■.■.■. 레이아웃 배지 ======================================= -->
+                  <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,.15);color:#e2e8f0;white-space:nowrap;">
+                    {{ area.layoutType==='dashboard' ? '🧩 대시보드' : ('🔲 grid ' + (area.gridCols||1) + '열') }}
+                  </span>
+                  <span style="margin-left:auto;font-size:11px;opacity:.6;">
+                    패널 {{ area.panels.length }}개
+                  </span>
+                  <!-- ===== ■.■.■.■.■.■. 캔버스 적용 버튼 ===================================== -->
+                  <button @click.stop="applyAreaLayout(area)"
               title="이 영역의 레이아웃을 캔버스에 적용"
               style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#e2e8f0;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;"
               onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
-              ⚡ 적용
-            </button>
-            <span style="font-size:11px;opacity:.5;">{{ expandedAreas.has(area.codeValue) ? '▲' : '▼' }}</span>
-          </div>
-          <!-- ===== ■.■.■.■.■. 패널 목록 =========================================== -->
-          <div v-show="expandedAreas.has(area.codeValue)">
-            <div v-if="area.panels.length===0" style="padding:14px 20px;font-size:12px;color:#bbb;">해당 날짜 활성 패널 없음</div>
-            <div v-for="(p, pi) in area.panels" :key="p?.dispId"
+                    ⚡ 적용
+                  </button>
+                  <span style="font-size:11px;opacity:.5;">
+                    {{ expandedAreas.has(area.codeValue) ? '▲' : '▼' }}
+                  </span>
+                </div>
+                <!-- ===== ■.■.■.■.■. 패널 목록 =========================================== -->
+                <div v-show="expandedAreas.has(area.codeValue)">
+                  <div v-if="area.panels.length===0" style="padding:14px 20px;font-size:12px;color:#bbb;">
+                    해당 날짜 활성 패널 없음
+                  </div>
+                  <div v-for="(p, pi) in area.panels" :key="p?.dispId"
               draggable="true"
               @dragstart="onPanelDragStart($event, p, area.codeLabel)"
               @dragend="onAreaDragEnd"
-              @click="togglePanelCheck(p)"
+              @click="handleSelectAction('simul-toggle-panel-check', p)"
               style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;cursor:grab;user-select:none;border-top:1px solid #f0f0f0;transition:background .1s;"
               :style="checkedPanelIds.has(p.dispId) ? 'background:#fff8e1;' : ''">
-              <!-- ===== ■.■.■.■.■.■.■. 체크박스 (full=패널+위젯 모두, partial=패널만) =========== -->
-              <div style="margin-top:2px;width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+                    <!-- ===== ■.■.■.■.■.■.■. 체크박스 (full=패널+위젯 모두, partial=패널만) =========== -->
+                    <div style="margin-top:2px;width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
                 :style="isPanelAllChecked(p) ? 'border-color:#f59e0b;background:#f59e0b;' : checkedPanelIds.has(p.dispId) ? 'border-color:#f59e0b;background:#fde68a;' : 'border-color:#ccc;background:#fff;'">
-                <span v-if="isPanelAllChecked(p)" style="color:#fff;font-size:11px;line-height:1;">✓</span>
-                <span v-else-if="checkedPanelIds.has(p.dispId)" style="color:#f59e0b;font-size:11px;font-weight:900;line-height:1;">−</span>
-              </div>
-              <!-- ===== ■.■.■.■.■.■.■. 패널 정보 ======================================= -->
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-                  <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;line-height:16px;">
-                    DispX03Panel
-                  </span>
-                  <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">
+                      <span v-if="isPanelAllChecked(p)" style="color:#fff;font-size:11px;line-height:1;">
+                        ✓
+                      </span>
+                      <span v-else-if="checkedPanelIds.has(p.dispId)" style="color:#f59e0b;font-size:11px;font-weight:900;line-height:1;">
+                        −
+                      </span>
+                    </div>
+                    <!-- ===== ■.■.■.■.■.■.■. 패널 정보 ======================================= -->
+                    <div style="flex:1;min-width:0;">
+                      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
+                        <span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:3px;padding:0 4px;line-height:16px;">
+                          DispX03Panel
+                        </span>
+                        <code style="font-size:10px;background:#f5f5f5;padding:1px 5px;border-radius:3px;color:#555;">
                     #{{ String(p.dispId).padStart(4,'0') }}
                   </code>
-                  <span style="font-size:13px;font-weight:700;color:#222;">{{ p.name }}</span>
-                  <span style="font-size:10px;padding:1px 7px;border-radius:8px;" :style="p.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">
-                    {{ p.status }}
-                  </span>
-                  <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;">
-                    {{ p.condition || '항상 표시' }}
-                  </span>
-                </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 위젯 목록 ===================================== -->
-                <div style="display:flex;flex-direction:column;gap:2px;padding-left:2px;">
-                  <div v-for="(w, wi) in (p.rows || [])" :key="wi"
-                    @click.stop="toggleWidgetCheck(p.dispId, wi, $event)"
+                          <span style="font-size:13px;font-weight:700;color:#222;">
+                            {{ p.name }}
+                          </span>
+                          <span style="font-size:10px;padding:1px 7px;border-radius:8px;" :style="p.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">
+                            {{ p.status }}
+                          </span>
+                          <span style="font-size:10px;background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;">
+                            {{ p.condition || '항상 표시' }}
+                          </span>
+                        </div>
+                        <!-- ===== ■.■.■.■.■.■.■.■. 위젯 목록 ===================================== -->
+                        <div style="display:flex;flex-direction:column;gap:2px;padding-left:2px;">
+                          <div v-for="(w, wi) in (p.rows || [])" :key="wi"
+                    @click.stop="handleSelectAction('simul-toggle-widget-check', { dispId: p.dispId, wi, event: $event })"
                     style="display:flex;align-items:center;gap:5px;padding:2px 5px;border-radius:4px;cursor:pointer;transition:background .1s;"
                     :style="checkedWidgetKeys.has(p.dispId + '_' + wi) ? 'background:#fff3e0;' : 'background:transparent;'">
-                    <div style="width:13px;height:13px;border-radius:3px;border:1.5px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+                            <div style="width:13px;height:13px;border-radius:3px;border:1.5px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
                       :style="checkedWidgetKeys.has(p.dispId + '_' + wi) ? 'border-color:#f59e0b;background:#f59e0b;' : 'border-color:#ccc;background:#fff;'">
-                      <span v-if="checkedWidgetKeys.has(p.dispId + '_' + wi)" style="color:#fff;font-size:9px;line-height:1;">✓</span>
+                              <span v-if="checkedWidgetKeys.has(p.dispId + '_' + wi)" style="color:#fff;font-size:9px;line-height:1;">
+                                ✓
+                              </span>
+                            </div>
+                            <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 3px;flex-shrink:0;">
+                              DispX04Widget
+                            </span>
+                            <span style="font-size:10px;">
+                              {{ wIcon(w.widgetType) }}
+                            </span>
+                            <span style="font-size:11px;color:#e65100;">
+                              {{ wLabel(w.widgetType) }}
+                            </span>
+                            <span v-if="w.widgetNm" style="font-size:10px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                              {{ w.widgetNm }}
+                            </span>
+                          </div>
+                          <span v-if="!p.rows || p.rows.length===0" style="font-size:11px;color:#ccc;">
+                            (위젯 없음)
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <span style="font-size:9px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 3px;flex-shrink:0;">
-                      DispX04Widget
-                    </span>
-                    <span style="font-size:10px;">{{ wIcon(w.widgetType) }}</span>
-                    <span style="font-size:11px;color:#e65100;">{{ wLabel(w.widgetType) }}</span>
-                    <span v-if="w.widgetNm" style="font-size:10px;color:#777;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                      {{ w.widgetNm }}
-                    </span>
                   </div>
-                  <span v-if="!p.rows || p.rows.length===0" style="font-size:11px;color:#ccc;">(위젯 없음)</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 우: 위젯 컨텐츠 그리드 위젯미리보기 ================================ -->
-      <div style="flex:6;min-width:0;display:flex;flex-direction:column;max-height:80vh;">
-        <!-- ===== ■.■.■.■. 캔버스 컨트롤 바 ========================================= -->
-        <div style="display:flex;align-items:center;gap:6px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:6px 10px;flex-wrap:wrap;">
-          <!-- ===== ■.■.■.■.■. 표시방식 토글 ========================================= -->
-          <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-            <button @click="uiState.structLayoutType='grid'"
+              <!-- ===== ■.■.■. 우: 위젯 컨텐츠 그리드 위젯미리보기 ================================ -->
+              <div style="flex:6;min-width:0;display:flex;flex-direction:column;max-height:80vh;">
+                <!-- ===== ■.■.■.■. 캔버스 컨트롤 바 ========================================= -->
+                <div style="display:flex;align-items:center;gap:6px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:6px 10px;flex-wrap:wrap;">
+                  <!-- ===== ■.■.■.■.■. 표시방식 토글 ========================================= -->
+                  <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
+                    <button @click="handleSelectAction('simul-set-struct-layout', 'grid')"
               style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;transition:all .15s;"
               :style="uiState.structLayoutType==='grid' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
-              🔲 그리드
-            </button>
-            <button @click="uiState.structLayoutType='dashboard'"
+                      🔲 그리드
+                    </button>
+                    <button @click="handleSelectAction('simul-set-struct-layout', 'dashboard')"
               style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
               :style="uiState.structLayoutType==='dashboard' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
-              🧩 대시보드
-            </button>
-          </div>
-          <!-- ===== ■.■.■.■.■. 열수 (grid 전용) ==================================== -->
-          <template v-if="uiState.structLayoutType==='grid'">
-            <div style="width:1px;height:20px;background:#e5e7eb;"></div>
-            <span style="font-size:11px;color:#6b7280;font-weight:600;">열수</span>
-            <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-              <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="uiState.structColCount=n; resetStructGrid()"
+                      🧩 대시보드
+                    </button>
+                  </div>
+                  <!-- ===== ■.■.■.■.■. 열수 (grid 전용) ==================================== -->
+                  <template v-if="uiState.structLayoutType==='grid'">
+                    <div style="width:1px;height:20px;background:#e5e7eb;">
+                    </div>
+                    <span style="font-size:11px;color:#6b7280;font-weight:600;">
+                      열수
+                    </span>
+                    <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
+                      <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="handleSelectAction('simul-set-struct-cols', n)"
                 style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                 :style="[n===1?'border-left:none;':'', uiState.structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
-                {{ n }}
-              </button>
-            </div>
-            <input type="number" v-model.number="uiState.structColCount" min="1" max="32"
+                        {{ n }}
+                      </button>
+                    </div>
+                    <input type="number" v-model.number="uiState.structColCount" min="1" max="32"
               @change="resetStructGrid()"
               style="width:52px;font-size:12px;padding:3px 6px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
-            <div style="width:1px;height:20px;background:#e5e7eb;"></div>
-            <!-- ===== ■.■.■.■.■.■. 실제컨텐츠 ========================================= -->
-            <button @click="uiState.structShowReal=!uiState.structShowReal"
+                    <div style="width:1px;height:20px;background:#e5e7eb;">
+                    </div>
+                    <!-- ===== ■.■.■.■.■.■. 실제컨텐츠 ========================================= -->
+                    <button @click="handleSelectAction('simul-toggle-struct-real')"
               style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="uiState.structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
-              {{ uiState.structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
-            </button>
-            <div style="width:1px;height:20px;background:#e5e7eb;"></div>
-            <!-- ===== ■.■.■.■.■.■. 뷰포트 =========================================== -->
-            <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="uiState.structViewport=key"
+                      {{ uiState.structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
+                    </button>
+                    <div style="width:1px;height:20px;background:#e5e7eb;">
+                    </div>
+                    <!-- ===== ■.■.■.■.■.■. 뷰포트 =========================================== -->
+                    <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="handleSelectAction('simul-set-struct-viewport', key)"
               style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="uiState.structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
-              {{ vp.label }}
-            </button>
-          </template>
-          <!-- ===== ■.■.■.■.■. 우측: 개수 + 초기화 ==================================== -->
-          <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:12px;color:#555;font-weight:600;">
-              {{ uiState.structLayoutType==='dashboard' ? structDashItems.length : cfStructPlacedCount }}개
-            </span>
-            <button @click="uiState.structLayoutType==='dashboard' ? structDashItems.splice(0) : resetStructGrid()"
+                      {{ vp.label }}
+                    </button>
+                  </template>
+                  <!-- ===== ■.■.■.■.■. 우측: 개수 + 초기화 ==================================== -->
+                  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:12px;color:#555;font-weight:600;">
+                      {{ uiState.structLayoutType==='dashboard' ? structDashItems.length : cfStructPlacedCount }}개
+                    </span>
+                    <button @click="handleBtnAction('simul-reset-struct-grid')"
               style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">
-              초기화
-            </button>
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. 그리드 캔버스 =========================================== -->
-        <div @click="closeStructSpanPopup" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
-          <!-- ===== ■.■.■.■.■. dashboard 캔버스 =================================== -->
-          <template v-if="uiState.structLayoutType==='dashboard'">
-            <div
+                      초기화
+                    </button>
+                  </div>
+                </div>
+                <!-- ===== ■.■.■.■. 그리드 캔버스 =========================================== -->
+                <div @click="handleBtnAction('simul-close-span-popup')" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
+                  <!-- ===== ■.■.■.■.■. dashboard 캔버스 =================================== -->
+                  <template v-if="uiState.structLayoutType==='dashboard'">
+                    <div
               @dragover="onStructDashDragOver"
               @dragleave="onStructDashDragLeave"
               @drop="onStructDashDrop"
               style="position:relative;min-height:500px;min-width:400px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
               :style="structDashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
-              <div v-if="!structDashItems.length && !structDashDragOver"
-                style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
-                <span style="font-size:40px;">🧩</span>
-                <span style="font-size:13px;">좌측에서 영역·패널을 드래그하여 배치하세요</span>
-              </div>
-              <div v-if="structDashDragOver && !structDashItems.length"
-                style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
-                ▼ 여기에 배치
-              </div>
-              <!-- ===== ■.■.■.■.■.■.■. 배치된 아이템 ===================================== -->
-              <div v-for="item in structDashItems" :key="item?.id"
+                      <div v-if="!structDashItems.length && !structDashDragOver" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
+                      <span style="font-size:40px;">
+                        🧩
+                      </span>
+                      <span style="font-size:13px;">
+                        좌측에서 영역·패널을 드래그하여 배치하세요
+                      </span>
+                    </div>
+                    <div v-if="structDashDragOver && !structDashItems.length" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
+                    ▼ 여기에 배치
+                  </div>
+                  <!-- ===== ■.■.■.■.■.■.■. 배치된 아이템 ===================================== -->
+                  <div v-for="item in structDashItems" :key="item?.id"
                 :style="{ position:'absolute', left:item.x+'px', top:item.y+'px', width:item.w+'px', minHeight:item.h+'px',
                 border:'1px solid #e5e7eb', borderRadius:'8px', background:'#fff',
                 boxShadow:'0 2px 10px rgba(0,0,0,.1)', userSelect:'none', zIndex:1 }">
-                <div @mousedown="startStructDashMove($event, item)"
+                    <div @mousedown="startStructDashMove($event, item)"
                   style="display:flex;align-items:center;gap:5px;padding:5px 8px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;border-radius:8px 8px 0 0;cursor:move;">
-                  <span style="font-size:11px;">{{ wIcon(item.slot.widgetType) }}</span>
-                  <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 4px;white-space:nowrap;">
-                    {{ wLabel(item.slot.widgetType) }}
-                  </span>
-                  <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                    {{ item.slot.widgetNm }}
-                  </span>
-                  <button @click="removeStructDashItem(item.id)"
+                      <span style="font-size:11px;">
+                        {{ wIcon(item.slot.widgetType) }}
+                      </span>
+                      <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 4px;white-space:nowrap;">
+                        {{ wLabel(item.slot.widgetType) }}
+                      </span>
+                      <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        {{ item.slot.widgetNm }}
+                      </span>
+                      <button @click="handleSelectAction('simul-remove-struct-dash', item.id)"
                     style="flex-shrink:0;width:15px;height:15px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0;">
-                    ✕
-                  </button>
+                        ✕
+                      </button>
+                    </div>
+                    <div style="padding:8px;font-size:11px;color:#888;">
+                      {{ item.slot._panelNm }}
+                    </div>
+                    <!-- ===== ■.■.■.■.■.■.■.■. 리사이즈 핸들 =================================== -->
+                    <div @mousedown="startStructDashResize($event, item)"
+                  style="position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;background:linear-gradient(135deg,transparent 50%,#d1d5db 50%);border-radius:0 0 8px 0;">
+                    </div>
+                  </div>
                 </div>
-                <div style="padding:8px;font-size:11px;color:#888;">{{ item.slot._panelNm }}</div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 리사이즈 핸들 =================================== -->
-                <div @mousedown="startStructDashResize($event, item)"
-                  style="position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;background:linear-gradient(135deg,transparent 50%,#d1d5db 50%);border-radius:0 0 8px 0;"></div>
-              </div>
-            </div>
-          </template>
-          <!-- ===== ■.■.■.■.■. grid 캔버스 ======================================== -->
-          <template v-else>
-            <!-- ===== ■.■.■.■.■.■. 뷰포트 래퍼 ======================================== -->
-            <div :style="{ width: STRUCT_VIEWPORT[structViewport].width || '100%', maxWidth: STRUCT_VIEWPORT[structViewport].width || '100%', margin:'0 auto', transition:'width .3s' }">
-              <div v-if="STRUCT_VIEWPORT[structViewport].width"
+              </template>
+              <!-- ===== ■.■.■.■.■. grid 캔버스 ======================================== -->
+              <template v-else>
+                <!-- ===== ■.■.■.■.■.■. 뷰포트 래퍼 ======================================== -->
+                <div :style="{ width: STRUCT_VIEWPORT[structViewport].width || '100%', maxWidth: STRUCT_VIEWPORT[structViewport].width || '100%', margin:'0 auto', transition:'width .3s' }">
+                  <div v-if="STRUCT_VIEWPORT[structViewport].width"
                 style="text-align:center;margin-bottom:6px;font-size:11px;color:#9ca3af;font-weight:600;">
-                {{ structViewport==='mobile' ? '📱 375px' : '📟 768px' }}
-              </div>
-              <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
-                <div :style="{ display:'grid', gridTemplateColumns:cfStructGridColumns, gap:'10px' }">
-                  <template v-for="(slot, idx) in structSlots" :key="Math.random()">
-                    <div v-if="!structShowReal || slot"
-                      @dragover="onStructDragOver($event, idx)"
-                      @dragleave="onStructDragLeave"
-                      @drop="onStructDrop($event, idx)"
-                      style="border-radius:8px;transition:all .15s;position:relative;"
-                      :style="[
-                      structDragOverIdx===idx
-                      ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;'
-                      : slot
-                      ? (uiState.structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;')
-                      : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;',
-                      slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {},
-                      slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {},
-                      ]">
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 빈 슬롯 ================================ -->
-                      <div v-if="!slot && structDragOverIdx!==idx"
-                        style="min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#d1d5db;padding:10px;">
-                        <span style="font-size:18px;">+</span>
-                        <span style="font-size:11px;">드래그하여 추가</span>
+                    {{ structViewport==='mobile' ? '📱 375px' : '📟 768px' }}
+                  </div>
+                  <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
+                    <div :style="{ display:'grid', gridTemplateColumns:cfStructGridColumns, gap:'10px' }">
+                      <template v-for="(slot, idx) in structSlots" :key="Math.random()">
+                        <div v-if="!structShowReal || slot" @dragover="onStructDragOver($event, idx)" @dragleave="onStructDragLeave" @drop="onStructDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ structDragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;' : slot ? (uiState.structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {}, slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {}, ]">
+                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 빈 슬롯 ================================ -->
+                        <div v-if="!slot && structDragOverIdx!==idx" style="min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#d1d5db;padding:10px;">
+                        <span style="font-size:18px;">
+                          +
+                        </span>
+                        <span style="font-size:11px;">
+                          드래그하여 추가
+                        </span>
                       </div>
-                      <div v-else-if="!slot && structDragOverIdx===idx"
-                        style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;">
-                        ▼ 여기에 추가
-                      </div>
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 배치된 위젯 ============================== -->
-                      <template v-else-if="slot">
-                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×만 ====================== -->
-                        <div v-if="structShowReal" style="position:relative;">
-                          <button @click="removeStructSlot(idx)"
+                      <div v-else-if="!slot && structDragOverIdx===idx" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;">
+                      ▼ 여기에 추가
+                    </div>
+                    <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 배치된 위젯 ============================== -->
+                    <template v-else-if="slot">
+                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×만 ====================== -->
+                      <div v-if="structShowReal" style="position:relative;">
+                        <button @click="handleSelectAction('simul-remove-struct-slot', idx)"
                             style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
-                            ✕
-                          </button>
-                        </div>
-                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 헤더 (실제컨텐츠 OFF) ==================== -->
-                        <div v-else style="display:flex;align-items:center;gap:4px;padding:5px 8px 4px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
-                          <span style="font-size:11px;">{{ wIcon(slot.widgetType) }}</span>
-                          <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 4px;white-space:nowrap;">
-                            {{ wLabel(slot.widgetType) }}
-                          </span>
-                          <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                            {{ slot.widgetNm }}
-                          </span>
-                          <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. ⚙ 설정 아이콘 ======================== -->
-                          <button @click="toggleStructSpanPopup($event, idx)"
+                          ✕
+                        </button>
+                      </div>
+                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 헤더 (실제컨텐츠 OFF) ==================== -->
+                      <div v-else style="display:flex;align-items:center;gap:4px;padding:5px 8px 4px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
+                        <span style="font-size:11px;">
+                          {{ wIcon(slot.widgetType) }}
+                        </span>
+                        <span style="font-size:10px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:3px;padding:0 4px;white-space:nowrap;">
+                          {{ wLabel(slot.widgetType) }}
+                        </span>
+                        <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                          {{ slot.widgetNm }}
+                        </span>
+                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. ⚙ 설정 아이콘 ======================== -->
+                        <button @click="handleSelectAction('simul-toggle-struct-span-popup', { e: $event, idx })"
                             :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                             style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                             :style="structSpanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">
-                            ⚙
-                          </button>
-                          <button @click="removeStructSlot(idx)"
+                          ⚙
+                        </button>
+                        <button @click="handleSelectAction('simul-remove-struct-slot', idx)"
                             style="flex-shrink:0;width:16px;height:16px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
-                            ✕
-                          </button>
-                        </div>
-                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. span 팝업 =========================== -->
-                        <div v-if="!structShowReal && structSpanPopupIdx===idx" @click.stop
-                          style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
-                          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                            <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
-                            <button @click="closeStructSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
-                              ✕
-                            </button>
-                          </div>
-                          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-                            <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
-                            <button @click="setStructSpan(idx,'col',-1)" :disabled="(slot.colSpan||1)<=1"
+                          ✕
+                        </button>
+                      </div>
+                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. span 팝업 =========================== -->
+                      <div v-if="!structShowReal && structSpanPopupIdx===idx" @click.stop style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
+                      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <span style="font-size:11px;font-weight:700;color:#374151;">
+                          그리드 스팬 설정
+                        </span>
+                        <button @click="handleBtnAction('simul-close-span-popup')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
+                          ✕
+                        </button>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                        <span style="font-size:11px;color:#6b7280;width:36px;">
+                          열 span
+                        </span>
+                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">
-                              −
-                            </button>
-                            <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
-                              {{ slot.colSpan||1 }}
-                            </span>
-                            <button @click="setStructSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)"
+                          −
+                        </button>
+                        <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
+                          {{ slot.colSpan||1 }}
+                        </span>
+                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)?'opacity:.3;cursor:default;':''">
-                              +
-                            </button>
-                            <span style="font-size:10px;color:#9ca3af;">/ {{ STRUCT_GRID_COLS[structGrid]||1 }}</span>
-                          </div>
-                          <div style="display:flex;align-items:center;gap:6px;">
-                            <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
-                            <button @click="setStructSpan(idx,'row',-1)" :disabled="(slot.rowSpan||1)<=1"
+                          +
+                        </button>
+                        <span style="font-size:10px;color:#9ca3af;">
+                          / {{ STRUCT_GRID_COLS[structGrid]||1 }}
+                        </span>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:11px;color:#6b7280;width:36px;">
+                          행 span
+                        </span>
+                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">
-                              −
-                            </button>
-                            <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
-                              {{ slot.rowSpan||1 }}
-                            </span>
-                            <button @click="setStructSpan(idx,'row',+1)" :disabled="(slot.rowSpan||1)>=4"
+                          −
+                        </button>
+                        <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
+                          {{ slot.rowSpan||1 }}
+                        </span>
+                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'row', delta: +1 })" :disabled="(slot.rowSpan||1)>=4"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">
-                              +
-                            </button>
-                            <span style="font-size:10px;color:#9ca3af;">/ 4</span>
-                          </div>
-                        </div>
-                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 위젯미리보기 (기존 렌더링 재사용) =============== -->
-                        <div :style="uiState.structShowReal ? 'padding:0;' : 'padding:10px;'">
-                          <div v-if="slot.widgetType==='image_banner'"
+                          +
+                        </button>
+                        <span style="font-size:10px;color:#9ca3af;">
+                          / 4
+                        </span>
+                      </div>
+                    </div>
+                    <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 위젯미리보기 (기존 렌더링 재사용) =============== -->
+                    <div :style="uiState.structShowReal ? 'padding:0;' : 'padding:10px;'">
+                      <div v-if="slot.widgetType==='image_banner'"
                             style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:20px;text-align:center;color:#fff;">
-                            <div style="font-size:26px;">🖼</div>
-                            <div style="font-size:13px;font-weight:700;margin-top:4px;">{{ slot.widgetNm }}</div>
-                            <div v-if="slot.clickTarget" style="font-size:10px;opacity:.8;margin-top:3px;">→ {{ slot.clickTarget }}</div>
-                          </div>
-                          <div v-else-if="slot.widgetType==='product_slider'||slot.widgetType==='product'">
-                            <div style="display:flex;gap:5px;overflow:hidden;">
-                              <div v-for="n in 4" :key="Math.random()" style="flex:0 0 60px;border:1px solid #eee;border-radius:6px;overflow:hidden;">
-                                <div style="height:50px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:18px;">
-                                  📦
-                                </div>
-                                <div style="padding:4px;font-size:9px;color:#888;text-align:center;">상품{{ n }}</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div v-else-if="slot.widgetType==='chart_bar'">
-                            <div style="display:flex;align-items:flex-end;gap:4px;height:70px;">
-                              <div v-for="(h,ci) in [55,78,42,88,65,92,70]" :key="ci" style="flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#667eea,#764ba2);" :style="'height:'+h+'%;'"></div>
-                            </div>
-                          </div>
-                          <div v-else-if="slot.widgetType==='chart_line'">
-                            <svg viewBox="0 0 200 70" style="width:100%;height:60px;">
-                              <polyline points="0,55 28,40 56,50 84,18 112,30 140,10 168,22 200,15" fill="none" stroke="#667eea" stroke-width="2" stroke-linejoin="round"/>
-                            </svg>
-                          </div>
-                          <div v-else-if="slot.widgetType==='text_banner'"
-                            style="background:#f8f9fa;border-left:4px solid #667eea;border-radius:0 6px 6px 0;padding:10px 12px;">
-                            <div style="font-size:12px;font-weight:700;color:#222;">{{ slot.widgetNm }}</div>
-                          </div>
-                          <div v-else-if="slot.widgetType==='coupon'"
-                            style="border:2px dashed #e8587a;border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#fff5f7,#fce4ec);">
-                            <span style="font-size:26px;">🎟</span>
-                            <div style="font-size:12px;font-weight:700;color:#c2185b;">{{ slot.widgetNm }}</div>
-                          </div>
-                          <div v-else-if="slot.widgetType==='event_banner'"
-                            style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:8px;padding:14px;text-align:center;color:#fff;">
-                            <div style="font-size:22px;">🎉</div>
-                            <div style="font-size:12px;font-weight:700;margin-top:4px;">{{ slot.widgetNm }}</div>
-                          </div>
-                          <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. 영역 ============================== -->
-                          <div v-else-if="slot.widgetType==='cache_banner'"
-                            style="background:linear-gradient(135deg,#f6d365,#fda085);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;color:#fff;">
-                            <span style="font-size:26px;">💰</span>
-                            <div style="font-size:14px;font-weight:800;">+0,000P</div>
-                          </div>
-                          <div v-else-if="slot.widgetType==='popup'"
-                            style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;">
-                            <div style="background:#f5f5f5;padding:5px 10px;font-size:10px;display:flex;justify-content:space-between;">
-                              <span>팝업</span>
-                              <span>×</span>
-                            </div>
-                            <div style="padding:12px;text-align:center;color:#bbb;font-size:11px;">{{ slot.widgetNm }}</div>
-                          </div>
-                          <div v-else-if="slot.widgetType==='html_editor'"
-                            style="background:#1e1e2e;border-radius:6px;padding:10px;font-size:10px;color:#a9b7c6;font-family:monospace;">
-                            &lt;!-- {{ slot.widgetNm }} --&gt;
-                          </div>
-                          <div v-else
-                            style="background:#f5f5f5;border-radius:6px;padding:14px;text-align:center;color:#aaa;">
-                            <div style="font-size:22px;">{{ wIcon(slot.widgetType) }}</div>
-                            <div style="font-size:11px;margin-top:4px;">{{ slot.widgetNm }}</div>
-                          </div>
-                          <div v-if="slot._panelNm" style="font-size:9px;color:#aaa;margin-top:6px;">📋 {{ slot._panelNm }}</div>
+                        <div style="font-size:26px;">
+                          🖼
                         </div>
-                      </template>
+                        <div style="font-size:13px;font-weight:700;margin-top:4px;">
+                          {{ slot.widgetNm }}
+                        </div>
+                        <div v-if="slot.clickTarget" style="font-size:10px;opacity:.8;margin-top:3px;">
+                          → {{ slot.clickTarget }}
+                        </div>
+                      </div>
+                      <div v-else-if="slot.widgetType==='product_slider'||slot.widgetType==='product'">
+                        <div style="display:flex;gap:5px;overflow:hidden;">
+                          <div v-for="n in 4" :key="Math.random()" style="flex:0 0 60px;border:1px solid #eee;border-radius:6px;overflow:hidden;">
+                            <div style="height:50px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:18px;">
+                              📦
+                            </div>
+                            <div style="padding:4px;font-size:9px;color:#888;text-align:center;">
+                              상품{{ n }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div v-else-if="slot.widgetType==='chart_bar'">
+                        <div style="display:flex;align-items:flex-end;gap:4px;height:70px;">
+                          <div v-for="(h,ci) in [55,78,42,88,65,92,70]" :key="ci" style="flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,#667eea,#764ba2);" :style="'height:'+h+'%;'">
+                          </div>
+                        </div>
+                      </div>
+                      <div v-else-if="slot.widgetType==='chart_line'">
+                        <svg viewBox="0 0 200 70" style="width:100%;height:60px;">
+                          <polyline points="0,55 28,40 56,50 84,18 112,30 140,10 168,22 200,15" fill="none" stroke="#667eea" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                      <div v-else-if="slot.widgetType==='text_banner'"
+                            style="background:#f8f9fa;border-left:4px solid #667eea;border-radius:0 6px 6px 0;padding:10px 12px;">
+                        <div style="font-size:12px;font-weight:700;color:#222;">
+                          {{ slot.widgetNm }}
+                        </div>
+                      </div>
+                      <div v-else-if="slot.widgetType==='coupon'"
+                            style="border:2px dashed #e8587a;border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#fff5f7,#fce4ec);">
+                        <span style="font-size:26px;">
+                          🎟
+                        </span>
+                        <div style="font-size:12px;font-weight:700;color:#c2185b;">
+                          {{ slot.widgetNm }}
+                        </div>
+                      </div>
+                      <div v-else-if="slot.widgetType==='event_banner'"
+                            style="background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:8px;padding:14px;text-align:center;color:#fff;">
+                        <div style="font-size:22px;">
+                          🎉
+                        </div>
+                        <div style="font-size:12px;font-weight:700;margin-top:4px;">
+                          {{ slot.widgetNm }}
+                        </div>
+                      </div>
+                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. 영역 ============================== -->
+                      <div v-else-if="slot.widgetType==='cache_banner'"
+                            style="background:linear-gradient(135deg,#f6d365,#fda085);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;color:#fff;">
+                        <span style="font-size:26px;">
+                          💰
+                        </span>
+                        <div style="font-size:14px;font-weight:800;">
+                          +0,000P
+                        </div>
+                      </div>
+                      <div v-else-if="slot.widgetType==='popup'"
+                            style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;">
+                        <div style="background:#f5f5f5;padding:5px 10px;font-size:10px;display:flex;justify-content:space-between;">
+                          <span>
+                            팝업
+                          </span>
+                          <span>
+                            ×
+                          </span>
+                        </div>
+                        <div style="padding:12px;text-align:center;color:#bbb;font-size:11px;">
+                          {{ slot.widgetNm }}
+                        </div>
+                      </div>
+                      <div v-else-if="slot.widgetType==='html_editor'"
+                            style="background:#1e1e2e;border-radius:6px;padding:10px;font-size:10px;color:#a9b7c6;font-family:monospace;">
+                        &lt;!-- {{ slot.widgetNm }} --&gt;
+                      </div>
+                      <div v-else
+                            style="background:#f5f5f5;border-radius:6px;padding:14px;text-align:center;color:#aaa;">
+                        <div style="font-size:22px;">
+                          {{ wIcon(slot.widgetType) }}
+                        </div>
+                        <div style="font-size:11px;margin-top:4px;">
+                          {{ slot.widgetNm }}
+                        </div>
+                      </div>
+                      <div v-if="slot._panelNm" style="font-size:9px;color:#aaa;margin-top:6px;">
+                        📋 {{ slot._panelNm }}
+                      </div>
                     </div>
                   </template>
                 </div>
-                <!-- ===== /grid ====================================================== -->
-                <div v-if="window.safeArrayUtils.safeEvery(structSlots, s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
-                  좌측 영역 또는 패널을 드래그하여 배치하세요
-                </div>
-              </div>
-              <!-- ===== /device frame ============================================== -->
+              </template>
             </div>
-            <!-- ===== /viewport wrapper ========================================== -->
-          </template>
-          <!-- ===== /grid1~4 =================================================== -->
+            <!-- ===== /grid ====================================================== -->
+            <div v-if="window.safeArrayUtils.safeEvery(structSlots, s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
+              좌측 영역 또는 패널을 드래그하여 배치하세요
+            </div>
+          </div>
+          <!-- ===== /device frame ============================================== -->
         </div>
-        <!-- ===== /캔버스 ======================================================= -->
-      </div>
+        <!-- ===== /viewport wrapper ========================================== -->
+      </template>
+      <!-- ===== /grid1~4 =================================================== -->
     </div>
+    <!-- ===== /캔버스 ======================================================= -->
   </div>
-  <!-- ═══════════════════════════════════════
+</div>
+</div>
+<!-- ═══════════════════════════════════════
        Tab3: 소스 구조
   ═══════════════════════════════════════ -->
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div v-else-if="uiState.mainTab==='source'" style="margin-top:4px;">
-    <div class="card" style="padding:0;overflow:hidden;">
-      <!-- ===== ■.■.■. 소스 헤더 =============================================== -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1e1e2e;border-bottom:1px solid #3a3a5c;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:13px;font-weight:700;color:#63b3ed;">&lt;/&gt; 소스 구조</span>
-          <span style="font-size:11px;color:#718096;">DispX01Ui → DispX02Area → DispX03Panel → DispX04Widget</span>
-        </div>
-        <button @click="copySource"
+<!-- ===== □. 영역 ====================================================== -->
+<!-- ===== ■. 영역 ====================================================== -->
+<div v-else-if="uiState.mainTab==='source'" style="margin-top:4px;">
+  <div class="card" style="padding:0;overflow:hidden;">
+    <!-- ===== ■.■.■. 소스 헤더 =============================================== -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1e1e2e;border-bottom:1px solid #3a3a5c;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:13px;font-weight:700;color:#63b3ed;">
+          &lt;/&gt; 소스 구조
+        </span>
+        <span style="font-size:11px;color:#718096;">
+          DispX01Ui → DispX02Area → DispX03Panel → DispX04Widget
+        </span>
+      </div>
+      <button @click="handleBtnAction('simul-copy-source')"
           style="font-size:11px;padding:4px 12px;border-radius:8px;cursor:pointer;transition:all .15s;"
           :style="uiState.sourceCopied ? 'background:#276749;color:#9ae6b4;border:1px solid #276749;' : 'background:#2d2d4e;color:#a0aec0;border:1px solid #3a3a5c;'">
-          {{ uiState.sourceCopied ? '✓ 복사됨' : '📋 전체 복사' }}
-        </button>
+        {{ uiState.sourceCopied ? '✓ 복사됨' : '📋 전체 복사' }}
+      </button>
+    </div>
+    <!-- ===== ■.■.■. 소스 본문 =============================================== -->
+    <div style="background:#1e1e2e;padding:16px 20px;overflow-x:auto;min-height:400px;max-height:70vh;overflow-y:auto;">
+      <div v-if="sourceLines.length===0" style="color:#718096;font-size:13px;text-align:center;padding:40px;">
+        영역 또는 패널 데이터가 없습니다.
       </div>
-      <!-- ===== ■.■.■. 소스 본문 =============================================== -->
-      <div style="background:#1e1e2e;padding:16px 20px;overflow-x:auto;min-height:400px;max-height:70vh;overflow-y:auto;">
-        <div v-if="sourceLines.length===0" style="color:#718096;font-size:13px;text-align:center;padding:40px;">영역 또는 패널 데이터가 없습니다.</div>
-        <div v-else style="font-family:monospace;font-size:12px;line-height:1.9;">
-          <div v-for="(line, i) in sourceLines" :key="Math.random()"
+      <div v-else style="font-family:monospace;font-size:12px;line-height:1.9;">
+        <div v-for="(line, i) in sourceLines" :key="Math.random()"
             :style="line.type==='blank'
             ? 'height:0.4em;'
             : 'white-space:nowrap;overflow-x:visible;padding-left:' + (line.level||0)*20 + 'px;'">
-            <!-- ===== ■.■.■.■.■.■. 소스 최상단 헤더 주석 ================================== -->
-            <template v-if="line.type==='source-header'">
-              <span style="color:#718096;font-style:italic;">
-                <span style="color:#4a7a5a;">&lt;!--</span>
-                <template v-if="line.htype==='entities'">
-                  <span style="color:#7ec8a0;font-weight:600;">전시개체</span>
-                  <span style="color:#718096;">: 전시영역s:</span>
-                  <span style="color:#fbd38d;">{{ line.data.area || '-' }}</span>
-                  <span style="color:#718096;">, 전시패널s:</span>
-                  <span style="color:#fbd38d;">{{ line.data.panel || '-' }}</span>
-                  <span style="color:#718096;">, 전시위젯s:</span>
-                  <span style="color:#fbd38d;">{{ line.data.widget || '-' }}</span>
-                  <span style="color:#718096;">, 위젯Libs:</span>
-                  <span style="color:#fbd38d;">{{ line.data.lib || '-' }}</span>
-                </template>
-                <template v-else-if="line.htype==='disp'">
-                  <span style="color:#90cdf4;font-weight:600;">disp조건</span>
-                  <span style="color:#718096;">: 전시일시 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.datetime }}</span>
-                  <span style="color:#4a5568;">|</span>
-                  <span style="color:#718096;">상태 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.status }}</span>
-                  <span style="color:#4a5568;">|</span>
-                  <span style="color:#718096;">노출조건 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.condition }}</span>
-                  <span style="color:#4a5568;">|</span>
-                  <span style="color:#718096;">인증필요 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.authRequired }}</span>
-                  <span style="color:#4a5568;">|</span>
-                  <span style="color:#718096;">등급제한 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.authGrade }}</span>
-                </template>
-                <template v-else-if="line.htype==='cond'">
-                  <span style="color:#f6ad55;font-weight:600;">cond조건</span>
-                  <span style="color:#718096;">: 조회기간 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.period }}</span>
-                  <span style="color:#718096;">, 카테고리 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.category }}</span>
-                  <span style="color:#718096;">, 주문 :</span>
-                  <span style="color:#b5e4c7;">{{ line.data.order }}</span>
-                </template>
-                <span style="color:#4a7a5a;">--&gt;</span>
+          <!-- ===== ■.■.■.■.■.■. 소스 최상단 헤더 주석 ================================== -->
+          <template v-if="line.type==='source-header'">
+            <span style="color:#718096;font-style:italic;">
+              <span style="color:#4a7a5a;">
+                &lt;!--
+              </span>
+              <template v-if="line.htype==='entities'">
+                <span style="color:#7ec8a0;font-weight:600;">
+                  전시개체
+                </span>
+                <span style="color:#718096;">
+                  : 전시영역s:
+                </span>
+                <span style="color:#fbd38d;">
+                  {{ line.data.area || '-' }}
+                </span>
+                <span style="color:#718096;">
+                  , 전시패널s:
+                </span>
+                <span style="color:#fbd38d;">
+                  {{ line.data.panel || '-' }}
+                </span>
+                <span style="color:#718096;">
+                  , 전시위젯s:
+                </span>
+                <span style="color:#fbd38d;">
+                  {{ line.data.widget || '-' }}
+                </span>
+                <span style="color:#718096;">
+                  , 위젯Libs:
+                </span>
+                <span style="color:#fbd38d;">
+                  {{ line.data.lib || '-' }}
+                </span>
+              </template>
+              <template v-else-if="line.htype==='disp'">
+                <span style="color:#90cdf4;font-weight:600;">
+                  disp조건
+                </span>
+                <span style="color:#718096;">
+                  : 전시일시 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.datetime }}
+                </span>
+                <span style="color:#4a5568;">
+                  |
+                </span>
+                <span style="color:#718096;">
+                  상태 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.status }}
+                </span>
+                <span style="color:#4a5568;">
+                  |
+                </span>
+                <span style="color:#718096;">
+                  노출조건 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.condition }}
+                </span>
+                <span style="color:#4a5568;">
+                  |
+                </span>
+                <span style="color:#718096;">
+                  인증필요 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.authRequired }}
+                </span>
+                <span style="color:#4a5568;">
+                  |
+                </span>
+                <span style="color:#718096;">
+                  등급제한 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.authGrade }}
+                </span>
+              </template>
+              <template v-else-if="line.htype==='cond'">
+                <span style="color:#f6ad55;font-weight:600;">
+                  cond조건
+                </span>
+                <span style="color:#718096;">
+                  : 조회기간 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.period }}
+                </span>
+                <span style="color:#718096;">
+                  , 카테고리 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.category }}
+                </span>
+                <span style="color:#718096;">
+                  , 주문 :
+                </span>
+                <span style="color:#b5e4c7;">
+                  {{ line.data.order }}
+                </span>
+              </template>
+              <span style="color:#4a7a5a;">
+                --&gt;
+              </span>
+            </span>
+          </template>
+          <!-- ===== ■.■.■.■.■.■. DispArea 메타 주석 ================================ -->
+          <template v-else-if="line.type==='area-meta'">
+            <span style="color:#4a7a5a;font-style:italic;">
+              &lt;!--
+            </span>
+            <span style="color:#4a7a5a;font-style:italic;">
+              표시형식:
+              <span style="color:#7ec8a0;">
+                {{ line.meta.layout }}
+              </span>
+              , 정렬:
+              <span style="color:#7ec8a0;">
+                {{ line.meta.sortOrd }}
+              </span>
+              , area=
+              <span style="color:#7ec8a0;">
+                "{{ line.meta.area }}"
+              </span>
+            </span>
+            <span style="color:#4a7a5a;font-style:italic;">
+              --&gt;
+            </span>
+          </template>
+          <!-- <DispX01Ui> / </DispX01Ui> -->
+          <template v-else-if="line.type==='ui-open'">
+            <span style="color:#b794f4;font-weight:700;">
+              &lt;DispX01Ui&gt;
+            </span>
+          </template>
+          <template v-else-if="line.type==='ui-close'">
+            <span style="color:#b794f4;font-weight:700;">
+              &lt;/DispX01Ui&gt;
+            </span>
+          </template>
+          <!-- <DispX02Area attr="val" ...> -->
+          <template v-else-if="line.type==='area-open'">
+            <span style="color:#63b3ed;font-weight:700;">
+              &lt;DispX02Area
+            </span>
+            <template v-for="a in line.attrs" :key="a?.key">
+              <span style="color:#9cdcfe;">
+                {{ a.key }}
+              </span>
+              <span style="color:#cdd9e5;">
+                ="
+              </span>
+              <span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">
+                {{ a.val }}
+              </span>
+              <span style="color:#cdd9e5;">
+                "
               </span>
             </template>
-            <!-- ===== ■.■.■.■.■.■. DispArea 메타 주석 ================================ -->
-            <template v-else-if="line.type==='area-meta'">
-              <span style="color:#4a7a5a;font-style:italic;">&lt;!--</span>
-              <span style="color:#4a7a5a;font-style:italic;">
-                표시형식:
-                <span style="color:#7ec8a0;">{{ line.meta.layout }}</span>
-                , 정렬:
-                <span style="color:#7ec8a0;">{{ line.meta.sortOrd }}</span>
-                , area=
-                <span style="color:#7ec8a0;">"{{ line.meta.area }}"</span>
+            <span style="color:#63b3ed;font-weight:700;">
+              &gt;
+            </span>
+          </template>
+          <!-- ===== ■.■.■.■.■.■. 패널 메타 주석 ====================================== -->
+          <template v-else-if="line.type==='panel-meta'">
+            <span style="color:#5a9e6f;font-style:italic;">
+              &lt;!--
+            </span>
+            <span style="color:#5a9e6f;font-style:italic;">
+              표시형식:
+              <span style="color:#b5e4c7;">
+                {{ line.meta.layout }}
               </span>
-              <span style="color:#4a7a5a;font-style:italic;">--&gt;</span>
-            </template>
-            <!-- <DispX01Ui> / </DispX01Ui> -->
-            <template v-else-if="line.type==='ui-open'"><span style="color:#b794f4;font-weight:700;">&lt;DispX01Ui&gt;</span></template>
-            <template v-else-if="line.type==='ui-close'"><span style="color:#b794f4;font-weight:700;">&lt;/DispX01Ui&gt;</span></template>
-            <!-- <DispX02Area attr="val" ...> -->
-            <template v-else-if="line.type==='area-open'">
-              <span style="color:#63b3ed;font-weight:700;">&lt;DispX02Area</span>
-              <template v-for="a in line.attrs" :key="a?.key">
-                <span style="color:#9cdcfe;">{{ a.key }}</span>
-                <span style="color:#cdd9e5;">="</span>
-                <span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span>
-                <span style="color:#cdd9e5;">"</span>
-              </template>
-              <span style="color:#63b3ed;font-weight:700;">&gt;</span>
-            </template>
-            <!-- ===== ■.■.■.■.■.■. 패널 메타 주석 ====================================== -->
-            <template v-else-if="line.type==='panel-meta'">
-              <span style="color:#5a9e6f;font-style:italic;">&lt;!--</span>
-              <span style="color:#5a9e6f;font-style:italic;">
-                표시형식:
-                <span style="color:#b5e4c7;">{{ line.meta.layout }}</span>
-                , 정렬:
-                <span style="color:#b5e4c7;">{{ line.meta.sortOrder }}</span>
-                , 기간:
-                <span style="color:#b5e4c7;">{{ line.meta.period }}</span>
-                &nbsp;|&nbsp; 상태:
-                <span style="color:#b5e4c7;">{{ line.meta.status }}</span>
-                &nbsp;|&nbsp; 노출조건:
-                <span style="color:#b5e4c7;">{{ line.meta.condition }}</span>
-                &nbsp;|&nbsp; 인증필요:
-                <span style="color:#b5e4c7;">{{ line.meta.authRequired }}</span>
-                &nbsp;|&nbsp; 등급제한:
-                <span style="color:#b5e4c7;">{{ line.meta.authGrade }}</span>
+              , 정렬:
+              <span style="color:#b5e4c7;">
+                {{ line.meta.sortOrder }}
               </span>
-              <span style="color:#5a9e6f;font-style:italic;">--&gt;</span>
+              , 기간:
+              <span style="color:#b5e4c7;">
+                {{ line.meta.period }}
+              </span>
+              &nbsp;|&nbsp; 상태:
+              <span style="color:#b5e4c7;">
+                {{ line.meta.status }}
+              </span>
+              &nbsp;|&nbsp; 노출조건:
+              <span style="color:#b5e4c7;">
+                {{ line.meta.condition }}
+              </span>
+              &nbsp;|&nbsp; 인증필요:
+              <span style="color:#b5e4c7;">
+                {{ line.meta.authRequired }}
+              </span>
+              &nbsp;|&nbsp; 등급제한:
+              <span style="color:#b5e4c7;">
+                {{ line.meta.authGrade }}
+              </span>
+            </span>
+            <span style="color:#5a9e6f;font-style:italic;">
+              --&gt;
+            </span>
+          </template>
+          <!-- <DispX03Panel attr="val" ...> -->
+          <template v-else-if="line.type==='panel-open'">
+            <span style="color:#68d391;font-weight:700;">
+              &lt;DispX03Panel
+            </span>
+            <template v-for="a in line.attrs" :key="a?.key">
+              <span style="color:#9cdcfe;">
+                {{ a.key }}
+              </span>
+              <span style="color:#cdd9e5;">
+                ="
+              </span>
+              <span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">
+                {{ a.val }}
+              </span>
+              <span style="color:#cdd9e5;">
+                "
+              </span>
             </template>
-            <!-- <DispX03Panel attr="val" ...> -->
-            <template v-else-if="line.type==='panel-open'">
-              <span style="color:#68d391;font-weight:700;">&lt;DispX03Panel</span>
-              <template v-for="a in line.attrs" :key="a?.key">
-                <span style="color:#9cdcfe;">{{ a.key }}</span>
-                <span style="color:#cdd9e5;">="</span>
-                <span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span>
-                <span style="color:#cdd9e5;">"</span>
-              </template>
-              <span style="color:#68d391;font-weight:700;">&gt;</span>
+            <span style="color:#68d391;font-weight:700;">
+              &gt;
+            </span>
+          </template>
+          <!-- <DispX04Widget attr="val" .../> -->
+          <template v-else-if="line.type==='widget'">
+            <span style="color:#f6ad55;font-weight:700;">
+              &lt;DispX04Widget
+            </span>
+            <template v-for="a in line.attrs" :key="a?.key">
+              <span style="color:#9cdcfe;">
+                {{ a.key }}
+              </span>
+              <span style="color:#cdd9e5;">
+                ="
+              </span>
+              <span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">
+                {{ a.val }}
+              </span>
+              <span style="color:#cdd9e5;">
+                "
+              </span>
             </template>
-            <!-- <DispX04Widget attr="val" .../> -->
-            <template v-else-if="line.type==='widget'">
-              <span style="color:#f6ad55;font-weight:700;">&lt;DispX04Widget</span>
-              <template v-for="a in line.attrs" :key="a?.key">
-                <span style="color:#9cdcfe;">{{ a.key }}</span>
-                <span style="color:#cdd9e5;">="</span>
-                <span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span>
-                <span style="color:#cdd9e5;">"</span>
-              </template>
-              <!-- ===== ■.■.■.■.■.■.■. 헤더 영역 ======================================= -->
-              <span style="color:#f6ad55;font-weight:700;">/&gt;</span>
-            </template>
-            <!-- </DispX03Panel> -->
-            <span v-else-if="line.type==='panel-close'"
+            <!-- ===== ■.■.■.■.■.■.■. 헤더 영역 ======================================= -->
+            <span style="color:#f6ad55;font-weight:700;">
+              /&gt;
+            </span>
+          </template>
+          <!-- </DispX03Panel> -->
+          <span v-else-if="line.type==='panel-close'"
               style="color:#68d391;font-weight:700;">
-              &lt;/DispX03Panel&gt;
-            </span>
-            <!-- </DispX02Area> -->
-            <span v-else-if="line.type==='area-close'"
+            &lt;/DispX03Panel&gt;
+          </span>
+          <!-- </DispX02Area> -->
+          <span v-else-if="line.type==='area-close'"
               style="color:#63b3ed;font-weight:700;">
-              &lt;/DispX02Area&gt;
-            </span>
-            <!-- ===== ■.■.■.■.■.■. 주석 ============================================ -->
-            <span v-else-if="line.type==='comment'" style="color:#6a737d;">{{ line.text }}</span>
-          </div>
+            &lt;/DispX02Area&gt;
+          </span>
+          <!-- ===== ■.■.■.■.■.■. 주석 ============================================ -->
+          <span v-else-if="line.type==='comment'" style="color:#6a737d;">
+            {{ line.text }}
+          </span>
         </div>
       </div>
-      <!-- ===== ■.■.■. 소스 푸터: 범례 =========================================== -->
-      <div style="background:#161622;padding:10px 20px;border-top:1px solid #3a3a5c;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-        <span style="font-size:11px;color:#b794f4;">■ DispX01Ui</span>
-        <span style="font-size:11px;color:#63b3ed;">■ DispX02Area</span>
-        <span style="font-size:11px;color:#68d391;">■ DispX03Panel</span>
-        <span style="font-size:11px;color:#f6ad55;">■ DispX04Widget</span>
-        <span style="font-size:11px;color:#9cdcfe;">■ 속성명</span>
-        <span style="font-size:11px;color:#ce9178;">■ 실제값</span>
-        <span style="font-size:11px;color:#6a737d;font-style:italic;">■ 플레이스홀더(~)</span>
-        <span style="font-size:11px;color:#aaa;margin-left:auto;">📅 {{ previewDate }} 기준 활성 패널</span>
-      </div>
+    </div>
+    <!-- ===== ■.■.■. 소스 푸터: 범례 =========================================== -->
+    <div style="background:#161622;padding:10px 20px;border-top:1px solid #3a3a5c;display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:11px;color:#b794f4;">
+        ■ DispX01Ui
+      </span>
+      <span style="font-size:11px;color:#63b3ed;">
+        ■ DispX02Area
+      </span>
+      <span style="font-size:11px;color:#68d391;">
+        ■ DispX03Panel
+      </span>
+      <span style="font-size:11px;color:#f6ad55;">
+        ■ DispX04Widget
+      </span>
+      <span style="font-size:11px;color:#9cdcfe;">
+        ■ 속성명
+      </span>
+      <span style="font-size:11px;color:#ce9178;">
+        ■ 실제값
+      </span>
+      <span style="font-size:11px;color:#6a737d;font-style:italic;">
+        ■ 플레이스홀더(~)
+      </span>
+      <span style="font-size:11px;color:#aaa;margin-left:auto;">
+        📅 {{ previewDate }} 기준 활성 패널
+      </span>
     </div>
   </div>
 </div>
-
-  <!-- ===== □. 영역 ====================================================== -->`
+</div>
+<!-- ===== □. 영역 ====================================================== -->
+`
 };

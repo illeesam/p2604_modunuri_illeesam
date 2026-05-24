@@ -214,7 +214,6 @@ window.StSettleCloseMng = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
       uiState, codes, closeList, searchParam, thisMonth,
       baseGridColumns, baseSearchColumns,
@@ -226,11 +225,17 @@ window.StSettleCloseMng = {
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">정산마감</div>
+  <div class="page-title">
+    정산마감
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">월별 업체 정산을 확정하는 마감 처리를 수행합니다. 마감 후 원장·조정 데이터 수정이 불가합니다.</span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      월별 업체 정산을 확정하는 마감 처리를 수행합니다. 마감 후 원장·조정 데이터 수정이 불가합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 마감 처리 시 해당 월의 수집원장 + 조정 + 기타조정 금액을 최종 집계합니다. • 마감 상태: 미마감 / 마감완료 / 지급완료 • [재오픈] 기능으로 마감을 취소하고 수정 후 재마감할 수 있습니다. • 자동마감 설정(StConfigMng) 시 지급일에 자동 마감됩니다.
     </div>
@@ -238,36 +243,66 @@ window.StSettleCloseMng = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 이번달 마감 대상 =============================================== -->
   <div class="card">
-    <div style="font-weight:700;font-size:15px;margin-bottom:12px">{{ thisMonth }} 정산마감 대상</div>
+    <div style="font-weight:700;font-size:15px;margin-bottom:12px">
+      {{ thisMonth }} 정산마감 대상
+    </div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:10px;background:#f0f4ff">
-        <div style="font-size:11px;color:#888">매출액</div>
-        <div style="font-size:16px;font-weight:700;color:#3498db">{{ fmtW(cfThisMonthSales) }}</div>
+        <div style="font-size:11px;color:#888">
+          매출액
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#3498db">
+          {{ fmtW(cfThisMonthSales) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
-        <div style="font-size:11px;color:#888">환불액</div>
-        <div style="font-size:16px;font-weight:700;color:#e74c3c">{{ fmtW(cfThisMonthRefund) }}</div>
+        <div style="font-size:11px;color:#888">
+          환불액
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#e74c3c">
+          {{ fmtW(cfThisMonthRefund) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888">순매출</div>
-        <div style="font-size:16px;font-weight:700;color:#333">{{ fmtW(cfThisMonthNet) }}</div>
+        <div style="font-size:11px;color:#888">
+          순매출
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#333">
+          {{ fmtW(cfThisMonthNet) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
-        <div style="font-size:11px;color:#888">수수료(10%)</div>
-        <div style="font-size:16px;font-weight:700;color:#e67e22">{{ fmtW(cfThisMonthComm) }}</div>
+        <div style="font-size:11px;color:#888">
+          수수료(10%)
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#e67e22">
+          {{ fmtW(cfThisMonthComm) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#fdf5ff">
-        <div style="font-size:11px;color:#888">프로모션(3%)</div>
-        <div style="font-size:16px;font-weight:700;color:#9b59b6">{{ fmtW(cfThisMonthPromo) }}</div>
+        <div style="font-size:11px;color:#888">
+          프로모션(3%)
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#9b59b6">
+          {{ fmtW(cfThisMonthPromo) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">정산예정액</div>
-        <div style="font-size:16px;font-weight:700;color:#27ae60">{{ fmtW(cfThisMonthSettle) }}</div>
+        <div style="font-size:11px;color:#888">
+          정산예정액
+        </div>
+        <div style="font-size:16px;font-weight:700;color:#27ae60">
+          {{ fmtW(cfThisMonthSettle) }}
+        </div>
       </div>
     </div>
     <div style="text-align:right">
-      <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-do-close')">📋 {{ thisMonth }} 정산마감 실행</button>
-      <span v-else class="badge badge-green" style="font-size:13px;padding:8px 16px">✓ 마감완료</span>
+      <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-do-close')">
+        📋 {{ thisMonth }} 정산마감 실행
+      </button>
+      <span v-else class="badge badge-green" style="font-size:13px;padding:8px 16px">
+        ✓ 마감완료
+      </span>
     </div>
   </div>
   <!-- ===== □. 이번달 마감 대상 =============================================== -->
@@ -282,14 +317,18 @@ window.StSettleCloseMng = {
     <bo-grid
       :columns="baseGridColumns" :rows="cfFilteredClose" row-key="closeId"
       list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
-      <template #head-actions>액션</template>
+      <template #head-actions>
+        액션
+      </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="handleSelectAction('settleCloses-row-reopen', r)">마감취소</button>
+        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="handleSelectAction('settleCloses-row-reopen', r)">
+          마감취소
+        </button>
       </template>
     </bo-grid>
   </div>
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 마감 이력 =================================================== -->`,
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. 마감 이력 =================================================== -->
+`,
 };

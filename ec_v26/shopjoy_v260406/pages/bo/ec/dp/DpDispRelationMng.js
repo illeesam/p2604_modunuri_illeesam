@@ -18,6 +18,31 @@ window.DpDispRelationMng = {
       date_range_opts: [],
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispRelationMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispRelationMng.js : handleSelectAction -> ', cmd, param);
+      // 트리 노드 토글
+      if (cmd === 'relations-toggle-node') {
+        return toggleNode(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -145,46 +170,55 @@ window.DpDispRelationMng = {
                             : { bg: '#f1f1f1', color: '#666', text: '미사용' };
     };
 
-
     // --- [컬럼 정의] ---
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
 
     const baseSearchColumns = [
       { key: 'dateStart_range', type: 'dateRange', label: '등록기간', startKey: 'dateStart', endKey: 'dateEnd' },
     ];
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      codes, searchParam, baseSearchColumns,
-      onSearch, onReset,
-      expandedNodes, toggleNode, isNodeExpanded,
-      cfTreeData, fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge,
+      codes, searchParam, uiState, expandedNodes,                                   // 상태 / 데이터
+      baseSearchColumns,                                                            // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+      cfTreeData,                                                                   // computed
+      fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge, isNodeExpanded,      // 헬퍼
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">전시관계도 <span style="font-size:13px;font-weight:400;color:#888;">UI · 영역 · 패널 계층 구조</span></div>
+  <div class="page-title">
+    전시관계도
+    <span style="font-size:13px;font-weight:400;color:#888;">
+      UI · 영역 · 패널 계층 구조
+    </span>
+  </div>
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 내용 ====================================================== -->
   <div class="card" style="padding:12px;">
-    <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</div>
+    <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">
+      데이터가 없습니다.
+    </div>
     <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
       <!-- ===== ■.■.■. UI 행 ================================================ -->
-      <div @click="toggleNode('ui_'+ui.id)"
+      <div @click="handleSelectAction('relations-toggle-node', 'ui_'+ui.id)"
         style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">
-        <span style="font-size:12px;color:#999;width:20px;text-align:center;">{{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}</span>
+        <span style="font-size:12px;color:#999;width:20px;text-align:center;">
+          {{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}
+        </span>
         <span :style="{background: fnGetBadgeColor('ui').bg, color: fnGetBadgeColor('ui').color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">
           UI
         </span>
-        <span style="font-weight:700;color:#222;flex:1;">{{ ui.name }}</span>
+        <span style="font-weight:700;color:#222;flex:1;">
+          {{ ui.name }}
+        </span>
         <template v-if="fnGetVisibilityBadges(ui.visibilityTargets).length">
           <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">
             {{ fnGetVisibilityBadges(ui.visibilityTargets).join(', ') }}
@@ -193,18 +227,24 @@ window.DpDispRelationMng = {
         <span :style="{background: fnGetUseYnBadge(ui.useYn).bg, color: fnGetUseYnBadge(ui.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">
           {{ fnGetUseYnBadge(ui.useYn).text }}
         </span>
-        <span style="font-size:10px;color:#aaa;">하위: {{ ui.childCount }}</span>
+        <span style="font-size:10px;color:#aaa;">
+          하위: {{ ui.childCount }}
+        </span>
       </div>
       <!-- ===== ■.■.■. 영역들 ================================================= -->
       <div v-if="isNodeExpanded('ui_'+ui.id)" style="background:#fafafa;">
         <div v-for="area in ui.children" :key="area?.id" style="border-top:1px solid #f0f0f0;">
-          <div @click="toggleNode('area_'+area.id)"
+          <div @click="handleSelectAction('relations-toggle-node', 'area_'+area.id)"
             style="display:flex;align-items:center;gap:8px;padding:8px 12px 8px 40px;cursor:pointer;user-select:none;background:#fff;">
-            <span style="font-size:12px;color:#999;width:20px;text-align:center;">{{ isNodeExpanded('area_'+area.id) ? '▼' : '▶' }}</span>
+            <span style="font-size:12px;color:#999;width:20px;text-align:center;">
+              {{ isNodeExpanded('area_'+area.id) ? '▼' : '▶' }}
+            </span>
             <span :style="{background: fnGetBadgeColor('area').bg, color: fnGetBadgeColor('area').color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">
               영역
             </span>
-            <span style="font-weight:600;color:#333;flex:1;">{{ area.name }}</span>
+            <span style="font-weight:600;color:#333;flex:1;">
+              {{ area.name }}
+            </span>
             <template v-if="fnGetVisibilityBadges(area.visibilityTargets).length">
               <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">
                 {{ fnGetVisibilityBadges(area.visibilityTargets).join(', ') }}
@@ -213,7 +253,9 @@ window.DpDispRelationMng = {
             <span :style="{background: fnGetUseYnBadge(area.useYn).bg, color: fnGetUseYnBadge(area.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600}">
               {{ fnGetUseYnBadge(area.useYn).text }}
             </span>
-            <span style="font-size:10px;color:#aaa;">하위: {{ area.childCount }}</span>
+            <span style="font-size:10px;color:#aaa;">
+              하위: {{ area.childCount }}
+            </span>
           </div>
           <!-- ===== ■.■.■.■.■. 패널들 ============================================= -->
           <div v-if="isNodeExpanded('area_'+area.id)" style="background:#fff;">
@@ -222,7 +264,9 @@ window.DpDispRelationMng = {
               <span :style="{background: fnGetBadgeColor('panel').bg, color: fnGetBadgeColor('panel').color, fontSize:'9px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">
                 패널
               </span>
-              <span style="color:#333;flex:1;">{{ panel.name }}</span>
+              <span style="color:#333;flex:1;">
+                {{ panel.name }}
+              </span>
               <template v-if="fnGetVisibilityBadges(panel.visibilityTargets).length">
                 <span style="font-size:9px;background:#e0e0e0;color:#666;border-radius:4px;padding:2px 6px;">
                   {{ fnGetVisibilityBadges(panel.visibilityTargets).join(', ') }}
@@ -231,16 +275,22 @@ window.DpDispRelationMng = {
               <span :style="{background: fnGetUseYnBadge(panel.useYn).bg, color: fnGetUseYnBadge(panel.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">
                 {{ fnGetUseYnBadge(panel.useYn).text }}
               </span>
-              <span style="font-size:10px;color:#aaa;">위젯: {{ panel.childCount }}</span>
+              <span style="font-size:10px;color:#aaa;">
+                위젯: {{ panel.childCount }}
+              </span>
             </div>
-            <div v-if="!area.children.length" style="padding:8px 12px;color:#ccc;text-align:center;font-size:11px;">패널이 없습니다.</div>
+            <div v-if="!area.children.length" style="padding:8px 12px;color:#ccc;text-align:center;font-size:11px;">
+              패널이 없습니다.
+            </div>
           </div>
         </div>
-        <div v-if="!ui.children.length" style="padding:8px 12px;color:#ccc;text-align:center;font-size:11px;">영역이 없습니다.</div>
+        <div v-if="!ui.children.length" style="padding:8px 12px;color:#ccc;text-align:center;font-size:11px;">
+          영역이 없습니다.
+        </div>
       </div>
     </div>
   </div>
 </div>
-
-  <!-- ===== □. 내용 ====================================================== -->`
+<!-- ===== □. 내용 ====================================================== -->
+`
 };

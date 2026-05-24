@@ -163,7 +163,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
         // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
         // --- [컬럼 정의] ---
 
         const baseSearchColumns = [
@@ -200,7 +199,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
       uiState, codes, pager, payList, searchParam,
       baseSearchColumns, baseGridColumns,
@@ -211,11 +209,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">정산지급관리</div>
+  <div class="page-title">
+    정산지급관리
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">마감된 정산액의 업체별 지급 요청·확인·완료 처리 및 이의신청을 관리합니다.</span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      마감된 정산액의 업체별 지급 요청·확인·완료 처리 및 이의신청을 관리합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청 • [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다. • 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다. • 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.
     </div>
@@ -231,16 +235,28 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
       <div class="card" style="text-align:center;padding:12px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888">총 정산액</div>
-        <div style="font-size:18px;font-weight:700;color:#333">{{ fmtW(cfSummary.total) }}</div>
+        <div style="font-size:11px;color:#888">
+          총 정산액
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#333">
+          {{ fmtW(cfSummary.total) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">지급완료</div>
-        <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfSummary.paid) }}</div>
+        <div style="font-size:11px;color:#888">
+          지급완료
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#27ae60">
+          {{ fmtW(cfSummary.paid) }}
+        </div>
       </div>
       <div class="card" style="text-align:center;padding:12px;background:#f0f4ff">
-        <div style="font-size:11px;color:#888">지급대기</div>
-        <div style="font-size:18px;font-weight:700;color:#3498db">{{ fmtW(cfSummary.pending) }}</div>
+        <div style="font-size:11px;color:#888">
+          지급대기
+        </div>
+        <div style="font-size:18px;font-weight:700;color:#3498db">
+          {{ fmtW(cfSummary.pending) }}
+        </div>
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
@@ -248,14 +264,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseGridColumns" :rows="payList" :pager="pager" row-key="payId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('settlePays-set-page', n)" @size-change="handleSelectAction('settlePays-size-change')">
-      <template #head-actions>액션</template>
+      <template #head-actions>
+        액션
+      </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settlePays-row-pay', r)">지급처리</button>
+        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settlePays-row-pay', r)">
+          지급처리
+        </button>
       </template>
     </bo-grid>
   </div>
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->`,
+<!-- ===== □.□. 목록 영역 ================================================= -->
+<!-- ===== □. 카드 영역 =================================================== -->
+`,
 };
