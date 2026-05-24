@@ -271,6 +271,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid :columns="listGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
     :sort-state="uiState" list-title="게시글 목록"
@@ -286,6 +287,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       </button>
     </template>
   </bo-grid>
+  <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 =================================================== -->
   <div class="card" v-if="detailModal.show">
     <div class="toolbar">
@@ -296,7 +298,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
         <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
       </div>
     </div>
-    <!-- 블로그 detail 폼 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="blogFormColumns" :form="detailModal.form" :errors="{}"
@@ -308,5 +310,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
+  <!-- ===== □. 상세 패널 =================================================== -->`
 };

@@ -54,7 +54,7 @@ window.DispX03Panel = {
   },
   template: /* html */`
 <div class="disp-panel" :data-area="panelItem.area">
-  <!-- 패널 헤더 (showHeader=true 일 때) -->
+  <!-- ===== ■. 패널 헤더 (showHeader=true 일 때) ============================= -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="showHeader"
     style="display:flex;align-items:center;gap:6px;padding:6px 14px;background:#f8f8f8;border-bottom:1px solid #efefef;">
@@ -73,13 +73,15 @@ window.DispX03Panel = {
       {{ panelItem.condition }}
     </span>
   </div>
-  <!-- 패널 타이틀 -->
+  <!-- ===== □. 조건부 영역 ================================================== -->
+  <!-- ===== ■. 패널 타이틀 ================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="panelItem.titleYn==='Y' && panelItem.title"
     style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
     {{ panelItem.title }}
   </div>
-  <!-- 위젯 목록 -->
+  <!-- ===== □. 조건부 영역 ================================================== -->
+  <!-- ===== ■. 위젯 목록 =================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <div :style="cfLayoutStyle">
     <disp-x04-widget
@@ -97,5 +99,6 @@ window.DispX03Panel = {
     </div>
   </div>
 </div>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

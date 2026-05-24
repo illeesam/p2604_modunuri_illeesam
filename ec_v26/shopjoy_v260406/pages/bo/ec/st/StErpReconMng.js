@@ -167,11 +167,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다. • 차이 상태: 일치 / 차이발생 / 오류 • [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다. • 유형 필터: 정산지급 / 수수료 / 조정 / 기타
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -204,5 +206,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </bo-grid>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->`,
 };

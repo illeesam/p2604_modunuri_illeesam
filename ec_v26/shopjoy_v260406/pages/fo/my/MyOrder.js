@@ -303,6 +303,7 @@ window.MyOrder = {
       </button>
     </div>
   </div>
+  <!-- ===== □. 주문 처리 흐름 (토글 필터) ======================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredOrders.length" :pager="pager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
@@ -348,6 +349,7 @@ window.MyOrder = {
         </span>
       </div>
     </div>
+    <!-- ===== □.□. 주문 헤더 ================================================= -->
     <!-- ===== ■.■. 주문 진행 프로세스 (취소됨 포함) =================================== -->
     <div v-if="myStore.ORDER_FLOW.findIndex(f=>f.status===o.status) >= 0 || o.status==='취소됨'"
       style="background:#f6f6f6;border-radius:8px;padding:10px 14px;margin-bottom:12px;overflow-x:auto;">
@@ -378,6 +380,7 @@ window.MyOrder = {
         </template>
       </div>
     </div>
+    <!-- ===== □.□. 주문 진행 프로세스 (취소됨 포함) =================================== -->
     <!-- ===== ■.■. 클레임 정보 ================================================ -->
     <template v-if="claimsByOrderId[o.orderId]">
       <div :style="'border-left:3px solid '+myStore.CLAIM_TYPE_COLOR[claimsByOrderId[o.orderId].type]+';background:#FAFAFA;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:12px;'">
@@ -436,6 +439,7 @@ window.MyOrder = {
             </template>
           </div>
         </div>
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <div style="font-size:0.73rem;margin-bottom:5px;">
           <span style="color:var(--text-muted);">사유</span>
           <span style="margin-left:5px;font-weight:600;color:var(--text-primary);">{{ claimsByOrderId[o.orderId].reason }}</span>
@@ -469,6 +473,7 @@ window.MyOrder = {
             색상 → {{ claimsByOrderId[o.orderId].exchangeColor }}
           </span>
         </div>
+        <!-- ===== ■.■.■.■. 조건부 영역 ============================================ -->
         <div v-if="claimsByOrderId[o.orderId].courier" style="font-size:0.7rem;color:var(--text-muted);margin-bottom:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
           <span>수거 {{ claimsByOrderId[o.orderId].courier }}</span>
           <button v-if="claimsByOrderId[o.orderId].trackingNo" @click.stop="openTracking2(claimsByOrderId[o.orderId].courier, claimsByOrderId[o.orderId].trackingNo)"
@@ -488,6 +493,7 @@ window.MyOrder = {
         </div>
       </div>
     </template>
+    <!-- ===== □.□. 클레임 정보 ================================================ -->
     <!-- ===== ■.■. 상품 목록 ================================================= -->
     <div v-for="(item, iix) in o.orderItems" :key="iix">
       <div style="display:flex;align-items:center;gap:10px;padding:6px 0;">
@@ -529,6 +535,7 @@ window.MyOrder = {
         <span style="font-weight:700;color:#16a34a;">-{{ Number(item.productCoupon.discount).toLocaleString() }}원</span>
       </div>
     </div>
+    <!-- ===== □.□. 상품 목록 ================================================= -->
     <!-- ===== ■.■. 결제 내역 ================================================= -->
     <div v-if="showOrderPayBreakdown(o)" style="border-top:1px dashed var(--border);margin-top:10px;padding-top:12px;display:flex;flex-direction:column;gap:6px;">
       <div v-if="o.shippingFee != null && o.shippingFee > 0" style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-secondary);">
@@ -552,6 +559,7 @@ window.MyOrder = {
         <span style="margin-left:auto;font-weight:700;color:var(--text-primary);">{{ Number(o.transferPaid).toLocaleString() }}원</span>
       </div>
     </div>
+    <!-- ===== □.□. 결제 내역 ================================================= -->
     <!-- ===== ■.■. 입금 내역 ================================================= -->
     <div v-if="o.paymentDetails && o.paymentDetails.length" style="border-top:1px dashed var(--border);margin-top:8px;padding-top:8px;">
       <div style="font-size:0.68rem;font-weight:700;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:5px;">💳 입금 내역</div>
@@ -570,6 +578,7 @@ window.MyOrder = {
         <span v-if="pd.account" style="color:var(--text-muted);white-space:nowrap;">{{ pd.account }}</span>
       </div>
     </div>
+    <!-- ===== □.□. 입금 내역 ================================================= -->
     <!-- ===== ■.■. 합계 + 택배 =============================================== -->
     <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -588,6 +597,8 @@ window.MyOrder = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 합계 + 택배 =============================================== -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="orders.length" :pager="pager" />
   <!-- ===== ■. Teleport 모달들 ============================================ -->
@@ -666,6 +677,7 @@ window.MyOrder = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 리뷰 작성/수정 모달 =========================================== -->
     <!-- ===== ■.■. 도움말 모달 ================================================ -->
     <div v-if="uiState.flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.flowHelpOpen=false">
       <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
@@ -705,6 +717,7 @@ window.MyOrder = {
               </div>
             </div>
           </div>
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div v-else-if="uiState.helpTab==='cancel'">
             <div style="background:#fee2e2;border-radius:8px;padding:10px 14px;margin-bottom:14px;">
               <div style="font-size:0.82rem;font-weight:800;color:#dc2626;margin-bottom:4px;">🚫 취소 신청 안내</div>
@@ -745,6 +758,7 @@ window.MyOrder = {
               </span>
             </div>
           </div>
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div v-else-if="uiState.helpTab==='exchange'">
             <div style="background:#eff6ff;border-radius:8px;padding:10px 14px;margin-bottom:14px;">
               <div style="font-size:0.82rem;font-weight:800;color:#1d4ed8;margin-bottom:4px;">🔄 교환 신청 안내</div>
@@ -774,6 +788,7 @@ window.MyOrder = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 도움말 모달 ================================================ -->
     <!-- ===== ■.■. 교환·반품 신청 모달 =========================================== -->
     <div v-if="claimModal.show" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="claimModal.show=false">
       <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
@@ -811,6 +826,7 @@ window.MyOrder = {
             <textarea v-model="claimModal.reasonDetail" rows="2" placeholder="상세 내용을 입력해 주세요."
               style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.8rem;resize:none;box-sizing:border-box;outline:none;"></textarea>
           </div>
+          <!-- ===== ■.■.■.■.■. 조건부 영역 ========================================== -->
           <div v-if="claimModal.type==='exchange' && claimModal.order && claimModal.order.orderItems.length > 1">
             <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">
               교환 상품 선택
@@ -855,6 +871,7 @@ window.MyOrder = {
               </div>
             </div>
           </div>
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div>
             <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">배송비 안내</div>
             <div v-if="!claimModal.reason" style="font-size:0.78rem;color:var(--text-muted);padding:10px;background:var(--bg-base);border-radius:8px;">
@@ -895,6 +912,7 @@ window.MyOrder = {
                     <span style="font-size:0.78rem;font-weight:800;color:var(--blue);">{{ myStore.discountLabel(cp) }}</span>
                   </label>
                 </div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:8px 12px;background:var(--bg-base);border-radius:8px;border:1px solid var(--border);">
                   <span style="font-size:0.8rem;color:var(--text-secondary);">최종 배송비</span>
                   <span style="font-size:0.92rem;font-weight:800;" :style="cfClaimFinalFee===0 ? 'color:#16a34a;' : 'color:#ea580c;'">
@@ -912,6 +930,7 @@ window.MyOrder = {
             </template>
           </div>
         </div>
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
           <button @click="claimModal.show=false" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:700;">
             취소
@@ -923,6 +942,7 @@ window.MyOrder = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 교환·반품 신청 모달 =========================================== -->
     <!-- ===== ■.■. 주문 상세 모달 ============================================== -->
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
     <!-- ===== ■.■. 상품 모달 ================================================= -->
@@ -931,7 +951,9 @@ window.MyOrder = {
     <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
   </teleport>
 </fo-my-layout>
-`,
+
+    <!-- ===== □.□. 주문자 모달 ================================================ -->
+  <!-- ===== □. Teleport 모달들 ============================================ -->`,
   components: {
     FoMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,

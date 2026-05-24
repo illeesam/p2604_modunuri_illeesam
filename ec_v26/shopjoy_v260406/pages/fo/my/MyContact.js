@@ -74,7 +74,6 @@ window.MyContact = {
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
-  <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" />
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredInquiries.length" :pager="inquiryPager" />
@@ -110,10 +109,12 @@ window.MyContact = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="inquiries.length" :pager="inquiryPager" />
 </fo-my-layout>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
   components: {
     FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,

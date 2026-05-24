@@ -273,7 +273,7 @@ window.HelpBoModal = {
   box-pad="0" body-pad="0" :z-index="3000" @close="close">
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- 헤더 -->
+    <!-- ===== ■.■. 헤더 ==================================================== -->
     <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #ffc9d6;">
       <div style="font-size:15px;font-weight:800;color:#9f2946;">
         <span style="color:#e8587a;font-size:9px;margin-right:6px;">●</span>
@@ -283,9 +283,10 @@ window.HelpBoModal = {
         ✕
       </button>
     </div>
-    <!-- 바디 -->
+    <!-- ===== □.□. 헤더 ==================================================== -->
+    <!-- ===== ■.■. 바디 ==================================================== -->
     <div style="flex:1;display:flex;overflow:hidden;">
-      <!-- 좌측 탭 -->
+      <!-- ===== ■.■.■. 좌측 탭 ================================================ -->
       <div style="width:148px;flex-shrink:0;background:#f7f8fa;border-right:1px solid #efe0e5;display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;">
         <button v-for="t in TABS" :key="t.id" @click="activeTab=t.id"
           :style="activeTab===t.id
@@ -294,9 +295,9 @@ window.HelpBoModal = {
           {{ t.label }}
         </button>
       </div>
-      <!-- 우측 콘텐츠 -->
+      <!-- ===== ■.■.■. 우측 콘텐츠 ============================================== -->
       <div style="flex:1;overflow-y:auto;padding:24px;">
-        <!-- 개요 -->
+        <!-- ===== ■.■.■.■. 개요 ================================================ -->
         <template v-if="activeTab==='overview'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 12px;">ShopJoy 관리자 시스템 개요</h3>
           <p style="color:#555;font-size:13px;line-height:1.8;margin-bottom:16px;">
@@ -315,7 +316,8 @@ window.HelpBoModal = {
             각 탭을 클릭하면 해당 도메인의 상세 도움말을 확인할 수 있습니다.
           </div>
         </template>
-        <!-- 회원관리 -->
+        <!-- ===== ■.■.■.■. 회원관리 ============================================== -->
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <template v-else-if="activeTab==='member'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">👤 회원관리</h3>
           <div style="display:flex;flex-direction:column;gap:14px;">
@@ -350,7 +352,8 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-        <!-- 상품관리 -->
+        <!-- ===== ■.■.■.■. 상품관리 ============================================== -->
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <template v-else-if="activeTab==='product'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">📦 상품관리</h3>
           <div style="display:flex;flex-direction:column;gap:14px;">
@@ -375,11 +378,11 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-        <!-- 옵션설정 -->
+        <!-- ===== ■.■.■.■. 옵션설정 ============================================== -->
         <template v-else-if="activeTab==='prodOpt'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">⚙ 옵션설정 상세 가이드</h3>
           <p style="font-size:12px;color:#888;margin:0 0 16px;">상품 상세 &gt; 옵션설정 탭</p>
-          <!-- 서브탭 버튼 -->
+          <!-- ===== ■.■.■.■.■. 서브탭 버튼 ========================================== -->
           <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
             <button v-for="st in OPT_SUB_TABS" :key="st.id" @click="optSubTab=st.id"
               :style="optSubTab===st.id
@@ -388,7 +391,7 @@ window.HelpBoModal = {
               {{ st.label }}
             </button>
           </div>
-          <!-- 서브탭: 개요 -->
+          <!-- ===== ■.■.■.■.■. 서브탭: 개요 ========================================= -->
           <template v-if="optSubTab==='basic'">
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
@@ -424,7 +427,7 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브탭: 의류 -->
+          <!-- ===== ■.■.■.■.■. 서브탭: 의류 ========================================= -->
           <template v-else-if="optSubTab==='clothing'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
@@ -458,7 +461,7 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브탭: 신발 -->
+          <!-- ===== ■.■.■.■.■. 서브탭: 신발 ========================================= -->
           <template v-else-if="optSubTab==='shoes'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
@@ -491,7 +494,7 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브탭: 전자기기 -->
+          <!-- ===== ■.■.■.■.■. 서브탭: 전자기기 ======================================= -->
           <template v-else-if="optSubTab==='elec'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
@@ -524,7 +527,7 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브탭: 단독 옵션 -->
+          <!-- ===== ■.■.■.■.■. 서브탭: 단독 옵션 ====================================== -->
           <template v-else-if="optSubTab==='single'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
@@ -554,11 +557,12 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브탭: 입력 방식 -->
+          <!-- ===== ■.■.■.■.■. 서브탭: 입력 방식 ====================================== -->
           <template v-else-if="optSubTab==='inputtype'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div v-for="item in INPUT_TYPES" :key="item.type"
                 :style="'border:1px solid '+item.border+';border-radius:8px;padding:14px;background:'+item.bg+';'">
+                <!-- ===== ■.■.■.■.■.■.■.■. 헤더 영역 ===================================== -->
                 <div :style="'font-weight:700;color:'+item.color+';margin-bottom:6px;font-size:13px;'">{{ item.title }}</div>
                 <div style="font-size:12px;line-height:1.8;">
                   <div style="margin-bottom:4px;">{{ item.desc }}</div>
@@ -569,11 +573,11 @@ window.HelpBoModal = {
             </div>
           </template>
         </template>
-        <!-- 주문관리 -->
+        <!-- ===== ■.■.■.■. 주문관리 ============================================== -->
         <template v-else-if="activeTab==='order'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">🛒 주문관리</h3>
           <p style="font-size:12px;color:#888;margin:0 0 12px;">주문접수부터 구매확정까지. 상품(order_item) 단위 부분처리 지원.</p>
-          <!-- 서브탭 -->
+          <!-- ===== ■.■.■.■.■. 서브탭 ============================================= -->
           <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
             <button v-for="st in [{id:'flow',label:'상태 흐름'},{id:'partial',label:'부분처리/구매확정'},{id:'refund',label:'환불 순서'},{id:'bulk',label:'일괄 작업'}]"
               :key="st.id" @click="orderSubTab=st.id"
@@ -583,11 +587,12 @@ window.HelpBoModal = {
               {{ st.label }}
             </button>
           </div>
-          <!-- 서브: 상태 흐름 -->
+          <!-- ===== ■.■.■.■.■. 서브: 상태 흐름 ======================================= -->
           <template v-if="orderSubTab==='flow'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:12px;">
               <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">주문 상태 흐름</div>
               <div style="display:flex;align-items:center;gap:4px;font-size:11px;flex-wrap:wrap;margin-bottom:6px;">
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <template v-for="(s,i) in ORDER_STEPS" :key="s">
                   <span style="background:#1677ff;color:#fff;border-radius:4px;padding:3px 8px;">{{ s }}</span>
                   <span v-if="i < ORDER_STEPS.length-1" style="color:#bbb;">-&gt;</span>
@@ -610,10 +615,10 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브: 부분처리/구매확정 -->
+          <!-- ===== ■.■.■.■.■. 서브: 부분처리/구매확정 =================================== -->
           <template v-else-if="orderSubTab==='partial'">
             <div style="display:flex;flex-direction:column;gap:12px;">
-              <!-- 핵심 원칙 -->
+              <!-- ===== ■.■.■.■.■.■.■. 핵심 원칙 ======================================= -->
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
                 <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">핵심 원칙</div>
                 <div style="font-size:12px;color:#333;line-height:2;">
@@ -624,10 +629,11 @@ window.HelpBoModal = {
                   <div>• 주문 전체 상태는 <b>취소되지 않은 활성 상품</b>들의 상태 중 가장 앞선 값으로 집계</div>
                 </div>
               </div>
-              <!-- 시나리오 -->
+              <!-- ===== ■.■.■.■.■.■.■. 시나리오 ======================================== -->
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
                 <div style="font-weight:700;color:#333;margin-bottom:4px;font-size:13px;">시나리오: 상품 3개 주문 — 1개 취소, 1개 반품진행중, 1개 정상완료</div>
                 <div style="font-size:11px;color:#888;margin-bottom:10px;">주문 전체 상태 = 활성 상품(B,C) 중 가장 앞선 상태 = 배송완료</div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <div style="display:flex;flex-direction:column;gap:8px;">
                   <div v-for="sc in ORDER_PARTIAL_SCENARIO" :key="sc.item"
                     style="border:1px solid #e8e8e8;border-radius:6px;padding:10px 12px;background:#fff;display:flex;gap:10px;align-items:flex-start;">
@@ -646,7 +652,7 @@ window.HelpBoModal = {
                   </div>
                 </div>
               </div>
-              <!-- 구매확정 상세 -->
+              <!-- ===== ■.■.■.■.■.■.■. 구매확정 상세 ===================================== -->
               <div style="border:1px solid #d9f0e7;border-radius:8px;padding:14px;background:#f0fdf4;">
                 <div style="font-weight:700;color:#059669;margin-bottom:8px;font-size:13px;">구매확정 처리 방식</div>
                 <div style="font-size:12px;color:#333;line-height:2;">
@@ -657,7 +663,7 @@ window.HelpBoModal = {
                   <div>• 구매확정 시: 적립금 지급, 리뷰 작성 가능, 추가 클레임 불가</div>
                 </div>
               </div>
-              <!-- 부분취소/반품/교환 제약 -->
+              <!-- ===== ■.■.■.■.■.■.■. 부분취소/반품/교환 제약 =============================== -->
               <div style="border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;line-height:1.9;">
                 <div style="font-weight:700;margin-bottom:4px;">부분처리 제약사항</div>
                 <div>• <b>취소</b>: 배송준비 착수 전(PREPARING 이전)만 가능. 이후는 반품으로 처리</div>
@@ -667,11 +673,12 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브: 환불 순서 -->
+          <!-- ===== ■.■.■.■.■. 서브: 환불 순서 ======================================= -->
           <template v-else-if="orderSubTab==='refund'">
             <div style="display:flex;flex-direction:column;gap:12px;">
-              <!-- 환불 우선순위 -->
+              <!-- ===== ■.■.■.■.■.■.■. 환불 우선순위 ===================================== -->
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
+                <!-- ===== ■.■.■.■.■.■.■.■. 헤더 영역 ===================================== -->
                 <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">환불 처리 우선순위</div>
                 <div style="display:flex;flex-direction:column;gap:6px;">
                   <div v-for="row in REFUND_ORDER_ROWS" :key="row.rank"
@@ -687,7 +694,7 @@ window.HelpBoModal = {
                 </div>
                 <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.7;">* 복수 결제수단 혼용 시 적립금/캐쉬 먼저 복원 후 나머지를 결제수단 역순으로 환불</div>
               </div>
-              <!-- 반품 배송비 -->
+              <!-- ===== ■.■.■.■.■.■.■. 반품 배송비 ====================================== -->
               <div style="border:1px solid #fee2e2;border-radius:8px;padding:14px;background:#fff5f5;">
                 <div style="font-weight:700;color:#ef4444;margin-bottom:10px;font-size:13px;">반품 배송비 부담 기준</div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
@@ -714,12 +721,13 @@ window.HelpBoModal = {
                   </tbody>
                 </table>
               </div>
-              <!-- 쿠폰/할인 환불 처리 -->
+              <!-- ===== ■.■.■.■.■.■.■. 쿠폰/할인 환불 처리 ================================= -->
               <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;">
                 <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">쿠폰/할인 환불 처리 방식</div>
                 <div style="display:flex;flex-direction:column;gap:8px;">
                   <div v-for="row in COUPON_REFUND_ROWS" :key="row.type"
                     style="border:1px solid #a7f3d0;border-radius:6px;padding:10px 12px;background:#fff;">
+                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 헤더 영역 ================================= -->
                     <div style="font-weight:700;font-size:12px;color:#065f46;margin-bottom:4px;">{{ row.type }}</div>
                     <div style="font-size:11px;color:#333;margin-bottom:2px;"><b>규칙:</b> {{ row.rule }}</div>
                     <div style="font-size:11px;color:#555;">{{ row.detail }}</div>
@@ -735,11 +743,12 @@ window.HelpBoModal = {
               </div>
             </div>
           </template>
-          <!-- 서브: 일괄 작업 -->
+          <!-- ===== ■.■.■.■.■. 서브: 일괄 작업 ======================================= -->
           <template v-else-if="orderSubTab==='bulk'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
               <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">일괄 작업 방법</div>
               <div style="font-size:12px;color:#555;line-height:1.9;">
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <div>• 목록 좌측 체크박스로 복수 선택 후 <b>[변경작업 선택]</b> 버튼 클릭</div>
               </div>
             </div>
@@ -760,16 +769,17 @@ window.HelpBoModal = {
             </div>
           </template>
         </template>
-        <!-- 클레임 -->
+        <!-- ===== ■.■.■.■. 클레임 =============================================== -->
         <template v-else-if="activeTab==='claim'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">🔄 클레임 처리</h3>
           <p style="font-size:12px;color:#888;margin:0 0 14px;">취소 / 반품 / 교환 3가지 유형으로 구분</p>
-          <!-- 상태 흐름 요약 -->
+          <!-- ===== ■.■.■.■.■. 상태 흐름 요약 ======================================== -->
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
             <div v-for="ct in CLAIM_TYPES" :key="ct.title"
               style="border:1px solid #e0e0e0;border-radius:8px;padding:12px;background:#fafafa;">
               <div :style="'font-weight:700;color:'+ct.color+';margin-bottom:8px;font-size:13px;'">{{ ct.title }} 상태 흐름</div>
               <div style="display:flex;align-items:center;gap:4px;font-size:11px;flex-wrap:wrap;">
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <template v-for="(s,i) in ct.steps" :key="s">
                   <span :style="'background:'+ct.color+';color:#fff;border-radius:4px;padding:3px 8px;white-space:nowrap;'">{{ s }}</span>
                   <template v-if="i < ct.steps.length-1">
@@ -783,13 +793,14 @@ window.HelpBoModal = {
               </div>
             </div>
           </div>
-          <!-- 상세 정책 -->
+          <!-- ===== ■.■.■.■.■. 상세 정책 =========================================== -->
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div v-for="cd in CLAIM_DETAILS" :key="cd.title"
               :style="'border:1px solid #ddd;border-radius:8px;padding:14px;background:'+cd.bg+';'">
               <div :style="'font-weight:700;color:'+cd.color+';margin-bottom:10px;font-size:13px;'">{{ cd.title }} 상세</div>
-              <!-- 단계별 설명 -->
+              <!-- ===== ■.■.■.■.■.■.■. 단계별 설명 ====================================== -->
               <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <div v-for="sd in cd.stepDetails" :key="sd.step"
                   style="display:flex;gap:10px;align-items:flex-start;font-size:12px;">
                   <span :style="'flex-shrink:0;min-width:68px;display:inline-block;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;color:#fff;background:'+cd.color+';text-align:center;'">
@@ -798,7 +809,7 @@ window.HelpBoModal = {
                   <span style="color:#444;line-height:1.7;">{{ sd.desc }}</span>
                 </div>
               </div>
-              <!-- 정책 요약 -->
+              <!-- ===== ■.■.■.■.■.■.■. 정책 요약 ======================================= -->
               <div style="border-top:1px dashed #ddd;padding-top:8px;font-size:11px;color:#666;line-height:1.9;">
                 <div><b>신청기간:</b> {{ cd.period }}</div>
                 <div><b>환불/완료:</b> {{ cd.refund }}</div>
@@ -806,7 +817,7 @@ window.HelpBoModal = {
               </div>
             </div>
           </div>
-          <!-- 공통 제약사항 -->
+          <!-- ===== ■.■.■.■.■. 공통 제약사항 ========================================= -->
           <div style="margin-top:14px;border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;">
             <div style="font-weight:700;margin-bottom:6px;">공통 제약사항</div>
             <div style="line-height:1.9;">
@@ -817,7 +828,7 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-        <!-- 프로모션 -->
+        <!-- ===== ■.■.■.■. 프로모션 ============================================== -->
         <template v-else-if="activeTab==='promotion'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🎫 프로모션</h3>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
@@ -829,13 +840,14 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-        <!-- 전시관리 -->
+        <!-- ===== ■.■.■.■. 전시관리 ============================================== -->
         <template v-else-if="activeTab==='display'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🖼 전시관리</h3>
           <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:14px;">
             <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">계층 구조</div>
             <div style="display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap;">
               <template v-for="(lv,i) in DISP_LEVELS" :key="lv.l">
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <div style="text-align:center;">
                   <div style="background:#1677ff;color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;">{{ lv.l }}</div>
                   <div style="font-size:10px;color:#666;margin-top:2px;white-space:nowrap;">{{ lv.d }}</div>
@@ -854,7 +866,7 @@ window.HelpBoModal = {
             </div>
           </div>
         </template>
-        <!-- 시스템 -->
+        <!-- ===== ■.■.■.■. 시스템 =============================================== -->
         <template v-else-if="activeTab==='system'">
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🔧 시스템 관리</h3>
           <div style="display:flex;flex-direction:column;gap:10px;">
@@ -866,10 +878,13 @@ window.HelpBoModal = {
           </div>
         </template>
       </div>
-      <!-- /우측 콘텐츠 -->
+      <!-- ===== ■.■.■. /우측 콘텐츠 ============================================= -->
     </div>
-    <!-- /바디 -->
+    <!-- ===== □.□. 바디 ==================================================== -->
+    <!-- ===== ■.■. /바디 =================================================== -->
   </div>
 </bo-modal>
-`,
+
+    <!-- ===== □.□. /바디 =================================================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->`,
 };

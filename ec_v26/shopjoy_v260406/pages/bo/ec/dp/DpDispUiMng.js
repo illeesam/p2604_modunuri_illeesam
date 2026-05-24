@@ -193,6 +193,7 @@ window.DpDispUiMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">
@@ -225,6 +226,8 @@ window.DpDispUiMng = {
       </template>
     </bo-grid>
   </div>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 =================================================== -->
   <div v-if="uiStateDetail.selectedId" class="card" style="margin-top:10px;">
     <dp-disp-ui-dtl
@@ -240,5 +243,6 @@ window.DpDispUiMng = {
       />
   </div>
 </div>
-`
+
+  <!-- ===== □. 상세 패널 =================================================== -->`
 };

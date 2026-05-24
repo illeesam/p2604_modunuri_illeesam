@@ -503,6 +503,7 @@ window.XsSample14 = {
     14. 전시영역 구조 트리 보기
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">영역 &gt; 패널 &gt; 위젯 구조 선택</span>
   </div>
+  <!-- ===== □. 제목 ====================================================== -->
   <!-- ===== ■. 필터 바 ==================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -606,6 +607,8 @@ window.XsSample14 = {
       </span>
     </div>
   </div>
+    <!-- ===== □.□. 현재 사용자 정보 ============================================= -->
+  <!-- ===== □. 필터 바 ==================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
     <!-- ===== ■.■. 좌: 구조 트리 ============================================== -->
@@ -711,6 +714,7 @@ window.XsSample14 = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 좌: 구조 트리 ============================================== -->
     <!-- ===== ■.■. 우: 위젯 컨텐츠 미리보기 (드래그&드롭) =============================== -->
     <div style="flex:6;min-width:280px;max-height:80vh;overflow-y:auto;">
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;margin-bottom:8px;position:sticky;top:0;z-index:10;overflow:hidden;">
@@ -915,6 +919,7 @@ window.XsSample14 = {
                           </div>
                         </div>
                         <div v-else-if="cell.widget.widgetType==='chart_bar'">
+                          <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. 영역 ============================== -->
                           <div style="display:flex;align-items:flex-end;gap:2px;height:50px;border-bottom:1px solid #eee;">
                             <div v-for="(h,ci2) in [55,78,42,88,65,92,70]" :key="ci2" style="flex:1;border-radius:2px 2px 0 0;" :style="'height:'+h+'%;background:linear-gradient(180deg,#667eea,#764ba2);'"></div>
                           </div>
@@ -958,6 +963,7 @@ window.XsSample14 = {
                             <span style="font-size:8px;font-weight:700;color:#555;">팝업</span>
                             <span style="color:#aaa;font-size:11px;">×</span>
                           </div>
+                          <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. 영역 ============================== -->
                           <div style="padding:8px;text-align:center;">
                             <div style="font-size:16px;">💬</div>
                             <div style="font-size:9px;font-weight:700;margin-top:2px;">{{ cell.widget.widgetNm }}</div>
@@ -1000,6 +1006,7 @@ window.XsSample14 = {
                             <div style="font-size:13px;font-weight:800;">+0,000P</div>
                           </div>
                         </div>
+                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 영역 ================================ -->
                         <div v-else-if="cell.widget.widgetType==='widget_embed'" style="border:2px dashed #a0aec0;border-radius:5px;padding:10px;text-align:center;background:#f7fafc;">
                           <div style="font-size:16px;margin-bottom:2px;">🧩</div>
                           <div style="font-size:9px;font-weight:700;color:#4a5568;">{{ cell.widget.widgetNm }}</div>
@@ -1099,6 +1106,7 @@ window.XsSample14 = {
                   </div>
                 </div>
               </div>
+              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <div v-else-if="item.widget.widgetType==='chart_bar'">
                 <div style="display:flex;align-items:flex-end;gap:3px;height:66px;border-bottom:1px solid #eee;">
                   <div v-for="(h,ci) in [55,78,42,88,65,92,70]" :key="ci" style="flex:1;border-radius:3px 3px 0 0;" :style="'height:'+h+'%;background:linear-gradient(180deg,#667eea,#764ba2);'"></div>
@@ -1128,6 +1136,7 @@ window.XsSample14 = {
                 </div>
               </div>
               <div v-else-if="item.widget.widgetType==='text_banner'" style="background:#f8f9fa;border-left:4px solid #667eea;border-radius:0 6px 6px 0;padding:10px 12px;">
+                <!-- ===== ■.■.■.■.■.■.■.■. 헤더 영역 ===================================== -->
                 <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:3px;">{{ item.widget.widgetNm }}</div>
                 <div style="font-size:10px;color:#666;line-height:1.5;">텍스트 배너 컨텐츠</div>
               </div>
@@ -1148,6 +1157,7 @@ window.XsSample14 = {
                   <div style="font-size:11px;font-weight:700;">{{ item.widget.widgetNm }}</div>
                 </div>
               </div>
+              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <div v-else-if="item.widget.widgetType==='file'" style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;">
                 <span style="font-size:24px;">📎</span>
                 <div>
@@ -1190,6 +1200,7 @@ window.XsSample14 = {
                   <div style="font-size:15px;font-weight:800;">+0,000P</div>
                 </div>
               </div>
+              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <div v-else-if="item.widget.widgetType==='widget_embed'" style="border:2px dashed #a0aec0;border-radius:6px;padding:16px;text-align:center;background:#f7fafc;">
                 <div style="font-size:20px;margin-bottom:4px;">🧩</div>
                 <div style="font-size:11px;font-weight:700;color:#4a5568;">{{ item.widget.widgetNm }}</div>
@@ -1215,6 +1226,8 @@ window.XsSample14 = {
       <!-- ===== /dashboard ================================================= -->
     </div>
   </div>
+    <!-- ===== □.□. 우: 위젯 컨텐츠 미리보기 (드래그&드롭) =============================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 위젯 정보 팝오버 backdrop ====================================== -->
   <div v-if="popoverKey" @click="closePopover" style="position:fixed;inset:0;z-index:199;"></div>
   <!-- ===== ■. 위젯 정보 팝오버 =============================================== -->
@@ -1236,6 +1249,7 @@ window.XsSample14 = {
         ×
       </button>
     </div>
+    <!-- ===== □.□. 팝오버 헤더 ================================================ -->
     <!-- ===== ■.■. 메타 정보 ================================================= -->
     <div style="padding:7px 14px;border-bottom:1px solid #f0f0f0;display:flex;flex-direction:column;gap:2px;">
       <div style="font-size:10px;color:#888;">
@@ -1247,6 +1261,7 @@ window.XsSample14 = {
         <span style="color:#333;font-weight:600;">{{ popoverPanel ? popoverPanel.name : '' }}</span>
       </div>
     </div>
+    <!-- ===== □.□. 메타 정보 ================================================= -->
     <!-- ===== ■.■. 컨텐츠 미리보기 ============================================== -->
     <div style="padding:12px 14px;">
       <div v-if="popoverWidget.widgetType==='image_banner'" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:8px;padding:24px 16px;text-align:center;color:#fff;">
@@ -1290,6 +1305,7 @@ window.XsSample14 = {
           </div>
         </div>
       </div>
+      <!-- ===== ■.■.■. 영역 ================================================== -->
       <div v-else-if="popoverWidget.widgetType==='chart_bar'">
         <div style="display:flex;align-items:flex-end;gap:4px;height:80px;border-bottom:1px solid #eee;">
           <div v-for="(h,ci) in [55,78,42,88,65,92,70]" :key="ci" style="flex:1;border-radius:3px 3px 0 0;" :style="'height:'+h+'%;background:linear-gradient(180deg,#667eea,#764ba2);'"></div>
@@ -1319,6 +1335,7 @@ window.XsSample14 = {
         </div>
       </div>
       <div v-else-if="popoverWidget.widgetType==='text_banner'" style="background:#f8f9fa;border-left:4px solid #667eea;border-radius:0 7px 7px 0;padding:12px 14px;">
+        <!-- ===== ■.■.■.■. 헤더 영역 ============================================= -->
         <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:4px;">{{ popoverWidget.widgetNm }}</div>
         <div style="font-size:11px;color:#666;line-height:1.6;">텍스트 배너 컨텐츠가 이 영역에 표시됩니다.</div>
       </div>
@@ -1339,6 +1356,7 @@ window.XsSample14 = {
           <div style="font-size:12px;font-weight:700;color:#333;">{{ popoverWidget.widgetNm }}</div>
         </div>
       </div>
+      <!-- ===== ■.■.■. 영역 ================================================== -->
       <div v-else-if="popoverWidget.widgetType==='file'" style="display:flex;align-items:center;gap:10px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:7px;padding:12px 14px;">
         <span style="font-size:26px;">📎</span>
         <div>
@@ -1381,6 +1399,7 @@ window.XsSample14 = {
           <div style="font-size:18px;font-weight:800;">+0,000P</div>
         </div>
       </div>
+      <!-- ===== ■.■.■. 영역 ================================================== -->
       <div v-else-if="popoverWidget.widgetType==='widget_embed'" style="border:2px dashed #a0aec0;border-radius:7px;padding:20px;text-align:center;background:#f7fafc;">
         <div style="font-size:24px;margin-bottom:6px;">🧩</div>
         <div style="font-size:12px;font-weight:700;color:#4a5568;margin-bottom:2px;">{{ popoverWidget.widgetNm }}</div>
@@ -1392,8 +1411,11 @@ window.XsSample14 = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 컨텐츠 미리보기 ============================================== -->
+  <!-- ===== □. 위젯 정보 팝오버 =============================================== -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
   <category-select-modal :show="showCatModal" :selected-ids="[...selectedCatIds]" @close="showCatModal=false" @apply="onCatApply" />
 </div>
-`,
+
+  <!-- ===== □. 카테고리 선택 모달 ============================================== -->`,
 };

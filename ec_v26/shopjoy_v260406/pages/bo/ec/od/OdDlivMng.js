@@ -482,6 +482,7 @@ window.OdDlivMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
@@ -497,7 +498,7 @@ window.OdDlivMng = {
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
+    <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare selectable :columns="listGridColumns" :rows="deliveries" :pager="pager" row-key="dlivId"
@@ -512,13 +513,16 @@ window.OdDlivMng = {
         </template>
       </bo-grid>
     </div>
-    <!-- /그리드 스크롤 컨테이너 -->
-    <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
+    <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
+    <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
+    <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
       <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
+    <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: DlivDtl 컴포넌트 임베드 ================================= -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -537,6 +541,7 @@ window.OdDlivMng = {
       :on-list-reload="handleSearchData"
       />
   </div>
+  <!-- ===== □. 하단 상세: DlivDtl 컴포넌트 임베드 ================================= -->
   <!-- ===== ■. 변경작업 모달 ================================================= -->
   <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="bulkOpen=false">
     <div style="background:#fff;border-radius:12px;width:480px;max-width:92vw;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;">
@@ -559,13 +564,13 @@ window.OdDlivMng = {
             <option v-for="c in codes.dliv_statuses" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
           </select>
         </div>
-        <!-- 택배사/운송장번호 (BoFormArea 자동 렌더) -->
+        <!-- ===== ■.■.■.■. 택배사/운송장번호 (BoFormArea 자동 렌더) ====================== -->
         <div v-if="uiState.bulkTab==='courier'">
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="bulkCourierFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
         </div>
-        <!-- 결재처리 (BoFormArea 자동 렌더) -->
+        <!-- ===== ■.■.■.■. 결재처리 (BoFormArea 자동 렌더) =========================== -->
         <div v-if="uiState.bulkTab==='approval'">
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="bulkApprovalFormColumns" :form="bulkForm" :errors="{}"
@@ -579,15 +584,15 @@ window.OdDlivMng = {
               <option v-for="m in members" :key="m?.memberId" :value="m.memberId">{{ m.memberNm }} ({{ m.memberId }})</option>
             </select>
           </div>
-          <!-- 전화번호/이메일 (BoFormArea 자동 렌더, readonly) -->
+          <!-- ===== ■.■.■.■.■. 전화번호/이메일 (BoFormArea 자동 렌더, readonly) =========== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="apprContactFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
-          <!-- 요청대상/요청대상명 (BoFormArea 자동 렌더) -->
+          <!-- ===== ■.■.■.■.■. 요청대상/요청대상명 (BoFormArea 자동 렌더) =================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="apprTargetFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
-          <!-- 요청금액/요청사유/전송템플릿 (BoFormArea 자동 렌더) -->
+          <!-- ===== ■.■.■.■.■. 요청금액/요청사유/전송템플릿 (BoFormArea 자동 렌더) ============== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="apprDetailFormColumns" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false">
@@ -611,11 +616,13 @@ window.OdDlivMng = {
       </div>
     </div>
   </div>
-  <!-- 회원 선택 팝업 -->
+  <!-- ===== □. 변경작업 모달 ================================================= -->
+  <!-- ===== ■. 회원 선택 팝업 ================================================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="배송관리"
     subtitle="배송 조회 기준 회원을 선택해주세요"
     @select="onSelectMember" @close="memberPick.open=false" />
 </div>
-`
+
+  <!-- ===== □. 영역 ====================================================== -->`
 };

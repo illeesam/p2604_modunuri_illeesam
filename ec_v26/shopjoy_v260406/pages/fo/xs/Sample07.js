@@ -646,6 +646,7 @@ window.XsSample07 = {
       <input v-model="treeSearch" placeholder="🔍 이름 / URL 검색"
         style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;background:#fff;" />
     </div>
+    <!-- ===== □.□. Header ================================================ -->
     <!-- ===== ■.■. Tree ================================================== -->
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
       <div v-if="!uiState.treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">로딩 중…</div>
@@ -682,6 +683,8 @@ window.XsSample07 = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. Tree ================================================== -->
+  <!-- ===== □. ━━━ 1. Tree Panel (좌측) ━━━ ============================== -->
   <!-- ===== ■. ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ =============================== -->
   <div style="width:172px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f4f5f7;overflow:hidden;">
     <div style="padding:5px 8px 4px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;background:#eeeff2;">
@@ -703,6 +706,7 @@ window.XsSample07 = {
         클릭하세요
       </span>
     </div>
+    <!-- ===== □.□. 탭 없을 때 ================================================ -->
     <!-- ===== ■.■. 탭 목록 ================================================== -->
     <div style="flex:1;overflow-y:auto;">
       <div v-for="tab in openTabs" :key="tab.tabId"
@@ -754,6 +758,8 @@ window.XsSample07 = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 탭 목록 ================================================== -->
+  <!-- ===== □. ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ =============================== -->
   <!-- ===== ■. ━━━ 자동실행 주기 선택 팝업 ━━━ =================================== -->
   <template v-if="autoPopupTabId">
     <!-- ===== ■.■. backdrop ============================================== -->
@@ -826,6 +832,8 @@ window.XsSample07 = {
       </div>
     </div>
   </template>
+    <!-- ===== □.□. popup ================================================= -->
+  <!-- ===== □. ━━━ 자동실행 주기 선택 팝업 ━━━ =================================== -->
   <!-- ===== ■. ━━━ 3. Main Panel (우측) ━━━ ============================== -->
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
     <!-- ===== ■.■. ⚙ Settings Panel ====================================== -->
@@ -884,12 +892,14 @@ window.XsSample07 = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. ⚙ Settings Panel ====================================== -->
     <!-- ===== ■.■. 탭 없을 때 빈 상태 =========================================== -->
     <div v-if="!cfActiveTab" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#ccc;background:#fafafa;">
       <span style="font-size:40px;">🚀</span>
       <div style="font-size:14px;font-weight:600;color:#bbb;">좌측 API Endpoints에서 항목을 선택하세요</div>
       <div style="font-size:11px;color:#ccc;">선택하면 여기에 탭으로 열립니다</div>
     </div>
+    <!-- ===== □.□. 탭 없을 때 빈 상태 =========================================== -->
     <!-- ===== ■.■. 활성 탭 내용 =============================================== -->
     <template v-if="cfActiveTab">
       <!-- ===== ■.■.■. Request Bar ========================================= -->
@@ -999,6 +1009,7 @@ window.XsSample07 = {
         </div>
       </div>
     </template>
+    <!-- ===== □.□. 활성 탭 내용 =============================================== -->
     <!-- ===== ■.■. History =============================================== -->
     <div style="border-top:2px solid #e0e0e0;background:#fafafa;flex-shrink:0;">
       <div style="padding:4px 12px;border-bottom:1px solid #ebebeb;display:flex;align-items:center;justify-content:space-between;">
@@ -1027,6 +1038,7 @@ window.XsSample07 = {
         </fo-grid>
       </div>
     </div>
+    <!-- ===== □.□. History =============================================== -->
     <!-- ===== ■.■. History 상세 모달 ========================================= -->
     <template v-if="histModal">
       <div @click="closeHistModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);"></div>
@@ -1188,6 +1200,8 @@ window.XsSample07 = {
     </template>
   </div>
   <!-- ===== /Main Panel ================================================ -->
+    <!-- ===== □.□. History 상세 모달 ========================================= -->
+  <!-- ===== □. ━━━ 3. Main Panel (우측) ━━━ ============================== -->
   <!-- ===== ■. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->
   <div style="position:fixed;right:16px;bottom:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;">
     <div v-for="t in toasts" :key="t.id"
@@ -1244,5 +1258,6 @@ window.XsSample07 = {
     </div>
   </div>
 </div>
-`,
+
+  <!-- ===== □. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->`,
 };

@@ -169,6 +169,7 @@ window.XsLocalStorage = {
     <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 700; color: #1a1a1a;">localStorage 정보 관리</h1>
     <p style="margin: 0; font-size: 13px; color: #666;">브라우저 로컬 저장소 데이터 조회 및 편집</p>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 검색 및 액션 바 =============================================== -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px; align-items: flex-end;">
@@ -190,6 +191,7 @@ window.XsLocalStorage = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 검색 및 액션 바 =============================================== -->
   <!-- ===== ■. 테이블 ===================================================== -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
     <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: uiState.isResizing ? 'col-resize' : 'auto' }">
@@ -238,6 +240,7 @@ window.XsLocalStorage = {
                 </div>
               </template>
             </td>
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
               <button @click="copyValue(item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
                 복사
@@ -264,5 +267,7 @@ window.XsLocalStorage = {
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 푸터: 항목 수 ============================================== -->
+  <!-- ===== □. 테이블 ===================================================== -->`
 };

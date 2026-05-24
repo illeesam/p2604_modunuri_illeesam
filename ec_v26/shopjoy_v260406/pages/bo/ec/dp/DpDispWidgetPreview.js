@@ -125,7 +125,7 @@ const _WP_DispWidgetPreview = {
 <div style="padding:10px;">
   <!-- ===== ■. 미리보기 ==================================================== -->
 
-  <!-- ===== ■.■. 1) 이미지 배너 ============================================= -->
+  <!-- ===== ■. 1) 이미지 배너 =============================================== -->
   <template v-if="cfType==='image_banner'">
     <div style="border-radius:6px;overflow:hidden;background:#f0f0f0;">
       <img v-if="cfImg" :src="cfImg" style="width:100%;display:block;max-height:130px;object-fit:cover;" @error="$event.target.style.display='none'" />
@@ -135,7 +135,8 @@ const _WP_DispWidgetPreview = {
     <div v-if="cfConfig.alt" style="font-size:10px;color:#888;margin-top:2px;">{{ cfConfig.alt }}</div>
   </template>
 
-  <!-- ===== ■.■. 2) 텍스트 배너 ============================================= -->
+  <!-- ===== □. 1) 이미지 배너 =============================================== -->
+  <!-- ===== ■. 2) 텍스트 배너 =============================================== -->
   <template v-else-if="cfType==='text_banner'">
     <div :style="{background:cfConfig.bg_color||cfConfig.bgColor||'#fff0f4',color:cfConfig.text_color||cfConfig.textColor||'#c0396a',padding:'14px',borderRadius:'6px',border:'1px solid #ffe4ec',fontSize:'13px',fontWeight:600,textAlign:'center'}">
       <span v-if="cfConfig.icon" style="margin-right:6px;">{{ cfConfig.icon }}</span>
@@ -143,7 +144,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 3) 정보 카드 ============================================== -->
+  <!-- ===== □. 2) 텍스트 배너 =============================================== -->
+  <!-- ===== ■. 3) 정보 카드 ================================================ -->
   <template v-else-if="cfType==='info_card'">
     <div style="background:#f0f9ff;border-radius:6px;padding:12px;border:1px solid #bae6fd;display:flex;gap:10px;align-items:flex-start;">
       <span style="font-size:24px;flex-shrink:0;">{{ cfConfig.icon || '📦' }}</span>
@@ -154,23 +156,27 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 4) 텍스트 영역 ============================================= -->
+  <!-- ===== □. 3) 정보 카드 ================================================ -->
+  <!-- ===== ■. 4) 텍스트 영역 =============================================== -->
   <template v-else-if="cfType==='textarea'">
     <div style="font-size:11px;color:#374151;line-height:1.6;white-space:pre-wrap;background:#f9fafb;padding:10px;border-radius:5px;border:1px solid #e5e7eb;max-height:120px;overflow:hidden;">{{ cfConfig.text || cfContent || cfName }}</div>
   </template>
 
-  <!-- ===== ■.■. 5) Markdown =========================================== -->
+  <!-- ===== □. 4) 텍스트 영역 =============================================== -->
+  <!-- ===== ■. 5) Markdown ============================================= -->
   <template v-else-if="cfType==='markdown'">
     <div style="font-size:11px;color:#374151;line-height:1.6;white-space:pre-wrap;font-family:monospace;background:#f3f4f6;padding:10px;border-radius:5px;border:1px solid #d1d5db;max-height:120px;overflow:hidden;">{{ cfConfig.markdown || cfContent || ('## ' + cfName + '\\n- 항목1\\n- 항목2') }}</div>
   </template>
 
-  <!-- ===== ■.■. 6) HTML 에디터 =========================================== -->
+  <!-- ===== □. 5) Markdown ============================================= -->
+  <!-- ===== ■. 6) HTML 에디터 ============================================= -->
   <template v-else-if="cfType==='html_editor'">
     <div v-if="cfContent || cfConfig.html" v-html="cfContent || cfConfig.html" style="font-size:12px;overflow:hidden;max-height:120px;border:1px solid #eee;border-radius:5px;padding:8px;background:#fff;"></div>
     <div v-else style="color:#bbb;font-size:11px;padding:14px;background:#fafafa;border-radius:5px;border:1px dashed #d1d5db;text-align:center;">HTML 콘텐츠 없음</div>
   </template>
 
-  <!-- ===== ■.■. 7) 팝업 ================================================= -->
+  <!-- ===== □. 6) HTML 에디터 ============================================= -->
+  <!-- ===== ■. 7) 팝업 =================================================== -->
   <template v-else-if="cfType==='popup'">
     <div style="border:2px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
       <div style="background:#1e293b;color:#fff;padding:6px 12px;font-size:11px;display:flex;justify-content:space-between;align-items:center;">
@@ -184,7 +190,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 8) 파일 다운로드 ============================================ -->
+  <!-- ===== □. 7) 팝업 =================================================== -->
+  <!-- ===== ■. 8) 파일 다운로드 ============================================== -->
   <template v-else-if="cfType==='file'">
     <div style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;">
       <span style="font-size:24px;">📎</span>
@@ -196,7 +203,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 9) 파일 목록 ============================================== -->
+  <!-- ===== □. 8) 파일 다운로드 ============================================== -->
+  <!-- ===== ■. 9) 파일 목록 ================================================ -->
   <template v-else-if="cfType==='file_list'">
     <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
       <div v-for="(f,i) in (Array.isArray(cfConfig.files) && cfConfig.files.length ? cfConfig.files : [{nm:'카탈로그.pdf'},{nm:'가격표.pdf'},{nm:'사용자매뉴얼.pdf'}])" :key="i"
@@ -207,7 +215,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 10) 동영상 플레이어 ========================================== -->
+  <!-- ===== □. 9) 파일 목록 ================================================ -->
+  <!-- ===== ■. 10) 동영상 플레이어 ============================================ -->
   <template v-else-if="cfType==='video_player'">
     <div style="position:relative;background:#000;border-radius:6px;overflow:hidden;">
       <img v-if="cfImg || cfConfig.poster_url" :src="cfImg || cfConfig.poster_url" style="width:100%;display:block;height:120px;object-fit:cover;opacity:.85;" @error="$event.target.style.display='none'" />
@@ -219,7 +228,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 11~12) 상품 슬라이더 / 그리드 ================================== -->
+  <!-- ===== □. 10) 동영상 플레이어 ============================================ -->
+  <!-- ===== ■. 11~12) 상품 슬라이더 / 그리드 ==================================== -->
   <template v-else-if="cfType==='product_slider' || cfType==='product'">
     <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
       <span>{{ cfType==='product_slider' ? '🛒 슬라이더' : '📦 상품 그리드' }}</span>
@@ -234,7 +244,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 13) 조건상품 ============================================== -->
+  <!-- ===== □. 11~12) 상품 슬라이더 / 그리드 ==================================== -->
+  <!-- ===== ■. 13) 조건상품 ================================================ -->
   <template v-else-if="cfType==='cond_product'">
     <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">🔍 {{ cfConfig.condition || 'BEST_SELLER' }}</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">
@@ -244,7 +255,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 14) 쿠폰 ================================================ -->
+  <!-- ===== □. 13) 조건상품 ================================================ -->
+  <!-- ===== ■. 14) 쿠폰 ================================================== -->
   <template v-else-if="cfType==='coupon'">
     <div style="background:linear-gradient(135deg,#e8587a,#f97316);border-radius:8px;padding:14px;color:#fff;display:flex;align-items:center;gap:12px;">
       <span style="font-size:28px;">🎟</span>
@@ -256,7 +268,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 15) 카운트다운 ============================================= -->
+  <!-- ===== □. 14) 쿠폰 ================================================== -->
+  <!-- ===== ■. 15) 카운트다운 =============================================== -->
   <template v-else-if="cfType==='countdown'">
     <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:8px;padding:12px;color:#fff;text-align:center;">
       <div style="font-size:11px;opacity:.8;margin-bottom:6px;">⏱ {{ cfConfig.label || cfName || '이벤트 종료까지' }}</div>
@@ -269,7 +282,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 16) 막대 차트 ============================================= -->
+  <!-- ===== □. 15) 카운트다운 =============================================== -->
+  <!-- ===== ■. 16) 막대 차트 =============================================== -->
   <template v-else-if="cfType==='chart_bar'">
     <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">📊 {{ cfConfig.title || cfName }}</div>
     <div style="display:flex;align-items:flex-end;gap:3px;height:80px;background:#fafafa;border-radius:5px;padding:8px;">
@@ -280,7 +294,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 17) 라인 차트 ============================================= -->
+  <!-- ===== □. 16) 막대 차트 =============================================== -->
+  <!-- ===== ■. 17) 라인 차트 =============================================== -->
   <template v-else-if="cfType==='chart_line'">
     <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">📈 {{ cfConfig.title || cfName }}</div>
     <div style="position:relative;height:80px;background:#fafafa;border-radius:5px;padding:8px;">
@@ -293,7 +308,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 18) 파이 차트 ============================================= -->
+  <!-- ===== □. 17) 라인 차트 =============================================== -->
+  <!-- ===== ■. 18) 파이 차트 =============================================== -->
   <template v-else-if="cfType==='chart_pie'">
     <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:6px;">🥧 {{ cfConfig.title || cfName }}</div>
     <div style="display:flex;align-items:center;gap:10px;">
@@ -308,7 +324,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 19) 바코드 =============================================== -->
+  <!-- ===== □. 18) 파이 차트 =============================================== -->
+  <!-- ===== ■. 19) 바코드 ================================================= -->
   <template v-else-if="cfType==='barcode'">
     <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:14px;text-align:center;">
       <div style="font-family:monospace;font-size:36px;letter-spacing:-2px;color:#000;line-height:1;font-weight:900;">||‖|‖‖|||‖|‖|||‖||‖|||</div>
@@ -316,7 +333,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 20) QR 코드 ============================================= -->
+  <!-- ===== □. 19) 바코드 ================================================= -->
+  <!-- ===== ■. 20) QR 코드 =============================================== -->
   <template v-else-if="cfType==='qrcode'">
     <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:12px;text-align:center;">
       <div style="display:inline-block;padding:6px;background:#fff;border:2px solid #000;font-family:monospace;font-size:7px;line-height:0.9;color:#000;font-weight:900;letter-spacing:0;white-space:pre;">{{
@@ -326,7 +344,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 21) 바코드 + QR ========================================== -->
+  <!-- ===== □. 20) QR 코드 =============================================== -->
+  <!-- ===== ■. 21) 바코드 + QR ============================================ -->
   <template v-else-if="cfType==='barcode_qrcode'">
     <div style="display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #ddd;border-radius:6px;padding:10px;">
       <div style="flex:1;text-align:center;">
@@ -337,7 +356,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 22) 결제위젯 ============================================== -->
+  <!-- ===== □. 21) 바코드 + QR ============================================ -->
+  <!-- ===== ■. 22) 결제위젯 ================================================ -->
   <template v-else-if="cfType==='payment_widget'">
     <div style="background:linear-gradient(135deg,#3b82f6,#1e40af);border-radius:8px;padding:14px;color:#fff;">
       <div style="font-size:10px;opacity:.8;">💳 결제 금액</div>
@@ -348,7 +368,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 23) 전자결재 ============================================== -->
+  <!-- ===== □. 22) 결제위젯 ================================================ -->
+  <!-- ===== ■. 23) 전자결재 ================================================ -->
   <template v-else-if="cfType==='approval_widget'">
     <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;">
       <div style="font-size:11px;font-weight:700;color:#222;margin-bottom:8px;">✅ {{ cfName || '전자결재' }}</div>
@@ -361,7 +382,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 
-  <!-- ===== ■.■. 기타 ==================================================== -->
+  <!-- ===== □. 23) 전자결재 ================================================ -->
+  <!-- ===== ■. 기타 ====================================================== -->
   <template v-else>
     <div style="background:#f5f5f5;border-radius:6px;padding:16px;text-align:center;color:#9ca3af;">
       <div style="font-size:24px;margin-bottom:4px;">▪</div>
@@ -370,7 +392,8 @@ const _WP_DispWidgetPreview = {
     </div>
   </template>
 </div>
-  `,
+  
+  <!-- ===== □. 기타 ====================================================== -->`,
 };
 
 /* -- 메인 컴포넌트 -- */
@@ -874,7 +897,8 @@ window.DpDispWidgetPreview = {
     </span>
   </div>
 
-  <!-- ===== ■.■. 조회 조건 ================================================= -->
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
+  <!-- ===== ■. 조회 조건 =================================================== -->
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:5px;">
@@ -904,6 +928,7 @@ window.DpDispWidgetPreview = {
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
           <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">{{ t.codeLabel }}</option>
         </select>
@@ -927,10 +952,11 @@ window.DpDispWidgetPreview = {
     </div>
   </div>
 
-  <!-- ===== ■.■. 2단 레이아웃 =============================================== -->
+  <!-- ===== □. 조회 조건 =================================================== -->
+  <!-- ===== ■. 2단 레이아웃 ================================================= -->
   <div style="display:flex;gap:12px;height:calc(100vh - 240px);min-height:500px;align-items:stretch;">
 
-    <!-- ===== ■.■.■. 왼쪽: 트리 (카드) ========================================= -->
+    <!-- ===== ■.■. 왼쪽: 트리 (카드) =========================================== -->
     <div class="card" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;padding:0;overflow:hidden;">
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
         <span>표시경로</span>
@@ -987,6 +1013,7 @@ window.DpDispWidgetPreview = {
                 <span>{{ sub.label }}</span>
                 <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 5px;">{{ sub.libs.length }}</span>
               </div>
+              <!-- ===== ■.■.■.■.■.■.■. 조건부 영역 ====================================== -->
               <template v-if="isOpen(node.label+'_'+sub.label)">
                 <div v-for="lib in sub.libs" :key="lib.widgetLibId || lib.libId"
                   draggable="true"
@@ -1009,10 +1036,11 @@ window.DpDispWidgetPreview = {
       </div>
     </div>
 
-    <!-- ===== ■.■.■. 오른쪽 (카드) ============================================ -->
+    <!-- ===== □.□. 왼쪽: 트리 (카드) =========================================== -->
+    <!-- ===== ■.■. 오른쪽 (카드) ============================================== -->
     <div class="card" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f0f2f5;min-width:0;padding:0;">
 
-      <!-- ===== ■.■.■.■. 탭바 + 뷰포트 토글 + 배치수 ================================= -->
+      <!-- ===== ■.■.■. 탭바 + 뷰포트 토글 + 배치수 =================================== -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">
           <button v-for="tab in GRID_TABS" :key="tab?.id" @click="gridState.previewGrid=tab.id"
@@ -1046,7 +1074,7 @@ window.DpDispWidgetPreview = {
         </div>
       </div>
 
-      <!-- ===== ■.■.■.■. 그리드 캔버스 (grid1~4) ================================= -->
+      <!-- ===== ■.■.■. 그리드 캔버스 (grid1~4) =================================== -->
       <div v-if="gridState.previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
         <!-- ===== ■.■.■.■. 뷰포트 래퍼 ============================================ -->
         <div :style="{
@@ -1088,20 +1116,20 @@ window.DpDispWidgetPreview = {
                   slot && (slot.rowSpan||1) > 1 ? { gridRow:    'span ' + slot.rowSpan } : {},
                 ]">
 
-                <!-- ===== ■.■.■.■.■.■.■.■.■. 비어있음 ==================================== -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 비어있음 ====================================== -->
                 <div v-if="!slot && dragState.dragOverIdx!==idx"
                   style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
                   <span style="font-size:20px;">+</span>
                   <span style="font-size:11px;">드래그하여 추가</span>
                 </div>
 
-                <!-- ===== ■.■.■.■.■.■.■.■.■. 드롭 오버 =================================== -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 드롭 오버 ===================================== -->
                 <div v-else-if="!slot && dragState.dragOverIdx===idx"
                   style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
                   ▼ 여기에 추가
                 </div>
 
-                <!-- ===== ■.■.■.■.■.■.■.■.■. 배치됨 ===================================== -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 배치됨 ======================================= -->
                 <template v-else-if="slot">
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 슬롯 헤더 (실제컨텐츠 OFF) ======================= -->
                   <div v-if="!gridState.showRealContent" style="display:flex;align-items:center;gap:5px;padding:6px 10px 5px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
@@ -1117,7 +1145,7 @@ window.DpDispWidgetPreview = {
                       style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
                   </div>
 
-                  <!-- ===== ■.■.■.■.■.■.■.■.■.■. span 설정 레이어 팝업 ======================== -->
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. span 설정 레이어 팝업 ========================== -->
                   <div v-if="gridState.spanPopupIdx===idx" @click.stop
                     style="position:absolute;top:36px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 닫기 ==================================== -->
@@ -1166,7 +1194,7 @@ window.DpDispWidgetPreview = {
         </div><!-- ===== /viewport wrapper ===== -->
       </div><!-- ===== /grid canvas ===== -->
 
-      <!-- ===== ■.■.■.■. 대시보드 캔버스 (자유 배치) ================================== -->
+      <!-- ===== ■.■.■. 대시보드 캔버스 (자유 배치) ==================================== -->
       <div v-else style="flex:1;overflow:auto;padding:16px;">
         <div
           ref="dashCanvas"
@@ -1176,7 +1204,7 @@ window.DpDispWidgetPreview = {
           style="position:relative;min-height:560px;min-width:600px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
           :style="gridState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
 
-          <!-- ===== ■.■.■.■.■.■. 빈 상태 ========================================== -->
+          <!-- ===== ■.■.■.■.■. 빈 상태 ============================================ -->
           <div v-if="!dashItems.length && !gridState.dashDragOver"
             style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
             <span style="font-size:48px;">🧩</span>
@@ -1187,7 +1215,7 @@ window.DpDispWidgetPreview = {
             ▼ 여기에 배치
           </div>
 
-          <!-- ===== ■.■.■.■.■.■. 배치된 아이템 ======================================= -->
+          <!-- ===== ■.■.■.■.■. 배치된 아이템 ========================================= -->
           <div v-for="item in dashItems" :key="item?.id"
             :style="{
               position:'absolute',
@@ -1203,7 +1231,7 @@ window.DpDispWidgetPreview = {
               zIndex: 1,
             }">
 
-            <!-- ===== ■.■.■.■.■.■.■. 이동 핸들 헤더 ==================================== -->
+            <!-- ===== ■.■.■.■.■.■. 이동 핸들 헤더 ====================================== -->
             <div
               @mousedown="startItemMove($event, item)"
               style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;border-radius:8px 8px 0 0;cursor:move;">
@@ -1215,19 +1243,19 @@ window.DpDispWidgetPreview = {
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">✕</button>
             </div>
 
-            <!-- ===== ■.■.■.■.■.■.■. 위젯미리보기 ====================================== -->
+            <!-- ===== ■.■.■.■.■.■. 위젯미리보기 ======================================== -->
             <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
               <widget-preview :lib="item.lib" />
             </div>
 
-            <!-- ===== ■.■.■.■.■.■.■. 크기 조절 핸들 ==================================== -->
+            <!-- ===== ■.■.■.■.■.■. 크기 조절 핸들 ====================================== -->
             <div
               @mousedown="startItemResize($event, item)"
               style="position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:se-resize;border-radius:0 0 8px 0;overflow:hidden;">
               <div style="width:0;height:0;border-style:solid;border-width:0 0 18px 18px;border-color:transparent transparent #d1d5db transparent;position:absolute;right:0;bottom:0;"></div>
             </div>
 
-            <!-- ===== ■.■.■.■.■.■.■. 크기 표시 ======================================= -->
+            <!-- ===== ■.■.■.■.■.■. 크기 표시 ========================================= -->
             <div style="position:absolute;right:22px;bottom:3px;font-size:9px;color:#c4c4c4;pointer-events:none;user-select:none;">
               {{ Math.round(item.w) }}×{{ Math.round(item.h) }}
             </div>
@@ -1239,7 +1267,9 @@ window.DpDispWidgetPreview = {
     </div><!-- ===== /오른쪽 ===== -->
   </div><!-- ===== /2단 ===== -->
 </div>
-  `,
+  
+    <!-- ===== □.□. 오른쪽 (카드) ============================================== -->
+  <!-- ===== □. 2단 레이아웃 ================================================= -->`,
   components: {
     WidgetPreview: _WP_DispWidgetPreview,
   },

@@ -588,6 +588,8 @@ window.SyVendorUserMng = {
     <bo-search-area :columns="baseSearchColumns" :param="uiState"
       :loading="uiState.loading" @search="onSearch" @reset="onReset" />
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 업체 검색 =================================================== -->
   <!-- ===== ■. 업체 목록 =================================================== -->
   <bo-grid
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
@@ -600,6 +602,7 @@ window.SyVendorUserMng = {
       </button>
     </template>
   </bo-grid>
+  <!-- ===== □. 업체 목록 =================================================== -->
   <!-- ===== ■. 사용자 목록 ================================================== -->
   <bo-grid v-if="uiState.searchVendorId != null" style="margin-top:16px;"
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
@@ -613,6 +616,7 @@ window.SyVendorUserMng = {
       <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
     </template>
   </bo-grid>
+  <!-- ===== □. 사용자 목록 ================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.</div>
   <!-- ===== ■. 인라인 폼 =================================================== -->
@@ -629,12 +633,13 @@ window.SyVendorUserMng = {
         <button class="btn btn-primary btn-sm" @click="handleSaveForm">저장</button>
       </div>
     </div>
-    <!-- 업체사용자 상세 폼 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
     <div style="padding:16px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
         :cols="4" :show-actions="false" />
     </div>
+    <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
     <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->
     <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
       <div class="toolbar" style="margin-bottom:8px;">
@@ -653,10 +658,13 @@ window.SyVendorUserMng = {
   </div>
 </div>
 </div>
+    <!-- ===== □.□. 역할 목록 (수정 모드에서만) ====================================== -->
+  <!-- ===== □. 인라인 폼 =================================================== -->
 <!-- ===== ■. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
 <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
   :confirm-disabled="!uiState.roleModalTemp"
   @close="closeRoleModal" @confirm="confirmRoleModal">
+<!-- ===== □. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #header-extra>
     <span v-if="cfFormAllowedRootCode"
@@ -664,6 +672,7 @@ window.SyVendorUserMng = {
       {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
     </span>
   </template>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #tree>
     <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">📂 역할 트리</div>
@@ -695,6 +704,7 @@ window.SyVendorUserMng = {
       </div>
     </template>
   </template>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #perm>
     <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">
@@ -730,6 +740,8 @@ window.SyVendorUserMng = {
       </tbody>
     </table>
   </template>
+    <!-- ===== □.□. 테이블 =================================================== -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #footer-extra>
     <span style="font-size:11px;color:#6b7280;">
@@ -739,5 +751,6 @@ window.SyVendorUserMng = {
   </template>
 </bo-role-select-modal>
 </div>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

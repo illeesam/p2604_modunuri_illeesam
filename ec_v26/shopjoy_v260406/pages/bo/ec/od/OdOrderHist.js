@@ -126,6 +126,7 @@ window.OdOrderHist = {
     <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
     이력정보
   </div>
+  <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -143,6 +144,7 @@ window.OdOrderHist = {
       </button>
     </div>
   </div>
+  <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 구성 상품 ================================================= -->
@@ -156,6 +158,7 @@ window.OdOrderHist = {
         </template>
       </bo-grid>
     </div>
+    <!-- ===== □.□. 구성 상품 ================================================= -->
     <!-- ===== ■.■. 배송 이력 ================================================= -->
     <div class="card" v-show="showTab('dliv')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
@@ -179,6 +182,7 @@ window.OdOrderHist = {
       </template>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
     </div>
+    <!-- ===== □.□. 배송 이력 ================================================= -->
     <!-- ===== ■.■. 연관 클레임 ================================================ -->
     <div class="card" v-show="showTab('claims')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
@@ -192,5 +196,7 @@ window.OdOrderHist = {
     </div>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 연관 클레임 ================================================ -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->`,
 };

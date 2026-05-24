@@ -221,6 +221,7 @@ window.PmEventMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
@@ -260,6 +261,7 @@ window.PmEventMng = {
         </div>
       </template>
     </bo-grid>
+    <!-- ===== □.□. 리스트 뷰 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="events.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
@@ -295,6 +297,8 @@ window.PmEventMng = {
     </div>
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
+    <!-- ===== □.□. 카드 뷰 ================================================== -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: EventDtl 임베드 ===================================== -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -314,5 +318,6 @@ window.PmEventMng = {
       />
   </div>
 </div>
-`
+
+  <!-- ===== □. 하단 상세: EventDtl 임베드 ===================================== -->`
 };

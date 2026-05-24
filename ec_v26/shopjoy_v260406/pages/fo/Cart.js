@@ -167,12 +167,14 @@ window.Cart = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 빈 장바구니 ================================================== -->
   <div v-if="cart.length===0" style="text-align:center;padding:80px 20px;">
     <div style="font-size:4rem;margin-bottom:20px;">🛒</div>
     <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">장바구니가 비어 있어요</p>
     <button class="btn-blue" @click="navigate('prodList')" style="padding:12px 28px;">쇼핑하러 가기</button>
   </div>
+  <!-- ===== □. 빈 장바구니 ================================================== -->
   <!-- ===== ■. 장바구니 목록 ================================================= -->
   <template v-else>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);align-items:start;" class="order-grid">
@@ -293,5 +295,6 @@ window.Cart = {
     </div>
   </template>
 </div>
-`,
+
+  <!-- ===== □. 장바구니 목록 ================================================= -->`,
 };

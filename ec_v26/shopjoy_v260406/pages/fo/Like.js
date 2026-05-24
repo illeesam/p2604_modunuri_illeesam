@@ -59,6 +59,7 @@ window.Like = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 상품 목록 =================================================== -->
   <div v-if="cfLikedProds.length" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:20px;">
     <div v-for="p in cfLikedProds" :key="p.prodId"
@@ -87,6 +88,7 @@ window.Like = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 상품 목록 =================================================== -->
   <!-- ===== ■. 빈 상태 ==================================================== -->
   <div v-else style="text-align:center;padding:clamp(40px,8vw,80px) 0;">
     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="margin-bottom:16px;">
@@ -96,5 +98,6 @@ window.Like = {
     <button class="btn-outline" @click="navigate('prodList')" style="padding:10px 24px;">상품 둘러보기</button>
   </div>
 </div>
-`
+
+  <!-- ===== □. 빈 상태 ==================================================== -->`
 };

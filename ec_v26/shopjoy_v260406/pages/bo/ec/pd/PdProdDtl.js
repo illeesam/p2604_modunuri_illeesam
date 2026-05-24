@@ -1348,6 +1348,7 @@ window.PdProdDtl = {
       👁 미리보기
     </button>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭바 ====================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -1382,6 +1383,7 @@ window.PdProdDtl = {
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
+  <!-- ===== □. 탭바 ====================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ══════════════════════════════════════
@@ -1389,11 +1391,11 @@ window.PdProdDtl = {
   ══════════════════════════════════════ -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <!-- 상품명 / 상품코드 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 상품명 / 상품코드 (BoFormArea 자동 렌더) ======================= -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="prodNameFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false" />
-      <!-- 카테고리 / 브랜드 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 카테고리 / 브랜드 (BoFormArea 자동 렌더) ======================= -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="categoryBrandFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
@@ -1432,7 +1434,7 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
       <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
         @select="addCategory" @close="catPickerOpen=false" />
-      <!-- 업체 / 상품유형 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 업체 / 상품유형 (BoFormArea 자동 렌더) ======================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="vendorTypeFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
@@ -1443,7 +1445,7 @@ window.PdProdDtl = {
           </select>
         </template>
       </bo-form-area>
-      <!-- 담당MD / 배송템플릿 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 담당MD / 배송템플릿 (BoFormArea 자동 렌더) ===================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="mdDlivFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
@@ -1504,11 +1506,11 @@ window.PdProdDtl = {
           </div>
         </div>
       </teleport>
-      <!-- 상태 / 미판매메시지 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 상태 / 미판매메시지 (BoFormArea 자동 렌더) ====================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="prodStatusFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false" />
-      <!-- 판매기간 (BoFormArea 자동 렌더, BoDateTimePicker slot) -->
+      <!-- ===== ■.■.■. 판매기간 (BoFormArea 자동 렌더, BoDateTimePicker slot) ====== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="salePeriodFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
@@ -1519,7 +1521,7 @@ window.PdProdDtl = {
           <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
         </template>
       </bo-form-area>
-      <!-- 무게 / 사이즈 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 무게 / 사이즈 (BoFormArea 자동 렌더) ========================= -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="prodSizeFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false" />
@@ -1666,7 +1668,7 @@ window.PdProdDtl = {
             </div>
             <button class="btn btn-xs btn-secondary" @click="addOptItem(grp)" style="flex-shrink:0;">+ 값 추가</button>
           </div>
-          <!-- 옵션 값 스크롤 컨테이너 — 1단=5행, 2단=10행 정도 보이고 그 이상은 세로 스크롤 -->
+          <!-- ===== ■.■.■.■.■. 옵션 값 스크롤 컨테이너 — 1단=5행, 2단=10행 정도 보이고 그 이상은 세로 스크롤 ===== -->
           <div :style="'max-height:'+(grp.level===1?'200px':'340px')+';overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;margin-bottom:6px;background:#fff;'">
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -1766,7 +1768,7 @@ window.PdProdDtl = {
               </tbody>
             </table>
           </div>
-          <!-- /옵션 값 스크롤 컨테이너 -->
+          <!-- ===== ■.■.■.■.■. /옵션 값 스크롤 컨테이너 ================================== -->
         </div>
       </template>
       <div style="padding:10px 14px;background:#e6f4ff;border-radius:8px;border:1px solid #bae0ff;font-size:12px;color:#0958d9;margin-top:8px;">
@@ -1920,7 +1922,7 @@ window.PdProdDtl = {
         <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
         <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">{{ (form.advrtStmt||'').length }} / 500</div>
       </div>
-      <!-- 광고 노출 기간 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 광고 노출 기간 (BoFormArea 자동 렌더) ========================= -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="advrtPeriodFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
@@ -1931,7 +1933,7 @@ window.PdProdDtl = {
           <bo-date-time-picker v-model="form.advrtEndDate" />
         </template>
       </bo-form-area>
-      <!-- 구매 제한 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 구매 제한 (BoFormArea 자동 렌더) ============================ -->
       <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
         구매 제한
         <span style="color:#aaa;font-size:11px;font-weight:400;">(NULL = 무제한)</span>
@@ -1978,7 +1980,7 @@ window.PdProdDtl = {
         @click="triggerFileInput">
         클릭하거나 파일을 끌어다 놓으세요
       </div>
-      <!-- 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) -->
+      <!-- ===== ■.■.■. 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) ===== -->
       <div v-if="images.length>0" style="max-height:620px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:10px;padding:8px;background:#fafafa;">
         <div v-for="(img, idx) in images" :key="img?.id"
           draggable="true"
@@ -2044,7 +2046,7 @@ window.PdProdDtl = {
           </div>
         </div>
       </div>
-      <!-- /이미지 스크롤 컨테이너 -->
+      <!-- ===== ■.■.■. /이미지 스크롤 컨테이너 ======================================= -->
       <div class="form-actions" v-if="!cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleSave">
           저장
@@ -2160,7 +2162,7 @@ window.PdProdDtl = {
   ══════════════════════════════════════ -->
     <div class="card" v-show="showTab('price')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
-      <!-- 기본 가격 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 기본 가격 (BoFormArea 자동 렌더) ============================ -->
       <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
         기본 가격
         <span style="font-weight:400;font-size:11px;color:#888;">(pd_prod)</span>
@@ -2168,7 +2170,7 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
-        <!-- 마진율 (purchasePrice 입력 시 자동 계산) -->
+        <!-- ===== ■.■.■.■. 마진율 (purchasePrice 입력 시 자동 계산) ==================== -->
         <template #marginRate>
           <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
             {{ cfMarginRateCalc ? cfMarginRateCalc + '%' : '(매입가 입력 시 자동 계산)' }}
@@ -2318,6 +2320,7 @@ window.PdProdDtl = {
                     ▼
                   </button>
                 </td>
+                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <td style="padding:2px 6px;"><span class="badge badge-gray" style="font-size:11px;">{{ sku._nm1 }}</span></td>
                 <td v-if="optGroups.length>1" style="padding:2px 6px;">
                   <span class="badge badge-blue" style="font-size:11px;">{{ sku._nm2 }}</span>
@@ -2350,6 +2353,7 @@ window.PdProdDtl = {
                   <input type="checkbox" :checked="sku.useYn==='Y'" @change="sku.useYn=$event.target.checked?'Y':'N'" style="width:14px;height:14px;" />
                 </td>
               </tr>
+              <!-- ===== ■.■.■.■.■.■.■. 조건부 영역 ====================================== -->
               <tr v-if="skus.length===0">
                 <td :colspan="optGroups.length>1?11:10" style="text-align:center;color:#bbb;padding:16px;font-size:12px;">
                   옵션설정 탭에서 옵션 값 입력 후 [🔄 SKU 재생성]을 눌러주세요.
@@ -2365,6 +2369,7 @@ window.PdProdDtl = {
           </table>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#888;margin-bottom:16px;">
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <span>
             총
             <strong style="color:#333;">{{ cfSkusFiltered.length }}</strong>
@@ -2387,7 +2392,7 @@ window.PdProdDtl = {
           단일 재고
           <span style="font-weight:400;font-size:11px;color:#888;">(옵션 미사용 — pd_prod.prod_stock)</span>
         </div>
-        <!-- 재고수량 (BoFormArea 자동 렌더) -->
+        <!-- ===== ■.■.■.■. 재고수량 (BoFormArea 자동 렌더) =========================== -->
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="2" :show-actions="false" />
@@ -2429,11 +2434,13 @@ window.PdProdDtl = {
     </div>
   </div>
   <!-- ===== /dtl-tab-grid ============================================== -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
   <!-- ===== ■. 이력 ====================================================== -->
   <div v-if="!cfIsNew" style="margin-top:20px;">
     <pd-prod-hist :prod-id="dtlId" :navigate="navigate" :show-ref-modal="showRefModal" />
   </div>
-  <!-- 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) -->
+  <!-- ===== □. 이력 ====================================================== -->
+  <!-- ===== ■. 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) ===== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <bo-code-grp-modal
     :show="codeGrpModal.show"
@@ -2441,5 +2448,6 @@ window.PdProdDtl = {
     :title="codeGrpModal.title"
     @close="codeGrpModal.show=false" />
 </div>
-`
+
+  <!-- ===== □. 영역 ====================================================== -->`
 };

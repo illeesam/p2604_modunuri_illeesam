@@ -236,6 +236,7 @@ window.BlogView = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 좌: 본문 영역 ============================================== -->
     <!-- ===== ■.■. 우: 사이드바 =============================================== -->
     <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:clamp(16px,2.5vw,32px);">
       <!-- ===== ■.■.■. 검색 ================================================== -->
@@ -317,6 +318,8 @@ window.BlogView = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 우: 사이드바 =============================================== -->
+  <!-- ===== □. ══ 2컬럼 레이아웃 ══ ========================================== -->
   <!-- ===== ■. ══ 하단: You Might Also Like ══ =========================== -->
   <div v-if="cfRelatedPosts.length" style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);">
     <h2 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-bottom:28px;text-align:center;">You Might Also Like</h2>
@@ -339,5 +342,6 @@ window.BlogView = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. ══ 하단: You Might Also Like ══ =========================== -->`
 };

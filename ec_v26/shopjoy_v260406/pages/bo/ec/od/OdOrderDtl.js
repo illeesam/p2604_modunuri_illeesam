@@ -425,6 +425,7 @@ window.OdOrderDtl = {
     {{ cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.orderId }}</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 ======================================================= -->
   <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
@@ -467,6 +468,7 @@ window.OdOrderDtl = {
       </button>
     </div>
   </div>
+  <!-- ===== □. 탭 ======================================================= -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <div v-if="cfIsNew || showTab('info')" class="card">
@@ -565,7 +567,7 @@ window.OdOrderDtl = {
           </template>
         </div>
       </div>
-      <!-- 기본정보 폼 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2"
@@ -573,7 +575,7 @@ window.OdOrderDtl = {
         @cancel="navigate('odOrderMng')"
         @edit="navigate('__switchToEdit__')"
         @close="navigate('odOrderMng')">
-        <!-- 회원ID + 보기 -->
+        <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
             <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
@@ -581,7 +583,7 @@ window.OdOrderDtl = {
           </div>
           <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
         </template>
-        <!-- 판매업체 표시 -->
+        <!-- ===== ■.■.■.■. 판매업체 표시 =========================================== -->
         <template #vendor>
           <div v-if="cfRelatedVendor" style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:13px;font-weight:700;color:#222;">{{ cfRelatedVendor.vendorNm }}</span>
@@ -590,7 +592,7 @@ window.OdOrderDtl = {
           </div>
           <div v-else style="font-size:12px;color:#bbb;">-</div>
         </template>
-        <!-- 메모: Quill 또는 view 모드 HTML -->
+        <!-- ===== ■.■.■.■. 메모: Quill 또는 view 모드 HTML ========================= -->
         <template #memo>
           <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
           <base-html-editor v-else v-model="form.memo" height="180px" />
@@ -648,12 +650,14 @@ window.OdOrderDtl = {
         </template>
       </bo-grid>
     </div>
+    <!-- ===== □.□. 주문항목목록 탭 ============================================== -->
     <!-- ===== ■.■. 결제정보 탭 ================================================ -->
     <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다."></bo-grid>
     </div>
+    <!-- ===== □.□. 결제정보 탭 ================================================ -->
     <!-- ===== ■.■. 상태변경이력 탭 ============================================== -->
     <div v-if="!cfIsNew && showTab('hist')" class="card">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">
@@ -662,6 +666,7 @@ window.OdOrderDtl = {
       </div>
       <od-order-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" :show-toast="showToast" />
     </div>
+    <!-- ===== □.□. 상태변경이력 탭 ============================================== -->
     <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->
     <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
@@ -670,5 +675,7 @@ window.OdOrderDtl = {
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->`
 };

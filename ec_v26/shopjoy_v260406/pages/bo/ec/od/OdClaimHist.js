@@ -139,6 +139,7 @@ window.OdClaimHist = {
     <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
     이력정보
   </div>
+  <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -153,6 +154,7 @@ window.OdClaimHist = {
       </button>
     </div>
   </div>
+  <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 클레임 항목 ================================================ -->
@@ -192,6 +194,7 @@ window.OdClaimHist = {
               <th style="border:1px solid #e0e0e0;padding:6px 10px;background:#f0f9ff;color:#1677ff;font-weight:600;white-space:nowrap;width:60px;">
                 수량
               </th>
+              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <th style="border:1px solid #e0e0e0;padding:6px 10px;background:#f0f9ff;color:#1677ff;font-weight:600;white-space:nowrap;width:90px;">
                 금액
               </th>
@@ -218,6 +221,7 @@ window.OdClaimHist = {
               </th>
             </tr>
           </thead>
+          <!-- ===== ■.■.■.■.■. 테이블 본문 ========================================== -->
           <tbody>
             <tr v-for="(item, idx) in claimItems" :key="item?._id">
               <td style="border:1px solid #e0e0e0;padding:6px;text-align:center;color:#aaa;">{{ idx + 1 }}</td>
@@ -247,6 +251,7 @@ window.OdClaimHist = {
                   <option v-for="s in cfStatusOptions" :key="Math.random()">{{ s }}</option>
                 </select>
               </td>
+              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <td style="border:1px solid #e0e0e0;padding:4px 6px;background:#fff5fb;">
                 <input class="form-control" v-model="item.afMemo" style="font-size:12px;background:transparent;border-color:#ffadd2;" />
               </td>
@@ -265,7 +270,8 @@ window.OdClaimHist = {
       </div>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">클레임 항목이 없습니다.</div>
     </div>
-    <!-- 처리 정보 (BoFormArea 자동 렌더) -->
+    <!-- ===== □.□. 클레임 항목 ================================================ -->
+    <!-- ===== ■.■. 처리 정보 (BoFormArea 자동 렌더) ============================== -->
     <div class="card" v-show="showTab('process')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 처리 정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
@@ -275,6 +281,7 @@ window.OdClaimHist = {
         <button class="btn btn-primary" @click="handleSaveProcess">저장</button>
       </div>
     </div>
+    <!-- ===== □.□. 처리 정보 (BoFormArea 자동 렌더) ============================== -->
     <!-- ===== ■.■. 연관 주문 ================================================= -->
     <div class="card" v-show="showTab('order')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span></div>
@@ -309,6 +316,7 @@ window.OdClaimHist = {
             <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:relatedOrder.orderId})">주문 수정</button>
           </div>
         </div>
+        <!-- ===== ■.■.■.■. 조건부 영역 ============================================ -->
         <template v-if="relatedDliv">
           <div style="padding:12px 14px;background:#f0f7ff;border-radius:8px;border:1px solid #bae0ff;font-size:13px;">
             <div style="font-weight:600;color:#1677ff;margin-bottom:6px;">배송 정보</div>
@@ -337,5 +345,7 @@ window.OdClaimHist = {
     </div>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 연관 주문 ================================================= -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->`,
 };

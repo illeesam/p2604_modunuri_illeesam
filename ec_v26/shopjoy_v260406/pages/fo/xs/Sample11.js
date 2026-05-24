@@ -167,6 +167,7 @@ window.XsSample11 = {
     11. 전시영역 미리보기
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">화면영역별 활성 패널 목록</span>
   </div>
+  <!-- ===== □. 제목 ====================================================== -->
   <!-- ===== ■. 필터 바 ==================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -300,6 +301,7 @@ window.XsSample11 = {
         총 {{ cfTotalPanels }}개 패널
       </span>
     </div>
+    <!-- ===== □.□. 조회 조건 요약 ============================================== -->
     <!-- ===== ■.■. 현재 사용자 정보 ============================================= -->
     <div style="margin-top:8px;padding:7px 12px;background:#f8f9fa;border-radius:6px;border-left:3px solid #aaa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
@@ -317,6 +319,8 @@ window.XsSample11 = {
       </span>
     </div>
   </div>
+    <!-- ===== □.□. 현재 사용자 정보 ============================================= -->
+  <!-- ===== □. 필터 바 ==================================================== -->
   <!-- ===== ■. 영역별 패널 목록 =============================================== -->
   <div v-if="cfAreaList.length===0" style="text-align:center;padding:40px;color:#ccc;">등록된 화면영역이 없습니다.</div>
   <!-- ===== ■. 영역 ====================================================== -->
@@ -330,11 +334,13 @@ window.XsSample11 = {
       <span style="font-size:13px;font-weight:700;">{{ area.codeLabel }}</span>
       <span style="margin-left:auto;font-size:11px;opacity:.7;">패널 {{ panelsForArea(area.codeValue).length }}개</span>
     </div>
+    <!-- ===== □.□. 영역 헤더 ================================================= -->
     <!-- ===== ■.■. 패널 없음 ================================================= -->
     <div v-if="panelsForArea(area.codeValue).length===0"
       style="background:#fafafa;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:12px 16px;font-size:12px;color:#bbb;">
       해당 날짜 활성 패널 없음
     </div>
+    <!-- ===== □.□. 패널 없음 ================================================= -->
     <!-- ===== ■.■. 리스트 모드 ================================================ -->
     <div v-else-if="uiState.tabMode==='list'" style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId"
@@ -350,6 +356,7 @@ window.XsSample11 = {
         <span style="font-size:10px;color:#999;flex-shrink:0;">위젯 {{ (p.rows||[]).length }}개</span>
       </div>
     </div>
+    <!-- ===== □.□. 리스트 모드 ================================================ -->
     <!-- ===== ■.■. 카드 모드 ================================================= -->
     <div v-else-if="uiState.tabMode==='card'" style="background:#f9f9f9;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;">
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId"
@@ -369,6 +376,7 @@ window.XsSample11 = {
         <div style="font-size:10px;color:#999;">{{ p.condition || '항상 표시' }} · 위젯 {{ (p.rows||[]).length }}개</div>
       </div>
     </div>
+    <!-- ===== □.□. 카드 모드 ================================================= -->
     <!-- ===== ■.■. 상세(expand) 모드 ========================================= -->
     <div v-else-if="uiState.tabMode==='expand'" style="border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
       <div v-for="p in panelsForArea(area.codeValue)" :key="p.dispId" style="border-bottom:1px solid #f0f0f0;">
@@ -399,8 +407,11 @@ window.XsSample11 = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 상세(expand) 모드 ========================================= -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
   <category-select-modal :show="showCatModal" :selected-ids="[...selectedCatIds]" @close="showCatModal=false" @apply="onCatApply" />
 </div>
-`,
+
+  <!-- ===== □. 카테고리 선택 모달 ============================================== -->`,
 };

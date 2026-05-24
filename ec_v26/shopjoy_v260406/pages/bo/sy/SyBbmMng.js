@@ -216,6 +216,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 좌: 표시경로 트리 ============================================ -->
@@ -260,5 +261,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 우: 목록 + 상세 ============================================ -->
+  <!-- ===== □. 본문 영역 =================================================== -->`
 };

@@ -364,6 +364,7 @@ window.SyDeptMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
@@ -398,7 +399,8 @@ window.SyDeptMng = {
     </div>
   </div>
 </div>
-`,
+
+  <!-- ===== □. 본문 영역 =================================================== -->`,
 };
 
 window.DeptTreeNode = {
@@ -430,6 +432,7 @@ window.DeptTreeNode = {
     <span v-else style="margin-right:4px;width:14px;flex-shrink:0;"></span>
     <span style="font-size:13px;">{{ node.deptNm }}</span>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="node.children && node.children.length && expanded.has(node.deptId)">
     <dept-tree-node v-for="child in node.children" :key="child.deptId"
@@ -437,5 +440,6 @@ window.DeptTreeNode = {
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" />
   </template>
 </div>
-`
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`
 };

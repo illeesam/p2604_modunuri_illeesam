@@ -179,11 +179,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청 • [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다. • 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다. • 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
@@ -212,5 +214,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </bo-grid>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->`,
 };

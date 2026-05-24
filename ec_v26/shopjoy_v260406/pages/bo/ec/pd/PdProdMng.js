@@ -268,11 +268,13 @@ window.PdProdMng = {
       <span style="color:#888;font-size:12px">예) 단품 의류 등록, 옵션(색상·사이즈) 설정, 재고 이력 확인</span>
     </div>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
@@ -305,12 +307,15 @@ window.PdProdMng = {
       </template>
     </bo-grid>
   </div>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
   <bo-category-tree-modal
     v-if="catModal && catModal.show"
     :exclude-id="null"
     @select="onCatSelect"
     @close="catModal.show=false" />
+  <!-- ===== □. 카테고리 선택 모달 ============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 ====================================== -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -332,5 +337,6 @@ window.PdProdMng = {
       />
   </div>
 </div>
-`
+
+  <!-- ===== □. 하단 상세: ProdDtl 임베드 ====================================== -->`
 };

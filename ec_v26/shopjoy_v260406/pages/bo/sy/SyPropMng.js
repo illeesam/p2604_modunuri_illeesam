@@ -227,6 +227,7 @@ window.SyPropMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area @search="fetchData" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
   <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 트리 ==================================================== -->
@@ -248,7 +249,9 @@ window.SyPropMng = {
     </bo-grid-crud>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 그리드 (BoGridCrud) ====================================== -->
+  <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->`,
 };
 
 /* -- 트리 노드 재귀 컴포넌트 -- */
@@ -284,6 +287,7 @@ window.PropTreeNode = {
     </span>
     <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="expanded.has(node.path) && node.children.length>0">
     <bo-path-tree-node v-for="ch in node.children" :key="ch.path"
@@ -291,5 +295,6 @@ window.PropTreeNode = {
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
 </div>
-`,
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

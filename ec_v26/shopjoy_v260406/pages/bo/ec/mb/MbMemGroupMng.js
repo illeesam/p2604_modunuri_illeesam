@@ -211,6 +211,7 @@ window.MbMemGroupMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. CRUD 그리드 ================================================ -->
   <bo-grid-crud
     :columns="baseGridColumns" :rows="gridRows" row-key="memberGroupId"
@@ -226,5 +227,6 @@ window.MbMemGroupMng = {
     </template>
   </bo-grid-crud>
 </div>
-`
+
+  <!-- ===== □. CRUD 그리드 ================================================ -->`
 };

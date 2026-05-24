@@ -385,6 +385,7 @@
   <div class="page-header">
     <h2 class="page-title">고객종합정보</h2>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 검색 바 ==================================================== -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:14px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <!-- ===== ■.■. 모드 세그먼트 =============================================== -->
@@ -397,6 +398,7 @@
         {{ m.label }}
       </button>
     </div>
+    <!-- ===== □.□. 모드 세그먼트 =============================================== -->
     <!-- ===== ■.■. 고객 선택 ================================================= -->
     <template v-if="uiState.searchMode==='member'">
       <button @click="openMemberModal"
@@ -405,6 +407,7 @@
       </button>
       <span style="font-size:12px;color:#aaa;">이름 · 이메일 · 전화번호로 검색</span>
     </template>
+    <!-- ===== □.□. 고객 선택 ================================================= -->
     <!-- ===== ■.■. 번호 입력 ================================================= -->
     <template v-else>
       <div style="display:flex;align-items:center;gap:0;background:#f8f9fa;border:1.5px solid #ddd;border-radius:8px;overflow:hidden;flex:1;max-width:360px;">
@@ -424,6 +427,8 @@
       ✕ 초기화
     </button>
   </div>
+    <!-- ===== □.□. 번호 입력 ================================================= -->
+  <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 기간 필터 바 ================================================= -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:12px;color:#888;font-weight:500;white-space:nowrap;">조회기간</span>
@@ -445,6 +450,7 @@
     </template>
     <span v-else style="font-size:12px;color:#aaa;">{{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}</span>
   </div>
+  <!-- ===== □. 기간 필터 바 ================================================= -->
   <!-- ===== ■. 고객 없음 안내 ================================================ -->
   <div v-if="!uiState.customer"
     style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:#ccc;gap:12px;">
@@ -452,6 +458,7 @@
     <div style="font-size:15px;color:#bbb;">고객을 검색하여 선택하면 종합 정보가 표시됩니다.</div>
     <div style="font-size:12px;color:#d0d0d0;">고객 선택 · 주문번호 · 클레임번호 세 가지 방법으로 조회할 수 있습니다.</div>
   </div>
+  <!-- ===== □. 고객 없음 안내 ================================================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template v-else>
     <!-- ===== ■.■. 1. 고객 프로필 카드 ========================================== -->
@@ -501,6 +508,7 @@
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 1. 고객 프로필 카드 ========================================== -->
     <!-- ===== ■.■. 이력 탭바 + 뷰모드 =========================================== -->
     <div class="tab-bar-row">
       <div class="tab-nav">
@@ -549,6 +557,7 @@
         <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
+    <!-- ===== □.□. 이력 탭바 + 뷰모드 =========================================== -->
     <!-- ===== ■.■. 이력 패널 ================================================= -->
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
       <!-- ===== ■.■.■. 주문이력 ================================================ -->
@@ -684,6 +693,8 @@
     </div>
     <!-- ===== /grid ====================================================== -->
   </template>
+    <!-- ===== □.□. 이력 패널 ================================================= -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
   <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
     max-height="85vh" @close="memberModal.show=false">
@@ -711,6 +722,8 @@
     </bo-grid>
   </bo-modal>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 고객 선택 모달 ================================================ -->`,
   };
 })();

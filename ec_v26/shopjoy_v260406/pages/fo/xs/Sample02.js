@@ -289,17 +289,21 @@ window.XsSample02 = {
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">
     {{ toast.msg }}
   </div>
+  <!-- ===== □. Toast =================================================== -->
   <!-- ===== ■. 제목 ====================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     02. 상품 관리
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">Infinity Scroll CRUD Grid</span>
   </div>
+  <!-- ===== □. 제목 ====================================================== -->
   <!-- ===== ■. 검색 ====================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. CRUD Grid (fo-grid-crud — 전체로드 스크롤 모델) ================== -->
   <fo-grid-crud
     list-title="상품 목록" row-key="productId"
@@ -313,10 +317,12 @@ window.XsSample02 = {
       <fo-row-cancel-delete :row="row" @cancel="onRowCancel(row)" @delete="onRowDelete(row)" />
     </template>
   </fo-grid-crud>
+  <!-- ===== □. CRUD Grid (fo-grid-crud — 전체로드 스크롤 모델) ================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <style>
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </div>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

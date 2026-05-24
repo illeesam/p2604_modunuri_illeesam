@@ -122,6 +122,8 @@ window.EventView = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 장식 원 ================================================== -->
+  <!-- ===== □. ① 히어로 배너 ================================================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-wrap" style="max-width:960px;">
     <!-- ===== ■.■. ② 뒤로 ================================================== -->
@@ -131,6 +133,7 @@ window.EventView = {
       @mouseleave="$event.currentTarget.style.color='var(--text-muted)'">
       ← 이벤트 목록으로
     </button>
+    <!-- ===== □.□. ② 뒤로 ================================================== -->
     <!-- ===== ■.■. ③ 혜택 카드 =============================================== -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:clamp(20px,4vw,36px) clamp(16px,3vw,32px);margin-bottom:36px;text-align:center;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--blue);letter-spacing:2px;margin-bottom:10px;">SHOPJOY BENEFIT</div>
@@ -148,6 +151,7 @@ window.EventView = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. ③ 혜택 카드 =============================================== -->
     <!-- ===== ■.■. ④ 이벤트 대상 (eventItems) ================================= -->
     <div v-if="cfEvent.eventItems && cfEvent.eventItems.length" style="margin-bottom:36px;">
       <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">이벤트 대상</h2>
@@ -159,6 +163,7 @@ window.EventView = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. ④ 이벤트 대상 (eventItems) ================================= -->
     <!-- ===== ■.■. ⑤ 더 많은 프로모션 =========================================== -->
     <div v-if="cfPromoEvents.length" style="margin-bottom:36px;">
       <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">더 많은 프로모션 보기</h2>
@@ -193,6 +198,7 @@ window.EventView = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. ⑤ 더 많은 프로모션 =========================================== -->
     <!-- ===== ■.■. ⑥ 유의사항 ================================================ -->
     <div style="background:var(--bg-base);border:1px solid var(--border);border-radius:12px;padding:clamp(16px,3vw,24px) clamp(16px,3vw,28px);margin-bottom:32px;">
       <h3 style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);margin-bottom:14px;">유의사항</h3>
@@ -204,6 +210,7 @@ window.EventView = {
         </li>
       </ul>
     </div>
+    <!-- ===== □.□. ⑥ 유의사항 ================================================ -->
     <!-- ===== ■.■. 목록으로 (하단) ============================================= -->
     <div style="text-align:center;padding-bottom:8px;">
       <button @click="navigate('event')"
@@ -215,5 +222,7 @@ window.EventView = {
     </div>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록으로 (하단) ============================================= -->
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

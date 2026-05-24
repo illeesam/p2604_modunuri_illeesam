@@ -375,6 +375,7 @@ window.Login = {
           <span style="font-size:1.1rem;">💬</span>
           카카오로 로그인
         </button>
+        <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button @click="doSocial('naver')"
           style="width:100%;padding:11px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#fff;font-weight:700;">
           <span style="font-size:1.1rem;font-weight:900;">N</span>
@@ -401,7 +402,8 @@ window.Login = {
           </button>
         </div>
       </div>
-      <!-- 회원선택 바로 로그인 (개발용) -->
+      <!-- ===== ■.■.■. 회원선택 바로 로그인 (개발용) =================================== -->
+      <!-- ===== ■.■.■. 영역 ================================================== -->
       <div style="text-align:center;margin-top:18px;">
         <button @click="onOpenMemberPick"
           style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:var(--text-muted);text-decoration:underline;padding:0;">
@@ -409,10 +411,11 @@ window.Login = {
         </button>
       </div>
     </template>
-    <!-- ════ 회원선택 모달 ════ -->
+    <!-- ===== □.□. ════ 로그인 ════ ========================================= -->
+    <!-- ===== ■.■. ════ 회원선택 모달 ════ ===================================== -->
     <div v-if="memberPick.show" class="modal-overlay" @click.self="memberPick.show=false" style="z-index:300;">
       <div style="background:#fff;border-radius:16px;overflow:hidden;max-width:820px;width:96%;display:flex;flex-direction:column;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.18);">
-        <!-- 헤더 -->
+        <!-- ===== ■.■.■.■. 헤더 ================================================ -->
         <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffc8d6;flex-shrink:0;">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:18px;">👥</span>
@@ -425,9 +428,9 @@ window.Login = {
             ✕
           </button>
         </div>
-        <!-- 본문 (스크롤) -->
+        <!-- ===== ■.■.■.■. 본문 (스크롤) ========================================== -->
         <div style="padding:14px 18px;overflow-y:auto;flex:1;">
-          <!-- 검색바 -->
+          <!-- ===== ■.■.■.■.■. 검색바 ============================================= -->
           <div style="display:flex;gap:6px;margin-bottom:10px;">
             <div style="position:relative;flex:1;">
               <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">🔍</span>
@@ -445,18 +448,19 @@ window.Login = {
                 @keyup.enter="onMemberPickSearch"
                 style="width:100%;padding:7px 10px 7px 32px;border:1.5px solid #f0c8d8;border-radius:8px;font-size:12px;outline:none;box-sizing:border-box;">
             </div>
+            <!-- ===== ■.■.■.■.■.■. 버튼 영역 ========================================= -->
             <button @click="onMemberPickSearch"
               style="padding:0 16px;border:none;border-radius:8px;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">
               조회
             </button>
           </div>
-          <!-- 건수 -->
+          <!-- ===== ■.■.■.■.■. 건수 ============================================== -->
           <div style="font-size:11px;color:#aaa;margin-bottom:8px;text-align:left;">
             총
             <b style="color:#e8587a;">{{ memberPick.total }}</b>
             명
           </div>
-          <!-- 테이블 -->
+          <!-- ===== ■.■.■.■.■. 테이블 ============================================= -->
           <div style="border-radius:8px;border:1px solid #f0e0e8;overflow:hidden;">
             <!-- ===== ■.■.■.■.■.■. 목록 영역 ========================================= -->
             <fo-grid bare :columns="memberPickGridColumns" :rows="memberPick.rows" :pager="memberPick"
@@ -471,7 +475,7 @@ window.Login = {
             </fo-grid>
           </div>
         </div>
-        <!-- 페이지네이션 (고정) -->
+        <!-- ===== ■.■.■.■. 페이지네이션 (고정) ======================================= -->
         <div v-if="memberPick.totalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
           <button @click="onMemberPickPage(1)" :disabled="memberPick.pageNo===1"
             style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="memberPick.pageNo===1?'opacity:.35;cursor:default;':''">
@@ -502,6 +506,7 @@ window.Login = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. ════ 회원선택 모달 ════ ===================================== -->
     <!-- ===== ■.■. ════ 약관 ════ ========================================== -->
     <template v-else-if="uiState.step==='terms'">
       <div style="text-align:center;margin-bottom:20px;">
@@ -540,6 +545,7 @@ window.Login = {
         </button>
       </div>
     </template>
+    <!-- ===== □.□. ════ 약관 ════ ========================================== -->
     <!-- ===== ■.■. ════ 이메일 회원가입 ════ ==================================== -->
     <template v-else-if="uiState.step==='signup'">
       <div style="text-align:center;margin-bottom:16px;">
@@ -642,6 +648,7 @@ window.Login = {
         <button @click="doSignup" class="btn-blue" style="flex:2;padding:12px;">가입 완료</button>
       </div>
     </template>
+    <!-- ===== □.□. ════ 이메일 회원가입 ════ ==================================== -->
     <!-- ===== ■.■. ════ SNS 회원가입 추가 정보 ════ ============================== -->
     <template v-else-if="uiState.step==='sns-signup'">
       <div style="text-align:center;margin-bottom:16px;">
@@ -726,5 +733,7 @@ window.Login = {
     </template>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. ════ SNS 회원가입 추가 정보 ════ ============================== -->
+  <!-- ===== □. 로그인 화면 ================================================== -->`
 };

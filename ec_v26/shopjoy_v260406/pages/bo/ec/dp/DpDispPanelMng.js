@@ -521,6 +521,7 @@ window.DpDispPanelMng = {
     <bo-search-area :loading="uiState.loading"
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
+    <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 2행: 전시일·노출조건·인증 (별도 BoSearchArea, actions 없음) ========= -->
     <bo-search-area :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;"
@@ -532,6 +533,8 @@ window.DpDispPanelMng = {
       </template>
     </bo-search-area>
   </div>
+    <!-- ===== □.□. 2행: 전시일·노출조건·인증 (별도 BoSearchArea, actions 없음) ========= -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문: 좌측 트리 + 우측 목록 ======================================= -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
     <!-- ===== ■.■. 좌측 표시경로 =============================================== -->
@@ -549,6 +552,7 @@ window.DpDispPanelMng = {
         <bo-path-tree biz-cd="ec_disp_panel" :selected="uiState.selectedPath" @select="selectPathNode" />
       </div>
     </div>
+    <!-- ===== □.□. 좌측 표시경로 =============================================== -->
     <!-- ===== ■.■. 우측 목록 ================================================= -->
     <div style="flex:1;min-width:0;">
       <div class="card">
@@ -655,6 +659,7 @@ window.DpDispPanelMng = {
                         {{ d.authGrade }}↑
                       </span>
                     </span>
+                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 영역 ==================================== -->
                     <span>
                       <b style="color:#888;">전시기간:</b>
                       <template v-if="d.dispStartDt || d.dispEndDt">{{ d.dispStartDt || '∞' }} ~ {{ d.dispEndDt || '∞' }}</template>
@@ -725,6 +730,7 @@ window.DpDispPanelMng = {
                             </td>
                           </tr>
                         </template>
+                        <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 영역 ================================ -->
                         <tr v-else>
                           <td colspan="6" style="padding:8px;text-align:center;color:#bbb;">등록된 전시항목이 없습니다. (수정 후 저장하면 전시항목 정보가 표시됩니다)</td>
                         </tr>
@@ -742,6 +748,8 @@ window.DpDispPanelMng = {
     <!-- ===== /우측 목록 ===================================================== -->
   </div>
   <!-- ===== /본문 flex =================================================== -->
+    <!-- ===== □.□. 우측 목록 ================================================= -->
+  <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
   <!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -760,6 +768,7 @@ window.DpDispPanelMng = {
       :on-list-reload="handleSearchData"
       />
   </div>
+  <!-- ===== □. 하단 상세: DispDtl 임베드 ====================================== -->
   <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
   <div v-if="uiState.cardPreviewItem"
     @click.self="closeCardPreview"
@@ -843,5 +852,6 @@ window.DpDispPanelMng = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 패널미리보기 오버레이 ============================================= -->`
 };

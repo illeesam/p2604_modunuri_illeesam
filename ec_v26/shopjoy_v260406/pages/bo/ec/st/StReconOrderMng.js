@@ -158,6 +158,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • 주문금액(order_amt) vs 정산수집 금액(recon_amt) 차이를 자동 비교합니다. • 차이 상태: 일치 / 차이발생 / 검토중 / 처리완료 • 차이 발생 건은 원인 파악 후 조정(StSettleAdjMng)으로 처리하거나 수동 대사 확인합니다.
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -165,6 +166,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -192,5 +195,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @set-page="setPage" @size-change="onSizeChange"></bo-grid>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->`,
 };

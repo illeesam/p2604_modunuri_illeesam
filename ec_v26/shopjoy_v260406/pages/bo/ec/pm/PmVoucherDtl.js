@@ -320,6 +320,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     {{ cfIsNew ? '상품권 등록' : '상품권 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.voucherId }}</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;justify-content:flex-end;">
     <div class="tab-modes">
@@ -330,6 +331,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 탭 네비게이션 ================================================= -->
   <div class="tab-nav">
     <button v-for="t in ['info','detail','issueHist','useHist','preview']" :key="Math.random()"
@@ -338,14 +340,15 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       {{ {info:'기본정보',detail:'상세정보',issueHist:'발급내역',useHist:'사용내역',preview:'미리보기'}[t] }}
     </button>
   </div>
-  <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
+  <!-- ===== □. 탭 네비게이션 ================================================= -->
+  <!-- ===== ■. 기본정보 탭 (BoFormArea 자동 렌더) =============================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">기본정보</div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
-      <!-- 판매업체 picker -->
+      <!-- ===== ■.■.■. 판매업체 picker ========================================= -->
       <template #vendor>
         <div style="display:flex;gap:8px;align-items:center;">
           <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
@@ -358,7 +361,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
         </div>
       </template>
     </bo-form-area>
-    <!-- 판매업체 선택 모달 -->
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+    <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
     <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
       @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
     <div class="form-actions" v-if="!cfDtlMode">
@@ -368,6 +372,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <button @click="navigate('pmVoucherMng')" class="btn btn-secondary">취소</button>
     </div>
   </div>
+    <!-- ===== □.□. 판매업체 선택 모달 ============================================ -->
+  <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 미리보기 탭 ================================================== -->
   <div v-if="showTab('preview')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">미리보기</div>
@@ -503,6 +509,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       </div>
     </div>
   </div>
+  <!-- ===== □. 미리보기 탭 ================================================== -->
   <!-- ===== ■. 발급내역 탭 ================================================== -->
   <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">발급내역</div>
@@ -510,6 +517,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     <bo-grid bare :columns="issueGridColumns" :rows="cfIssuedList" row-key="issueNo"
       empty-text="발급내역이 없습니다."></bo-grid>
   </div>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 발급내역 탭 ================================================== -->
   <!-- ===== ■. 사용내역 탭 ================================================== -->
   <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">사용내역</div>
@@ -517,6 +526,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     <bo-grid bare :columns="usageGridColumns" :rows="cfUsedList" row-key="usageNo"
       empty-text="사용내역이 없습니다."></bo-grid>
   </div>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 사용내역 탭 ================================================== -->
   <!-- ===== ■. 상세정보 탭 ================================================== -->
   <div v-if="showTab('detail')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
@@ -533,6 +544,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       </div>
     </div>
   </div>
+  <!-- ===== □. 상세정보 탭 ================================================== -->
   <!-- ===== ■. SNS 전송 모달 =============================================== -->
   <bo-modal :show="snsModal.show"
     :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"
@@ -547,5 +559,6 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     </template>
   </bo-modal>
 </div>
-`
+
+  <!-- ===== □. SNS 전송 모달 =============================================== -->`
 };

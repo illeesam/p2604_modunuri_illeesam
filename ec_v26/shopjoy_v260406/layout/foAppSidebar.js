@@ -103,7 +103,7 @@ window.foAppSidebar = {
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="sidebar-inner" style="padding:16px 10px;overflow-y:auto;height:100%;display:flex;flex-direction:column;gap:6px;">
 
-    <!-- 기존 sidebarMenu 섹션 (샘플 전시 제외) -->
+    <!-- ===== ■.■. 기존 sidebarMenu 섹션 (샘플 전시 제외) ========================== -->
     <template v-for="section in cfSidebarMenu" :key="section.section">
       <template v-if="section.section !== '샘플 전시'">
         <div v-if="appSidebarOpen" style="padding:12px 8px 4px;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
@@ -127,7 +127,8 @@ window.foAppSidebar = {
       </template>
     </template>
 
-    <!-- 개발도구 섹션 -->
+    <!-- ===== □.□. 기존 sidebarMenu 섹션 (샘플 전시 제외) ========================== -->
+    <!-- ===== ■.■. 개발도구 섹션 =============================================== -->
     <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.devToolsOpen=!uiState.devToolsOpen"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
@@ -145,9 +146,11 @@ window.foAppSidebar = {
       </button>
     </template>
 
-    <!-- 샘플 섹션 — Site 01은 전체 숨김 -->
+    <!-- ===== □.□. 개발도구 섹션 =============================================== -->
+    <!-- ===== ■.■. 샘플 섹션 — Site 01은 전체 숨김 ================================ -->
+    <!-- ===== ■.■. 조건부 영역 ================================================ -->
     <template v-if="showSamples">
-    <!-- 샘플0 (01~06) -->
+    <!-- ===== ■.■. 샘플0 (01~06) =========================================== -->
     <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.sample0Open=!uiState.sample0Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
@@ -165,7 +168,8 @@ window.foAppSidebar = {
       </button>
     </template>
 
-    <!-- 샘플1 (07~14) -->
+    <!-- ===== □.□. 샘플0 (01~06) =========================================== -->
+    <!-- ===== ■.■. 샘플1 (07~14) =========================================== -->
     <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.sample1Open=!uiState.sample1Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
@@ -183,7 +187,8 @@ window.foAppSidebar = {
       </button>
     </template>
 
-    <!-- 샘플2 (21~23) -->
+    <!-- ===== □.□. 샘플1 (07~14) =========================================== -->
+    <!-- ===== ■.■. 샘플2 (21~23) =========================================== -->
     <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.sample2Open=!uiState.sample2Open"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
@@ -191,6 +196,8 @@ window.foAppSidebar = {
         <span style="font-size:0.6rem;">{{ uiState.sample2Open ? '▲' : '▼' }}</span>
       </button>
     </div>
+    <!-- ===== □.□. 샘플2 (21~23) =========================================== -->
+    <!-- ===== ■.■. 조건부 영역 ================================================ -->
     <template v-if="uiState.sample2Open">
       <button v-for="item in SAMPLE2_ITEMS" :key="item.menuId" type="button"
         @click.stop="navTo(item.menuId)"
@@ -201,7 +208,8 @@ window.foAppSidebar = {
       </button>
     </template>
 
-    <!-- 샘플 전시 (토글) -->
+    <!-- ===== □.□. 조건부 영역 ================================================ -->
+    <!-- ===== ■.■. 샘플 전시 (토글) ============================================ -->
     <div v-if="appSidebarOpen" style="padding:12px 8px 0;">
       <button type="button" @click.stop="uiState.dispUiOpen=!uiState.dispUiOpen"
         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:4px 0;background:none;border:none;cursor:pointer;font-size:0.65rem;font-weight:700;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;">
@@ -231,5 +239,7 @@ window.foAppSidebar = {
     </button>
   </div>
 </div>
-  `,
+  
+    <!-- ===== □.□. 샘플 전시 (토글) ============================================ -->
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

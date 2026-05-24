@@ -325,6 +325,7 @@ window.SyBrandMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
@@ -361,7 +362,9 @@ window.SyBrandMng = {
   </div>
   <!-- ===== /grid 25/75 ================================================ -->
 </div>
-`,
+
+    <!-- ===== □.□. CRUD 그리드 ============================================== -->
+  <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->`,
 };
 
 /* PathTreeNode, PathParentSelector, BrandPathTreeNode → components/comp/BoComp.js */

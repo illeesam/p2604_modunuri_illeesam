@@ -61,7 +61,6 @@ window.MyChatt = {
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
-  <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" />
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredChats.length" :pager="chatPager" />
@@ -106,10 +105,12 @@ window.MyChatt = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="chats.length" :pager="chatPager" />
 </fo-my-layout>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
   components: {
     FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,

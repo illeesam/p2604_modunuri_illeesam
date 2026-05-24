@@ -152,11 +152,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • PG사 결제금액(pg_amt) vs 정산 수집금액(settle_amt) 차이를 자동 비교합니다. • 결제수단: 무통장/가상계좌/토스/카카오/네이버/핸드폰 • 차이 발생 시 PG사 정산 리포트와 대조 후 조정 처리합니다.
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -184,5 +186,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @set-page="setPage" @size-change="onSizeChange"></bo-grid>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->`,
 };

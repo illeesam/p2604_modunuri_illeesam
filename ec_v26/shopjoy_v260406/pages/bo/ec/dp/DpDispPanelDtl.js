@@ -842,6 +842,7 @@ window.DpDispPanelDtl = {
       <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleSave" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. ═══════════════════ 탭 모드 ═══════════════════ ========== -->
@@ -910,11 +911,11 @@ window.DpDispPanelDtl = {
                   <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
                   설정
                 </div>
-                <!-- 패널코드/패널명/상태 (BoFormArea 자동 렌더) -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 패널코드/패널명/상태 (BoFormArea 자동 렌더) ============ -->
                 <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
                 <bo-form-area :columns="basePanelFormColumns" :form="form" :errors="{}"
                   :readonly="cfDtlMode" :cols="3" :show-actions="false" />
-                <!-- 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) ======== -->
                 <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
                 <bo-form-area :columns="pathAreaFormColumns" :form="form" :errors="{}"
                   :readonly="cfDtlMode" :cols="3" :show-actions="false">
@@ -953,6 +954,7 @@ window.DpDispPanelDtl = {
                       </button>
                     </div>
                   </div>
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 조건부 영역 ================================== -->
                   <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
                     <label class="form-label">열수 <span style="font-size:10px;color:#aaa;">(위젯 배치 열 개수)</span></label>
                     <div style="display:flex;align-items:center;gap:6px;">
@@ -970,6 +972,7 @@ window.DpDispPanelDtl = {
                       <span style="font-size:12px;color:#aaa;">열</span>
                     </div>
                   </div>
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 영역 ====================================== -->
                   <div class="form-group" style="flex:0 0 auto;" v-else>
                     <label class="form-label">배치</label>
                     <span style="font-size:12px;color:#6b7280;padding:6px 0;display:block;">자유 배치 (열수 없음)</span>
@@ -1286,6 +1289,7 @@ window.DpDispPanelDtl = {
                         </div>
                       </td>
                     </tr>
+                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 조건부 영역 ================================ -->
                     <tr v-if="cfIsText && cfActiveRow.textContent">
                       <td style="font-weight:500;color:#555;">미리보기</td>
                       <td style="padding:6px 8px;">
@@ -1444,6 +1448,7 @@ window.DpDispPanelDtl = {
       <!-- ===== /탭 모드 flex ================================================= -->
     </div>
     <!-- ===== /내부 flex =================================================== -->
+    <!-- ===== □.□. ═══════════════════ 탭 모드 ═══════════════════ ========== -->
     <!-- ===== ■.■. ═══════════════════ 펼치기(아코디언) 모드 ═══════════════════ ===== -->
     <div v-else>
       <div v-for="(t, tIdx) in cfTabLabels" :key="'va_'+t.key" style="margin-bottom:4px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
@@ -1492,7 +1497,7 @@ window.DpDispPanelDtl = {
         <div v-show="isSectionExpanded(t.key)" style="padding:20px 24px;background:#fff;border-top:1px solid #f0f0f0;">
           <!-- ===== ■.■.■.■.■. 패널정보 ============================================ -->
           <div v-if="t.key === 'info'">
-            <!-- 패널코드/패널명/표시경로/포함영역 (BoFormArea 자동 렌더) -->
+            <!-- ===== ■.■.■.■.■.■. 패널코드/패널명/표시경로/포함영역 (BoFormArea 자동 렌더) ========= -->
             <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
             <bo-form-area :columns="sectionInfoFormColumns" :form="form" :errors="{}"
               :readonly="cfDtlMode" :cols="4" :show-actions="false">
@@ -1567,7 +1572,7 @@ window.DpDispPanelDtl = {
             <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
               📐 위젯 설정
             </div>
-            <!-- 위젯 유형/노출 순서 (BoFormArea 자동 렌더, r 로컬 변수에 바인딩) -->
+            <!-- ===== ■.■.■.■.■.■. 위젯 유형/노출 순서 (BoFormArea 자동 렌더, r 로컬 변수에 바인딩) ===== -->
             <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
             <bo-form-area :columns="widgetRowFormColumns" :form="r" :errors="{}"
               :readonly="cfDtlMode" :cols="2" :show-actions="false" />
@@ -1668,6 +1673,7 @@ window.DpDispPanelDtl = {
                     </div>
                   </td>
                 </tr>
+                <!-- ===== ■.■.■.■.■.■.■.■. 조건부 영역 ==================================== -->
                 <tr v-if="fnRowIsText(r) && r.textContent">
                   <td style="font-weight:500;color:#555;">미리보기</td>
                   <td style="padding:6px 8px;">
@@ -1754,6 +1760,8 @@ window.DpDispPanelDtl = {
     </div>
     <!-- ===== /펼치기 아코디언 모드 =============================================== -->
   </div>
+    <!-- ===== □.□. ═══════════════════ 펼치기(아코디언) 모드 ═══════════════════ ===== -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 위젯미리보기 모달 =============================================== -->
   <disp-preview-modal
     :show="preview.show"
@@ -1764,6 +1772,7 @@ window.DpDispPanelDtl = {
     :widget="cfPreviewWidget"
     @close="closePreview"
     />
+  <!-- ===== □. 위젯미리보기 모달 =============================================== -->
   <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
   <div v-if="cardPreview && cardPreview.show"
     @click.self="closeCardPreview"
@@ -1809,11 +1818,13 @@ window.DpDispPanelDtl = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 패널미리보기 오버레이 ============================================= -->
   <!-- ===== ■. 전시위젯Lib 선택 팝업 =========================================== -->
   <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
     :widget-libs="[] || []"
     @close="libPickOpen=false"
     @pick="onLibPicked" />
+  <!-- ===== □. 전시위젯Lib 선택 팝업 =========================================== -->
   <!-- ===== ■. 전시항목 복사 팝업 ============================================== -->
   <row-pick-modal v-if="rowCopyOpen"
     :title="'전시항목 복사 [' + (form.name || '현재 패널') + ']'"
@@ -1822,11 +1833,13 @@ window.DpDispPanelDtl = {
     :exclude-panel-id="form.dispId"
     @close="rowCopyOpen=false"
     @pick-multi="onRowCopy" />
+  <!-- ===== □. 전시항목 복사 팝업 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel"
     :value="form.pathId"
     title="표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
-`,
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

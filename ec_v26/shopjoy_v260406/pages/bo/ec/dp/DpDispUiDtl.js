@@ -430,6 +430,7 @@ window.DpDispUiDtl = {
       <button class="btn btn-primary btn-sm" @click="handleSave" style="font-weight:700;">💾 저장</button>
     </div>
   </div>
+  <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 안내 배너 =================================================== -->
   <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin:12px 20px;font-size:11px;color:#444;line-height:1.6;">
     <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;"><span>ℹ️ 여부 및 기간 관리 안내</span></div>
@@ -438,6 +439,7 @@ window.DpDispUiDtl = {
       <li>전시관리정보 수정 후 저장하면 <b>전시여부, 사용여부</b> 정보가 즉시 반영됩니다</li>
     </ul>
   </div>
+  <!-- ===== □. 안내 배너 =================================================== -->
   <!-- ===== ■. 본문 ====================================================== -->
   <div style="display:flex;min-height:520px;">
     <!-- ===== ■.■. 좌측 탭 ================================================== -->
@@ -485,6 +487,7 @@ window.DpDispUiDtl = {
         </button>
       </div>
     </div>
+    <!-- ===== □.□. 좌측 탭 ================================================== -->
     <!-- ===== ■.■. 중앙 본문 ================================================= -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
       <!-- ===== ■.■.■. 기본정보 탭 ============================================== -->
@@ -495,11 +498,11 @@ window.DpDispUiDtl = {
             <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
             설정
           </div>
-          <!-- UI코드/UI명/UI유형 (BoFormArea 자동 렌더) -->
+          <!-- ===== ■.■.■.■.■. UI코드/UI명/UI유형 (BoFormArea 자동 렌더) ================ -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="baseUiFormColumns" :form="form" :errors="errors"
             :readonly="false" :cols="3" :show-actions="false" />
-          <!-- 표시경로 (BoFormArea 자동 렌더) -->
+          <!-- ===== ■.■.■.■.■. 표시경로 (BoFormArea 자동 렌더) ========================= -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="pathPickFormColumns" :form="form" :errors="{}"
             :cols="3" :show-actions="false">
@@ -515,7 +518,7 @@ window.DpDispUiDtl = {
               </div>
             </template>
           </bo-form-area>
-          <!-- 정렬순서/사용여부/설명 (BoFormArea 자동 렌더) -->
+          <!-- ===== ■.■.■.■.■. 정렬순서/사용여부/설명 (BoFormArea 자동 렌더) ================= -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="settingUiFormColumns" :form="form" :errors="errors"
             :readonly="false" :cols="4" :show-actions="false" />
@@ -627,6 +630,7 @@ window.DpDispUiDtl = {
               {{ opt.label }}
             </label>
           </div>
+          <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
             <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
@@ -674,12 +678,14 @@ window.DpDispUiDtl = {
         <!-- ===== /내용 ======================================================== -->
       </div>
     </div>
+    <!-- ===== □.□. 중앙 본문 ================================================= -->
     <!-- ===== ■.■. 스플리터 ================================================== -->
     <div @mousedown="onSplitDrag"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
       title="드래그로 폭 조절">
       <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
     </div>
+    <!-- ===== □.□. 스플리터 ================================================== -->
     <!-- ===== ■.■. 우측 미리보기 =============================================== -->
     <div :style="{
       width: previewPaneWidth + 'px',
@@ -741,6 +747,8 @@ window.DpDispUiDtl = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 우측 미리보기 =============================================== -->
+  <!-- ===== □. 본문 ====================================================== -->
   <!-- ===== ■. 영역 선택 팝업 ================================================ -->
   <area-pick-modal v-if="pickOpen"
     :title="'전시영역 추가 [' + form.codeValue + ']'"
@@ -748,10 +756,12 @@ window.DpDispUiDtl = {
     :exclude-ui="form.codeValue"
     @close="closePick"
     @pick="onAreaPicked" />
+  <!-- ===== □. 영역 선택 팝업 ================================================ -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_ui"
     :value="form.pathId" title="UI 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
-`,
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

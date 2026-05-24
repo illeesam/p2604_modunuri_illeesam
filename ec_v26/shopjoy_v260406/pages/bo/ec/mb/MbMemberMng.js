@@ -290,6 +290,7 @@ window.MbMemberMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid :columns="listGridColumns" :rows="members" :pager="pager" row-key="memberId"
     :sort-state="uiState" list-title="회원목록" row-clickable
@@ -303,11 +304,13 @@ window.MbMemberMng = {
       <button class="btn btn-blue btn-sm" @click="openDetail(row)">수정</button>
     </template>
   </bo-grid>
+  <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <mb-member-dtl :detail-modal="detailModal" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
     :reload-trigger="detailModal.reloadTrigger"
     :on-list-reload="handleSearchList"
     />
 </div>
-`
+
+  <!-- ===== □. 영역 ====================================================== -->`
 };

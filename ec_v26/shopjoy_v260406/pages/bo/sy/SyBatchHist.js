@@ -235,5 +235,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </template>
   </bo-grid>
 </div>
-`,
+
+  <!-- ===== □. 목록 영역 =================================================== -->`,
 };

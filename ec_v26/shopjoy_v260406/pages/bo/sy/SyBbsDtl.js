@@ -185,9 +185,10 @@ window.SyBbsDtl = {
     {{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbsId }}</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- 사이트명 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
       :cols="4" :show-actions="false" />
@@ -215,7 +216,8 @@ window.SyBbsDtl = {
       </div>
       <span v-if="errors.bbmId" class="field-error">{{ errors.bbmId }}</span>
     </div>
-    <!-- 기본 정보 (BoFormArea 자동 렌더) -->
+    <!-- ===== □.□. 게시판 선택 ================================================ -->
+    <!-- ===== ■.■. 기본 정보 (BoFormArea 자동 렌더) ============================== -->
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="4" :show-actions="false" />
@@ -237,6 +239,7 @@ window.SyBbsDtl = {
       <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
       <base-html-editor v-else v-model="form.contentHtml" height="320px" />
     </div>
+    <!-- ===== □.□. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
     <!-- ===== ■.■. 첨부파일 ================================================== -->
     <div v-if="selectedBbm && cfAttachMaxCount > 0" class="form-group">
       <label class="form-label">
@@ -272,11 +275,14 @@ window.SyBbsDtl = {
       </template>
     </div>
   </div>
+    <!-- ===== □.□. 첨부파일 ================================================== -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 게시판 선택 팝업 =============================================== -->
   <bbm-select-modal
     v-if="showBbmModal" @select="onBbmSelect"
     @close="showBbmModal=false"
     />
+  <!-- ===== □. 게시판 선택 팝업 =============================================== -->
   <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
   <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
     width="420px" @close="showBbmDetail=false">
@@ -304,5 +310,6 @@ window.SyBbsDtl = {
     </template>
   </bo-modal>
 </div>
-`
+
+  <!-- ===== □. 게시판 상세보기 팝업 ============================================= -->`
 };

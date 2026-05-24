@@ -206,9 +206,10 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     {{ cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.contactId }}</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- 사이트명 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
       :cols="4" :show-actions="false" />
@@ -229,20 +230,20 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
       </div>
     </div>
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-      <!-- 문의 내용 탭 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 문의 내용 탭 (BoFormArea 자동 렌더) ========================== -->
       <div class="card" v-show="showTab('content')" style="margin:0;">
         <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="2" :show-actions="false">
-          <!-- 회원ID + 보기 버튼 -->
+          <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
           <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">
               <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" />
               <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
             </div>
           </template>
-          <!-- 문의 내용: Quill 또는 view 모드 HTML -->
+          <!-- ===== ■.■.■.■.■. 문의 내용: Quill 또는 view 모드 HTML ==================== -->
           <template #contactContent>
             <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.contactContent || '<span style=color:#bbb>-</span>'"></div>
             <base-html-editor v-else v-model="form.contactContent" height="220px" />
@@ -299,5 +300,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+  <!-- ===== □. 카드 영역 =================================================== -->`
 };

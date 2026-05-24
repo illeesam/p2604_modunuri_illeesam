@@ -211,13 +211,14 @@ window.PmCacheDtl = {
   // ===== 템플릿 ===========================================================
   template: /* html */`
 <div>
-  <!-- 페이지 타이틀 + ID 표시 -->
+  <!-- ===== ■. 페이지 타이틀 + ID 표시 ========================================= -->
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.cacheId }}</span>
   </div>
-  <!-- 탭바 + 뷰모드 아이콘 -->
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
+  <!-- ===== ■. 탭바 + 뷰모드 아이콘 ============================================ -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -235,23 +236,24 @@ window.PmCacheDtl = {
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
     </div>
   </div>
-  <!-- 탭 콘텐츠 컨테이너 (1/2/3/4열 그리드 자동 적용) -->
+  <!-- ===== □. 탭 영역 ==================================================== -->
+  <!-- ===== ■. 탭 콘텐츠 컨테이너 (1/2/3/4열 그리드 자동 적용) ========================= -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
-        <!-- 회원ID + 보기 -->
+        <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
             <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserIdChange" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
             <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', Number(form.memberId))">보기</span>
           </div>
         </template>
-        <!-- 판매업체 picker -->
+        <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
@@ -264,10 +266,10 @@ window.PmCacheDtl = {
           </div>
         </template>
       </bo-form-area>
-      <!-- 판매업체 선택 모달 -->
+      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
-      <!-- 폼 액션 버튼 (수정/저장/취소/닫기) -->
+      <!-- ===== ■.■.■. 폼 액션 버튼 (수정/저장/취소/닫기) =============================== -->
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
@@ -279,8 +281,10 @@ window.PmCacheDtl = {
         </template>
       </div>
     </div>
-    <!-- 회원 캐쉬 내역 탭 -->
+    <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+    <!-- ===== ■.■. 회원 캐쉬 내역 탭 ============================================ -->
     <div class="card" v-show="showTab('history')" style="margin:0;">
+      <!-- ===== ■.■.■. 조건부 영역 ============================================== -->
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🕒 회원 캐쉬 내역
         <span class="tab-count">{{ cfMemberCacheHistory.length }}</span>
@@ -298,5 +302,7 @@ window.PmCacheDtl = {
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 회원 캐쉬 내역 탭 ============================================ -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->`
 };

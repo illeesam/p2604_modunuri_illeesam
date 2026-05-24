@@ -411,6 +411,7 @@ window.PdCategoryProdMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 상품목록 =========================================== -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
     <!-- ===== ■.■. 좌측 카테고리 트리 ============================================ -->
@@ -421,6 +422,7 @@ window.PdCategoryProdMng = {
       </div>
       <bo-category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="selectNode" />
     </div>
+    <!-- ===== □.□. 좌측 카테고리 트리 ============================================ -->
     <!-- ===== ■.■. 우측 상품 목록 ============================================== -->
     <div class="card">
       <!-- ===== ■.■.■. 선택 전 안내 ============================================= -->
@@ -597,6 +599,8 @@ window.PdCategoryProdMng = {
       </template>
     </div>
   </div>
+    <!-- ===== □.□. 우측 상품 목록 ============================================== -->
+  <!-- ===== □. 좌 트리 + 우 상품목록 =========================================== -->
   <!-- ===== ■. 상품 추가 피커 모달 ============================================= -->
   <teleport to="body">
     <div v-if="pickerOpen"
@@ -640,5 +644,6 @@ window.PdCategoryProdMng = {
     </div>
   </teleport>
 </div>
-`
+
+  <!-- ===== □. 상품 추가 피커 모달 ============================================= -->`
 };

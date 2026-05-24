@@ -121,6 +121,7 @@ window.BlogEdit = {
     </button>
     <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">{{ cfIsEdit ? '글 수정' : '새 글 작성' }}</h1>
   </div>
+  <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 폼 ======================================================= -->
   <div class="card" style="padding:clamp(16px,3vw,28px);">
     <!-- ===== ■.■. 제목 / 카테고리 / 요약 / 본문 =================================== -->
@@ -138,6 +139,7 @@ window.BlogEdit = {
         </button>
       </div>
     </div>
+    <!-- ===== □.□. 이미지 첨부 ================================================ -->
     <!-- ===== ■.■. 태그 ==================================================== -->
     <div style="margin-bottom:28px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">태그 (쉼표로 구분)</label>
@@ -150,6 +152,7 @@ window.BlogEdit = {
         </span>
       </div>
     </div>
+    <!-- ===== □.□. 태그 ==================================================== -->
     <!-- ===== ■.■. 버튼 ==================================================== -->
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button class="btn-outline" @click="cancel" style="padding:11px 28px;font-size:0.88rem;">취소</button>
@@ -157,5 +160,7 @@ window.BlogEdit = {
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 버튼 ==================================================== -->
+  <!-- ===== □. 폼 ======================================================= -->`
 };

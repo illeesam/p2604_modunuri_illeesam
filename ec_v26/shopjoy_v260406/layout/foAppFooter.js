@@ -146,6 +146,7 @@ window.foAppFooter = {
       <span style="color:var(--text-muted);font-size:0.8rem;">{{ config.address }}</span>
     </div>
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;">
+      <!-- ===== ■.■.■. 버튼 영역 =============================================== -->
       <button type="button" @click="toggleMenu"
         style="font-size:0.75rem;padding:5px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
         🌐 메뉴 바로가기
@@ -154,14 +155,14 @@ window.foAppFooter = {
         <span style="font-size:9px;">▾</span>
       </button>
 
-      <!-- 메뉴 레이어 -->
+      <!-- ===== ■.■.■. 메뉴 레이어 ============================================== -->
       <div v-if="uiState.menuOpen"
         style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9998;backdrop-filter:blur(2px);"
         @click="closeMenu"></div>
       <div v-if="uiState.menuOpen"
         style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.28);width:920px;max-width:95vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #ffe4ec;"
         @click.stop>
-        <!-- 헤더 -->
+        <!-- ===== ■.■.■.■. 헤더 ================================================ -->
         <div style="padding:14px 18px;border-bottom:1px solid #ffc9d6;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);display:flex;align-items:center;justify-content:space-between;">
           <div style="font-size:15px;font-weight:800;color:#9f2946;"><span style="color:#e8587a;font-size:9px;margin-right:8px;">●</span>🌐 메뉴 바로가기</div>
           <button type="button" @click="closeMenu"
@@ -170,11 +171,12 @@ window.foAppFooter = {
             onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';this.style.transform='';">✕</button>
         </div>
 
-        <!-- 3열 본문 -->
+        <!-- ===== ■.■.■.■. 3열 본문 ============================================= -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:18px;overflow:auto;">
-          <!-- foOffice -->
+          <!-- ===== ■.■.■.■.■. foOffice ======================================== -->
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
             <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">🛍 foOffice</div>
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in FO_MENU" :key="m.id" type="button"
                 @click="goItem('foOffice', m.id)"
@@ -187,7 +189,7 @@ window.foAppFooter = {
             </div>
           </div>
 
-          <!-- boOffice -->
+          <!-- ===== ■.■.■.■.■. boOffice ======================================== -->
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
             <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 boOffice</div>
             <div style="display:flex;flex-direction:column;gap:2px;">
@@ -202,18 +204,19 @@ window.foAppFooter = {
             </div>
           </div>
 
-          <!-- 나머지: FO 사이트번호 + dispUi -->
+          <!-- ===== ■.■.■.■.■. 나머지: FO 사이트번호 + dispUi ========================== -->
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <!-- _SITE_NO (FO / BO 분리 링크) -->
+            <!-- ===== ■.■.■.■.■.■. _SITE_NO (FO / BO 분리 링크) ====================== -->
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
               <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FO: {{ currentFoSiteNo }}, BO: {{ currentBoSiteNo }})</span></div>
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
-                  <!-- site_id 표시 -->
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. site_id 표시 ============================== -->
                   <span :style="{flexShrink:0,minWidth:'112px',fontSize:'11px',fontFamily:'monospace',fontWeight:700,color: (currentFoSiteNo===p.fo||currentBoSiteNo===p.bo)?'#2e7d6b':'#999'}"
                     :title="'적용 site_id: '+p.siteId">site_id={{ p.siteId }}</span>
-                  <!-- FO 링크 -->
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. FO 링크 =================================== -->
                   <button type="button" @click="goItem('foOnly', p.fo)"
                     :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFoSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFoSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentFoSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFoSiteNo===p.fo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#e0f2ec';this.style.color='#2e7d6b';"
@@ -223,7 +226,7 @@ window.foAppFooter = {
                     <span>{{ currentFoSiteNo===p.fo?'●':'○' }}</span>
                     <span>FO={{ p.fo }}</span>
                   </button>
-                  <!-- BO 링크 (bo.html 새창) -->
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. BO 링크 (bo.html 새창) ====================== -->
                   <button type="button" @click="goItem('boOnly', p.bo)"
                     :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentBoSiteNo===p.bo?'#f3e5f5':'transparent',border:'1px solid '+(currentBoSiteNo===p.bo?'#ce93d8':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentBoSiteNo===p.bo?'#7b1fa2':'#444',fontWeight: currentBoSiteNo===p.bo?700:500,transition:'all .12s'}"
                     onmouseover="this.style.background='#f3e5f5';this.style.color='#7b1fa2';"
@@ -237,7 +240,8 @@ window.foAppFooter = {
                 </div>
               </div>
             </div>
-            <!-- dispUi -->
+            <!-- ===== ■.■.■.■.■.■. dispUi ======================================== -->
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
               <div style="font-size:13px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">🖥 dispUi (샘플)</div>
               <div style="display:flex;flex-direction:column;gap:2px;">
@@ -264,5 +268,6 @@ window.foAppFooter = {
     </div>
   </div>
 </footer>
-  `,
+  
+  <!-- ===== □. 본문 영역 =================================================== -->`,
 };

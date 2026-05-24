@@ -296,6 +296,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
     {{ cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.eventId }}</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -320,6 +321,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
     </div>
   </div>
+  <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 배너이미지 ================================================= -->
@@ -342,10 +344,11 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
+    <!-- ===== □.□. 배너이미지 ================================================= -->
     <!-- ===== ■.■. 기본정보 ================================================== -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <!-- 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) ===================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false" />
@@ -370,7 +373,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
           </label>
         </div>
       </div>
-      <!-- 판매업체/판매담당자 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 판매업체/판매담당자 (BoFormArea 자동 렌더) ======================= -->
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
@@ -404,6 +407,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
+    <!-- ===== □.□. 기본정보 ================================================== -->
     <!-- ===== ■.■. 이벤트 내용 (HTML 에디터) ===================================== -->
     <div class="card" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 이벤트 내용</div>
@@ -438,6 +442,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
+    <!-- ===== □.□. 이벤트 내용 (HTML 에디터) ===================================== -->
     <!-- ===== ■.■. 대상 상품 ================================================= -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛍 대상 상품 <span class="tab-count">{{ form.targetProducts.length }}</span></div>
@@ -465,6 +470,7 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
         </template>
       </div>
     </div>
+    <!-- ===== □.□. 대상 상품 ================================================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
@@ -503,9 +509,12 @@ watch(() => uiState.tab, v => { window._ecEventDtlState.tab = v; });
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 미리보기 ================================================== -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
   <!-- ===== ■. 상품 선택 팝업 ================================================ -->
   <simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.targetProducts"
     title="대상 상품 선택" @toggle="toggleProduct" @close="showProdPopup=false" />
 </div>
-`
+
+  <!-- ===== □. 상품 선택 팝업 ================================================ -->`
 };

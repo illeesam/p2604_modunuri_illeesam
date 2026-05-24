@@ -231,6 +231,7 @@ window.CmChattMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid :columns="listGridColumns" :rows="chatts" :pager="pager" row-key="chattRoomId"
     :sort-state="uiState" list-title="채팅목록"
@@ -249,6 +250,7 @@ window.CmChattMng = {
       </div>
     </template>
   </bo-grid>
+  <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ChattDtl 임베드 ===================================== -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -268,5 +270,6 @@ window.CmChattMng = {
       />
   </div>
 </div>
-`
+
+  <!-- ===== □. 하단 상세: ChattDtl 임베드 ===================================== -->`
 };

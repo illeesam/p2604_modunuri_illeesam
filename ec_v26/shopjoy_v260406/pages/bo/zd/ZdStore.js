@@ -205,7 +205,9 @@ window.ZdStore = {
       🔄 재로드
     </button>
   </div>
-  <!-- Store 선택 탭 + 뷰모드 버튼 -->
+    <!-- ===== □.□. 페이지 타이틀 =============================================== -->
+  <!-- ===== □. 메인 영역 =================================================== -->
+  <!-- ===== ■. Store 선택 탭 + 뷰모드 버튼 ===================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
     <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; flex: 1; border-bottom: 1px solid #e5e7eb;">
@@ -216,7 +218,7 @@ window.ZdStore = {
         {{ store.label }}
       </div>
     </div>
-    <!-- 뷰모드 버튼 (탭바 우측) -->
+    <!-- ===== ■.■. 뷰모드 버튼 (탭바 우측) ======================================== -->
     <div class="tab-modes" style="display: flex; gap: 2px; padding-left: 16px;">
       <button
         :class="{active: uiState.tabMode === 'tab'}"
@@ -239,6 +241,7 @@ window.ZdStore = {
         style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
         2
       </button>
+      <!-- ===== ■.■.■. 버튼 영역 =============================================== -->
       <button
         :class="{active: uiState.tabMode === 'col3'}"
         @click="uiState.tabMode = 'col3'"
@@ -262,7 +265,9 @@ window.ZdStore = {
       </button>
     </div>
   </div>
-  <!-- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) -->
+    <!-- ===== □.□. 뷰모드 버튼 (탭바 우측) ======================================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) ================================ -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="['dtl-tab-grid', 'cols-' + (uiState.tabMode === 'col1' ? '1' : uiState.tabMode === 'col2' ? '2' : uiState.tabMode === 'col3' ? '3' : uiState.tabMode === 'col4' ? '4' : uiState.tabMode === 'col5' ? '5' : 'tab')]"
     style="display: grid; gap: 4px; padding: 0; auto-flow: row;">
@@ -294,5 +299,6 @@ window.ZdStore = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->`
 };

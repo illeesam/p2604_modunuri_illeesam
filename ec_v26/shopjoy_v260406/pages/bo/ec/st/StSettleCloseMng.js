@@ -202,6 +202,7 @@ window.StSettleCloseMng = {
       • 마감 처리 시 해당 월의 수집원장 + 조정 + 기타조정 금액을 최종 집계합니다. • 마감 상태: 미마감 / 마감완료 / 지급완료 • [재오픈] 기능으로 마감을 취소하고 수정 후 재마감할 수 있습니다. • 자동마감 설정(StConfigMng) 시 지급일에 자동 마감됩니다.
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 이번달 마감 대상 =============================================== -->
   <div class="card">
     <div style="font-weight:700;font-size:15px;margin-bottom:12px">{{ thisMonth }} 정산마감 대상</div>
@@ -236,12 +237,14 @@ window.StSettleCloseMng = {
       <span v-else class="badge badge-green" style="font-size:13px;padding:8px 16px">✓ 마감완료</span>
     </div>
   </div>
+  <!-- ===== □. 이번달 마감 대상 =============================================== -->
   <!-- ===== ■. 마감 이력 =================================================== -->
   <div class="card" style="margin-top:12px">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="margin-bottom:12px"
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
+    <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="cfFilteredClose" row-key="closeId"
@@ -253,5 +256,7 @@ window.StSettleCloseMng = {
     </bo-grid>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 마감 이력 =================================================== -->`,
 };

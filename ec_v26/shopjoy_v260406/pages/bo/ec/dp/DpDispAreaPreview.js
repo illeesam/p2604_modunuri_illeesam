@@ -38,6 +38,7 @@ const _WP_DispAreaPreview2 = {
     </div>
     <div v-if="lib.linkUrl" style="font-size:10px;color:#aaa;margin-top:4px;">🔗 {{ lib.linkUrl }}</div>
   </template>
+  <!-- ===== □. 이미지 배너 ================================================== -->
   <!-- ===== ■. 상품 슬라이더 / 상품 ============================================ -->
   <template v-else-if="lib.widgetType==='product_slider'||lib.widgetType==='product'">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:7px;">{{ lib.name }}</div>
@@ -50,6 +51,7 @@ const _WP_DispAreaPreview2 = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 상품 슬라이더 / 상품 ============================================ -->
   <!-- ===== ■. 차트 ====================================================== -->
   <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
@@ -61,6 +63,7 @@ const _WP_DispAreaPreview2 = {
     </div>
     <div v-else style="height:50px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:11px;">데이터 없음</div>
   </template>
+  <!-- ===== □. 차트 ====================================================== -->
   <!-- ===== ■. 텍스트 배너 ================================================== -->
   <template v-else-if="lib.widgetType==='text_banner'">
     <div :style="{background:lib.bgColor||'#fff',color:lib.textColor||'#222',padding:'10px',borderRadius:'5px',border:'1px solid #eee',fontSize:'12px'}">
@@ -68,6 +71,7 @@ const _WP_DispAreaPreview2 = {
       <span v-else style="color:#ccc;">텍스트 배너</span>
     </div>
   </template>
+  <!-- ===== □. 텍스트 배너 ================================================== -->
   <!-- ===== ■. 정보 카드 =================================================== -->
   <template v-else-if="lib.widgetType==='info_card'">
     <div style="background:#f8f9fa;border-radius:5px;padding:10px;border:1px solid #eee;">
@@ -75,6 +79,7 @@ const _WP_DispAreaPreview2 = {
       <div style="font-size:11px;color:#666;white-space:pre-line;">{{ (lib.infoBody||'카드 내용').slice(0,100) }}</div>
     </div>
   </template>
+  <!-- ===== □. 정보 카드 =================================================== -->
   <!-- ===== ■. 쿠폰 ====================================================== -->
   <template v-else-if="lib.widgetType==='coupon'">
     <div style="background:linear-gradient(135deg,#e8587a,#f97316);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -89,6 +94,7 @@ const _WP_DispAreaPreview2 = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 쿠폰 ====================================================== -->
   <!-- ===== ■. 캐시 배너 =================================================== -->
   <template v-else-if="lib.widgetType==='cache_banner'">
     <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:6px;padding:12px;color:#fff;display:flex;align-items:center;gap:10px;">
@@ -100,16 +106,19 @@ const _WP_DispAreaPreview2 = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 캐시 배너 =================================================== -->
   <!-- ===== ■. HTML 에디터 ================================================ -->
   <template v-else-if="lib.widgetType==='html_editor'">
     <div v-if="lib.htmlContent" v-html="lib.htmlContent" style="font-size:12px;overflow:hidden;max-height:120px;"></div>
     <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">HTML 미리보기</div>
   </template>
+  <!-- ===== □. HTML 에디터 ================================================ -->
   <!-- ===== ■. 위젯 임베드 ================================================== -->
   <template v-else-if="lib.widgetType==='widget_embed'">
     <div v-if="lib.embedCode" v-html="lib.embedCode" style="overflow:hidden;max-height:140px;"></div>
     <div v-else style="color:#ccc;font-size:11px;padding:8px 0;">임베드 미리보기</div>
   </template>
+  <!-- ===== □. 위젯 임베드 ================================================== -->
   <!-- ===== ■. 팝업 ====================================================== -->
   <template v-else-if="lib.widgetType==='popup'">
     <div style="border:2px solid #e0e0e0;border-radius:6px;overflow:hidden;">
@@ -122,6 +131,7 @@ const _WP_DispAreaPreview2 = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 팝업 ====================================================== -->
   <!-- ===== ■. 파일 ====================================================== -->
   <template v-else-if="lib.widgetType==='file'">
     <div style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;">
@@ -132,6 +142,7 @@ const _WP_DispAreaPreview2 = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 파일 ====================================================== -->
   <!-- ===== ■. 기타 ====================================================== -->
   <template v-else>
     <div style="background:#f5f5f5;border-radius:6px;padding:16px;text-align:center;color:#bbb;">
@@ -140,7 +151,8 @@ const _WP_DispAreaPreview2 = {
     </div>
   </template>
 </div>
-`,
+
+  <!-- ===== □. 기타 ====================================================== -->`,
 };
 
 /* -- 메인 컴포넌트 -- */
@@ -617,6 +629,7 @@ window.DpDispAreaPreview = {
       🌐 {{ cfSiteNm }}
     </span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 조회 조건 =================================================== -->
   <div class="card" style="padding:14px 18px;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -647,6 +660,7 @@ window.DpDispAreaPreview = {
         </select>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
+      <!-- ===== ■.■.■. 영역 ================================================== -->
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
         <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
@@ -671,6 +685,7 @@ window.DpDispAreaPreview = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 조회 조건 =================================================== -->
   <!-- ===== ■. 2단 레이아웃 ================================================= -->
   <div style="display:flex;gap:12px;height:calc(100vh - 240px);min-height:500px;align-items:stretch;">
     <!-- ===== ■.■. 왼쪽: 트리 (카드) =========================================== -->
@@ -721,6 +736,7 @@ window.DpDispAreaPreview = {
                 {{ node.children.reduce((acc,c)=>acc+c.libs.length,0) }}
               </span>
             </div>
+            <!-- ===== ■.■.■.■.■.■. 조건부 영역 ======================================== -->
             <template v-if="isOpen(node.label)">
               <div v-for="sub in node.children" :key="node.label+'_'+sub.label">
                 <div @click="toggleNode(node.label+'_'+sub.label)"
@@ -766,6 +782,7 @@ window.DpDispAreaPreview = {
         <div v-if="!cfTree.length" style="padding:24px;text-align:center;color:#ccc;font-size:12px;">위젯이 없습니다.</div>
       </div>
     </div>
+    <!-- ===== □.□. 왼쪽: 트리 (카드) =========================================== -->
     <!-- ===== ■.■. 오른쪽 (카드) ============================================== -->
     <div class="card" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f0f2f5;min-width:0;padding:0;">
       <!-- ===== ■.■.■. 탭바 + 뷰포트 토글 + 배치수 =================================== -->
@@ -1039,7 +1056,9 @@ window.DpDispAreaPreview = {
   </div>
   <!-- ===== /2단 ======================================================== -->
 </div>
-`,
+
+    <!-- ===== □.□. 오른쪽 (카드) ============================================== -->
+  <!-- ===== □. 2단 레이아웃 ================================================= -->`,
   components: {
     WidgetPreview: _WP_DispAreaPreview2,
   },

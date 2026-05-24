@@ -202,12 +202,14 @@ window.SyI18nMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
     :columns="baseGridColumns" :rows="i18nKeys" :pager="pager" row-key="i18nId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
     @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail"></bo-grid>
+  <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 번역 편집 패널 ================================================ -->
   <div class="card" v-if="cfSelectedKey">
     <div class="toolbar">
@@ -217,7 +219,7 @@ window.SyI18nMng = {
         <button class="btn btn-secondary btn-sm" @click="selectedId=null">닫기</button>
       </div>
     </div>
-    <!-- 언어별 번역 입력 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="msgFormColumns" :form="msgForm" :errors="{}"
@@ -225,5 +227,7 @@ window.SyI18nMng = {
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
+  <!-- ===== □. 번역 편집 패널 ================================================ -->`
 };

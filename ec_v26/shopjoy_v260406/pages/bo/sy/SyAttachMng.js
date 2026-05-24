@@ -354,7 +354,7 @@ window.SyAttachMng = {
   <div class="page-title">첨부관리</div>
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:16px;align-items:flex-start;">
-    <!-- 좌: 첨부그룹관리 (30%) -->
+    <!-- ===== ■.■. 좌: 첨부그룹관리 (30%) ======================================= -->
     <div style="flex:0 0 30%;min-width:260px;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
@@ -376,7 +376,7 @@ window.SyAttachMng = {
             <button class="btn btn-primary btn-sm" style="font-size:12px;padding:4px 10px;flex-shrink:0;" @click="onGrpSearch">조회</button>
           </div>
         </div>
-        <!-- 그룹 폼 (BoFormArea 자동 렌더) -->
+        <!-- ===== ■.■.■.■. 그룹 폼 (BoFormArea 자동 렌더) =========================== -->
         <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;">
             {{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}
@@ -392,7 +392,7 @@ window.SyAttachMng = {
             <button class="btn btn-secondary btn-sm" style="flex:1;" @click="uiState.grpEditMode=false">취소</button>
           </div>
         </div>
-        <!-- 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) -->
+        <!-- ===== ■.■.■.■. 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) ===== -->
         <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
           <div v-for="g in attachGrps" :key="g.attachGrpId"
             style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
@@ -423,18 +423,20 @@ window.SyAttachMng = {
             {{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}
           </div>
         </div>
-        <!-- /그룹 목록 박스 -->
-        <!-- 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
+        <!-- ===== ■.■.■.■. /그룹 목록 박스 ========================================= -->
+        <!-- ===== ■.■.■.■. 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ====================== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <bo-pager :pager="grpPager" :on-set-page="setGrpPage" :on-size-change="onGrpSizeChange"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>
     </div>
-    <!-- 우: 첨부파일관리 (70%) -->
+    <!-- ===== □.□. 좌: 첨부그룹관리 (30%) ======================================= -->
+    <!-- ===== ■.■. 우: 첨부파일관리 (70%) ======================================= -->
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
-        <!-- 검색바 -->
+        <!-- ===== ■.■.■.■. 검색바 =============================================== -->
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
           <b style="font-size:14px;white-space:nowrap;">
             첨부파일관리
@@ -469,11 +471,12 @@ window.SyAttachMng = {
           </div>
         </div>
         <span class="list-title">
+          <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
           <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
           첨부파일목록
           <span class="list-count">{{ pager.pageTotalCount }}건</span>
         </span>
-        <!-- 파일 폼 -->
+        <!-- ===== ■.■.■.■. 파일 폼 ============================================== -->
         <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px 12px;margin-bottom:10px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#444;">
             {{ uiState.fileEditId===null ? '파일 등록' : '파일 수정' }}
@@ -481,17 +484,17 @@ window.SyAttachMng = {
               #{{ uiState.fileEditId }}
             </span>
           </div>
-          <!-- 파일 폼 (BoFormArea 자동 렌더, 4컬럼) -->
+          <!-- ===== ■.■.■.■.■. 파일 폼 (BoFormArea 자동 렌더, 4컬럼) ==================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="fileFormColumns" :form="fileForm" :errors="{}"
             :cols="4" :show-actions="false" />
-          <!-- 저장/취소 가운데 정렬 -->
+          <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
           <div style="display:flex;gap:8px;justify-content:center;">
             <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleSaveFile">저장</button>
             <button class="btn btn-secondary btn-sm" style="min-width:60px;" @click="uiState.fileEditMode=false">취소</button>
           </div>
         </div>
-        <!-- 파일 그리드 (기본 10개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) -->
+        <!-- ===== ■.■.■.■. 파일 그리드 (기본 10개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) ===== -->
         <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
           <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid
@@ -512,8 +515,8 @@ window.SyAttachMng = {
             </template>
           </bo-grid>
         </div>
-        <!-- /파일 그리드 스크롤 컨테이너 -->
-        <!-- 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) -->
+        <!-- ===== ■.■.■.■. /파일 그리드 스크롤 컨테이너 ================================== -->
+        <!-- ===== ■.■.■.■. 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) ===== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
           <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
             style="margin-top:0;min-height:34px;" />
@@ -522,5 +525,7 @@ window.SyAttachMng = {
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 우: 첨부파일관리 (70%) ======================================= -->
+  <!-- ===== □. 본문 영역 =================================================== -->`
 };

@@ -176,7 +176,8 @@ window.SySiteDtl = {
     {{ cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.siteId }}</span>
   </div>
-  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
+  <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
@@ -186,7 +187,7 @@ window.SySiteDtl = {
       @cancel="navigate('sySiteMng')"
       @edit="navigate('__switchToEdit__')"
       @close="navigate('sySiteMng')">
-      <!-- 주소: 우편번호+검색버튼+기본주소 (카카오 우편번호 연동) -->
+      <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소 (카카오 우편번호 연동) ==================== -->
       <template #addr>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
@@ -202,5 +203,7 @@ window.SySiteDtl = {
     </bo-form-area>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+  <!-- ===== □. 카드 영역 =================================================== -->`
 };

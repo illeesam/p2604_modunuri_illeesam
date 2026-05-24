@@ -163,7 +163,7 @@ window.foAppHeader = {
   template: /* html */ `
 <header class="glass" style="height:var(--header-h,60px);min-height:60px;flex-shrink:0;display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">
 
-  <!-- Hamburger (mobile) -->
+  <!-- ===== ■. Hamburger (mobile) ====================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <button @click="$emit('app-toggle-mobile')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;"
@@ -173,7 +173,8 @@ window.foAppHeader = {
     <span style="display:block;width:14px;height:2px;background:var(--text-primary);border-radius:2px;transition:all 0.25s;"></span>
   </button>
 
-  <!-- Collapse toggle (desktop) -->
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. Collapse toggle (desktop) =============================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <button @click="$emit('app-toggle-sidebar')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:none;align-items:center;color:var(--text-secondary);flex-shrink:0;"
@@ -181,17 +182,18 @@ window.foAppHeader = {
     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
   </button>
 
-  <!-- Logo -->
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. Logo ==================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <button @click="navigate('home')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0;">
     <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <!-- 모래 -->
+      <!-- ===== ■.■.■. 모래 ================================================== -->
       <ellipse cx="30" cy="92" rx="22" ry="6" fill="#d4a017"/>
       <ellipse cx="30" cy="92" rx="18" ry="4" fill="#e6b422"/>
-      <!-- 줄기 -->
+      <!-- ===== ■.■.■. 줄기 ================================================== -->
       <path d="M30 90 Q25 60 35 30" stroke="#b8860b" stroke-width="6" fill="none" stroke-linecap="round"/>
       <path d="M30 90 Q25 60 35 30" stroke="#d4a017" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <!-- 잎 -->
+      <!-- ===== ■.■.■. 잎 =================================================== -->
       <path d="M35 30 Q55 10 75 18" stroke="#228B22" stroke-width="2.5" fill="none"/>
       <path d="M35 30 Q60 15 78 25" stroke="#2d8f2d" stroke-width="2" fill="none"/>
       <path d="M35 30 Q50 5 70 8" stroke="#1a7a1a" stroke-width="2.5" fill="none"/>
@@ -199,19 +201,20 @@ window.foAppHeader = {
       <path d="M35 30 Q15 12 3 22" stroke="#2d8f2d" stroke-width="2" fill="none"/>
       <path d="M35 30 Q25 5 10 5" stroke="#1a7a1a" stroke-width="2.5" fill="none"/>
       <path d="M35 30 Q35 8 40 3" stroke="#228B22" stroke-width="2" fill="none"/>
-      <!-- 열매 -->
+      <!-- ===== ■.■.■. 열매 ================================================== -->
       <circle cx="40" cy="34" r="5" fill="#8B008B"/>
       <circle cx="48" cy="38" r="5" fill="#dc2626"/>
       <circle cx="44" cy="44" r="5" fill="#2563eb"/>
       <circle cx="35" cy="40" r="4.5" fill="#7c3aed"/>
       <circle cx="52" cy="32" r="4" fill="#dc2626"/>
       <circle cx="50" cy="46" r="4" fill="#2563eb"/>
-      <!-- 하이라이트 -->
+      <!-- ===== ■.■.■. 하이라이트 =============================================== -->
       <circle cx="38" cy="32" r="1.5" fill="rgba(255,255,255,0.4)"/>
       <circle cx="46" cy="36" r="1.5" fill="rgba(255,255,255,0.4)"/>
       <circle cx="42" cy="42" r="1.5" fill="rgba(255,255,255,0.4)"/>
     </svg>
     <div style="display:flex;flex-direction:column;line-height:1.1;text-align:left;">
+      <!-- ===== ■.■.■. 영역 ================================================== -->
       <span style="font-size:0.95rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.3px;">{{ config.name }}</span>
       <span style="font-size:0.6rem;color:var(--text-muted);font-weight:500;letter-spacing:0.08em;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
         {{ config.tagline }}
@@ -236,11 +239,12 @@ window.foAppHeader = {
     </div>
   </button>
 
-  <!-- Top nav -->
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. Top nav ================================================= -->
   <!-- ===== ■. 영역 ====================================================== -->
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
     <template v-for="m in cfTopMenu" :key="m.menuId">
-      <!-- Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) -->
+      <!-- ===== ■.■.■. Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) ======= -->
       <template v-if="foSiteNo==='01' && (m.menuId && (m.menuId.startsWith('dispUi') || m.menuId==='divider-disp'))"></template>
       <span v-else-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
       <button v-else @click="navigate(m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
@@ -249,11 +253,12 @@ window.foAppHeader = {
     </template>
   </nav>
 
-  <!-- 우측: 로그인/유저 → 테마 순 -->
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. 우측: 로그인/유저 → 테마 순 ======================================= -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
 
-    <!-- 비로그인 -->
+    <!-- ===== ■.■. 비로그인 ================================================== -->
     <button v-if="!cfIsLogin" @click="onAppShowLogin"
       style="padding:7px 16px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;transition:all 0.2s;"
       @mouseenter="$event.target.style.background='var(--blue)';$event.target.style.color='#fff';"
@@ -261,7 +266,8 @@ window.foAppHeader = {
       로그인
     </button>
 
-    <!-- 로그인 상태 -->
+    <!-- ===== □.□. 비로그인 ================================================== -->
+    <!-- ===== ■.■. 로그인 상태 ================================================ -->
     <div v-else ref="userMenuRoot" style="position:relative;">
       <button type="button" @click="toggleUserMenu"
         style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;color:var(--text-primary);font-weight:600;">
@@ -273,10 +279,10 @@ window.foAppHeader = {
           :style="uiState.userMenuOpen?'transform:rotate(180deg);transition:0.2s;':'transition:0.2s;'"><path d="M6 9l6 6 6-6"/></svg>
       </button>
 
-      <!-- 드롭다운 -->
+      <!-- ===== ■.■.■. 드롭다운 ================================================ -->
       <div v-if="uiState.userMenuOpen" @click.stop
         style="position:absolute;right:0;top:calc(100% + 8px);width:196px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 28px rgba(0,0,0,0.13);z-index:100;overflow:hidden;">
-        <!-- 사용자 정보 -->
+        <!-- ===== ■.■.■.■. 사용자 정보 ============================================ -->
         <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:800;flex-shrink:0;">
@@ -289,7 +295,8 @@ window.foAppHeader = {
           </div>
         </div>
 
-        <!-- 메뉴 항목 -->
+        <!-- ===== ■.■.■.■. 메뉴 항목 ============================================= -->
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <div style="padding:4px 0;">
           <button v-for="item in cfMenuItems" :key="item.label" @click="item.action()"
             style="width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;text-align:left;font-size:0.86rem;display:flex;align-items:center;gap:9px;transition:background 0.15s;"
@@ -301,7 +308,7 @@ window.foAppHeader = {
           </button>
         </div>
 
-        <!-- 로그아웃 -->
+        <!-- ===== ■.■.■.■. 로그아웃 ============================================== -->
         <div style="border-top:1px solid var(--border);padding:4px 0;">
           <button @click="doLogout"
             style="width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;text-align:left;font-size:0.86rem;color:#ef4444;display:flex;align-items:center;gap:9px;transition:background 0.15s;"
@@ -313,7 +320,9 @@ window.foAppHeader = {
       </div>
     </div>
 
-    <!-- 좋아요(위시리스트) 아이콘 -->
+    <!-- ===== □.□. 로그인 상태 ================================================ -->
+    <!-- ===== ■.■. 좋아요(위시리스트) 아이콘 ======================================== -->
+    <!-- ===== ■.■. 버튼 영역 ================================================= -->
     <button type="button" @click="navigate('like'); closeUserMenu()"
       style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
       title="위시리스트"
@@ -327,7 +336,8 @@ window.foAppHeader = {
       </span>
     </button>
 
-    <!-- 장바구니: 아이콘 + 뱃지(개수) -->
+    <!-- ===== □.□. 버튼 영역 ================================================= -->
+    <!-- ===== ■.■. 장바구니: 아이콘 + 뱃지(개수) ==================================== -->
     <button type="button" @click="navigate('cart'); closeUserMenu()"
       class="header-cart-link"
       style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
@@ -342,19 +352,22 @@ window.foAppHeader = {
       </span>
     </button>
 
-    <!-- 테마 토글 (장바구니 오른쪽) -->
+    <!-- ===== □.□. 장바구니: 아이콘 + 뱃지(개수) ==================================== -->
+    <!-- ===== ■.■. 테마 토글 (장바구니 오른쪽) ====================================== -->
+    <!-- ===== ■.■. 버튼 영역 ================================================= -->
     <button class="theme-toggle" @click="toggleTheme" :title="theme==='light'?'다크 모드로 전환':'라이트 모드로 전환'">
       <span v-if="theme==='light'">🌙</span>
       <span v-else>☀️</span>
     </button>
 
-    <!-- 설정 아이콘 -->
+    <!-- ===== □.□. 버튼 영역 ================================================= -->
+    <!-- ===== ■.■. 설정 아이콘 ================================================ -->
     <div data-fo-settings style="position:relative;flex-shrink:0;">
       <button @click="$emit('app-toggle-settings')"
         style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;font-size:15px;color:var(--text-secondary);transition:all 0.2s;"
         :style="appShowSettings?'border-color:var(--accent,#c9a96e);background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);':''"
         title="설정">⚙</button>
-      <!-- 설정 드롭다운 -->
+      <!-- ===== ■.■.■. 설정 드롭다운 ============================================= -->
       <div v-if="appShowSettings"
         style="position:absolute;right:0;top:calc(100% + 8px);width:148px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
         <button @click="$emit('app-toggle-api-log')"
@@ -370,7 +383,9 @@ window.foAppHeader = {
     </div>
   </div>
 
-  <!-- ══ Profile 모달 ══ -->
+    <!-- ===== □.□. 설정 아이콘 ================================================ -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. ══ Profile 모달 ══ ======================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
   <!-- ===== ■. 조건부 영역 ================================================== -->
@@ -384,22 +399,22 @@ window.foAppHeader = {
       </div>
 
       <div style="display:flex;flex-direction:column;gap:12px;">
-        <!-- 이름 -->
+        <!-- ===== ■.■.■.■. 이름 ================================================ -->
         <div>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">이름 <span style="color:var(--blue);">*</span></div>
           <input v-model="pf.memberNm" :style="IS" placeholder="이름">
         </div>
-        <!-- 이메일 (읽기전용) -->
+        <!-- ===== ■.■.■.■. 이메일 (읽기전용) ======================================== -->
         <div>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">이메일</div>
           <input v-model="pf.email" :style="IS.replace('var(--bg-card)','var(--bg-base)')" readonly style="cursor:default;">
         </div>
-        <!-- 휴대폰 -->
+        <!-- ===== ■.■.■.■. 휴대폰 =============================================== -->
         <div>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">휴대폰</div>
           <input v-model="pf.phone" :style="IS" placeholder="010-0000-0000">
         </div>
-        <!-- 주소 -->
+        <!-- ===== ■.■.■.■. 주소 ================================================ -->
         <div>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">주소</div>
           <div style="display:flex;gap:8px;margin-bottom:6px;">
@@ -414,7 +429,8 @@ window.foAppHeader = {
             style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;cursor:default;outline:none;margin-bottom:6px;">
           <input v-model="pf.addressDetail" :style="IS" placeholder="상세 주소 (동/호수 등)">
         </div>
-        <!-- 생년월일 + 성별 -->
+        <!-- ===== ■.■.■.■. 생년월일 + 성별 ========================================= -->
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <div>
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">생년월일</div>
@@ -446,7 +462,8 @@ window.foAppHeader = {
   </div>
   </Teleport>
 
-  <!-- ══ 비밀번호 변경 모달 ══ -->
+  <!-- ===== □. 조건부 영역 ================================================== -->
+  <!-- ===== ■. ══ 비밀번호 변경 모달 ══ ======================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
   <!-- ===== ■. 조건부 영역 ================================================== -->
@@ -459,7 +476,7 @@ window.foAppHeader = {
         <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">현재 비밀번호 확인 후 변경할 수 있습니다</div>
       </div>
 
-      <!-- 성공 상태 -->
+      <!-- ===== ■.■.■. 성공 상태 =============================================== -->
       <div v-if="pw.ok" style="text-align:center;padding:20px 0;">
         <div style="font-size:2.5rem;margin-bottom:12px;">✅</div>
         <div style="font-size:1rem;font-weight:700;color:#22c55e;">비밀번호가 변경되었습니다!</div>
@@ -479,7 +496,8 @@ window.foAppHeader = {
           <input v-model="pw.next2" type="password" :style="IS" placeholder="새 비밀번호 재입력" @keyup.enter="savePw">
         </div>
 
-        <!-- 비번 강도 표시 -->
+        <!-- ===== ■.■.■.■. 비번 강도 표시 ========================================== -->
+        <!-- ===== ■.■.■.■. 조건부 영역 ============================================ -->
         <div v-if="pw.next" style="display:flex;gap:4px;align-items:center;">
           <div v-for="i in 4" :key="i" style="flex:1;height:3px;border-radius:2px;transition:background 0.2s;"
             :style="i <= (pw.next.length<6?1:pw.next.length<8?2:pw.next.match(/[^a-zA-Z0-9]/)?4:3) ? 'background:var(--blue);' : 'background:var(--border);'"></div>
@@ -502,5 +520,6 @@ window.foAppHeader = {
   </Teleport>
 
 </header>
-  `,
+  
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

@@ -247,6 +247,7 @@ window.CmChattDtl = {
       #{{ chat.chattRoomId }}
     </span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 채팅 상세 =================================================== -->
   <div v-if="!cfIsNew">
     <div class="tab-bar-row">
@@ -327,6 +328,7 @@ window.CmChattDtl = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 채팅 상세 =================================================== -->
   <!-- ===== ■. 신규 채팅 등록 ================================================ -->
   <template v-if="cfIsNew">
     <div class="card">
@@ -334,12 +336,12 @@ window.CmChattDtl = {
         <button class="tab-btn" :class="{active:tab==='new'}" @click="tab='new'">신규 등록</button>
         <button class="tab-btn" :class="{active:tab==='search'}" @click="tab='search'">고객 채팅 조회</button>
       </div>
-      <!-- 신규 등록 탭 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 신규 등록 탭 (BoFormArea 자동 렌더) ========================== -->
       <div v-show="tab==='new'">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="newFormColumns" :form="form" :errors="errors"
           :readonly="false" :cols="2" :show-actions="false">
-          <!-- 회원ID + 보기 -->
+          <!-- ===== ■.■.■.■.■. 회원ID + 보기 ======================================= -->
           <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">
               <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="onUserChange" :class="errors.memberId ? 'is-invalid' : ''" />
@@ -366,6 +368,7 @@ window.CmChattDtl = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 신규 채팅 등록 ================================================ -->
   <!-- ===== ■. 메시지 내 참조 모달 (상품/주문/클레임) ================================= -->
   <bo-modal :show="refModal.show"
     :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'"
@@ -376,5 +379,6 @@ window.CmChattDtl = {
     </template>
   </bo-modal>
 </div>
-`
+
+  <!-- ===== □. 메시지 내 참조 모달 (상품/주문/클레임) ================================= -->`
 };

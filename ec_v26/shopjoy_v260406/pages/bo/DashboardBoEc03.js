@@ -329,7 +329,7 @@
 
     template: /* html */`
 <div :class="(tabMode==='3col'||tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
-  <!-- 헤더 -->
+  <!-- ===== ■. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
@@ -339,7 +339,8 @@
       14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}
     </span>
   </div>
-  <!-- 필터 바: 조회기간 + 상세필터 토글 -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 필터 바: 조회기간 + 상세필터 토글 ==================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -385,7 +386,8 @@
       </div>
     </div>
   </div>
-  <!-- 탭 바 + 뷰모드 -->
+  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== ■. 탭 바 + 뷰모드 =============================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
@@ -409,10 +411,11 @@
       </button>
     </div>
   </div>
-  <!-- 탭 컨텐츠: 뷰모드에 따라 grid -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 탭 컨텐츠: 뷰모드에 따라 grid ===================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">
-    <!-- 1) 월별 매출현황 -->
+    <!-- ===== ■.■. 1) 월별 매출현황 ============================================ -->
     <div v-show="showPanel('sales')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
         💰
@@ -437,10 +440,12 @@
         <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
       </div>
     </div>
-    <!-- 2) 월별 고객 가입/탈퇴 현황 -->
+    <!-- ===== □.□. 1) 월별 매출현황 ============================================ -->
+    <!-- ===== ■.■. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
     <div v-show="showPanel('member')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
         👥
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <span>월별 고객 가입/탈퇴자 현황 (14개월)</span>
         <span style="flex:1;"></span>
         <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;">
@@ -466,7 +471,9 @@
         <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
       </div>
     </div>
-    <!-- 3) 월별 상품상세 클릭 현황 -->
+    <!-- ===== □.□. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
+    <!-- ===== ■.■. 3) 월별 상품상세 클릭 현황 ====================================== -->
+    <!-- ===== ■.■. 조건부 카드 ================================================ -->
     <div v-show="showPanel('click')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
         🖱
@@ -491,11 +498,13 @@
         <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
       </div>
     </div>
-    <!-- 4) 월별 주문완료 현황 -->
+    <!-- ===== □.□. 조건부 카드 ================================================ -->
+    <!-- ===== ■.■. 4) 월별 주문완료 현황 ========================================= -->
     <div v-show="showPanel('order')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
         📋
         <span>월별 주문완료 현황 (14개월)</span>
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(cfMonthlyOrders.reduce((a,b)=>a+b,0)) }}건</span>
       </div>
@@ -516,7 +525,9 @@
         <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
       </div>
     </div>
-    <!-- 5) 월별 판매채널별 매출 -->
+    <!-- ===== □.□. 4) 월별 주문완료 현황 ========================================= -->
+    <!-- ===== ■.■. 5) 월별 판매채널별 매출 ======================================== -->
+    <!-- ===== ■.■. 조건부 카드 ================================================ -->
     <div v-show="showPanel('channel')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
         📺
@@ -539,7 +550,8 @@
         </span>
       </div>
     </div>
-    <!-- 6) 핵심지표 KPI -->
+    <!-- ===== □.□. 조건부 카드 ================================================ -->
+    <!-- ===== ■.■. 6) 핵심지표 KPI =========================================== -->
     <div v-show="showPanel('kpi')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🎯 핵심지표</div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
@@ -563,7 +575,9 @@
         </div>
       </div>
     </div>
-    <!-- 7) 상품 TOP 7 -->
+    <!-- ===== □.□. 6) 핵심지표 KPI =========================================== -->
+    <!-- ===== ■.■. 7) 상품 TOP 7 =========================================== -->
+    <!-- ===== ■.■. 조건부 카드 ================================================ -->
     <div v-show="showPanel('topProducts')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">📦 상품별 매출 TOP 7</div>
       <div style="display:flex;flex-direction:column;gap:6px;">
@@ -576,7 +590,8 @@
         </div>
       </div>
     </div>
-    <!-- 8~10) 도넛 3개 (채널/디바이스/시간대) -->
+    <!-- ===== □.□. 조건부 카드 ================================================ -->
+    <!-- ===== ■.■. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
     <div v-for="d in [
       {key:'channelMix', title:'📱 판매 채널별',  data:salesByChannel},
       {key:'deviceMix',  title:'💻 디바이스별',   data:salesByDevice},
@@ -593,6 +608,7 @@
               transform="rotate(-90 50 50)" />
           </template>
         </svg>
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <div style="flex:1;display:flex;flex-direction:column;gap:3px;font-size:11px;">
           <div v-for="s in d.data" :key="s.label" style="display:flex;align-items:center;gap:6px;">
             <span :style="{width:'10px',height:'10px',borderRadius:'2px',background:s.color}"></span>
@@ -602,7 +618,8 @@
         </div>
       </div>
     </div>
-    <!-- 11) 지역별 -->
+    <!-- ===== □.□. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
+    <!-- ===== ■.■. 11) 지역별 =============================================== -->
     <div v-show="showPanel('region')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🗺 지역별 매출현황</div>
       <div style="display:flex;flex-direction:column;gap:5px;">
@@ -615,7 +632,9 @@
         </div>
       </div>
     </div>
-    <!-- 12) 시간대 추이 -->
+    <!-- ===== □.□. 11) 지역별 =============================================== -->
+    <!-- ===== ■.■. 12) 시간대 추이 ============================================ -->
+    <!-- ===== ■.■. 조건부 카드 ================================================ -->
     <div v-show="showPanel('hourly')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">⏱ 시간대별 주문 추이 (24H)</div>
       <svg viewBox="0 0 420 140" style="width:100%;height:140px;">
@@ -632,7 +651,8 @@
         <span>23</span>
       </div>
     </div>
-    <!-- 13) 영업지표 레이더 -->
+    <!-- ===== □.□. 조건부 카드 ================================================ -->
+    <!-- ===== ■.■. 13) 영업지표 레이더 ========================================== -->
     <div v-show="showPanel('radar')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">⚡ 영업 지표 비교</div>
       <svg viewBox="0 0 200 200" style="width:100%;height:200px;">
@@ -646,7 +666,9 @@
         </text>
       </svg>
     </div>
-    <!-- 14) 경제 수준별 -->
+    <!-- ===== □.□. 13) 영업지표 레이더 ========================================== -->
+    <!-- ===== ■.■. 14) 경제 수준별 ============================================ -->
+    <!-- ===== ■.■. 조건부 카드 ================================================ -->
     <div v-show="showPanel('economy')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">💼 경제 수준별 매출현황</div>
       <svg viewBox="0 0 480 160" style="width:100%;height:160px;">
@@ -672,7 +694,9 @@
         </span>
       </div>
     </div>
-    <!-- 15) 배송 조건별 -->
+    <!-- ===== □.□. 조건부 카드 ================================================ -->
+    <!-- ===== ■.■. 15) 배송 조건별 ============================================ -->
+    <!-- ===== ■.■. 조건부 카드 ================================================ -->
     <div v-show="showPanel('shipping')" class="card" style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🚚 배송 조건별 매출현황</div>
       <div style="display:flex;gap:14px;align-items:center;padding:8px 0;">
@@ -695,7 +719,9 @@
       </div>
     </div>
   </div>
-  <!-- /탭 그리드 -->
+    <!-- ===== □.□. 조건부 카드 ================================================ -->
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. /탭 그리드 ================================================== -->
 </div>
 `,
   };

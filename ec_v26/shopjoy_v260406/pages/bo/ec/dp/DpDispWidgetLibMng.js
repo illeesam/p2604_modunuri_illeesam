@@ -269,6 +269,8 @@ window.DpDispWidgetLibMng = {
       </div>
     </bo-search-area>
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">
@@ -317,6 +319,7 @@ window.DpDispWidgetLibMng = {
       </bo-grid>
     </div>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -333,5 +336,6 @@ window.DpDispWidgetLibMng = {
       />
   </div>
 </div>
-`
+
+  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->`
 };

@@ -137,13 +137,14 @@ window.CmNoticeDtl = {
   },
   template: /* html */`
 <div>
-  <!-- 페이지 타이틀 + ID 표시 -->
+  <!-- ===== ■. 페이지 타이틀 + ID 표시 ========================================= -->
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '공지사항 등록' : (cfDtlMode ? '공지사항 상세' : '공지사항 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.noticeId }}</span>
   </div>
-  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
+  <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
@@ -153,12 +154,12 @@ window.CmNoticeDtl = {
       @cancel="navigate('cmNoticeMng')"
       @edit="navigate('__switchToEdit__')"
       @close="navigate('cmNoticeMng')">
-      <!-- 내용 (Quill 또는 view 모드 HTML) -->
+      <!-- ===== ■.■.■. 내용 (Quill 또는 view 모드 HTML) ========================== -->
       <template #contentHtml>
         <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else v-model="form.contentHtml" height="280px" />
       </template>
-      <!-- 첨부파일 -->
+      <!-- ===== ■.■.■. 첨부파일 ================================================ -->
       <template #attachGrp>
         <div style="font-size:11px;font-weight:400;color:#aaa;margin-bottom:4px;">
           #NOTICE_ATTACH
@@ -178,5 +179,7 @@ window.CmNoticeDtl = {
     </bo-form-area>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+  <!-- ===== □. 카드 영역 =================================================== -->`
 };

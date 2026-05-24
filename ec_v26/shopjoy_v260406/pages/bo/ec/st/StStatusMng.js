@@ -473,6 +473,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계 • 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계 • 정산집계 탭: 마감 기준 월별 최종 정산액 목록 • CSV 내보내기를 지원합니다.
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 공통 날짜 필터 ================================================ -->
   <div class="card" style="margin-bottom:12px">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -484,6 +485,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </template>
     </bo-search-area>
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 공통 날짜 필터 ================================================ -->
   <!-- ===== ■. 탭 ======================================================= -->
   <div class="tab-bar-row" style="margin-bottom:0">
     <div class="tab-nav">
@@ -492,6 +495,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </button>
     </div>
   </div>
+  <!-- ===== □. 탭 ======================================================= -->
   <!-- ===== ■. ══ 1. 업체별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
     <!-- ===== ■.■. 요약 카드 ================================================= -->
@@ -513,10 +517,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <div style="font-size:18px;font-weight:700;color:#27ae60">{{ fmtW(cfVendorSummary.settle) }}</div>
       </div>
     </div>
+    <!-- ===== □.□. 요약 카드 ================================================= -->
     <!-- ===== ■.■. 검색 ==================================================== -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="vendorSearchColumns" :param="uiState"
       @search="onSearch" />
+    <!-- ===== □.□. 검색 ==================================================== -->
     <!-- ===== ■.■. 테이블 =================================================== -->
     <bo-grid
       :columns="vendorGridColumns"
@@ -529,6 +535,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @set-page="setVendorPage"
       @size-change="onVendorSizeChange"></bo-grid>
   </div>
+    <!-- ===== □.□. 테이블 =================================================== -->
+  <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 2. 주문별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -553,6 +561,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="orderSearchColumns" :param="uiState"
       @search="onSearch" />
+    <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="orderGridColumns"
@@ -566,6 +575,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @set-page="setOrderPage"
       @size-change="onOrderSizeChange"></bo-grid>
   </div>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 3. 클레임별현황 ══ ========================================= -->
   <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -595,6 +606,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="claimSearchColumns" :param="uiState"
       @search="onSearch" />
+    <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="claimGridColumns"
@@ -607,6 +619,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @set-page="setClaimPage"
       @size-change="onClaimSizeChange"></bo-grid>
   </div>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. ══ 3. 클레임별현황 ══ ========================================= -->
   <!-- ===== ■. ══ 4. 프로모션별현황 ══ ======================================== -->
   <div v-if="uiState.activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
@@ -627,6 +641,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="promoSearchColumns" :param="uiState"
       @search="onSearch" />
+    <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="promoGridColumns"
@@ -639,6 +654,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @set-page="setPromoPage"
       @size-change="onPromoSizeChange"></bo-grid>
   </div>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
   <!-- ===== ■. ══ 5. 정산별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
@@ -663,6 +680,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="settleSearchColumns" :param="uiState"
       @search="onSearch" />
+    <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="settleGridColumns"
@@ -676,5 +694,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @size-change="onSettleSizeChange"></bo-grid>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. ══ 5. 정산별현황 ══ ========================================== -->`,
 };

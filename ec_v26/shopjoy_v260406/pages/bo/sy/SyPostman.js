@@ -632,6 +632,7 @@ window.SyPostman = {
       <input v-model="uiState.treeSearch" placeholder="🔍 검색어 입력"
         style="width:100%;box-sizing:border-box;font-size:11px;padding:4px 7px;border:1px solid #ddd;border-radius:4px;outline:none;background:#fff;margin-top:4px;" />
     </div>
+    <!-- ===== ■.■. 영역 ==================================================== -->
     <div style="flex:1;overflow-y:auto;padding:4px 0;">
       <div v-if="!uiState.treeLoaded" style="text-align:center;padding:20px;color:#ccc;font-size:11px;">로딩 중…</div>
       <div v-for="item in cfFlatTree" :key="item.n.id"
@@ -667,6 +668,8 @@ window.SyPostman = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 영역 ==================================================== -->
+  <!-- ===== □. ━━━ 1. Tree Panel (좌측) ━━━ ============================== -->
   <!-- ===== ■. ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ =============================== -->
   <div style="width:172px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f4f5f7;overflow:hidden;">
     <div style="padding:5px 8px 4px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;background:#eeeff2;">
@@ -714,6 +717,7 @@ window.SyPostman = {
             </button>
           </div>
         </div>
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <div style="font-size:10px;font-weight:600;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;" :title="tab.tabLabel">
           {{ tab.shortLabel }}
         </div>
@@ -730,6 +734,7 @@ window.SyPostman = {
       </div>
     </div>
   </div>
+  <!-- ===== □. ━━━ 2. 열린탭 바 (세로 좌측면) ━━━ =============================== -->
   <!-- ===== ■. ━━━ 자동실행 주기 선택 팝업 ━━━ =================================== -->
   <template v-if="uiState.autoPopupTabId">
     <div @click="closeAutoPopup" style="position:fixed;inset:0;z-index:8000;"></div>
@@ -780,6 +785,7 @@ window.SyPostman = {
                   {{ row.m }}분
                 </button>
               </td>
+              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <td style="padding:1px 4px;text-align:center;">
                 <button v-if="row.h!=null" @click="selectAuto(openTabs.find(t=>t.tabId===uiState.autoPopupTabId),row.h*3600000, row.h+'시간')"
                   style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;transition:all .1s;background:#f9f9f9;"
@@ -795,6 +801,7 @@ window.SyPostman = {
       </div>
     </div>
   </template>
+  <!-- ===== □. ━━━ 자동실행 주기 선택 팝업 ━━━ =================================== -->
   <!-- ===== ■. ━━━ 3. Main Panel (우측) ━━━ ============================== -->
   <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
     <!-- ===== ■.■. ⚙ Settings Panel ====================================== -->
@@ -851,12 +858,14 @@ window.SyPostman = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. ⚙ Settings Panel ====================================== -->
     <!-- ===== ■.■. 탭 없을 때 빈 상태 =========================================== -->
     <div v-if="!cfActiveTab" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#ccc;background:#fafafa;">
       <span style="font-size:40px;">🚀</span>
       <div style="font-size:14px;font-weight:600;color:#bbb;">좌측 API Endpoints에서 항목을 선택하세요</div>
       <div style="font-size:11px;color:#ccc;">선택하면 여기에 탭으로 열립니다</div>
     </div>
+    <!-- ===== □.□. 탭 없을 때 빈 상태 =========================================== -->
     <!-- ===== ■.■. 활성 탭 내용 =============================================== -->
     <template v-if="cfActiveTab">
       <!-- ===== ■.■.■. Request Bar ========================================= -->
@@ -982,6 +991,7 @@ window.SyPostman = {
         </div>
       </div>
     </template>
+    <!-- ===== □.□. 활성 탭 내용 =============================================== -->
     <!-- ===== ■.■. History =============================================== -->
     <div style="border-top:2px solid #e0e0e0;background:#fafafa;flex-shrink:0;">
       <div style="padding:4px 12px;border-bottom:1px solid #ebebeb;display:flex;align-items:center;justify-content:space-between;">
@@ -1043,6 +1053,7 @@ window.SyPostman = {
         </table>
       </div>
     </div>
+    <!-- ===== □.□. History =============================================== -->
     <!-- ===== ■.■. History 상세 모달 ========================================= -->
     <template v-if="histModal">
       <div @click="closeHistModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);"></div>
@@ -1146,6 +1157,7 @@ window.SyPostman = {
                 style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;color:#333;outline:none;resize:vertical;min-height:60px;line-height:1.5;"></textarea>
             </div>
           </div>
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#fff;overflow:hidden;">
             <div style="flex-shrink:0;padding:12px 14px 0;border-bottom:1px solid #f0f0f0;">
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
@@ -1189,6 +1201,8 @@ window.SyPostman = {
     </template>
   </div>
   <!-- ===== /Main Panel ================================================ -->
+    <!-- ===== □.□. History 상세 모달 ========================================= -->
+  <!-- ===== □. ━━━ 3. Main Panel (우측) ━━━ ============================== -->
   <!-- ===== ■. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->
   <div style="position:fixed;right:16px;bottom:16px;z-index:9500;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none;">
     <div v-for="t in toasts" :key="t.id"
@@ -1219,6 +1233,7 @@ window.SyPostman = {
           :style="t.method==='GET'?'background:#dcfce7;color:#166534;':t.method==='POST'?'background:#dbeafe;color:#1e40af;':t.method==='PUT'?'background:#fef3c7;color:#92400e;':t.method==='DELETE'?'background:#fee2e2;color:#991b1b;':'background:#f3e8ff;color:#6b21a8;'">
           {{ t.method }}
         </span>
+        <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <span style="font-family:monospace;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px;" :title="t.url">
           {{ t.url }}
         </span>
@@ -1240,5 +1255,6 @@ window.SyPostman = {
     </div>
   </div>
 </div>
-`,
+
+  <!-- ===== □. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->`,
 };

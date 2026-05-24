@@ -102,6 +102,7 @@ window.MbMemberHist = {
     <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
     이력정보
   </div>
+  <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -122,6 +123,7 @@ window.MbMemberHist = {
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
     </div>
   </div>
+  <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 연관 주문 ================================================= -->
@@ -134,6 +136,7 @@ window.MbMemberHist = {
         </template>
       </bo-grid>
     </div>
+    <!-- ===== □.□. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 연관 클레임 ================================================ -->
     <div class="card" v-show="showTab('claims')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
@@ -146,5 +149,7 @@ window.MbMemberHist = {
     </div>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 연관 클레임 ================================================ -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->`,
 };

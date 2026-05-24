@@ -105,6 +105,7 @@ window.MyCoupon = {
       style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;text-transform:uppercase;">
     <button @click="addCoupon" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">쿠폰 등록</button>
   </div>
+  <!-- ===== □. 쿠폰 등록 =================================================== -->
   <!-- ===== ■. 탭 ======================================================= -->
   <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;">
     <button @click="onTabChange('unused')"
@@ -130,12 +131,14 @@ window.MyCoupon = {
       <span style="font-size:0.8rem;margin-left:2px;">({{ cfUsedCount }})</span>
     </button>
   </div>
+  <!-- ===== □. 탭 ======================================================= -->
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredCoupons.length" :pager="pager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!cfDateFilteredCoupons.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     {{ uiState.activeTab==='unused' ? '사용 가능한 쿠폰이 없습니다.' : '사용된 쿠폰이 없습니다.' }}
   </div>
+  <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <div v-for="c in paginate(cfDateFilteredCoupons, pager)" :key="c.couponId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:14px;">
@@ -214,6 +217,7 @@ window.MyCoupon = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 메인 정보 ================================================= -->
     <!-- ===== ■.■. 할인금액 + 상태 ============================================= -->
     <div style="text-align:right;flex-shrink:0;">
       <div style="font-size:1.1rem;font-weight:800;color:var(--blue);">{{ myStore.discountLabel(c) }}</div>
@@ -223,10 +227,13 @@ window.MyCoupon = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 할인금액 + 상태 ============================================= -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="cfDateFilteredCoupons.length" :pager="pager" />
 </fo-my-layout>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
   components: {
     FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,

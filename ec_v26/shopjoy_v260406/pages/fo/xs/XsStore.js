@@ -190,6 +190,7 @@ window.XsStore = {
       🔄 재로드
     </button>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. Store 선택 탭 + 뷰모드 버튼 ===================================== -->
   <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px; overflow: hidden;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
@@ -245,6 +246,7 @@ window.XsStore = {
           title="1열 보기">
           1
         </button>
+        <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
           @click="uiState.tabMode = 'col2'"
           :style="{
@@ -261,6 +263,7 @@ window.XsStore = {
           title="2열 보기">
           2
         </button>
+        <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
           @click="uiState.tabMode = 'col3'"
           :style="{
@@ -293,6 +296,7 @@ window.XsStore = {
           title="4열 보기">
           4
         </button>
+        <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
           @click="uiState.tabMode = 'col5'"
           :style="{
@@ -312,6 +316,7 @@ window.XsStore = {
       </div>
     </div>
   </div>
+  <!-- ===== □. Store 선택 탭 + 뷰모드 버튼 ===================================== -->
   <!-- ===== ■. 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) ================================ -->
   <div :style="{
     display: 'grid',
@@ -345,5 +350,6 @@ window.XsStore = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) ================================ -->`
 };

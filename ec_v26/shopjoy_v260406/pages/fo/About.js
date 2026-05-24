@@ -72,6 +72,7 @@ window.About = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 브랜드 히어로 ================================================= -->
   <div style="background:linear-gradient(135deg,#bfdbfe,#c7d2fe);border-radius:16px;padding:20px 32px;margin-bottom:32px;color:#1e3a8a;text-align:center;position:relative;overflow:hidden;">
     <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.3);"></div>
@@ -105,6 +106,7 @@ window.About = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 브랜드 히어로 ================================================= -->
   <!-- ===== ■. 미션 & 비전 ================================================= -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(10px,2vw,16px);margin-bottom:clamp(16px,2vw,24px);">
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
@@ -122,6 +124,7 @@ window.About = {
       </p>
     </div>
   </div>
+  <!-- ===== □. 미션 & 비전 ================================================= -->
   <!-- ===== ■. 핵심 가치 =================================================== -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(14px,2.5vw,24px);margin-bottom:clamp(16px,2vw,24px);">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;">💎 핵심 가치</div>
@@ -138,6 +141,7 @@ window.About = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 핵심 가치 =================================================== -->
   <!-- ===== ■. 연혁 ====================================================== -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px;">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;">📅 연혁</div>
@@ -151,6 +155,7 @@ window.About = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 연혁 ====================================================== -->
   <!-- ===== ■. 사업자 정보 ================================================== -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:16px;">📋 사업자 정보</div>
@@ -165,5 +170,6 @@ window.About = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 사업자 정보 ================================================== -->`
 };

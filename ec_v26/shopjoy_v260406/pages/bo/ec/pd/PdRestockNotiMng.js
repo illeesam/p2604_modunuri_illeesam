@@ -168,6 +168,7 @@ window.PdRestockNotiMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
@@ -186,5 +187,7 @@ window.PdRestockNotiMng = {
       @toggle-check="toggleOne" @toggle-check-all="toggleAll"></bo-grid>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->`
 };

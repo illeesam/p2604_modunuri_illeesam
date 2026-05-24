@@ -245,6 +245,7 @@ window.XsSample12 = {
     12. 전시영역 구조 트리 보기
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">영역 &gt; 패널 &gt; 위젯 구조 선택</span>
   </div>
+  <!-- ===== □. 제목 ====================================================== -->
   <!-- ===== ■. 필터 바 ==================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -348,6 +349,8 @@ window.XsSample12 = {
       </span>
     </div>
   </div>
+    <!-- ===== □.□. 현재 사용자 정보 ============================================= -->
+  <!-- ===== □. 필터 바 ==================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;">
     <!-- ===== ■.■. 좌: 구조 트리 ============================================== -->
@@ -438,6 +441,7 @@ window.XsSample12 = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 좌: 구조 트리 ============================================== -->
     <!-- ===== ■.■. 우: 위젯 컨텐츠 미리보기 ======================================== -->
     <div style="flex:6;min-width:280px;max-height:80vh;overflow-y:auto;">
       <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
@@ -648,8 +652,11 @@ window.XsSample12 = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 우: 위젯 컨텐츠 미리보기 ======================================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
   <category-select-modal :show="showCatModal" :selected-ids="[...selectedCatIds]" @close="showCatModal=false" @apply="onCatApply" />
 </div>
-`,
+
+  <!-- ===== □. 카테고리 선택 모달 ============================================== -->`,
 };

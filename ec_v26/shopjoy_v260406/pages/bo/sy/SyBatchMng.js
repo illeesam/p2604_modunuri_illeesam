@@ -352,6 +352,7 @@ window.SyBatchMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
@@ -386,17 +387,21 @@ window.SyBatchMng = {
       <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
         @apply="onCronApply" @close="cronModal.show=false" />
     </div>
-    <!-- /우측 영역 -->
+    <!-- ===== □.□. 경로 트리 ================================================= -->
+    <!-- ===== ■.■. /우측 영역 ================================================ -->
   </div>
-  <!-- /grid 컨테이너 -->
+  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
+  <!-- ===== ■. /grid 컨테이너 ============================================== -->
   <!-- ===== ■. 배치 실행이력 (전체 폭) ========================================== -->
   <div class="card" style="margin-top:12px;width:100%;">
     <sy-batch-hist />
   </div>
+  <!-- ===== □. 배치 실행이력 (전체 폭) ========================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />
 </div>
-`,
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

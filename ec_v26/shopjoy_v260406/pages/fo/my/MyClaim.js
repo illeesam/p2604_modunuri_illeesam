@@ -148,6 +148,7 @@ window.MyClaim = {
       <span v-else style="margin-left:4px;font-size:0.75rem;opacity:0.8;">({{ claims.length }})</span>
     </button>
   </div>
+  <!-- ===== □. 유형 필터 =================================================== -->
   <!-- ===== ■. 처리 흐름 (취소/반품/교환) ======================================== -->
   <template v-for="claimType in (claimFilter==='전체' ? ['취소','반품','교환'] : [claimFilter])" :key="claimType">
     <div v-if="claims.filter(c=>c.type===claimType).length>0"
@@ -195,6 +196,7 @@ window.MyClaim = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 처리 흐름 (취소/반품/교환) ======================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredClaims.length" :pager="pager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
@@ -235,6 +237,7 @@ window.MyClaim = {
         </span>
       </div>
     </div>
+    <!-- ===== □.□. 카드 헤더 ================================================= -->
     <!-- ===== ■.■. 진행 흐름 바 =============================================== -->
     <div style="background:#f6f6f6;border-radius:8px;padding:12px 14px;margin-bottom:12px;overflow-x:auto;">
       <div style="display:flex;align-items:center;min-width:320px;">
@@ -271,6 +274,7 @@ window.MyClaim = {
         </template>
       </div>
     </div>
+    <!-- ===== □.□. 진행 흐름 바 =============================================== -->
     <!-- ===== ■.■. 상품 목록 ================================================= -->
     <div v-for="(item, ii) in c.items" :key="ii"
       style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--border);">
@@ -287,6 +291,7 @@ window.MyClaim = {
       </div>
       <div style="font-size:0.88rem;font-weight:700;color:var(--blue);">{{ item.price.toLocaleString() }}원</div>
     </div>
+    <!-- ===== □.□. 상품 목록 ================================================= -->
     <!-- ===== ■.■. 사유 + 교환 정보 ============================================ -->
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:0.82rem;">
       <div style="display:flex;gap:8px;align-items:flex-start;">
@@ -318,6 +323,7 @@ window.MyClaim = {
           {{ c.exchangeTrackingNo }}
         </button>
       </div>
+      <!-- ===== ■.■.■. 조건부 영역 ============================================== -->
       <div v-if="c.refundAmount" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;padding-top:8px;border-top:1px solid var(--border);">
         <span style="color:var(--text-muted);">{{ c.type==='반품' ? '환불 예정금액' : '취소 환불금액' }}</span>
         <span style="font-size:0.95rem;font-weight:800;color:var(--blue);">{{ c.refundAmount.toLocaleString() }}원</span>
@@ -344,8 +350,9 @@ window.MyClaim = {
       </div>
     </div>
   </div>
-  <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="filteredClaims.length" :pager="pager" />
+    <!-- ===== □.□. 사유 + 교환 정보 ============================================ -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
@@ -353,7 +360,8 @@ window.MyClaim = {
     <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
   </teleport>
 </fo-my-layout>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
   components: {
     FoMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,

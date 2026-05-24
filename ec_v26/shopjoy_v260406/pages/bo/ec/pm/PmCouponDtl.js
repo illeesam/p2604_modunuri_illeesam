@@ -376,6 +376,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     {{ cfIsNew ? '쿠폰 등록' : '쿠폰 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.couponId }}</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -395,19 +396,20 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
+  <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="false" :cols="2" :show-actions="false">
-        <!-- 메모: Quill 에디터 -->
+        <!-- ===== ■.■.■.■. 메모: Quill 에디터 ===================================== -->
         <template #memo>
           <base-html-editor v-model="form.memo" height="200px" />
         </template>
-        <!-- 판매업체 picker -->
+        <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
@@ -420,10 +422,11 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
           </div>
         </template>
       </bo-form-area>
-      <!-- 판매업체 선택 모달 -->
+      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
     </div>
+    <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
@@ -575,6 +578,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 미리보기 ================================================== -->
     <!-- ===== ■.■. 상세정보 ================================================== -->
     <div class="card" v-show="showTab('detail')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
@@ -603,13 +607,13 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
           </div>
         </div>
       </div>
-      <!-- 지급방법/조건 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 지급방법/조건 (BoFormArea 자동 렌더) ========================== -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="detailIssueFormColumns" :form="form" :errors="errors"
           :cols="2" :show-actions="false" />
-        <!-- 적용 회원 등급 (체크박스 그룹, KEEP) -->
+        <!-- ===== ■.■.■.■. 적용 회원 등급 (체크박스 그룹, KEEP) ========================== -->
         <div class="form-group" style="margin-top:12px;">
           <label class="form-label">적용 회원 등급</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -621,7 +625,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
           <span v-if="form.issueGrades.length===0" style="font-size:12px;color:#aaa;">선택하지 않으면 전체 등급에 적용</span>
         </div>
       </div>
-      <!-- 사용방법 (BoFormArea 자동 렌더) -->
+      <!-- ===== ■.■.■. 사용방법 (BoFormArea 자동 렌더) ============================= -->
       <div>
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🔍 사용방법</h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
@@ -629,6 +633,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
           :cols="2" :show-actions="false" />
       </div>
     </div>
+    <!-- ===== □.□. 상세정보 ================================================== -->
     <!-- ===== ■.■. 발급목록 ================================================== -->
     <div class="card" v-show="showTab('issued')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ cfIssuedList.length }}</span></div>
@@ -636,6 +641,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid v-else bare :columns="issuedGridColumns" :rows="cfIssuedTop"></bo-grid>
     </div>
+    <!-- ===== □.□. 발급목록 ================================================== -->
     <!-- ===== ■.■. 사용목록 ================================================== -->
     <div class="card" v-show="showTab('used')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ cfUsedList.length }}</span></div>
@@ -644,6 +650,8 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <bo-grid v-else bare :columns="usedGridColumns" :rows="cfUsedTop"></bo-grid>
     </div>
   </div>
+    <!-- ===== □.□. 사용목록 ================================================== -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleSave" style="min-width:120px;">
@@ -652,5 +660,6 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     <button class="btn btn-secondary" @click="navigate('pmCouponMng')" style="min-width:120px;">취소</button>
   </div>
 </div>
-`
+
+  <!-- ===== □. 본문 영역 =================================================== -->`
 };

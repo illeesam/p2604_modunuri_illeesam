@@ -685,9 +685,9 @@ window.SyCodeMng = {
   <div class="page-title">공통코드관리</div>
   <!-- ===== ■. 검색 영역 =================================================== -->
   <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;margin-bottom:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
@@ -728,6 +728,8 @@ window.SyCodeMng = {
       </template>
     </bo-grid-crud>
   </div>
+    <!-- ===== □.□. CRUD 그리드 ============================================== -->
+  <!-- ===== □. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
   <!-- ===== ■. 코드 목록 영역 ================================================ -->
   <div class="card">
     <!-- ===== ■.■. 일반/트리 탭 =============================================== -->
@@ -743,6 +745,7 @@ window.SyCodeMng = {
         트리
       </button>
     </div>
+    <!-- ===== □.□. 일반/트리 탭 =============================================== -->
     <!-- ===== ■.■. 일반 탭 ================================================== -->
     <div v-if="uiState.activeCodeTab==='일반'">
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
@@ -762,6 +765,7 @@ window.SyCodeMng = {
         </template>
       </bo-grid-crud>
     </div>
+    <!-- ===== □.□. 일반 탭 ================================================== -->
     <!-- ===== ■.■. 트리 탭 (BoGridCrud 트리 모드) =============================== -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
@@ -820,6 +824,8 @@ window.SyCodeMng = {
       </bo-grid-crud>
     </div>
   </div>
+    <!-- ===== □.□. 트리 탭 (BoGridCrud 트리 모드) =============================== -->
+  <!-- ===== □. 코드 목록 영역 ================================================ -->
   <!-- ===== ■. 코드 상세 패널 (인라인 임베드) ====================================== -->
   <div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
@@ -835,5 +841,6 @@ window.SyCodeMng = {
       :dtl-mode="uiState.selectedCodeId ? 'edit' : 'new'" />
   </div>
 </div>
-`,
+
+  <!-- ===== □. 코드 상세 패널 (인라인 임베드) ====================================== -->`,
 };

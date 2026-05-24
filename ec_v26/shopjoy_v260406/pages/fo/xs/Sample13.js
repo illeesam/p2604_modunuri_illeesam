@@ -232,6 +232,7 @@ window.XsSample13 = {
       {{ copied ? '✓ 전체 복사됨' : '📋 전체 소스 복사' }}
     </button>
   </div>
+  <!-- ===== □. 제목 ====================================================== -->
   <!-- ===== ■. 필터 바 ==================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -326,6 +327,7 @@ window.XsSample13 = {
         {{ nm }}
       </span>
     </div>
+    <!-- ===== □.□. 카테고리 선택 현황 ============================================ -->
     <!-- ===== ■.■. 현재 사용자 정보 ============================================= -->
     <div style="margin-top:8px;padding:7px 12px;background:#f8f9fa;border-radius:6px;border-left:3px solid #aaa;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:11px;color:#888;font-weight:600;">현재 사용자</span>
@@ -343,6 +345,8 @@ window.XsSample13 = {
       </span>
     </div>
   </div>
+    <!-- ===== □.□. 현재 사용자 정보 ============================================= -->
+  <!-- ===== □. 필터 바 ==================================================== -->
   <!-- ===== ■. 영역별 패널+소스 목록 ============================================ -->
   <div v-if="cfPanelsByArea.length===0" style="text-align:center;padding:48px;color:#ccc;font-size:13px;">조건에 맞는 영역/패널이 없습니다.</div>
   <!-- ===== ■. 영역 ====================================================== -->
@@ -357,11 +361,13 @@ window.XsSample13 = {
         패널 {{ panels.length }}개
       </span>
     </div>
+    <!-- ===== □.□. 영역 헤더 ================================================= -->
     <!-- ===== ■.■. 패널 없음 ================================================= -->
     <div v-if="panels.length===0"
       style="padding:18px;text-align:center;font-size:12px;color:#bbb;background:#f9f9f9;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 6px 6px;">
       해당 조건의 패널이 없습니다.
     </div>
+    <!-- ===== □.□. 패널 없음 ================================================= -->
     <!-- ===== ■.■. 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) ================= -->
     <div v-for="(panel, pi) in panels" :key="panel.dispId"
       style="display:flex;flex-wrap:wrap;border:1px solid #e0e0e0;border-top:none;"
@@ -454,6 +460,7 @@ window.XsSample13 = {
               </div>
             </div>
           </div>
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div v-else-if="w.widgetType==='chart_bar'">
             <div style="display:flex;align-items:flex-end;gap:4px;height:70px;border-bottom:1px solid #eee;">
               <div v-for="(h,ci) in [55,78,42,88,65,92,70]" :key="ci" style="flex:1;border-radius:3px 3px 0 0;" :style="'height:'+h+'%;background:linear-gradient(180deg,#667eea,#764ba2);'"></div>
@@ -494,6 +501,7 @@ window.XsSample13 = {
             <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:4px;">{{ w.widgetNm }}</div>
             <div style="font-size:11px;color:#666;line-height:1.7;">텍스트 배너 컨텐츠가 이 영역에 표시됩니다.</div>
           </div>
+          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
           <div v-else-if="w.widgetType==='info_card'"
             style="background:linear-gradient(135deg,#e3f2fd,#bbdefb);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;">
             <div style="font-size:28px;">ℹ</div>
@@ -535,6 +543,7 @@ window.XsSample13 = {
               <div style="font-size:13px;font-weight:800;color:#c2185b;">{{ w.widgetNm }}</div>
               <div style="font-size:10px;color:#e8587a;">쿠폰 발급 이벤트</div>
             </div>
+            <!-- ===== ■.■.■.■.■.■. 헤더 영역 ========================================= -->
             <div style="background:#e8587a;color:#fff;border-radius:6px;padding:8px 12px;font-size:11px;font-weight:700;white-space:nowrap;">
               쿠폰 받기
             </div>
@@ -591,5 +600,7 @@ window.XsSample13 = {
   @close="showCatModal=false"
   @apply="onCatApply"
   />
-`,
+
+    <!-- ===== □.□. 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) ================= -->
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

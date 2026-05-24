@@ -633,6 +633,7 @@ window.SyRoleMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,20fr) minmax(0,80fr);gap:16px;align-items:flex-start;">
     <bo-local-tree-card title="역할"
@@ -787,10 +788,12 @@ window.SyRoleMng = {
         @close="roleTreeModal.show=false" />
     </div>
   </div>
+  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />
 </div>
-`,
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

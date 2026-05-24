@@ -175,6 +175,7 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
     :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
@@ -189,5 +190,6 @@ const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTota
     </template>
   </bo-grid>
 </div>
-`
+
+  <!-- ===== □. 목록 영역 =================================================== -->`
 };

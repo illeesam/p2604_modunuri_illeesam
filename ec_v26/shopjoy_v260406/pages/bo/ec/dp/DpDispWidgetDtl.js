@@ -640,6 +640,8 @@ window.DpDispWidgetDtl = {
       @close="libPickOpen=false"
       @pick="onLibPicked" />
   </div>
+    <!-- ===== □.□. 위젯Lib 선택 팝업 =========================================== -->
+  <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;">
     <!-- ===== ■.■. 왼쪽: 폼 ================================================= -->
@@ -687,7 +689,7 @@ window.DpDispWidgetDtl = {
           <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
           설정
         </div>
-        <!-- 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) -->
+        <!-- ===== ■.■.■.■. 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) =========== -->
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="baseWidgetFormColumns" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="2" :show-actions="false" />
@@ -764,7 +766,7 @@ window.DpDispWidgetDtl = {
           </span>
         </div>
         <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
-        <!-- 클릭 액션 (html_editor·file_list·embed 제외) - BoFormArea 자동 렌더 -->
+        <!-- ===== ■.■.■.■. 클릭 액션 (html_editor·file_list·embed 제외) - BoFormArea 자동 렌더 ===== -->
         <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:12px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
@@ -807,12 +809,14 @@ window.DpDispWidgetDtl = {
       </div>
       <!-- ===== /내용 ======================================================== -->
     </div>
+    <!-- ===== □.□. 왼쪽: 폼 ================================================= -->
     <!-- ===== ■.■. 스플리터 ================================================== -->
     <div @mousedown="onSplitDrag"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
       title="드래그로 폭 조절">
       <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
     </div>
+    <!-- ===== □.□. 스플리터 ================================================== -->
     <!-- ===== ■.■. 오른쪽: 위젯미리보기 =========================================== -->
     <div :style="{ width: previewPaneWidth + 'px', flexShrink:0, padding:'20px', background:'#f8f8f8', overflowX:'auto', transition:'width .2s' }">
       <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;cursor:help;position:relative;"
@@ -863,11 +867,14 @@ window.DpDispWidgetDtl = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 오른쪽: 위젯미리보기 =========================================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget"
     :value="form.pathId"
     title="위젯 표시경로 선택"
     @select="onPathPicked" @close="closePathPick" />
 </div>
-`
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`
 };

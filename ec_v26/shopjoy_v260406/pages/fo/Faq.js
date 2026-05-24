@@ -49,6 +49,7 @@ window.Faq = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
@@ -59,11 +60,13 @@ window.Faq = {
       <div v-show="uiState.openFaq===idx" class="faq-answer">{{ faq.a }}</div>
     </div>
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="text-align:center;padding:clamp(12px,3vw,24px) 0;">
     <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px;">원하시는 답변을 찾지 못하셨나요?</p>
     <button class="btn-blue" @click="navigate('contact')">1:1 문의하기</button>
   </div>
 </div>
-`
+
+  <!-- ===== □. 본문 영역 =================================================== -->`
 };

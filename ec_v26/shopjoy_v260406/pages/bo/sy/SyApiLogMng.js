@@ -339,6 +339,7 @@ window.SyApiLogMng = {
       • API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함 • API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함 • 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등) • 기본 조회기간: 최근 1주일.
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -349,12 +350,15 @@ window.SyApiLogMng = {
         </button>
       </template>
     </bo-search-area>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="moreSearchColumns" :param="uiState"
       @search="onSearch" />
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 탭 + 목록 ================================================== -->
   <div class="tab-nav" style="margin-bottom:16px">
     <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">
@@ -366,6 +370,7 @@ window.SyApiLogMng = {
       <span class="tab-count">{{ tabCounts.error }}</span>
     </button>
   </div>
+  <!-- ===== □. 탭 + 목록 ================================================== -->
   <!-- ===== ■. API요청로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='access'"
     :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
@@ -501,6 +506,7 @@ window.SyApiLogMng = {
       </td>
     </template>
   </bo-grid>
+  <!-- ===== □. API요청로그 탭 =============================================== -->
   <!-- ===== ■. API오류로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='error'"
     :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
@@ -564,6 +570,7 @@ window.SyApiLogMng = {
                   <span v-else>-</span>
                 </td>
               </tr>
+              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td>
                 <td>{{ String(row.regDate||'').slice(0,19) }}</td>
@@ -622,5 +629,6 @@ window.SyApiLogMng = {
     </template>
   </bo-grid>
 </div>
-`,
+
+  <!-- ===== □. API오류로그 탭 =============================================== -->`,
 };

@@ -272,6 +272,7 @@ const detailModal = reactive({
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
@@ -303,6 +304,7 @@ const detailModal = reactive({
         </template>
       </bo-grid>
     </div>
+    <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
     <div v-if="detailModal.show" style="grid-column:1/-1;margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -320,5 +322,7 @@ const detailModal = reactive({
       @select="onPathPicked" @close="closePathPick" />
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
+  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->`
 };

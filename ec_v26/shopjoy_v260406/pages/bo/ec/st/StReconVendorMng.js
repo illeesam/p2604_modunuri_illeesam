@@ -144,11 +144,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • 시스템 집계금액(sys_amt) vs 업체 제출금액(vendor_amt) 차이를 자동 비교합니다. • 업체별 정산 명세서와 대조하여 불일치 원인을 파악합니다. • 차이 발생 시 상호 확인 후 조정(StSettleAdjMng)으로 처리합니다.
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
@@ -172,5 +174,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @set-page="setPage" @size-change="onSizeChange"></bo-grid>
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->`,
 };

@@ -427,11 +427,13 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       <span style="color:#888;font-size:12px">예) 의류 &gt; 상의 &gt; 티셔츠, 전자기기 &gt; 스마트폰</span>
     </div>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
     <!-- ===== ■.■. 좌측: 카테고리 트리 =========================================== -->
@@ -442,6 +444,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       </div>
       <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" @select="selectNode" />
     </div>
+    <!-- ===== □.□. 좌측: 카테고리 트리 =========================================== -->
     <!-- ===== ■.■. 우측: 카테고리 그리드 ========================================== -->
     <div class="card">
       <div class="toolbar">
@@ -602,6 +605,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
     </div>
   </div>
+    <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
+  <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
   <!-- ===== ■. 상위카테고리 선택 모달 ============================================ -->
   <teleport to="body" v-if="catPickerModal.show">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
@@ -634,5 +639,6 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </div>
   </teleport>
 </div>
-`
+
+  <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->`
 };

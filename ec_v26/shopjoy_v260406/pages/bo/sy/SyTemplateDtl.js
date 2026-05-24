@@ -161,13 +161,14 @@ window.SyTemplateDtl = {
     {{ cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.templateId }}</span>
   </div>
-  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
+  <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" :show-actions="false">
-      <!-- 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) -->
+      <!-- ===== ■.■.■. 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) =========== -->
       <template #content>
         <template v-if="cfUseHtmlEditor">
           <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.templateContent || '<span style=color:#bbb>-</span>'"></div>
@@ -181,7 +182,8 @@ window.SyTemplateDtl = {
         <span v-if="errors.templateContent" class="field-error">{{ errors.templateContent }}</span>
       </template>
     </bo-form-area>
-    <!-- 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) -->
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+    <!-- ===== ■.■. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
     <div class="form-actions" v-if="!cfDtlMode">
       <button class="btn btn-secondary" @click="uiState.previewOpen=true">📄 미리보기</button>
       <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="uiState.sendOpen=true">📨 발송하기</button>
@@ -189,14 +191,18 @@ window.SyTemplateDtl = {
       <button class="btn btn-secondary" @click="navigate('syTemplateMng')">취소</button>
     </div>
   </div>
+    <!-- ===== □.□. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 미리보기 모달 ================================================= -->
   <template-preview-modal v-if="uiState.previewOpen"
     :tmpl="form" :sample-params="form.sampleParams"
     @close="uiState.previewOpen=false" />
+  <!-- ===== □. 미리보기 모달 ================================================= -->
   <!-- ===== ■. 발송하기 모달 ================================================= -->
   <template-send-modal v-if="uiState.sendOpen"
     :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm"
     @close="uiState.sendOpen=false" />
 </div>
-`
+
+  <!-- ===== □. 발송하기 모달 ================================================= -->`
 };

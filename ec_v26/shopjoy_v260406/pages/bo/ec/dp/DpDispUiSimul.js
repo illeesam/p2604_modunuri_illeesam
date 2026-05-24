@@ -945,6 +945,7 @@ window.DpDispUiSimul = {
       🌐 {{ cfSiteNm }}
     </span>
   </div>
+  <!-- ===== □. 페이지 제목 ================================================== -->
   <!-- ===== ■. 공통 필터 바 ================================================= -->
   <div class="card" style="padding:14px 18px;margin-bottom:0;border-radius:8px 8px 0 0;border-bottom:none;">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -1048,6 +1049,7 @@ window.DpDispUiSimul = {
         <span @click="toggleArea(code)" style="cursor:pointer;font-weight:700;">×</span>
       </span>
     </div>
+    <!-- ===== □.□. 선택 영역 배지 ============================================== -->
     <!-- ===== ■.■. 조건 요약 ================================================= -->
     <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;" :style="selectedAreas.size>0?'margin-top:6px;':''">
       <span style="font-size:11px;color:#aaa;">조회 조건:</span>
@@ -1069,6 +1071,7 @@ window.DpDispUiSimul = {
         <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:10px;padding:2px 10px;">패널 {{ cfTotalPanels }}개 해당</span>
       </div>
     </div>
+    <!-- ===== □.□. 조건 요약 ================================================= -->
     <!-- ===== ■.■. Ui미리보기 파라미터 레이어 ======================================= -->
     <div v-if="uiState.dispUiLayerOpen"
       style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
@@ -1254,6 +1257,8 @@ window.DpDispUiSimul = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. Ui미리보기 파라미터 레이어 ======================================= -->
+  <!-- ===== □. 공통 필터 바 ================================================= -->
   <!-- ===== ■. DispUi 모달 =============================================== -->
   <disp-ui-modal
     :show="uiState.dispUiModalOpen"
@@ -1262,6 +1267,7 @@ window.DpDispUiSimul = {
     @close="uiState.dispUiModalOpen=false"
     @open-popup="(scope) => { openDispUiPopup(scope || 'fo'); uiState.dispUiModalOpen=false; }"
     />
+  <!-- ===== □. DispUi 모달 =============================================== -->
   <!-- ===== ■. DispUi 사이트 선택 모달 ======================================== -->
   <div v-if="dispUiSiteModalOpen"
     @click.self="dispUiSiteModalOpen=false"
@@ -1304,6 +1310,7 @@ window.DpDispUiSimul = {
       </div>
     </div>
   </div>
+  <!-- ===== □. DispUi 사이트 선택 모달 ======================================== -->
   <!-- ===== ■. DispUi 회원 선택 모달 ========================================= -->
   <div v-if="dispUiMemberModalOpen"
     @click.self="dispUiMemberModalOpen=false"
@@ -1351,6 +1358,7 @@ window.DpDispUiSimul = {
       </div>
     </div>
   </div>
+  <!-- ===== □. DispUi 회원 선택 모달 ========================================= -->
   <!-- ===== ■. 탭 헤더 ==================================================== -->
   <div style="display:flex;border:1px solid #e0e0e0;border-top:none;background:#f5f5f5;">
     <button @click="switchTab('preview')"
@@ -1372,6 +1380,7 @@ window.DpDispUiSimul = {
   <!-- ═══════════════════════════════════════
        Tab1: 영역미리보기
   ═══════════════════════════════════════ -->
+  <!-- ===== □. 탭 헤더 ==================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="uiState.mainTab==='preview'">
     <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">기준 날짜를 선택해주세요.</div>
@@ -1389,6 +1398,7 @@ window.DpDispUiSimul = {
   <!-- ═══════════════════════════════════════
        Tab2: 구조 선택 영역미리보기
   ═══════════════════════════════════════ -->
+  <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <div v-else-if="uiState.mainTab==='struct'" style="margin-top:4px;">
     <div style="display:flex;gap:12px;align-items:stretch;">
@@ -1759,6 +1769,7 @@ window.DpDispUiSimul = {
                             <div style="font-size:22px;">🎉</div>
                             <div style="font-size:12px;font-weight:700;margin-top:4px;">{{ slot.widgetNm }}</div>
                           </div>
+                          <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. 영역 ============================== -->
                           <div v-else-if="slot.widgetType==='cache_banner'"
                             style="background:linear-gradient(135deg,#f6d365,#fda085);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;color:#fff;">
                             <span style="font-size:26px;">💰</span>
@@ -1805,6 +1816,7 @@ window.DpDispUiSimul = {
   <!-- ═══════════════════════════════════════
        Tab3: 소스 구조
   ═══════════════════════════════════════ -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <div v-else-if="uiState.mainTab==='source'" style="margin-top:4px;">
     <div class="card" style="padding:0;overflow:hidden;">
@@ -1940,6 +1952,7 @@ window.DpDispUiSimul = {
                 <span :style="a.real?'color:#ce9178;':'color:#6a737d;font-style:italic;'">{{ a.val }}</span>
                 <span style="color:#cdd9e5;">"</span>
               </template>
+              <!-- ===== ■.■.■.■.■.■.■. 헤더 영역 ======================================= -->
               <span style="color:#f6ad55;font-weight:700;">/&gt;</span>
             </template>
             <!-- </DispX03Panel> -->
@@ -1971,5 +1984,6 @@ window.DpDispUiSimul = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 영역 ====================================================== -->`
 };

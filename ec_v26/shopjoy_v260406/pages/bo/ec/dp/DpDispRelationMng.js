@@ -172,6 +172,7 @@ window.DpDispRelationMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 내용 ====================================================== -->
   <div class="card" style="padding:12px;">
     <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</div>
@@ -240,5 +241,6 @@ window.DpDispRelationMng = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 내용 ====================================================== -->`
 };

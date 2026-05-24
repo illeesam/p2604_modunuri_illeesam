@@ -79,7 +79,8 @@ window.MyDateFilter = {
     <button @click="onReset"
       style="padding:6px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg-base);color:var(--text-secondary);font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">초기화</button>
   </div>
-</div>`
+</div>
+  <!-- ===== □. 본문 영역 =================================================== -->`
 };
 
 /* ── 공통 페이저 컴포넌트 (My 탭 전체에서 공유) ── */
@@ -99,7 +100,8 @@ window.PagerHeader = {
     <option :value="50">50개씩</option>
     <option :value="100">100개씩</option>
   </select>
-</div>`
+</div>
+  <!-- ===== □. 영역 ====================================================== -->`
 };
 
 window.Pagination = {
@@ -117,15 +119,16 @@ window.Pagination = {
   <button @click="pager.page=Math.max(1,pager.page-1)" :disabled="pager.page===1"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
     :style="pager.page===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
-  <!-- ===== ■. 영역 ====================================================== -->
   <button v-for="p in pages" :key="p" @click="pager.page=p"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.82rem;min-width:36px;"
     :style="pager.page===p?'background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700;':'background:var(--bg-card);color:var(--text-secondary);'">{{ p }}</button>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <button @click="pager.page=Math.min(pages.length,pager.page+1)" :disabled="pager.page===pages.length"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
     :style="pager.page===pages.length?'opacity:0.4;cursor:not-allowed;':''">›</button>
-</div>`
+</div>
+  <!-- ===== □. 영역 ====================================================== -->`
 };
 
 window.foMyLayout = {
@@ -160,7 +163,7 @@ window.foMyLayout = {
   template: /* html */ `
 <div style="padding:0 20px 24px;max-width:1100px;margin:0 auto;">
 
-  <!-- 페이지 타이틀 배너 -->
+  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="position:relative;overflow:hidden;height:220px;margin-bottom:28px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="마이페이지"
@@ -177,7 +180,8 @@ window.foMyLayout = {
     </div>
   </div>
 
-  <!-- 탭 바 -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 탭 바 ===================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:8px;box-shadow:0 2px 12px rgba(0,0,0,0.05);align-items:stretch;">
     <template v-for="(t, ti) in MY_TABS" :key="t.pageId">
@@ -201,10 +205,12 @@ window.foMyLayout = {
     </template>
   </div>
 
-  <!-- 탭 컨텐츠 (슬롯) -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 탭 컨텐츠 (슬롯) ============================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <slot />
 
 </div>
-  `,
+  
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

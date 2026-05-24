@@ -222,17 +222,21 @@ window.XsSample08 = {
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">
     {{ toast.msg }}
   </div>
+  <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 헤더 영역 =================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     08. 카테고리 관리
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span>
   </div>
+  <!-- ===== □. 헤더 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <fo-grid-crud
     list-title="카테고리 목록" row-key="categoryId"
@@ -247,5 +251,6 @@ window.XsSample08 = {
     </template>
   </fo-grid-crud>
 </div>
-`,
+
+  <!-- ===== □. 목록 영역 =================================================== -->`,
 };

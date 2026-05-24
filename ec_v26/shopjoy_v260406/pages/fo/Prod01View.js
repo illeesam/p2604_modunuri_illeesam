@@ -879,6 +879,7 @@ window.Prod01View = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="prod">
     <!-- ===== ■.■. ══ 상단: 갤러리 + 구매 옵션 ══ ================================= -->
@@ -895,7 +896,7 @@ window.Prod01View = {
               :title="cfMockImages[uiState.selectedImg]?.optTip || ''">
               <img v-if="cfMockImages[uiState.selectedImg]?.src" :src="cfMockImages[uiState.selectedImg].src" :alt="prod.prodNm"
                 style="width:100%;height:100%;object-fit:cover;" />
-              <!-- 선택된 색상에 등록된 이미지가 없을 때 안내 -->
+              <!-- ===== ■.■.■.■.■.■.■. 선택된 색상에 등록된 이미지가 없을 때 안내 ==================== -->
               <div v-else-if="uiState.selectedColor"
                 style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#bbb;font-size:0.85rem;">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;">
@@ -915,7 +916,7 @@ window.Prod01View = {
                   인기
                 </span>
               </div>
-              <!-- 옵션 라벨 오버레이 (hover 시) -->
+              <!-- ===== ■.■.■.■.■.■.■. 옵션 라벨 오버레이 (hover 시) ======================== -->
               <div v-if="cfMockImages[uiState.selectedImg]?.optTip"
                 class="prod-img-overlay"
                 style="position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(to top,rgba(0,0,0,0.65),rgba(0,0,0,0));color:#fff;font-size:0.78rem;font-weight:600;letter-spacing:0.2px;opacity:0;transition:opacity .15s;pointer-events:none;">
@@ -1017,7 +1018,7 @@ window.Prod01View = {
                     boxSizing:'border-box',transition:'all .15s',
                     opacity: colorStatus(c)!=='ok' ? '0.4' : '1',
                     }">
-                    <!-- 선택 체크 아이콘 — 어두운 색상은 흰색, 밝은 색상은 검정 자동 판단 -->
+                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 선택 체크 아이콘 — 어두운 색상은 흰색, 밝은 색상은 검정 자동 판단 ===== -->
                     <svg v-if="uiState.selectedColor && uiState.selectedColor.name===c.name"
                       width="16" height="16" viewBox="0 0 24 24" fill="none"
                       :stroke="(c.hex && /^#(f|e|d)/i.test(c.hex)) ? '#222' : '#fff'"
@@ -1155,6 +1156,7 @@ window.Prod01View = {
       </div>
     </div>
     <!-- ===== /page-wrap top ============================================= -->
+    <!-- ===== □.□. ══ 상단: 갤러리 + 구매 옵션 ══ ================================= -->
     <!-- ===== ■.■. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->
     <div v-if="uiState.tabFixed" :style="{ height: uiState.tabPlaceholderH + 'px', marginTop:'24px' }"></div>
     <div ref="tabBarRef"
@@ -1185,6 +1187,7 @@ window.Prod01View = {
           marginBottom:'-2px',
           }">
           {{ tab.label }}
+          <!-- ===== ■.■.■.■.■. 조건부 영역 ========================================== -->
           <span v-if="tab.id==='review' && (svReviewSummary.total || cfMockReviews.length)"
             :style="{
             display:'inline-flex',alignItems:'center',justifyContent:'center',
@@ -1208,6 +1211,7 @@ window.Prod01View = {
         </button>
       </div>
     </div>
+    <!-- ===== □.□. ══ 탭 바 (스크롤 시 헤더 아래 고정) ══ ============================ -->
     <!-- ===== ■.■. ══ 탭 섹션들 ══ =========================================== -->
     <div style="padding-top:0;">
       <!-- ===== ■.■.■. 상세정보 ================================================ -->
@@ -1230,15 +1234,15 @@ window.Prod01View = {
           <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">📝 상세 설명</h2>
           <div style="display:flex;flex-direction:column;gap:16px;">
             <div v-for="(blk, bi) in svContents" :key="blk?.prodContentId || bi">
-              <!-- HTML 블록 -->
+              <!-- ===== ■.■.■.■.■.■.■. HTML 블록 ===================================== -->
               <div v-if="(blk.contentTypeCd||'').toUpperCase()==='HTML'"
                 style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);"
                 v-html="blk.contentHtml"></div>
-              <!-- IMAGE / FILE(첨부 base64) 블록 -->
+              <!-- ===== ■.■.■.■.■.■.■. IMAGE / FILE(첨부 base64) 블록 ================== -->
               <img v-else-if="['IMAGE','FILE'].includes((blk.contentTypeCd||'').toUpperCase())"
                 :src="blk.contentHtml" alt="상품설명 이미지"
                 style="max-width:100%;height:auto;border-radius:8px;display:block;" />
-              <!-- URL 블록 (외부 링크 또는 외부 이미지) -->
+              <!-- ===== ■.■.■.■.■.■.■. URL 블록 (외부 링크 또는 외부 이미지) ==================== -->
               <div v-else-if="(blk.contentTypeCd||'').toUpperCase()==='URL'">
                 <img v-if="/\.(jpe?g|png|gif|webp|svg)$/i.test(blk.contentHtml||'')"
                   :src="blk.contentHtml" alt="상품설명 이미지"
@@ -1248,7 +1252,7 @@ window.Prod01View = {
                   {{ blk.contentHtml }}
                 </a>
               </div>
-              <!-- 기타 — 원시 HTML 로 폴백 -->
+              <!-- ===== ■.■.■.■.■.■.■. 기타 — 원시 HTML 로 폴백 =========================== -->
               <div v-else style="font-size:0.9rem;line-height:1.8;color:var(--text-primary);" v-html="blk.contentHtml"></div>
             </div>
           </div>
@@ -1439,6 +1443,8 @@ window.Prod01View = {
     </div>
     <!-- ===== /page-wrap sections ======================================== -->
   </template>
+    <!-- ===== □.□. ══ 탭 섹션들 ══ =========================================== -->
+  <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. ══ 이미지 확대 모달 ══ ========================================= -->
   <teleport to="body">
     <div v-if="uiState.zoomOpen && prod" @click="uiState.zoomOpen=false"
@@ -1476,6 +1482,7 @@ window.Prod01View = {
       </div>
     </div>
   </teleport>
+  <!-- ===== □. ══ 이미지 확대 모달 ══ ========================================= -->
   <!-- ===== ■. ══ 포토 전체 팝업 ══ ========================================== -->
   <teleport to="body">
     <div v-if="uiState.photoPopupOpen && prod" @click.self="uiState.photoPopupOpen=false"
@@ -1520,6 +1527,7 @@ window.Prod01View = {
       </button>
     </div>
   </teleport>
+  <!-- ===== □. ══ 포토 전체 팝업 ══ ========================================== -->
   <!-- ===== ■. ══ 포토 리뷰 개별 팝업 ══ ======================================= -->
   <teleport to="body">
     <div v-if="uiState.selectedReview && prod" @click.self="closePhotoDetail"
@@ -1576,6 +1584,7 @@ window.Prod01View = {
       </button>
     </div>
   </teleport>
+  <!-- ===== □. ══ 포토 리뷰 개별 팝업 ══ ======================================= -->
   <!-- ===== ■. ══ 사이즈 가이드 모달 ══ ======================================== -->
   <fo-modal :show="uiState.showSizeGuide" title="📏 사이즈 가이드" width="480px"
     @close="uiState.showSizeGuide=false">
@@ -1584,6 +1593,8 @@ window.Prod01View = {
     <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">* 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.</p>
     <button class="btn-blue" @click="uiState.showSizeGuide=false" style="width:100%;margin-top:16px;padding:10px;">확인</button>
   </fo-modal>
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. ══ 사이즈 가이드 모달 ══ ======================================== -->
   <!-- ===== ■. ══ 고정 하단 바 ══ =========================================== -->
   <div v-if="prod && uiState.showBottomBar"
     style="position:fixed;bottom:0;left:0;right:0;z-index:100;padding:10px 24px;display:flex;justify-content:center;align-items:center;background:linear-gradient(to top, var(--bg-card) 0%, rgba(245,248,255,0.98) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--border);box-shadow:0 -4px 18px rgba(80,100,160,0.08);">
@@ -1602,6 +1613,7 @@ window.Prod01View = {
       </div>
     </div>
   </div>
+  <!-- ===== □. ══ 고정 하단 바 ══ =========================================== -->
   <!-- ===== ■. ══ 바로구매 드로어 (우측) ══ ===================================== -->
   <template v-if="uiState.quickBuyOpen && prod">
     <!-- ===== ■.■. 딤 오버레이 ================================================ -->
@@ -1742,5 +1754,7 @@ window.Prod01View = {
     </div>
   </template>
 </div>
-`,
+
+    <!-- ===== □.□. 드로어 패널 ================================================ -->
+  <!-- ===== □. ══ 바로구매 드로어 (우측) ══ ===================================== -->`,
 };

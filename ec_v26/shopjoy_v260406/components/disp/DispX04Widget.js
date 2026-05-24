@@ -209,6 +209,7 @@ window.DispX04Widget = {
     style="font-size:14px;font-weight:700;color:var(--text-primary,#222);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--blue,#1677ff);">
     {{ widget.title }}
   </div>
+  <!-- ===== □. 위젯 타이틀 ================================================== -->
   <!-- ===== ■. 이미지 배너 ================================================== -->
   <template v-if="widget.widgetType==='image_banner'">
     <div v-if="widget.imageUrl" style="border-radius:10px;overflow:hidden;">
@@ -221,6 +222,7 @@ window.DispX04Widget = {
       <div v-else-if="widget.altText" style="font-size:12px;opacity:.7;margin-top:6px;">{{ widget.altText }}</div>
     </div>
   </template>
+  <!-- ===== □. 이미지 배너 ================================================== -->
   <!-- ===== ■. 상품 슬라이더 ================================================= -->
   <template v-else-if="widget.widgetType==='product_slider'">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
@@ -236,6 +238,7 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 상품 슬라이더 ================================================= -->
   <!-- ===== ■. 상품 ====================================================== -->
   <template v-else-if="widget.widgetType==='product'">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
@@ -250,6 +253,7 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 상품 ====================================================== -->
   <!-- ===== ■. 조건 상품 =================================================== -->
   <template v-else-if="widget.widgetType==='cond_product'">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
@@ -265,6 +269,7 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 조건 상품 =================================================== -->
   <!-- ===== ■. 차트 ====================================================== -->
   <template v-else-if="widget.widgetType&&widget.widgetType.startsWith('chart_')">
     <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
@@ -282,6 +287,7 @@ window.DispX04Widget = {
       <div v-else style="height:60px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;">차트 데이터 없음</div>
     </div>
   </template>
+  <!-- ===== □. 차트 ====================================================== -->
   <!-- ===== ■. 텍스트 배너 ================================================== -->
   <template v-else-if="widget.widgetType==='text_banner'">
     <div :style="{ background: widget.bgColor||'#f5f5f5', color: widget.textColor||'#333', borderRadius:'10px', padding:'18px 20px', fontSize: (widget.fontSize||'14')+'px', lineHeight:'1.7' }">
@@ -289,6 +295,7 @@ window.DispX04Widget = {
       <span v-else style="opacity:.6;">{{ widget.name }}</span>
     </div>
   </template>
+  <!-- ===== □. 텍스트 배너 ================================================== -->
   <!-- ===== ■. 정보 카드 =================================================== -->
   <template v-else-if="widget.widgetType==='info_card'">
     <div style="background:#fff;border-radius:10px;padding:18px 20px;border:1px solid #e8e8e8;box-shadow:0 1px 6px rgba(0,0,0,.06);">
@@ -299,6 +306,7 @@ window.DispX04Widget = {
       <div style="font-size:13px;color:#555;white-space:pre-line;line-height:1.6;">{{ widget.infoBody || '내용 없음' }}</div>
     </div>
   </template>
+  <!-- ===== □. 정보 카드 =================================================== -->
   <!-- ===== ■. 팝업 ====================================================== -->
   <template v-else-if="widget.widgetType==='popup'">
     <div style="background:#fff;border-radius:10px;padding:16px 20px;border:2px dashed #e8587a;text-align:center;">
@@ -308,6 +316,7 @@ window.DispX04Widget = {
       <div v-if="widget.popupWidth" style="font-size:11px;color:#aaa;margin-top:4px;">{{ widget.popupWidth }}×{{ widget.popupHeight }}</div>
     </div>
   </template>
+  <!-- ===== □. 팝업 ====================================================== -->
   <!-- ===== ■. 파일 ====================================================== -->
   <template v-else-if="widget.widgetType==='file'">
     <div style="display:flex;align-items:center;gap:12px;background:#f8f9ff;border-radius:10px;padding:14px 18px;border:1px solid #dce3f8;">
@@ -318,6 +327,7 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 파일 ====================================================== -->
   <!-- ===== ■. 파일 목록 =================================================== -->
   <template v-else-if="widget.widgetType==='file_list'">
     <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e8e8e8;">
@@ -329,6 +339,7 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 파일 목록 =================================================== -->
   <!-- ===== ■. 쿠폰 ====================================================== -->
   <template v-else-if="widget.widgetType==='coupon'">
     <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#f06292,#e91e63);color:#fff;display:flex;align-items:center;padding:20px 24px;gap:18px;position:relative;">
@@ -342,11 +353,12 @@ window.DispX04Widget = {
         <div style="font-size:16px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.2);">{{ widget.couponDesc || widget.name }}</div>
         <div v-if="widget.discountRate" style="font-size:12px;opacity:.8;margin-top:3px;">할인율: {{ widget.discountRate }}%</div>
       </div>
-      <!-- 점선 경계 -->
+      <!-- ===== ■.■.■. 점선 경계 =============================================== -->
       <div style="position:absolute;top:0;bottom:0;right:70px;width:1px;border-left:2px dashed rgba(255,255,255,.4);"></div>
       <div style="font-size:13px;font-weight:700;width:60px;text-align:center;flex-shrink:0;">받기</div>
     </div>
   </template>
+  <!-- ===== □. 쿠폰 ====================================================== -->
   <!-- ===== ■. HTML 에디터 ================================================ -->
   <template v-else-if="widget.widgetType==='html_editor'">
     <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
@@ -357,6 +369,7 @@ window.DispX04Widget = {
       <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">HTML 내용 없음</div>
     </div>
   </template>
+  <!-- ===== □. HTML 에디터 ================================================ -->
   <!-- ===== ■. 텍스트 영역 ================================================== -->
   <template v-else-if="widget.widgetType==='textarea'">
     <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
@@ -367,6 +380,7 @@ window.DispX04Widget = {
       <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">내용 없음</div>
     </div>
   </template>
+  <!-- ===== □. 텍스트 영역 ================================================== -->
   <!-- ===== ■. Markdown ================================================ -->
   <template v-else-if="widget.widgetType==='markdown'">
     <div style="border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
@@ -377,10 +391,12 @@ window.DispX04Widget = {
       <div v-else style="padding:14px 16px;font-size:12px;color:#bbb;text-align:center;">Markdown 내용 없음</div>
     </div>
   </template>
+  <!-- ===== □. Markdown ================================================ -->
   <!-- ===== ■. 바코드 / QR코드 ============================================== -->
   <template v-else-if="widget.widgetType==='barcode'||widget.widgetType==='qrcode'||widget.widgetType==='barcode_qrcode'">
     <co-barcode-widget :widget="widget" />
   </template>
+  <!-- ===== □. 바코드 / QR코드 ============================================== -->
   <!-- ===== ■. 동영상 플레이어 ================================================ -->
   <template v-else-if="widget.widgetType==='video_player'">
     <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
@@ -395,10 +411,12 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 동영상 플레이어 ================================================ -->
   <!-- ===== ■. 카운트다운 타이머 =============================================== -->
   <template v-else-if="widget.widgetType==='countdown'">
     <co-countdown-widget :widget="widget" />
   </template>
+  <!-- ===== □. 카운트다운 타이머 =============================================== -->
   <!-- ===== ■. 결제위젯 ==================================================== -->
   <template v-else-if="widget.widgetType==='payment_widget'">
     <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;padding:20px;">
@@ -418,6 +436,7 @@ window.DispX04Widget = {
       </button>
     </div>
   </template>
+  <!-- ===== □. 결제위젯 ==================================================== -->
   <!-- ===== ■. 전자결재 ==================================================== -->
   <template v-else-if="widget.widgetType==='approval_widget'">
     <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
@@ -438,6 +457,7 @@ window.DispX04Widget = {
       <div style="padding:10px 14px;font-size:12px;color:#888;">결재를 진행합니다.</div>
     </div>
   </template>
+  <!-- ===== □. 전자결재 ==================================================== -->
   <!-- ===== ■. 지도맵 ===================================================== -->
   <template v-else-if="widget.widgetType==='map_widget'">
     <div style="border-radius:10px;overflow:hidden;border:1px solid #e8e8e8;">
@@ -454,6 +474,7 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 지도맵 ===================================================== -->
   <!-- ===== ■. 이벤트 배너 ================================================== -->
   <template v-else-if="widget.widgetType==='event_banner'">
     <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#f50057,#c51162);padding:28px 24px;text-align:center;color:#fff;">
@@ -462,6 +483,7 @@ window.DispX04Widget = {
       <div v-if="widget.eventUrl" style="font-size:12px;opacity:.7;margin-top:6px;">→ {{ widget.eventUrl }}</div>
     </div>
   </template>
+  <!-- ===== □. 이벤트 배너 ================================================== -->
   <!-- ===== ■. 캐시 배너 =================================================== -->
   <template v-else-if="widget.widgetType==='cache_banner'">
     <div style="border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#ff8f00,#f57f17);padding:22px 24px;color:#fff;display:flex;align-items:center;gap:18px;">
@@ -477,6 +499,7 @@ window.DispX04Widget = {
       </div>
     </div>
   </template>
+  <!-- ===== □. 캐시 배너 =================================================== -->
   <!-- ===== ■. 위젯 임베드 ================================================== -->
   <template v-else-if="widget.widgetType==='widget_embed'">
     <div style="background:#f8f8f8;border-radius:10px;padding:16px;border:1px dashed #ccc;text-align:center;">
@@ -484,6 +507,7 @@ window.DispX04Widget = {
       <div style="font-size:12px;color:#888;">위젯 임베드: {{ widget.name }}</div>
     </div>
   </template>
+  <!-- ===== □. 위젯 임베드 ================================================== -->
   <!-- ===== ■. 기타 ====================================================== -->
   <template v-else>
     <div :style="'border-radius:10px;overflow:hidden;background:'+nameGrad(widget.name)+';padding:24px 20px;text-align:center;color:#fff;'">
@@ -493,5 +517,6 @@ window.DispX04Widget = {
     </div>
   </template>
 </div>
-`,
+
+  <!-- ===== □. 기타 ====================================================== -->`,
 };

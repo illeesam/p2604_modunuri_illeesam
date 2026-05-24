@@ -273,6 +273,7 @@ window.Prod03List = {
     <span>✨ 프리미엄 큐레이션 — 장인의 손길</span>
     <span style="margin-left:auto;opacity:0.9;">SITE 03</span>
   </div>
+  <!-- ===== □. Site 03 Edition Ribbon ================================== -->
   <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품목록"
@@ -288,6 +289,7 @@ window.Prod03List = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 카테고리 탭 (최상위 독립 배치) ====================================== -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
     <button
@@ -311,6 +313,7 @@ window.Prod03List = {
       </span>
     </button>
   </div>
+  <!-- ===== □. 카테고리 탭 (최상위 독립 배치) ====================================== -->
   <!-- ===== ■. 검색 바 ==================================================== -->
   <fo-search-area :show-actions="false" bar-style="margin-bottom:12px;"
     :columns="baseSearchColumns" :param="uiState"
@@ -330,6 +333,7 @@ window.Prod03List = {
       조회
     </button>
   </fo-search-area>
+  <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 상세 필터 패널 ================================================ -->
   <div v-show="uiState.filterOpen"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:clamp(12px,2vw,18px);margin-bottom:20px;">
@@ -362,6 +366,7 @@ window.Prod03List = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 가격 구간 ================================================= -->
     <!-- ===== ■.■. 색상 ==================================================== -->
     <div style="margin-bottom:16px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">
@@ -381,6 +386,7 @@ window.Prod03List = {
         </button>
       </div>
     </div>
+    <!-- ===== □.□. 색상 ==================================================== -->
     <!-- ===== ■.■. 사이즈 =================================================== -->
     <div style="margin-bottom:12px;">
       <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.05em;">
@@ -398,6 +404,7 @@ window.Prod03List = {
         </button>
       </div>
     </div>
+    <!-- ===== □.□. 사이즈 =================================================== -->
     <!-- ===== ■.■. 필터 초기화 ================================================ -->
     <div style="display:flex;justify-content:flex-end;">
       <button v-if="cfHasFilter" @click="clearFilters"
@@ -406,6 +413,8 @@ window.Prod03List = {
       </button>
     </div>
   </div>
+    <!-- ===== □.□. 필터 초기화 ================================================ -->
+  <!-- ===== □. 상세 필터 패널 ================================================ -->
   <!-- ===== ■. 결과 요약 =================================================== -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div style="font-size:0.85rem;color:var(--text-secondary);">
@@ -415,6 +424,7 @@ window.Prod03List = {
       <span v-if="cfHasFilter" style="color:#f97316;font-size:0.78rem;margin-left:6px;">(필터 적용중)</span>
     </div>
   </div>
+  <!-- ===== □. 결과 요약 =================================================== -->
   <!-- ===== ■. 스켈레톤 ==================================================== -->
   <div v-if="uiState.loading" class="grid-3">
     <div v-for="i in 6" :key="'sk'+i" class="prod-card" style="overflow:hidden;">
@@ -430,6 +440,7 @@ window.Prod03List = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 스켈레톤 ==================================================== -->
   <!-- ===== ■. 상품 그리드 ================================================== -->
   <div v-else class="grid-3">
     <div v-for="p in pager.pageList" :key="p.prodId"
@@ -497,6 +508,7 @@ window.Prod03List = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 상품 그리드 ================================================== -->
   <!-- ===== ■. 결과 없음 =================================================== -->
   <div v-if="!uiState.loading && allProds.length===0"
     style="text-align:center;padding:60px 0;color:var(--text-muted);">
@@ -507,6 +519,7 @@ window.Prod03List = {
       필터 초기화
     </button>
   </div>
+  <!-- ===== □. 결과 없음 =================================================== -->
   <!-- ===== ■. PC 페이지네이션 =============================================== -->
   <div v-if="!uiState.loading && !uiState.isMobile && pager.pageTotalPage > 1"
     style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
@@ -532,6 +545,7 @@ window.Prod03List = {
     </button>
     <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">{{ pager.pageNo }} / {{ pager.pageTotalPage }}</span>
   </div>
+  <!-- ===== □. PC 페이지네이션 =============================================== -->
   <!-- ===== ■. 모바일 무한스크롤 센티넬 =========================================== -->
   <div v-if="!uiState.loading && uiState.isMobile" id="sj-sentinel" style="height:1px;"></div>
   <!-- ===== ■. 조건부 영역 ================================================== -->
@@ -540,5 +554,6 @@ window.Prod03List = {
     스크롤하면 더 불러옵니다…
   </div>
 </div>
-`,
+
+  <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

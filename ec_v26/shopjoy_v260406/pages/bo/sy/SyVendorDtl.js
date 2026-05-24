@@ -174,7 +174,8 @@ window.SyVendorDtl = {
     {{ cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.vendorId }}</span>
   </div>
-  <!-- 폼 영역 (BoFormArea 자동 렌더) -->
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
+  <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
@@ -184,7 +185,7 @@ window.SyVendorDtl = {
       @cancel="navigate('syVendorMng')"
       @edit="navigate('__switchToEdit__')"
       @close="navigate('syVendorMng')">
-      <!-- 주소: 우편번호+검색버튼+기본주소+상세주소 -->
+      <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소+상세주소 ============================= -->
       <template #addr>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
@@ -199,7 +200,7 @@ window.SyVendorDtl = {
         <input class="form-control" v-model="form.vendorAddrDetail" ref="addrDetailRef"
           placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
       </template>
-      <!-- 메모: Quill 또는 view 모드 HTML -->
+      <!-- ===== ■.■.■. 메모: Quill 또는 view 모드 HTML =========================== -->
       <template #remark>
         <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
@@ -207,5 +208,7 @@ window.SyVendorDtl = {
     </bo-form-area>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+  <!-- ===== □. 카드 영역 =================================================== -->`
 };

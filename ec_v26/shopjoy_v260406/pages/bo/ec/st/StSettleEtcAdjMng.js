@@ -246,11 +246,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다. • 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등 • 승인 후 정산마감 집계에 포함됩니다. • 승인 상태: 대기 / 승인 / 반려
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
@@ -272,7 +274,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       </template>
     </bo-grid>
   </div>
-  <!-- 편집 폼 (BoFormArea 자동 렌더) -->
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== ■. 편집 폼 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 상세 패널 =================================================== -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}</div>
@@ -282,5 +286,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       @save="handleSave" @cancel="closeForm" />
   </div>
 </div>
-`,
+
+    <!-- ===== □.□. 폼 영역 ================================================== -->
+  <!-- ===== □. 상세 패널 =================================================== -->`,
 };

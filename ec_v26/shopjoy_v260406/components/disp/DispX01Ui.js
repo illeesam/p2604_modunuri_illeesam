@@ -276,7 +276,7 @@ window.DispX01Ui = {
   template: /* html */`
 <div>
   <!-- ===== ■. 메인 영역 =================================================== -->
-  <!-- 파라미터 요약 바 (보기옵션이 있을 때만) -->
+  <!-- ===== ■. 파라미터 요약 바 (보기옵션이 있을 때만) ================================= -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="params.viewOpts" style="background:#fff;border-bottom:1px solid #e8e0f8;padding:10px 24px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
     <span style="font-size:11px;color:#888;margin-right:4px;">전달 파라미터:</span>
@@ -302,6 +302,7 @@ window.DispX01Ui = {
       보기: {{ params.viewOpts }}
     </span>
   </div>
+  <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <style>
     @keyframes skelShimmer {
@@ -314,12 +315,13 @@ window.DispX01Ui = {
       animation: skelShimmer 1.4s infinite linear;
     }
   </style>
-  <!-- 탭 바 -->
+  <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== ■. 탭 바 ===================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:stretch;border-bottom:2px solid #e8e0f8;background:#faf8ff;">
     <template v-if="cfActiveTabs.length > 1">
       <template v-for="tab in cfActiveTabs" :key="tab.key">
-        <!-- 내용보기 탭: 구조보기 토글 내장 -->
+        <!-- ===== ■.■.■.■. 내용보기 탭: 구조보기 토글 내장 ================================ -->
         <div v-if="tab.key==='content'"
           style="display:flex;align-items:center;border-bottom:3px solid transparent;margin-bottom:-2px;"
           :style="activeTab==='content' ? 'border-bottom-color:#6a1b9a;background:#fff;' : ''">
@@ -337,7 +339,7 @@ window.DispX01Ui = {
             상세
           </span>
         </div>
-        <!-- 나머지 탭 -->
+        <!-- ===== ■.■.■.■. 나머지 탭 ============================================= -->
         <button v-else @click="activeTab=tab.key"
           style="padding:9px 20px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;border-bottom:3px solid transparent;margin-bottom:-2px;"
           :style="activeTab===tab.key
@@ -347,7 +349,7 @@ window.DispX01Ui = {
         </button>
       </template>
     </template>
-    <!-- 탭이 1개이거나 없을 때 (내용보기만): 구조 토글만 표시 -->
+    <!-- ===== ■.■. 탭이 1개이거나 없을 때 (내용보기만): 구조 토글만 표시 ====================== -->
     <div v-else style="display:flex;align-items:center;padding:6px 14px;gap:8px;">
       <span style="font-size:13px;font-weight:600;color:#6a1b9a;">🖼 내용보기</span>
       <span @click="showContentStruct=!showContentStruct"
@@ -359,12 +361,15 @@ window.DispX01Ui = {
       </span>
     </div>
   </div>
-  <!-- 영역 없음 -->
+    <!-- ===== □.□. 탭이 1개이거나 없을 때 (내용보기만): 구조 토글만 표시 ====================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 영역 없음 =================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!(params.areas&&params.areas.length)"
     style="text-align:center;padding:60px;color:#bbb;font-size:14px;">
     전시영역 파라미터가 없습니다. 관리자 화면에서 영역을 선택 후 다시 열어주세요.
   </div>
+  <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template v-else>
     <!-- ══════════════════════════════════════
@@ -380,7 +385,7 @@ window.DispX01Ui = {
             :disp-opt="{ ...dispOpt, mode: 'area_detail', showDesc: false }"
             :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
             />
-          <!-- 스켈레톤 (패널 없을 때) -->
+          <!-- ===== ■.■.■.■.■. 스켈레톤 (패널 없을 때) ================================== -->
           <div v-else style="padding:12px 0 4px 0;">
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div v-for="sk in 2" :key="sk"
@@ -422,7 +427,7 @@ window.DispX01Ui = {
             :disp-opt="{ ...dispOpt, mode: 'expand', showDesc: true }"
             :area-item="{ code: areaCode, label: areaLabel(areaCode), info: areaInfo(areaCode), panels: panelsForArea(areaCode) }"
             />
-          <!-- 스켈레톤 (패널 없을 때) -->
+          <!-- ===== ■.■.■.■.■. 스켈레톤 (패널 없을 때) ================================== -->
           <div v-if="!panelsForArea(areaCode).length"
             style="background:#fff;border-radius:0 0 8px 8px;border:1px solid #e0e0e0;border-top:none;padding:14px 16px;">
             <div style="display:flex;flex-direction:column;gap:8px;">
@@ -442,7 +447,7 @@ window.DispX01Ui = {
          구조보기 — 윈도우 트리
     ══════════════════════════════════════ -->
     <div v-else-if="activeTab==='struct'" style="padding:0;">
-      <!-- 트리 컨트롤 바 -->
+      <!-- ===== ■.■.■. 트리 컨트롤 바 ============================================ -->
       <div style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:#f5f5f5;border-bottom:1px solid #e0e0e0;flex-wrap:wrap;">
         <button @click="expandAll"
           style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:7px;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
@@ -453,6 +458,7 @@ window.DispX01Ui = {
           ▶ 전체접기
         </button>
         <div style="width:1px;height:18px;background:#ddd;margin:0 2px;"></div>
+        <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button @click="toggleAll1"
           style="font-size:11px;padding:3px 10px;border:1px solid #6a1b9a;border-radius:7px;cursor:pointer;font-weight:600;"
           :style="allAreas1Open?'background:#f3e5f5;color:#4a148c;':'background:#fff;color:#9c27b0;'">
@@ -465,10 +471,10 @@ window.DispX01Ui = {
         </button>
         <span style="font-size:11px;color:#aaa;margin-left:auto;">영역 {{ params.areas.length }}개 · 패널 {{ cfTotalPanels }}개</span>
       </div>
-      <!-- 트리 본문 -->
+      <!-- ===== ■.■.■. 트리 본문 =============================================== -->
       <div style="padding:10px 16px;background:#fff;font-family:monospace;">
         <div v-for="(areaCode, ai) in params.areas" :key="areaCode" style="margin-bottom:2px;">
-          <!-- 1레벨: Area 행 -->
+          <!-- ===== ■.■.■.■.■. 1레벨: Area 행 ===================================== -->
           <div @click="toggleArea(areaCode)"
             style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:7px;cursor:pointer;user-select:none;border:1px solid #d1c4e9;background:linear-gradient(90deg,#ede7f6,#f8f5ff);"
             onmouseover="this.style.background='linear-gradient(90deg,#e1d5f0,#ede7f6)'"
@@ -482,26 +488,27 @@ window.DispX01Ui = {
             <code style="font-size:11px;color:#4a148c;font-weight:700;background:#e8d5f8;padding:1px 6px;border-radius:4px;">
               {{ areaCode }}
             </code>
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <span style="font-size:12px;color:#4a148c;font-weight:600;">{{ areaLabel(areaCode) }}</span>
-            <!-- Area 옵션 정보 -->
+            <!-- ===== ■.■.■.■.■.■. Area 옵션 정보 ==================================== -->
             <span style="margin-left:auto;font-size:10px;color:#9c6fb5;font-family:monospace;white-space:nowrap;flex-shrink:0;">
               표시형식:{{ (areaInfo(areaCode)||{}).layoutType||'grid' }}:{{ (areaInfo(areaCode)||{}).gridCols||1 }}, 정렬:{{ (areaInfo(areaCode)||{}).sortOrd != null ? (areaInfo(areaCode)||{}).sortOrd : '-' }}, 타이틀:{{ (areaInfo(areaCode)||{}).titleYn==='Y' ? ((areaInfo(areaCode)||{}).title||'(제목없음)') : '미표시' }}, area="{{ areaCode }}"
             </span>
             <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:10px;">패널 {{ panelsForArea(areaCode).length }}개</span>
           </div>
-          <!-- 2레벨: Panel 목록 (영역 펼쳐져 있을 때) -->
+          <!-- ===== ■.■.■.■.■. 2레벨: Panel 목록 (영역 펼쳐져 있을 때) ===================== -->
           <div v-if="structAreaOpen.has(areaCode)" style="margin-left:20px;border-left:2px solid #d1c4e9;padding-left:8px;margin-top:2px;">
             <div v-if="!panelsForArea(areaCode).length"
               style="padding:6px 10px;font-size:11px;color:#bbb;font-style:italic;">
               ── 해당 조건 패널 없음
             </div>
             <div v-for="(p, pi) in panelsForArea(areaCode)" :key="p.dispId" style="margin-bottom:2px;">
-              <!-- Panel 행 -->
+              <!-- ===== ■.■.■.■.■.■.■. Panel 행 ===================================== -->
               <div @click="togglePanel(p.dispId)"
                 style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;cursor:pointer;user-select:none;border:1px solid #c8e6c9;background:linear-gradient(90deg,#e8f5e9,#f9fdf9);flex-wrap:wrap;"
                 onmouseover="this.style.background='linear-gradient(90deg,#dcedc8,#e8f5e9)'"
                 onmouseout="this.style.background='linear-gradient(90deg,#e8f5e9,#f9fdf9)'">
-                <!-- 좌측: 트리 + 이름 -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 좌측: 트리 + 이름 =============================== -->
                 <span style="font-size:11px;color:#a5d6a7;margin-left:-2px;width:12px;flex-shrink:0;">
                   {{ pi === panelsForArea(areaCode).length - 1 ? '└' : '├' }}
                 </span>
@@ -513,13 +520,14 @@ window.DispX01Ui = {
                 </span>
                 <code style="font-size:10px;color:#888;flex-shrink:0;">#{{ String(p.dispId).padStart(4,'0') }}</code>
                 <span style="font-size:12px;font-weight:600;color:#1b5e20;">{{ p.name }}</span>
-                <!-- Panel 옵션 정보 (우측) -->
+                <!-- ===== ■.■.■.■.■.■.■.■. Panel 옵션 정보 (우측) ========================== -->
                 <span style="margin-left:auto;font-size:10px;color:#5a8a6a;font-family:monospace;white-space:nowrap;flex-shrink:0;">
                   표시형식:{{ p.layoutType||'grid' }}:{{ p.gridCols||1 }}, 정렬:{{ p.sortOrder != null ? p.sortOrder : '-' }}, 타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }}, 기간: {{ (p.dispStartDt||p.dispEndDt) ? (p.dispStartDt||'∞')+' ~ '+(p.dispEndDt||'∞') : '기간없음' }} &nbsp;|&nbsp;상태: {{ p.status||'-' }}
                 </span>
                 <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px;">위젯 {{ (p.rows||[]).length }}개</span>
               </div>
-              <!-- 3레벨: Widget 목록 (패널 펼쳐져 있을 때) -->
+              <!-- ===== ■.■.■.■.■.■.■. 3레벨: Widget 목록 (패널 펼쳐져 있을 때) ================ -->
+              <!-- ===== ■.■.■.■.■.■.■. 조건부 영역 ====================================== -->
               <div v-if="structPanelOpen.has(p.dispId)"
                 style="margin-left:28px;border-left:2px solid #c8e6c9;padding-left:8px;margin-top:2px;margin-bottom:2px;">
                 <div v-if="!(p.rows&&p.rows.length)"
@@ -558,11 +566,11 @@ window.DispX01Ui = {
               style="vertical-align:top;"
               onmouseover="this.style.background='rgba(255,255,255,0.04)'"
               onmouseout="this.style.background=''">
-              <!-- 라인 번호 -->
+              <!-- ===== ■.■.■.■.■.■.■. 라인 번호 ======================================= -->
               <td style="width:40px;padding:0 10px 0 12px;text-align:right;color:#4b5263;font-size:11px;user-select:none;border-right:1px solid #2d2d40;white-space:nowrap;vertical-align:top;">
                 <span v-if="line.type!=='blank'">{{ idx+1 }}</span>
               </td>
-              <!-- 소스 내용 -->
+              <!-- ===== ■.■.■.■.■.■.■. 소스 내용 ======================================= -->
               <td style="padding:0 16px 0 14px;white-space:pre;vertical-align:top;">
                 <span v-if="line.type==='blank'">&nbsp;</span>
                 <span v-else :style="'color:'+lineColor(line)">{{ line.text }}</span>
@@ -574,5 +582,6 @@ window.DispX01Ui = {
     </div>
   </template>
 </div>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

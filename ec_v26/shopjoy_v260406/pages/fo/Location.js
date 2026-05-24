@@ -117,12 +117,14 @@ window.Location = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 지도 영역 =================================================== -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;">
     <!-- ===== ■.■. 카카오 SDK 모드: div 컨테이너 ================================== -->
     <div v-if="uiState.mapProvider==='kakao_sdk'"
       id="shopjoy-map"
       style="width:100%;height:clamp(220px,40vw,320px);"></div>
+    <!-- ===== □.□. 카카오 SDK 모드: div 컨테이너 ================================== -->
     <!-- ===== ■.■. iframe 모드 (Google / OSM) ============================== -->
     <iframe v-else-if="!uiState.mapError && uiState.mapSrc"
       :src="uiState.mapSrc"
@@ -131,12 +133,14 @@ window.Location = {
       allowfullscreen loading="lazy"
       referrerpolicy="no-referrer-when-downgrade"
       @error="onMapError"></iframe>
+    <!-- ===== □.□. iframe 모드 (Google / OSM) ============================== -->
     <!-- ===== ■.■. 로딩 중 (mapSrc 아직 미설정) ================================== -->
     <div v-else-if="!uiState.mapError && !uiState.mapSrc"
       style="height:clamp(220px,40vw,320px);display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
       <span style="animation:spin .8s linear infinite;display:inline-block;">⏳</span>
       지도 로딩 중…
     </div>
+    <!-- ===== □.□. 로딩 중 (mapSrc 아직 미설정) ================================== -->
     <!-- ===== ■.■. 에러 fallback =========================================== -->
     <div v-else
       style="height:clamp(220px,40vw,320px);display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-base);gap:12px;">
@@ -147,6 +151,7 @@ window.Location = {
         외부 지도에서 보기 →
       </a>
     </div>
+    <!-- ===== □.□. 에러 fallback =========================================== -->
     <!-- ===== ■.■. 하단 바: 주소 + 지도앱 링크 ===================================== -->
     <div style="padding:12px 20px;background:var(--bg-card);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <span style="font-size:0.83rem;color:var(--text-secondary);flex:1;min-width:0;">📍 {{ ADDR }} 201호</span>
@@ -166,6 +171,8 @@ window.Location = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 하단 바: 주소 + 지도앱 링크 ===================================== -->
+  <!-- ===== □. 지도 영역 =================================================== -->
   <!-- ===== ■. 상세 정보 =================================================== -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(10px,2vw,16px);margin-bottom:24px;">
     <!-- ===== ■.■. 주소 ==================================================== -->
@@ -182,6 +189,7 @@ window.Location = {
         <div style="margin-top:8px;font-size:0.8rem;color:var(--text-muted);">우편번호: 13401</div>
       </div>
     </div>
+    <!-- ===== □.□. 주소 ==================================================== -->
     <!-- ===== ■.■. 영업시간 ================================================== -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
@@ -205,6 +213,7 @@ window.Location = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 영업시간 ================================================== -->
     <!-- ===== ■.■. 연락처 =================================================== -->
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
@@ -235,6 +244,8 @@ window.Location = {
       </div>
     </div>
   </div>
+    <!-- ===== □.□. 연락처 =================================================== -->
+  <!-- ===== □. 상세 정보 =================================================== -->
   <!-- ===== ■. 교통편 안내 ================================================== -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(16px,3vw,24px);">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:16px;">🚌 교통편 안내</div>
@@ -262,10 +273,12 @@ window.Location = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 교통편 안내 ================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <style>
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </div>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
 };

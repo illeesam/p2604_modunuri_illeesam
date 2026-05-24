@@ -208,6 +208,7 @@ window.ZdLocalStorage = {
                 </div>
               </template>
             </td>
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <td style="padding: 12px; text-align: center; white-space: nowrap;">
               <button @click="copyValue(item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
                 복사
@@ -227,5 +228,6 @@ window.ZdLocalStorage = {
     <div style="margin-top: 12px; font-size: 12px; color: #666;">총 {{ filteredData.length }}개 항목</div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 카드 영역 =================================================== -->`
 };

@@ -252,6 +252,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     {{ cfIsNew ? '사은품 등록' : '사은품 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.giftId }}</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
@@ -267,15 +268,16 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
+  <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
+    <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfIsView" :cols="2" :show-actions="false">
-        <!-- 판매업체 picker -->
+        <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="showVendorModal=true">
@@ -288,7 +290,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
           </div>
         </template>
       </bo-form-area>
-      <!-- 판매업체 선택 모달 -->
+      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
       <div class="form-actions" v-if="!cfIsView">
@@ -298,6 +300,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmGiftMng')">취소</button>
       </div>
     </div>
+    <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 공개대상 ================================================== -->
     <div class="card" v-show="showTab('visibility')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
@@ -316,6 +319,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmGiftMng')">취소</button>
       </div>
     </div>
+    <!-- ===== □.□. 공개대상 ================================================== -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
@@ -344,5 +348,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 미리보기 ================================================== -->
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->`
 };

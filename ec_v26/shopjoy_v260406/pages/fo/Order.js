@@ -313,6 +313,7 @@ window.Order = {
           </div>
         </div>
       </div>
+      <!-- ===== ■.■.■. 카드 영역 =============================================== -->
       <div class="card" style="padding:18px;text-align:left;margin-bottom:28px;background:var(--blue-dim);">
         <div style="font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:10px;">💳 입금 안내</div>
         <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.8;">
@@ -341,6 +342,7 @@ window.Order = {
       </div>
     </div>
   </template>
+  <!-- ===== □. ══ 주문 결과 화면 ══ ========================================== -->
   <!-- ===== ■. ══ 주문 입력 화면 ══ ========================================== -->
   <template v-else>
     <!-- ===== ■.■. 페이지 타이틀 배너 ============================================ -->
@@ -609,6 +611,7 @@ window.Order = {
                 </div>
               </div>
             </div>
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div class="info-row">
               <span class="info-icon">📞</span>
               <div>
@@ -629,6 +632,8 @@ window.Order = {
       </div>
     </template>
   </template>
+    <!-- ===== □.□. 페이지 타이틀 배너 ============================================ -->
+  <!-- ===== □. ══ 주문 입력 화면 ══ ========================================== -->
   <!-- ===== ■. ══ 상품 쿠폰 팝업 ══ ========================================== -->
   <div v-if="couponPopup.show" class="modal-overlay" @click.self="closeCouponPopup" style="z-index:200;">
     <div class="modal-box" style="max-width:480px;width:92%;padding:0;max-height:82vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
@@ -691,6 +696,7 @@ window.Order = {
       </div>
     </div>
   </div>
+  <!-- ===== □. ══ 상품 쿠폰 팝업 ══ ========================================== -->
   <!-- ===== ■. ══ 배송비 쿠폰 팝업 ══ ========================================= -->
   <div v-if="uiState.shipCouponPopup" class="modal-overlay" @click.self="uiState.shipCouponPopup=false" style="z-index:200;">
     <div class="modal-box" style="max-width:440px;width:92%;padding:0;max-height:72vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
@@ -741,5 +747,6 @@ window.Order = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. ══ 배송비 쿠폰 팝업 ══ ========================================= -->`
 };

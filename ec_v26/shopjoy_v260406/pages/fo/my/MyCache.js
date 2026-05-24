@@ -97,12 +97,14 @@ window.MyCache = {
       <span style="font-size:1rem;margin-left:4px;">원</span>
     </div>
   </div>
+  <!-- ===== □. 보유 캐쉬 =================================================== -->
   <!-- ===== ■. 충전 입력 =================================================== -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;display:flex;gap:10px;align-items:center;">
     <input v-model="chargeAmount" type="number" placeholder="충전 금액 입력 (최소 1,000원)" @keyup.enter="addCash"
       style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.9rem;outline:none;">
     <button @click="addCash" class="btn-blue" style="padding:10px 20px;white-space:nowrap;">충전하기</button>
   </div>
+  <!-- ===== □. 충전 입력 =================================================== -->
   <!-- ===== ■. 빠른 금액 버튼 ================================================ -->
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
     <button v-for="amt in [5000,10000,30000,50000]" :key="amt" @click="chargeAmount=amt"
@@ -110,6 +112,7 @@ window.MyCache = {
       +{{ amt.toLocaleString() }}원
     </button>
   </div>
+  <!-- ===== □. 빠른 금액 버튼 ================================================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredHistory.length" :pager="pager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
@@ -135,6 +138,7 @@ window.MyCache = {
       </div>
       <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ h.date }}</div>
     </div>
+    <!-- ===== □.□. 1열: 설명 + 날짜 =========================================== -->
     <!-- ===== ■.■. 2열: 결제/환불 정보 ========================================== -->
     <div style="flex:1;min-width:0;padding:0 8px;">
       <!-- ===== ■.■.■. 직접 충전 결제정보 ========================================== -->
@@ -176,25 +180,29 @@ window.MyCache = {
         </div>
       </div>
     </div>
+    <!-- ===== □.□. 2열: 결제/환불 정보 ========================================== -->
     <!-- ===== ■.■. 3열: 거래금액 ============================================== -->
     <div style="font-weight:800;font-size:0.95rem;text-align:right;min-width:80px;flex-shrink:0;"
       :style="h.type==='환불'?'color:#f97316;':h.type==='충전'?'color:#22c55e;':'color:#ef4444;'">
       {{ h.type==='충전' ? '+' : h.type==='환불' ? '-' : '' }}{{ Math.abs(h.amount).toLocaleString() }}원
     </div>
+    <!-- ===== □.□. 3열: 거래금액 ============================================== -->
     <!-- ===== ■.■. 4열: 잔액 ================================================ -->
     <div v-if="h.balance != null" style="text-align:right;min-width:90px;flex-shrink:0;border-left:1px solid var(--border);padding-left:14px;">
       <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:2px;">잔액</div>
       <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">{{ h.balance.toLocaleString() }}원</div>
     </div>
   </div>
-  <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="cashHistory.length" :pager="pager" />
+    <!-- ===== □.□. 4열: 잔액 ================================================ -->
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
   </teleport>
 </fo-my-layout>
-`,
+
+  <!-- ===== □. 영역 ====================================================== -->`,
   components: {
     FoMyLayout:         window.foMyLayout,
     PagerHeader:      window.PagerHeader,

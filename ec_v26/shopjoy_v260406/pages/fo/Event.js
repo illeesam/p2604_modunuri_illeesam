@@ -91,6 +91,7 @@ window.EventPage = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 탭 + 정렬 ================================================== -->
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:28px;">
     <!-- ===== ■.■. 탭 ===================================================== -->
@@ -116,6 +117,7 @@ window.EventPage = {
         당첨자 발표
       </button>
     </div>
+    <!-- ===== □.□. 탭 ===================================================== -->
     <!-- ===== ■.■. 정렬 ==================================================== -->
     <div style="display:flex;gap:0;padding-bottom:2px;">
       <button @click="uiState.sortBy='latest'"
@@ -139,6 +141,8 @@ window.EventPage = {
       </button>
     </div>
   </div>
+    <!-- ===== □.□. 정렬 ==================================================== -->
+  <!-- ===== □. 탭 + 정렬 ================================================== -->
   <!-- ===== ■. 이벤트 그리드 ================================================= -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
     <div v-for="ev in events" :key="ev.id"
@@ -179,11 +183,13 @@ window.EventPage = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 이벤트 그리드 ================================================= -->
   <!-- ===== ■. 빈 상태 ==================================================== -->
   <div v-if="events.length === 0" style="text-align:center;padding:clamp(32px,6vw,60px) 0;color:var(--text-muted);">
     <div style="font-size:2rem;margin-bottom:12px;">📭</div>
     <div style="font-size:0.95rem;">{{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}</div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 빈 상태 ==================================================== -->`
 };

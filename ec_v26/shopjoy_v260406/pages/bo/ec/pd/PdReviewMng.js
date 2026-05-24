@@ -344,6 +344,7 @@ window.PdReviewMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid :columns="listGridColumns" :rows="reviews" :pager="pager" row-key="reviewId"
     :sort-state="uiState" list-title="상품리뷰 목록"
@@ -356,6 +357,7 @@ window.PdReviewMng = {
       </button>
     </template>
   </bo-grid>
+  <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
   <div class="card" v-if="selectedProdId">
     <div class="toolbar">
@@ -365,7 +367,7 @@ window.PdReviewMng = {
         ✕ 닫기
       </button>
     </div>
-    <!-- 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) -->
+    <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="prodReviewGridColumns" :rows="prodReviews" :pager="prodReviewPager"
@@ -373,13 +375,16 @@ window.PdReviewMng = {
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
         @set-page="setProdReviewPage" @size-change="onProdReviewSizeChange" @row-click="openDetail"></bo-grid>
     </div>
-    <!-- /그리드 스크롤 컨테이너 -->
-    <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 -->
+    <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
+    <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
+    <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
       <bo-pager :pager="prodReviewPager" :on-set-page="setProdReviewPage" :on-size-change="onProdReviewSizeChange"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
+    <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
+  <!-- ===== □. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
   <!-- ===== ■. 상세 패널 =================================================== -->
   <div class="card" v-if="cfSelectedRow">
     <div class="toolbar">
@@ -419,6 +424,7 @@ window.PdReviewMng = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 상세 패널 =================================================== -->
   <!-- ===== ■. 상태변경 사유 입력 모달 =========================================== -->
   <div v-if="statusModal.show"
     style="position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(2px);z-index:1500;display:flex;align-items:center;justify-content:center;"
@@ -456,5 +462,6 @@ window.PdReviewMng = {
     </div>
   </div>
 </div>
-`
+
+  <!-- ===== □. 상태변경 사유 입력 모달 =========================================== -->`
 };

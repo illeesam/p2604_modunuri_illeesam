@@ -138,6 +138,7 @@ window.Home01 = {
           }"></span>
       </div>
     </div>
+    <!-- ===== □.□. 좌: 텍스트 (슬라이드별) ======================================== -->
     <!-- ===== ■.■. 우: 이미지 (페이드 전환) ======================================= -->
     <div style="flex:1 1 160px;position:relative;min-height:280px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
       <img v-for="(b, i) in banners" :key="i" :src="b.img" :alt="b.title"
@@ -149,6 +150,8 @@ window.Home01 = {
         }" />
     </div>
   </section>
+    <!-- ===== □.□. 우: 이미지 (페이드 전환) ======================================= -->
+  <!-- ===== □. ══ Hero Banner Slider ══ ================================ -->
   <!-- ===== ■. ══ Category Cards (Outstock 스타일) ══ ===================== -->
   <div style="padding:0 clamp(12px,3vw,32px);margin:-40px auto 0;max-width:820px;position:relative;z-index:3;">
     <div class="home-cat-grid">
@@ -167,6 +170,7 @@ window.Home01 = {
       </div>
     </div>
   </div>
+  <!-- ===== □. ══ Category Cards (Outstock 스타일) ══ ===================== -->
   <!-- ===== ■. ══ 인기 상품 (8개) ══ ======================================== -->
   <div style="max-width:1080px;margin:0 auto;padding:48px clamp(12px,3vw,32px) 40px;">
     <div style="text-align:center;margin-bottom:28px;">
@@ -233,6 +237,7 @@ window.Home01 = {
       </button>
     </div>
   </div>
+  <!-- ===== □. ══ 인기 상품 (8개) ══ ======================================== -->
   <!-- ===== ■. ══ 2열 프로모션 배너 ══ ======================================== -->
   <div style="max-width:1100px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 48px;">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);">
@@ -290,6 +295,7 @@ window.Home01 = {
       </div>
     </div>
   </div>
+  <!-- ===== □. ══ 2열 프로모션 배너 ══ ======================================== -->
   <!-- ===== ■. ══ 할인 상품 (Sale Off) ══ ================================== -->
   <div style="max-width:1080px;margin:0 auto;padding:0 clamp(12px,3vw,32px) 40px;">
     <div style="text-align:center;margin-bottom:28px;">
@@ -318,12 +324,14 @@ window.Home01 = {
       </div>
     </div>
   </div>
+  <!-- ===== □. ══ 할인 상품 (Sale Off) ══ ================================== -->
   <!-- ===== ■. ══ 브랜드 로고 ══ ============================================ -->
   <div style="max-width:900px;margin:0 auto;padding:20px clamp(12px,3vw,32px) 40px;border-top:1px solid #eee;border-bottom:1px solid #eee;">
     <div style="display:flex;align-items:center;justify-content:center;gap:clamp(20px,5vw,48px);flex-wrap:wrap;opacity:0.45;">
       <img v-for="i in 5" :key="i" :src="'assets/cdn/prod/img/client/brand-' + i + '.webp'" style="height:30px;object-fit:contain;filter:grayscale(1);" />
     </div>
   </div>
+  <!-- ===== □. ══ 브랜드 로고 ══ ============================================ -->
   <!-- ===== ■. ══ 블로그 포스트 ══ =========================================== -->
   <div style="max-width:1080px;margin:0 auto;padding:40px clamp(12px,3vw,32px) 48px;">
     <div style="text-align:center;margin-bottom:28px;">
@@ -353,6 +361,7 @@ window.Home01 = {
       </div>
     </div>
   </div>
+  <!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
   <!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
   <prod-modal
     :show="!!uiState.quickViewProduct"
@@ -364,5 +373,6 @@ window.Home01 = {
     @close="uiState.quickViewProduct=null; uiState.cartModalMode=false"
     />
 </div>
-`
+
+  <!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->`
 };

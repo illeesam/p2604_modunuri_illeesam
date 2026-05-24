@@ -104,6 +104,7 @@ window.Contact = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(14px,2.5vw,28px);align-items:start;" class="contact-grid">
     <!-- ===== ■.■. 문의 폼 ================================================== -->
@@ -117,6 +118,7 @@ window.Contact = {
       </div>
       <button class="btn-blue" @click="handleSubmit" style="width:100%;padding:13px;">문의 접수하기</button>
     </div>
+    <!-- ===== □.□. 문의 폼 ================================================== -->
     <!-- ===== ■.■. 연락처 + 미니 FAQ ========================================== -->
     <div style="display:flex;flex-direction:column;gap:18px;">
       <div class="card" style="padding:24px;">
@@ -164,5 +166,7 @@ window.Contact = {
     </div>
   </div>
 </div>
-`
+
+    <!-- ===== □.□. 연락처 + 미니 FAQ ========================================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->`
 };

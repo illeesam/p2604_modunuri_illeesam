@@ -254,19 +254,19 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   // ===== 템플릿 ===========================================================
   template: /* html */`
 <div>
-  <!-- 페이지 타이틀 -->
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">할인관리</div>
-  <!-- 검색영역 -->
+  <!-- ===== ■. 검색영역 ==================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- 목록영역 (리스트/카드 토글) -->
+  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 -->
+    <!-- ===== ■.■. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
     <div class="toolbar">
       <span class="list-title">
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
@@ -288,7 +288,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
       </div>
     </div>
-    <!-- 리스트 뷰 (BoGrid) -->
+    <!-- ===== □.□. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
+    <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="baseGridColumns" :rows="discounts" :pager="pager" row-key="discntId"
@@ -304,7 +305,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         </div>
       </template>
     </bo-grid>
-    <!-- 카드 뷰 -->
+    <!-- ===== □.□. 목록 영역 ================================================= -->
+    <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="discounts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">데이터가 없습니다.</div>
       <div v-for="d in discounts" :key="d?.discntId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
@@ -333,10 +335,12 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         </div>
       </div>
     </div>
-    <!-- 페이지네이션 -->
+    <!-- ===== □.□. 카드 뷰 ================================================== -->
+    <!-- ===== ■.■. 페이지네이션 ================================================ -->
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
-  <!-- 하단 상세영역: PmDiscntDtl 인라인 임베드 -->
+  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== ■. 하단 상세영역: PmDiscntDtl 인라인 임베드 ============================ -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
@@ -356,5 +360,6 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       />
   </div>
 </div>
-`
+
+  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->`
 };

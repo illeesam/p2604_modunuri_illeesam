@@ -223,6 +223,7 @@ const rawList = reactive([]);
       • 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다. • 수집 단위: od_order_item / od_claim_item (상품 행 단위) • [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다. • 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)
     </div>
   </div>
+  <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 검색 카드 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -300,6 +301,8 @@ const rawList = reactive([]);
       </template>
     </bo-search-area>
   </div>
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □. 검색 카드 =================================================== -->
   <!-- ===== ■. 집계 카드 =================================================== -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
@@ -333,6 +336,7 @@ const rawList = reactive([]);
       <div style="font-size:15px;font-weight:700;color:#2980b9">{{ fmtW(cfSummary.settleAmt) }}</div>
     </div>
   </div>
+  <!-- ===== □. 집계 카드 =================================================== -->
   <!-- ===== ■. 목록 카드 =================================================== -->
   <bo-grid
     :columns="rawGridColumns"
@@ -512,5 +516,6 @@ const rawList = reactive([]);
     </template>
   </bo-grid>
 </div>
-`,
+
+  <!-- ===== □. 목록 카드 =================================================== -->`,
 };

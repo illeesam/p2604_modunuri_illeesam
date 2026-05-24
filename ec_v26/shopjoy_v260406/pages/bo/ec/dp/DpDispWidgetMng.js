@@ -253,6 +253,7 @@ window.DpDispWidgetMng = {
     <span style="font-size:14px;font-weight:600;color:#666;">전시위젯관리</span>
     <span style="font-size:13px;font-weight:400;color:#888;display:block;margin-top:4px;">위젯 유형별 리소스 등록·재활용</span>
   </div>
+  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 검색 필터 =================================================== -->
   <div class="card" style="padding:14px 18px;margin-bottom:14px;">
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
@@ -292,6 +293,7 @@ window.DpDispWidgetMng = {
       <button @click="onReset"  class="btn btn-outline" style="height:36px;padding:0 16px;">초기화</button>
     </div>
   </div>
+  <!-- ===== □. 검색 필터 =================================================== -->
   <!-- ===== ■. 본문: 좌측 트리 + 우측 목록 ======================================= -->
   <div style="display:flex;gap:12px;align-items:flex-start;">
     <!-- ===== ■.■. 좌측 표시경로 =============================================== -->
@@ -307,6 +309,7 @@ window.DpDispWidgetMng = {
         <bo-path-tree biz-cd="ec_disp_widget" :selected="uiState.selectedPath" @select="selectNode" />
       </div>
     </div>
+    <!-- ===== □.□. 좌측 표시경로 =============================================== -->
     <!-- ===== ■.■. 우측 목록 ================================================= -->
     <div style="flex:1;min-width:0;width:100%;">
       <!-- ===== ■.■.■. 목록 ================================================== -->
@@ -348,6 +351,7 @@ window.DpDispWidgetMng = {
                 {{ fnStatusLabel(row.useYn) }}
               </span>
             </div>
+            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div style="display:flex;flex-wrap:nowrap;gap:14px;font-size:11px;color:#555;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
               <span style="flex-shrink:0;overflow:hidden;text-overflow:ellipsis;max-width:240px;">
                 <b style="color:#888;">타이틀:</b>
@@ -395,6 +399,8 @@ window.DpDispWidgetMng = {
     <!-- ===== /우측 목록 ===================================================== -->
   </div>
   <!-- ===== /본문 flex =================================================== -->
+    <!-- ===== □.□. 우측 목록 ================================================= -->
+  <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
   <!-- ===== ■. 인라인 상세 ================================================== -->
   <div v-if="selectedId !== null" style="margin-top:16px;">
     <dp-disp-widget-dtl
@@ -412,5 +418,6 @@ window.DpDispWidgetMng = {
       />
   </div>
 </div>
-`
+
+  <!-- ===== □. 인라인 상세 ================================================== -->`
 };
