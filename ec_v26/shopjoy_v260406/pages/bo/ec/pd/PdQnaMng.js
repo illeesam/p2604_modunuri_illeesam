@@ -40,7 +40,7 @@ window.PdQnaMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -49,7 +49,7 @@ window.PdQnaMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -85,7 +85,7 @@ window.PdQnaMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');    });
 const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 

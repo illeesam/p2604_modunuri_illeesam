@@ -55,7 +55,7 @@ window.PdDlivTmpltMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -65,7 +65,7 @@ window.PdDlivTmpltMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -93,7 +93,7 @@ window.PdDlivTmpltMng = {
     // ===== 라이프사이클 ====================================================
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');    });
 
     // ===== 페이저 / 라벨 맵 / 선택 행 ======================================
@@ -134,36 +134,36 @@ window.PdDlivTmpltMng = {
     const handleSave = async () => {
       if (!form.dlivTmpltNm) { showToast('템플릿명은 필수입니다.', 'error'); return; }
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       const isNewTmplt = uiState.isNew;
       const src = dlivTmplts;
       if (isNewTmplt) { form.dlivTmpltId = 'DT' + String(Date.now()).slice(-6); src.push({ ...form }); uiState.selectedId = form.dlivTmpltId; uiState.isNew = false; }
       else { const si = src.findIndex(t => t.dlivTmpltId === form.dlivTmpltId); if (si !== -1) Object.assign(src[si], form); }
       try {
         const res = await boApiSvc.pdDlivTmplt.save(form.dlivTmpltId || null, { ...form }, isNewTmplt ? '배송템플릿관리' : '배송템플릿관리', isNewTmplt ? '등록' : '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async () => {
-      if (!cfSelectedRow.value) return;
+      if (!cfSelectedRow.value) { return; }
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.dlivTmpltNm}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const si = dlivTmplts.findIndex(t => t.dlivTmpltId === cfSelectedRow.value.dlivTmpltId); if (si !== -1) dlivTmplts.splice(si, 1); closeDetail();
       try {
         const res = await boApiSvc.pdDlivTmplt.remove(cfSelectedRow.value.dlivTmpltId, '배송템플릿관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

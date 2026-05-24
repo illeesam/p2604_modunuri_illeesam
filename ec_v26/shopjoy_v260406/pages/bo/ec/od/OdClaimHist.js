@@ -66,7 +66,7 @@ window.OdClaimHist = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       const c = getClaim.value(props.claimId);
       if (c) {
         uiState.claimType  = c.type || '취소';
@@ -101,7 +101,7 @@ window.OdClaimHist = {
     /* removeClaimItem — 제거 */
     const removeClaimItem = (id) => {
       const idx = claimItems.findIndex(r => r._id === id);
-      if (idx !== -1) claimItems.splice(idx, 1);
+      if (idx !== -1) { claimItems.splice(idx, 1); }
     };
 
     /* handleSaveProcess — 처리 저장 */

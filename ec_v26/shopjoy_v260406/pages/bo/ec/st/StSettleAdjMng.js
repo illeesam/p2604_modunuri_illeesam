@@ -78,7 +78,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');
     });
 
@@ -127,55 +127,55 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       catch (err) {
       console.error('[catch-info]', err); err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const v = cfVendors.value.find(x => x.vendorId === Number(form.vendorId));
-      if (v) form.vendorNm = v.vendorNm;
+      if (v) { form.vendorNm = v.vendorNm; }
       const ok = await showConfirm('저장', '정산조정을 저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       if (uiState.isNew) { form.adjId = 'ADJ-' + Date.now(); adjList.unshift({ ...form }); }
       else { const idx = adjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjList[idx], { ...form }); }
       closeForm();
       try {
         const res = await (uiState.isNew ? boApiSvc.stSettleAdj.create({ ...form }, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.adjId, { ...form }, '정산조정관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (r) => {
       const ok = await showConfirm('삭제', `[${r.adjId}] 정산조정을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (uiState.selectedId === r.adjId) closeForm();
       try {
         const res = await boApiSvc.stSettleAdj.remove(r.adjId, '정산조정관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* doApprove — 실행 */
     const doApprove = async (r) => {
       const ok = await showConfirm('승인', '정산조정을 승인하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       r.aprvStatusCd = '승인';
       try {
         const res = await boApiSvc.stSettleAdj.approve(r.adjId, { aprvStatusCd: '승인' }, '정산조정관리', '상태변경');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('승인되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('승인되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

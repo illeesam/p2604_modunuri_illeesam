@@ -62,7 +62,7 @@ window.SyRoleMng = {
       const row = pathPickModal.row;
       if (row) {
         row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
+        if (row._row_status === 'N') { row._row_status = 'U'; }
       }
     };
 
@@ -88,7 +88,7 @@ window.SyRoleMng = {
       const enrich = (n) => {
         if (n._raw && n._raw.roleId != null) {
           let cur = n._raw;
-          while (cur && cur.parentRoleId) cur = rolesById[cur.parentRoleId];
+          while (cur && cur.parentRoleId) { cur = rolesById[cur.parentRoleId]; }
           n._badge = cur ? ROOT_MAP[cur.roleCode] : null;
         }
         (n.children || []).forEach(enrich);
@@ -104,7 +104,7 @@ window.SyRoleMng = {
     });
     /* 선택 권한 + 자손 roleId Set */
     const cfAllowedRoleIds = computed(() => {
-      if (uiState.selectedPath == null) return null;
+      if (uiState.selectedPath == null) { return null; }
       return coUtil.cofCollectDescendantIds(roles, 'roleId', 'parentRoleId', uiState.selectedPath);
     });
 
@@ -127,7 +127,7 @@ window.SyRoleMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       fnLoadMenusAndUsers();
       const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
@@ -145,7 +145,7 @@ window.SyRoleMng = {
       const rolesData = roles || [];
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
       let cur = role;
-      while (cur && cur.parentRoleId) cur = m[cur.parentRoleId];
+      while (cur && cur.parentRoleId) { cur = m[cur.parentRoleId]; }
       const code = cur && ROOT_CAT_MAP[cur.roleCode];
       return code ? [code] : [];
     };
@@ -162,8 +162,8 @@ window.SyRoleMng = {
     boUtil.__roleCatOf = (roleId) => {
       const rolesData = roles || [];
       const r = roles.find(x => x.roleId === roleId);
-      if (!r) return [];
-      if (r.roleCat && r.roleCat.length) return r.roleCat;
+      if (!r) { return []; }
+      if (r.roleCat && r.roleCat.length) { return r.roleCat; }
       const m = Object.fromEntries(roles.map(x => [x.roleId, x]));
       let cur = r; while (cur && cur.parentRoleId) cur = m[cur.parentRoleId];
       const code = cur && ROOT_CAT_MAP[cur.roleCode];
@@ -203,8 +203,8 @@ window.SyRoleMng = {
       items.forEach(r => { map[r.roleId] = { ...r, _children: [] }; });
       const roots = [];
       items.forEach(r => {
-        if (r.parentRoleId && map[r.parentRoleId]) map[r.parentRoleId]._children.push(map[r.roleId]);
-        else roots.push(map[r.roleId]);
+        if (r.parentRoleId && map[r.parentRoleId]) { map[r.parentRoleId]._children.push(map[r.roleId]); }
+        else { roots.push(map[r.roleId]); }
       });
       const result = [];
 
@@ -274,7 +274,7 @@ window.SyRoleMng = {
         // boUsers에 없는 사용자 보완
         ruList.forEach(u => {
           const uid = u.userId || u.boUserId;
-          if (!boUsers.find(x => x.boUserId === uid || x.userId === uid)) boUsers.push({ ...u, boUserId: uid });
+          if (!boUsers.find(x => x.boUserId === uid || x.userId === uid)) { boUsers.push({ ...u, boUserId: uid }); }
         });
       } catch (err) {
         console.error('[handleLoadRoleDetail]', err);
@@ -285,9 +285,9 @@ window.SyRoleMng = {
 
     /* handleSaveRoleConfig — 저장 */
     const handleSaveRoleConfig = async () => {
-      if (!uiState.selectedRoleId) return;
+      if (!uiState.selectedRoleId) { return; }
       const ok = await showConfirm('설정 저장', '메뉴 접근권한과 대상사용자를 저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const menuPayload = roleMenus
           .filter(x => x.roleId === uiState.selectedRoleId)
@@ -324,15 +324,15 @@ window.SyRoleMng = {
       setFocused(idx);
       Vue.nextTick(() => {
         const el = document.getElementById('role-config-panel');
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       });
     };
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       const changed = EDIT_FIELDS.some(f => {
-        if (f === 'roleCat') return JSON.stringify(row.roleCat || []) !== (row._row_org.roleCat || '[]');
+        if (f === 'roleCat') { return JSON.stringify(row.roleCat || []) !== (row._row_org.roleCat || '[]'); }
         return String(row[f]) !== String(row._row_org[f]);
       });
       row._row_status = changed ? 'U' : 'N';
@@ -359,7 +359,7 @@ window.SyRoleMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0)); }
       } else { row._row_status = 'D'; }
     };
 
@@ -368,9 +368,9 @@ window.SyRoleMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0)); }
       } else {
-        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+        if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
         row._row_status = 'N';
       }
     };
@@ -381,10 +381,10 @@ window.SyRoleMng = {
       if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
-        if (!checkedIds.has(row.roleId)) continue;
+        if (!checkedIds.has(row.roleId)) { continue; }
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_status !== 'N') {
-          if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+          if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
           row._row_status = 'N';
         }
       }
@@ -393,9 +393,9 @@ window.SyRoleMng = {
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
-        else gridRows[i]._row_status = 'D';
+        if (!gridRows[i]._row_check) { continue; }
+        if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
+        else { gridRows[i]._row_status = 'D'; }
       }
     };
 
@@ -409,11 +409,11 @@ window.SyRoleMng = {
         if (!r.roleCode || !r.roleNm) { showToast('역할코드와 역할명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      if (iRows.length) { details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' }); }
+      if (uRows.length) { details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' }); }
+      if (dRows.length) { details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' }); }
       const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syRole.saveList(saveRows, '역할관리', '저장');
@@ -432,7 +432,7 @@ window.SyRoleMng = {
 
     /* parentNm — 상위 Nm */
     const parentNm = (parentRoleId) => {
-      if (!parentRoleId) return '';
+      if (!parentRoleId) { return ''; }
       const p = roles.find(r => r.roleId === parentRoleId);
       return p ? p.roleNm : `ID:${parentRoleId}`;
     };
@@ -469,39 +469,39 @@ window.SyRoleMng = {
     });
 
     const cfRoleMenuIds = computed(() => {
-      if (!uiState.selectedRoleId) return new Set();
+      if (!uiState.selectedRoleId) { return new Set(); }
       return new Set(roleMenus.filter(x => x.roleId === uiState.selectedRoleId).map(x => x.menuId));
     });
 
     /* getMenuPerm — 조회 */
     const getMenuPerm = (menuId) => {
-      if (!uiState.selectedRoleId) return '없음';
+      if (!uiState.selectedRoleId) { return '없음'; }
       const entry = roleMenus.find(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
       return entry ? (entry.permLevel || '읽기') : '없음';
     };
 
     /* setMenuPerm — 설정 */
     const setMenuPerm = (menuId, level) => {
-      if (!uiState.selectedRoleId) return;
+      if (!uiState.selectedRoleId) { return; }
       const idx = roleMenus.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
       if (level === '없음') {
-        if (idx !== -1) roleMenus.splice(idx, 1);
+        if (idx !== -1) { roleMenus.splice(idx, 1); }
       } else {
-        if (idx !== -1) roleMenus[idx].permLevel = level;
-        else roleMenus.push({ roleId: uiState.selectedRoleId, menuId, permLevel: level });
+        if (idx !== -1) { roleMenus[idx].permLevel = level; }
+        else { roleMenus.push({ roleId: uiState.selectedRoleId, menuId, permLevel: level }); }
       }
     };
 
     /* setAllMenuPerm — 설정 */
     const setAllMenuPerm = (level) => {
-      if (!uiState.selectedRoleId) return;
+      if (!uiState.selectedRoleId) { return; }
       if (level === '없음') {
         const idxs = roleMenus.map((x,i)=>x.roleId===uiState.selectedRoleId?i:-1).filter(i=>i>=0).reverse(); idxs.forEach(i=>roleMenus.splice(i,1));
       } else {
         cfMenuTree.value.forEach(m => {
           const idx = roleMenus.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === m.menuId);
-          if (idx !== -1) roleMenus[idx].permLevel = level;
-          else roleMenus.push({ roleId: uiState.selectedRoleId, menuId: m.menuId, permLevel: level });
+          if (idx !== -1) { roleMenus[idx].permLevel = level; }
+          else { roleMenus.push({ roleId: uiState.selectedRoleId, menuId: m.menuId, permLevel: level }); }
         });
       }
     };
@@ -512,13 +512,13 @@ window.SyRoleMng = {
     /* toggleAllMenus — 전체 토글 */
     const toggleAllMenus = (check) => { setAllMenuPerm(check ? '읽기' : '없음'); };
     const cfMenuAllChecked = computed(() => {
-      if (!uiState.selectedRoleId || !cfMenuTree.value.length) return false;
+      if (!uiState.selectedRoleId || !cfMenuTree.value.length) { return false; }
       return cfMenuTree.value.every(m => getMenuPerm(m.menuId) !== '없음');
     });
 
     /* -- 하단: 대상사용자 (모달 선택) -- */
     const cfRoleUsersList = computed(() => {
-      if (!uiState.selectedRoleId) return [];
+      if (!uiState.selectedRoleId) { return []; }
       return roleUsers
         .filter(x => x.roleId === uiState.selectedRoleId)
         .map(x => boUsers.find(u => u.boUserId === x.boUserId))
@@ -527,23 +527,23 @@ window.SyRoleMng = {
 
     /* onUserSelect — 이벤트 */
     const onUserSelect = (users) => {
-      if (!uiState.selectedRoleId) return;
+      if (!uiState.selectedRoleId) { return; }
       users.forEach(u => {
         const already = roleUsers.some(x => x.roleId === uiState.selectedRoleId && x.boUserId === u.boUserId);
-        if (!already) roleUsers.push({ roleId: uiState.selectedRoleId, boUserId: u.boUserId });
+        if (!already) { roleUsers.push({ roleId: uiState.selectedRoleId, boUserId: u.boUserId }); }
       });
       uiState.userSelectOpen = false;
     };
 
     /* removeUser — 제거 */
     const removeUser = (boUserId) => {
-      if (!uiState.selectedRoleId) return;
+      if (!uiState.selectedRoleId) { return; }
       const idx = roleUsers.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === boUserId);
-      if (idx !== -1) roleUsers.splice(idx, 1);
+      if (idx !== -1) { roleUsers.splice(idx, 1); }
     };
 
     const cfSelectedRoleNm = computed(() => {
-      if (!uiState.selectedRoleId) return '';
+      if (!uiState.selectedRoleId) { return ''; }
       const r = roles.find(x => x.roleId === uiState.selectedRoleId);
       return r ? r.roleNm : '';
     });
@@ -604,10 +604,55 @@ window.SyRoleMng = {
         cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
+    /**
+     * baseBtnAction — 버튼 액션 dispatch (toolbar/검색바 버튼 통합 라우팅)
+     * cmd 네이밍: '영역명-기능명'
+     *   영역: search / grid / config
+     *   기능: list / reset / save / add / delete-checked / cancel-checked / excel / reload
+     * @typedef {'search-list'|'search-reset'|'grid-save'|'grid-add'|'grid-delete-checked'|'grid-cancel-checked'|'grid-excel'|'grid-reload'|'config-save'} BtnCmd
+     * @param {BtnCmd} cmd
+     * @param {*} [param] — 액션별 추가 파라미터
+     */
+    const baseBtnAction = (cmd, param = {}) => {
+      console.log(' :: SyRoleMng.js : baseBtnAction : cmd, param -> ', cmd, param);
+      if (cmd === 'search-list')         { return onSearch(); }
+      if (cmd === 'search-reset')        { return onReset(); }
+      if (cmd === 'grid-save')           { return handleSave(); }
+      if (cmd === 'grid-add')            { return addRow(); }
+      if (cmd === 'grid-delete-checked') { return deleteRows(); }
+      if (cmd === 'grid-cancel-checked') { return cancelChecked(); }
+      if (cmd === 'grid-excel')          { return exportExcel(); }
+      if (cmd === 'grid-reload')         { return handleSearchList('RELOAD'); }
+      if (cmd === 'config-save')         { return handleSaveRoleConfig(); }
+      console.warn('[baseBtnAction] unknown cmd:', cmd);
+    };
+
+    /**
+     * baseSelectAction — 그리드 행/노드 선택 액션 dispatch
+     * cmd 네이밍: '영역명-기능명' (영역명은 부모-자식 hierarchy 반영)
+     *   영역: grid-row / parent
+     *   기능: edit / delete / cancel / cell-change / check-all / open-setting / open
+     * @typedef {'grid-row-edit'|'grid-row-delete'|'grid-row-cancel'|'grid-row-cell-change'|'grid-row-check-all'|'grid-row-open-setting'|'parent-open'} SelectCmd
+     * @param {SelectCmd} cmd
+     * @param {*} [param] — 행 데이터 / idx / 노드 등 (액션마다 의미 다름)
+     */
+    const baseSelectAction = (cmd, param = {}) => {
+      console.log(' :: SyRoleMng.js : baseSelectAction : cmd, param -> ', cmd, param);
+      if (cmd === 'grid-row-edit')         { return handleLoadRoleDetail(param); }
+      if (cmd === 'grid-row-delete')       { return deleteRow(param); }
+      if (cmd === 'grid-row-cancel')       { return cancelRow(param); }
+      if (cmd === 'grid-row-cell-change')  { return onCellChange(param); }
+      if (cmd === 'grid-row-check-all')    { return toggleCheckAll(); }
+      if (cmd === 'grid-row-open-setting') { return onOpenSetting(param); }
+      if (cmd === 'parent-open')           { return openParentModal(param); }
+      console.warn('[baseSelectAction] unknown cmd:', cmd);
+    };
+
     // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, codes, baseSearchColumns, baseGridColumns,
+      baseBtnAction, baseSelectAction,
       pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
       expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
       cfSiteNm, ROLE_TYPES, ROLE_CAT_COLOR, effectiveRoleCat, toggleRoleCat, fnPermColor, depthBullet, depthColor, fnStatusClass,

@@ -45,19 +45,19 @@ window.PmCouponDtl = {
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.pmCoupon.getById(props.dtlId, '쿠폰관리', '상세조회');
         const c = res.data?.data || res.data;
-        if (c) Object.assign(form, { ...c });
+        if (c) { Object.assign(form, { ...c }); }
         // Entity discountRate/discountAmt → UI 단일 입력 매핑
         if (c) {
           if (c.discountRate != null && c.discountRate !== '') { form.discountType = 'percent'; form.discountVal = Number(c.discountRate) || 0; }
           else { form.discountType = 'amount'; form.discountVal = Number(c.discountAmt) || 0; }
         }
-        if (!form.validFrom) form.validFrom = DEFAULT_START;
-        if (!form.validTo) form.validTo = DEFAULT_END;
+        if (!form.validFrom) { form.validFrom = DEFAULT_START; }
+        if (!form.validTo) { form.validTo = DEFAULT_END; }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -115,27 +115,27 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
     /* handleInitForm — 처리 */
     const handleInitForm = () => {
       if (cfIsNew.value) {
-        if (!form.validFrom) form.validFrom = DEFAULT_START;
-        if (!form.validTo) form.validTo = DEFAULT_END;
+        if (!form.validFrom) { form.validFrom = DEFAULT_START; }
+        if (!form.validTo) { form.validTo = DEFAULT_END; }
       }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
       handleInitForm();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
       handleInitForm();
     });
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) return '소속업체 선택';
+      if (!form.vendorId) { return '소속업체 선택'; }
       const v = vendors.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
@@ -240,16 +240,16 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-      if (showToast) showToast(msg, 'success');
+      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+      if (showToast) { showToast(msg, 'success'); }
     };
 
     /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-      if (showToast) showToast(errMsg, 'error', 0);
+      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+      if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
     /* handleSave — 저장 */
@@ -257,7 +257,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       const tabId = uiState.tab;
 
       if (cfSaveDisabled.value) {
-        if (!cfHasId.value && tabId !== 'info') showToast('먼저 기본정보 탭에서 등록해주세요.', 'error');
+        if (!cfHasId.value && tabId !== 'info') { showToast('먼저 기본정보 탭에서 등록해주세요.', 'error'); }
         return;
       }
 
@@ -269,7 +269,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
 
       const isCreate = !cfHasId.value;
       const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const payload = { ...form };
         // UI 단일 입력 → Entity discountRate / discountAmt 매핑
@@ -280,7 +280,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
           : await boApiSvc.pmCoupon.update(cfCurId.value, payload, '쿠폰관리', tabId === 'info' ? '기본정보저장' : '상세정보저장');
         if (isCreate) {
           const newId = res.data?.data?.couponId || res.data?.couponId || null;
-          if (newId) form.couponId = newId;
+          if (newId) { form.couponId = newId; }
         }
         _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
       } catch (err) { _afterApiErr(err); }

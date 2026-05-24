@@ -80,7 +80,7 @@ window.PdBundleMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');
     });
 
@@ -121,7 +121,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     /* addCategory — 추가 */
     const addCategory = cat => {
       const id = cat.categoryId;
-      if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(id))) return;
+      if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(id))) { return; }
       dtlCategories.push({ categoryId: id, categoryNm: cat.categoryNm || String(id), depth: cat.depth || cat.categoryDepth || 1 });
       uiState.catPickerOpen = false;
     };
@@ -283,7 +283,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         const sv = (uiState.pickerSearch || '').trim();
         if (sv) {
           params.searchValue = sv;
-          if (uiState.pickerSearchType) params.searchType = uiState.pickerSearchType;
+          if (uiState.pickerSearchType) { params.searchType = uiState.pickerSearchType; }
         }
         const res = await boApiSvc.pdProd.getPage(params, '상품번들관리', '상품검색');
         const list = (res.data?.data?.pageList || res.data?.data?.list || [])
@@ -360,7 +360,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       const bundleProdId = isNewBundle ? newProdId : uiState.editBundleId;
 
       const ok = await showConfirm(isNewBundle ? '등록' : '저장', isNewBundle ? '묶음상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       /* 신규: products 목록에 BUNDLE 상품 추가 */
       if (isNewBundle) {
         products.push({
@@ -407,31 +407,31 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         const res = await (isNewBundle
           ? boApiSvc.pdBundle.create({ prodNm: newForm.prodNm, siteId: newForm.siteId || null, items: bundleItems }, '묶음상품관리', '등록')
           : boApiSvc.pdBundle.updateItems(bundleProdId, { items: bundleItems }, '묶음상품관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async bundleProdId => {
       const ok = await showConfirm('삭제', '묶음상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
-      if (!ok) return;
+      if (!ok) { return; }
       bundles = (bundles).filter(b => b.bundleProdId !== bundleProdId);
-      if (uiState.editBundleId === bundleProdId) closeDtl();
+      if (uiState.editBundleId === bundleProdId) { closeDtl(); }
       try {
         const res = await boApiSvc.pdBundle.remove(bundleProdId, '묶음상품관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -460,8 +460,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     /* fnBundleStatusBadge — 유틸 */
     const fnBundleStatusBadge = (g) => {
       const st = g.prod ? (g.prod.prodStatusCd || g.prod.status) : null;
-      if (st === 'ACTIVE' || st === '판매중') return 'badge badge-green';
-      if (st === 'INACTIVE') return 'badge badge-gray';
+      if (st === 'ACTIVE' || st === '판매중') { return 'badge badge-green'; }
+      if (st === 'INACTIVE') { return 'badge badge-gray'; }
       return 'badge badge-orange';
     };
     /* fnBundleStatusText — 유틸 */

@@ -35,7 +35,7 @@ window.StConfigMng = {
 
     // ★ onMounted — 진입 시 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleLoadList();
     });
 
@@ -96,9 +96,9 @@ window.StConfigMng = {
     /* validate — 검증 */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
-      if (!form.settleCycleCd) errors.settleCycleCd = '정산주기를 선택하세요.';
-      if (form.commissionRate === '' || form.commissionRate === null) errors.commissionRate = '수수료율을 입력하세요.';
-      if (!form.settleDay) errors.settleDay = '정산일을 입력하세요.';
+      if (!form.settleCycleCd) { errors.settleCycleCd = '정산주기를 선택하세요.'; }
+      if (form.commissionRate === '' || form.commissionRate === null) { errors.commissionRate = '수수료율을 입력하세요.'; }
+      if (!form.settleDay) { errors.settleDay = '정산일을 입력하세요.'; }
       return Object.keys(errors).length === 0;
     };
 
@@ -106,19 +106,19 @@ window.StConfigMng = {
     const handleSave = async () => {
       if (!validate()) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       const ok = await showConfirm('저장', '정산기준을 저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       closeForm();
       const apiData = fnMapUiToApi(form);
       try {
         const res = await (uiState.isNew ? boApiSvc.stSettleConfig.create(apiData, '정산설정관리', '등록') : boApiSvc.stSettleConfig.update(form.settleConfigId, apiData, '정산설정관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
         await handleLoadList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -126,18 +126,18 @@ window.StConfigMng = {
     const handleDelete = async (c) => {
       const cycleName = c.settleCycleNm || c.settleCycleCd;
       const ok = await showConfirm('삭제', `[${cycleName}] 정산기준을 삭제하시겠습니까?`);
-      if (!ok) return;
-      if (uiState.selectedId === c.settleConfigId) closeForm();
+      if (!ok) { return; }
+      if (uiState.selectedId === c.settleConfigId) { closeForm(); }
       try {
         const res = await boApiSvc.stSettleConfig.remove(c.settleConfigId, '정산설정관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
         await handleLoadList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

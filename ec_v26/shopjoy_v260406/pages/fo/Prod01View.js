@@ -30,7 +30,7 @@ window.Prod01View = {
     /* fnApplySvProduct — 유틸 */
     const fnApplySvProduct = (newProd) => {
       Object.keys(svProduct).forEach(k => delete svProduct[k]);
-      if (newProd) Object.assign(svProduct, newProd);
+      if (newProd) { Object.assign(svProduct, newProd); }
     };
     /* 백엔드 응답 (prod + opts + skus + images) → 화면이 기대하는 단일 prod 형태로 머지
        - opts.groups[level=1].items → opt1s        = [{ optItemId, name, priceDelta, imgUrl }]
@@ -88,9 +88,9 @@ window.Prod01View = {
       const opt2Prices = {};
       lv2Items.forEach(it => {
         const matchedSkus = skusList.filter(s => (s.optItemId2 === it.optItemId) || (s.optItemNm2 === it.optNm));
-        if (!matchedSkus.length) return;
+        if (!matchedSkus.length) { return; }
         const avg = Math.round(matchedSkus.reduce((a,s) => a + (Number(s.addPrice)||0), 0) / matchedSkus.length);
-        if (avg) opt2Prices[it.optNm || it.optVal] = avg;
+        if (avg) { opt2Prices[it.optNm || it.optVal] = avg; }
       });
 
       // 대표 이미지 / 추가 이미지
@@ -113,7 +113,7 @@ window.Prod01View = {
         skus:       skusList,
       };
     };
-    if (prod) fnApplySvProduct(prod);
+    if (prod) { fnApplySvProduct(prod); }
     /* Tier 2/3 lazy 데이터 — 배열/객체는 reactive (정책: base.데이터흐름-상태관리.md §2-1) */
     const svContents      = reactive([]);  // 상품 상세 HTML
     const svRels          = reactive([]);  // 연관 상품
@@ -137,14 +137,14 @@ window.Prod01View = {
     /* fnPickList — 유틸 */
     const fnPickList = (res) => {
       const d = fnPickData(res);
-      if (Array.isArray(d)) return d;
+      if (Array.isArray(d)) { return d; }
       return d?.pageList || d?.list || [];
     };
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       const prodId = fnGetProdIdFromHash() || svProduct.prodId;
-      if (!prodId) return;
+      if (!prodId) { return; }
       /* Tier 1: 첫 화면 통합 (prod + images + opts + skus) */
       try {
         const res = await foApiSvc.pdProd.getById(prodId, '상품상세', '상세조회');
@@ -176,8 +176,8 @@ window.Prod01View = {
         foApiSvc.pdProd.getReviewImages(prodId, '상품상세', '리뷰이미지조회'),
         foApiSvc.pdProd.getQna(prodId, { pageNo: 1, pageSize: 20 }, '상품상세', 'Q&A조회'),
       ]);
-      if (tier2[0].status === 'fulfilled') svContents.splice(0, svContents.length, ...fnPickList(tier2[0].value));
-      if (tier2[1].status === 'fulfilled') svRels.splice(0, svRels.length, ...fnPickList(tier2[1].value));
+      if (tier2[0].status === 'fulfilled') { svContents.splice(0, svContents.length, ...fnPickList(tier2[0].value)); }
+      if (tier2[1].status === 'fulfilled') { svRels.splice(0, svRels.length, ...fnPickList(tier2[1].value)); }
       if (tier2[2].status === 'fulfilled') {
         const rd = fnPickData(tier2[2].value) || {};
         const rows = rd.reviewPage?.pageList || [];
@@ -298,7 +298,7 @@ window.Prod01View = {
 
     const cfMockImages = computed(() => {
       const p = svProduct;
-      if (!p) return [];
+      if (!p) { return []; }
       // 1) 실제 등록된 이미지(prod.images) 우선
       //    - 색상이 선택되었으면 그 색상에 매핑된 이미지만 표시
       //    - 매칭 키는 (a) opt_item_id (b) codeValue(val) 둘 다 허용 — BO 이미지 select 가 val 또는 _id 를 저장하므로
@@ -310,22 +310,22 @@ window.Prod01View = {
         // 색상 매칭 후보 키들 (Set) — itemId, val, name 모두 포함
         const colorKeys = new Set();
         if (sel) {
-          if (sel.optItemId) colorKeys.add(String(sel.optItemId));
-          if (sel.val)       colorKeys.add(String(sel.val));
-          if (sel.name)      colorKeys.add(String(sel.name));
+          if (sel.optItemId) { colorKeys.add(String(sel.optItemId)); }
+          if (sel.val) { colorKeys.add(String(sel.val)); }
+          if (sel.name) { colorKeys.add(String(sel.name)); }
         }
         // 옵션값 → 표시명 매핑 (image.optItemId1 가 무엇이든 라벨 만들 수 있도록)
         const opt1ById = new Map();
         (p.opt1s || []).forEach(c => {
-          if (c.optItemId) opt1ById.set(String(c.optItemId), c);
-          if (c.val)       opt1ById.set(String(c.val), c);
-          if (c.name)      opt1ById.set(String(c.name), c);
+          if (c.optItemId) { opt1ById.set(String(c.optItemId), c); }
+          if (c.val) { opt1ById.set(String(c.val), c); }
+          if (c.name) { opt1ById.set(String(c.name), c); }
         });
         const opt2ById = new Map();
         (p.opt2sAll || []).forEach(c => {
-          if (c.optItemId) opt2ById.set(String(c.optItemId), c);
-          if (c.val)       opt2ById.set(String(c.val), c);
-          if (c.name)      opt2ById.set(String(c.name), c);
+          if (c.optItemId) { opt2ById.set(String(c.optItemId), c); }
+          if (c.val) { opt2ById.set(String(c.val), c); }
+          if (c.name) { opt2ById.set(String(c.name), c); }
         });
         const filtered = colorKeys.size
           ? real.filter(im => im.optItemId1 && colorKeys.has(String(im.optItemId1)))
@@ -338,9 +338,9 @@ window.Prod01View = {
           const c2 = im.optItemId2 != null ? opt2ById.get(String(im.optItemId2)) : null;
           // hover 시 표시할 옵션 라벨 — "색상: 블랙 / 사이즈: M" 형태
           const parts = [];
-          if (c1) parts.push((p.opt1Nm || '색상') + ': ' + c1.name);
-          if (c2) parts.push((p.opt2Nm || '사이즈') + ': ' + c2.name);
-          if (im.isThumb === 'Y') parts.push('★ 대표');
+          if (c1) { parts.push((p.opt1Nm || '색상') + ': ' + c1.name); }
+          if (c2) { parts.push((p.opt2Nm || '사이즈') + ': ' + c2.name); }
+          if (im.isThumb === 'Y') { parts.push('★ 대표'); }
           return {
             src:    im.cdnImgUrl || im.cdnThumbUrl || im.previewUrl || '',
             label:  '이미지 ' + (i + 1),
@@ -352,7 +352,7 @@ window.Prod01View = {
         }).filter(it => it.src);
       }
       // 2) API 응답 완료 후에만 목업 fallback — 응답 전 플리커 방지
-      if (!uiState.prodApiLoaded) return [];
+      if (!uiState.prodApiLoaded) { return []; }
       const opt1s = p.opt1s || [];
       const colorIdx = opt1s.findIndex(c => c.name === uiState.selectedColor?.name);
       return _buildColorImages(p, Math.max(0, colorIdx));
@@ -389,15 +389,15 @@ window.Prod01View = {
 
     const cfFilteredReviews = computed(() => {
       const list = [...cfMockReviews.value];
-      if (uiState.reviewFilter === '별점높은순') return list.sort((a, b) => b.rating - a.rating);
-      if (uiState.reviewFilter === '별점낮은순') return list.sort((a, b) => a.rating - b.rating);
-      if (uiState.reviewFilter === '도움순')     return list.sort((a, b) => b.helpful - a.helpful);
+      if (uiState.reviewFilter === '별점높은순') { return list.sort((a, b) => b.rating - a.rating); }
+      if (uiState.reviewFilter === '별점낮은순') { return list.sort((a, b) => a.rating - b.rating); }
+      if (uiState.reviewFilter === '도움순') { return list.sort((a, b) => b.helpful - a.helpful); }
       return list;
     });
 
     const cfAvgRating = computed(() => {
       const avg = Number(svReviewSummary.avgRating || svReviewSummary.avg_rating);
-      if (avg) return avg.toFixed(1);
+      if (avg) { return avg.toFixed(1); }
       const r = cfMockReviews.value;
       return r.length ? (r.reduce((s, x) => s + x.rating, 0) / r.length).toFixed(1) : '0.0';
     });
@@ -439,7 +439,7 @@ window.Prod01View = {
     /* updateTabFixedPos — 갱신 */
     const updateTabFixedPos = () => {
       const main = getScrollEl();
-      if (!main.getBoundingClientRect) return;
+      if (!main.getBoundingClientRect) { return; }
       const r = main.getBoundingClientRect();
       uiState.tabFixedTop  = r.top;
       uiState.tabFixedLeft = r.left;
@@ -450,7 +450,7 @@ window.Prod01View = {
     const scrollToTab = (tabId) => {
       const map = { detail: detailSecRef, size: sizeSecRef, review: reviewSecRef, qna: qnaSecRef, style: styleSecRef };
       const el  = map[tabId]?.value;
-      if (!el) return;
+      if (!el) { return; }
       const main = getScrollEl();
       const mainRect = main.getBoundingClientRect ? main.getBoundingClientRect() : { top: 0 };
       const barH = tabBarRef.value?.offsetHeight || 44;
@@ -466,7 +466,7 @@ window.Prod01View = {
     const onScroll = () => {
       const main = getScrollEl();
       const bar  = tabBarRef.value;
-      if (!bar || !main.getBoundingClientRect) return;
+      if (!bar || !main.getBoundingClientRect) { return; }
 
       const mainTop = main.getBoundingClientRect().top;
 
@@ -535,7 +535,7 @@ window.Prod01View = {
 
     /* onPopState — 이벤트 */
     const onPopState = () => {
-      if (anyModalOpen()) closeAllModals();
+      if (anyModalOpen()) { closeAllModals(); }
     };
 
     watch(anyModalOpen, (open, prev) => {
@@ -546,14 +546,14 @@ window.Prod01View = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       const main = getScrollEl();
       main.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('keydown', onKeydown);
       window.addEventListener('popstate', onPopState);
       /* 품절/중지 아닌 첫 색상 자동 선택 */
       const firstAvail = (svProduct.opt1s || []).find(c => colorStatus(c) === 'ok');
-      if (firstAvail) uiState.selectedColor = firstAvail;
+      if (firstAvail) { uiState.selectedColor = firstAvail; }
       handleSearchList();
     });
     onBeforeUnmount(() => {
@@ -577,22 +577,22 @@ window.Prod01View = {
 
     /* fnCategoryLabel — 유틸 */
     const fnCategoryLabel = p => {
-      if (!p) return '';
+      if (!p) { return ''; }
       return (window.SITE_CONFIG?.categorys || []).find(c => c.categoryId === p.categoryId)?.categoryNm || p.categoryId || '';
     };
 
     /* -- 옵션 재고 상태 (목업: 색상 + 사이즈) -- */
     const cfColorStockMap = computed(() => {
       const p = svProduct;
-      if (!p) return {};
+      if (!p) { return {}; }
       const opt1s = p.opt1s || [];
       const pid = p.prodId || 1;
       const map = {};
       opt1s.forEach((c, i) => {
         const seed = (pid * 11 + i * 17) % 25;
-        if (seed === 0)      map[c.name] = 'stop';
-        else if (seed === 1) map[c.name] = 'soldout';
-        else                 map[c.name] = 'ok';
+        if (seed === 0) { map[c.name] = 'stop'; }
+        else if (seed === 1) { map[c.name] = 'soldout'; }
+        else { map[c.name] = 'ok'; }
       });
       return map;
     });
@@ -602,15 +602,15 @@ window.Prod01View = {
 
     const cfSizeStockMap = computed(() => {
       const p = svProduct;
-      if (!p) return {};
+      if (!p) { return {}; }
       const sizes = p.opt2s || [];
       const pid = p.prodId || 1;
       const map = {};
       sizes.forEach((s, i) => {
         const seed = (pid * 7 + i * 13) % 20;
-        if (seed === 0)      map[s] = 'stop';
-        else if (seed === 1) map[s] = 'soldout';
-        else                 map[s] = 'ok';
+        if (seed === 0) { map[s] = 'stop'; }
+        else if (seed === 1) { map[s] = 'soldout'; }
+        else { map[s] = 'ok'; }
       });
       return map;
     });
@@ -628,7 +628,7 @@ window.Prod01View = {
     /* sizeStatus — 크기 상태 */
     const sizeStatus = (s) => {
       const allowed = cfAllowedSizeNms.value;
-      if (allowed && !allowed.has(s)) return 'stop';
+      if (allowed && !allowed.has(s)) { return 'stop'; }
       return cfSizeStockMap.value[s] || 'ok';
     };
     /* 선택된 색상에 종속된 사이즈만 노출 (없으면 전체 노출) */
@@ -658,7 +658,7 @@ window.Prod01View = {
     /* 모든 옵션 조합의 최소~최대 가격 범위 */
     const cfPriceRange = computed(() => {
       const p = svProduct;
-      if (!p || !cfBasePrice.value) return null;
+      if (!p || !cfBasePrice.value) { return null; }
       const colorDeltas = (p.opt1s || []).map(c => c.priceDelta || 0);
       const sizeDeltas  = Object.values(p.opt2Prices || {}).concat([0]);
       const prices = [];
@@ -674,7 +674,7 @@ window.Prod01View = {
        - 미선택               → 전체 범위 또는 기본가 */
     const cfDisplayPrice = computed(() => {
       const p = svProduct;
-      if (!p || !cfBasePrice.value) return p?.price || '';
+      if (!p || !cfBasePrice.value) { return p?.price || ''; }
 
       const colorDelta = uiState.selectedColor?.priceDelta || 0;
       const sizeDelta  = getSizeDelta(uiState.selectedSize);
@@ -704,8 +704,8 @@ window.Prod01View = {
 
     /* 바로구매 총 금액 */
     const cfQuickBuyTotal = computed(() => {
-      if (!svProduct.prodId) return '';
-      if (!cfSelectedUnitPrice.value) return svProduct.price;
+      if (!svProduct.prodId) { return ''; }
+      if (!cfSelectedUnitPrice.value) { return svProduct.price; }
       const total = cfSelectedUnitPrice.value * uiState.qty;
       return total.toLocaleString('ko-KR') + '원';
     });
@@ -713,7 +713,7 @@ window.Prod01View = {
     /* selectColor — 선택 */
     const selectColor = c => {
       const st = colorStatus(c);
-      if (st === 'stop' || st === 'soldout') return;
+      if (st === 'stop' || st === 'soldout') { return; }
       uiState.selectedColor = c; uiState.colorError = ''; uiState.selectedImg = 0;
       // 색상 변경 시 — 새 색상의 자식이 아니라면 사이즈 선택 해제
       const allowed = cfAllowedSizeNms.value;
@@ -725,7 +725,7 @@ window.Prod01View = {
     /* selectSize — 선택 */
     const selectSize  = s => {
       const st = sizeStatus(s);
-      if (st === 'stop' || st === 'soldout') return;
+      if (st === 'stop' || st === 'soldout') { return; }
       uiState.selectedSize = s; uiState.sizeError = '';
     };
 
@@ -745,7 +745,7 @@ window.Prod01View = {
 
     /* handleAddToCart — 처리 */
     const handleAddToCart = () => {
-      if (!validate()) return;
+      if (!validate()) { return; }
       addToCart(svProduct, uiState.selectedColor, uiState.selectedSize, uiState.qty);
       uiState.selectedColor = svProduct.opt1s?.[0] || null;
       uiState.selectedSize  = null;
@@ -754,7 +754,7 @@ window.Prod01View = {
 
     /* execBuyNow — 실행 구매 즉시 */
     const execBuyNow = () => {
-      if (!validate()) return;
+      if (!validate()) { return; }
       uiState.quickBuyOpen = false;
       props.navigate('order', {
         instantOrder: {
@@ -768,7 +768,7 @@ window.Prod01View = {
 
     /* execCartFromDrawer — 실행 장바구니 에서 서랍 */
     const execCartFromDrawer = () => {
-      if (!validate()) return;
+      if (!validate()) { return; }
       addToCart(svProduct, uiState.selectedColor, uiState.selectedSize, uiState.qty);
       uiState.quickBuyOpen = false;
       uiState.selectedColor = svProduct.opt1s?.[0] || null;
@@ -794,14 +794,14 @@ window.Prod01View = {
     /* closePhotoDetail — 닫기 */
     const closePhotoDetail  = () => {
       uiState.selectedReview = null;
-      if (uiState.photoFromGrid) uiState.photoPopupOpen = true;
+      if (uiState.photoFromGrid) { uiState.photoPopupOpen = true; }
       uiState.photoFromGrid = false;
     };
 
     /* photoNavPrev — photo 네비 이전 */
     const photoNavPrev = () => {
       const list = cfReviewsWithPhoto.value;
-      if (!list.length) return;
+      if (!list.length) { return; }
       const idx = list.findIndex(r => r.id === uiState.selectedReview?.id);
       uiState.selectedReview = list[(idx - 1 + list.length) % list.length];
     };
@@ -809,7 +809,7 @@ window.Prod01View = {
     /* photoNavNext — photo 네비 다음 */
     const photoNavNext = () => {
       const list = cfReviewsWithPhoto.value;
-      if (!list.length) return;
+      if (!list.length) { return; }
       const idx = list.findIndex(r => r.id === uiState.selectedReview?.id);
       uiState.selectedReview = list[(idx + 1) % list.length];
     };

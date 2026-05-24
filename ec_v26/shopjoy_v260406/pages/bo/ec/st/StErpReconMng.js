@@ -86,17 +86,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* doFix — 실행 */
     const doFix = async (r) => {
       const ok = await showConfirm('조정처리', '해당 전표 대사 차이를 조정처리 하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       r.erpAmt = r.sysAmt; r.diff = 0; r.diffStatus = '일치'; r.remark = '조정처리 완료';
       try {
         const res = await boApiSvc.stErp.fixRecon(r.reconId, {}, 'ERP대사관리', '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('조정처리 되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('조정처리 되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

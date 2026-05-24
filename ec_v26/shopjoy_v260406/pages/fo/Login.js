@@ -129,10 +129,10 @@ window.Login = {
 
     /* _callSocialSdk — 호출 소셜 SDK */
     const _callSocialSdk = async (provider) => {
-      if (!window.coExtSdk) throw new Error('coExtSdk 헬퍼가 로드되지 않았습니다.');
-      if (provider === 'google') return await window.coExtSdk.loginGoogle();
-      if (provider === 'kakao')  return await window.coExtSdk.loginKakao();
-      if (provider === 'naver')  return await window.coExtSdk.loginNaver();
+      if (!window.coExtSdk) { throw new Error('coExtSdk 헬퍼가 로드되지 않았습니다.'); }
+      if (provider === 'google') { return await window.coExtSdk.loginGoogle(); }
+      if (provider === 'kakao') { return await window.coExtSdk.loginKakao(); }
+      if (provider === 'naver') { return await window.coExtSdk.loginNaver(); }
       throw new Error('알 수 없는 provider: ' + provider);
     };
 
@@ -171,7 +171,7 @@ window.Login = {
           || p.kakao_account?.profile?.nickname
           || p.properties?.nickname
           || '';
-        if (nm) uiState.snsNickname = nm;
+        if (nm) { uiState.snsNickname = nm; }
         uiState.step = 'terms';
       } catch (e) {
         console.error('[startSnsSignup] error:', e);
@@ -217,7 +217,7 @@ window.Login = {
     /* verifyEmail — 검증 이메일 */
     const verifyEmail = () => {
       if (sf.emailCode === uiState._ec) { sf.emailVerified = true; uiState.signupErr = ''; props.showToast('이메일 인증 완료!', 'success'); }
-      else uiState.signupErr = '인증코드가 올바르지 않습니다.';
+      else { uiState.signupErr = '인증코드가 올바르지 않습니다.'; }
     };
 
     /* sendPhoneCode — 전송 전화 코드 */
@@ -231,7 +231,7 @@ window.Login = {
     /* verifyPhone — 검증 전화 */
     const verifyPhone = () => {
       if (sf.phoneCode === uiState._pc) { sf.phoneVerified = true; uiState.signupErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
-      else uiState.signupErr = '인증코드가 올바르지 않습니다.';
+      else { uiState.signupErr = '인증코드가 올바르지 않습니다.'; }
     };
 
     /* openKakaoAddr — 열기 */
@@ -287,7 +287,7 @@ window.Login = {
     /* verifySnsPhone — 검증 SNS 전화 */
     const verifySnsPhone = () => {
       if (uiState.snsPhoneCode === uiState._spc) { uiState.snsPhoneVerified = true; uiState.snsErr = ''; props.showToast('휴대폰 인증 완료!', 'success'); }
-      else uiState.snsErr = '인증코드가 올바르지 않습니다.';
+      else { uiState.snsErr = '인증코드가 올바르지 않습니다.'; }
     };
 
     /* SNS 선택 정보 */

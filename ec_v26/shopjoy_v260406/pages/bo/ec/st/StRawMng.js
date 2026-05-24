@@ -187,14 +187,14 @@ const rawList = reactive([]);
     /* doCollect — 실행 */
     const doCollect = async () => {
       const ok = await showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.stSettleRaw.collect({ dateStart: uiState.dateStart, dateEnd: uiState.dateEnd }, '원장관리', '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('재수집이 완료되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('재수집이 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
-        if (showToast) showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        if (showToast) { showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0); }
       }
     };
 

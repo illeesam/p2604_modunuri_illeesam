@@ -41,9 +41,9 @@ window.MyContact = {
     /* cancelInquiry — 취소 */
     const cancelInquiry = async id => {
       const ok = await showConfirm('문의 취소', '이 문의를 취소하시겠습니까?', 'warning');
-      if (!ok) return;
+      if (!ok) { return; }
       const item = inquiries.value.find(x => x.inquiryId === id);
-      if (item) item.status = '취소됨';
+      if (item) { item.status = '취소됨'; }
       showToast('문의가 취소되었습니다.', 'success');
     };
 
@@ -57,7 +57,7 @@ window.MyContact = {
 
     /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
-      if (dateParams) onDateSearch(dateParams);
+      if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
 

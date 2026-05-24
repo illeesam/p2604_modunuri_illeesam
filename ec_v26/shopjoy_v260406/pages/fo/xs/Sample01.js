@@ -107,13 +107,13 @@ window.XsSample01 = {
         if (searchVal) {
           const types = searchParam.searchType || 'memberNm,email,phone';
           const hits = [];
-          if (types.includes('memberNm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
-          if (types.includes('email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
-          if (types.includes('phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
-          if (!hits.some(Boolean)) return false;
+          if (types.includes('memberNm')) { hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal)); }
+          if (types.includes('email')) { hits.push(String(d.email    || '').toLowerCase().includes(searchVal)); }
+          if (types.includes('phone')) { hits.push(String(d.phone    || '').toLowerCase().includes(searchVal)); }
+          if (!hits.some(Boolean)) { return false; }
         }
-        if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
-        if (searchParam.status && d.status !== searchParam.status) return false;
+        if (searchParam.grade  && d.grade  !== searchParam.grade) { return false; }
+        if (searchParam.status && d.status !== searchParam.status) { return false; }
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
       fnBuildPagerNums();
@@ -121,7 +121,7 @@ window.XsSample01 = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList();
     });
 
@@ -136,7 +136,7 @@ window.XsSample01 = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = row => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
@@ -153,7 +153,7 @@ window.XsSample01 = {
     const deleteRow = idx => {
       const row = gridRows[idx];
       if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
-      else row._row_status = 'D';
+      else { row._row_status = 'D'; }
     };
 
     /* cancelRow — 행 취소 */
@@ -172,8 +172,8 @@ window.XsSample01 = {
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i]; if (!ids.has(row.memberId)) continue;
-        if (row._row_status === 'N') continue;
-        if (row._row_status === 'I') gridRows.splice(i, 1);
+        if (row._row_status === 'N') { continue; }
+        if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
@@ -184,11 +184,11 @@ window.XsSample01 = {
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) { if (!r.memberNm || !r.email) { showToast('이름, 이메일은 필수 항목입니다.', 'error'); return; } }
       const parts = []; if (iRows.length) parts.push(`등록 ${iRows.length}건`); if (uRows.length) parts.push(`수정 ${uRows.length}건`); if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
-      if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) return;
+      if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) { return; }
       try {
-        for (const r of dRows) await api.delete(`${API}/${r.memberId}`);
-        for (const r of uRows) await api.put(`${API}/${r.memberId}`, toPayload(r));
-        for (const r of iRows) await api.post(API, toPayload(r));
+        for (const r of dRows) { await api.delete(`${API}/${r.memberId}`); }
+        for (const r of uRows) { await api.put(`${API}/${r.memberId}`, toPayload(r)); }
+        for (const r of iRows) { await api.post(API, toPayload(r)); }
         showToast(`${parts.join(', ')} 저장되었습니다.`);
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
@@ -199,13 +199,13 @@ window.XsSample01 = {
           if (searchVal) {
             const types = searchParam.searchType || 'memberNm,email,phone';
             const hits = [];
-            if (types.includes('memberNm'))    hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal));
-            if (types.includes('email')) hits.push(String(d.email    || '').toLowerCase().includes(searchVal));
-            if (types.includes('phone')) hits.push(String(d.phone    || '').toLowerCase().includes(searchVal));
-            if (!hits.some(Boolean)) return false;
+            if (types.includes('memberNm')) { hits.push(String(d.memberNm || '').toLowerCase().includes(searchVal)); }
+            if (types.includes('email')) { hits.push(String(d.email    || '').toLowerCase().includes(searchVal)); }
+            if (types.includes('phone')) { hits.push(String(d.phone    || '').toLowerCase().includes(searchVal)); }
+            if (!hits.some(Boolean)) { return false; }
           }
-          if (searchParam.grade  && d.grade  !== searchParam.grade)  return false;
-          if (searchParam.status && d.status !== searchParam.status) return false;
+          if (searchParam.grade  && d.grade  !== searchParam.grade) { return false; }
+          if (searchParam.status && d.status !== searchParam.status) { return false; }
           return true;
         }).forEach(d => gridRows.push(makeRow(d)));
         fnBuildPagerNums();

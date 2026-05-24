@@ -42,12 +42,12 @@ window.PmCacheDtl = {
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.pmCache.getById(props.dtlId, '캐시관리', '상세조회');
         const c = res.data?.data || res.data;
-        if (c) Object.assign(form, { ...c });
+        if (c) { Object.assign(form, { ...c }); }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -93,11 +93,11 @@ window.PmCacheDtl = {
     // ===== 라이프사이클 / 부모 reloadTrigger 동기화 =========================
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
@@ -124,17 +124,17 @@ window.PmCacheDtl = {
         return;
       }
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await (cfIsNew.value ? boApiSvc.pmCache.create({ ...form }, '캐시관리', '등록') : boApiSvc.pmCache.update(form.cacheId, { ...form }, '캐시관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pmCacheMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('pmCacheMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -142,11 +142,11 @@ window.PmCacheDtl = {
     /* onUserIdChange — 이벤트 */
     const onUserIdChange = () => {
       const m = getMember.value(Number(form.memberId));
-      if (m) form.memberNm = m.memberNm;
+      if (m) { form.memberNm = m.memberNm; }
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) return '소속업체 선택';
+      if (!form.vendorId) { return '소속업체 선택'; }
       const v = vendors.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });

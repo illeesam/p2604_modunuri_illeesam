@@ -47,7 +47,7 @@ window.foAppHeader = {
 
     /* saveProfile — 저장 */
     const saveProfile = () => {
-      if (!pf.memberNm.trim()) return;
+      if (!pf.memberNm.trim()) { return; }
       const u = props.appAuth.user;
       if (u) {
         Object.assign(u, {
@@ -66,7 +66,7 @@ window.foAppHeader = {
 
     /* openKakaoAddrProfile — 카카오 주소 검색 */
     const openKakaoAddrProfile = () => {
-      if (typeof daum === 'undefined' || !daum.Postcode) return;
+      if (typeof daum === 'undefined' || !daum.Postcode) { return; }
       new daum.Postcode({ oncomplete(d) {
         pf.postcode = d.zonecode;
         pf.address  = d.roadAddress || d.jibunAddress;
@@ -128,16 +128,16 @@ window.foAppHeader = {
 
       /* onPointerDown — 이벤트 */
       const onPointerDown = (e) => {
-        if (!uiState.userMenuOpen) return;
+        if (!uiState.userMenuOpen) { return; }
         const root = userMenuRoot.value;
-        if (root && !root.contains(e.target)) closeUserMenu();
+        if (root && !root.contains(e.target)) { closeUserMenu(); }
       };
       document.addEventListener('pointerdown', onPointerDown, true);
       removeUserMenuOutside = () => document.removeEventListener('pointerdown', onPointerDown, true);
     }
     watch(() => uiState.userMenuOpen, (open) => {
-      if (open) nextTick(() => bindUserMenuOutside());
-      else unbindUserMenuOutside();
+      if (open) { nextTick(() => bindUserMenuOutside()); }
+      else { unbindUserMenuOutside(); }
     });
     onUnmounted(() => unbindUserMenuOutside());
 

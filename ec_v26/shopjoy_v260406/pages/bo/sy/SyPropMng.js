@@ -81,7 +81,7 @@ window.SyPropMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       fetchData('DEFAULT');
     });
 
@@ -90,7 +90,7 @@ window.SyPropMng = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
@@ -115,9 +115,9 @@ window.SyPropMng = {
     /* deleteChecked — 삭제 */
     const deleteChecked = () => {
       for (let i = rows.length - 1; i >= 0; i--) {
-        if (!rows[i]._row_check) continue;
-        if (rows[i]._row_status === 'I') rows.splice(i, 1);
-        else rows[i]._row_status = 'D';
+        if (!rows[i]._row_check) { continue; }
+        if (rows[i]._row_status === 'I') { rows.splice(i, 1); }
+        else { rows[i]._row_status = 'D'; }
       }
     };
 
@@ -127,7 +127,7 @@ window.SyPropMng = {
       if (!checked.length) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = rows.length - 1; i >= 0; i--) {
         const row = rows[i];
-        if (!row._row_check || row._row_status === 'N') continue;
+        if (!row._row_check || row._row_status === 'N') { continue; }
         if (row._row_status === 'I') { rows.splice(i, 1); }
         else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
@@ -142,7 +142,7 @@ window.SyPropMng = {
       const dirty = rows.filter(r => ['I', 'U', 'D'].includes(r._row_status));
       if (dirty.length === 0) { showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await showConfirm('저장', `${dirty.length}건의 변경사항을 저장하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = dirty.map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syProp.saveList(saveRows, '속성관리', '저장');

@@ -75,7 +75,7 @@ window.MyCoupon = {
 
     /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
-      if (dateParams) onDateSearch(dateParams);
+      if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
 

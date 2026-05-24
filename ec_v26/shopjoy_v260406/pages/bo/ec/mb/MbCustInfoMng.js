@@ -44,22 +44,22 @@
 
   /* 기간 옵션 → from 날짜 문자열 */
   const calcFrom = (period, customFrom) => {
-    if (period === 'all') return '';
-    if (period === 'custom') return customFrom;
+    if (period === 'all') { return ''; }
+    if (period === 'custom') { return customFrom; }
     const d = new Date();
-    if (period === '1m') d.setMonth(d.getMonth() - 1);
-    else if (period === '3m') d.setMonth(d.getMonth() - 3);
-    else if (period === '6m') d.setMonth(d.getMonth() - 6);
-    else if (period === '1y') d.setFullYear(d.getFullYear() - 1);
+    if (period === '1m') { d.setMonth(d.getMonth() - 1); }
+    else if (period === '3m') { d.setMonth(d.getMonth() - 3); }
+    else if (period === '6m') { d.setMonth(d.getMonth() - 6); }
+    else if (period === '1y') { d.setFullYear(d.getFullYear() - 1); }
     return d.toISOString().slice(0, 10);
   };
 
   /* dateFrom~dateTo 필터 */
   const inRange = (dateVal, from, to) => {
     const d = dateStr(dateVal);
-    if (!d) return false;
-    if (from && d < from) return false;
-    if (to   && d > to)   return false;
+    if (!d) { return false; }
+    if (from && d < from) { return false; }
+    if (to   && d > to) { return false; }
     return true;
   };
 
@@ -157,9 +157,9 @@
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       Object.assign(searchParamOrg, searchParam);
-      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT');
+      if (isAppReady.value) { fnLoadCodes(); handleSearchData('DEFAULT'); }
     });
       /* -- 검색 상태 -- */
       const memberModal  = reactive({ show: false, searchType: '', keyword: '', list: [] });
@@ -246,9 +246,9 @@
 
       /* 캐쉬 잔액 = 전체(필터 미적용) 마지막 레코드 */
       const cfCustCacheBalance = computed(() => {
-        if (!uiState.customer) return 0;
+        if (!uiState.customer) { return 0; }
         const all = cacheList.filter(c => c.userId === uiState.customer.userId);
-        if (!all.length) return 0;
+        if (!all.length) { return 0; }
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
 
@@ -267,9 +267,9 @@
         memberModal.list = searchVal
           ? members.filter(m => {
               const hits = [];
-              if (types.includes('memberNm')) hits.push((m.memberNm || '').includes(searchVal));
-              if (types.includes('email'))    hits.push((m.email || '').toLowerCase().includes(searchVal));
-              if (types.includes('phone'))    hits.push((m.phone || '').includes(searchVal));
+              if (types.includes('memberNm')) { hits.push((m.memberNm || '').includes(searchVal)); }
+              if (types.includes('email')) { hits.push((m.email || '').toLowerCase().includes(searchVal)); }
+              if (types.includes('phone')) { hits.push((m.phone || '').includes(searchVal)); }
               return hits.some(Boolean);
             })
           : [...members];

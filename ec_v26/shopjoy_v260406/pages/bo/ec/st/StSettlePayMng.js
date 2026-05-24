@@ -62,7 +62,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -93,17 +93,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* doPay — 실행 */
     const doPay = async (r) => {
       const ok = await showConfirm('지급처리', `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
       try {
         const res = await boApiSvc.stSettlePay.pay(r.settlePayId || r.payId, { payAmt: r.payAmt ?? r.settleAmt }, '정산지급관리', '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('지급처리가 완료되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('지급처리가 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

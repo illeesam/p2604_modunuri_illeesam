@@ -69,13 +69,13 @@ window.OdClaimDtl = {
 
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.odClaim.getById(props.dtlId, '클레임관리', '상세조회');
         const c = res.data?.data || res.data || {};
         Object.assign(form, { ...c });
-        if (!form.claimId) form.claimId = props.dtlId;
+        if (!form.claimId) { form.claimId = props.dtlId; }
         // getById 응답에 임베드된 클레임항목(claimItems) 사용
         claimItems.splice(0, claimItems.length, ...((c.claimItems || []).map(x => ({
           ...x,
@@ -99,13 +99,13 @@ window.OdClaimDtl = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
       // 클레임항목은 handleSearchDetail에서 getById 임베드 데이터로 채움
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
@@ -123,19 +123,19 @@ window.OdClaimDtl = {
       }
       const isNewClaim = cfIsNew.value;
       const ok = await showConfirm(isNewClaim ? '등록' : '저장', isNewClaim ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await (isNewClaim
           ? boApiSvc.odClaim.create({ ...form, refundAmt: Number(form.refundAmt) }, '클레임관리', '등록')
           : boApiSvc.odClaim.update(form.claimId, { ...form, refundAmt: Number(form.refundAmt) }, '클레임관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('odClaimMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('odClaimMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -185,7 +185,7 @@ window.OdClaimDtl = {
 
     /* toggleExpandAll — 토글 */
     const toggleExpandAll = () => {
-      if (cfAllExpanded.value) expandedItems.clear();
+      if (cfAllExpanded.value) { expandedItems.clear(); }
       else { expandedItems.clear(); claimItems.forEach((_,i) => expandedItems.add(i)); }
     };
 
@@ -193,7 +193,7 @@ window.OdClaimDtl = {
 
     /* getExchangedItem — 조회 */
     const getExchangedItem = (it) => {
-      if (form.claimTypeCd !== '교환') return null;
+      if (form.claimTypeCd !== '교환') { return null; }
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };
 
       return {
@@ -207,7 +207,7 @@ window.OdClaimDtl = {
 
     /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
-      if (!no) return '';
+      if (!no) { return ''; }
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
       if (courier === '롯데택배')   return 'https://www.lotteglogis.com/open/tracking?invno=' + no;
       if (courier === '한진택배')   return 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2=' + no;
@@ -228,7 +228,7 @@ window.OdClaimDtl = {
       account: form.refundAccount || '-', apprNo: form.apprNo || '-',
     }] : []);
     const cfStatusHistList = computed(() => {
-      if (!form.claimId) return [];
+      if (!form.claimId) { return []; }
       const d = String(form.requestDate || '').slice(0,10) || '-';
       return [
         { date: d+' 09:10', user:'회원',   from:'-',           to: form.claimTypeCd+'요청', memo: form.claimTypeCd+' 접수' },

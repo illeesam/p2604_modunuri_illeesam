@@ -88,11 +88,11 @@ window.XsSample02 = {
 
     /* setupObserver — 설정 옵저버 */
     const setupObserver = () => {
-      if (_observer) _observer.disconnect();
+      if (_observer) { _observer.disconnect(); }
       _observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && cfHasMore.value) handleLoadMore();
+        if (entries[0].isIntersecting && cfHasMore.value) { handleLoadMore(); }
       }, { threshold: 0.1 });
-      if (sentinelEl.value) _observer.observe(sentinelEl.value);
+      if (sentinelEl.value) { _observer.observe(sentinelEl.value); }
     };
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
@@ -107,9 +107,9 @@ window.XsSample02 = {
       gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
       allData.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
-        if (searchVal && !String(d.productNm || '').toLowerCase().includes(searchVal)) return false;
-        if (searchParam.category && d.category !== searchParam.category) return false;
-        if (searchParam.status   && d.status   !== searchParam.status)   return false;
+        if (searchVal && !String(d.productNm || '').toLowerCase().includes(searchVal)) { return false; }
+        if (searchParam.category && d.category !== searchParam.category) { return false; }
+        if (searchParam.status   && d.status   !== searchParam.status) { return false; }
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
       Vue.nextTick(setupObserver);
@@ -117,12 +117,12 @@ window.XsSample02 = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList();
     });
 
     onUnmounted(() => {
-      if (_observer) _observer.disconnect();
+      if (_observer) { _observer.disconnect(); }
     });
 
     /* onSearch — 조회 */
@@ -136,7 +136,7 @@ window.XsSample02 = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = row => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
@@ -146,7 +146,7 @@ window.XsSample02 = {
       gridRows.splice(at, 0, { productId: _tempId--, productNm: '', category: '상의', price: 0, stock: 0, status: '판매중', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
       uiState.focusedIdx = at;
       // 새 행이 보이도록 visibleCount 확장
-      if (at >= uiState.visibleCount) uiState.visibleCount = at + 1;
+      if (at >= uiState.visibleCount) { uiState.visibleCount = at + 1; }
     };
 
     /* deleteRow — 행 삭제 */
@@ -154,8 +154,8 @@ window.XsSample02 = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
-        if (idx < uiState.visibleCount) uiState.visibleCount = Math.max(10, uiState.visibleCount - 1);
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
+        if (idx < uiState.visibleCount) { uiState.visibleCount = Math.max(10, uiState.visibleCount - 1); }
       } else { row._row_status = 'D'; }
     };
 
@@ -164,17 +164,17 @@ window.XsSample02 = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
-        if (idx < uiState.visibleCount) uiState.visibleCount = Math.max(10, uiState.visibleCount - 1);
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
+        if (idx < uiState.visibleCount) { uiState.visibleCount = Math.max(10, uiState.visibleCount - 1); }
       } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
-        else gridRows[i]._row_status = 'D';
+        if (!gridRows[i]._row_check) { continue; }
+        if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
+        else { gridRows[i]._row_status = 'D'; }
       }
     };
 
@@ -184,7 +184,7 @@ window.XsSample02 = {
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i]; if (!ids.has(row.productId) || row._row_status === 'N') continue;
-        if (row._row_status === 'I') gridRows.splice(i, 1);
+        if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
@@ -195,11 +195,11 @@ window.XsSample02 = {
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) { if (!r.productNm) { showToast('상품명은 필수 항목입니다.', 'error'); return; } }
       const parts = []; if (iRows.length) parts.push(`등록 ${iRows.length}건`); if (uRows.length) parts.push(`수정 ${uRows.length}건`); if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
-      if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) return;
+      if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) { return; }
       try {
-        for (const r of dRows) await api.delete(`${API}/${r.productId}`);
-        for (const r of uRows) await api.put(`${API}/${r.productId}`, toPayload(r));
-        for (const r of iRows) await api.post(API, toPayload(r));
+        for (const r of dRows) { await api.delete(`${API}/${r.productId}`); }
+        for (const r of uRows) { await api.put(`${API}/${r.productId}`, toPayload(r)); }
+        for (const r of iRows) { await api.post(API, toPayload(r)); }
         showToast(`${parts.join(', ')} 저장되었습니다.`);
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
@@ -207,9 +207,9 @@ window.XsSample02 = {
         gridRows.splice(0); uiState.focusedIdx = null; uiState.visibleCount = 10;
         allData.filter(d => {
           const searchVal = searchParam.searchValue.toLowerCase();
-          if (searchVal && !String(d.productNm || '').toLowerCase().includes(searchVal)) return false;
-          if (searchParam.category && d.category !== searchParam.category) return false;
-          if (searchParam.status   && d.status   !== searchParam.status)   return false;
+          if (searchVal && !String(d.productNm || '').toLowerCase().includes(searchVal)) { return false; }
+          if (searchParam.category && d.category !== searchParam.category) { return false; }
+          if (searchParam.status   && d.status   !== searchParam.status) { return false; }
           return true;
         }).forEach(d => gridRows.push(makeRow(d)));
         Vue.nextTick(setupObserver);
@@ -222,7 +222,7 @@ window.XsSample02 = {
     /* onDragOver — 드래그 오버 */
     const onDragOver  = (e, idx) => {
       e.preventDefault();
-      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) { return; }
       const m = gridRows.splice(uiState.dragSrc, 1)[0]; gridRows.splice(idx, 0, m);
       uiState.dragSrc = idx; uiState.dragMoved = true;
     };

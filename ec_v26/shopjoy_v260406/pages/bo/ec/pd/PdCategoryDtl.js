@@ -61,11 +61,11 @@ window.PdCategoryDtl = {
 
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       try {
         const res = await boApiSvc.pdCategory.getById(props.dtlId, '카테고리상세', '상세조회');
         const c = res.data?.data || res.data;
-        if (c) Object.assign(form, { ...c });
+        if (c) { Object.assign(form, { ...c }); }
       } catch (err) {
         console.error('[catch-info]', err);
       }
@@ -73,19 +73,19 @@ window.PdCategoryDtl = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchDetail();
       handleSearchList('DEFAULT');
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
 
     const cfParentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {
-      if (!cfIsNew.value && c.categoryId === props.dtlId) return false;
+      if (!cfIsNew.value && c.categoryId === props.dtlId) { return false; }
       return true;
     }));
 
@@ -111,17 +111,17 @@ window.PdCategoryDtl = {
         return;
       }
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await (cfIsNew.value ? boApiSvc.pdCategory.create({ ...form }, '카테고리관리', '등록') : boApiSvc.pdCategory.update(form.categoryId, { ...form }, '카테고리관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('pdCategoryMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('pdCategoryMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

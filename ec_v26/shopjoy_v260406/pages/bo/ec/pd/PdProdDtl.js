@@ -37,7 +37,7 @@ window.PdProdDtl = {
     const fnLoadCodes = () => {
       try {
         const codeStore = window.sfGetBoCodeStore();
-        if (!codeStore?.svCodes) return;
+        if (!codeStore?.svCodes) { return; }
         codes.length = 0;
         codes.push(...codeStore.svCodes);
         if (codeStore.sgGetGrpCodes) {
@@ -121,7 +121,7 @@ window.PdProdDtl = {
         if (!isNew) {
           // 기본정보
           const p = r[2].data?.data || r[2].data;
-          if (p) products.splice(0, products.length, p);
+          if (p) { products.splice(0, products.length, p); }
 
           // 이미지 — getById 응답에 embedded (PdProdDto.Item.images)
           //   pd_prod_img: cdn_img_url / cdn_thumb_url / opt_item_id_1 / opt_item_id_2 / is_thumb / sort_ord
@@ -296,7 +296,7 @@ window.PdProdDtl = {
     // 2레벨 — 선택된 카테고리 하위의 옵션 유형 목록 (1단·2단 유형 select 공용)
     /* getOptTypeCodes — 조회 */
     const getOptTypeCodes = (categoryCd) => {
-      if (!categoryCd) return [];
+      if (!categoryCd) { return []; }
       return (codes||[])
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y'
                   && Number(c.codeLevel||0) === 2
@@ -309,7 +309,7 @@ window.PdProdDtl = {
     // 3레벨 — 공통코드ID(opt_val_code_id) 드롭다운: 선택된 N단 유형(typeCd)의 자식
     /* getOptValCodes — 조회 */
     const getOptValCodes = (typeCd) => {
-      if (!typeCd) return [];
+      if (!typeCd) { return []; }
       return (codes||[])
         .filter(c => c.codeGrp === PROD_OPT_GRP && c.useYn === 'Y'
                   && Number(c.codeLevel||0) === 3
@@ -388,7 +388,7 @@ window.PdProdDtl = {
 
     /* fnLabelOfCategory — 유틸 */
     const fnLabelOfCategory = (cv) => {
-      if (!cv) return '(미선택)';
+      if (!cv) { return '(미선택)'; }
       const found = cfOptTypeLevel1Codes.value.find(c => c.codeValue === cv);
       return found ? `${found.codeLabel} (${cv})` : cv;
     };
@@ -403,7 +403,7 @@ window.PdProdDtl = {
         const items = level === 1
           ? fnBuildLevel1Items(t.codeValue)
           : fnBuildLevel2Items(t.codeValue, level1Items);
-        if (level === 1) level1Items = items;
+        if (level === 1) { level1Items = items; }
         optGroups.push({
           _id: _optSeq++,
           grpNm: t.codeLabel || t.codeValue,
@@ -531,9 +531,9 @@ window.PdProdDtl = {
     /* moveSku — 이동 */
     const moveSku = (sku, dir) => {
       const idx = skus.findIndex(s => s._id === sku._id);
-      if (idx === -1) return;
+      if (idx === -1) { return; }
       const target = idx + (dir === 'up' ? -1 : 1);
-      if (target < 0 || target >= skus.length) return;
+      if (target < 0 || target >= skus.length) { return; }
       const [moved] = skus.splice(idx, 1);
       skus.splice(target, 0, moved);
     };
@@ -545,10 +545,10 @@ window.PdProdDtl = {
       return [...new Set(base.map(s => s._nm2).filter(Boolean))];
     });
     const cfSkusFiltered = computed(() => safeFilter(skus, s => {
-      if (uiState.skuFilter1     && s._nm1 !== uiState.skuFilter1) return false;
-      if (uiState.skuFilter2     && s._nm2 !== uiState.skuFilter2) return false;
-      if (uiState.skuFilterStock === 'in'  && (s.stock || 0) <= 0) return false;
-      if (uiState.skuFilterStock === 'out' && (s.stock || 0) >  0) return false;
+      if (uiState.skuFilter1     && s._nm1 !== uiState.skuFilter1) { return false; }
+      if (uiState.skuFilter2     && s._nm2 !== uiState.skuFilter2) { return false; }
+      if (uiState.skuFilterStock === 'in'  && (s.stock || 0) <= 0) { return false; }
+      if (uiState.skuFilterStock === 'out' && (s.stock || 0) >  0) { return false; }
       return true;
     }));
 
@@ -584,13 +584,13 @@ window.PdProdDtl = {
     // 2단 옵션 라벨 — 상위옵션값(parent_opt_item)이 있으면 "상위 > 본인" 형식으로 표시
     /* fnOptItem2Label — 유틸 */
     const fnOptItem2Label = (item) => {
-      if (!item) return '';
+      if (!item) { return ''; }
       const baseLabel = (item.nm || '') + (item.val ? ' (' + item.val + ')' : '');
       const parentKey = item.parentOptItemId;
-      if (!parentKey) return baseLabel;
+      if (!parentKey) { return baseLabel; }
       const parents = optGroups[0]?.items || [];
       const p = parents.find(pi => String(pi._id) === String(parentKey) || pi.val === parentKey);
-      if (!p) return baseLabel;
+      if (!p) { return baseLabel; }
       const parentLabel = (p.nm || '') + (p.val ? ' (' + p.val + ')' : '');
       return parentLabel + ' > ' + baseLabel;
     };
@@ -656,11 +656,11 @@ window.PdProdDtl = {
 
     // -- 계산값
     const cfMarginRateCalc = computed(() => {
-      if (!form.salePrice || !form.purchasePrice) return null;
+      if (!form.salePrice || !form.purchasePrice) { return null; }
       return ((form.salePrice - form.purchasePrice) / form.salePrice * 100).toFixed(2);
     });
     const cfDiscountRate = computed(() => {
-      if (!form.listPrice || form.listPrice <= 0) return 0;
+      if (!form.listPrice || form.listPrice <= 0) { return 0; }
       return Math.round((1 - form.salePrice / form.listPrice) * 100);
     });
     // 플랫폼수수료: amount 우선 — amount 가 비어 있으면 rate × salePrice 로 환산
@@ -676,15 +676,15 @@ window.PdProdDtl = {
     });
     const cfPlatformFeeDisp = computed(() => {
       const fee = cfPlatformFee.value;
-      if (!fee) return '-';
-      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') return fee.toLocaleString() + '원';
-      if (form.platformFeeRate   != null && form.platformFeeRate   !== '') return fee.toLocaleString() + '원 (' + form.platformFeeRate + '%)';
+      if (!fee) { return '-'; }
+      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') { return fee.toLocaleString() + '원'; }
+      if (form.platformFeeRate   != null && form.platformFeeRate   !== '') { return fee.toLocaleString() + '원 (' + form.platformFeeRate + '%)'; }
       return '-';
     });
     // 예상 순수익 = 판매가 - 매입가 - 플랫폼수수료
     const cfNetRevenueDisp = computed(() => {
       const sale = Number(form.salePrice || 0);
-      if (!sale) return '-';
+      if (!sale) { return '-'; }
       const cost = Number(form.purchasePrice || 0);
       const fee  = cfPlatformFee.value;
       const net  = sale - cost - fee;
@@ -704,12 +704,12 @@ window.PdProdDtl = {
       const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.prodId);
       const types = uiState.prodPickerSearchType || 'prodId,prodNm,cateNm';
       return safeFilter(all, p => {
-        if (used.includes(p.prodId)) return false;
-        if (!q) return true;
+        if (used.includes(p.prodId)) { return false; }
+        if (!q) { return true; }
         const hits = [];
-        if (types.includes('prodId'))  hits.push(String(p.prodId).includes(q));
-        if (types.includes('prodNm'))  hits.push((p.prodNm || '').toLowerCase().includes(q));
-        if (types.includes('cateNm')) hits.push((p.cateNm || '').toLowerCase().includes(q));
+        if (types.includes('prodId')) { hits.push(String(p.prodId).includes(q)); }
+        if (types.includes('prodNm')) { hits.push((p.prodNm || '').toLowerCase().includes(q)); }
+        if (types.includes('cateNm')) { hits.push((p.cateNm || '').toLowerCase().includes(q)); }
         return hits.some(Boolean);
       });
     });
@@ -720,8 +720,8 @@ window.PdProdDtl = {
     /* selectProdItem — 선택 */
     const selectProdItem = (p) => {
       const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm, cateNm: p.cateNm||'', listPrice: p.listPrice||0, prodStock: p.prodStock||0, prodStatusCd: p.prodStatusCd||'' };
-      if (uiState.prodPickerOpen === 'rel') relProds.push(row);
-      else                                codeProds.push(row);
+      if (uiState.prodPickerOpen === 'rel') { relProds.push(row); }
+      else { codeProds.push(row); }
       uiState.prodPickerOpen = '';
     };
 
@@ -775,7 +775,7 @@ window.PdProdDtl = {
     /* addCategory — 추가 */
     const addCategory = (cat) => {
       const id = cat.categoryId||cat.id;
-      if (window.safeArrayUtils.safeSome(prodCategories, c => String(c.categoryId) === String(id))) return;
+      if (window.safeArrayUtils.safeSome(prodCategories, c => String(c.categoryId) === String(id))) { return; }
       prodCategories.push({ categoryId: id, categoryNm: cat.categoryNm||cat.nm||String(id), depth: cat.depth||cat.categoryDepth||cat.level||1 });
       uiState.catPickerOpen = false;
     };
@@ -824,13 +824,13 @@ window.PdProdDtl = {
     const cfMdUserList  = computed(() => (boUsers||[]).filter(u => u.userStatusCd !== 'SUSPENDED' && u.userStatusCd !== 'DELETED'));
     const cfMdUserListFiltered = computed(() => {
       const q = (uiState.mdSearch || '').trim().toLowerCase();
-      if (!q) return cfMdUserList.value;
+      if (!q) { return cfMdUserList.value; }
       const types = (uiState.mdSearchType || mdSearchType.value) || 'userNm,deptId,roleId';
       return cfMdUserList.value.filter(u => {
         const hits = [];
-        if (types.includes('userNm'))   hits.push((u.userNm || '').toLowerCase().includes(q));
-        if (types.includes('deptId')) hits.push((u.deptId || '').toLowerCase().includes(q));
-        if (types.includes('roleId')) hits.push((u.roleId || '').toLowerCase().includes(q));
+        if (types.includes('userNm')) { hits.push((u.userNm || '').toLowerCase().includes(q)); }
+        if (types.includes('deptId')) { hits.push((u.deptId || '').toLowerCase().includes(q)); }
+        if (types.includes('roleId')) { hits.push((u.roleId || '').toLowerCase().includes(q)); }
         return hits.some(Boolean);
       });
     });
@@ -894,16 +894,16 @@ window.PdProdDtl = {
           if (tabData.images.length) {
             images.splice(0, images.length, ...tabData.images);
             // 대표가 하나도 없으면 첫 번째 자동 지정
-            if (!images.some(i => i.isMain)) safeFirst(images).isMain = true;
+            if (!images.some(i => i.isMain)) { safeFirst(images).isMain = true; }
           }
-          else if (p.mainImage) images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' });
+          else if (p.mainImage) { images.splice(0, images.length, { id: imgIdSeq++, previewUrl: p.mainImage, isMain: true, optItemId1: '', optItemId2: '' }); }
 
           // 상품설명 — tabData.content에서 채움
           // DB contentTypeCd (HTML/FILE/URL/IMAGE) → 클라이언트 type (html/file/url) 매핑
           const fnMapTypeCd = (cd) => {
             const v = String(cd || 'HTML').toUpperCase();
-            if (v === 'FILE') return 'file';
-            if (v === 'URL') return 'url';
+            if (v === 'FILE') { return 'file'; }
+            if (v === 'URL') { return 'url'; }
             if (v === 'IMAGE') return 'file'; // IMAGE 는 첨부와 동일 표시 (data:image)
             return 'html';
           };
@@ -920,14 +920,14 @@ window.PdProdDtl = {
           }
 
           // 연관상품 — tabData.rels에서 채움
-          if (tabData.rels.length) relProds.splice(0, relProds.length, ...tabData.rels);
+          if (tabData.rels.length) { relProds.splice(0, relProds.length, ...tabData.rels); }
 
           // SKU — tabData.skus에서 채움
-          if (tabData.skus.length) skus.splice(0, skus.length, ...tabData.skus);
+          if (tabData.skus.length) { skus.splice(0, skus.length, ...tabData.skus); }
 
           // 옵션 사용 여부 — DB 값 우선 반영 (없으면 true 기본)
-          if (p.useOptYn !== undefined) uiState.useOpt = p.useOptYn === 'Y';
-          else uiState.useOpt = true;
+          if (p.useOptYn !== undefined) { uiState.useOpt = p.useOptYn === 'Y'; }
+          else { uiState.useOpt = true; }
 
           // 옵션 카테고리 복원 — optGroups 의 typeCd(=2레벨 code_value)의 parent_code_value 로 역추적
           //   svCodes row 원본 키(codeVal / codeLevel / parentCodeValue) 기준으로 비교
@@ -939,12 +939,12 @@ window.PdProdDtl = {
               return found ? found.parentCodeValue : null;
             }).filter(Boolean));
             // 모든 typeCd 가 동일한 부모(카테고리)에 속할 때만 자동 복원
-            if (parentSet.size === 1) uiState.prodOptCategoryTypeCd = [...parentSet][0];
+            if (parentSet.size === 1) { uiState.prodOptCategoryTypeCd = [...parentSet][0]; }
           }
           // 변경 confirm 비교용 — 현재 카테고리를 baseline 으로 기록
           _prevCategoryCd = uiState.prodOptCategoryTypeCd || '';
 
-          if (p.salePlans?.length) salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false })));
+          if (p.salePlans?.length) { salePlans.splice(0, salePlans.length, ...p.salePlans.map(r => ({ ...r, _id: planIdSeq++, _checked: false }))); }
           // 카테고리 N개 로드 (pd_category_prod)
           const pid = String(p.prodId);
           const linked = (categoryProds||[])
@@ -960,7 +960,7 @@ window.PdProdDtl = {
       await nextTick();
       // 스플릿 패널 divider 마우스 리스너
       _divMoveH = (e) => {
-        if (!uiState.isDraggingDivider || !contentSplitRef.value) return;
+        if (!uiState.isDraggingDivider || !contentSplitRef.value) { return; }
         const rect = contentSplitRef.value.getBoundingClientRect();
         const pct = ((e.clientX - rect.left) / rect.width) * 100;
         uiState.splitPct = Math.max(25, Math.min(78, pct));
@@ -972,19 +972,19 @@ window.PdProdDtl = {
 
     // ★ onMounted
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadData();
       await handleInitForm();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadData();
     });
     onBeforeUnmount(() => {
-      if (_divMoveH) document.removeEventListener('mousemove', _divMoveH);
-      if (_divUpH)   document.removeEventListener('mouseup',  _divUpH);
+      if (_divMoveH) { document.removeEventListener('mousemove', _divMoveH); }
+      if (_divUpH) { document.removeEventListener('mouseup',  _divUpH); }
     });
 
     // -- 저장
@@ -996,16 +996,16 @@ window.PdProdDtl = {
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-      if (showToast) showToast(msg, 'success');
+      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+      if (showToast) { showToast(msg, 'success'); }
     };
 
     /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-      if (showToast) showToast(errMsg, 'error', 0);
+      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+      if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
     /* ── 탭별 저장: topTab 값으로 분기. info/detail 은 form 전체 저장(같은 form 공유).
@@ -1029,7 +1029,7 @@ window.PdProdDtl = {
 
         const isCreate = !cfHasProdId.value; // info 신규
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
-        if (!ok) return;
+        if (!ok) { return; }
         try {
           const payload = { ...form };
           const res = isCreate
@@ -1038,7 +1038,7 @@ window.PdProdDtl = {
           /* 신규 등록 응답에서 prodId 추출하여 form.prodId 에 주입 → 다른 탭 활성화 */
           if (isCreate) {
             const newId = res.data?.data?.prodId || res.data?.prodId || null;
-            if (newId) form.prodId = newId;
+            if (newId) { form.prodId = newId; }
           }
           /* UX-admin §18: 저장 후 재조회 — 본 탭 + 첫 탭(info)이면 상위 Mng 도 */
           await handleLoadData();
@@ -1050,7 +1050,7 @@ window.PdProdDtl = {
 
       /* 그 외 탭: 부분 PUT — payload 에 해당 탭 데이터만 포함 */
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
 
       const TAB_LABEL = { content: '상품설명', option: '옵션설정', price: '옵션(가격/재고)', image: '이미지', related: '연관상품' };
       let payload = null;
@@ -1222,7 +1222,7 @@ window.PdProdDtl = {
     /* onPlanToggleCheck — 이벤트 */
     const onPlanToggleCheck = (key) => {
       const r = window.safeArrayUtils.safeFind(cfPlanVisible.value, x => String(x._id) === String(key));
-      if (r) r._checked = !r._checked;
+      if (r) { r._checked = !r._checked; }
     };
     /* onPlanToggleCheckAll — 이벤트 */
     const onPlanToggleCheckAll = () => { cfPlanAllChecked.value = !cfPlanAllChecked.value; };

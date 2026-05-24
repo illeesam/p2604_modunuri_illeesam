@@ -49,7 +49,7 @@ window.Contact = {
 
     /* handleSubmit — 처리 */
     const handleSubmit = async () => {
-      if (!validate()) return;
+      if (!validate()) { return; }
       if (typeof foApi !== 'undefined') {
         await foApiSvc.myInquiry.create({
           source: 'shopjoy',

@@ -43,7 +43,7 @@ window.XsLocalStorage = {
 
     const cfFilteredData = computed(() => {
       const data = Array.isArray(storageData) ? storageData : [];
-      if (!uiStateGlobal.filterKey) return data;
+      if (!uiStateGlobal.filterKey) { return data; }
       return data.filter(item => item.key.toLowerCase().includes(uiStateGlobal.filterKey.toLowerCase()));
     });
 
@@ -65,7 +65,7 @@ window.XsLocalStorage = {
 
     /* saveEdit — 저장 */
     const saveEdit = (key) => {
-      if (!key) return;
+      if (!key) { return; }
       try {
         localStorage.setItem(key, uiStateGlobal.editingValue);
         props.showToast('저장되었습니다.', 'success');
@@ -87,7 +87,7 @@ window.XsLocalStorage = {
 
     /* handleDelete — 삭제 */
     const handleDelete = (key) => {
-      if (!confirm(`'${key}'를 삭제하시겠습니까?`)) return;
+      if (!confirm(`'${key}'를 삭제하시겠습니까?`)) { return; }
       try {
         localStorage.removeItem(key);
         props.showToast('삭제되었습니다.', 'success');
@@ -99,7 +99,7 @@ window.XsLocalStorage = {
 
     /* clearAllStorage — 비우기 */
     const clearAllStorage = () => {
-      if (!confirm('localStorage의 모든 데이터를 삭제하시겠습니까?')) return;
+      if (!confirm('localStorage의 모든 데이터를 삭제하시겠습니까?')) { return; }
       try {
         localStorage.clear();
         props.showToast('모든 데이터가 삭제되었습니다.', 'success');
@@ -127,7 +127,7 @@ window.XsLocalStorage = {
 
     /* handleMouseMove — 처리 */
     const handleMouseMove = (e) => {
-      if (!uiState.isResizing) return;
+      if (!uiState.isResizing) { return; }
       const delta = e.clientX - uiStateGlobal.startX;
       const newWidth = Math.max(30, uiStateGlobal.startWidth + (delta / window.innerWidth * 100));
       const keyWidth = 25;
@@ -143,7 +143,7 @@ window.XsLocalStorage = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       window.addEventListener('mouseup', stopResize);
     });
 

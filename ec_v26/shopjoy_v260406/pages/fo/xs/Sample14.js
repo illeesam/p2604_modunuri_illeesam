@@ -37,7 +37,7 @@ window.XsSample14 = {
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
-      if (selectedCatIds.size === 0) return '카테고리';
+      if (selectedCatIds.size === 0) { return '카테고리'; }
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
 
@@ -55,8 +55,8 @@ window.XsSample14 = {
       const c = ['항상 표시'];
       if (!isLoggedIn) { c.push('비로그인 전용'); return c; }
       c.push('로그인 필요');
-      if (userGrade === '우수' || userGrade === 'VIP') c.push('로그인+우수');
-      if (userGrade === 'VIP') c.push('로그인+VIP');
+      if (userGrade === '우수' || userGrade === 'VIP') { c.push('로그인+우수'); }
+      if (userGrade === 'VIP') { c.push('로그인+VIP'); }
       return c;
     });
     const WIDGET_LABELS = {
@@ -90,28 +90,28 @@ window.XsSample14 = {
     /* isInRange — 여부 확인 */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
-      if (!d) return true;
+      if (!d) { return true; }
       const dt = `${d}T${uiState.previewTime || '00:00'}`;
       /* _norm — _norm */
       const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
-      if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) return false;
-      if (panel.dispEndDt   && dt > _norm(panel.dispEndDt))   return false;
+      if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) { return false; }
+      if (panel.dispEndDt   && dt > _norm(panel.dispEndDt)) { return false; }
       return true;
     };
 
     /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
-      if (uiState.searchStatus       && p.status !== uiState.searchStatus) return false;
-      if (!isInRange(p)) return false;
-      if (uiState.searchCondition    && (p.condition || '항상 표시') !== uiState.searchCondition) return false;
-      if (uiState.searchAuthRequired === 'Y' && !p.authRequired) return false;
-      if (uiState.searchAuthRequired === 'N' &&  p.authRequired) return false;
-      if (uiState.searchAuthGrade    && p.authGrade !== uiState.searchAuthGrade) return false;
+      if (uiState.searchStatus       && p.status !== uiState.searchStatus) { return false; }
+      if (!isInRange(p)) { return false; }
+      if (uiState.searchCondition    && (p.condition || '항상 표시') !== uiState.searchCondition) { return false; }
+      if (uiState.searchAuthRequired === 'Y' && !p.authRequired) { return false; }
+      if (uiState.searchAuthRequired === 'N' &&  p.authRequired) { return false; }
+      if (uiState.searchAuthGrade    && p.authGrade !== uiState.searchAuthGrade) { return false; }
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
                     (p.rows || []).some(w => names.some(nm => (w.widgetNm || '').includes(nm)));
-        if (!hit) return false;
+        if (!hit) { return false; }
       }
       return true;
     };
@@ -136,8 +136,8 @@ window.XsSample14 = {
 
     /* toggleAreaExpand — 영역 토글 */
     const toggleAreaExpand = (code) => {
-      if (expandedAreas.has(code)) expandedAreas.delete(code);
-      else expandedAreas.add(code);
+      if (expandedAreas.has(code)) { expandedAreas.delete(code); }
+      else { expandedAreas.add(code); }
     };
 
     /* togglePanel — 패널 토글 */
@@ -155,10 +155,10 @@ window.XsSample14 = {
 
     /* toggleWidget — 토글 */
     const toggleWidget = (dispId, wi, e) => {
-      if (e) e.stopPropagation();
+      if (e) { e.stopPropagation(); }
       const key = `${dispId}_${wi}`;
-      if (checkedWidgets.has(key)) checkedWidgets.delete(key);
-      else checkedWidgets.add(key);
+      if (checkedWidgets.has(key)) { checkedWidgets.delete(key); }
+      else { checkedWidgets.add(key); }
     };
 
     /* checkAll — 확인 */
@@ -242,7 +242,7 @@ window.XsSample14 = {
     const wColor = (t) => WIDGET_COLORS[t] || '#888';
     // 헤더 카운트용
     const cfPreviewWidgets = computed(() => {
-      if (uiState.activeTab === 'dashboard') return dashItems;
+      if (uiState.activeTab === 'dashboard') { return dashItems; }
       return (gridCells[uiState.activeTab] || []).filter(c => c.widget);
     });
     const dragSrc      = ref(null);
@@ -293,10 +293,10 @@ window.XsSample14 = {
     /* setSpan — 설정 */
     const setSpan = (tab, ci, axis, delta) => {
       const cell = gridCells[tab][ci];
-      if (!cell || !cell.widget) return;
+      if (!cell || !cell.widget) { return; }
       const maxCol = GRID_COLS[tab] || 1;
-      if (axis === 'col') cell.colSpan = Math.max(1, Math.min(maxCol, (cell.colSpan || 1) + delta));
-      if (axis === 'row') cell.rowSpan = Math.max(1, Math.min(4,      (cell.rowSpan || 1) + delta));
+      if (axis === 'col') { cell.colSpan = Math.max(1, Math.min(maxCol, (cell.colSpan || 1) + delta)); }
+      if (axis === 'row') { cell.rowSpan = Math.max(1, Math.min(4,      (cell.rowSpan || 1) + delta)); }
     };
 
     /* ensureTrailingRows — ensure Trailing 행 */
@@ -304,11 +304,11 @@ window.XsSample14 = {
       let emptyRows = 0;
       const totalRows = Math.ceil(cells.length / cols);
       for (let r = totalRows - 1; r >= 0; r--) {
-        if (cells.slice(r * cols, (r + 1) * cols).every(c => !c.widget)) emptyRows++;
-        else break;
+        if (cells.slice(r * cols, (r + 1) * cols).every(c => !c.widget)) { emptyRows++; }
+        else { break; }
       }
       while (emptyRows < 2) {
-        for (let c = 0; c < cols; c++) cells.push({ widget: null });
+        for (let c = 0; c < cols; c++) { cells.push({ widget: null }); }
         emptyRows++;
       }
     };
@@ -332,7 +332,7 @@ window.XsSample14 = {
         /* 아직 남은 경우 뒤에 행 추가하며 배치 */
         while (placed < list.length) {
           const startIdx = cells.length;
-          for (let c = 0; c < cols; c++) cells.push({ widget: null });
+          for (let c = 0; c < cols; c++) { cells.push({ widget: null }); }
           for (let c = 0; c < cols && placed < list.length; c++) {
             cells[startIdx + c] = { widget: { ...list[placed++] }, colSpan: 1, rowSpan: 1 };
           }
@@ -340,7 +340,7 @@ window.XsSample14 = {
         ensureTrailingRows(cells, cols);
         uiState.dragSrcList = null; uiState.dropZoneIdx = -1; return;
       }
-      if (!uiState.dragSrc) return;
+      if (!uiState.dragSrc) { return; }
       cells[ci] = { widget: { ...uiState.dragSrc }, colSpan: 1, rowSpan: 1 };
       ensureTrailingRows(cells, cols);
       uiState.dragSrc = null;
@@ -368,7 +368,7 @@ window.XsSample14 = {
         });
         uiState.dragSrcList = null; uiState.dropZoneIdx = -1; return;
       }
-      if (!uiState.dragSrc) return;
+      if (!uiState.dragSrc) { return; }
       const x = Math.max(0, Math.round((evt.clientX - rect.left - 80) / snap) * snap);
       const y = Math.max(0, Math.round((evt.clientY - rect.top  - 14) / snap) * snap);
       dashItems.push({ widget: { ...uiState.dragSrc }, x, y, w: 200, h: 160 });
@@ -421,7 +421,7 @@ window.XsSample14 = {
       if (GRID_COLS[tab]) {
         const cells = gridCells[tab], cols = GRID_COLS[tab];
         cells.splice(0, cells.length);
-        for (let i = 0; i < cols * 2; i++) cells.push({ widget: null });
+        for (let i = 0; i < cols * 2; i++) { cells.push({ widget: null }); }
       } else if (tab === 'dashboard') {
         dashItems.splice(0, dashItems.length);
       }
@@ -459,8 +459,8 @@ window.XsSample14 = {
       return map[uiState.activeTab] || 'repeat(1,1fr)';
     });
     const cfViewportWidth = computed(() => {
-      if (uiState.viewportMode === 'mobile') return '375px';
-      if (uiState.viewportMode === 'tablet') return '768px';
+      if (uiState.viewportMode === 'mobile') { return '375px'; }
+      if (uiState.viewportMode === 'tablet') { return '768px'; }
       return null;
     });
     /* 실제 컨텐츠 보기 토글 */

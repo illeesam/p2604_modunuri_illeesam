@@ -85,8 +85,8 @@ window.SyDeptMng = {
       items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
       const roots = [];
       items.forEach(d => {
-        if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId].children.push(map[d.deptId]);
-        else roots.push(map[d.deptId]);
+        if (d.parentDeptId && map[d.parentDeptId]) { map[d.parentDeptId].children.push(map[d.deptId]); }
+        else { roots.push(map[d.deptId]); }
       });
 
       /* sort — 정렬 */
@@ -141,8 +141,8 @@ window.SyDeptMng = {
       items.forEach(d => { map[d.deptId] = { ...d, _children: [] }; });
       const roots = [];
       items.forEach(d => {
-        if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId]._children.push(map[d.deptId]);
-        else roots.push(map[d.deptId]);
+        if (d.parentDeptId && map[d.parentDeptId]) { map[d.parentDeptId]._children.push(map[d.deptId]); }
+        else { roots.push(map[d.deptId]); }
       });
       const result = [];
 
@@ -178,7 +178,7 @@ window.SyDeptMng = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
@@ -203,7 +203,7 @@ window.SyDeptMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0)); }
       } else { row._row_status = 'D'; }
     };
 
@@ -212,9 +212,9 @@ window.SyDeptMng = {
       const row = gridRows[realIdx];
       if (row._row_status === 'I') {
         gridRows.splice(realIdx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= realIdx ? 1 : 0)); }
       } else {
-        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+        if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
         row._row_status = 'N';
       }
     };
@@ -225,10 +225,10 @@ window.SyDeptMng = {
       if (!checkedIds.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
-        if (!checkedIds.has(row.deptId)) continue;
+        if (!checkedIds.has(row.deptId)) { continue; }
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_status !== 'N') {
-          if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+          if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
           row._row_status = 'N';
         }
       }
@@ -237,9 +237,9 @@ window.SyDeptMng = {
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
-        else gridRows[i]._row_status = 'D';
+        if (!gridRows[i]._row_check) { continue; }
+        if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
+        else { gridRows[i]._row_status = 'D'; }
       }
     };
 
@@ -253,11 +253,11 @@ window.SyDeptMng = {
         if (!r.deptCode || !r.deptNm) { showToast('부서코드와 부서명은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      if (iRows.length) { details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' }); }
+      if (uRows.length) { details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' }); }
+      if (dRows.length) { details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' }); }
       const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syDept.saveList(saveRows, '부서관리', '저장');
@@ -273,7 +273,7 @@ window.SyDeptMng = {
 
     /* parentNm — 상위 Nm */
     const parentNm = (parentDeptId) => {
-      if (!parentDeptId) return '';
+      if (!parentDeptId) { return ''; }
       const p = depts.find(d => d.deptId === parentDeptId);
       return p ? p.deptNm : `ID:${parentDeptId}`;
     };

@@ -97,8 +97,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* toggleExpand — 토글 */
     const toggleExpand = (logId) => {
-      if (uiState.expandedSet.has(logId)) uiState.expandedSet.delete(logId);
-      else uiState.expandedSet.add(logId);
+      if (uiState.expandedSet.has(logId)) { uiState.expandedSet.delete(logId); }
+      else { uiState.expandedSet.add(logId); }
     };
 
     /* onExpandAll — 이벤트 */
@@ -119,8 +119,8 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
 
     /* fnFmtDuration — 유틸 */
     const fnFmtDuration = (sec) => {
-      if (!sec && sec !== 0) return '-';
-      if (sec < 60) return `${sec}초`;
+      if (!sec && sec !== 0) { return '-'; }
+      if (sec < 60) { return `${sec}초`; }
       return `${Math.floor(sec / 60)}분 ${sec % 60}초`;
     };
 

@@ -66,7 +66,7 @@ window.MbMemGradeMng = {
     };
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList();
     });
 
@@ -81,7 +81,7 @@ window.MbMemGradeMng = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
@@ -103,7 +103,7 @@ window.MbMemGradeMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else {
         row._row_status = 'D';
       }
@@ -114,9 +114,9 @@ window.MbMemGradeMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else {
-        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+        if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
         row._row_status = 'N';
       }
     };
@@ -124,9 +124,9 @@ window.MbMemGradeMng = {
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
-        else gridRows[i]._row_status = 'D';
+        if (!gridRows[i]._row_check) { continue; }
+        if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
+        else { gridRows[i]._row_status = 'D'; }
       }
     };
 
@@ -136,8 +136,8 @@ window.MbMemGradeMng = {
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
-        if (!ids.has(row.memberGradeId)) continue;
-        if (row._row_status === 'N') continue;
+        if (!ids.has(row.memberGradeId)) { continue; }
+        if (row._row_status === 'N') { continue; }
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
@@ -160,11 +160,11 @@ window.MbMemGradeMng = {
         }
       }
       const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      if (iRows.length) { details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' }); }
+      if (uRows.length) { details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' }); }
+      if (dRows.length) { details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' }); }
       const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.mbMemGrade.saveList(saveRows, '회원등급관리', '저장');

@@ -61,7 +61,7 @@ window.OdOrderHist = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       if (o) {
         orderItems.splice(0, orderItems.length,
@@ -74,7 +74,7 @@ window.OdOrderHist = {
     const cfRelatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === props.orderId));
     const cfDlivHistory   = computed(() => {
-      if (!cfRelatedDliv.value) return [];
+      if (!cfRelatedDliv.value) { return []; }
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
       return [
         { date: o && o.orderDate ? o.orderDate.slice(0, 10) : '-', status: '상품준비중', location: '물류센터', memo: '상품 포장 완료' },

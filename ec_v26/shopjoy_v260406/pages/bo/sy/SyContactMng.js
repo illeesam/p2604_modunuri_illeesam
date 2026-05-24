@@ -21,7 +21,7 @@ window.SyContactMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
 
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
@@ -33,7 +33,7 @@ window.SyContactMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -82,7 +82,7 @@ window.SyContactMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -155,19 +155,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCoun
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
       const ok = await showConfirm('삭제', `[${c.contactTitle}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = contacts.findIndex(x => x.contactId === c.contactId);
-      if (idx !== -1) contacts.splice(idx, 1);
+      if (idx !== -1) { contacts.splice(idx, 1); }
       if (detailModal.dtlId === c.contactId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.syContact.remove(c.contactId, '문의관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

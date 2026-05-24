@@ -57,30 +57,30 @@ window.DispX01Ui = {
     const panelFilter = (p) => {
       const pm = props.params;
       // ✓ 전시여부 체크 (UI-Area 매핑)
-      if (p.dispYn !== 'Y') return false;
+      if (p.dispYn !== 'Y') { return false; }
       // ✓ 사용여부 체크 (UI 마스터)
-      if (p.useYn !== 'Y') return false;
-      if (pm.status && p.status !== pm.status) return false;
+      if (p.useYn !== 'Y') { return false; }
+      if (pm.status && p.status !== pm.status) { return false; }
       // ✓ 사용기간 체크 (UI 마스터)
       if (pm.date) {
         const t  = pm.time || '00:00';
         const dt = `${pm.date} ${t}`;
-        if (p.useStartDate && dt < `${p.useStartDate} 00:00`) return false;
-        if (p.useEndDate   && dt > `${p.useEndDate}   23:59`) return false;
+        if (p.useStartDate && dt < `${p.useStartDate} 00:00`) { return false; }
+        if (p.useEndDate   && dt > `${p.useEndDate}   23:59`) { return false; }
       }
       // ✓ 전시기간 체크 (UI-Area 매핑)
       if (pm.date) {
         const t  = pm.time || '00:00';
         const dt = `${pm.date}T${t}`;
         const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
-        if (p.dispStartDt && dt < _norm(p.dispStartDt)) return false;
-        if (p.dispEndDt   && dt > _norm(p.dispEndDt))   return false;
+        if (p.dispStartDt && dt < _norm(p.dispStartDt)) { return false; }
+        if (p.dispEndDt   && dt > _norm(p.dispEndDt)) { return false; }
       }
       // ✓ 전시환경 체크 (UI-Area 매핑)
-      if (p.dispEnv && pm.dispEnv && !p.dispEnv.includes('^' + pm.dispEnv + '^')) return false;
+      if (p.dispEnv && pm.dispEnv && !p.dispEnv.includes('^' + pm.dispEnv + '^')) { return false; }
       if (pm.visibilityTargets) {
         const code = pm.visibilityTargets.replace(/\^/g, '').trim();
-        if (code && !window.visibilityUtil.has(p.visibilityTargets, code)) return false;
+        if (code && !window.visibilityUtil.has(p.visibilityTargets, code)) { return false; }
       }
       return true;
     };
@@ -140,25 +140,25 @@ window.DispX01Ui = {
     /* toggleAll1 — 토글 */
     const toggleAll1  = () => {
       if (allAreas1Open.value) { structAreaOpen.clear(); structPanelOpen.clear(); }
-      else (props.params.areas || []).forEach(c => structAreaOpen.add(c));
+      else { (props.params.areas || []).forEach(c => structAreaOpen.add(c)); }
     };
 
     /* toggleAll2 — 토글 */
     const toggleAll2  = () => {
-      if (allPanels2Open.value) structPanelOpen.clear();
-      else (props.params.areas || []).forEach(c => panelsForArea(c).forEach(p => structPanelOpen.add(p.dispId)));
+      if (allPanels2Open.value) { structPanelOpen.clear(); }
+      else { (props.params.areas || []).forEach(c => panelsForArea(c).forEach(p => structPanelOpen.add(p.dispId))); }
     };
 
     /* toggleArea — 영역 토글 */
     const toggleArea  = (code) => {
-      if (structAreaOpen.has(code)) structAreaOpen.delete(code);
-      else structAreaOpen.add(code);
+      if (structAreaOpen.has(code)) { structAreaOpen.delete(code); }
+      else { structAreaOpen.add(code); }
     };
 
     /* togglePanel — 패널 토글 */
     const togglePanel = (id) => {
-      if (structPanelOpen.has(id)) structPanelOpen.delete(id);
-      else structPanelOpen.add(id);
+      if (structPanelOpen.has(id)) { structPanelOpen.delete(id); }
+      else { structPanelOpen.add(id); }
     };
 
     /* ─────────────────────────────────────────
@@ -182,7 +182,7 @@ window.DispX01Ui = {
       allAreas.forEach((areaCode, ai) => {
         const info   = areaInfo(areaCode);
         const panels = panelsForArea(areaCode);
-        if (ai > 0) lines.push({ type:'blank' });
+        if (ai > 0) { lines.push({ type:'blank' }); }
 
         const _aLayout = info?.layoutType === 'dashboard' ? 'dashboard' : `${info?.layoutType||'grid'}:${info?.gridCols||1}`;
         const _aTitleYn = info?.titleYn === 'Y' ? (info?.title || '(제목없음)') : '미표시';
@@ -230,9 +230,9 @@ window.DispX01Ui = {
     const lineColor = (line) => {
       switch (line.type) {
         case 'header':
-          if (line.sub === 'entities') return '#ffd700';
-          if (line.sub === 'disp')     return '#ffab40';
-          if (line.sub === 'cond')     return '#ff8a65';
+          if (line.sub === 'entities') { return '#ffd700'; }
+          if (line.sub === 'disp') { return '#ffab40'; }
+          if (line.sub === 'cond') { return '#ff8a65'; }
           return '#ffd700';
         case 'ui-open':
         case 'ui-close':    return '#b794f4';

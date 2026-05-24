@@ -140,7 +140,7 @@ window.SyApiLogMng = {
         expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchAccessLog]', err);
-        if (showToast) showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
       }
     };
 
@@ -157,20 +157,20 @@ window.SyApiLogMng = {
         expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchErrorLog]', err);
-        if (showToast) showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
+        if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
       }
     };
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
-      if (uiState.activeTab === 'access') await handleSearchAccessLog();
-      else                                await handleSearchErrorLog();
+      if (uiState.activeTab === 'access') { await handleSearchAccessLog(); }
+      else { await handleSearchErrorLog(); }
     };
 
     // --- [라이프사이클] ---
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList();
     });
 
@@ -183,17 +183,17 @@ window.SyApiLogMng = {
     const handleClearLog = async () => {
       const tabNm = uiState.activeTab === 'access' ? 'API요청로그' : 'API오류로그';
       const ok = await window.boApp.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
-        if (uiState.activeTab === 'access') await window.boApi.delete('/bo/sy/access-log/all', coUtil.cofApiHdr('API로그조회', '로그비우기'));
-        else                                await window.boApi.delete('/bo/sy/access-error-log/all', coUtil.cofApiHdr('API로그조회', '로그비우기'));
-        if (showToast) showToast(`${tabNm} 전체 삭제 완료`, 'success');
+        if (uiState.activeTab === 'access') { await window.boApi.delete('/bo/sy/access-log/all', coUtil.cofApiHdr('API로그조회', '로그비우기')); }
+        else { await window.boApi.delete('/bo/sy/access-error-log/all', coUtil.cofApiHdr('API로그조회', '로그비우기')); }
+        if (showToast) { showToast(`${tabNm} 전체 삭제 완료`, 'success'); }
         if (uiState.activeTab === 'access') { accessLogs.splice(0); tabCounts.access = 0; }
         else                                { errorLogs.splice(0);  tabCounts.error  = 0; }
         pager.pageTotalCount = 0; pager.pageTotalPage = 1;
         expandedRows.clear(); allExpanded.value = false;
       } catch (err) {
-        if (showToast) showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+        if (showToast) { showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0); }
       }
     };
 
@@ -230,12 +230,12 @@ window.SyApiLogMng = {
 
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => {
-      if (!s) return 'badge-gray';
+      if (!s) { return 'badge-gray'; }
       const n = Number(s);
-      if (n >= 500) return 'badge-red';
-      if (n >= 400) return 'badge-orange';
-      if (n >= 300) return 'badge-blue';
-      if (n >= 200) return 'badge-green';
+      if (n >= 500) { return 'badge-red'; }
+      if (n >= 400) { return 'badge-orange'; }
+      if (n >= 300) { return 'badge-blue'; }
+      if (n >= 200) { return 'badge-green'; }
       return 'badge-gray';
     };
 

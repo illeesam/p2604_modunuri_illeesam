@@ -21,7 +21,7 @@ window.SySiteMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
 
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
@@ -33,7 +33,7 @@ window.SySiteMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -82,7 +82,7 @@ window.SySiteMng = {
       const row = pathPickModal.row;
       if (row) {
         row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
+        if (row._row_status === 'N') { row._row_status = 'U'; }
       }
     };
 
@@ -141,7 +141,7 @@ const detailModal = reactive({
       if (pg === 'sySiteMng') {
         detailModal.show = false;
         detailModal.dtlId = null;
-        if (opts.reload) handleSearchList('RELOAD');
+        if (opts.reload) { handleSearchList('RELOAD'); }
         return;
       }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
@@ -182,19 +182,19 @@ const detailModal = reactive({
     /* handleDelete — 삭제 */
     const handleDelete = async (s) => {
       const ok = await showConfirm('삭제', `[${s.siteCode}] ${s.siteNm} 사이트를 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = sites.findIndex(x => x.siteId === s.siteId);
-      if (idx !== -1) sites.splice(idx, 1);
+      if (idx !== -1) { sites.splice(idx, 1); }
       if (detailModal.dtlId === s.siteId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.sySite.remove(s.siteId, '사이트관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -204,7 +204,7 @@ const detailModal = reactive({
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 

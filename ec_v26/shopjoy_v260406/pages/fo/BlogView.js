@@ -42,7 +42,7 @@ window.BlogView = {
     /* 백엔드 CmBlogDto.Item → 화면 표준 형태로 정규화 (replies/tags/files 연관정보 포함) */
     const cfPost   = computed(() => {
       const raw = posts.length > 0 ? posts[0] : null;
-      if (!raw) return { id: '', title: '', category: '', author: '', date: '', readTime: '', tags: [], files: [], viewCount: 0, img: '', imgMid: '', body: '', comments: [] };
+      if (!raw) { return { id: '', title: '', category: '', author: '', date: '', readTime: '', tags: [], files: [], viewCount: 0, img: '', imgMid: '', body: '', comments: [] }; }
       const files = raw.files || [];
       return {
         id:        raw.blogId,
@@ -77,7 +77,7 @@ window.BlogView = {
     /* addComment — 추가 */
     const addComment    = () => {
       const t = searchParam.commentText.trim();
-      if (!t) return;
+      if (!t) { return; }
       localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOString().slice(0,10).replace(/-/g,'.'), text: t });
       uiState.commentText = '';
     };
@@ -115,7 +115,7 @@ window.BlogView = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData();
     });
 

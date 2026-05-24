@@ -73,14 +73,14 @@ window.PmCacheMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -179,19 +179,19 @@ window.PmCacheMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
       const ok = await showConfirm('삭제', `[${c.cacheDesc}] 내역을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = caches.findIndex(x => x.cacheId === c.cacheId);
-      if (idx !== -1) caches.splice(idx, 1);
-      if (uiStateDetail.selectedId === c.cacheId) uiStateDetail.selectedId = null;
+      if (idx !== -1) { caches.splice(idx, 1); }
+      if (uiStateDetail.selectedId === c.cacheId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pmCache.remove(c.cacheId, '캐시관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

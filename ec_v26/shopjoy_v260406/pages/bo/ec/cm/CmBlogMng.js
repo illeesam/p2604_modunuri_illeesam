@@ -46,7 +46,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -56,7 +56,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -97,7 +97,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -129,7 +129,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       if (!detailModal.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
       const isNewPost = detailModal.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       if (isNewPost) {
         detailModal.form.blogId = 'BL' + String(Date.now()).slice(-6);
         detailModal.form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
@@ -137,39 +137,39 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
         detailModal.dtlId = detailModal.form.blogId; detailModal.isNew = false;
       } else {
         const si = blogs.findIndex(p => p.blogId === detailModal.form.blogId);
-        if (si !== -1) Object.assign(blogs[si], detailModal.form);
+        if (si !== -1) { Object.assign(blogs[si], detailModal.form); }
       }
       try {
         const res = await (isNewPost
           ? boApiSvc.cmBlog.create({ ...detailModal.form }, '블로그관리', '등록')
           : boApiSvc.cmBlog.update(detailModal.form.blogId, { ...detailModal.form }, '블로그관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async () => {
-      if (!cfSelectedRow.value) return;
+      if (!cfSelectedRow.value) { return; }
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const si = blogs.findIndex(p => p.blogId === cfSelectedRow.value.blogId);
-      if (si !== -1) blogs.splice(si, 1);
+      if (si !== -1) { blogs.splice(si, 1); }
       closeDetail();
       try {
         const res = await boApiSvc.cmBlog.remove(cfSelectedRow.value.blogId, '블로그관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -177,18 +177,18 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
     const toggleUse = async (row) => {
       const newYn = row.useYn === 'Y' ? 'N' : 'Y';
       const ok = await showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn === 'Y' ? '공개' : '비공개'} 처리하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       row.useYn = newYn;
-      if (detailModal.form.blogId === row.blogId) detailModal.form.useYn = newYn;
+      if (detailModal.form.blogId === row.blogId) { detailModal.form.useYn = newYn; }
       try {
         const res = await boApiSvc.cmBlog.setUse(row.blogId, { useYn: newYn }, '블로그관리', '상태변경');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('처리되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('처리되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

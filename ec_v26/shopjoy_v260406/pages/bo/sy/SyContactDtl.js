@@ -63,14 +63,14 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.syContact.getById(props.dtlId, '문의관리', '상세조회');
         const data = res.data?.data;
         if (data) {
           Object.assign(form, data);
-          if (form.contactAnswer) uiState.tab = 'answer';
+          if (form.contactAnswer) { uiState.tab = 'answer'; }
         }
         uiState.error = null;
       } catch (err) {
@@ -83,12 +83,12 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
     // ★ onMounted — 진입 시 코드 로드 + 상세 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       if (!cfIsNew.value) { await handleLoadDetail(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadDetail();
     });
@@ -96,7 +96,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
     /* onUserIdChange — 이벤트 */
     const onUserIdChange = () => {
       const m = getMember.value(Number(form.memberId));
-      if (m) form.memberNm = m.memberNm;
+      if (m) { form.memberNm = m.memberNm; }
     };
 
     /* 문의 fnStatusBadge */
@@ -113,16 +113,16 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-      if (showToast) showToast(msg, 'success');
+      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+      if (showToast) { showToast(msg, 'success'); }
     };
 
     /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-      if (showToast) showToast(errMsg, 'error', 0);
+      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+      if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
     /* handleSave — 저장 */
@@ -141,7 +141,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
-        if (!ok) return;
+        if (!ok) { return; }
         try {
           const payload = { ...form };
           const res = isCreate
@@ -149,7 +149,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
             : await boApiSvc.syContact.update(cfCurId.value, payload, '문의관리', '문의내용저장');
           if (isCreate) {
             const newId = res.data?.data?.contactId || res.data?.contactId || null;
-            if (newId) form.contactId = newId;
+            if (newId) { form.contactId = newId; }
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 답변 탭에서 답변을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -167,7 +167,7 @@ watch(() => uiState.tab, v => { window._syContactDtlState.tab = v; });
         return;
       }
       const ok = await showConfirm('답변 저장', '답변을 저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.syContact.update(cfCurId.value, { contactAnswer: form.contactAnswer, contactStatusCd: form.contactStatusCd }, '문의관리', '답변저장');
         _afterApiOk(res, '답변이 저장되었습니다.');

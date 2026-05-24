@@ -93,7 +93,7 @@ window.SyAttachMng = {
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
         // 좌측 그룹 클릭 선택이 우선, 없으면 검색 조건 attachGrpId 사용
-        if (uiState.selectedGrpId) p.attachGrpId = uiState.selectedGrpId;
+        if (uiState.selectedGrpId) { p.attachGrpId = uiState.selectedGrpId; }
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (p.searchValue && !p.searchType) {
           p.searchType = 'fileNm,refId';
@@ -129,7 +129,7 @@ window.SyAttachMng = {
 
     // ★ onMounted
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadGrps();
       handleSearchData();
     });
@@ -199,7 +199,7 @@ window.SyAttachMng = {
     /* handleDeleteGrp — 그룹 삭제 */
     const handleDeleteGrp = async (g) => {
       const ok = await showConfirm('그룹 삭제', `[${g.attachGrpNm}] 그룹을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         await boApi.delete(`/bo/sy/attach-grp/${g.attachGrpId}`, coUtil.cofApiHdr('첨부파일관리', '그룹삭제'));
         if (uiState.selectedGrpId === g.attachGrpId) { uiState.selectedGrpId = null; attaches.splice(0, attaches.length); pager.totalCount = 0; }
@@ -257,7 +257,7 @@ window.SyAttachMng = {
     /* handleDeleteFile — 삭제 */
     const handleDeleteFile = async (a) => {
       const ok = await showConfirm('파일 삭제', `[${a.fileNm}] 파일을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         await boApi.delete(`/bo/sy/attach/${a.attachId}`, coUtil.cofApiHdr('첨부파일관리', '파일삭제'));
         showToast('삭제되었습니다.', 'success');
@@ -269,9 +269,9 @@ window.SyAttachMng = {
 
     /* fnFmtSize — 유틸 */
     const fnFmtSize = bytes => {
-      if (!bytes) return '0 B';
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      if (!bytes) { return '0 B'; }
+      if (bytes < 1024) { return bytes + ' B'; }
+      if (bytes < 1024 * 1024) { return (bytes / 1024).toFixed(1) + ' KB'; }
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 

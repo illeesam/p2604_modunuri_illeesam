@@ -60,12 +60,12 @@ window.SyAlarmDtl = {
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.syAlarm.getById(props.dtlId, '알람관리', '상세조회');
         const data = res.data?.data;
-        if (data) Object.assign(form, data);
+        if (data) { Object.assign(form, data); }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -79,12 +79,12 @@ window.SyAlarmDtl = {
 
     // ★ onMounted — 진입 시 코드 로드 + 상세 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       if (!cfIsNew.value) { await handleLoadDetail(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleLoadDetail();
     });
@@ -103,17 +103,17 @@ window.SyAlarmDtl = {
         return;
       }
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await (cfIsNew.value ? boApiSvc.syAlarm.create({ ...form }, '알람관리', '등록') : boApiSvc.syAlarm.update(form.alarmId, { ...form }, '알람관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('syAlarmMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('syAlarmMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

@@ -33,7 +33,7 @@
   /* areaPath */
   const areaPath = (vals, w, h, pad = 10) => {
     const pts = linePoints(vals, w, h, pad);
-    if (!pts) return '';
+    if (!pts) { return ''; }
     const first = pts.split(' ')[0].split(',');
     const last  = pts.split(' ').slice(-1)[0].split(',');
     return `M${first[0]},${h - pad} L${pts.replace(/ /g, ' L')} L${last[0]},${h - pad} Z`;
@@ -82,8 +82,8 @@
 
       /* toggleAll — 전체 토글 */
       const toggleAll = (key, all) => {
-        if (filters[key].length === all.length) filters[key] = [];
-        else filters[key] = [...all];
+        if (filters[key].length === all.length) { filters[key] = []; }
+        else { filters[key] = [...all]; }
       };
 
       /* isSel — 여부 확인 */
@@ -155,7 +155,7 @@
       // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
       const cfBaseGridColumns = computed(() => {
-        if (uiState.tabMode === 'tab') return '1fr';
+        if (uiState.tabMode === 'tab') { return '1fr'; }
         return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
       });
 

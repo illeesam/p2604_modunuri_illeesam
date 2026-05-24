@@ -42,7 +42,7 @@ window.PdCategoryProdMng = {
 
     /* fnCatIdsWithChildren — 유틸 */
     const fnCatIdsWithChildren = (catId) => {
-      if (!catId) return [];
+      if (!catId) { return []; }
       const childIds = categories
         .filter(c => c.parentCategoryId === catId)
         .map(c => c.categoryId);
@@ -65,11 +65,11 @@ window.PdCategoryProdMng = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
     });
 
     /* -- 뷰모드 영속화 -- */
-    if (!window._ecCategoryProdState) window._ecCategoryProdState = { tabMode: 'tab' };
+    if (!window._ecCategoryProdState) { window._ecCategoryProdState = { tabMode: 'tab' }; }
 
         watch(() => uiState.tabMode, v => { window._ecCategoryProdState.tabMode = v; });
 
@@ -177,7 +177,7 @@ window.PdCategoryProdMng = {
 
     /* ★ onMounted — 진입 시 카테고리·상품 목록 조회 */
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await Promise.all([handleSearchCategoriesList(), handleSearchProductsList()]);
       try {
         await handleSearchList('DEFAULT');
@@ -242,7 +242,7 @@ window.PdCategoryProdMng = {
     /* getCatPath — 조회 */
     const getCatPath = (catId) => {
       const cat = categories.find(c => c.categoryId === catId);
-      if (!cat) return '-';
+      if (!cat) { return '-'; }
       const path = [cat.categoryNm];
       let parent = cat.parentCategoryId;
       while (parent && categories.some(c => c.categoryId === parent)) {
@@ -256,14 +256,14 @@ window.PdCategoryProdMng = {
     /* removeRow — 제거 */
     const removeRow = (row) => {
       const idx = categoryProds.findIndex(r => r === row);
-      if (idx !== -1) categoryProds.splice(idx, 1);
+      if (idx !== -1) { categoryProds.splice(idx, 1); }
     };
 
     /* addProd — 추가 */
     const addProd = (prod) => {
       const exists = categoryProds.some(cp => cp.prodId === prod.prodId && cp.categoryId === cfSelectedCatId.value && cp.categoryProdTypeCd === uiState.activeTypeCd);
       if (exists) {
-        if (showToast) showToast('이미 추가된 상품입니다.', 'warning');
+        if (showToast) { showToast('이미 추가된 상품입니다.', 'warning'); }
         return;
       }
       const newRow = {
@@ -280,7 +280,7 @@ window.PdCategoryProdMng = {
       };
       categoryProds.push(newRow);
       pickerOpen.value = false;
-      if (showToast) showToast('상품이 추가되었습니다.', 'success');
+      if (showToast) { showToast('상품이 추가되었습니다.', 'success'); }
     };
 
     /* -- 피커 검색 (서버 조회) -- */
@@ -298,7 +298,7 @@ window.PdCategoryProdMng = {
         const sv = pickerSearch.value.trim();
         if (sv) {
           params.searchValue = sv;
-          if (pickerSearchType.value) params.searchType = pickerSearchType.value;
+          if (pickerSearchType.value) { params.searchType = pickerSearchType.value; }
         }
         const res = await boApiSvc.pdProd.getPage(params, '카테고리상품관리', '상품검색');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
@@ -320,16 +320,16 @@ window.PdCategoryProdMng = {
     /* onSave — 이벤트 */
     const onSave = async () => {
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.pdCategory.updateProds({ categoryProds }, '카테고리상품관리', '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -365,9 +365,9 @@ window.PdCategoryProdMng = {
     });
     /* fnCatProdRowStyle — 유틸 */
     const fnCatProdRowStyle = (row, idx) => {
-      if (dragoverIdx.value === idx) return 'background:#e6f4ff';
-      if (row._isNew) return 'background:#f6ffed';
-      if (uiState.activeTypeCd !== 'NORMAL' && row.dispYn === 'N') return 'background:#fafafa;opacity:0.65';
+      if (dragoverIdx.value === idx) { return 'background:#e6f4ff'; }
+      if (row._isNew) { return 'background:#f6ffed'; }
+      if (uiState.activeTypeCd !== 'NORMAL' && row.dispYn === 'N') { return 'background:#fafafa;opacity:0.65'; }
       return '';
     };
 

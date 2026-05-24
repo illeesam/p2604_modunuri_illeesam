@@ -24,7 +24,7 @@ window.MbMemberDtl = {
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     watch(() => props.detailModal.dtlId, (newId) => {
-      if (newId) currentId.value = newId;
+      if (newId) { currentId.value = newId; }
     }, { immediate: true });
 
 
@@ -37,13 +37,13 @@ window.MbMemberDtl = {
        MbMember 은 부모 Mng 의 openDetail() 에서 직접 getById 로 detailModal.form 을
        채우는 패턴이므로, reloadTrigger 신호 수신 시 dtlId 기준으로 재조회한다. */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       const id = props.detailModal && props.detailModal.dtlId;
-      if (!id || id === '__new__') return;
+      if (!id || id === '__new__') { return; }
       try {
         const res = await window.boApiSvc.mbMember.getById(id, '회원관리', '상세조회');
         const d = res.data?.data || res.data;
-        if (d && props.detailModal && props.detailModal.form) Object.assign(props.detailModal.form, d);
+        if (d && props.detailModal && props.detailModal.form) { Object.assign(props.detailModal.form, d); }
       } catch (err) { console.error('[MbMemberDtl reloadTrigger]', err); }
     });
 

@@ -45,8 +45,8 @@ window.SyPathMng = {
       allPaths.forEach(r => { map[r.pathId] = { ...r, children: [] }; });
       const roots = [];
       allPaths.forEach(r => {
-        if (r.parentPathId != null && map[r.parentPathId]) map[r.parentPathId].children.push(map[r.pathId]);
-        else roots.push(map[r.pathId]);
+        if (r.parentPathId != null && map[r.parentPathId]) { map[r.parentPathId].children.push(map[r.pathId]); }
+        else { roots.push(map[r.pathId]); }
       });
 
       /* sort — 정렬 */
@@ -112,7 +112,7 @@ window.SyPathMng = {
     const handleGridSearch = async () => {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...searchParam };
-        if (uiState.selectedPathId != null) params.parentPathId = uiState.selectedPathId;
+        if (uiState.selectedPathId != null) { params.parentPathId = uiState.selectedPathId; }
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'pathLabel,pathRemark';
@@ -152,7 +152,7 @@ window.SyPathMng = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (!row._status) row._status = 'U';
+      if (!row._status) { row._status = 'U'; }
     };
 
     /* addRow — 행 추가 */
@@ -174,7 +174,7 @@ window.SyPathMng = {
     const cancelRow = (row) => {
       if (row._status === 'N') {
         const idx = gridRows.findIndex(r => r.pathId === row.pathId);
-        if (idx !== -1) gridRows.splice(idx, 1);
+        if (idx !== -1) { gridRows.splice(idx, 1); }
       } else if (row._row_org) {
         Object.assign(row, row._row_org, { _status: null });
       }
@@ -184,16 +184,16 @@ window.SyPathMng = {
     const deleteRow = async (row) => {
       if (row._status === 'N') { cancelRow(row); return; }
       const ok = await showConfirm?.('삭제', `[${row.pathLabel}] 경로를 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.syPath.remove(row.pathId, '경로관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         showToast?.('삭제되었습니다.', 'success');
         await handleSearchTree();
         await handleGridSearch();
       } catch (err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         showToast?.(msg, 'error', 0);
       }
     };
@@ -208,7 +208,7 @@ window.SyPathMng = {
         if (!row.pathLabel) { showToast?.('경로 라벨은 필수입니다.', 'error'); return; }
       }
       const ok = await showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status || r._status }));
       try {
         await boApiSvc.syPath.saveList(saveRows, '경로관리', '저장');
@@ -229,9 +229,9 @@ window.SyPathMng = {
       allPaths.forEach(r => { if (r.pathId !== exclude) map[r.pathId] = { ...r, children: [] }; });
       const roots = [];
       allPaths.forEach(r => {
-        if (r.pathId === exclude) return;
-        if (r.parentPathId != null && map[r.parentPathId]) map[r.parentPathId].children.push(map[r.pathId]);
-        else roots.push(map[r.pathId]);
+        if (r.pathId === exclude) { return; }
+        if (r.parentPathId != null && map[r.parentPathId]) { map[r.parentPathId].children.push(map[r.pathId]); }
+        else { roots.push(map[r.pathId]); }
       });
       return { pathId: null, pathLabel: '전체', children: roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)) };
     });
@@ -254,13 +254,13 @@ window.SyPathMng = {
 
     /* selectParent — 선택 */
     const selectParent = (pathId) => {
-      if (parentModal.targetRow) onCellChange(parentModal.targetRow, 'parentPathId', pathId);
+      if (parentModal.targetRow) { onCellChange(parentModal.targetRow, 'parentPathId', pathId); }
       closeParentModal();
     };
 
     /* getParentLabel — 조회 */
     const getParentLabel = (pathId) => {
-      if (pathId == null) return '(루트)';
+      if (pathId == null) { return '(루트)'; }
       return allPaths.find(r => r.pathId === pathId)?.pathLabel || String(pathId);
     };
 

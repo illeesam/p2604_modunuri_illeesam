@@ -52,7 +52,7 @@ window.BlogEdit = {
 
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async (searchType = 'DEFAULT') => {
-      if (!cfIsEdit.value) return;
+      if (!cfIsEdit.value) { return; }
       try {
         const res = await foApiSvc.cmBltn.getById(props.dtlId, '블로그편집', '상세조회');
         Object.assign(form, res.data?.data || {});

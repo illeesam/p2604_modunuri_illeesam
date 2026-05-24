@@ -46,7 +46,7 @@ window.Prod01List = {
       if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
       if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
       /* API 대표이미지 → image 매핑 */
-      if (!p.image && p.thumbnailUrl) p.image = p.thumbnailUrl;
+      if (!p.image && p.thumbnailUrl) { p.image = p.thumbnailUrl; }
       /* 이미지 자동 할당 (실제 이미지 없을 때만) */
       if (!p.image) {
         const id = p.prodId || 1;
@@ -79,7 +79,7 @@ window.Prod01List = {
       const sorted = [...set].sort((a, b) => a - b);
       const result = [];
       for (let i = 0; i < sorted.length; i++) {
-        if (i > 0 && sorted[i] - sorted[i-1] > 1) result.push('…');
+        if (i > 0 && sorted[i] - sorted[i-1] > 1) { result.push('…'); }
         result.push(sorted[i]);
       }
       pager.pageNums = result;
@@ -139,8 +139,8 @@ window.Prod01List = {
       allProds.forEach(p => (p.opt2s || []).forEach(s => seen.add(s)));
       return [...seen].sort((a, b) => {
         const ai = sizeOrder.indexOf(a); const bi = sizeOrder.indexOf(b);
-        if (ai < 0 && bi < 0) return a.localeCompare(b);
-        if (ai < 0) return 1; if (bi < 0) return -1;
+        if (ai < 0 && bi < 0) { return a.localeCompare(b); }
+        if (ai < 0) { return 1; if (bi < 0) return -1; }
         return ai - bi;
       });
     });
@@ -155,7 +155,7 @@ window.Prod01List = {
 
     /* fnCategoryLabel — 유틸 */
     const fnCategoryLabel = p => {
-      if (!p) return '';
+      if (!p) { return ''; }
       const row = cfAllCats.value.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryNm : p.categoryId;
     };
@@ -202,9 +202,9 @@ window.Prod01List = {
 
     /* setupObserver — 설정 옵저버 */
     const setupObserver = () => {
-      if (observer) observer.disconnect();
+      if (observer) { observer.disconnect(); }
       const el = document.getElementById('sj-sentinel');
-      if (!el || !('IntersectionObserver' in window)) return;
+      if (!el || !('IntersectionObserver' in window)) { return; }
       observer = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting && uiState.isMobile && pager.pageNo < pager.pageTotalPage) {
           pager.pageNo++;
@@ -232,7 +232,7 @@ window.Prod01List = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     onBeforeUnmount(() => {
-      if (observer) observer.disconnect();
+      if (observer) { observer.disconnect(); }
       window.removeEventListener('resize', onResize);
     });
 

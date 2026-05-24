@@ -122,8 +122,8 @@ window.SyUserLoginHist = {
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
-      if (uiState.activeTab === 'log') await handleSearchLog();
-      else                             await handleSearchToken();
+      if (uiState.activeTab === 'log') { await handleSearchLog(); }
+      else { await handleSearchToken(); }
     };
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList(); });
@@ -150,10 +150,10 @@ window.SyUserLoginHist = {
     const handleClearLog = async () => {
       const tabNm = uiState.activeTab==='log' ? '사용자로그인 로그' : '사용자토큰 이력';
       const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
-        if (uiState.activeTab==='log') await window.boApi.delete('/bo/sy/user-login-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기'));
-        else                           await window.boApi.delete('/bo/sy/user-token-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기'));
+        if (uiState.activeTab==='log') { await window.boApi.delete('/bo/sy/user-login-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기')); }
+        else { await window.boApi.delete('/bo/sy/user-token-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기')); }
         props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
         if (uiState.activeTab==='log') { logList.splice(0); tabCounts.log=0; }
         else                           { tokenList.splice(0); tabCounts.token=0; }

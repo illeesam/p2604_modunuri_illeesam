@@ -115,8 +115,8 @@ window.OdCartMng = {
     /* toggleCheck — 토글 */
     const toggleCheck = (id) => {
       const idx = uiState.selectedIds.indexOf(id);
-      if (idx >= 0) uiState.selectedIds.splice(idx, 1);
-      else uiState.selectedIds.push(id);
+      if (idx >= 0) { uiState.selectedIds.splice(idx, 1); }
+      else { uiState.selectedIds.push(id); }
     };
     /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => {
@@ -182,7 +182,7 @@ window.OdCartMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (cartId) => {
       const ok = await showConfirm('삭제', '장바구니 항목을 삭제하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         await window.boApi.delete(`/bo/ec/od/cart/${cartId}`, coUtil.cofApiHdr('장바구니관리', '삭제'));
         showToast('삭제되었습니다.', 'success');
@@ -196,7 +196,7 @@ window.OdCartMng = {
     const handleBulkDelete = async () => {
       if (!uiState.selectedIds.length) { showToast('삭제할 항목을 선택해주세요.', 'error'); return; }
       const ok = await showConfirm('일괄삭제', `선택한 ${uiState.selectedIds.length}건을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         await Promise.all(uiState.selectedIds.map(id =>
           window.boApi.delete(`/bo/ec/od/cart/${id}`, coUtil.cofApiHdr('장바구니관리', '일괄삭제'))

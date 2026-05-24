@@ -52,7 +52,7 @@ window.MbMemberMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -62,7 +62,7 @@ window.MbMemberMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -123,7 +123,7 @@ window.MbMemberMng = {
       try {
         const res = await boApiSvc.mbMember.getById(row.memberId, '회원관리', '상세조회');
         const d = res.data?.data || res.data;
-        if (d) fnApplyForm(d);
+        if (d) { fnApplyForm(d); }
       } catch (err) {
         console.error('[openDetail]', err);
       }
@@ -150,7 +150,7 @@ window.MbMemberMng = {
       if (!detailModal.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
       const isNewMember = detailModal.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       if (isNewMember) {
         detailModal.form.memberId = 'MB' + String(Date.now()).slice(-6);
         detailModal.form.orderCount = 0;
@@ -160,12 +160,12 @@ window.MbMemberMng = {
         detailModal.isNew = false;
       } else {
         const si = members.findIndex(m => m.memberId === detailModal.form.memberId);
-        if (si !== -1) Object.assign(members[si], detailModal.form);
+        if (si !== -1) { Object.assign(members[si], detailModal.form); }
       }
       try {
         /* DB join_date 컬럼은 TIMESTAMP — LocalDateTime 매핑이라 'YYYY-MM-DDTHH:mm:ss' 형식 필요 */
         const fnToDateTime = (s) => {
-          if (!s) return s;
+          if (!s) { return s; }
           return /^\d{4}-\d{2}-\d{2}$/.test(s) ? `${s}T00:00:00` : s;
         };
         const payload = {
@@ -180,34 +180,34 @@ window.MbMemberMng = {
         const res = await (isNewMember
           ? boApiSvc.mbMember.create(payload, '회원관리', '등록')
           : boApiSvc.mbMember.update(detailModal.form.memberId, payload, '회원관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async () => {
-      if (!cfSelectedRow.value) return;
+      if (!cfSelectedRow.value) { return; }
       const ok = await showConfirm('삭제', `[${cfSelectedRow.value.memberNm}] 회원을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const memberId = cfSelectedRow.value.memberId;
       const si = members.findIndex(m => m.memberId === memberId);
-      if (si !== -1) members.splice(si, 1);
+      if (si !== -1) { members.splice(si, 1); }
       closeDetail();
       try {
         const res = await boApiSvc.mbMember.remove(memberId, '회원관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

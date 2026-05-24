@@ -22,7 +22,7 @@ window.SyUserMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
 
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
@@ -34,7 +34,7 @@ window.SyUserMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -58,7 +58,7 @@ window.SyUserMng = {
         if (params.searchValue && !params.searchType) {
           params.searchType = 'userId,loginId,userNm,userEmail';
         }
-        if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
+        if (uiState.selectedDeptId != null) { params.deptId = uiState.selectedDeptId; }
         const [resUsers] = await Promise.all([
           boApiSvc.syUser.getPage(params, '사용자관리', '목록조회'),
         ]);
@@ -91,8 +91,8 @@ window.SyUserMng = {
       items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
       const roots = [];
       items.forEach(d => {
-        if (d.parentDeptId && map[d.parentDeptId]) map[d.parentDeptId].children.push(map[d.deptId]);
-        else roots.push(map[d.deptId]);
+        if (d.parentDeptId && map[d.parentDeptId]) { map[d.parentDeptId].children.push(map[d.deptId]); }
+        else { roots.push(map[d.deptId]); }
       });
 
       /* sort — 정렬 */
@@ -144,7 +144,7 @@ window.SyUserMng = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchTree();
       expanded.add(null);
       await handleSearchData('DEFAULT');
@@ -152,9 +152,9 @@ window.SyUserMng = {
 
     /* 선택 부서 + 자손의 dept 이름 Set */
     const cfAllowedDeptNms = computed(() => {
-      if (uiState.selectedDeptId == null) return null;
+      if (uiState.selectedDeptId == null) { return null; }
       const desc = coUtil.cofCollectDescendantIds(depts, 'deptId', 'parentDeptId', uiState.selectedDeptId);
-      if (!desc) return null;
+      if (!desc) { return null; }
       return new Set((depts || []).filter(d => desc.has(d.deptId)).map(d => d.deptNm));
     });
 
@@ -222,19 +222,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* handleDelete — 삭제 */
     const handleDelete = async (u) => {
       const ok = await showConfirm('삭제', `[${u.userNm}] 사용자를 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = users.findIndex(x => x.userId === u.userId);
-      if (idx !== -1) users.splice(idx, 1);
-      if (uiStateDetail.selectedId === u.userId) uiStateDetail.selectedId = null;
+      if (idx !== -1) { users.splice(idx, 1); }
+      if (uiStateDetail.selectedId === u.userId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.syUser.remove(u.userId, '사용자관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

@@ -39,8 +39,8 @@ window.MyClaim = {
     /* toggleClaimStatus — 토글 */
     const toggleClaimStatus = (step) => {
       const idx = claimStatusFilter.indexOf(step);
-      if (idx === -1) claimStatusFilter.push(step);
-      else claimStatusFilter.splice(idx, 1);
+      if (idx === -1) { claimStatusFilter.push(step); }
+      else { claimStatusFilter.splice(idx, 1); }
     };
     // 날짜/기간 필터는 서버(API)가 처리 — claims 는 이미 조회기간 내 결과.
     // 클레임상태 토글만 클라이언트에서 즉시 좁힘 (검색정책 예외: 토글 UX).
@@ -70,7 +70,7 @@ window.MyClaim = {
     const openOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
-      if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
+      if (!ok) { showToast('주문 정보를 찾을 수 없습니다.', 'error'); }
     };
 
     /* openTracking2 — 열기 */
@@ -81,13 +81,13 @@ window.MyClaim = {
         '한진택배':   no => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${no}`,
       };
       const fn = URLS[courier];
-      if (fn) window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes');
+      if (fn) { window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes'); }
     };
 
     /* cancelClaim — 취소 */
     const cancelClaim = async claimId => {
       const ok = await showConfirm('신청 취소', '이 신청을 취소하시겠습니까?', 'warning');
-      if (!ok) return;
+      if (!ok) { return; }
       const item = claims.value.find(c => c.claimId === claimId);
       if (item) {
         item.status = item.type === '취소' ? '취소완료'
@@ -109,7 +109,7 @@ window.MyClaim = {
 
     /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
-      if (dateParams) onDateSearch(dateParams);
+      if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
 

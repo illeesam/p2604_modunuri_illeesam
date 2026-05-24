@@ -35,7 +35,7 @@ window.XsSample11 = {
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
-      if (selectedCatIds.size === 0) return '카테고리';
+      if (selectedCatIds.size === 0) { return '카테고리'; }
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
 
@@ -54,8 +54,8 @@ window.XsSample11 = {
       const c = ['항상 표시'];
       if (!isLoggedIn) { c.push('비로그인 전용'); return c; }
       c.push('로그인 필요');
-      if (userGrade === '우수' || userGrade === 'VIP') c.push('로그인+우수');
-      if (userGrade === 'VIP') c.push('로그인+VIP');
+      if (userGrade === '우수' || userGrade === 'VIP') { c.push('로그인+우수'); }
+      if (userGrade === 'VIP') { c.push('로그인+VIP'); }
       return c;
     });
     const WIDGET_LABELS = {
@@ -87,7 +87,7 @@ window.XsSample11 = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
     const cfAreaList = computed(() => {
-      if (selectedAreas.size === 0) return cfAllAreas.value;
+      if (selectedAreas.size === 0) { return cfAllAreas.value; }
       return cfAllAreas.value.filter(c => selectedAreas.has(c.codeValue));
     });
 
@@ -110,28 +110,28 @@ window.XsSample11 = {
     /* isInRange — 여부 확인 */
     const isInRange = (panel) => {
       const d = uiState.previewDate;
-      if (!d) return true;
+      if (!d) { return true; }
       const dt = `${d}T${uiState.previewTime || '00:00'}`;
       /* _norm — _norm */
       const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
-      if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) return false;
-      if (panel.dispEndDt   && dt > _norm(panel.dispEndDt))   return false;
+      if (panel.dispStartDt && dt < _norm(panel.dispStartDt)) { return false; }
+      if (panel.dispEndDt   && dt > _norm(panel.dispEndDt)) { return false; }
       return true;
     };
 
     /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
-      if (searchStatus.value       && p.status !== searchStatus.value) return false;
-      if (!isInRange(p)) return false;
-      if (searchCondition.value    && (p.condition || '항상 표시') !== searchCondition.value) return false;
-      if (searchAuthRequired.value === 'Y' && !p.authRequired) return false;
-      if (searchAuthRequired.value === 'N' &&  p.authRequired) return false;
-      if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) return false;
+      if (searchStatus.value       && p.status !== searchStatus.value) { return false; }
+      if (!isInRange(p)) { return false; }
+      if (searchCondition.value    && (p.condition || '항상 표시') !== searchCondition.value) { return false; }
+      if (searchAuthRequired.value === 'Y' && !p.authRequired) { return false; }
+      if (searchAuthRequired.value === 'N' &&  p.authRequired) { return false; }
+      if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) { return false; }
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
                     (p.rows || []).some(w => names.some(nm => (w.widgetNm || '').includes(nm)));
-        if (!hit) return false;
+        if (!hit) { return false; }
       }
       return true;
     };

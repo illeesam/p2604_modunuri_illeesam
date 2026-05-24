@@ -83,7 +83,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 

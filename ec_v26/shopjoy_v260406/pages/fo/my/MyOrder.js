@@ -53,7 +53,7 @@ window.MyOrder = {
     /* openTracking2 — 열기 */
     const openTracking2 = (courier, trackingNo) => {
       const fn = COURIER_URLS[courier];
-      if (fn) window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes');
+      if (fn) { window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes'); }
     };
 
     /* showOrderPayBreakdown — 표시 */
@@ -66,7 +66,7 @@ window.MyOrder = {
     /* cancelOrder — 취소 */
     const cancelOrder = async orderId => {
       const ok = await showConfirm('주문 취소', '이 주문을 취소하시겠습니까?', 'warning');
-      if (!ok) return;
+      if (!ok) { return; }
       myStore.setOrderStatus(orderId, '취소됨');
       showToast('주문이 취소되었습니다.', 'success');
     };
@@ -74,7 +74,7 @@ window.MyOrder = {
     /* confirmPurchase — 확인 구매 */
     const confirmPurchase = async orderId => {
       const ok = await showConfirm('구매확정', '구매를 확정하시겠습니까?\n확정 후에는 교환/반품 신청이 어렵습니다.', 'warning');
-      if (!ok) return;
+      if (!ok) { return; }
       myStore.setOrderStatus(orderId, '완료');
       showToast('구매가 확정되었습니다. 감사합니다! 🎉', 'success');
     };
@@ -103,14 +103,14 @@ window.MyOrder = {
     );
     const cfClaimFinalFee = computed(() => {
       const fee = cfClaimShippingFee.value;
-      if (!fee || !cfClaimSelectedCoupon.value) return fee;
+      if (!fee || !cfClaimSelectedCoupon.value) { return fee; }
       const c = cfClaimSelectedCoupon.value;
-      if (c.discountType === 'shipping') return 0;
-      if (c.discountType === 'amount') return Math.max(0, fee - c.discountValue);
+      if (c.discountType === 'shipping') { return 0; }
+      if (c.discountType === 'amount') { return Math.max(0, fee - c.discountValue); }
       return fee;
     });
     const cfClaimModalProduct = computed(() => {
-      if (!claimModal.order) return null;
+      if (!claimModal.order) { return null; }
       const name = claimModal.order.orderItems[claimModal.exchangeItemIdx]?.prodNm;
       return window.SITE_CONFIG.prods.find(p => p.prodNm === name) || null;
     });
@@ -122,7 +122,7 @@ window.MyOrder = {
       claimModal.reason = ''; claimModal.reasonDetail = '';
       claimModal.exchangeSize = ''; claimModal.exchangeColor = '';
       claimModal.selectedCouponId = null; claimModal.exchangeItemIdx = 0;
-      if (!coupons.value.length) myStore.handleLoadCoupons();
+      if (!coupons.value.length) { myStore.handleLoadCoupons(); }
     };
 
     /* submitClaimModal — 제출 */
@@ -133,7 +133,7 @@ window.MyOrder = {
           showToast('교환할 사이즈 또는 색상을 선택해주세요.', 'error'); return;
         }
       }
-      if (cfClaimSelectedCoupon.value) cfClaimSelectedCoupon.value.used = true;
+      if (cfClaimSelectedCoupon.value) { cfClaimSelectedCoupon.value.used = true; }
       myStore.setOrderStatus(claimModal.orderId, claimModal.type === 'exchange' ? '교환요청' : '반품요청');
       const label = claimModal.type === 'exchange' ? '교환' : '반품';
       claimModal.show = false;
@@ -191,7 +191,7 @@ window.MyOrder = {
       const order = orders.value.find(o => o.orderId === reviewModal.orderId);
       if (order && order.status === '배송완료') {
         const allReviewed = order.orderItems.every((_, idx) => reviews[`${reviewModal.orderId}_${idx}`]);
-        if (allReviewed) myStore.setOrderStatus(reviewModal.orderId, '구매확정');
+        if (allReviewed) { myStore.setOrderStatus(reviewModal.orderId, '구매확정'); }
       }
       reviewModal.show = false;
       showToast(reviewModal.isEdit ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다! 감사합니다 😊', 'success');
@@ -206,8 +206,8 @@ window.MyOrder = {
     /* toggleFlowStatus — 토글 */
     const toggleFlowStatus = (status) => {
       const idx = flowStatusFilter.indexOf(status);
-      if (idx === -1) flowStatusFilter.push(status);
-      else flowStatusFilter.splice(idx, 1);
+      if (idx === -1) { flowStatusFilter.push(status); }
+      else { flowStatusFilter.splice(idx, 1); }
     };
     // 날짜/기간 필터는 서버(API)가 처리 — orders.value 는 이미 조회기간 내 결과.
     // 주문흐름(상태) 토글만 클라이언트에서 즉시 좁힘 (검색정책 예외: 토글 UX).
@@ -231,7 +231,7 @@ window.MyOrder = {
 
     /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
-      if (dateParams) onDateSearch(dateParams);
+      if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
 

@@ -61,15 +61,15 @@ window.OdDlivDtl = {
     // 단건 GET
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.odDliv.getById(props.dtlId, '배송관리', '상세조회');
         const d = res.data?.data || res.data || {};
         Object.assign(form, { ...d });
-        if (!form.dlivId) form.dlivId = props.dtlId;
-        if (d.dlivStatusCd) form.dlivStatusCd = d.dlivStatusCd;
-        if (d.outboundCourierCd) form.outboundCourierCd = d.outboundCourierCd;
+        if (!form.dlivId) { form.dlivId = props.dtlId; }
+        if (d.dlivStatusCd) { form.dlivStatusCd = d.dlivStatusCd; }
+        if (d.outboundCourierCd) { form.outboundCourierCd = d.outboundCourierCd; }
         // getById 응답에 임베드된 배송항목(dlivItems) 사용
         dlivItems.splice(0, dlivItems.length, ...((d.dlivItems || []).map(it => ({
           ...it,
@@ -114,19 +114,19 @@ window.OdDlivDtl = {
       }
       const isNewDliv = cfIsNew.value;
       const ok = await showConfirm(isNewDliv ? '등록' : '저장', isNewDliv ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await (isNewDliv
           ? boApiSvc.odDliv.create({ ...form }, '배송관리', '등록')
           : boApiSvc.odDliv.update(form.dlivId, { ...form }, '배송관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('odDlivMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('odDlivMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -146,7 +146,7 @@ window.OdDlivDtl = {
       ];
       return defs.map((d,i) => {
         const paid = Math.round(total * shares[i]);
-        if (paid <= 0) return null;
+        if (paid <= 0) { return null; }
         const sale = discRates[i] > 0 ? Math.round(paid / (1 - discRates[i])) : paid;
 
 
@@ -159,13 +159,13 @@ window.OdDlivDtl = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
       await initItems();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
@@ -175,7 +175,7 @@ window.OdDlivDtl = {
 
     /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
-      if (!no) return '';
+      if (!no) { return ''; }
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
       if (courier === '롯데택배')   return 'https://www.lotteglogis.com/open/tracking?invno=' + no;
       if (courier === '한진택배')   return 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2=' + no;
@@ -201,14 +201,14 @@ window.OdDlivDtl = {
       payDate: form.regDate || '-',
     }] : []);
     const cfStatusHistList = computed(() => {
-      if (!form.dlivId) return [];
+      if (!form.dlivId) { return []; }
       const d = String(form.regDate || '').slice(0,10) || '-';
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-',     to:'준비중',   memo:'배송 등록' },
       ];
-      if (['출고완료','배송중','배송완료'].includes(form.dlivStatusCd)) rows.push({ date:d+' 10:00', user:'bo', from:'준비중', to:'출고완료', memo:(form.outboundCourierCd||'-')+' 출고' });
-      if (['배송중','배송완료'].includes(form.dlivStatusCd)) rows.push({ date:d+' 11:30', user:'시스템', from:'출고완료', to:'배송중', memo:'배송 중' });
-      if (form.dlivStatusCd === '배송완료') rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' });
+      if (['출고완료','배송중','배송완료'].includes(form.dlivStatusCd)) { rows.push({ date:d+' 10:00', user:'bo', from:'준비중', to:'출고완료', memo:(form.outboundCourierCd||'-')+' 출고' }); }
+      if (['배송중','배송완료'].includes(form.dlivStatusCd)) { rows.push({ date:d+' 11:30', user:'시스템', from:'출고완료', to:'배송중', memo:'배송 중' }); }
+      if (form.dlivStatusCd === '배송완료') { rows.push({ date:d+' 15:20', user:'시스템', from:'배송중', to:'배송완료', memo:'수령 완료' }); }
       return rows;
     });
     const cfEditHistList = computed(() => form.dlivId ? [
@@ -280,7 +280,7 @@ window.OdDlivDtl = {
         trackBoxes: {
           items: () => {
             const c = cfFirstClaim.value;
-            if (!c || c.type !== '교환') return [];
+            if (!c || c.type !== '교환') { return []; }
             return [
               ...(c.exchangeCourier ? [{ label: '발송', courier: c.exchangeCourier, trackingNo: c.exchangeTrackingNo, colorVariant: 'blue' }] : []),
               ...(c.courier         ? [{ label: '수거', courier: c.courier,         trackingNo: c.trackingNo,         colorVariant: 'orange' }] : []),

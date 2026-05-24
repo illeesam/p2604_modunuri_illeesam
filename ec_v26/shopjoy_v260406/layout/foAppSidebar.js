@@ -13,7 +13,7 @@ window.foAppSidebar = {
 
     /* isMenuActive — 여부 확인 */
     const isMenuActive = (page, menuId) => {
-      if (menuId === 'myOrder') return MY_PAGES.includes(page);
+      if (menuId === 'myOrder') { return MY_PAGES.includes(page); }
       return page === menuId;
     };
 
@@ -72,11 +72,11 @@ window.foAppSidebar = {
 
     /* 현재 페이지가 속한 그룹 자동 펼침 */
     watch(() => props.page, (p) => {
-      if (SAMPLE0_ITEMS.some(i => i.menuId === p)) uiState.sample0Open = true;
-      if (SAMPLE1_ITEMS.some(i => i.menuId === p)) uiState.sample1Open = true;
-      if (SAMPLE2_ITEMS.some(i => i.menuId === p)) uiState.sample2Open = true;
-      if (DISP_UI_ITEMS.some(i => i.menuId === p)) uiState.dispUiOpen  = true;
-      if (DEV_TOOLS_ITEMS.some(i => i.menuId === p)) uiState.devToolsOpen = true;
+      if (SAMPLE0_ITEMS.some(i => i.menuId === p)) { uiState.sample0Open = true; }
+      if (SAMPLE1_ITEMS.some(i => i.menuId === p)) { uiState.sample1Open = true; }
+      if (SAMPLE2_ITEMS.some(i => i.menuId === p)) { uiState.sample2Open = true; }
+      if (DISP_UI_ITEMS.some(i => i.menuId === p)) { uiState.dispUiOpen  = true; }
+      if (DEV_TOOLS_ITEMS.some(i => i.menuId === p)) { uiState.devToolsOpen = true; }
     }, { immediate: true });
 
     /* navTo — 이동 */

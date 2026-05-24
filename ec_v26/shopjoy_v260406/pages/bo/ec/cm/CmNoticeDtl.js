@@ -51,7 +51,7 @@ window.CmNoticeDtl = {
 
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       try {
         const res = await boApiSvc.cmNotice.getById(props.dtlId, '공지사항관리', '상세조회');
         Object.assign(form, res.data?.data || {});
@@ -62,14 +62,14 @@ window.CmNoticeDtl = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      if (typeof handleSearchDetail === 'function') await handleSearchDetail();
+      if (typeof handleSearchDetail === 'function') { await handleSearchDetail(); }
     });
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
@@ -87,22 +87,22 @@ window.CmNoticeDtl = {
       }
       const isNewNotice = cfIsNew.value;
       const ok = await showConfirm(isNewNotice ? '등록' : '저장', isNewNotice ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await (isNewNotice
           ? boApiSvc.cmNotice.create({ ...form }, '공지사항관리', '등록')
           : boApiSvc.cmNotice.update(props.dtlId, { ...form }, '공지사항관리', '저장'));
         console.log('[handleSave] API Response:', res);
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         // 200ms 딜레이 후 목록으로 복귀 (서버 반영 대기)
         await new Promise(r => setTimeout(r, 200));
-        if (props.navigate) props.navigate('cmNoticeMng', { reload: true });
+        if (props.navigate) { props.navigate('cmNoticeMng', { reload: true }); }
       } catch (err) {
         console.error('[handleSave] Error:', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

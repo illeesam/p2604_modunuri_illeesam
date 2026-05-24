@@ -78,7 +78,7 @@ window.SyI18nMng = {
 
     const cfSelectedKey = computed(() => (i18nKeys||[]).find(k => k.i18nId === uiState.selectedId) || null);
     const cfSelectedMsgs = computed(() => {
-      if (!cfSelectedKey.value) return {};
+      if (!cfSelectedKey.value) { return {}; }
       const msgs = {};
       LANGS.forEach(lang => { msgs[lang] = ''; });
       (i18nMsgs||[]).filter(m => m.i18nId === uiState.selectedId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
@@ -98,24 +98,24 @@ window.SyI18nMng = {
 
     /* saveMsgs — 저장 */
     const saveMsgs = async () => {
-      if (!cfSelectedKey.value) return;
+      if (!cfSelectedKey.value) { return; }
       const ok = await showConfirm('저장', '번역 메시지를 저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       const src = i18nMsgs;
       LANGS.forEach(lang => {
         const existing = src.find(m => m.i18nId === cfSelectedKey.value.i18nId && m.langCd === lang);
-        if (existing) existing.i18nMsg = msgForm[lang];
-        else if (msgForm[lang]) src.push({ i18nMsgId: 'IM' + Date.now() + lang, i18nId: cfSelectedKey.value.i18nId, langCd: lang, i18nMsg: msgForm[lang] });
+        if (existing) { existing.i18nMsg = msgForm[lang]; }
+        else if (msgForm[lang]) { src.push({ i18nMsgId: 'IM' + Date.now() + lang, i18nId: cfSelectedKey.value.i18nId, langCd: lang, i18nMsg: msgForm[lang] }); }
       });
       try {
         const res = await boApiSvc.syI18n.updateMsgs(cfSelectedKey.value.i18nId, { msgs: { ...msgForm } }, '다국어관리', '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -143,7 +143,7 @@ window.SyI18nMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');
     });
 

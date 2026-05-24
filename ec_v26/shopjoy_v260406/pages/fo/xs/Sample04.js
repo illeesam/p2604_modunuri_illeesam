@@ -54,23 +54,23 @@ window.XsSample04 = {
     const doConfirm = () => {
       const cb = _confirmCb;
       closeModal();
-      if (cb) setTimeout(cb, 80);
+      if (cb) { setTimeout(cb, 80); }
     };
 
     /* loadingDemo — 로딩 데모 */
     const loadingDemo = async () => {
       openModal('loading');
       await new Promise(r => setTimeout(r, 2500));
-      if (uiState.modalType === 'loading') closeModal();
+      if (uiState.modalType === 'loading') { closeModal(); }
     };
 
     /* submitForm — 제출 */
     const submitForm = () => {
       Object.keys(formErrors).forEach(k => delete formErrors[k]);
-      if (!form.name.trim()) formErrors.name = '이름을 입력해주세요.';
-      if (!form.email.trim()) formErrors.email = '이메일을 입력해주세요.';
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) formErrors.email = '이메일 형식이 올바르지 않습니다.';
-      if (Object.keys(formErrors).length) return;
+      if (!form.name.trim()) { formErrors.name = '이름을 입력해주세요.'; }
+      if (!form.email.trim()) { formErrors.email = '이메일을 입력해주세요.'; }
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { formErrors.email = '이메일 형식이 올바르지 않습니다.'; }
+      if (Object.keys(formErrors).length) { return; }
       const nm = form.name;
       Object.assign(form, { name: '', email: '', phone: '', grade: '일반' });
       closeModal();

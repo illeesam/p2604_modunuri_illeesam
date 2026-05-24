@@ -59,7 +59,7 @@ window.SyVendorUserMng = {
       /* badgeOf — 배지 의 */
       const badgeOf = (role) => {
         let cur = role;
-        while (cur && cur.parentId) cur = rolesById[cur.parentId];
+        while (cur && cur.parentId) { cur = rolesById[cur.parentId]; }
         return cur ? ROOT_BADGE_MAP[cur.roleCode] : null;
       };
       const CAT_ROOT_MAP = { SALES:'SITE_MGR_ROOT', DELIVERY:'DLIV_ROOT', CS:'CS_ROOT', SITE:'SITE_OP_ROOT', PROG:'PROG_ROOT' };
@@ -137,7 +137,7 @@ window.SyVendorUserMng = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleLoadData();
       expandAll();
       handleLoadDetail();
@@ -154,7 +154,7 @@ window.SyVendorUserMng = {
     /* fnVendorSummary — 유틸 */
     const fnVendorSummary = (id) => {
       const v = cfVendorMap.value[id];
-      if (!v) return '';
+      if (!v) { return ''; }
       const vt = (codes.vendor_types.find(x=>x[0]===v.vendorTypeCd)||[,'?'])[1];
       return '['+vt+'] '+v.vendorNm;
     };
@@ -221,9 +221,9 @@ window.SyVendorUserMng = {
 
     /* cfPathRoleCodes: 선택된 역할 코드 하위 descendants */
     const cfPathRoleCodes = computed(() => {
-      if (uiState.selectedPath == null) return null;
+      if (uiState.selectedPath == null) { return null; }
       const root = roles.find(r => r.roleCode === uiState.selectedPath);
-      if (!root) return new Set([uiState.selectedPath]);
+      if (!root) { return new Set([uiState.selectedPath]); }
       const ids = new Set([root.roleId]);
       let added = true;
       while (added) { added = false; roles.forEach(r => { if(ids.has(r.parentId)&&!ids.has(r.roleId)){ids.add(r.roleId);added=true;}}); }
@@ -275,24 +275,24 @@ window.SyVendorUserMng = {
         showToast('이름/휴대전화/이메일은 필수입니다.', 'error'); return;
       }
       const ok = await showConfirm(uiState.formMode==='new'?'등록':'저장', uiState.formMode==='new'?'등록하시겠습니까?':'저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = uiState.formMode === 'new'
           ? await boApiSvc.syVendorUser.create({ ...formData }, '사업자사용자관리', '등록')
           : await boApiSvc.syVendorUser.update(formData.vendorUserId, { ...formData }, '사업자사용자관리', '저장');
-        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
         await loadVendorUsers(formData.vendorId);
         if (uiState.formMode === 'edit') {
           const saved = res.data?.data;
-          if (saved) Object.assign(formData, saved);
+          if (saved) { Object.assign(formData, saved); }
         } else {
           closeForm();
         }
         uiState.formMode = uiState.formMode === 'new' ? '' : 'edit';
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
+        if (setApiRes) { setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message }); }
         showToast(msg, 'error', 0);
       }
     };
@@ -300,16 +300,16 @@ window.SyVendorUserMng = {
     /* handleDeleteRow — 삭제 */
     const handleDeleteRow = async (u) => {
       const ok = await showConfirm('삭제', `[${u.memberNm}] 사용자를 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.syVendorUser.remove(u.vendorUserId, '사업자사용자관리', '삭제');
-        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast('삭제되었습니다.', 'success');
         await loadVendorUsers(u.vendorId);
-        if (uiState.formMode === 'edit' && formData.vendorUserId === u.vendorUserId) closeForm();
+        if (uiState.formMode === 'edit' && formData.vendorUserId === u.vendorUserId) { closeForm(); }
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message });
+        if (setApiRes) { setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message }); }
         showToast(msg, 'error', 0);
       }
     };
@@ -319,7 +319,7 @@ window.SyVendorUserMng = {
 
     /* loadUserRoles — 로드 */
     const loadUserRoles = async (vendorUserId) => {
-      if (!vendorUserId) return;
+      if (!vendorUserId) { return; }
       uiState.roleLoading = true;
       try {
         const res = await boApiSvc.syVendorUser.getRoles({ userId: vendorUserId }, '사업자사용자관리', '조회');
@@ -361,7 +361,7 @@ window.SyVendorUserMng = {
       roleTreeExpanded.clear();
       await handleLoadData();
       const root = roles.find(r=>r.roleCode===cfFormAllowedRootCode.value);
-      if (root) roleTreeExpanded.add(root.roleId);
+      if (root) { roleTreeExpanded.add(root.roleId); }
       uiState.roleModalOpen = true;
     };
 
@@ -378,7 +378,7 @@ window.SyVendorUserMng = {
     const roleNmByCode = (code) => {
       const m = Object.fromEntries(roles.map(x=>[x.roleId,x]));
       let cur = roles.find(x=>x.roleCode===code);
-      if (!cur) return code;
+      if (!cur) { return code; }
       const seg = [];
       while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
       return seg.join(' > ');
@@ -389,7 +389,7 @@ window.SyVendorUserMng = {
 
     /* confirmRoleModal — 확인 권한 모달 */
     const confirmRoleModal = async () => {
-      if (!uiState.roleModalTemp) return;
+      if (!uiState.roleModalTemp) { return; }
       const rid = roleIdByCode(uiState.roleModalTemp);
       if (!rid) { showToast('역할을 찾을 수 없습니다.', 'error'); return; }
       if (userRoles.some(r=>r.roleId===rid)) {
@@ -402,7 +402,7 @@ window.SyVendorUserMng = {
           userId: formData.vendorUserId,
           roleId: rid,
         }, '사업자사용자관리', '등록');
-        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast('역할이 부여되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
@@ -415,10 +415,10 @@ window.SyVendorUserMng = {
     /* handleDeleteRole — 삭제 */
     const handleDeleteRole = async (r) => {
       const ok = await showConfirm('역할 삭제', `[${r.roleNm}] 역할을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.syVendorUser.removeRole(r.vendorUserRoleId, '사업자사용자관리', '삭제');
-        if (setApiRes) setApiRes({ ok:true, status:res.status, data:res.data });
+        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast('역할이 삭제되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
@@ -432,7 +432,7 @@ window.SyVendorUserMng = {
       DLIV_REP:'관리', DLIV_MGT:'관리', DLIV_SITE_ADMIN:'쓰기', DLIV_STAFF:'읽기',
     };
     const cfSelectedModalRole = computed(() => {
-      if (!uiState.roleModalTemp) return null;
+      if (!uiState.roleModalTemp) { return null; }
       return roles.find(r=>r.roleCode===uiState.roleModalTemp) || null;
     });
     const cfModalMenuList = computed(() => {

@@ -68,18 +68,18 @@ window.Order = {
 
     /* discountLabel — 할인 라벨 */
     const discountLabel = c => {
-      if (!c) return '';
-      if (c.discountType === 'rate')     return c.discountValue + '% 할인';
-      if (c.discountType === 'shipping') return '무료배송';
+      if (!c) { return ''; }
+      if (c.discountType === 'rate') { return c.discountValue + '% 할인'; }
+      if (c.discountType === 'shipping') { return '무료배송'; }
       return fmt(c.discountValue) + ' 할인';
     };
 
     /* calcCouponDiscount — 계산 쿠폰 할인 */
     const calcCouponDiscount = (c, item) => {
-      if (!c) return 0;
+      if (!c) { return 0; }
       const base = parsePrice(item.prod.price) * item.qty;
-      if (c.discountType === 'rate')   return Math.floor(base * c.discountValue / 100);
-      if (c.discountType === 'amount') return Math.min(c.discountValue, base);
+      if (c.discountType === 'rate') { return Math.floor(base * c.discountValue / 100); }
+      if (c.discountType === 'amount') { return Math.min(c.discountValue, base); }
       return 0;
     };
 
@@ -120,8 +120,8 @@ window.Order = {
 
     /* -- 주문 대상: 바로구매 > 선택장바구니(cartIds) > 전체장바구니 -- */
     const cfOrderItems = computed(() => {
-      if (window.foApp.instantOrder) return [window.foApp.instantOrder];
-      if (window.foApp.cartIds?.length) return cart.filter(i => window.foApp.cartIds.includes(i.cartId));
+      if (window.foApp.instantOrder) { return [window.foApp.instantOrder]; }
+      if (window.foApp.cartIds?.length) { return cart.filter(i => window.foApp.cartIds.includes(i.cartId)); }
       return cart;
     });
 
@@ -191,7 +191,7 @@ window.Order = {
 
     /* handleSubmit — 처리 */
     const handleSubmit = async () => {
-      if (!validate()) return;
+      if (!validate()) { return; }
       uiState.submitting = true;
       try {
         const orderId = 'ORD-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-5);
@@ -214,7 +214,7 @@ window.Order = {
           cashUsed:           cfAppliedCash.value,
           finalPrice:         cfFinalPrice.value,
         };
-        if (typeof foApiSvc !== 'undefined') await foApiSvc.myOrder.create(payload, '주문', '저장').catch(() => {});
+        if (typeof foApiSvc !== 'undefined') { await foApiSvc.myOrder.create(payload, '주문', '저장').catch(() => {}); }
         uiState.resultData = payload;
         uiState.view = 'result';
         if (!window.foApp.instantOrder) clearCart(); // 바로구매는 장바구니 건드리지 않음

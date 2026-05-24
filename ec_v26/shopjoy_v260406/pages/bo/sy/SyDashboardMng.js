@@ -31,7 +31,7 @@ window.SyDashboardMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
     });
 
     const cfStats = computed(() => [

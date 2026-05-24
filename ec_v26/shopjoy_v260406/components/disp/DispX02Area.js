@@ -48,13 +48,13 @@ window.DispX02Area = {
 
     /* panelWidgetTypes — 패널 위젯 Types */
     const panelWidgetTypes = (p) => {
-      if (p.rows && p.rows.length) return p.rows.map(r => r.widgetType);
+      if (p.rows && p.rows.length) { return p.rows.map(r => r.widgetType); }
       return p.widgetType ? [p.widgetType] : [];
     };
 
     /* periodText — 기간 Text */
     const periodText = (p) => {
-      if (!p.dispStartDt && !p.dispEndDt) return '기간 없음';
+      if (!p.dispStartDt && !p.dispEndDt) { return '기간 없음'; }
       return `${p.dispStartDt || '∞'} ~ ${p.dispEndDt || '∞'}`;
     };
 

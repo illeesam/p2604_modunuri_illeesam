@@ -125,14 +125,14 @@ window.DpDispUiDtl = {
 
     // ★ onMounted
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadData();
       handleInitForm();
     });
 
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       Object.keys(errors).forEach(k => delete errors[k]);
       await handleLoadData();
       handleInitForm();
@@ -146,7 +146,7 @@ window.DpDispUiDtl = {
 
         const selectTab = (k) => { uiState.activeTab = k; };
     const cfActiveArea = computed(() => {
-      if (!activeTab.value.startsWith('area_')) return null;
+      if (!activeTab.value.startsWith('area_')) { return null; }
       const id = Number(activeTab.value.replace('area_', ''));
       return cfRelatedAreas.value.find(a => a.codeId === id) || null;
     });
@@ -199,8 +199,8 @@ window.DpDispUiDtl = {
       const all = areas.filter(c => c.codeGrp === 'DISP_AREA');
       const searchVal  = uiState.pickSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, a => {
-        if (a.uiCode === form.codeValue) return false;
-        if (searchVal && !(a.codeLabel||'').toLowerCase().includes(searchVal) && !(a.codeValue||'').toLowerCase().includes(searchVal)) return false;
+        if (a.uiCode === form.codeValue) { return false; }
+        if (searchVal && !(a.codeLabel||'').toLowerCase().includes(searchVal) && !(a.codeValue||'').toLowerCase().includes(searchVal)) { return false; }
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
     });
@@ -223,7 +223,7 @@ window.DpDispUiDtl = {
     const moveArea = (idx, dir) => {
       const arr = cfRelatedAreas.value;
       const target = idx + dir;
-      if (target < 0 || target >= arr.length) return;
+      if (target < 0 || target >= arr.length) { return; }
       /* sortOrd 스왑 */
       const a = arr[idx], b = arr[target];
       const tmp = a.sortOrd; a.sortOrd = b.sortOrd; b.sortOrd = tmp;
@@ -247,15 +247,15 @@ window.DpDispUiDtl = {
 
     /* hasAreaVisibility — 여부 확인 */
     const hasAreaVisibility = (code) => {
-      if (!cfActiveArea.value) return false;
-      if (!cfActiveArea.value.visibilityTargets) cfActiveArea.value.visibilityTargets = '^PUBLIC^';
+      if (!cfActiveArea.value) { return false; }
+      if (!cfActiveArea.value.visibilityTargets) { cfActiveArea.value.visibilityTargets = '^PUBLIC^'; }
       return window.visibilityUtil.has(cfActiveArea.value.visibilityTargets, code);
     };
 
     /* toggleAreaVisibility — 영역 토글 */
     const toggleAreaVisibility = (code) => {
-      if (!cfActiveArea.value) return;
-      if (!cfActiveArea.value.visibilityTargets) cfActiveArea.value.visibilityTargets = '^PUBLIC^';
+      if (!cfActiveArea.value) { return; }
+      if (!cfActiveArea.value.visibilityTargets) { cfActiveArea.value.visibilityTargets = '^PUBLIC^'; }
       const list = window.visibilityUtil.parse(cfActiveArea.value.visibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
@@ -276,15 +276,15 @@ window.DpDispUiDtl = {
 
     /* hasUiDispEnv — 여부 확인 */
     const hasUiDispEnv = (code) => {
-      if (!cfActiveArea.value) return false;
-      if (!cfActiveArea.value.uiDispEnv) cfActiveArea.value.uiDispEnv = '^PROD^';
+      if (!cfActiveArea.value) { return false; }
+      if (!cfActiveArea.value.uiDispEnv) { cfActiveArea.value.uiDispEnv = '^PROD^'; }
       return cfActiveArea.value.uiDispEnv.includes('^' + code + '^');
     };
 
     /* toggleUiDispEnv — 토글 */
     const toggleUiDispEnv = (code) => {
-      if (!cfActiveArea.value) return;
-      if (!cfActiveArea.value.uiDispEnv) cfActiveArea.value.uiDispEnv = '^PROD^';
+      if (!cfActiveArea.value) { return; }
+      if (!cfActiveArea.value.uiDispEnv) { cfActiveArea.value.uiDispEnv = '^PROD^'; }
       const envList = cfActiveArea.value.uiDispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);
@@ -293,13 +293,13 @@ window.DpDispUiDtl = {
 
     /* openUiPreview — 열기 */
     const openUiPreview = () => {
-      if (!form.codeValue) return showToast && showToast('UI코드를 먼저 입력하세요.', 'error');
+      if (!form.codeValue) { return showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); }
       window.open(`${window.pageUrl('index.html')}`, '_blank', 'width=1280,height=900');
     };
 
     /* openAreaPreview — 열기 */
     const openAreaPreview = (scope) => {
-      if (!cfActiveArea.value) return showToast && showToast('미리볼 영역을 선택하세요.', 'error');
+      if (!cfActiveArea.value) { return showToast && showToast('미리볼 영역을 선택하세요.', 'error'); }
       const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
       window.open(`${window.pageUrl(file)}?areas=${cfActiveArea.value.codeValue}&date=${form.regDate}&time=00:00`,
         '_blank', 'width=1280,height=900');
@@ -325,7 +325,7 @@ window.DpDispUiDtl = {
       }
       const isNewUi = cfIsNew.value;
       const ok = await showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       /* form 별칭 → DpUi Entity 필드 매핑 */
       const body = { ...form };
       body.uiId         = form.codeId    || form.uiId || null;
@@ -340,14 +340,14 @@ window.DpDispUiDtl = {
       body.pathId       = form.pathId;
       try {
         const res = await (isNewUi ? boApiSvc.dpUi.create(body, '전시UI관리', '등록') : boApiSvc.dpUi.update(body.uiId, body, '전시UI관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispUiMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('dpDispUiMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

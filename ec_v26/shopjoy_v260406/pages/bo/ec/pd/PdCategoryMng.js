@@ -91,14 +91,14 @@ window.PdCategoryMng = {
     const onSiteChange = async () => {
       uiState.selectedCatId = null;
       // boCommonFilter 동기화 (다른 화면 이동 시 일관성 유지)
-      if (window.boCommonFilter) window.boCommonFilter.siteId = searchParam.siteId;
+      if (window.boCommonFilter) { window.boCommonFilter.siteId = searchParam.siteId; }
       await handleSearchList();
       await handleGridSearch();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchList();
       await handleGridSearch();
     });
@@ -123,8 +123,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       window.safeArrayUtils.safeForEach(items, c => { map[c.categoryId] = { ...c, _children: [] }; });
       const roots = [];
       window.safeArrayUtils.safeForEach(items, c => {
-        if (c.parentCategoryId && map[c.parentCategoryId]) map[c.parentCategoryId]._children.push(map[c.categoryId]);
-        else roots.push(map[c.categoryId]);
+        if (c.parentCategoryId && map[c.parentCategoryId]) { map[c.parentCategoryId]._children.push(map[c.categoryId]); }
+        else { roots.push(map[c.categoryId]); }
       });
       const result = [];
 
@@ -179,7 +179,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       const idx = catPickerModal.forRowIdx;
       if (idx != null && gridRows[idx]) {
         gridRows[idx].parentCategoryId = c ? c.categoryId : null;
-        if (gridRows[idx]._row_status !== 'N') gridRows[idx]._row_status = 'U';
+        if (gridRows[idx]._row_status !== 'N') { gridRows[idx]._row_status = 'U'; }
       }
       catPickerModal.show = false;
     };
@@ -225,7 +225,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     const onRowDrop = () => {
       const from = dragRowIdx.value, to = dragoverRowIdx.value;
       dragRowIdx.value = null; dragoverRowIdx.value = null;
-      if (from == null || to == null || from === to) return;
+      if (from == null || to == null || from === to) { return; }
       const [moved] = gridRows.splice(from, 1);
       gridRows.splice(to, 0, moved);
       // 같은 부모 그룹 내 sortOrd 재계산
@@ -234,7 +234,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       gridRows.forEach(r => {
         if ((r.parentCategoryId || null) === parentId) {
           r.sortOrd = ord++;
-          if (r._row_status == null) r._row_status = 'U';
+          if (r._row_status == null) { r._row_status = 'U'; }
         }
       });
     };
@@ -287,7 +287,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     /* cancelRow — 행 취소 */
     const cancelRow = (idx) => {
       const row = gridRows[idx];
-      if (!row) return;
+      if (!row) { return; }
       if (row._row_status === 'N') {
         gridRows.splice(idx, 1);
       } else if (row._row_org) {
@@ -299,28 +299,28 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (gridRows[i]._row_check) cancelRow(i);
+        if (gridRows[i]._row_check) { cancelRow(i); }
       }
     };
 
     /* deleteRow — 행 삭제 */
     const deleteRow = async (idx) => {
       const row = gridRows[idx];
-      if (!row) return;
+      if (!row) { return; }
       if (row._row_status === 'N') { gridRows.splice(idx, 1); return; }
       const ok = await showConfirm?.('삭제', `[${row.categoryNm}] 카테고리를 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       row._row_status = 'D';
       try {
         const res = await boApiSvc.pdCategory.remove(row.categoryId, '카테고리관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
         gridRows.splice(idx, 1);
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -330,7 +330,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       gridRows.forEach((r, i) => { if (r._row_check) idxs.push(i); });
       if (!idxs.length) { showToast?.('삭제할 행을 선택하세요.', 'info'); return; }
       const ok = await showConfirm?.('삭제', `선택한 ${idxs.length}건을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       for (let i = idxs.length - 1; i >= 0; i--) {
         const idx = idxs[i];
         const row = gridRows[idx];
@@ -351,23 +351,23 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         if (!row.categoryNm) { showToast?.('카테고리명은 필수입니다.', 'error'); return; }
       }
       const ok = await showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       for (const row of changed) {
         const isNew = row._row_status === 'N';
         const payload = { ...row };
         delete payload._depth; delete payload._row_status; delete payload._row_check; delete payload._row_org; delete payload._children;
-        if (isNew) delete payload.categoryId;
+        if (isNew) { delete payload.categoryId; }
         try {
           const res = isNew
             ? await boApiSvc.pdCategory.create(payload, '카테고리관리', '저장')
             : await boApiSvc.pdCategory.update(row.categoryId, payload, '카테고리관리', '저장');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           row._row_status = null;
         } catch (err) {
           console.error('[handleSave]', err);
           const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
           return;
         }
       }

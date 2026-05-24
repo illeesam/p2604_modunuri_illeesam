@@ -104,8 +104,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* inRange — 에서 범위 */
     const inRange = (dateStr) => {
       const d = String(dateStr || '').slice(0, 10);
-      if (uiState.dateStart && d < uiState.dateStart) return false;
-      if (uiState.dateEnd   && d > uiState.dateEnd)   return false;
+      if (uiState.dateStart && d < uiState.dateStart) { return false; }
+      if (uiState.dateEnd   && d > uiState.dateEnd) { return false; }
       return true;
     };
 
@@ -147,9 +147,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const cfOrderRows = computed(() => {
       const searchVal = applied.orderSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(orderList, o => {
-        if (!inRange(o.orderDate)) return false;
-        if (applied.orderSearchStatus && o.status !== applied.orderSearchStatus) return false;
-        if (searchVal && !o.orderId.toLowerCase().includes(searchVal) && !o.userNm.toLowerCase().includes(searchVal) && !o.prodNm.toLowerCase().includes(searchVal)) return false;
+        if (!inRange(o.orderDate)) { return false; }
+        if (applied.orderSearchStatus && o.status !== applied.orderSearchStatus) { return false; }
+        if (searchVal && !o.orderId.toLowerCase().includes(searchVal) && !o.userNm.toLowerCase().includes(searchVal) && !o.prodNm.toLowerCase().includes(searchVal)) { return false; }
         return true;
       }).map(o => {
         const vendor = cfVendors.value.find(v => v.vendorId === o.vendorId);
@@ -177,9 +177,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const cfClaimRows = computed(() => {
       return window.safeArrayUtils.safeFilter(claimList, c => {
-        if (!inRange(c.requestDate)) return false;
-        if (applied.claimSearchType   && c.type   !== applied.claimSearchType)   return false;
-        if (applied.claimSearchStatus && c.status !== applied.claimSearchStatus) return false;
+        if (!inRange(c.requestDate)) { return false; }
+        if (applied.claimSearchType   && c.type   !== applied.claimSearchType) { return false; }
+        if (applied.claimSearchStatus && c.status !== applied.claimSearchStatus) { return false; }
         return true;
       }).map(c => {
         const isCompleted = ['환불완료','취소완료','교환완료'].includes(c.status);
@@ -225,8 +225,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       ];
       const allRows = [...couponRows, ...cacheRows];
       return allRows.filter(r => {
-        if (applied.promoSearchType && r.promoType !== applied.promoSearchType) return false;
-        if (searchVal && !r.promoNm.toLowerCase().includes(searchVal) && !r.promoType.toLowerCase().includes(searchVal)) return false;
+        if (applied.promoSearchType && r.promoType !== applied.promoSearchType) { return false; }
+        if (searchVal && !r.promoNm.toLowerCase().includes(searchVal) && !r.promoType.toLowerCase().includes(searchVal)) { return false; }
         return true;
       });
     });
@@ -248,13 +248,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       const monthMap = {};
       window.safeArrayUtils.safeForEach(orderList, o => {
         const m = String(o.orderDate || '').slice(0, 7);
-        if (!m) return;
-        if (!monthMap[m]) monthMap[m] = { month: m, orderCnt: 0, sales: 0, refund: 0, commAmt: 0, promoAmt: 0 };
+        if (!m) { return; }
+        if (!monthMap[m]) { monthMap[m] = { month: m, orderCnt: 0, sales: 0, refund: 0, commAmt: 0, promoAmt: 0 }; }
         if (o.status !== '취소됨') { monthMap[m].orderCnt++; monthMap[m].sales += o.totalPrice || 0; }
       });
       window.safeArrayUtils.safeForEach(claimList, c => {
         const m = String(c.requestDate || '').slice(0, 7);
-        if (m && monthMap[m] && ['환불완료','취소완료'].includes(c.status)) monthMap[m].refund += c.refundAmount || 0;
+        if (m && monthMap[m] && ['환불완료','취소완료'].includes(c.status)) { monthMap[m].refund += c.refundAmount || 0; }
       });
       return Object.values(monthMap).sort((a, b) => b.month.localeCompare(a.month)).map(r => {
         const net  = r.sales - r.refund;

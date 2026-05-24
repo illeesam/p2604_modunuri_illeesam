@@ -51,7 +51,7 @@ window.PmSaveMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -61,7 +61,7 @@ window.PmSaveMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -105,7 +105,7 @@ window.PmSaveMng = {
       return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');    });
 
     // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
@@ -182,19 +182,19 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     /* handleDelete — 삭제 */
     const handleDelete = async (s) => {
       const ok = await showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = (saves || []).findIndex(x => x.saveId === s.saveId);
-      if (idx !== -1) saves.splice(idx, 1);
-      if (uiStateDetail.selectedId === s.saveId) uiStateDetail.selectedId = null;
+      if (idx !== -1) { saves.splice(idx, 1); }
+      if (uiStateDetail.selectedId === s.saveId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pmSave.remove(s.saveId, '적립금관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

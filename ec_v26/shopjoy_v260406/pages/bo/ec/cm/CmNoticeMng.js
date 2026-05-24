@@ -59,7 +59,7 @@ window.CmNoticeMng = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -106,14 +106,14 @@ window.CmNoticeMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -147,20 +147,20 @@ window.CmNoticeMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (n) => {
       const ok = await showConfirm('삭제', `[${n.noticeTitle}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = notices.findIndex(x => x.noticeId === n.noticeId);
-      if (idx !== -1) notices.splice(idx, 1);
-      if (uiStateDetail.selectedId === n.noticeId) uiStateDetail.selectedId = null;
+      if (idx !== -1) { notices.splice(idx, 1); }
+      if (uiStateDetail.selectedId === n.noticeId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.cmNotice.remove(n.noticeId, '공지사항관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
         await handleSearchList();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

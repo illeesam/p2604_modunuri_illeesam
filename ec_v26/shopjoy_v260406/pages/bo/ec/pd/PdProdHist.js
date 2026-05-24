@@ -67,7 +67,7 @@ window.PdProdHist = {
 
     /* handleLoadTab — 처리 */
     const handleLoadTab = async (tab) => {
-      if (!props.prodId || uiState.loadedTabs.has(tab)) return;
+      if (!props.prodId || uiState.loadedTabs.has(tab)) { return; }
       uiState.loading = true;
       try {
         if (tab === 'qna') {
@@ -105,10 +105,10 @@ window.PdProdHist = {
 
     /* fnStockBadge — 유틸 */
     const fnStockBadge = (cd) => {
-      if (!cd) return 'badge-gray';
+      if (!cd) { return 'badge-gray'; }
       const s = String(cd).toUpperCase();
-      if (s.includes('IN') || s.includes('입고') || s.includes('ADD')) return 'badge-green';
-      if (s.includes('OUT') || s.includes('출고') || s.includes('SALE')) return 'badge-orange';
+      if (s.includes('IN') || s.includes('입고') || s.includes('ADD')) { return 'badge-green'; }
+      if (s.includes('OUT') || s.includes('출고') || s.includes('SALE')) { return 'badge-orange'; }
       return 'badge-gray';
     };
 
@@ -186,7 +186,7 @@ window.PdProdHist = {
     ];
 
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleLoadTab(uiState.botTab);
       if (uiState.tabMode2 !== 'tab') {
         ALL_TABS.forEach(t => t !== uiState.botTab && handleLoadTab(t));
@@ -209,7 +209,7 @@ window.PdProdHist = {
     });
 
     watch(() => uiState.tabMode2, (v) => {
-      if (v !== 'tab') ALL_TABS.forEach(t => handleLoadTab(t));
+      if (v !== 'tab') { ALL_TABS.forEach(t => handleLoadTab(t)); }
     });
 
 

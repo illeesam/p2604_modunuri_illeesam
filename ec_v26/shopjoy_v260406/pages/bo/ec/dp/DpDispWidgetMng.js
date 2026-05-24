@@ -46,7 +46,7 @@ window.DpDispWidgetMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -55,7 +55,7 @@ window.DpDispWidgetMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -111,7 +111,7 @@ window.DpDispWidgetMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');    });
 
     /* pathLabel — 경로 라벨 */
@@ -217,7 +217,7 @@ window.DpDispWidgetMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.widgetNm || d.widgetId}] 위젯을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         await boApiSvc.dpWidget.remove(d.widgetId, '전시위젯관리', '삭제');
         showToast('삭제되었습니다.', 'success');

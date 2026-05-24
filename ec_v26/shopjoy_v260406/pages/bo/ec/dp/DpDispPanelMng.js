@@ -53,7 +53,7 @@ window.DpDispPanelMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -62,7 +62,7 @@ window.DpDispPanelMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -98,7 +98,7 @@ window.DpDispPanelMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');
     });
 
@@ -153,34 +153,34 @@ window.DpDispPanelMng = {
 
     /* fnDispSummary — 유틸 */
     const fnDispSummary = (d) => {
-      if (d.widgetType === 'image_banner') return d.imageUrl ? '🖼 ' + d.imageUrl.split('/').pop().slice(0, 20) : '-';
-      if (d.widgetType === 'product_slider' || d.widgetType === 'product') return d.productIds ? '상품: ' + d.productIds.slice(0, 20) : '-';
-      if (d.widgetType === 'coupon') return d.couponCode ? '쿠폰: ' + d.couponCode : '-';
-      if (d.widgetType === 'file') return d.fileUrl ? '파일: ' + d.fileLabel || d.fileUrl.split('/').pop() : '-';
-      if (d.widgetType === 'event_banner') return d.eventId ? '이벤트#' + d.eventId : '-';
-      if (d.widgetType === 'cache_banner') return d.cacheDesc || '-';
-      if (d.widgetType === 'html_editor') return d.htmlContent ? d.htmlContent.replace(/<[^>]+>/g, '').slice(0, 20) + '…' : '-';
-      if (d.widgetType === 'textarea') return d.textareaContent ? d.textareaContent.slice(0, 20) + (d.textareaContent.length > 20 ? '…' : '') : '-';
-      if (d.widgetType === 'markdown') return d.markdownContent ? d.markdownContent.slice(0, 20) + (d.markdownContent.length > 20 ? '…' : '') : '-';
-      if (['barcode','qrcode','barcode_qrcode'].includes(d.widgetType)) return d.codeValue ? '코드: ' + d.codeValue.slice(0, 20) : '-';
-      if (d.widgetType === 'video_player')    return d.videoUrl ? d.videoUrl.slice(0, 30) + '…' : '-';
-      if (d.widgetType === 'countdown')       return d.countdownTarget || '-';
-      if (d.widgetType === 'payment_widget')  return d.payAmount ? Number(d.payAmount).toLocaleString() + '원' : '-';
-      if (d.widgetType === 'approval_widget') return d.approvalDocType || '-';
-      if (d.widgetType === 'map_widget')      return d.mapAddress || (d.mapLat ? `${d.mapLat},${d.mapLng}` : '-');
-      if (d.widgetType === 'widget_embed') return d.embedCode ? d.embedCode.slice(0, 20) + '…' : '-';
-      if (d.widgetType.startsWith('chart_')) return d.chartTitle || '-';
-      if (d.widgetType === 'text_banner') return d.textContent ? d.textContent.slice(0, 20) + (d.textContent.length > 20 ? '…' : '') : '-';
-      if (d.widgetType === 'info_card') return d.infoTitle || '-';
-      if (d.widgetType === 'popup') return d.popupWidth && d.popupHeight ? `${d.popupWidth}×${d.popupHeight}` : '-';
+      if (d.widgetType === 'image_banner') { return d.imageUrl ? '🖼 ' + d.imageUrl.split('/').pop().slice(0, 20) : '-'; }
+      if (d.widgetType === 'product_slider' || d.widgetType === 'product') { return d.productIds ? '상품: ' + d.productIds.slice(0, 20) : '-'; }
+      if (d.widgetType === 'coupon') { return d.couponCode ? '쿠폰: ' + d.couponCode : '-'; }
+      if (d.widgetType === 'file') { return d.fileUrl ? '파일: ' + d.fileLabel || d.fileUrl.split('/').pop() : '-'; }
+      if (d.widgetType === 'event_banner') { return d.eventId ? '이벤트#' + d.eventId : '-'; }
+      if (d.widgetType === 'cache_banner') { return d.cacheDesc || '-'; }
+      if (d.widgetType === 'html_editor') { return d.htmlContent ? d.htmlContent.replace(/<[^>]+>/g, '').slice(0, 20) + '…' : '-'; }
+      if (d.widgetType === 'textarea') { return d.textareaContent ? d.textareaContent.slice(0, 20) + (d.textareaContent.length > 20 ? '…' : '') : '-'; }
+      if (d.widgetType === 'markdown') { return d.markdownContent ? d.markdownContent.slice(0, 20) + (d.markdownContent.length > 20 ? '…' : '') : '-'; }
+      if (['barcode','qrcode','barcode_qrcode'].includes(d.widgetType)) { return d.codeValue ? '코드: ' + d.codeValue.slice(0, 20) : '-'; }
+      if (d.widgetType === 'video_player') { return d.videoUrl ? d.videoUrl.slice(0, 30) + '…' : '-'; }
+      if (d.widgetType === 'countdown') { return d.countdownTarget || '-'; }
+      if (d.widgetType === 'payment_widget') { return d.payAmount ? Number(d.payAmount).toLocaleString() + '원' : '-'; }
+      if (d.widgetType === 'approval_widget') { return d.approvalDocType || '-'; }
+      if (d.widgetType === 'map_widget') { return d.mapAddress || (d.mapLat ? `${d.mapLat},${d.mapLng}` : '-'); }
+      if (d.widgetType === 'widget_embed') { return d.embedCode ? d.embedCode.slice(0, 20) + '…' : '-'; }
+      if (d.widgetType.startsWith('chart_')) { return d.chartTitle || '-'; }
+      if (d.widgetType === 'text_banner') { return d.textContent ? d.textContent.slice(0, 20) + (d.textContent.length > 20 ? '…' : '') : '-'; }
+      if (d.widgetType === 'info_card') { return d.infoTitle || '-'; }
+      if (d.widgetType === 'popup') { return d.popupWidth && d.popupHeight ? `${d.popupWidth}×${d.popupHeight}` : '-'; }
       return '-';
     };
 
     const cfFiltered = computed(() => {
-      if (!uiState.selectedTreeKey) return displays;
+      if (!uiState.selectedTreeKey) { return displays; }
       const k = uiState.selectedTreeKey;
       return window.safeArrayUtils.safeFilter(displays, d => {
-        if (k.startsWith('panel_')) return d.dispId === k.slice(6);
+        if (k.startsWith('panel_')) { return d.dispId === k.slice(6); }
         const areaNm = (code) => {
           const c = window.safeArrayUtils.safeFind(codes.disp_area, x => x.codeValue === code);
           return c ? c.codeLabel : code;
@@ -189,7 +189,7 @@ window.DpDispPanelMng = {
         if (k.includes('_')) {
           const [topPrefix, ...labelParts] = k.split('_');
           const targetLabel = labelParts.join('_');
-          if (!area.startsWith(topPrefix + '_')) return false;
+          if (!area.startsWith(topPrefix + '_')) { return false; }
           return areaNm(area) === targetLabel;
         } else {
           return area === k || area.startsWith(k + '_');
@@ -307,19 +307,19 @@ window.DpDispPanelMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = displays.findIndex(x => x.dispId === d.dispId);
-      if (idx !== -1) displays.splice(idx, 1);
-      if (uiStateDetail.selectedId === d.dispId) uiStateDetail.selectedId = null;
+      if (idx !== -1) { displays.splice(idx, 1); }
+      if (uiStateDetail.selectedId === d.dispId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.dpPanel.remove(d.dispId, '전시패널관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -337,8 +337,8 @@ window.DpDispPanelMng = {
 
     /* toggleExpand — 토글 */
     const toggleExpand = (id) => {
-      if (expandedIds.has(id)) expandedIds.delete(id);
-      else expandedIds.add(id);
+      if (expandedIds.has(id)) { expandedIds.delete(id); }
+      else { expandedIds.add(id); }
     };
 
     /* isExpanded — 여부 확인 */
@@ -375,7 +375,7 @@ window.DpDispPanelMng = {
     /* onPanelDragOver — 이벤트 */
     const onPanelDragOver = (e, pageIdx) => {
       e.preventDefault();
-      if (uiState.panelDragSrc === null || uiState.panelDragSrc === pageIdx) return;
+      if (uiState.panelDragSrc === null || uiState.panelDragSrc === pageIdx) { return; }
       uiState.panelDragOverIdx = pageIdx;
     };
 
@@ -414,7 +414,7 @@ window.DpDispPanelMng = {
     /* onWidgetDragOver — 이벤트 */
     const onWidgetDragOver = (e, dispId, wi) => {
       e.preventDefault(); e.stopPropagation();
-      if (uiState.widgetDragPanel !== dispId) return;
+      if (uiState.widgetDragPanel !== dispId) { return; }
       uiState.widgetDragOverWi = wi;
     };
 
@@ -425,11 +425,11 @@ window.DpDispPanelMng = {
     const onWidgetDrop = (e, dispId, wi) => {
       e.preventDefault(); e.stopPropagation();
       uiState.widgetDragOverWi = null;
-      if (uiState.widgetDragPanel !== dispId) return;
+      if (uiState.widgetDragPanel !== dispId) { return; }
       const src = uiState.widgetDragSrcWi;
       if (src === null || src === wi) { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; return; }
       const panel = window.safeArrayUtils.safeFind(displays, x => x.dispId === dispId);
-      if (!panel?.rows) return;
+      if (!panel?.rows) { return; }
       const moved = panel.rows.splice(src, 1)[0];
       panel.rows.splice(wi, 0, moved);
       window.safeArrayUtils.safeForEach(panel.rows, (r, i) => { r.sortOrder = i + 1; });
@@ -484,8 +484,8 @@ window.DpDispPanelMng = {
         const area = p.area || '(미등록)';
         const top = area.split('_')[0] || '(기타)';
         const subKey = areaNm(area);
-        if (!map[top]) map[top] = {};
-        if (!map[top][subKey]) map[top][subKey] = [];
+        if (!map[top]) { map[top] = {}; }
+        if (!map[top][subKey]) { map[top][subKey] = []; }
         map[top][subKey].push(p);
       });
       return Object.keys(map).sort().map(top => ({

@@ -71,7 +71,7 @@ window.PdSetMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');
     });
 
@@ -109,7 +109,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
     /* addCategory — 추가 */
     const addCategory    = cat => {
-      if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(cat.categoryId))) return;
+      if (window.safeArrayUtils.safeSome(dtlCategories, c => String(c.categoryId) === String(cat.categoryId))) { return; }
       dtlCategories.push({ categoryId: cat.categoryId, categoryNm: cat.categoryNm, depth: cat.depth || cat.categoryDepth || 1 });
       uiState.catPickerOpen = false;
     };
@@ -162,7 +162,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         const sv = (uiState.pickerSearch || '').trim();
         if (sv) {
           params.searchValue = sv;
-          if (uiState.pickerSearchType) params.searchType = uiState.pickerSearchType;
+          if (uiState.pickerSearchType) { params.searchType = uiState.pickerSearchType; }
         }
         const res = await boApiSvc.pdProd.getPage(params, '상품세트관리', '상품검색');
         const list = (res.data?.data?.pageList || res.data?.data?.list || [])
@@ -318,8 +318,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const handleSave = async () => {
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
       if (uiState.dtlMode === 'new') {
-        if (!newForm.prodNm.trim()) newErrors.prodNm = '세트상품명을 입력해주세요.';
-        if (!newForm.salePrice || newForm.salePrice <= 0) newErrors.salePrice = '판매가를 입력해주세요.';
+        if (!newForm.prodNm.trim()) { newErrors.prodNm = '세트상품명을 입력해주세요.'; }
+        if (!newForm.salePrice || newForm.salePrice <= 0) { newErrors.salePrice = '판매가를 입력해주세요.'; }
         if (Object.keys(newErrors).length) { showToast('입력 내용을 확인해주세요.', 'error'); return; }
       }
       const hasBlankNm = window.safeArrayUtils.safeSome(dtlItems, d => !d.itemNm.trim());
@@ -330,7 +330,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       const setProdId = isNewSet ? newProdId : uiState.editSetId;
 
       const ok = await showConfirm(isNewSet ? '등록' : '저장', isNewSet ? '세트상품을 등록하시겠습니까?' : '구성품 설정을 저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       if (isNewSet) {
         products.push({
           productId: newProdId, prodNm: newForm.prodNm,
@@ -372,32 +372,32 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         const res = await (isNewSet
           ? boApiSvc.pdSet.create({ prodNm: newForm.prodNm, siteId: newForm.siteId || null, items: setItems }, '세트상품관리', '등록')
           : boApiSvc.pdSet.updateItems(setProdId, { items: setItems }, '세트상품관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async setProdId => {
       const ok = await showConfirm('삭제', '세트상품을 삭제하시겠습니까?\n구성품 설정도 함께 삭제됩니다.');
-      if (!ok) return;
+      if (!ok) { return; }
       const remaining = (sets).filter(s => s.setProdId !== setProdId);
       sets.splice(0, sets.length, ...remaining);
-      if (uiState.editSetId === setProdId) closeDtl();
+      if (uiState.editSetId === setProdId) { closeDtl(); }
       try {
         const res = await boApiSvc.pdSet.remove(setProdId, '세트상품관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

@@ -45,7 +45,7 @@ window.DpDispWidgetLibMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -54,7 +54,7 @@ window.DpDispWidgetLibMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -105,7 +105,7 @@ window.DpDispWidgetLibMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -220,17 +220,17 @@ window.DpDispWidgetLibMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (lib) => {
       const ok = await showConfirm('삭제', `[${lib.widgetNm}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = widgetLibs.findIndex(x => x.widgetLibId === lib.widgetLibId);
-      if (idx !== -1) widgetLibs.splice(idx, 1);
+      if (idx !== -1) { widgetLibs.splice(idx, 1); }
       if (uiStateDetail.selectedId === lib.widgetLibId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.dpWidgetLib.remove(lib.widgetLibId, '전시위젯라이브러리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
-        if (showToast) showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+        if (showToast) { showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0); }
       }
     };
 

@@ -22,7 +22,7 @@ window.OdClaimMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -32,7 +32,7 @@ window.OdClaimMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -111,7 +111,7 @@ window.OdClaimMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');
     });
 
@@ -187,20 +187,20 @@ window.OdClaimMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
       const ok = await showConfirm('삭제', `[${c.claimId}]를 삭제하시겠습니까?`);
-      if (!ok) return;
-      if (!Array.isArray(claims)) return;
+      if (!ok) { return; }
+      if (!Array.isArray(claims)) { return; }
       const idx = claims.findIndex(x => x.claimId === c.claimId);
-      if (idx !== -1) claims.splice(idx, 1);
-      if (uiStateDetail.selectedId === c.claimId) uiStateDetail.selectedId = null;
+      if (idx !== -1) { claims.splice(idx, 1); }
+      if (uiStateDetail.selectedId === c.claimId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.odClaim.remove(c.claimId, '클레임관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -220,8 +220,8 @@ window.OdClaimMng = {
     /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) claims.forEach(c => s.delete(c.claimId));
-      else claims.forEach(c => s.add(c.claimId));
+      if (cfAllChecked.value) { claims.forEach(c => s.delete(c.claimId)); }
+      else { claims.forEach(c => s.add(c.claimId)); }
       checked = s;
     };
     const claimStatusCodes = (codes.claim_statuses || [])
@@ -254,10 +254,10 @@ window.OdClaimMng = {
       const ids = Array.from(checked);
       const first = window.safeArrayUtils.safeFind(Array.isArray(claims) ? claims : [], c => ids.includes(c.claimId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
-      if (bulkForm.reqTarget === '주문')    bulkForm.reqTargetNm = first.orderId || '';
-      else if (bulkForm.reqTarget === '상품') bulkForm.reqTargetNm = first.prodNm || '';
-      else if (bulkForm.reqTarget === '배송') bulkForm.reqTargetNm = first.dlivId || (first.orderId ? '배송('+first.orderId+')' : '');
-      else bulkForm.reqTargetNm = first.claimId || '';
+      if (bulkForm.reqTarget === '주문') { bulkForm.reqTargetNm = first.orderId || ''; }
+      else if (bulkForm.reqTarget === '상품') { bulkForm.reqTargetNm = first.prodNm || ''; }
+      else if (bulkForm.reqTarget === '배송') { bulkForm.reqTargetNm = first.dlivId || (first.orderId ? '배송('+first.orderId+')' : ''); }
+      else { bulkForm.reqTargetNm = first.claimId || ''; }
     };
     const cfBuildTmplMsg = computed(() => {
       return (bulkForm.tmplMsg || '')
@@ -285,7 +285,7 @@ window.OdClaimMng = {
       uiState.bulkOpen = true;
     };
     const cfBulkPreview = computed(() => {
-      if (!uiState.bulkOpen) return '';
+      if (!uiState.bulkOpen) { return ''; }
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(claims, c => ids.includes(c.claimId));
       let rows = [];
@@ -294,16 +294,16 @@ window.OdClaimMng = {
           .filter(c => bulkForm.statusByType[c.claimTypeCd])
           .map(c => `- [${c.claimId} / ${c.memberNm} (${c.claimTypeCd})] [클레임관리] 클레임상태 변경: ${c.claimStatusCd || '-'} → ${bulkForm.statusByType[c.claimTypeCd]}`);
       } else if (uiState.bulkTab === 'type') {
-        if (!bulkForm.type) return '';
+        if (!bulkForm.type) { return ''; }
         rows = selected.map(c => `- [${c.claimId} / ${c.memberNm}] [클레임관리] 클레임유형 변경: ${c.claimTypeCd || '-'} → ${bulkForm.type}`);
       } else if (uiState.bulkTab === 'approval') {
-        if (!bulkForm.apprAction) return '';
+        if (!bulkForm.apprAction) { return ''; }
         rows = selected.map(c => `- [${c.claimId} / ${c.memberNm}] [클레임관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
       } else if (uiState.bulkTab === 'approvalReq') {
-        if (!bulkForm.apprToUserId) return '';
+        if (!bulkForm.apprToUserId) { return ''; }
         rows = selected.map(c => `- [${c.claimId} / ${c.memberNm}] [클레임관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
       }
-      if (!rows.length) return '';
+      if (!rows.length) { return ''; }
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
 
@@ -318,7 +318,7 @@ window.OdClaimMng = {
         const totalCnt = changes.reduce((s,c)=>s+c.ids.length,0);
         const msg = changes.map(c => `[${c.type}] ${c.ids.length}건 → ${c.status}`).join('\n');
         const ok = await showConfirm('일괄 클레임상태 변경', `${msg}\n\n총 ${totalCnt}건을 변경하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(changes, ch => {
           window.safeArrayUtils.safeForEach(claims, c => { if (ch.ids.includes(c.claimId)) c.claimStatusCd = ch.status; });
         });
@@ -326,55 +326,55 @@ window.OdClaimMng = {
         uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.bulkStatus({ changes }, '클레임관리', '일괄처리');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${totalCnt}건 변경되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${totalCnt}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'type') {
         const val = bulkForm.type;
         if (!val) { showToast('변경할 클레임유형을 선택하세요.', 'error'); return; }
         const ids = Array.from(checked);
         const ok = await showConfirm('일괄 클레임유형 변경', `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) c.claimTypeCd = val; });
         checked = new Set();
         uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.bulkType({ ids, type: val }, '클레임관리', '일괄처리');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${ids.length}건 변경되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) { showToast('결재처리 구분을 선택하세요.', 'error'); return; }
         const ids = Array.from(checked);
         const ok = await showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.bulkApproval({ ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, '클레임관리', '결재처리');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${ids.length}건 처리되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${ids.length}건 처리되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) { showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
         const ids = Array.from(checked);
         const ok = await showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) {
           c.apprToUserId = bulkForm.apprToUserId; c.apprToNm = bulkForm.apprToNm;
           c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
@@ -383,13 +383,13 @@ window.OdClaimMng = {
         checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.bulkApprovalReq({ ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '클레임관리', '추가결재요청');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${ids.length}건 요청되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${ids.length}건 요청되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       }
     };

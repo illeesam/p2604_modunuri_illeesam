@@ -44,7 +44,7 @@ window.DpDispPanelDtl = {
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.dpPanel.getById(props.dtlId, '전시패널관리', '상세조회');
@@ -252,9 +252,9 @@ window.DpDispPanelDtl = {
     /* moveRow — 이동 */
     const moveRow = (dir) => {
       const idx = cfActiveRowIdx.value;
-      if (idx === null) return;
+      if (idx === null) { return; }
       const target = idx + dir;
-      if (target < 0 || target >= rows.length) return;
+      if (target < 0 || target >= rows.length) { return; }
       const a = { ...rows[idx] };
       const b = { ...rows[target] };
       Object.assign(rows[idx], b);
@@ -304,7 +304,7 @@ window.DpDispPanelDtl = {
 
     /* _saveFileList — 저장 */
     const _saveFileList = (items) => {
-      if (cfActiveRow.value) cfActiveRow.value.fileListJson = JSON.stringify(items);
+      if (cfActiveRow.value) { cfActiveRow.value.fileListJson = JSON.stringify(items); }
     };
 
     /* addFileItem — 추가 */
@@ -319,7 +319,7 @@ window.DpDispPanelDtl = {
 
     /* cfDisplayRows — html_editor는 Toast UI로 별도 렌더하므로 제외 */
     const cfDisplayRows = computed(() => {
-      if (!cfActiveRow.value) return [];
+      if (!cfActiveRow.value) { return []; }
       if (cfIsImage.value)       return [
         { key: 'imageUrl', label: '이미지 URL',  type: 'input', ph: 'https://...' },
         { key: 'altText',  label: 'Alt 텍스트',  type: 'input', ph: '' },
@@ -443,7 +443,7 @@ window.DpDispPanelDtl = {
 
     const cfRelatedEvent = computed(() => {
       const eid = cfActiveRow.value?.eventId;
-      if (!eid) return null;
+      if (!eid) { return null; }
       return (Array.isArray(events) ? events : []).find(e => String(e.eventId) === String(eid)) || null;
     });
 
@@ -460,7 +460,7 @@ window.DpDispPanelDtl = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadDetail();
       handleLoadData();
       handleInitForm();
@@ -468,7 +468,7 @@ window.DpDispPanelDtl = {
 
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       await handleLoadDetail();
       handleInitForm();
     });
@@ -478,7 +478,7 @@ window.DpDispPanelDtl = {
       if (!form.name || !form.area || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
       const isNewPanel = cfIsNew.value;
       const ok = await showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         /* form 별칭 → DpPanel Entity 필드 매핑 (위젯 목록은 content_json 직렬화) */
         const _rows = rows.map(r => ({ ...r }));
@@ -493,14 +493,14 @@ window.DpDispPanelDtl = {
         body.pathId             = form.pathId;
         body.contentJson        = JSON.stringify({ rows: _rows });
         const res = await (isNewPanel ? boApiSvc.dpPanel.create(body, '전시패널관리', '등록') : boApiSvc.dpPanel.update(body.panelId, body, '전시패널관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispPanelMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('dpDispPanelMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -560,21 +560,21 @@ window.DpDispPanelDtl = {
 
     /* fnGetDisplayRows — 유틸 */
     const fnGetDisplayRows = (r) => {
-      if (!r) return [];
+      if (!r) { return []; }
       const wt = r.widgetType;
       if (wt === 'image_banner')   return [{ key:'imageUrl', label:'이미지 URL', type:'input', ph:'https://...' },{ key:'altText', label:'Alt 텍스트', type:'input', ph:'' },{ key:'linkUrl', label:'링크 URL', type:'input', ph:'https://...' }];
-      if (['product_slider','product'].includes(wt)) return [{ key:'productIds', label:'상품 ID 목록', type:'input', ph:'1, 2, 3, ...' }];
-      if (wt?.startsWith('chart_')) return [{ key:'chartTitle', label:'차트 제목', type:'input', ph:'' },{ key:'chartType', label:'차트 유형', type:'select', options:[{v:'bar',l:'Bar'},{v:'line',l:'Line'},{v:'pie',l:'Pie'}] },{ key:'chartLabels', label:'라벨 (쉼표 구분)', type:'input', ph:'1월, 2월, 3월' },{ key:'chartValues', label:'값 (쉼표 구분)', type:'input', ph:'100, 200, 150' }];
-      if (wt === 'text_banner')    return [{ key:'textContent', label:'텍스트 내용', type:'textarea', ph:'' },{ key:'bgColor', label:'배경색', type:'color', ph:'' },{ key:'textColor', label:'글자색', type:'color', ph:'' }];
-      if (wt === 'info_card')      return [{ key:'infoTitle', label:'카드 제목', type:'input', ph:'' },{ key:'infoBody', label:'카드 내용', type:'textarea', ph:'' }];
+      if (['product_slider','product'].includes(wt)) { return [{ key:'productIds', label:'상품 ID 목록', type:'input', ph:'1, 2, 3, ...' }]; }
+      if (wt?.startsWith('chart_')) { return [{ key:'chartTitle', label:'차트 제목', type:'input', ph:'' },{ key:'chartType', label:'차트 유형', type:'select', options:[{v:'bar',l:'Bar'},{v:'line',l:'Line'},{v:'pie',l:'Pie'}] },{ key:'chartLabels', label:'라벨 (쉼표 구분)', type:'input', ph:'1월, 2월, 3월' },{ key:'chartValues', label:'값 (쉼표 구분)', type:'input', ph:'100, 200, 150' }]; }
+      if (wt === 'text_banner') { return [{ key:'textContent', label:'텍스트 내용', type:'textarea', ph:'' },{ key:'bgColor', label:'배경색', type:'color', ph:'' },{ key:'textColor', label:'글자색', type:'color', ph:'' }]; }
+      if (wt === 'info_card') { return [{ key:'infoTitle', label:'카드 제목', type:'input', ph:'' },{ key:'infoBody', label:'카드 내용', type:'textarea', ph:'' }]; }
       if (wt === 'popup')          return [{ key:'popupWidth', label:'팝업 너비(px)', type:'number', ph:'' },{ key:'popupHeight', label:'팝업 높이(px)', type:'number', ph:'' },{ key:'imageUrl', label:'팝업 이미지 URL', type:'input', ph:'https://...' },{ key:'linkUrl', label:'링크 URL', type:'input', ph:'' }];
       if (wt === 'file')           return [{ key:'fileUrl', label:'파일 URL', type:'input', ph:'https://...' },{ key:'fileLabel', label:'표시 레이블', type:'input', ph:'다운로드' }];
-      if (wt === 'coupon')         return [{ key:'couponCode', label:'쿠폰 코드', type:'input', ph:'COUPON_CODE' },{ key:'couponDesc', label:'쿠폰 설명', type:'input', ph:'쿠폰 안내 문구' }];
-      if (wt === 'html_editor' || wt === 'file_list') return [];
-      if (wt === 'cond_product')   return [{ key:'condSite', label:'사이트 조건', type:'input', ph:'사이트 코드 (비워두면 전체)' },{ key:'condUser', label:'사용자 조건', type:'select', options:[{v:'',l:'전체'},{v:'login',l:'로그인'},{v:'nologin',l:'비로그인'},{v:'VIP',l:'VIP'},{v:'우수',l:'우수'},{v:'일반',l:'일반'}] },{ key:'condCategory', label:'카테고리 조건', type:'input', ph:'카테고리 ID (쉼표 구분)' },{ key:'condBrand', label:'브랜드 조건', type:'input', ph:'브랜드명 (쉼표 구분)' },{ key:'condSort', label:'정렬 기준', type:'select', options:[{v:'newest',l:'최신순'},{v:'popular',l:'인기순'},{v:'price_asc',l:'가격 낮은순'},{v:'price_desc',l:'가격 높은순'},{v:'discount',l:'할인율순'}] },{ key:'condLimit', label:'표시 개수', type:'number', ph:'8' }];
-      if (wt === 'event_banner')   return [{ key:'eventId', label:'이벤트 ID', type:'event', ph:'' }];
-      if (wt === 'cache_banner')   return [{ key:'cacheDesc', label:'안내 문구', type:'input', ph:'지금 충전하면 10% 보너스!' },{ key:'cacheAmount', label:'기본 충전 금액(원)', type:'number', ph:'' }];
-      if (wt === 'widget_embed')   return [{ key:'embedCode', label:'임베드 코드', type:'code', ph:'<iframe ...></iframe>' }];
+      if (wt === 'coupon') { return [{ key:'couponCode', label:'쿠폰 코드', type:'input', ph:'COUPON_CODE' },{ key:'couponDesc', label:'쿠폰 설명', type:'input', ph:'쿠폰 안내 문구' }]; }
+      if (wt === 'html_editor' || wt === 'file_list') { return []; }
+      if (wt === 'cond_product') { return [{ key:'condSite', label:'사이트 조건', type:'input', ph:'사이트 코드 (비워두면 전체)' },{ key:'condUser', label:'사용자 조건', type:'select', options:[{v:'',l:'전체'},{v:'login',l:'로그인'},{v:'nologin',l:'비로그인'},{v:'VIP',l:'VIP'},{v:'우수',l:'우수'},{v:'일반',l:'일반'}] },{ key:'condCategory', label:'카테고리 조건', type:'input', ph:'카테고리 ID (쉼표 구분)' },{ key:'condBrand', label:'브랜드 조건', type:'input', ph:'브랜드명 (쉼표 구분)' },{ key:'condSort', label:'정렬 기준', type:'select', options:[{v:'newest',l:'최신순'},{v:'popular',l:'인기순'},{v:'price_asc',l:'가격 낮은순'},{v:'price_desc',l:'가격 높은순'},{v:'discount',l:'할인율순'}] },{ key:'condLimit', label:'표시 개수', type:'number', ph:'8' }]; }
+      if (wt === 'event_banner') { return [{ key:'eventId', label:'이벤트 ID', type:'event', ph:'' }]; }
+      if (wt === 'cache_banner') { return [{ key:'cacheDesc', label:'안내 문구', type:'input', ph:'지금 충전하면 10% 보너스!' },{ key:'cacheAmount', label:'기본 충전 금액(원)', type:'number', ph:'' }]; }
+      if (wt === 'widget_embed') { return [{ key:'embedCode', label:'임베드 코드', type:'code', ph:'<iframe ...></iframe>' }]; }
       return [];
     };
 
@@ -596,7 +596,7 @@ window.DpDispPanelDtl = {
     /* moveRowAt — 이동 */
     const moveRowAt = (rowIdx, dir) => {
       const target = rowIdx + dir;
-      if (target < 0 || target >= rows.length) return;
+      if (target < 0 || target >= rows.length) { return; }
       const a = { ...rows[rowIdx] };
       const b = { ...rows[target] };
       Object.assign(rows[rowIdx], b);
@@ -615,7 +615,7 @@ window.DpDispPanelDtl = {
 
     /* removeWidget — 제거 */
     const removeWidget = (idx) => {
-      if (idx === 0 || rows.length <= 1) return;
+      if (idx === 0 || rows.length <= 1) { return; }
       const currentIdx = cfActiveRowIdx.value;
       rows.splice(idx, 1);
       window.safeArrayUtils.safeForEach(rows, (r, i) => { r.sortOrder = i + 1; });
@@ -630,13 +630,13 @@ window.DpDispPanelDtl = {
 
     /* hasVisibility — 여부 확인 */
     const hasVisibility = (code) => {
-      if (!cfActiveRow.value) return false;
+      if (!cfActiveRow.value) { return false; }
       return window.visibilityUtil.has(cfActiveRow.value.visibilityTargets, code);
     };
 
     /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
-      if (!cfActiveRow.value) return;
+      if (!cfActiveRow.value) { return; }
       const list = window.visibilityUtil.parse(cfActiveRow.value.visibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
@@ -658,13 +658,13 @@ window.DpDispPanelDtl = {
 
     /* hasDispEnv — 여부 확인 */
     const hasDispEnv = (code) => {
-      if (!cfActiveRow.value) return false;
+      if (!cfActiveRow.value) { return false; }
       return cfActiveRow.value.dispEnv.includes('^' + code + '^');
     };
 
     /* toggleDispEnv — 토글 */
     const toggleDispEnv = (code) => {
-      if (!cfActiveRow.value) return;
+      if (!cfActiveRow.value) { return; }
       const envList = cfActiveRow.value.dispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);
@@ -697,9 +697,9 @@ window.DpDispPanelDtl = {
 
     /* onRowCopy — 이벤트 */
     const onRowCopy = (pickedRows) => {
-      if (!Array.isArray(pickedRows) || !pickedRows.length) return;
+      if (!Array.isArray(pickedRows) || !pickedRows.length) { return; }
       window.safeArrayUtils.safeForEach(pickedRows, r => {
-        if (rows.length >= MAX_WIDGETS) return;
+        if (rows.length >= MAX_WIDGETS) { return; }
         rows.push({ ...makeRowData(), ...r, sortOrder: rows.length + 1 });
       });
       showToast && showToast(`${pickedRows.length}개 전시항목을 복사했습니다.`, 'info');
@@ -708,14 +708,14 @@ window.DpDispPanelDtl = {
 
     /* -- 위젯Lib 선택 팝업 (활성 row에 복사/참조) -- */
         const openLibPick = (mode) => {
-      if (!cfActiveRow.value) return;
+      if (!cfActiveRow.value) { return; }
       uiState.libPickMode = mode; uiState.libPickOpen = true;
     };
 
     /* onLibPicked — 이벤트 */
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
-      if (!cfActiveRow.value) return;
+      if (!cfActiveRow.value) { return; }
       if (uiState.libPickMode === 'copy') {
         const r = cfActiveRow.value;
         const preserve = { widgetNm: r.widgetNm, sortOrder: r.sortOrder };

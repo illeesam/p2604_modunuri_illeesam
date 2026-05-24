@@ -52,7 +52,7 @@ window.MyCache = {
     const openOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
-      if (!ok) showToast('주문 정보를 찾을 수 없습니다.', 'error');
+      if (!ok) { showToast('주문 정보를 찾을 수 없습니다.', 'error'); }
     };
 
     /* handleSearchData — 처리 */
@@ -66,7 +66,7 @@ window.MyCache = {
 
     /* onSearch — 조회 */
     const onSearch = async (dateParams) => {
-      if (dateParams) onDateSearch(dateParams);
+      if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
 

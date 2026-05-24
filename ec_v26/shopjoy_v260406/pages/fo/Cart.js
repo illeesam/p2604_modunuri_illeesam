@@ -38,7 +38,7 @@ window.Cart = {
     /* onCartSort — 이벤트 */
     const onCartSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
     };
@@ -48,7 +48,7 @@ window.Cart = {
 
     const cfSortedCart = computed(() => {
       const list = [...(cart || [])].map((item, i) => ({ ...item, _origIdx: i }));
-      if (!uiState.sortKey) return list;
+      if (!uiState.sortKey) { return list; }
       return list.sort((a, b) => {
         let va, vb;
         if (uiState.sortKey === 'nm') { va = a.prod?.prodNm || ''; vb = b.prod?.prodNm || ''; return uiState.sortDir === 'asc' ? va.localeCompare(vb, 'ko') : vb.localeCompare(va, 'ko'); }
@@ -62,8 +62,8 @@ window.Cart = {
 
     /* toggleCheck — 토글 */
     const toggleCheck = (idx) => {
-      if (uiState.checkedIdxs.has(idx)) uiState.checkedIdxs.delete(idx);
-      else uiState.checkedIdxs.add(idx);
+      if (uiState.checkedIdxs.has(idx)) { uiState.checkedIdxs.delete(idx); }
+      else { uiState.checkedIdxs.add(idx); }
     };
 
     const cfAllChecked = computed(() =>
@@ -104,14 +104,14 @@ window.Cart = {
 
     /* -- 금액 계산 -- */
     function parsePrice(priceStr) {
-      if (!priceStr) return 0;
+      if (!priceStr) { return 0; }
       const m = priceStr.replace(/[^0-9]/g, '');
       return m ? parseInt(m, 10) : 0;
     }
 
     function formatPrice(priceStr, qty) {
       const base = parsePrice(priceStr);
-      if (!base) return priceStr;
+      if (!base) { return priceStr; }
       return (base * (qty || 1)).toLocaleString('ko-KR') + '원';
     }
 

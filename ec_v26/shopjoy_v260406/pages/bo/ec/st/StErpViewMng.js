@@ -73,17 +73,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* doResend — 실행 */
     const doResend = async (r) => {
       const ok = await showConfirm('재전송', '전표를 ERP로 재전송하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
       try {
         const res = await boApiSvc.stErp.resend(r.erpVoucherId || r.slipId, {}, 'ERP전표조회', '전송');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('재전송이 완료되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('재전송이 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

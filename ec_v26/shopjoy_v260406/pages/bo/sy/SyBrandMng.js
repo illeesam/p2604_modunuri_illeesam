@@ -122,7 +122,7 @@ window.SyBrandMng = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
       row._row_status = changed ? 'U' : 'N';
     };
@@ -145,7 +145,7 @@ window.SyBrandMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else {
         row._row_status = 'D';
       }
@@ -156,9 +156,9 @@ window.SyBrandMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else {
-        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+        if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
         row._row_status = 'N';
       }
     };
@@ -169,8 +169,8 @@ window.SyBrandMng = {
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
-        if (!ids.has(row.brandId)) continue;
-        if (row._row_status === 'N') continue;
+        if (!ids.has(row.brandId)) { continue; }
+        if (row._row_status === 'N') { continue; }
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
@@ -179,9 +179,9 @@ window.SyBrandMng = {
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
-        if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1);
-        else gridRows[i]._row_status = 'D';
+        if (!gridRows[i]._row_check) { continue; }
+        if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
+        else { gridRows[i]._row_status = 'D'; }
       }
     };
 
@@ -199,12 +199,12 @@ window.SyBrandMng = {
         }
       }
       const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      if (iRows.length) { details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' }); }
+      if (uRows.length) { details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' }); }
+      if (dRows.length) { details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' }); }
       const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?',
         { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syBrand.saveList(saveRows, '브랜드관리', '저장');
@@ -224,7 +224,7 @@ window.SyBrandMng = {
     /* onDragOver — 드래그 오버 */
     const onDragOver  = (e, idx) => {
       e.preventDefault();
-      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) { return; }
       const moved = gridRows.splice(uiState.dragSrc, 1)[0];
       gridRows.splice(idx, 0, moved);
       uiState.dragSrc = idx;
@@ -233,7 +233,7 @@ window.SyBrandMng = {
 
     /* onDragEnd — 드래그 종료 */
     const onDragEnd = () => {
-      if (uiState.dragMoved) showToast('정렬정보가 저장되었습니다.');
+      if (uiState.dragMoved) { showToast('정렬정보가 저장되었습니다.'); }
       uiState.dragSrc = null; uiState.dragMoved = false;
     };
 
@@ -266,7 +266,7 @@ window.SyBrandMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 

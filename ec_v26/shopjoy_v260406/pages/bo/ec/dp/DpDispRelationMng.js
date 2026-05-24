@@ -53,7 +53,7 @@ window.DpDispRelationMng = {
       return { dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');    });
 
     /* 검색 */
@@ -125,7 +125,7 @@ window.DpDispRelationMng = {
 
     /* fnGetVisibilityBadges — 유틸 */
     const fnGetVisibilityBadges = (targets) => {
-      if (!targets) return [];
+      if (!targets) { return []; }
       return targets.split('^').filter(Boolean);
     };
 

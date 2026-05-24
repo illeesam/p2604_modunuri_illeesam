@@ -123,13 +123,13 @@ window.SyCodeMng = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
     /* onGrpChange — 그룹 변경 */
     const onGrpChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       row._row_status = GRP_FIELDS.some(f => String(row[f] || '') !== String(row._row_org[f] || '')) ? 'U' : 'N';
       syncGrpDirty();
     };
@@ -150,7 +150,7 @@ window.SyCodeMng = {
     /* onDragOver — 드래그 오버 */
     const onDragOver  = (e, idx) => {
       e.preventDefault();
-      if (uiState.dragSrc === null || uiState.dragSrc === idx) return;
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) { return; }
       const moved = uiState.gridRows.splice(uiState.dragSrc, 1)[0];
       uiState.gridRows.splice(idx, 0, moved);
       uiState.dragSrc = idx; uiState.dragMoved = true;
@@ -163,7 +163,7 @@ window.SyCodeMng = {
           const newOrd = i + 1;
           if (r.sortOrd !== newOrd) {
             r.sortOrd = newOrd;
-            if (r._row_status === 'N') r._row_status = 'U';
+            if (r._row_status === 'N') { r._row_status = 'U'; }
           }
         });
       }
@@ -212,7 +212,7 @@ window.SyCodeMng = {
           boApiSvc.syCode.getPage({ pageNo: 1, pageSize: 100000 }, '코드관리', '코드수집계'),
         ]);
 
-        if (seq !== _grpLoadSeq) return;
+        if (seq !== _grpLoadSeq) { return; }
 
         const grpList  = grpRes.data?.data  || [];
         const codeList = codeRes.data?.data?.pageList || codeRes.data?.data?.list || [];
@@ -233,7 +233,7 @@ window.SyCodeMng = {
         uiState.grpRows = [];
         uiState.gridRows = [];
         await nextTick();
-        if (seq !== _grpLoadSeq) return;
+        if (seq !== _grpLoadSeq) { return; }
         uiState.grpRows = newGrpRows;
         syncGrpDirty();
         uiState.focusedIdx = null;
@@ -288,7 +288,7 @@ window.SyCodeMng = {
       const row = uiState.gridRows[idx];
       if (row._row_status === 'I') {
         uiState.gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else { row._row_status = 'D'; }
     };
 
@@ -297,7 +297,7 @@ window.SyCodeMng = {
       const row = uiState.gridRows[idx];
       if (row._row_status === 'I') {
         uiState.gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
     };
 
@@ -307,7 +307,7 @@ window.SyCodeMng = {
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = uiState.gridRows.length - 1; i >= 0; i--) {
         const row = uiState.gridRows[i];
-        if (!ids.has(row.codeId) || row._row_status === 'N') continue;
+        if (!ids.has(row.codeId) || row._row_status === 'N') { continue; }
         if (row._row_status === 'I') { uiState.gridRows.splice(i, 1); }
         else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
@@ -316,9 +316,9 @@ window.SyCodeMng = {
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = uiState.gridRows.length - 1; i >= 0; i--) {
-        if (!uiState.gridRows[i]._row_check) continue;
-        if (uiState.gridRows[i]._row_status === 'I') uiState.gridRows.splice(i, 1);
-        else uiState.gridRows[i]._row_status = 'D';
+        if (!uiState.gridRows[i]._row_check) { continue; }
+        if (uiState.gridRows[i]._row_status === 'I') { uiState.gridRows.splice(i, 1); }
+        else { uiState.gridRows[i]._row_status = 'D'; }
       }
     };
 
@@ -332,11 +332,11 @@ window.SyCodeMng = {
         if (!r.codeGrp || !r.codeLabel || !r.codeValue) { showToast('코드그룹, 코드라벨, 코드값은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      if (iRows.length) { details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' }); }
+      if (uRows.length) { details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' }); }
+      if (dRows.length) { details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' }); }
       const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         uiState.loading = true;
         const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({
@@ -344,9 +344,9 @@ window.SyCodeMng = {
         }));
         await boApi.post('/bo/sy/code/save-list', saveRows, coUtil.cofApiHdr('공통코드관리', '저장'));
         const toastParts = [];
-        if (iRows.length) toastParts.push(`등록 ${iRows.length}건`);
-        if (uRows.length) toastParts.push(`수정 ${uRows.length}건`);
-        if (dRows.length) toastParts.push(`삭제 ${dRows.length}건`);
+        if (iRows.length) { toastParts.push(`등록 ${iRows.length}건`); }
+        if (uRows.length) { toastParts.push(`수정 ${uRows.length}건`); }
+        if (dRows.length) { toastParts.push(`삭제 ${dRows.length}건`); }
         showToast(`${toastParts.join(', ')} 저장되었습니다.`);
         await handleSearchList();
       } catch (err) {
@@ -387,7 +387,7 @@ window.SyCodeMng = {
     const handleSaveGrp = async () => {
       if (!uiState.grpDirtyCount) { showToast('변경된 행이 없습니다.', 'warning'); return; }
       const ok = await showConfirm('저장', `${uiState.grpDirtyCount}건 저장하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = uiState.grpRows
         .filter(r => r._row_status !== 'N')
         .map(r => ({
@@ -440,7 +440,7 @@ window.SyCodeMng = {
       const parentVals = new Set();
       visible.forEach(c => {
         const pv = c.parentCodeValue;
-        if (pv && byValue.has(pv)) parentVals.add(pv);
+        if (pv && byValue.has(pv)) { parentVals.add(pv); }
       });
       parentVals.forEach(v => treeExpanded.add(v));
       rebuildTree();
@@ -454,8 +454,8 @@ window.SyCodeMng = {
 
     /* codeToggleNode — 코드 트리 노드 토글 */
     const codeToggleNode = (codeValue) => {
-      if (treeExpanded.has(codeValue)) treeExpanded.delete(codeValue);
-      else treeExpanded.add(codeValue);
+      if (treeExpanded.has(codeValue)) { treeExpanded.delete(codeValue); }
+      else { treeExpanded.add(codeValue); }
       rebuildTree();
     };
 
@@ -491,13 +491,13 @@ window.SyCodeMng = {
     /* cfGrpSortParam — 그룹 정렬 파라미터 */
     const cfGrpSortParam = () => {
       const { grpSortKey, grpSortDir } = uiState;
-      if (!grpSortKey || !GRP_SORT_MAP[grpSortKey]) return {};
+      if (!grpSortKey || !GRP_SORT_MAP[grpSortKey]) { return {}; }
       return { sort: GRP_SORT_MAP[grpSortKey][grpSortDir] };
     };
 
     /* grpSortIcon — 그룹 정렬 아이콘 */
     const grpSortIcon = (key) => {
-      if (uiState.grpSortKey !== key) return '⇅';
+      if (uiState.grpSortKey !== key) { return '⇅'; }
       return uiState.grpSortDir === 'asc' ? '↑' : '↓';
     };
 
@@ -520,14 +520,14 @@ window.SyCodeMng = {
         });
       }
       flatTree.splice(0);
-      if (!uiState.selectedGrp) return;
+      if (!uiState.selectedGrp) { return; }
       const visible = uiState.gridRows.filter(r => r._row_status !== 'D');
       const byValue = new Map(visible.map(c => [c.codeValue, c]));
       const childMap = new Map();
       visible.forEach(c => {
         const pv = c.parentCodeValue || null;
-        if (!pv || !byValue.has(pv)) return;
-        if (!childMap.has(pv)) childMap.set(pv, []);
+        if (!pv || !byValue.has(pv)) { return; }
+        if (!childMap.has(pv)) { childMap.set(pv, []); }
         childMap.get(pv).push(c);
       });
       const roots = visible.filter(c => !c.parentCodeValue || !byValue.has(c.parentCodeValue));
@@ -537,7 +537,7 @@ window.SyCodeMng = {
       /* walk — walk */
       const walk = (node, depth) => {
         flatTree.push({ node, depth, isExpanded: treeExpanded.has(node.value) });
-        if (treeExpanded.has(node.value)) node.children.forEach(child => walk(child, depth + 1));
+        if (treeExpanded.has(node.value)) { node.children.forEach(child => walk(child, depth + 1)); }
       };
       roots.map(build).forEach(node => walk(node, 0));
     };

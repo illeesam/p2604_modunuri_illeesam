@@ -57,7 +57,7 @@ window.Location = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       const appKey = (window.SITE_CONFIG && window.SITE_CONFIG.kakaoMapKey) || '';
       if (appKey) {
       const s = document.createElement('script');
@@ -65,7 +65,7 @@ window.Location = {
       s.onload = () => {
       kakao.maps.load(() => {
       const el = document.getElementById('shopjoy-map');
-      if (!el) return;
+      if (!el) { return; }
       const map = new kakao.maps.Map(el, {
       center: new kakao.maps.LatLng(LAT, LNG),
       level: 4,

@@ -22,7 +22,7 @@ window.SyBbsMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
 
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
@@ -34,7 +34,7 @@ window.SyBbsMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -94,7 +94,7 @@ window.SyBbsMng = {
       const row = pathPickModal.row;
       if (row) {
         row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
+        if (row._row_status === 'N') { row._row_status = 'U'; }
       }
     };
 
@@ -131,7 +131,7 @@ window.SyBbsMng = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadBbmList();
       await handleSearchBbs('DEFAULT');
       const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
@@ -212,19 +212,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* handleDelete — 삭제 */
     const handleDelete = async (b) => {
       const ok = await showConfirm('삭제', `[${b.bbsTitle}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = bbss.findIndex(x => x.bbsId === b.bbsId);
-      if (idx !== -1) bbss.splice(idx, 1);
+      if (idx !== -1) { bbss.splice(idx, 1); }
       if (detailModal.dtlId === b.bbsId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.syBbs.remove(b.bbsId, '게시판관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

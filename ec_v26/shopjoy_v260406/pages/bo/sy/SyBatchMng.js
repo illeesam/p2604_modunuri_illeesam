@@ -52,7 +52,7 @@ window.SyBatchMng = {
       const row = pathPickModal.row;
       if (row) {
         row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
+        if (row._row_status === 'N') { row._row_status = 'U'; }
       }
     };
 
@@ -76,7 +76,7 @@ window.SyBatchMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -126,7 +126,7 @@ window.SyBatchMng = {
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') return;
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
       row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
     };
 
@@ -150,7 +150,7 @@ window.SyBatchMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else { row._row_status = 'D'; }
     };
 
@@ -159,9 +159,9 @@ window.SyBatchMng = {
       const row = gridRows[idx];
       if (row._row_status === 'I') {
         gridRows.splice(idx, 1);
-        if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0));
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else {
-        if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; });
+        if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
         row._row_status = 'N';
       }
     };
@@ -172,7 +172,7 @@ window.SyBatchMng = {
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
       for (let i = gridRows.length - 1; i >= 0; i--) {
         const row = gridRows[i];
-        if (!ids.has(row.batchId) || row._row_status === 'N') continue;
+        if (!ids.has(row.batchId) || row._row_status === 'N') { continue; }
         if (row._row_status === 'I') { gridRows.splice(i, 1); }
         else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
@@ -181,7 +181,7 @@ window.SyBatchMng = {
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
       for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) continue;
+        if (!gridRows[i]._row_check) { continue; }
         if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
         else { gridRows[i]._row_status = 'D'; }
       }
@@ -197,11 +197,11 @@ window.SyBatchMng = {
         if (!r.batchNm || !r.batchCode || !r.cronExpr) { showToast('배치명, 배치코드, Cron 표현식은 필수 항목입니다.', 'error'); return; }
       }
       const details = [];
-      if (iRows.length) details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' });
-      if (uRows.length) details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' });
-      if (dRows.length) details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' });
+      if (iRows.length) { details.push({ label: `등록 ${iRows.length}건`, cls: 'badge-blue' }); }
+      if (uRows.length) { details.push({ label: `수정 ${uRows.length}건`, cls: 'badge-orange' }); }
+      if (dRows.length) { details.push({ label: `삭제 ${dRows.length}건`, cls: 'badge-red' }); }
       const ok = await showConfirm('저장 확인', '다음 내용을 저장하시겠습니까?', { details, btnOk: '예', btnCancel: '아니오' });
-      if (!ok) return;
+      if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
         await boApiSvc.syBatch.saveList(saveRows, '배치관리', '저장');
@@ -218,10 +218,10 @@ window.SyBatchMng = {
     /* runNow — 실행 */
     const runNow = async (row) => {
       const ok = await showConfirm('즉시 실행', `[${row.batchNm}] 배치를 즉시 실행하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const src = batches.find(x => x.batchId === row.batchId);
       row.batchRunStatus = '실행중';
-      if (src) src.batchRunStatus = '실행중';
+      if (src) { src.batchRunStatus = '실행중'; }
       showToast('배치 실행을 시작했습니다.');
       setTimeout(() => {
         const now = new Date().toLocaleString('ko-KR').slice(0, 16);
@@ -236,7 +236,7 @@ window.SyBatchMng = {
     /* openCronPicker — 열기 */
     const openCronPicker = (realIdx) => {
       const row = gridRows[realIdx];
-      if (!row || row._row_status === 'D') return;
+      if (!row || row._row_status === 'D') { return; }
       cronModal.rowIdx = realIdx;
       cronModal.value  = row.cronExpr || '0 0 * * *';
       cronModal.show   = true;
@@ -256,7 +256,7 @@ window.SyBatchMng = {
     /* onDragOver — 드래그 오버 */
     const onDragOver = (e, idx) => {
       e.preventDefault();
-      if (dragSrc.value === null || dragSrc.value === idx) return;
+      if (dragSrc.value === null || dragSrc.value === idx) { return; }
       const moved = gridRows.splice(dragSrc.value, 1)[0];
       gridRows.splice(idx, 0, moved);
       dragSrc.value = idx; uiState.dragMoved = true;

@@ -34,7 +34,7 @@ window.OdOrderDtl = {
 
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const [orderRes, vendorsRes, deliveriesRes, claimsRes] = await Promise.all([
@@ -45,16 +45,16 @@ window.OdOrderDtl = {
         ]);
         const o = orderRes.data?.data || orderRes.data || {};
         Object.assign(form, { ...o });
-        if (!form.orderId) form.orderId = props.dtlId;
-        if (o.orderStatusCd) form.orderStatusCd = o.orderStatusCd;
-        if (o.payMethodCd) form.payMethodCd = o.payMethodCd;
-        if (o.payStatus) form.payStatusCd = o.payStatus;
-        else if (['취소','자동취소'].includes(o.orderStatusCd)) form.payStatusCd = '환불완료';
-        else if (['입금대기'].includes(o.orderStatusCd)) form.payStatusCd = '미결제';
-        else form.payStatusCd = '결제완료';
-        if (!form.payDate) form.payDate = o.orderDate || '';
-        if (!form.apprNo)   form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01';
-        if (!form.payIssuer) form.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[form.payMethodCd] || '-');
+        if (!form.orderId) { form.orderId = props.dtlId; }
+        if (o.orderStatusCd) { form.orderStatusCd = o.orderStatusCd; }
+        if (o.payMethodCd) { form.payMethodCd = o.payMethodCd; }
+        if (o.payStatus) { form.payStatusCd = o.payStatus; }
+        else if (['취소','자동취소'].includes(o.orderStatusCd)) { form.payStatusCd = '환불완료'; }
+        else if (['입금대기'].includes(o.orderStatusCd)) { form.payStatusCd = '미결제'; }
+        else { form.payStatusCd = '결제완료'; }
+        if (!form.payDate) { form.payDate = o.orderDate || ''; }
+        if (!form.apprNo) { form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01'; }
+        if (!form.payIssuer) { form.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[form.payMethodCd] || '-'); }
         vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.pageList || vendorsRes.data?.data?.list || []));
         deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.pageList || deliveriesRes.data?.data?.list || []));
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
@@ -143,19 +143,19 @@ window.OdOrderDtl = {
       }
       const isNewOrder = cfIsNew.value;
       const ok = await showConfirm(isNewOrder ? '등록' : '저장', isNewOrder ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await (isNewOrder
           ? boApiSvc.odOrder.create({ ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '등록')
           : boApiSvc.odOrder.update(form.orderId, { ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('odOrderMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('odOrderMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -178,7 +178,7 @@ window.OdOrderDtl = {
       ];
       return defs.map((d,i) => {
         const paid = Math.round(total * shares[i]);
-        if (paid <= 0) return null;
+        if (paid <= 0) { return null; }
         const sale = Math.round(paid / (1 - discRates[i]));
         const disc = sale - paid;
 
@@ -192,13 +192,13 @@ window.OdOrderDtl = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
       await initItems();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
@@ -208,7 +208,7 @@ window.OdOrderDtl = {
 
     /* 판매업체 */
     const cfRelatedVendor = computed(() => {
-      if (!form.vendorId) return null;
+      if (!form.vendorId) { return null; }
       return vendors.find(v => v.vendorId === form.vendorId) || null;
     });
 
@@ -237,7 +237,7 @@ window.OdOrderDtl = {
 
     /* trackingUrl — 추적 URL */
     const trackingUrl = (courier, no) => {
-      if (!no) return '';
+      if (!no) { return ''; }
       if (courier === 'CJ대한통운') return 'https://trace.cjlogistics.com/next/tracking.html?wblNo=' + no;
       if (courier === '롯데택배')   return 'https://www.lotteglogis.com/open/tracking?invno=' + no;
       if (courier === '한진택배')   return 'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2=' + no;
@@ -260,7 +260,7 @@ window.OdOrderDtl = {
       apprNo: form.apprNo || '-', issuer: form.payIssuer || '-',
     }] : []));
     const cfStatusHistList = computed(() => {
-      if (!form.orderId) return [];
+      if (!form.orderId) { return []; }
       const d = String(form.orderDate || '').slice(0,10) || '-';
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-', to:'입금대기', memo:'주문 접수' },
@@ -290,15 +290,15 @@ window.OdOrderDtl = {
 
     /* toggleExpandAll — 토글 */
     const toggleExpandAll = () => {
-      if (cfAllExpanded.value) expandedItems = new Set();
-      else expandedItems = new Set(orderItems.map((_,i) => i));
+      if (cfAllExpanded.value) { expandedItems = new Set(); }
+      else { expandedItems = new Set(orderItems.map((_,i) => i)); }
     };
 
     watch(orderItems, (list) => { expandedItems = new Set(list.map((_,i) => i)); });
 
     /* getExchangedItem — 조회 */
     const getExchangedItem = (it) => {
-      if (!cfRelatedClaim.value || cfRelatedClaim.value.type !== '교환') return null;
+      if (!cfRelatedClaim.value || cfRelatedClaim.value.type !== '교환') { return null; }
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리' };
 
       return {
@@ -376,7 +376,7 @@ window.OdOrderDtl = {
         trackBoxes: {
           items: () => {
             const c = cfRelatedClaim.value;
-            if (!c || c.type !== '교환') return [];
+            if (!c || c.type !== '교환') { return []; }
             return [
               ...(c.exchangeCourier ? [{ courier: c.exchangeCourier, trackingNo: c.exchangeTrackingNo, colorVariant: 'blue' }] : []),
               ...(c.courier         ? [{ label: '수거', courier: c.courier, trackingNo: c.trackingNo, colorVariant: 'orange' }] : []),
@@ -388,7 +388,7 @@ window.OdOrderDtl = {
 
     // pay_statuses 폴백 옵션 — sy_code 로딩 전엔 PAY_STATUS_FALLBACK 사용
     const cfPayStatusOptions = computed(() => {
-      if (codes.pay_statuses && codes.pay_statuses.length) return codes.pay_statuses;
+      if (codes.pay_statuses && codes.pay_statuses.length) { return codes.pay_statuses; }
       return PAY_STATUS_FALLBACK.map(v => ({ codeValue: v, codeLabel: v }));
     });
     const baseFormColumns = [

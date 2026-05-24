@@ -43,13 +43,13 @@ window.PmPlanDtl = {
       uiState.loading = true;
       try {
         const calls = [boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 10000 }, '요금제관리', '조회')];
-        if (!cfIsNew.value) calls.unshift(boApiSvc.pmPlan.getById(props.dtlId, '요금제관리', '상세조회'));
+        if (!cfIsNew.value) { calls.unshift(boApiSvc.pmPlan.getById(props.dtlId, '요금제관리', '상세조회')); }
         const results = await Promise.all(calls);
         if (!cfIsNew.value) {
           const p = results[0].data?.data || results[0].data;
           if (p) {
             Object.assign(form, { ...p, productIds: [...(p.productIds || [])] });
-            if (!form.visibilityTargets) form.visibilityTargets = '^PUBLIC^';
+            if (!form.visibilityTargets) { form.visibilityTargets = '^PUBLIC^'; }
           }
           products.splice(0, products.length, ...(results[1].data?.data?.list || []));
         } else {
@@ -125,11 +125,11 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
@@ -143,8 +143,8 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     /* toggleProduct — 토글 */
     const toggleProduct = (pid) => {
       const idx = form.productIds.indexOf(pid);
-      if (idx === -1) form.productIds.push(pid);
-      else form.productIds.splice(idx, 1);
+      if (idx === -1) { form.productIds.push(pid); }
+      else { form.productIds.splice(idx, 1); }
     };
 
     /* isSelected — 여부 확인 */
@@ -156,7 +156,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     /* removeProduct — 제거 */
     const removeProduct = (pid) => {
       const idx = form.productIds.indexOf(pid);
-      if (idx !== -1) form.productIds.splice(idx, 1);
+      if (idx !== -1) { form.productIds.splice(idx, 1); }
     };
 
     /* hasVisibility — 여부 확인 */
@@ -168,13 +168,13 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
     const toggleVisibility = (code) => {
       const targets = (form.visibilityTargets || '').split('^').filter(Boolean);
       const idx = targets.indexOf(code);
-      if (idx === -1) targets.push(code);
-      else targets.splice(idx, 1);
+      if (idx === -1) { targets.push(code); }
+      else { targets.splice(idx, 1); }
       form.visibilityTargets = '^' + targets.join('^') + '^';
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) return '소속업체 선택';
+      if (!form.vendorId) { return '소속업체 선택'; }
       const v = vendors.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
@@ -192,16 +192,16 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-      if (showToast) showToast(msg, 'success');
+      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+      if (showToast) { showToast(msg, 'success'); }
     };
 
     /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-      if (showToast) showToast(errMsg, 'error', 0);
+      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+      if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
     /* handleSave — 저장 */
@@ -220,7 +220,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
-        if (!ok) return;
+        if (!ok) { return; }
         try {
           const payload = { ...form };
           const res = isCreate
@@ -228,7 +228,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
             : await boApiSvc.pmPlan.update(cfCurId.value, payload, '요금제관리', '기본정보저장');
           if (isCreate) {
             const newId = res.data?.data?.planId || res.data?.planId || null;
-            if (newId) form.planId = newId;
+            if (newId) { form.planId = newId; }
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -236,7 +236,7 @@ watch(() => uiState.tab, v => { window._ecPlanDtlState.tab = v; });
       }
 
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
 
       const TAB_LABEL = { banner: '배너이미지', content: '내용입력', products: '대상상품' };
       let payload = null;

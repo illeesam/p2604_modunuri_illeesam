@@ -74,11 +74,11 @@ window.XsSample08 = {
         if (searchVal) {
           const types = searchParam.searchType || 'categoryNm,parentNm';
           const hits = [];
-          if (types.includes('categoryNm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
-          if (types.includes('parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
-          if (!hits.some(Boolean)) return false;
+          if (types.includes('categoryNm')) { hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal)); }
+          if (types.includes('parentNm')) { hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal)); }
+          if (!hits.some(Boolean)) { return false; }
         }
-        if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
+        if (searchParam.useYn && d.useYn !== searchParam.useYn) { return false; }
         return true;
       }).forEach(d => gridRows.push(makeRow(d)));
       fnBuildPagerNums();
@@ -86,7 +86,7 @@ window.XsSample08 = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList();
     });
 
@@ -127,11 +127,11 @@ window.XsSample08 = {
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
       for (const r of [...iRows, ...uRows]) { if (!r.categoryNm) { showToast('카테고리명은 필수 항목입니다.', 'error'); return; } }
       const parts = []; if (iRows.length) parts.push(`등록 ${iRows.length}건`); if (uRows.length) parts.push(`수정 ${uRows.length}건`); if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
-      if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) return;
+      if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) { return; }
       try {
-        for (const r of dRows) await api.delete(`${API}/${r.categoryId}`);
-        for (const r of uRows) await api.put(`${API}/${r.categoryId}`, toPayload(r));
-        for (const r of iRows) await api.post(API, toPayload(r));
+        for (const r of dRows) { await api.delete(`${API}/${r.categoryId}`); }
+        for (const r of uRows) { await api.put(`${API}/${r.categoryId}`, toPayload(r)); }
+        for (const r of iRows) { await api.post(API, toPayload(r)); }
         showToast(`${parts.join(', ')} 저장되었습니다.`);
         const res = await api.get(API, { cdGrp: CD_GRP });
         const list = res?.data?.data ?? res?.data ?? [];
@@ -142,11 +142,11 @@ window.XsSample08 = {
           if (searchVal) {
           const types = searchParam.searchType || 'categoryNm,parentNm';
           const hits = [];
-          if (types.includes('categoryNm'))       hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal));
-          if (types.includes('parentNm')) hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal));
-          if (!hits.some(Boolean)) return false;
+          if (types.includes('categoryNm')) { hits.push(String(d.categoryNm || '').toLowerCase().includes(searchVal)); }
+          if (types.includes('parentNm')) { hits.push(String(d.parentNm   || '').toLowerCase().includes(searchVal)); }
+          if (!hits.some(Boolean)) { return false; }
         }
-          if (searchParam.useYn && d.useYn !== searchParam.useYn) return false;
+          if (searchParam.useYn && d.useYn !== searchParam.useYn) { return false; }
           return true;
         }).forEach(d => gridRows.push(makeRow(d)));
         fnBuildPagerNums();

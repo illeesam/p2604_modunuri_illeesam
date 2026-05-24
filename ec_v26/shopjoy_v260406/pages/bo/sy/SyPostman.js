@@ -34,7 +34,7 @@ window.SyPostman = {
         params: (n.params || []).map(p => ({ ...p })),
         body: n.body || '',
       });
-      if (n.children) node.children = n.children.map(makeNode);
+      if (n.children) { node.children = n.children.map(makeNode); }
       return node;
     };
 
@@ -42,9 +42,9 @@ window.SyPostman = {
     const findParentLabel = (nodes, targetId) => {
       for (const n of nodes) {
         if (n.children) {
-          if (n.children.some(c => c.id === targetId)) return n.label;
+          if (n.children.some(c => c.id === targetId)) { return n.label; }
           const r = findParentLabel(n.children, targetId);
-          if (r !== null) return r;
+          if (r !== null) { return r; }
         }
       }
       return null;
@@ -151,12 +151,12 @@ window.SyPostman = {
       const searchVal = uiState.treeSearch.toLowerCase();
       const types = uiState.treeSearchType || 'label,url';
       for (const n of nodes) {
-        if (n.type === 'app' && !appFilter[n.appId]) continue;
+        if (n.type === 'app' && !appFilter[n.appId]) { continue; }
         if (searchVal && n.type === 'req') {
           const hits = [];
-          if (types.includes('label')) hits.push((n.label || '').toLowerCase().includes(searchVal));
-          if (types.includes('url'))   hits.push((n.url   || '').toLowerCase().includes(searchVal));
-          if (!hits.some(Boolean)) continue;
+          if (types.includes('label')) { hits.push((n.label || '').toLowerCase().includes(searchVal)); }
+          if (types.includes('url')) { hits.push((n.url   || '').toLowerCase().includes(searchVal)); }
+          if (!hits.some(Boolean)) { continue; }
         }
         result.push({ n, depth });
         if (n.type !== 'req' && (n.open || searchVal)) {
@@ -187,8 +187,8 @@ window.SyPostman = {
     const loadSettings = () => {
       try {
         const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-        if (s.hostUrl) uiState.hostUrl = s.hostUrl;
-        if (s.token)   uiState.token   = s.token;
+        if (s.hostUrl) { uiState.hostUrl = s.hostUrl; }
+        if (s.token) { uiState.token   = s.token; }
         if (s.defHeaders?.length) {
           defHeaders.splice(0);
           s.defHeaders.forEach(h => defHeaders.push({ ...h }));
@@ -209,7 +209,7 @@ window.SyPostman = {
         const k = localStorage.key(i);
         lsItems.push({ k, v: String(localStorage.getItem(k)).substring(0, 100) });
       }
-      if (!lsItems.length) lsItems.push({ k: '(비어 있음)', v: '-' });
+      if (!lsItems.length) { lsItems.push({ k: '(비어 있음)', v: '-' }); }
     };
 
     /* ===== Tab System ===== */
@@ -248,7 +248,7 @@ window.SyPostman = {
 
     /* selectApiNode — 선택 */
     const selectApiNode = node => {
-      if (node.type !== 'req') return;
+      if (node.type !== 'req') { return; }
       const existing = openTabs.find(t => t.nodeId === node.id);
       if (existing) { uiState.activeTabId = existing.tabId; return; }
       const tab = makeTab(node);
@@ -279,7 +279,7 @@ window.SyPostman = {
       stopAutoRun(tab.tabId);
       tab.autoMs    = ms;
       tab.autoLabel = label;
-      if (!ms) return;
+      if (!ms) { return; }
       _nextFire[tab.tabId] = Date.now() + ms;
       countdown[tab.tabId] = Math.ceil(ms / 1000);
       _timers[tab.tabId] = setInterval(() => {
@@ -326,13 +326,13 @@ window.SyPostman = {
       e?.stopPropagation();
       stopAutoRun(tabId);
       const idx = openTabs.findIndex(t => t.tabId === tabId);
-      if (idx === -1) return;
+      if (idx === -1) { return; }
       openTabs.splice(idx, 1);
       if (uiState.activeTabId === tabId) {
         const next = openTabs[idx] || openTabs[idx - 1];
         uiState.activeTabId = next ? next.tabId : null;
       }
-      if (uiState.autoPopupTabId === tabId) uiState.autoPopupTabId = null;
+      if (uiState.autoPopupTabId === tabId) { uiState.autoPopupTabId = null; }
     };
 
     /* closeAllTabs — 닫기 */
@@ -363,7 +363,7 @@ window.SyPostman = {
         if (elapsed >= TOAST_MS) {
           clearInterval(tick);
           const idx = toasts.findIndex(x => x.id === id);
-          if (idx !== -1) toasts.splice(idx, 1);
+          if (idx !== -1) { toasts.splice(idx, 1); }
         }
       }, 200);
       t._tick = tick;
@@ -395,7 +395,7 @@ window.SyPostman = {
     /* doSend — 실행 */
     const doSend = async (targetTab) => {
       const tab = targetTab || cfActiveTab.value;
-      if (!tab || !tab.reqUrl?.trim()) return;
+      if (!tab || !tab.reqUrl?.trim()) { return; }
       tab.sending = true;
       tab.resJson = ''; tab.resStatus = null; tab.resTime = null; tab.resData = null;
       const finalUrl = buildUrl(tab);
@@ -404,7 +404,7 @@ window.SyPostman = {
       const headers = {};
       defHeaders.filter(h => safeStr(h.k).trim()).forEach(h => { headers[safeStr(h.k)] = safeStr(h.v); });
       tab.reqHeaders.filter(h => safeStr(h.k).trim()).forEach(h => { headers[safeStr(h.k)] = safeStr(h.v); });
-      if (uiState.token.trim()) headers['Authorization'] = `Bearer ${uiState.token.trim()}`;
+      if (uiState.token.trim()) { headers['Authorization'] = `Bearer ${uiState.token.trim()}`; }
       let status = null, elapsed = null;
       try {
         const config = { method, url: finalUrl, headers };
@@ -440,7 +440,7 @@ window.SyPostman = {
             defHeaders: defHeaders.filter(h => safeStr(h.k).trim()).map(h => ({ k: safeStr(h.k), v: safeStr(h.v) })),
           },
         });
-        if (history.length > 50) history.splice(50);
+        if (history.length > 50) { history.splice(50); }
         if (status !== null) {
           pushToast({
             type:     status >= 200 && status < 300 ? 'info' : 'error',
@@ -485,15 +485,15 @@ window.SyPostman = {
 
     /* resendHist — 재전송 이력 */
     const resendHist = async () => {
-      if (!cfActiveTab.value) return;
+      if (!cfActiveTab.value) { return; }
       const tab = cfActiveTab.value;
       tab.reqMethod = editReq.method;
       tab.reqUrl    = editReq.url;
       tab.reqBody   = editReq.body || '';
       tab.reqParams.splice(0, tab.reqParams.length, ...editReq.params.map(p=>({...p})), {k:'',v:''});
       tab.reqHeaders.splice(0, tab.reqHeaders.length, ...editReq.headers.map(h=>({...h})), {k:'',v:''});
-      if (editReq.token) uiState.token   = editReq.token;
-      if (editReq.host)  uiState.hostUrl = editReq.host;
+      if (editReq.token) { uiState.token   = editReq.token; }
+      if (editReq.host) { uiState.hostUrl = editReq.host; }
       uiState.histResJson     = '';
       uiState.histResStatus   = null;
       uiState.histResTime     = null;
@@ -520,16 +520,16 @@ window.SyPostman = {
     /* ===== Response Grid (active tab) ===== */
     const cfResGridColumns = computed(() => {
       const d = cfActiveTab.value?.resData;
-      if (!d) return [];
+      if (!d) { return []; }
       const arr = Array.isArray(d) ? d : Array.isArray(d?.data) ? d.data : Array.isArray(d?.list) ? d.list : null;
       return arr?.length ? Object.keys(arr[0]) : [];
     });
     const cfResGridRows = computed(() => {
       const d = cfActiveTab.value?.resData;
-      if (!d) return [];
-      if (Array.isArray(d)) return d;
-      if (Array.isArray(d?.data)) return d.data;
-      if (Array.isArray(d?.list)) return d.list;
+      if (!d) { return []; }
+      if (Array.isArray(d)) { return d; }
+      if (Array.isArray(d?.data)) { return d.data; }
+      if (Array.isArray(d?.list)) { return d.list; }
       return [];
     });
 

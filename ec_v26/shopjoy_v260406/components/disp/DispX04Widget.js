@@ -20,30 +20,30 @@ window.DispX04Widget = {
       const w = props.widgetItem;
       const pm = props.params;
 
-      if (!w) return false;
+      if (!w) { return false; }
 
       // 상태 체크
-      if (w.status !== '활성') return false;
+      if (w.status !== '활성') { return false; }
 
       // ━━━ 위젯 라이브러리 참조 (dp_widget_lib) ━━━
       // 라이브러리는 마스터 템플릿이므로 useYn만 확인
       if (w.widgetLibRefYn === 'Y') {
         // ✓ 사용여부 체크 (widget lib 마스터)
-        if (w.useYn !== 'Y') return false;
+        if (w.useYn !== 'Y') { return false; }
       }
       // ━━━ 직접 생성 (dp_widget + dp_panel_item) ━━━
       else {
         // ✓ 사용여부 체크 (widget 마스터)
-        if (w.useYn !== 'Y') return false;
+        if (w.useYn !== 'Y') { return false; }
         // ✓ 전시여부 체크 (panel item 레벨)
-        if (w.dispYn !== 'Y') return false;
+        if (w.dispYn !== 'Y') { return false; }
 
         // ✓ 사용기간 체크 (widget 마스터)
         if (pm.date) {
           const t  = pm.time || '00:00';
           const dt = `${pm.date} ${t}`;
-          if (w.useStartDate && dt < `${w.useStartDate} 00:00`) return false;
-          if (w.useEndDate   && dt > `${w.useEndDate}   23:59`) return false;
+          if (w.useStartDate && dt < `${w.useStartDate} 00:00`) { return false; }
+          if (w.useEndDate   && dt > `${w.useEndDate}   23:59`) { return false; }
         }
 
         // ✓ 전시기간 체크 (panel item 레벨)
@@ -51,22 +51,22 @@ window.DispX04Widget = {
           const t  = pm.time || '00:00';
           const dt = `${pm.date}T${t}`;
           const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
-          if (w.dispStartDt && dt < _norm(w.dispStartDt)) return false;
-          if (w.dispEndDt   && dt > _norm(w.dispEndDt))   return false;
+          if (w.dispStartDt && dt < _norm(w.dispStartDt)) { return false; }
+          if (w.dispEndDt   && dt > _norm(w.dispEndDt)) { return false; }
         }
 
         // ✓ 전시환경 체크 (panel item 레벨)
-        if (w.dispEnv && pm.dispEnv && !w.dispEnv.includes('^' + pm.dispEnv + '^')) return false;
+        if (w.dispEnv && pm.dispEnv && !w.dispEnv.includes('^' + pm.dispEnv + '^')) { return false; }
       }
 
       const cond = w.condition;
-      if (cond === '항상 표시') return true;
+      if (cond === '항상 표시') { return true; }
       const isLoggedIn = pm?.isLoggedIn || false;
       const userGrade = pm?.userGrade || '';
-      if (cond === '로그인 필요')  return isLoggedIn;
-      if (cond === '비로그인')     return !isLoggedIn;
-      if (cond === '로그인+VIP')   return isLoggedIn && userGrade === 'VIP';
-      if (cond === '로그인+우수')  return isLoggedIn && (userGrade === '우수' || userGrade === 'VIP');
+      if (cond === '로그인 필요') { return isLoggedIn; }
+      if (cond === '비로그인') { return !isLoggedIn; }
+      if (cond === '로그인+VIP') { return isLoggedIn && userGrade === 'VIP'; }
+      if (cond === '로그인+우수') { return isLoggedIn && (userGrade === '우수' || userGrade === 'VIP'); }
       return true;
     });
 
@@ -75,7 +75,7 @@ window.DispX04Widget = {
     /* handleClick — 처리 */
     const handleClick = () => {
       const w = props.widgetItem;
-      if (!w.clickAction || w.clickAction === 'none') return;
+      if (!w.clickAction || w.clickAction === 'none') { return; }
       emit('click-action', { action: w.clickAction, target: w.clickTarget, widget: w });
     };
 
@@ -100,7 +100,7 @@ window.DispX04Widget = {
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
       const w = props.widgetItem;
-      if (!w.chartValues) return [];
+      if (!w.chartValues) { return []; }
       const vals   = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
       const labels = w.chartLabels ? w.chartLabels.split(',').map(l => l.trim()) : vals.map((_, i) => i + 1);
       const max    = Math.max(...vals, 1);
@@ -113,16 +113,16 @@ window.DispX04Widget = {
     /* getVideoEmbed — 조회 */
     const getVideoEmbed = (w) => {
       const url = (w.videoUrl || '').trim();
-      if (!url) return null;
+      if (!url) { return null; }
       if (w.videoType === 'youtube' || url.includes('youtube') || url.includes('youtu.be')) {
         const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^&\?\/\s]+)/);
-        if (!m) return null;
+        if (!m) { return null; }
         const params = `controls=${w.videoControls !== false ? 1 : 0}&mute=1`;
         return `https://www.youtube.com/embed/${m[1]}?${params}`;
       }
       if (w.videoType === 'vimeo' || url.includes('vimeo')) {
         const m = url.match(/vimeo\.com\/(\d+)/);
-        if (!m) return null;
+        if (!m) { return null; }
         return `https://player.vimeo.com/video/${m[1]}`;
       }
       return url;
@@ -130,7 +130,7 @@ window.DispX04Widget = {
 
     /* getMapEmbed — 조회 */
     const getMapEmbed = (w) => {
-      if (!w.mapAddress && !w.mapLat) return null;
+      if (!w.mapAddress && !w.mapLat) { return null; }
       const q = (w.mapLat && w.mapLng)
         ? `${w.mapLat},${w.mapLng}`
         : encodeURIComponent(w.mapAddress || '');

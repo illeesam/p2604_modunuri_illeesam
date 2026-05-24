@@ -78,7 +78,7 @@ window.StErpGenMng = {
     const doGenerate = async () => {
       if (!cfPreviewRows.value.length) { showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
       const ok = await showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       genHistory.unshift({
         genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
         slipCnt: cfPreviewRows.value.length,
@@ -87,13 +87,13 @@ window.StErpGenMng = {
       });
       try {
         const res = await boApiSvc.stErp.gen({ targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, '정산ERP생성', '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('ERP 전표가 생성되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('ERP 전표가 생성되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

@@ -37,7 +37,7 @@ window.Home02 = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     function fnCategoryLabel(p) {
-      if (!p) return '';
+      if (!p) { return ''; }
       const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
       const row = cats.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryNm : p.categoryId;
@@ -91,7 +91,7 @@ window.Home02 = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       if (!document.getElementById('home-grid-styles')) {
         const s = document.createElement('style');
         s.id = 'home-grid-styles';

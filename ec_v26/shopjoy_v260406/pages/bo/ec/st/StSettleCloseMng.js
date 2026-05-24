@@ -118,7 +118,7 @@ window.StSettleCloseMng = {
     const doClose = async () => {
       if (cfAlreadyClosed.value) { showToast('이미 마감된 월입니다.', 'error'); return; }
       const ok = await showConfirm('정산마감', `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`);
-      if (!ok) return;
+      if (!ok) { return; }
       closeList.unshift({
         closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
         sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value,
@@ -127,30 +127,30 @@ window.StSettleCloseMng = {
       });
       try {
         const res = await boApiSvc.stSettleClose.create({ closeMon: thisMonth, sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value, comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value }, '정산마감관리', '저장');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('정산마감이 완료되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('정산마감이 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* doReopen — 실행 */
     const doReopen = async (r) => {
       const ok = await showConfirm('마감취소', `${r.closeMon} 정산마감을 취소하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       r.status = '마감취소';
       try {
         const res = await boApiSvc.stSettleClose.reopen(r.settleCloseId || r.closeId, {}, '정산마감관리', '상태변경');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('마감이 취소되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('마감이 취소되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -164,11 +164,11 @@ window.StSettleCloseMng = {
       if (applied.searchValue) {
         const types = applied.searchType || 'closeMon,regUserNm';
         const hits = [];
-        if (types.includes('closeMon')) hits.push(r.closeMon && r.closeMon.includes(applied.searchValue));
-        if (types.includes('regUserNm')) hits.push(r.regUserNm && r.regUserNm.includes(applied.searchValue));
-        if (!hits.some(Boolean)) return false;
+        if (types.includes('closeMon')) { hits.push(r.closeMon && r.closeMon.includes(applied.searchValue)); }
+        if (types.includes('regUserNm')) { hits.push(r.regUserNm && r.regUserNm.includes(applied.searchValue)); }
+        if (!hits.some(Boolean)) { return false; }
       }
-      if (applied.searchStatus && r.status !== applied.searchStatus) return false;
+      if (applied.searchStatus && r.status !== applied.searchStatus) { return false; }
       return true;
     }));
 

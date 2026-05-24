@@ -36,14 +36,14 @@ window.PmVoucherDtl = {
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.pmVoucher.getById(props.dtlId, '바우처관리', '상세조회');
         const v = res.data?.data || res.data;
-        if (v) Object.assign(form, { ...v });
-        if (!form.startDate) form.startDate = DEFAULT_START;
-        if (!form.endDate) form.endDate = DEFAULT_END;
+        if (v) { Object.assign(form, { ...v }); }
+        if (!form.startDate) { form.startDate = DEFAULT_START; }
+        if (!form.endDate) { form.endDate = DEFAULT_END; }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -96,15 +96,15 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       if (cfIsNew.value) {
-      if (!form.startDate) form.startDate = DEFAULT_START;
-      if (!form.endDate) form.endDate = DEFAULT_END;
+      if (!form.startDate) { form.startDate = DEFAULT_START; }
+      if (!form.endDate) { form.endDate = DEFAULT_END; }
       }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
@@ -166,7 +166,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) return '소속업체 선택';
+      if (!form.vendorId) { return '소속업체 선택'; }
       const v = vendors.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
@@ -188,17 +188,17 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     /* sendSns — 전송 SNS */
     const sendSns = async () => {
       const ok = await showConfirm('SNS전송', `${form.voucherNm}을 ${snsModal.channel}로 전송하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       snsModal.show = false;
       try {
         const res = await boApiSvc.pmVoucher.sendSns(form.voucherId, { channel: snsModal.channel, message: uiState.snsMsg }, '바우처관리', '전송');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('SNS전송되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('SNS전송되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -207,24 +207,24 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     /* 신규: info 탭만 활성. 수정: info/detail 만 저장 의미 (issueHist/useHist/preview 는 조회 전용 → 비활성) */
     const cfSaveDisabled = computed(() => {
       const t = uiState.tab;
-      if (t === 'info') return false;
-      if (!cfHasId.value) return true;
-      if (t === 'detail') return false;
+      if (t === 'info') { return false; }
+      if (!cfHasId.value) { return true; }
+      if (t === 'detail') { return false; }
       return true;
     });
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-      if (showToast) showToast(msg, 'success');
+      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+      if (showToast) { showToast(msg, 'success'); }
     };
 
     /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-      if (showToast) showToast(errMsg, 'error', 0);
+      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+      if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
     /* handleSave — 저장 */
@@ -232,11 +232,11 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       const tabId = uiState.tab;
 
       if (cfSaveDisabled.value) {
-        if (!cfHasId.value && tabId !== 'info') showToast('먼저 기본정보 탭에서 등록해주세요.', 'error');
+        if (!cfHasId.value && tabId !== 'info') { showToast('먼저 기본정보 탭에서 등록해주세요.', 'error'); }
         return;
       }
 
-      if (tabId !== 'info' && tabId !== 'detail') return;
+      if (tabId !== 'info' && tabId !== 'detail') { return; }
 
       Object.keys(errors).forEach(k => delete errors[k]);
       try { await schema.validate(form, { abortEarly: false }); }
@@ -244,7 +244,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
       const isCreate = !cfHasId.value;
       const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const payload = { ...form };
         const res = isCreate
@@ -252,7 +252,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
           : await boApiSvc.pmVoucher.update(cfCurId.value, payload, '바우처관리', tabId === 'info' ? '기본정보저장' : '상세정보저장');
         if (isCreate) {
           const newId = res.data?.data?.voucherId || res.data?.voucherId || null;
-          if (newId) form.voucherId = newId;
+          if (newId) { form.voucherId = newId; }
         }
         _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
       } catch (err) { _afterApiErr(err); }

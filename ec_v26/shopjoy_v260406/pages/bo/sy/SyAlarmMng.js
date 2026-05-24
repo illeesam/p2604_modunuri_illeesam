@@ -27,7 +27,7 @@ window.SyAlarmMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -37,7 +37,7 @@ window.SyAlarmMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -94,7 +94,7 @@ window.SyAlarmMng = {
       const row = pathPickModal.row;
       if (row) {
         row.pathId = pathId;
-        if (row._row_status === 'N') row._row_status = 'U';
+        if (row._row_status === 'N') { row._row_status = 'U'; }
       }
     };
 
@@ -117,7 +117,7 @@ window.SyAlarmMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -216,19 +216,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* handleDelete — 삭제 */
     const handleDelete = async (a) => {
       const ok = await showConfirm('삭제', `[${a.alarmTitle}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = alarms.findIndex(x => x.alarmId === a.alarmId);
-      if (idx !== -1) alarms.splice(idx, 1);
+      if (idx !== -1) { alarms.splice(idx, 1); }
       if (detailModal.dtlId === a.alarmId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.syAlarm.remove(a.alarmId, '알람관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

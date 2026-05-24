@@ -113,7 +113,7 @@ window.DpDispWidgetLibDtl = {
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.dpWidgetLib.getById(props.dtlId, '전시위젯라이브러리', '상세조회');
@@ -191,20 +191,20 @@ window.DpDispWidgetLibDtl = {
 
     /* handleInitNewForm — 처리 */
     const handleInitNewForm = () => {
-      if (!cfIsNew.value) return;
+      if (!cfIsNew.value) { return; }
       form.libCode = fnGenLibCode();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadDetail();
       handleInitNewForm();
     });
 
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       Object.keys(errors).forEach(k => delete errors[k]);
       Object.assign(form, makeForm());
       await handleLoadDetail();
@@ -377,7 +377,7 @@ window.DpDispWidgetLibDtl = {
       const obj = { ...form };
       // 유형과 무관한 빈 필드 제거 (가독성)
       Object.keys(obj).forEach(k => {
-        if (obj[k] === '' || obj[k] === null) delete obj[k];
+        if (obj[k] === '' || obj[k] === null) { delete obj[k]; }
       });
       return JSON.stringify(obj, null, 2);
     });
@@ -466,8 +466,8 @@ window.DpDispWidgetLibDtl = {
         /* widgetConfigJson 의 html.default 도 동기화 (미리보기 어댑터 호환) */
         try {
           const schema = JSON.parse(form.widgetConfigJson || '{}');
-          if (!schema.properties) schema.properties = {};
-          if (!schema.properties.html) schema.properties.html = { type: 'string' };
+          if (!schema.properties) { schema.properties = {}; }
+          if (!schema.properties.html) { schema.properties.html = { type: 'string' }; }
           schema.properties.html.default = form.htmlContent || '';
           body.widgetConfigJson = JSON.stringify(schema);
         } catch (_) {
@@ -493,38 +493,38 @@ window.DpDispWidgetLibDtl = {
 
       const isNewLib = cfIsNew.value;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const body = _toApiBody();
         const id = body.widgetLibId;
         const res = await (isNewLib
           ? boApiSvc.dpWidgetLib.create(body, '전시위젯라이브러리', '등록')
           : boApiSvc.dpWidgetLib.update(id, body, '전시위젯라이브러리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispWidgetLibMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('dpDispWidgetLibMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       const ok = await showConfirm('삭제', '이 위젯 Lib를 삭제하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.dpWidgetLib.remove(form.libId, '전시위젯라이브러리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
       props.navigate('dpDispWidgetLibMng', { reload: true });
     };

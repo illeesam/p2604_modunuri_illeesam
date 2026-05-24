@@ -35,7 +35,7 @@ window.Home01 = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     function fnCategoryLabel(p) {
-      if (!p) return '';
+      if (!p) { return ''; }
       const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
       const row = cats.find(c => c.categoryId === p.categoryId);
       return row ? row.categoryNm : p.categoryId;
@@ -89,7 +89,7 @@ window.Home01 = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       // 컴포넌트 remount 시 동일 ID style 누적 방지
       if (!document.getElementById('home-grid-styles')) {
         const s = document.createElement('style');

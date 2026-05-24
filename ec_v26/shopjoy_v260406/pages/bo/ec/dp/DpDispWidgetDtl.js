@@ -118,7 +118,7 @@ window.DpDispWidgetDtl = {
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.dpWidget.getById(props.dtlId, '전시위젯관리', '상세조회');
@@ -197,13 +197,13 @@ window.DpDispWidgetDtl = {
 
     /* handleInitNewForm — 처리 */
     const handleInitNewForm = () => {
-      if (!cfIsNew.value) return;
+      if (!cfIsNew.value) { return; }
       form.libCode = fnGenWidgetCode();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadDetail();
       handleInitNewForm();
     });
@@ -211,7 +211,7 @@ window.DpDispWidgetDtl = {
     /* 정책: 수정 클릭 시 항상 상세 API 호출.
      * 부모 Mng 가 reloadTrigger 를 ++ 하면 (같은 id 재클릭 / 다른 id 클릭 모두 포함) form 초기화 후 새 데이터 로드 */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       Object.keys(errors).forEach(k => delete errors[k]);
       Object.assign(form, makeForm());
       await handleLoadDetail();
@@ -384,7 +384,7 @@ window.DpDispWidgetDtl = {
       const obj = { ...form };
       // 유형과 무관한 빈 필드 제거 (가독성)
       Object.keys(obj).forEach(k => {
-        if (obj[k] === '' || obj[k] === null) delete obj[k];
+        if (obj[k] === '' || obj[k] === null) { delete obj[k]; }
       });
       return JSON.stringify(obj, null, 2);
     });
@@ -489,38 +489,38 @@ window.DpDispWidgetDtl = {
 
       const isNewWidget = cfIsNew.value;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const body = _toApiBody();
         const id = body.widgetId;
         const res = await (isNewWidget
           ? boApiSvc.dpWidget.create(body, '전시위젯관리', '등록')
           : boApiSvc.dpWidget.update(id, body, '전시위젯관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispWidgetMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('dpDispWidgetMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
     /* handleDelete — 삭제 */
     const handleDelete = async () => {
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       const ok = await showConfirm('삭제', '이 위젯를 삭제하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         const res = await boApiSvc.dpWidget.remove(form.widgetId || form.libId, '전시위젯관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
       props.navigate('dpDispWidgetMng', { reload: true });
     };

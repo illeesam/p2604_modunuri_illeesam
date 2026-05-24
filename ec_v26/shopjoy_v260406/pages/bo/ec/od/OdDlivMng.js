@@ -22,7 +22,7 @@ window.OdDlivMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -32,7 +32,7 @@ window.OdDlivMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -109,7 +109,7 @@ window.OdDlivMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData('DEFAULT');
     });
 
@@ -177,20 +177,20 @@ window.OdDlivMng = {
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
       const ok = await showConfirm('삭제', `[${d.dlivId}]를 삭제하시겠습니까?`);
-      if (!ok) return;
-      if (!Array.isArray(deliveries)) return;
+      if (!ok) { return; }
+      if (!Array.isArray(deliveries)) { return; }
       const idx = deliveries.findIndex(x => x.dlivId === d.dlivId);
-      if (idx !== -1) deliveries.splice(idx, 1);
-      if (uiStateDetail.selectedId === d.dlivId) uiStateDetail.selectedId = null;
+      if (idx !== -1) { deliveries.splice(idx, 1); }
+      if (uiStateDetail.selectedId === d.dlivId) { uiStateDetail.selectedId = null; }
       try {
         const res = await boApiSvc.odDliv.remove(d.dlivId, '배송관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -210,8 +210,8 @@ window.OdDlivMng = {
     /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => {
       const s = new Set(checked);
-      if (cfAllChecked.value) deliveries.forEach(d => s.delete(d.dlivId));
-      else deliveries.forEach(d => s.add(d.dlivId));
+      if (cfAllChecked.value) { deliveries.forEach(d => s.delete(d.dlivId)); }
+      else { deliveries.forEach(d => s.add(d.dlivId)); }
       checked = s;
     };
     const COURIER_OPTIONS = ['CJ대한통운','롯데택배','한진택배','우체국택배','로젠택배'];
@@ -234,12 +234,12 @@ window.OdDlivMng = {
       const ids = Array.from(checked);
       const first = window.safeArrayUtils.safeFind(Array.isArray(deliveries) ? deliveries : [], d => ids.includes(d.dlivId));
       if (!first) { bulkForm.reqTargetNm = ''; return; }
-      if (bulkForm.reqTarget === '주문')      bulkForm.reqTargetNm = first.orderId || '';
-      else if (bulkForm.reqTarget === '배송') bulkForm.reqTargetNm = first.dlivId || '';
+      if (bulkForm.reqTarget === '주문') { bulkForm.reqTargetNm = first.orderId || ''; }
+      else if (bulkForm.reqTarget === '배송') { bulkForm.reqTargetNm = first.dlivId || ''; }
       else if (bulkForm.reqTarget === '상품') {
         const o = (Array.isArray(orders) ? orders : []).find(x => x.orderId === first.orderId);
         bulkForm.reqTargetNm = o ? (o.prodNm || '') : '';
-      } else bulkForm.reqTargetNm = first.dlivId || '';
+      } else { bulkForm.reqTargetNm = first.dlivId || ''; }
     };
     const cfBuildTmplMsg = computed(() => (bulkForm.tmplMsg || '')
       .replace('{target}', bulkForm.reqTarget || '-')
@@ -260,29 +260,29 @@ window.OdDlivMng = {
       uiState.bulkOpen = true;
     };
     const cfBulkPreview = computed(() => {
-      if (!uiState.bulkOpen) return '';
+      if (!uiState.bulkOpen) { return ''; }
       const ids = Array.from(checked);
       const selected = window.safeArrayUtils.safeFilter(deliveries, d => ids.includes(d.dlivId));
       let rows = [];
       if (uiState.bulkTab === 'status') {
-        if (!bulkForm.status) return '';
+        if (!bulkForm.status) { return ''; }
         rows = selected.map(d => `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 배송상태 변경: ${d.dlivStatusCd || '-'} → ${bulkForm.status}`);
       } else if (uiState.bulkTab === 'courier') {
-        if (!bulkForm.courier && !bulkForm.trackingNo) return '';
+        if (!bulkForm.courier && !bulkForm.trackingNo) { return ''; }
         rows = selected.map(d => {
           const parts = [];
-          if (bulkForm.courier) parts.push(`택배사: ${d.outboundCourierCd || '-'} → ${bulkForm.courier}`);
-          if (bulkForm.trackingNo) parts.push(`운송장: ${d.outboundTrackingNo || '-'} → ${bulkForm.trackingNo}`);
+          if (bulkForm.courier) { parts.push(`택배사: ${d.outboundCourierCd || '-'} → ${bulkForm.courier}`); }
+          if (bulkForm.trackingNo) { parts.push(`운송장: ${d.outboundTrackingNo || '-'} → ${bulkForm.trackingNo}`); }
           return `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 택배정보 변경: ${parts.join(', ')}`;
         });
       } else if (uiState.bulkTab === 'approval') {
-        if (!bulkForm.apprAction) return '';
+        if (!bulkForm.apprAction) { return ''; }
         rows = selected.map(d => `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 결재처리: ${bulkForm.apprAction}${bulkForm.apprComment ? ' / '+bulkForm.apprComment : ''}`);
       } else if (uiState.bulkTab === 'approvalReq') {
-        if (!bulkForm.apprToUserId) return '';
+        if (!bulkForm.apprToUserId) { return ''; }
         rows = selected.map(d => `- [${d.dlivId} / ${d.recvNm || d.memberNm}] [배송관리] 추가결재요청 → ${bulkForm.apprToNm}(${bulkForm.apprToUserId}) / 대상:${bulkForm.reqTarget}-${bulkForm.reqTargetNm} / 금액:${Number(bulkForm.reqAmount||0).toLocaleString()}원`);
       }
-      if (!rows.length) return '';
+      if (!rows.length) { return ''; }
       return `※ 총 ${rows.length}건\n` + rows.join('\n');
     });
 
@@ -293,60 +293,60 @@ window.OdDlivMng = {
       if (uiState.bulkTab === 'status') {
         if (!bulkForm.status) { showToast('변경할 배송상태를 선택하세요.', 'error'); return; }
         const ok = await showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) d.dlivStatusCd = bulkForm.status; });
         checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.bulkStatus({ ids, status: bulkForm.status }, '배송관리', '일괄처리');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${ids.length}건 변경되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'courier') {
         if (!bulkForm.courier && !bulkForm.trackingNo) { showToast('택배사 또는 운송장번호를 입력하세요.', 'error'); return; }
         const ok = await showConfirm('일괄 택배정보 변경', `선택한 ${ids.length}건의 택배정보를 변경하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(deliveries, d => {
           if (ids.includes(d.dlivId)) {
-            if (bulkForm.courier) d.outboundCourierCd = bulkForm.courier;
-            if (bulkForm.trackingNo) d.outboundTrackingNo = bulkForm.trackingNo;
+            if (bulkForm.courier) { d.outboundCourierCd = bulkForm.courier; }
+            if (bulkForm.trackingNo) { d.outboundTrackingNo = bulkForm.trackingNo; }
           }
         });
         checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.bulkCourier({ ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo }, '배송관리', '택배정보');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${ids.length}건 변경되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approval') {
         if (!bulkForm.apprAction) { showToast('결재처리 구분을 선택하세요.', 'error'); return; }
         const ok = await showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
         checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.bulkApproval({ ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, '배송관리', '결재처리');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${ids.length}건 처리되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${ids.length}건 처리되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approvalReq') {
         if (!bulkForm.apprToUserId) { showToast('추가결재자(회원)를 선택하세요.', 'error'); return; }
         const ok = await showConfirm('일괄 추가결재요청', `선택한 ${ids.length}건을 [${bulkForm.apprToNm}](으)로 추가결재요청 하시겠습니까?`);
-        if (!ok) return;
+        if (!ok) { return; }
         window.safeArrayUtils.safeForEach(deliveries, d => { if (ids.includes(d.dlivId)) {
           d.apprToUserId = bulkForm.apprToUserId; d.apprToNm = bulkForm.apprToNm;
           d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
@@ -355,13 +355,13 @@ window.OdDlivMng = {
         checked = new Set(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.bulkApprovalReq({ ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '배송관리', '추가결재요청');
-          if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-          if (showToast) showToast(`${ids.length}건 요청되었습니다.`, 'success');
+          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+          if (showToast) { showToast(`${ids.length}건 요청되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-          if (showToast) showToast(errMsg, 'error', 0);
+          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+          if (showToast) { showToast(errMsg, 'error', 0); }
         }
       }
     };
@@ -450,7 +450,7 @@ window.OdDlivMng = {
     // 택배사/운송장번호 (courier 탭) — courier_codes 가 비어있으면 COURIER_OPTIONS 폴백
     const cfCourierOpts = Vue.computed(() => {
       const arr = codes.courier_codes;
-      if (arr && arr.length) return arr;
+      if (arr && arr.length) { return arr; }
       return COURIER_OPTIONS.map(v => ({ codeValue: v, codeLabel: v }));
     });
     const bulkCourierFormColumns = [

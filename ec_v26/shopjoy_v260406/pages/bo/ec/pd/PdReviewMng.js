@@ -43,7 +43,7 @@ window.PdReviewMng = {
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) return {};
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
@@ -53,7 +53,7 @@ window.PdReviewMng = {
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') uiState.sortDir = 'desc';
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
       pager.pageNo = 1;
@@ -85,7 +85,7 @@ window.PdReviewMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
     const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -123,7 +123,7 @@ window.PdReviewMng = {
 
     /* previewProduct — 미리보기 상품 */
     const previewProduct = (prodId) => {
-      if (!prodId) return;
+      if (!prodId) { return; }
       window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
 
@@ -152,7 +152,7 @@ window.PdReviewMng = {
 
     /* onProdIdClick — 이벤트 */
     const onProdIdClick = async (prodId) => {
-      if (!prodId) return;
+      if (!prodId) { return; }
       if (selectedProdId.value === prodId) {
         selectedProdId.value = null;
         prodReviews.splice(0);
@@ -184,7 +184,7 @@ window.PdReviewMng = {
 
     /* openStatusModal — 열기 */
     const openStatusModal = (row, newStatus) => {
-      if (!newStatus || newStatus === row.reviewStatusCd) return;
+      if (!newStatus || newStatus === row.reviewStatusCd) { return; }
       statusModal.row = row;
       statusModal.newStatus = newStatus;
       statusModal.reason = '';
@@ -195,7 +195,7 @@ window.PdReviewMng = {
     const onStatusSelectChange = (row, evt) => {
       const newStatus = evt && evt.target ? evt.target.value : '';
       openStatusModal(row, newStatus);
-      if (evt && evt.target && row) evt.target.value = row.reviewStatusCd;
+      if (evt && evt.target && row) { evt.target.value = row.reviewStatusCd; }
     };
 
     /* 모달 표시용 — row 의 안전 접근 (template 의 ?. 표현식 회피) */
@@ -217,7 +217,7 @@ window.PdReviewMng = {
       const row = statusModal.row;
       const newStatus = statusModal.newStatus;
       const reason = (statusModal.reason || '').trim();
-      if (!row) return;
+      if (!row) { return; }
       if (!reason) { showToast('변경 사유를 입력해주세요.', 'error'); return; }
       try {
         const res = await boApiSvc.pdReview.updateStatus(
@@ -234,14 +234,14 @@ window.PdReviewMng = {
         if (cfSelectedRow.value && cfSelectedRow.value.reviewId === row.reviewId) {
           cfSelectedRow.value.reviewStatusCd = newStatus;
         }
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast(`상태가 [${STATUS_LABEL[newStatus]}] 로 변경되었습니다.`, 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(`상태가 [${STATUS_LABEL[newStatus]}] 로 변경되었습니다.`, 'success'); }
         statusModal.show = false;
       } catch (err) {
         console.error('[confirmStatusChange]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

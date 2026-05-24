@@ -46,7 +46,7 @@ window.EventView = {
     /* 백엔드 PmEventDto.Item → 화면 표준 형태로 정규화 (benefits/eventItems 연관정보 포함) */
     const cfEvent    = computed(() => {
       const raw = events.length > 0 ? events[0] : null;
-      if (!raw) return null;
+      if (!raw) { return null; }
       return {
         id:            raw.eventId,
         title:         raw.eventTitle || raw.eventNm || '',

@@ -26,7 +26,7 @@ window.foAppFooter = {
     const goItem = (root, target) => {
       if (root === 'foOffice') {
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + (target ? '#page=' + target : '');
-        if (target && typeof window.navigate === 'function') window.navigate(target);
+        if (target && typeof window.navigate === 'function') { window.navigate(target); }
       } else if (root === 'boOffice') {
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + (target ? '#page=' + target : ''), '_blank');
       } else if (root === 'dispFoUi') {

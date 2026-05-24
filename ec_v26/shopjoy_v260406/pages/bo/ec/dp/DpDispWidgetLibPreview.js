@@ -15,7 +15,7 @@ const _WidgetPreview = {
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
       const w = props.lib;
-      if (!w || !w.chartValues) return [];
+      if (!w || !w.chartValues) { return []; }
       const values = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
       const labels = w.chartLabels ? w.chartLabels.split(',').map(l => l.trim()) : values.map((_,i)=>String(i+1));
       const max = Math.max(...values, 1);
@@ -236,14 +236,14 @@ window.DpDispWidgetLibPreview = {
       const searchVal = applied.searchValue;
       const types = applied.searchType || 'widgetNm,tag,widgetLibDesc';
       return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
-        if (applied.type   && lib.widgetType !== applied.type) return false;
-        if (applied.status && lib.status     !== applied.status) return false;
+        if (applied.type   && lib.widgetType !== applied.type) { return false; }
+        if (applied.status && lib.status     !== applied.status) { return false; }
         if (searchVal) {
           const hits = [];
-          if (types.includes('widgetNm'))   hits.push((lib.name || '').toLowerCase().includes(searchVal));
-          if (types.includes('tag'))  hits.push((lib.tags || '').toLowerCase().includes(searchVal));
-          if (types.includes('widgetLibDesc')) hits.push((lib.desc || '').toLowerCase().includes(searchVal));
-          if (!hits.some(Boolean)) return false;
+          if (types.includes('widgetNm')) { hits.push((lib.name || '').toLowerCase().includes(searchVal)); }
+          if (types.includes('tag')) { hits.push((lib.tags || '').toLowerCase().includes(searchVal)); }
+          if (types.includes('widgetLibDesc')) { hits.push((lib.desc || '').toLowerCase().includes(searchVal)); }
+          if (!hits.some(Boolean)) { return false; }
         }
         return true;
       });
@@ -259,11 +259,11 @@ window.DpDispWidgetLibPreview = {
       /* addToPath — 추가 */
       const addToPath = (lib, pathStr) => {
         const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
-        if (!parts.length) return;
+        if (!parts.length) { return; }
         const top = window.safeArrayUtils.safeGet(parts, 0);
         const rest = parts.slice(1).join(' > ') || '(루트)';
-        if (!map[top]) map[top] = {};
-        if (!map[top][rest]) map[top][rest] = [];
+        if (!map[top]) { map[top] = {}; }
+        if (!map[top][rest]) { map[top][rest] = []; }
         map[top][rest].push(lib);
       };
       window.safeArrayUtils.safeForEach(cfFilteredLibs.value, lib => {
@@ -285,8 +285,8 @@ window.DpDispWidgetLibPreview = {
 
     /* toggleNode — 노드 토글 */
     const toggleNode = (key) => {
-      if (openNodes.has(key)) openNodes.delete(key);
-      else openNodes.add(key);
+      if (openNodes.has(key)) { openNodes.delete(key); }
+      else { openNodes.add(key); }
     };
 
     /* isOpen — 여부 확인 */
@@ -302,17 +302,17 @@ window.DpDispWidgetLibPreview = {
       const open = !allChildrenOpen(node);
       window.safeArrayUtils.safeForEach(node.children, (sub) => {
         const key = node.label + '_' + sub.label;
-        if (open) openNodes.add(key);
-        else openNodes.delete(key);
+        if (open) { openNodes.add(key); }
+        else { openNodes.delete(key); }
       });
-      if (open) openNodes.add(node.label);
+      if (open) { openNodes.add(node.label); }
     };
     watchEffect(() => {
-      if (!openNodes.has('__root__')) openNodes.add('__root__');
+      if (!openNodes.has('__root__')) { openNodes.add('__root__'); }
       const treeArr = Array.isArray(cfTree.value) ? cfTree.value : [];
       if (treeArr.length && openNodes.size === 1) {
         const firstNode = treeArr[0];
-        if (firstNode && firstNode.label) openNodes.add(firstNode.label);
+        if (firstNode && firstNode.label) { openNodes.add(firstNode.label); }
       }
     });
 
@@ -396,11 +396,11 @@ window.DpDispWidgetLibPreview = {
     /* autoExpand — 자동 펼치기 */
     const autoExpand = (tabId) => {
       const cols = GRID_COLS[tabId];
-      if (!cols) return;
+      if (!cols) { return; }
       const arr = tabSlots[tabId];
       const lastRowStart = arr.length - cols;
       if (arr.slice(lastRowStart).some(Boolean)) {
-        for (let i = 0; i < cols; i++) arr.push(null);
+        for (let i = 0; i < cols; i++) { arr.push(null); }
       }
     };
 
@@ -428,7 +428,7 @@ window.DpDispWidgetLibPreview = {
         let placed = 0, i = idx;
         while (placed < nodeLibs.length) {
           if (i >= arr.length) {
-            for (let c = 0; c < cols; c++) arr.push(null);
+            for (let c = 0; c < cols; c++) { arr.push(null); }
           }
           if (!arr[i]) { arr.splice(i, 1, { ...nodeLibs[placed], colSpan: 1, rowSpan: 1 }); placed++; }
           i++;
@@ -439,7 +439,7 @@ window.DpDispWidgetLibPreview = {
 
       /* -- 단일 위젯 배치 -- */
       const lib = window._dragWidgetLib;
-      if (!lib) return;
+      if (!lib) { return; }
       const tabId = uiState.previewGrid;
       tabSlots[tabId].splice(idx, 1, { ...lib, colSpan: 1, rowSpan: 1 });
       autoExpand(tabId);
@@ -451,10 +451,10 @@ window.DpDispWidgetLibPreview = {
     /* setSpan — 설정 */
     const setSpan = (idx, axis, delta) => {
       const slot = tabSlots[uiState.previewGrid][idx];
-      if (!slot) return;
+      if (!slot) { return; }
       const maxCol = GRID_COLS[uiState.previewGrid] || 1;
-      if (axis === 'col') slot.colSpan = Math.max(1, Math.min(maxCol, (slot.colSpan || 1) + delta));
-      if (axis === 'row') slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan || 1) + delta));
+      if (axis === 'col') { slot.colSpan = Math.max(1, Math.min(maxCol, (slot.colSpan || 1) + delta)); }
+      if (axis === 'row') { slot.rowSpan = Math.max(1, Math.min(4,      (slot.rowSpan || 1) + delta)); }
     };
 
     /* -- span 팝업 -- */
@@ -479,7 +479,7 @@ window.DpDispWidgetLibPreview = {
     /* onDashDrop — 이벤트 */
     const onDashDrop = (e) => {
       e.preventDefault(); uiState.dashDragOver = false;
-      if (!dashCanvas.value) return;
+      if (!dashCanvas.value) { return; }
       const rect = dashCanvas.value.getBoundingClientRect();
 
       /* -- 노드 일괄 배치 -- */
@@ -503,7 +503,7 @@ window.DpDispWidgetLibPreview = {
 
       /* -- 단일 위젯 배치 -- */
       const lib = window._dragWidgetLib;
-      if (!lib) return;
+      if (!lib) { return; }
       const x = Math.max(0, e.clientX - rect.left - 110);
       const y = Math.max(0, e.clientY - rect.top  - 20);
       dashItems.push({ id: Date.now(), lib: { ...lib }, x, y, w: 240, h: 180 });
@@ -512,7 +512,7 @@ window.DpDispWidgetLibPreview = {
     /* removeDashItem — 제거 */
     const removeDashItem = (id) => {
       const i = dashItems.findIndex(d => d.id === id);
-      if (i >= 0) dashItems.splice(i, 1);
+      if (i >= 0) { dashItems.splice(i, 1); }
     };
 
     /* startItemMove — 시작 항목 이동 */

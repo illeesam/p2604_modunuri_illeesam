@@ -61,7 +61,7 @@ window.SyBbmMng = {
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
 
@@ -143,19 +143,19 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     /* handleDelete — 삭제 */
     const handleDelete = async (b) => {
       const ok = await showConfirm('삭제', `[${b.bbmNm}]을 삭제하시겠습니까?`);
-      if (!ok) return;
+      if (!ok) { return; }
       const idx = bbms.findIndex(x => x.bbmId === b.bbmId);
-      if (idx !== -1) bbms.splice(idx, 1);
+      if (idx !== -1) { bbms.splice(idx, 1); }
       if (detailModal.dtlId === b.bbmId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.syBbm.remove(b.bbmId, '게시판모드관리', '삭제');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('삭제되었습니다.', 'success');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 

@@ -134,14 +134,14 @@ window.DpDispAreaDtl = {
 
     // ★ onMounted
     onMounted(async () => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadData();
       handleInitForm();
     });
 
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       Object.keys(errors).forEach(k => delete errors[k]);
       await handleLoadData();
       handleInitForm();
@@ -161,7 +161,7 @@ window.DpDispAreaDtl = {
     const movePanel = (idx, dir) => {
       const arr = cfRelatedPanels.value;
       const target = idx + dir;
-      if (target < 0 || target >= arr.length) return;
+      if (target < 0 || target >= arr.length) { return; }
       const a = arr[idx], b = arr[target];
       const tmp = a.sortOrder; a.sortOrder = b.sortOrder; b.sortOrder = tmp;
       showToast && showToast(`[${a.name}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
@@ -235,7 +235,7 @@ window.DpDispAreaDtl = {
     /* selectTab — 선택 */
     const selectTab = (key) => { uiState.activeTab = key; };
     const cfActivePanel = computed(() => {
-      if (!activeTab.value.startsWith('panel_')) return null;
+      if (!activeTab.value.startsWith('panel_')) { return null; }
       const id = Number(activeTab.value.replace('panel_', ''));
       return cfRelatedPanels.value.find(p => p.dispId === id) || null;
     });
@@ -260,7 +260,7 @@ window.DpDispAreaDtl = {
       }
       const isNewArea = cfIsNew.value;
       const ok = await showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       /* form 별칭 → DpArea Entity 필드 매핑 */
       const body = { ...form };
       body.areaId       = form.codeId    || form.areaId || null;
@@ -275,14 +275,14 @@ window.DpDispAreaDtl = {
       body.pathId       = form.pathId;
       try {
         const res = await (isNewArea ? boApiSvc.dpArea.create(body, '전시영역관리', '등록') : boApiSvc.dpArea.update(body.areaId, body, '전시영역관리', '저장'));
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('저장되었습니다.', 'success');
-        if (props.navigate) props.navigate('dpDispAreaMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('dpDispAreaMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
@@ -291,7 +291,7 @@ window.DpDispAreaDtl = {
 
     /* openPanelPreview — 열기 */
     const openPanelPreview = () => {
-      if (!form.codeValue) return showToast && showToast('영역코드를 먼저 입력하세요.', 'error');
+      if (!form.codeValue) { return showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); }
       const areaPageMap = {
         'HOME_BANNER':'', 'HOME_PRODUCT':'', 'HOME_CHART':'', 'HOME_EVENT':'',
         'PRODUCT_TOP':'#page=prod01list', 'PRODUCT_BTM':'#page=prod01list',
@@ -303,7 +303,7 @@ window.DpDispAreaDtl = {
 
     /* openWidgetPreview — 열기 */
     const openWidgetPreview = (scope) => {
-      if (!cfActivePanel.value) return showToast && showToast('미리볼 패널을 선택하세요.', 'error');
+      if (!cfActivePanel.value) { return showToast && showToast('미리볼 패널을 선택하세요.', 'error'); }
       const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
       window.open(`${window.pageUrl(file)}?areas=${form.codeValue}&date=${form.regDate}&time=00:00`, '_blank', 'width=1280,height=900');
     };
@@ -322,7 +322,7 @@ window.DpDispAreaDtl = {
 
     /* addPanelShortcut — 추가 */
     const addPanelShortcut = () => {
-      if (!form.codeId) return showToast && showToast('먼저 영역을 저장해주세요.', 'error');
+      if (!form.codeId) { return showToast && showToast('먼저 영역을 저장해주세요.', 'error'); }
       props.navigate('dpDispPanelDtl', { id: null, preset: { area: form.codeValue } });
     };
 
@@ -331,15 +331,15 @@ window.DpDispAreaDtl = {
 
     /* hasPanelVisibility — 여부 확인 */
     const hasPanelVisibility = (code) => {
-      if (!cfActivePanel.value) return false;
-      if (!cfActivePanel.value.visibilityTargets) cfActivePanel.value.visibilityTargets = '^PUBLIC^';
+      if (!cfActivePanel.value) { return false; }
+      if (!cfActivePanel.value.visibilityTargets) { cfActivePanel.value.visibilityTargets = '^PUBLIC^'; }
       return window.visibilityUtil.has(cfActivePanel.value.visibilityTargets, code);
     };
 
     /* togglePanelVisibility — 패널 토글 */
     const togglePanelVisibility = (code) => {
-      if (!cfActivePanel.value) return;
-      if (!cfActivePanel.value.visibilityTargets) cfActivePanel.value.visibilityTargets = '^PUBLIC^';
+      if (!cfActivePanel.value) { return; }
+      if (!cfActivePanel.value.visibilityTargets) { cfActivePanel.value.visibilityTargets = '^PUBLIC^'; }
       const list = window.visibilityUtil.parse(cfActivePanel.value.visibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
@@ -360,15 +360,15 @@ window.DpDispAreaDtl = {
 
     /* hasAreaDispEnv — 여부 확인 */
     const hasAreaDispEnv = (code) => {
-      if (!cfActivePanel.value) return false;
-      if (!cfActivePanel.value.areaDispEnv) cfActivePanel.value.areaDispEnv = '^PROD^';
+      if (!cfActivePanel.value) { return false; }
+      if (!cfActivePanel.value.areaDispEnv) { cfActivePanel.value.areaDispEnv = '^PROD^'; }
       return cfActivePanel.value.areaDispEnv.includes('^' + code + '^');
     };
 
     /* toggleAreaDispEnv — 영역 토글 */
     const toggleAreaDispEnv = (code) => {
-      if (!cfActivePanel.value) return;
-      if (!cfActivePanel.value.areaDispEnv) cfActivePanel.value.areaDispEnv = '^PROD^';
+      if (!cfActivePanel.value) { return; }
+      if (!cfActivePanel.value.areaDispEnv) { cfActivePanel.value.areaDispEnv = '^PROD^'; }
       const envList = cfActivePanel.value.areaDispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);

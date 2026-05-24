@@ -37,8 +37,8 @@ window.DispX03Panel = {
 
     const cfLayoutStyle = computed(() => {
       const layout = props.dispOpt?.layout || 'vertical';
-      if (layout === 'horizontal') return 'display:flex;gap:12px;overflow-x:auto;';
-      if (layout === 'grid')       return 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;';
+      if (layout === 'horizontal') { return 'display:flex;gap:12px;overflow-x:auto;'; }
+      if (layout === 'grid') { return 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;'; }
       return 'display:flex;flex-direction:column;gap:12px;';
     });
 

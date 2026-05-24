@@ -36,16 +36,16 @@ window.PmGiftDtl = {
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       await loadVendors();
-      if (cfIsNew.value) return;
+      if (cfIsNew.value) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.pmGift.getById(props.dtlId, '선물관리', '상세조회');
         const g = res.data?.data || res.data;
-        if (g) Object.assign(form, g);
+        if (g) { Object.assign(form, g); }
         // Entity minOrderAmt/minOrderQty → UI 단일 condVal 매핑
         if (g) {
-          if (g.giftTypeCd === '수량조건') form.condVal = Number(g.minOrderQty) || 0;
-          else form.condVal = Number(g.minOrderAmt) || 0;
+          if (g.giftTypeCd === '수량조건') { form.condVal = Number(g.minOrderQty) || 0; }
+          else { form.condVal = Number(g.minOrderAmt) || 0; }
         }
         uiState.error = null;
       } catch (err) {
@@ -99,11 +99,11 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     // ★ onMounted
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
@@ -122,7 +122,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) return '소속업체 선택';
+      if (!form.vendorId) { return '소속업체 선택'; }
       const v = vendors.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
@@ -134,9 +134,9 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
     };
 
     const cfCondValLabel = computed(() => {
-      if (form.giftTypeCd === '금액조건') return '기준금액 (원 이상)';
-      if (form.giftTypeCd === '수량조건') return '기준수량 (개 이상)';
-      if (form.giftTypeCd === '구매조건') return '기준금액 (원 이상)';
+      if (form.giftTypeCd === '금액조건') { return '기준금액 (원 이상)'; }
+      if (form.giftTypeCd === '수량조건') { return '기준수량 (개 이상)'; }
+      if (form.giftTypeCd === '구매조건') { return '기준금액 (원 이상)'; }
       return '조건값';
     });
 
@@ -148,16 +148,16 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-      if (showToast) showToast(msg, 'success');
+      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+      if (showToast) { showToast(msg, 'success'); }
     };
 
     /* _afterApiErr — 후 API 오류 */
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-      if (showToast) showToast(errMsg, 'error', 0);
+      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+      if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
     /* ── 탭별 저장: info=신규/전체저장, visibility=공개대상만 부분 PUT ── */
@@ -179,7 +179,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
-        if (!ok) return;
+        if (!ok) { return; }
         try {
           const payload = { ...form };
           // UI 단일 condVal → Entity minOrderQty / minOrderAmt 매핑
@@ -190,7 +190,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
             : await boApiSvc.pmGift.update(cfCurId.value, payload, '선물관리', '기본정보저장');
           if (isCreate) {
             const newId = res.data?.data?.giftId || res.data?.giftId || null;
-            if (newId) form.giftId = newId;
+            if (newId) { form.giftId = newId; }
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -198,7 +198,7 @@ watch(() => uiState.tab, v => { window._pmGiftDtlState.tab = v; });
       }
 
       const ok = await showConfirm('저장', '저장하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       let payload = null;
       switch (tabId) {
         case 'visibility': payload = { visibilityTargets: form.visibilityTargets }; break;

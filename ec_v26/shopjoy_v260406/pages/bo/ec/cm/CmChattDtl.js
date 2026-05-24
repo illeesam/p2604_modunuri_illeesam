@@ -37,12 +37,12 @@ window.CmChattDtl = {
 
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
-      if (!props.dtlId) return;
+      if (!props.dtlId) { return; }
       uiState.loading = true;
       try {
         const res = await boApiSvc.cmChatt.getById(props.dtlId, '채팅관리', '상세조회');
         uiState.chat = res.data?.data || null;
-        if (uiState.chat) uiState.chat.memberUnreadCnt = 0;
+        if (uiState.chat) { uiState.chat.memberUnreadCnt = 0; }
         scrollToBottom();
       } catch (err) {
         console.error('[catch-info]', err);
@@ -85,9 +85,9 @@ window.CmChattDtl = {
 
     /* refLabel — ref 라벨 */
     const refLabel = (msg) => {
-      if (msg.productId) return '[상품#' + msg.productId + ' 보기]';
-      if (msg.orderId) return '[' + msg.orderId + ' 보기]';
-      if (msg.claimId) return '[' + msg.claimId + ' 보기]';
+      if (msg.productId) { return '[상품#' + msg.productId + ' 보기]'; }
+      if (msg.orderId) { return '[' + msg.orderId + ' 보기]'; }
+      if (msg.claimId) { return '[' + msg.claimId + ' 보기]'; }
       return '';
     };
 
@@ -98,7 +98,7 @@ window.CmChattDtl = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
+      if (isAppReady.value) { fnLoadCodes(); }
       if (!cfIsNew.value) {
         handleSearchDetail();
         uiState.tab = 'chat';
@@ -108,14 +108,14 @@ window.CmChattDtl = {
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) return;
+      if (n === o || n === 0) { return; }
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });
 
     /* 회원의 다른 채팅 이력 */
     const cfMemberChats = computed(() => {
-      if (!uiState.chat) return [];
+      if (!uiState.chat) { return []; }
       return [];
     });
 
@@ -130,9 +130,9 @@ window.CmChattDtl = {
 
     /* sendReply — 전송 Reply */
     const sendReply = () => {
-      if (!uiState.replyText.trim()) return;
-      if (!uiState.chat) return;
-      if (!uiState.chat.messages) uiState.chat.messages = [];
+      if (!uiState.replyText.trim()) { return; }
+      if (!uiState.chat) { return; }
+      if (!uiState.chat.messages) { uiState.chat.messages = []; }
       uiState.chat.messages.push({ from: 'cs', text: uiState.replyText.trim(), time: new Date().toTimeString().slice(0, 5) });
       uiState.chat.lastMsg = uiState.replyText.trim();
       uiState.replyText = '';
@@ -142,7 +142,7 @@ window.CmChattDtl = {
 
     /* closeChat — 닫기 */
     const closeChat = () => {
-      if (!uiState.chat) return;
+      if (!uiState.chat) { return; }
       uiState.chat.chattStatusCd = '종료';
       showToast('채팅이 종료되었습니다.');
     };
@@ -161,7 +161,7 @@ window.CmChattDtl = {
         return;
       }
       const ok = await showConfirm('등록', '등록하시겠습니까?');
-      if (!ok) return;
+      if (!ok) { return; }
       try {
         /* CmChattRoom 엔티티 필드명에 맞춰 전송 */
         const payload = {
@@ -171,14 +171,14 @@ window.CmChattDtl = {
           chattStatusCd: form.chattStatusCd,
         };
         const res = await boApiSvc.cmChatt.create(payload, '채팅관리', '등록');
-        if (setApiRes) setApiRes({ ok: true, status: res.status, data: res.data });
-        if (showToast) showToast('등록되었습니다.', 'success');
-        if (props.navigate) props.navigate('cmChattMng', { reload: true });
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('등록되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('cmChattMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
-        if (showToast) showToast(errMsg, 'error', 0);
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
 
