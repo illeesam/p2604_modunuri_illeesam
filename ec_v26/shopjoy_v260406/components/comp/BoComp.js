@@ -51,6 +51,30 @@ window.BoPathTree = {
     const expanded = reactive(new Set([null]));
     const loading  = ref(false);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathTree : handleBtnAction -> ', cmd, param);
+      if (cmd === 'tree-expand-all') {
+        return expandAll();
+      } else if (cmd === 'tree-collapse-all') {
+        return collapseAll();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathTree : handleSelectAction -> ', cmd, param);
+      if (cmd === 'tree-node-toggle') {
+        return toggleNode(param);
+      } else if (cmd === 'tree-node-select') {
+        return selectNode(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* buildTree */
     const buildTree = (list, rootBizCd) => {
       const filtered = list.filter(p => p.useYn !== 'N');
@@ -132,13 +156,17 @@ window.BoPathTree = {
     watch(() => props.bizCd, () => { delete _cache[props.bizCd]; load(); });
     onMounted(load);
 
-    return { tree, expanded, loading, toggleNode, selectNode, expandAll, collapseAll };
+    return {
+      tree, expanded, loading,                            // 상태
+      handleBtnAction, handleSelectAction,                // dispatch
+      toggleNode, selectNode,                             // 자식 컴포넌트 콜백
+    };
   },
   template: /* html */`
 <div>
   <div style="display:flex;gap:4px;margin-bottom:8px;">
-    <button class="btn btn-sm" @click="expandAll"  style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-    <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+    <button class="btn btn-sm" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">▼ 전체펼치기</button>
+    <button class="btn btn-sm" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">▶ 전체닫기</button>
   </div>
   <div v-if="loading" style="font-size:11px;color:#aaa;padding:8px;text-align:center;">로딩중...</div>
   <bo-path-tree-node v-else
@@ -164,30 +192,48 @@ window.BoPathTreeNode = {
     depth:     { type: Number,   default: 0 },
     showBizCd: { type: Boolean,  default: false },
   },
-  methods: {
-    onNodeHover(evt) {
-      if (!evt || !evt.currentTarget) return;
-      const isSel = (this.selected === this.node.pathId);
-      evt.currentTarget.style.background = isSel ? '#fff0f4' : '#f8f9fb';
-    },
-    onNodeLeave(evt) {
-      if (!evt || !evt.currentTarget) return;
-      const isSel = (this.selected === this.node.pathId);
-      evt.currentTarget.style.background = isSel ? '#fff0f4' : 'transparent';
-    },
+  setup(props) {
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathTreeNode : handleBtnAction -> ', cmd, param);
+      if (cmd === 'node-toggle') {
+        return props.onToggle(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathTreeNode : handleSelectAction -> ', cmd, param);
+      if (cmd === 'node-select') {
+        return props.onSelect(param);
+      } else if (cmd === 'node-hover') {
+        if (!param || !param.currentTarget) return;
+        param.currentTarget.style.background = (props.selected === props.node.pathId) ? '#fff0f4' : '#f8f9fb';
+      } else if (cmd === 'node-leave') {
+        if (!param || !param.currentTarget) return;
+        param.currentTarget.style.background = (props.selected === props.node.pathId) ? '#fff0f4' : 'transparent';
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return { handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div>
-  <div @click="onSelect(node.pathId)"
+  <div @click="handleSelectAction('node-select', node.pathId)"
     :style="{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 6px', cursor:'pointer', borderRadius:'4px',
     paddingLeft: (8 + depth*14) + 'px',
     background: selected===node.pathId ? '#fff0f4' : 'transparent',
     color:      selected===node.pathId ? '#e8587a' : '#444',
     fontWeight: selected===node.pathId ? 700 : 400 }"
-    @mouseover="onNodeHover($event)"
-    @mouseout="onNodeLeave($event)">
+    @mouseover="handleSelectAction('node-hover', $event)"
+    @mouseout="handleSelectAction('node-leave', $event)">
     <span v-if="(node.children||[]).length>0" style="width:14px;font-size:10px;color:#999;flex-shrink:0"
-      @click.stop="onToggle(node.pathId)">
+      @click.stop="handleBtnAction('node-toggle', node.pathId)">
       {{ expanded.has(node.pathId) ? '▼' : '▶' }}
     </span>
     <span v-else style="width:14px;flex-shrink:0"></span>
@@ -242,6 +288,34 @@ window.BoCategoryTree = {
     const expandedSet = reactive(new Set());
     const loading = ref(false);
     const pickerSearch = ref('');
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoCategoryTree : handleBtnAction -> ', cmd, param);
+      if (cmd === 'tree-expand-all') {
+        return expandAll();
+      } else if (cmd === 'tree-collapse-all') {
+        return collapseAll();
+      } else if (cmd === 'picker-close') {
+        return onClose();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoCategoryTree : handleSelectAction -> ', cmd, param);
+      if (cmd === 'tree-node-select') {
+        return onSelect(param);
+      } else if (cmd === 'tree-node-toggle') {
+        return toggleNode(param);
+      } else if (cmd === 'picker-select') {
+        return onPickerSelect(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     /* DEPTH_COLOR */
     const DEPTH_COLOR  = d => ({0:'#e8587a', 1:'#1677ff', 2:'#3ba87a'}[d] || '#999');
@@ -334,17 +408,19 @@ window.BoCategoryTree = {
 
     onMounted(load);
 
-    return { loading, categories, cfTreeFlat, cfPickerList, expandedSet, pickerSearch,
-             toggleNode, expandAll, collapseAll, onSelect, onClose, onPickerSelect,
-             DEPTH_COLOR, DEPTH_BULLET };
+    return {
+      loading, categories, cfTreeFlat, cfPickerList, expandedSet, pickerSearch,  // 상태 / computed
+      handleBtnAction, handleSelectAction,                                       // dispatch
+      DEPTH_COLOR, DEPTH_BULLET,                                                 // 헬퍼
+    };
   },
   template: /* html */`
 <template v-if="mode==='tree'">
   <div v-if="loading" style="font-size:11px;color:#aaa;padding:12px;text-align:center;">로딩중...</div>
   <template v-else>
     <div style="display:flex;gap:4px;margin-bottom:8px">
-      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
-      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
+      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">▼ 전체</button>
+      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">▶ 닫기</button>
     </div>
     <!-- 전체 루트 항목 -->
     <div style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;margin-bottom:2px"
@@ -352,7 +428,7 @@ window.BoCategoryTree = {
       color:      selected===null ? '#e8587a' : '#555',
       fontWeight: selected===null ? 700 : 500,
       borderLeft: selected===null ? '3px solid #e8587a' : '3px solid transparent' }"
-      @click="onSelect(null)">
+      @click="handleSelectAction('tree-node-select', null)">
       <span style="width:14px;flex-shrink:0"></span>
       <span style="font-size:11px;font-weight:700;color:#e8587a;margin-right:4px">★</span>
       <span style="font-size:12px">전체</span>
@@ -364,10 +440,10 @@ window.BoCategoryTree = {
       color:      selected===cat.categoryId ? '#e8587a' : '#333',
       fontWeight: selected===cat.categoryId ? 600 : 400,
       borderLeft: selected===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
-      @click="onSelect(cat.categoryId)">
+      @click="handleSelectAction('tree-node-select', cat.categoryId)">
       <span v-if="cat._hasChildren"
         style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
-        @click.stop="toggleNode(cat.categoryId)">
+        @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
         {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
       </span>
       <span v-else style="width:14px;flex-shrink:0"></span>
@@ -385,11 +461,11 @@ window.BoCategoryTree = {
   </template>
 </template>
 <teleport v-else-if="mode==='picker'" to="body">
-  <div v-if="show" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="onClose">
+  <div v-if="show" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="handleBtnAction('picker-close')">
     <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
       <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0f0;background:linear-gradient(135deg,#fff0f4,#ffe4ec);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
         <span style="font-weight:700;font-size:15px;">카테고리 선택</span>
-        <button type="button" @click="onClose" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888;">✕</button>
+        <button type="button" @click="handleBtnAction('picker-close')" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888;">✕</button>
       </div>
       <div style="padding:8px 12px;">
         <input class="form-control" v-model="pickerSearch" placeholder="카테고리 검색..." style="font-size:13px;" />
@@ -400,8 +476,8 @@ window.BoCategoryTree = {
           <div v-if="loading" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">로딩중...</div>
           <template v-else>
             <div style="display:flex;gap:4px;margin:0 4px 6px">
-              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="expandAll">▼ 전체</button>
-              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="collapseAll">▶ 닫기</button>
+              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">▼ 전체</button>
+              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">▶ 닫기</button>
             </div>
             <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
               style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
@@ -410,10 +486,10 @@ window.BoCategoryTree = {
               pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
               @mouseover="$event.currentTarget.style.background='#fce4ec'"
               @mouseout="$event.currentTarget.style.background=''"
-              @click="onPickerSelect(cat)">
+              @click="handleSelectAction('picker-select', cat)">
               <span v-if="cat._hasChildren"
                 style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
-                @click.stop="toggleNode(cat.categoryId)">
+                @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
                 {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
               </span>
               <span v-else style="width:14px;flex-shrink:0"></span>
@@ -430,7 +506,7 @@ window.BoCategoryTree = {
         <template v-else>
           <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
           <div v-for="cat in cfPickerList" :key="cat.categoryId"
-            @click="onPickerSelect(cat)"
+            @click="handleSelectAction('picker-select', cat)"
             style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;"
             :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
             pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
@@ -548,6 +624,29 @@ window.BoMultiCheckSelect = {
     const { ref, computed, watch, onMounted, onBeforeUnmount } = Vue;
     const open = ref(false);
     const rootRef = ref(null);
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoMultiCheckSelect : handleBtnAction -> ', cmd, param);
+      if (cmd === 'select-toggle') {
+        return onToggle();
+      } else if (cmd === 'select-click-all') {
+        return onClickAll();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoMultiCheckSelect : handleSelectAction -> ', cmd, param);
+      if (cmd === 'select-click-option') {
+        return onClickOption(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* noneMode: 사용자가 '전체 선택'을 해제해 명시적으로 전부 비운 상태.
        (modelValue 빈값('')은 호출부에서 '전체'로 해석되므로, 빈값만으로는
         '아무것도 선택 안 함'을 표현할 수 없다 → 체크 표시 보정용 내부 상태) */
@@ -637,11 +736,14 @@ window.BoMultiCheckSelect = {
     onMounted(() => document.addEventListener('mousedown', onDocClick));
     onBeforeUnmount(() => document.removeEventListener('mousedown', onDocClick));
 
-    return { open, rootRef, noneMode, cfNorm, cfSelected, cfIsAll, cfDisplay, onToggle, onClickOption, onClickAll };
+    return {
+      open, rootRef, noneMode, cfNorm, cfSelected, cfIsAll, cfDisplay,  // 상태 / computed
+      handleBtnAction, handleSelectAction,                              // dispatch
+    };
   },
   template: /* html */`
 <div ref="rootRef" class="multi-check-select" :style="'position:relative;display:inline-block;min-width:'+minWidth">
-  <div @click="onToggle"
+  <div @click="handleBtnAction('select-toggle')"
     :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
     {{ cfDisplay }}
     <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">▼</span>
@@ -649,14 +751,14 @@ window.BoMultiCheckSelect = {
   <div v-if="open"
     style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:280px;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:4px 0;">
     <label v-if="showAll" style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-weight:600;white-space:nowrap;">
-      <input type="checkbox" :checked="cfIsAll" @change="onClickAll" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
+      <input type="checkbox" :checked="cfIsAll" @change="handleBtnAction('select-click-all')" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
       <span style="white-space:nowrap;">{{ allLabel }}</span>
     </label>
     <label v-for="o in cfNorm" :key="o.value"
       style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;white-space:nowrap;"
       @mouseenter="$event.currentTarget.style.background='#f9fafb'"
       @mouseleave="$event.currentTarget.style.background='transparent'">
-      <input type="checkbox" :checked="cfSelected.has(o.value)" @change="onClickOption(o.value)" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
+      <input type="checkbox" :checked="cfSelected.has(o.value)" @change="handleSelectAction('select-click-option', o.value)" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
       <span style="white-space:nowrap;">{{ o.label }}</span>
     </label>
   </div>
@@ -716,6 +818,30 @@ window.BoDateTimePicker = {
   setup(props, { emit }) {
     const { computed } = Vue;
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoDateTimePicker : handleBtnAction -> ', cmd, param);
+      if (cmd === 'picker-now') {
+        return onNow();
+      } else if (cmd === 'picker-clear') {
+        return onClear();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoDateTimePicker : handleSelectAction -> ', cmd, param);
+      if (cmd === 'picker-date-change') {
+        return onDateChange(param);
+      } else if (cmd === 'picker-time-change') {
+        return onTimeChange(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* 분리 모드 여부 — date/time prop 이 바인딩됐거나 splitMode 강제 시 */
     const cfSplit = computed(() => props.splitMode || props.date != null || props.time != null);
 
@@ -763,25 +889,28 @@ window.BoDateTimePicker = {
     const cfBaseStyle = computed(() =>
       props.inputClass ? '' : 'font-size:11px;padding:3px 7px;border:1px solid #d0d0d0;border-radius:6px;');
 
-    return { cfParts, cfBaseStyle, onDateChange, onTimeChange, onNow, onClear };
+    return {
+      cfParts, cfBaseStyle,                  // computed
+      handleBtnAction, handleSelectAction,   // dispatch
+    };
   },
   template: /* html */`
 <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;">
   <input type="date" :class="inputClass" :value="cfParts.date"
-    :disabled="readonly" @change="onDateChange"
+    :disabled="readonly" @change="handleSelectAction('picker-date-change', $event)"
     :style="cfBaseStyle+'width:'+dateWidth+';margin:0;flex-shrink:0;'" />
   <input type="time" :class="inputClass" :value="cfParts.time"
-    :disabled="readonly" @change="onTimeChange"
+    :disabled="readonly" @change="handleSelectAction('picker-time-change', $event)"
     :style="cfBaseStyle+'width:'+timeWidth+';margin:0;flex-shrink:0;'" />
   <span v-if="placeholderDate && !cfParts.date && !cfParts.time"
     style="font-size:11px;color:#aaa;white-space:nowrap;">
     {{ placeholderDate }}
   </span>
-  <button v-if="showNow && !readonly" type="button" @click="onNow"
+  <button v-if="showNow && !readonly" type="button" @click="handleBtnAction('picker-now')"
     style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
     🕐 현재
   </button>
-  <button v-if="showClear && !readonly && (cfParts.date || cfParts.time)" type="button" @click="onClear"
+  <button v-if="showClear && !readonly && (cfParts.date || cfParts.time)" type="button" @click="handleBtnAction('picker-clear')"
     style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
     ✕ 지움
   </button>
@@ -837,12 +966,38 @@ window.BoPathPickField = {
       show.value = false;
       emit('change', pathId);
     };
-    const onHover = (e) => {
-      if (props.disabled || !e || !e.currentTarget) return;
-      e.currentTarget.style.background = '#eef2ff';
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathPickField : handleBtnAction -> ', cmd, param);
+      if (cmd === 'pathPick-open') {
+        return onOpen();
+      } else if (cmd === 'pathPick-close') {
+        return onClose();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
     };
-    const onLeave = (e) => { if (e && e.currentTarget) e.currentTarget.style.background = '#fff'; };
-    return { show, cfLabel, cfHasVal, onOpen, onClose, onPicked, onHover, onLeave };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathPickField : handleSelectAction -> ', cmd, param);
+      if (cmd === 'pathPick-picked') {
+        return onPicked(param);
+      } else if (cmd === 'pathPick-hover') {
+        if (props.disabled || !param || !param.currentTarget) return;
+        param.currentTarget.style.background = '#eef2ff';
+      } else if (cmd === 'pathPick-leave') {
+        if (param && param.currentTarget) param.currentTarget.style.background = '#fff';
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return {
+      show, cfLabel, cfHasVal,                // 상태 / computed
+      handleBtnAction, handleSelectAction,    // dispatch
+    };
   },
   template: /* html */`
 <component :is="bare ? 'div' : 'td'">
@@ -853,17 +1008,17 @@ window.BoPathPickField = {
     display:'flex',alignItems:'center',gap:'6px'}">
     <span style="flex:1;">{{ cfLabel || placeholder }}</span>
     <button type="button" :disabled="disabled"
-      @click.stop="onOpen" @dblclick.stop="onOpen"
+      @click.stop="handleBtnAction('pathPick-open')" @dblclick.stop="handleBtnAction('pathPick-open')"
       :title="modalTitle"
       :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
-      @mouseover="onHover($event)" @mouseout="onLeave($event)">
+      @mouseover="handleSelectAction('pathPick-hover', $event)" @mouseout="handleSelectAction('pathPick-leave', $event)">
       🔍
     </button>
   </div>
   <path-pick-modal v-if="show" :biz-cd="bizCd"
     :value="row ? row[pathField] : null"
     :title="modalTitle"
-    @select="onPicked" @close="onClose" />
+    @select="handleSelectAction('pathPick-picked', $event)" @close="handleBtnAction('pathPick-close')" />
 </component>
 `,
 };
@@ -879,6 +1034,38 @@ window.BoPropTreeNode = {
     onSelect: { type: Function, default: () => {} }, // 콜백 함수
     depth:    { type: Number, default: 0 }, // 전달값
   },
+  components: { 'bo-prop-tree-node': null },
+  created() { this.$options.components['bo-prop-tree-node'] = window.BoPropTreeNode; },
+  setup(props) {
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPropTreeNode : handleBtnAction -> ', cmd, param);
+      if (cmd === 'node-toggle') {
+        return props.onToggle(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPropTreeNode : handleSelectAction -> ', cmd, param);
+      if (cmd === 'node-select') {
+        return props.onSelect(param);
+      } else if (cmd === 'node-hover') {
+        if (!param || !param.currentTarget) return;
+        param.currentTarget.style.background = (props.selected === props.node.path) ? '#fff0f4' : '#f8f9fb';
+      } else if (cmd === 'node-leave') {
+        if (!param || !param.currentTarget) return;
+        param.currentTarget.style.background = (props.selected === props.node.path) ? '#fff0f4' : 'transparent';
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return { handleBtnAction, handleSelectAction };
+  },
   template: /* html */`
 <div>
   <!-- ===== ■. 영역 ====================================================== -->
@@ -887,14 +1074,14 @@ window.BoPropTreeNode = {
     background: selected===node.path ? '#fff0f4' : 'transparent',
     color:      selected===node.path ? '#e8587a' : '#444',
     fontWeight: selected===node.path ? 700 : 400}"
-    @mouseover="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : '#f8f9fb'"
-    @mouseout="$event.currentTarget.style.background = selected===node.path ? '#fff0f4' : 'transparent'">
+    @mouseover="handleSelectAction('node-hover', $event)"
+    @mouseout="handleSelectAction('node-leave', $event)">
     <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;"
-      @click.stop="onToggle(node.path)">
+      @click.stop="handleBtnAction('node-toggle', node.path)">
       {{ expanded.has(node.path) ? '▼' : '▶' }}
     </span>
     <span v-else style="width:14px;"></span>
-    <span style="font-size:13px;flex:1;" @click="onSelect(node.path)">{{ node.name || '전체' }}</span>
+    <span style="font-size:13px;flex:1;" @click="handleSelectAction('node-select', node.path)">{{ node.name || '전체' }}</span>
     <span v-if="node._badge"
       :style="{fontSize:'9px',padding:'1px 5px',borderRadius:'7px',color:'#fff',fontWeight:700,background:node._badge[1]}">
       {{ node._badge[0] }}
@@ -904,7 +1091,7 @@ window.BoPropTreeNode = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="expanded.has(node.path) && node.children.length>0">
-    <bo-path-tree-node v-for="ch in node.children" :key="ch.path"
+    <bo-prop-tree-node v-for="ch in node.children" :key="ch.path"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
   </div>
@@ -926,6 +1113,30 @@ window.BoDeptTreeNode = {
   },
   components: { 'bo-dept-tree-node': null },
   created() { this.$options.components['bo-dept-tree-node'] = window.BoDeptTreeNode; },
+  setup(props) {
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoDeptTreeNode : handleBtnAction -> ', cmd, param);
+      if (cmd === 'node-toggle') {
+        return props.onToggle(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoDeptTreeNode : handleSelectAction -> ', cmd, param);
+      if (cmd === 'node-select') {
+        return props.onSelect(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return { handleBtnAction, handleSelectAction };
+  },
   template: `
 <div>
   <!-- ===== ■. 영역 ====================================================== -->
@@ -934,9 +1145,9 @@ window.BoDeptTreeNode = {
     borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
     fontWeight: selected === node.deptId ? '600' : 'normal',
     color: selected === node.deptId ? '#e8587a' : '#333' }"
-    @click.stop="onSelect(node.deptId)">
+    @click.stop="handleSelectAction('node-select', node.deptId)">
     <span v-if="node.children && node.children.length"
-      @click.stop="onToggle(node.deptId)"
+      @click.stop="handleBtnAction('node-toggle', node.deptId)"
       style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
       {{ expanded.has(node.deptId) ? '▼' : '▶' }}
     </span>

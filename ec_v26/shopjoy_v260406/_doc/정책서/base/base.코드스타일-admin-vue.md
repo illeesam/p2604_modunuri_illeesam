@@ -1175,9 +1175,49 @@ pathModal-pick            ← 경로 선택 모달 선택
 - **기준 PoC**: [SyRoleMng.js:32-132](../../../pages/bo/sy/SyRoleMng.js#L32) — handleBtnAction 19 cmd + handleSelectAction 13 cmd, **9개 도메인 영역** (`searchParam`, `roles`, `roles-row`, `pathTree`, `config`, `roleMenus`, `roleUsers`, `parentModal`, `pathModal`). 모든 영역명이 setup() 안 reactive 변수명과 일치. template + 컬럼 콜백 안 모든 이벤트가 dispatch 경유. 각 if 위 + return 아래 한글 주석 부여.
 - **return 객체 단순화 효과**: SyRoleMng 기준 55개 → 17개 (-69%). [SyRoleMng.js:711-720](../../../pages/bo/sy/SyRoleMng.js#L711) 참조.
 
-### BO + FO 전체 일괄 적용 이력 (2026-05-24 ~ 2026-05-25) ⭐
+### BO + FO + 공통 컴포넌트 전체 일괄 적용 이력 (2026-05-24 ~ 2026-05-25) ⭐
 
-**BO 121개 + FO 54개 = 총 175개 파일 100% dispatch 패턴 적용 완료** — sy + ec/{cm,mb,od,pd,pm,dp,st} + zd + Dashboard + FO 전 페이지.
+**BO 121개 + FO 54개 + 공통 16개 = 총 191개 파일 100% dispatch 패턴 적용 완료** (placeholder 1개 + 의도적 제외 2개).
+- BO: 121/121 (sy 34, ec 95, zd 2, Dashboard 3 + 기타 1)
+- FO: 54/54 (메인 22, my 6, xs 19, xd 7)
+- **공통 컴포넌트** (single-setup + multi-setup): **16/17** (FoComp.js placeholder 1개 제외)
+  - components/ + layout/ 폴더
+  - 가장 큰 파일 BoModals.js 는 한 파일 안에 **33개 모달 컴포넌트 setup()** 존재 — 각각에 dispatch 적용
+
+#### 의도적 제외 파일 (dispatch 미적용) ⭐
+
+- **base/boApp.js** (2943 lines, 10 handler) — BO 앱 부트스트랩
+- **base/foApp.js** (1197 lines, 4 handler) — FO 앱 부트스트랩
+
+> 이유: §12 (포매팅 정책) 와 동일 — Vue 런타임 컴파일러가 이 두 파일의 template 백틱 문자열을 특수하게 파싱하므로, 자동/수동 변경 시 컴파일러 크래시 위험 존재. dispatch 도입 시 setup() 영역 대규모 재배치가 필요한데 이는 같은 위험을 안고 있음. 메모리 [[boapp_template_no_format]] 참조.
+> 새 화면은 BO 의 경우 `pages/bo/**` 안에서 작업 — boApp.js 자체는 라우팅/공통 setup 이라 도메인 로직이 아님.
+
+#### 공통 컴포넌트 적용 상세
+
+**single-setup 8개** (1 파일 1 setup):
+- components/disp/DispX01Ui.js / DispX02Area.js / DispX03Panel.js / DispX04Widget.js
+- components/modals/HelpBoModal.js
+- layout/foAppHeader.js / foAppFooter.js / foAppSidebar.js
+
+**multi-setup 8개** (1 파일 N setup, 총 ~75 setup):
+- components/modals/BoModals.js (33 setup) — 모달 모음 (Site/Vendor/User/Member/Order/Bbm/Tree/Path/Code/Auth 등)
+- components/modals/FoModals.js (2 setup)
+- components/comp/BoAreaComp.js (11 setup) — BoSearchArea, BoGrid, BoGridCrud, BoFormArea, BoModal, BoCronModal 등
+- components/comp/FoAreaComp.js (6 setup) — FoSearchArea, FoGrid, FoGridCrud, FoModal 등
+- components/comp/BoComp.js (8 setup) — BoPropTreeNode, BoDeptTreeNode, BoPathTree, BoCategoryTree, BoMultiCheckSelect, BoDateTimePicker, BoPathPickField, BoPathTreeNode
+- components/comp/CoWidgetComp.js (2 setup) — CoBarcodeWidget, CoCountdownWidget
+- components/comp/BaseComp.js (3 setup) — BaseAttachGrp, BaseAttachOne, BaseHtmlEditor
+- layout/foMyLayout.js (3 setup) — MyDateFilter, Pagination, foMyLayout
+
+#### multi-setup 컴포넌트 dispatch 특수 처리
+
+**모달/Area/위젯 컴포넌트는 props/emit 중심**이라 dispatch 의 라우팅 목적이 약하지만, 일관성 + 디버깅 추적성 + 향후 확장성을 위해 적용:
+
+- emit 호출도 dispatch 경유: `if (cmd === 'modal-close') { return emit('close'); }`
+- 단순 렌더 컴포넌트(stub)는 dispatch 빈 함수 + unknown warn 만 추가
+- 재귀 컴포넌트 (BoPropTreeNode, BoDeptTreeNode, PathPickTreeNode, BoCodeGrpTreeNode) 는 `components: { 'bo-xxx-tree-node': null }` + `created()` self-register 패턴 유지
+
+**BO 121개 파일 100% dispatch 패턴 적용** — sy + ec/{cm,mb,od,pd,pm,dp,st} + zd + Dashboard 전 도메인.
 
 #### FO 적용 이력 (2026-05-25)
 

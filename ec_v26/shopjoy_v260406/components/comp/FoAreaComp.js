@@ -154,8 +154,34 @@ window.FoSearchArea = {
   emits: ['search', 'reset'],
   setup(props, { emit }) {
     const U = window._foAreaCompUtil;
-    const onSearch = () => { if (!props.loading) emit('search'); };
-    const onReset  = () => emit('reset');
+
+    /* ── ▼ search 영역 (검색바 전체) ─────────────────────────────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoSearchArea : handleBtnAction -> ', cmd, param);
+      if (cmd === 'search-emit') {
+        if (!props.loading) return emit('search');
+      } else if (cmd === 'search-reset') {
+        return emit('reset');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoSearchArea : handleSelectAction -> ', cmd, param);
+      if (cmd === 'field-select-change') {
+        return param.col && param.col.onChange ? param.col.onChange(param.event) : null;
+      } else if (cmd === 'field-range-change') {
+        return param.col && param.col.onRangeChange ? param.col.onRangeChange(param.event) : null;
+      } else if (cmd === 'field-pick-open') {
+        return param.col.onOpen(param.target);
+      } else if (cmd === 'field-pick-clear') {
+        return param.col.onClear(param.target);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const normOpts = (opts) => U.normOptions(opts);
     /* col.paramObj 가 있으면 그 객체를, 없으면 props.param 사용 — 컬럼별 다른 reactive 매핑 지원 */
     const po = (col) => col.paramObj || props.param;
@@ -163,10 +189,12 @@ window.FoSearchArea = {
     const cfAutoMode  = Vue.computed(() => !!(props.columns && props.param));
     const fnHasRange1 = (col) => !!(col.rangeFirst && col.rangeOptions);
     const fnHasRange2 = (col) => !!(!col.rangeFirst && col.rangeOptions);
-    return { U, onSearch, onReset, normOpts, po, cfAutoMode, fnHasRange1, fnHasRange2 };
+    return { U, normOpts, po, cfAutoMode, fnHasRange1, fnHasRange2,
+             handleBtnAction, handleSelectAction };
   },
   template: /* html */`
-<div :style="'display:flex;flex-wrap:wrap;gap:10px;align-items:center;'+barStyle" @keyup.enter="onSearch">
+<div :style="'display:flex;flex-wrap:wrap;gap:10px;align-items:center;'+barStyle" @keyup.enter="handleBtnAction('search-emit')">
+  <!-- ▼ search 영역 -->
   <template v-if="cfAutoMode">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
       <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
@@ -182,9 +210,9 @@ window.FoSearchArea = {
         <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
           readonly :placeholder="col.placeholder || '선택'"
           :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
-          @click="col.onOpen(po(col))" />
-        <button class="btn-outline btn-sm" @click="col.onOpen(po(col))">{{ col.openLabel || '검색' }}</button>
-        <button v-if="po(col)[col.key]" class="btn-outline btn-sm" @click="col.onClear(po(col))">✕</button>
+          @click="handleSelectAction('field-pick-open', { col, target: po(col) })" />
+        <button class="btn-outline btn-sm" @click="handleSelectAction('field-pick-open', { col, target: po(col) })">{{ col.openLabel || '검색' }}</button>
+        <button v-if="po(col)[col.key]" class="btn-outline btn-sm" @click="handleSelectAction('field-pick-clear', { col, target: po(col) })">✕</button>
       </template>
       <!-- 다중선택 -->
       <bo-multi-check-select v-else-if="col.type==='multiCheck'"
@@ -194,10 +222,10 @@ window.FoSearchArea = {
       <!-- 텍스트 입력 -->
       <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
         :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
-        @keyup.enter="onSearch" />
+        @keyup.enter="handleBtnAction('search-emit')" />
       <!-- select -->
       <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
-        @change="col.onChange ? col.onChange($event) : null">
+        @change="handleSelectAction('field-select-change', { col, event: $event })">
         <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
         <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
@@ -209,7 +237,7 @@ window.FoSearchArea = {
           <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
         </select>
         <select v-if="fnHasRange1(col)" v-model="po(col)[col.key]"
-          @change="col.onRangeChange ? col.onRangeChange($event) : null"
+          @change="handleSelectAction('field-range-change', { col, event: $event })"
           :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
           <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
           <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
@@ -220,7 +248,7 @@ window.FoSearchArea = {
         <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
           :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
         <select v-if="fnHasRange2(col)" v-model="po(col)[col.key]"
-          @change="col.onRangeChange ? col.onRangeChange($event) : null">
+          @change="handleSelectAction('field-range-change', { col, event: $event })">
           <option value="">옵션선택</option>
           <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
@@ -230,8 +258,8 @@ window.FoSearchArea = {
   <slot></slot>
   <div v-if="showActions" style="display:flex;gap:6px;margin-left:auto;">
     <slot name="actions-before"></slot>
-    <button class="btn-blue" :disabled="loading" @click="onSearch">{{ searchLabel }}</button>
-    <button class="btn-outline btn-sm" @click="onReset">{{ resetLabel }}</button>
+    <button class="btn-blue" :disabled="loading" @click="handleBtnAction('search-emit')">{{ searchLabel }}</button>
+    <button class="btn-outline btn-sm" @click="handleBtnAction('search-reset')">{{ resetLabel }}</button>
     <slot name="actions-after"></slot>
   </div>
 </div>
@@ -358,6 +386,8 @@ window.FoGrid = {
           'toggle-check', 'toggle-check-all'],
   setup(props, { emit, slots }) {
     const U = window._foAreaCompUtil;
+
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfTotal = Vue.computed(() => U.pgTotal(props.pager, props.rows.length));
     const cfShowTfoot = Vue.computed(() => !!slots.tfoot && props.rows.length > 0);
     const cfPageNos = Vue.computed(() => {
@@ -366,12 +396,64 @@ window.FoGrid = {
       const t = Math.max(1, Math.ceil(cfTotal.value / sz));
       return Array.from({ length: t }, (_, i) => i + 1);
     });
+    const dragSrc = Vue.ref(null);
+    const cfColspan = Vue.computed(() => props.columns.length
+      + (props.showRowNo ? 1 : 0)
+      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
+    const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
+    const cfHasPager = Vue.computed(() => !!props.pager && !props.bare && cfPageNos.value.length > 1);
 
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGrid : handleBtnAction -> ', cmd, param);
+      if (cmd === 'toolbar-save') {
+        return emit('save');
+      } else if (cmd === 'pager-set') {
+        U.pgSetNo(props.pager, param.n);
+        return emit('set-page', param.n);
+      } else if (cmd === 'pager-size-change') {
+        return emit('size-change');
+      } else if (cmd === 'grid-toggle-check-all') {
+        return emit('toggle-check-all');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGrid : handleSelectAction -> ', cmd, param);
+      if (cmd === 'sort-toggle') {
+        if (param.col.sortKey) return emit('sort', param.col.sortKey);
+      } else if (cmd === 'grid-row-click') {
+        if (typeof props.rowClick === 'function') props.rowClick(param.row);
+        return emit('row-click', param.row);
+      } else if (cmd === 'grid-row-tr-click') {
+        if (typeof props.rowClick === 'function') return props.rowClick(param.row);
+      } else if (cmd === 'grid-row-remove') {
+        return emit('row-remove', param.row);
+      } else if (cmd === 'grid-row-toggle-check') {
+        const val = param.row[props.checkedKey || props.rowKey];
+        return emit('toggle-check', val);
+      } else if (cmd === 'grid-row-drag-start') {
+        if (props.draggable) dragSrc.value = param.idx;
+      } else if (cmd === 'grid-row-drag-over') {
+        if (!props.draggable || dragSrc.value === null || dragSrc.value === param.idx) return;
+        param.event.preventDefault();
+        const moved = props.rows.splice(dragSrc.value, 1)[0];
+        props.rows.splice(param.idx, 0, moved);
+        dragSrc.value = param.idx;
+      } else if (cmd === 'grid-row-drag-end') {
+        if (dragSrc.value !== null) { dragSrc.value = null; emit('reorder'); }
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* ── ▼ 내장 유틸 함수 ─────────────────────────────────────────────────── */
     const rowNo = (idx) => props.pager
       ? (U.pgNo(props.pager) - 1) * U.pgSize(props.pager) + idx + 1
       : idx + 1;
 
-    const onSort = (col) => { if (col.sortKey) emit('sort', col.sortKey); };
     const sortIcon = (col) => {
       const st = props.sortState;
       if (!col.sortKey || !st) return '';
@@ -380,23 +462,6 @@ window.FoGrid = {
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
-    const dragSrc = Vue.ref(null);
-    const onDragStart = (idx) => { if (props.draggable) dragSrc.value = idx; };
-    const onDragOver  = (e, idx) => {
-      if (!props.draggable || dragSrc.value === null || dragSrc.value === idx) return;
-      e.preventDefault();
-      const moved = props.rows.splice(dragSrc.value, 1)[0];
-      props.rows.splice(idx, 0, moved);
-      dragSrc.value = idx;
-    };
-    const onDragEnd = () => { if (dragSrc.value !== null) { dragSrc.value = null; emit('reorder'); } };
-
-    const onRowClick = (row) => { if (typeof props.rowClick === 'function') props.rowClick(row); emit('row-click', row); };
-    const onTrClick  = (row) => { if (typeof props.rowClick === 'function') props.rowClick(row); };
-    const onSave     = () => emit('save');
-    const onRemove   = (row) => emit('row-remove', row);
-    const onSetPage  = (n) => { U.pgSetNo(props.pager, n); emit('set-page', n); };
-    const onSizeChg  = () => emit('size-change');
     const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : '');
     const fnRowClass = (row, idx) => {
       const base = typeof props.rowClass === 'function' ? (props.rowClass(row, idx) || '') : '';
@@ -406,19 +471,11 @@ window.FoGrid = {
 
     const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
     const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
-    const onToggleCheck = (row) => emit('toggle-check', fnRowChkVal(row));
-    const onToggleCheckAll = () => emit('toggle-check-all');
 
-    const cfColspan = Vue.computed(() => props.columns.length
-      + (props.showRowNo ? 1 : 0)
-      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
-    const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
-    const cfHasPager = Vue.computed(() => !!props.pager && !props.bare && cfPageNos.value.length > 1);
-
-    return { U, cfTotal, cfShowTfoot, cfPageNos, rowNo, onSort, sortIcon, sortActive,
-             onDragStart, onDragOver, onDragEnd, onRowClick, onTrClick, onSave, onRemove,
-             onSetPage, onSizeChg, fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
-             cfTableStyle, cfHasPager, fnRowChecked, onToggleCheck, onToggleCheckAll };
+    return { U, cfTotal, cfShowTfoot, cfPageNos, rowNo, sortIcon, sortActive,
+             fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
+             cfTableStyle, cfHasPager, fnRowChecked,
+             handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div :class="bare ? '' : 'fo-grid-card'">
@@ -429,7 +486,7 @@ window.FoGrid = {
     </span>
     <div style="margin-left:auto;display:flex;gap:6px;">
       <slot name="toolbar-actions"></slot>
-      <button v-if="showSave" class="btn-blue btn-sm" @click="onSave">{{ saveLabel }}</button>
+      <button v-if="showSave" class="btn-blue btn-sm" @click="handleBtnAction('toolbar-save')">{{ saveLabel }}</button>
     </div>
   </div>
   <div class="fo-grid-scroll">
@@ -437,14 +494,14 @@ window.FoGrid = {
       <thead>
         <tr>
           <th v-if="selectable" style="width:34px;text-align:center;">
-            <input type="checkbox" :checked="allChecked" @change="onToggleCheckAll" />
+            <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
           <th v-if="draggable" style="width:26px;"></th>
           <th v-if="showRowNo" style="width:40px;text-align:center;">번호</th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
               :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
-              @click="onSort(col)">
+              @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
                 :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
@@ -459,12 +516,15 @@ window.FoGrid = {
         </tr>
       </thead>
       <tbody>
+        <!-- ▼ grid-row 영역 -->
         <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
           <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
-            :draggable="draggable" @click="onTrClick(row)"
-            @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+            :draggable="draggable" @click="handleSelectAction('grid-row-tr-click', { row })"
+            @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
+            @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
+            @dragend="handleSelectAction('grid-row-drag-end')">
             <td v-if="selectable" style="text-align:center;" @click.stop>
-              <input type="checkbox" :checked="fnRowChecked(row)" @change="onToggleCheck(row)" />
+              <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
             </td>
             <td v-if="draggable" class="fo-grid-drag">≡</td>
             <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">{{ rowNo(idx) }}</td>
@@ -480,7 +540,7 @@ window.FoGrid = {
                   <select v-else-if="col.edit==='select'" class="fo-grid-select" v-model="row[col.key]">
                     <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                   </select>
-                  <span v-else-if="col.link" class="fo-grid-link" @click="onRowClick(row)">{{ U.cellText(col, row) }}</span>
+                  <span v-else-if="col.link" class="fo-grid-link" @click="handleSelectAction('grid-row-click', { row })">{{ U.cellText(col, row) }}</span>
                   <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
                   <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
                     :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
@@ -492,7 +552,7 @@ window.FoGrid = {
             </template>
             <td v-if="rowActions" style="text-align:center;">
               <slot name="row-actions" :row="row" :idx="idx">
-                <button class="btn-outline btn-sm" @click="onRemove(row)">✕</button>
+                <button class="btn-outline btn-sm" @click="handleSelectAction('grid-row-remove', { row })">✕</button>
               </slot>
             </td>
             <slot v-else name="row-actions" :row="row" :idx="idx"></slot>
@@ -512,10 +572,11 @@ window.FoGrid = {
       </tfoot>
     </table>
   </div>
+  <!-- ▼ pager 영역 -->
   <div v-if="cfHasPager" class="fo-grid-pager">
-    <button :disabled="U.pgNo(pager)===1" @click="onSetPage(Math.max(1, U.pgNo(pager)-1))">‹</button>
-    <button v-for="p in cfPageNos" :key="p" :class="{ on: U.pgNo(pager)===p }" @click="onSetPage(p)">{{ p }}</button>
-    <button :disabled="U.pgNo(pager)===cfPageNos.length" @click="onSetPage(Math.min(cfPageNos.length, U.pgNo(pager)+1))">›</button>
+    <button :disabled="U.pgNo(pager)===1" @click="handleBtnAction('pager-set', { n: Math.max(1, U.pgNo(pager)-1) })">‹</button>
+    <button v-for="p in cfPageNos" :key="p" :class="{ on: U.pgNo(pager)===p }" @click="handleBtnAction('pager-set', { n: p })">{{ p }}</button>
+    <button :disabled="U.pgNo(pager)===cfPageNos.length" @click="handleBtnAction('pager-set', { n: Math.min(cfPageNos.length, U.pgNo(pager)+1) })">›</button>
   </div>
 </div>
 `,
@@ -549,14 +610,13 @@ window.FoGridCrud = {
   setup(props, { emit }) {
     const U = window._foAreaCompUtil;
 
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfVisibleCount = Vue.computed(() =>
       props.rows.filter(r => r._row_status !== 'D').length);
-
-    const fnStatusClass = s => 's-' + (s || 'N');
-
-    const onSetFocused = (idx) => { if (props.focusedIdx !== idx) emit('update:focusedIdx', idx); };
-    const fnColTitle = (col) => (typeof props.cellTitle === 'function' ? props.cellTitle(col) : '');
-
+    const allChecked = Vue.ref(props.checkAll);
+    Vue.watch(() => props.checkAll, v => { allChecked.value = v; });
+    const dragSrc = Vue.ref(null);
+    const dragMoved = Vue.ref(false);
     const cfEmptyColspan = Vue.computed(() => {
       let n = props.columns.length + 1;            // 데이터 + 액션
       if (props.draggable)     n += 1;
@@ -566,47 +626,64 @@ window.FoGridCrud = {
       if (props.showRowCheck)  n += 1;
       return n;
     });
+    const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
 
-    const allChecked = Vue.ref(props.checkAll);
-    Vue.watch(() => props.checkAll, v => { allChecked.value = v; });
-    const onToggleCheckAll = () => {
-      const v = !allChecked.value;
-      allChecked.value = v;
-      props.rows.forEach(r => { r._row_check = v; });
-      emit('update:checkAll', v);
-    };
-
-    const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') { emit('cell-change', row); return; }
-      if (row._row_org) {
-        const changed = Object.keys(row._row_org).some(f => String(row[f]) !== String(row._row_org[f]));
-        row._row_status = changed ? 'U' : 'N';
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGridCrud : handleBtnAction -> ', cmd, param);
+      if (cmd === 'toolbar-add') {
+        return emit('add');
+      } else if (cmd === 'toolbar-save') {
+        return emit('save');
+      } else if (cmd === 'toolbar-cancel-checked') {
+        return emit('cancel-checked');
+      } else if (cmd === 'toolbar-delete-checked') {
+        return emit('delete-checked');
+      } else if (cmd === 'grid-toggle-check-all') {
+        const v = !allChecked.value;
+        allChecked.value = v;
+        props.rows.forEach(r => { r._row_check = v; });
+        return emit('update:checkAll', v);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
-      emit('cell-change', row);
     };
 
-    const dragSrc = Vue.ref(null);
-    const dragMoved = Vue.ref(false);
-    const onDragStart = (idx) => { if (props.draggable) { dragSrc.value = idx; dragMoved.value = false; } };
-    const onDragOver  = (e, idx) => {
-      if (!props.draggable || dragSrc.value === null || dragSrc.value === idx) return;
-      e.preventDefault();
-      const moved = props.rows.splice(dragSrc.value, 1)[0];
-      props.rows.splice(idx, 0, moved);
-      dragSrc.value = idx;
-      dragMoved.value = true;
-    };
-    const onDragEnd = () => {
-      if (dragMoved.value) emit('reorder');
-      dragSrc.value = null; dragMoved.value = false;
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoGridCrud : handleSelectAction -> ', cmd, param);
+      if (cmd === 'sort-toggle') {
+        if (param.col.sortKey) return emit('sort', param.col.sortKey);
+      } else if (cmd === 'grid-row-focus') {
+        if (props.focusedIdx !== param.idx) return emit('update:focusedIdx', param.idx);
+      } else if (cmd === 'grid-row-cell-change') {
+        const row = param.row;
+        if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', row);
+        if (row._row_org) {
+          const changed = Object.keys(row._row_org).some(f => String(row[f]) !== String(row._row_org[f]));
+          row._row_status = changed ? 'U' : 'N';
+        }
+        return emit('cell-change', row);
+      } else if (cmd === 'grid-row-drag-start') {
+        if (props.draggable) { dragSrc.value = param.idx; dragMoved.value = false; }
+      } else if (cmd === 'grid-row-drag-over') {
+        if (!props.draggable || dragSrc.value === null || dragSrc.value === param.idx) return;
+        param.event.preventDefault();
+        const moved = props.rows.splice(dragSrc.value, 1)[0];
+        props.rows.splice(param.idx, 0, moved);
+        dragSrc.value = param.idx;
+        dragMoved.value = true;
+      } else if (cmd === 'grid-row-drag-end') {
+        if (dragMoved.value) emit('reorder');
+        dragSrc.value = null; dragMoved.value = false;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
     };
 
-    const onAdd           = () => emit('add');
-    const onSave          = () => emit('save');
-    const onCancelChecked = () => emit('cancel-checked');
-    const onDeleteChecked = () => emit('delete-checked');
+    /* ── ▼ 내장 유틸 함수 ─────────────────────────────────────────────────── */
+    const fnStatusClass = s => 's-' + (s || 'N');
+    const fnColTitle = (col) => (typeof props.cellTitle === 'function' ? props.cellTitle(col) : '');
 
-    const onSort = (col) => { if (col.sortKey) emit('sort', col.sortKey); };
     const sortIcon = (col) => {
       const st = props.sortState;
       if (!col.sortKey || !st) return '';
@@ -614,11 +691,10 @@ window.FoGridCrud = {
       return st.sortDir === 'asc' ? '↑' : '↓';
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
-    const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
 
-    return { U, cfVisibleCount, fnStatusClass, allChecked, onToggleCheckAll, onCellChange,
-             onDragStart, onDragOver, onDragEnd, onAdd, onSave, onCancelChecked, onDeleteChecked,
-             onSetFocused, fnColTitle, cfEmptyColspan, onSort, sortIcon, sortActive, cfTableStyle };
+    return { U, cfVisibleCount, fnStatusClass, allChecked,
+             fnColTitle, cfEmptyColspan, sortIcon, sortActive, cfTableStyle,
+             handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="fo-grid-card">
@@ -626,10 +702,10 @@ window.FoGridCrud = {
     <span class="fo-grid-title">{{ listTitle }} <span class="fo-grid-count">{{ cfVisibleCount }}건</span></span>
     <div style="display:flex;gap:6px;margin-left:auto;">
       <slot name="toolbar-actions"></slot>
-      <button v-if="showAdd" class="btn-outline btn-sm" @click="onAdd">+ 행추가</button>
-      <button v-if="showRowCheck" class="btn-outline btn-sm" @click="onDeleteChecked">행삭제</button>
-      <button v-if="showRowCheck" class="btn-outline btn-sm" @click="onCancelChecked">취소</button>
-      <button v-if="showSave" class="btn-blue btn-sm" @click="onSave">저장</button>
+      <button v-if="showAdd" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-add')">+ 행추가</button>
+      <button v-if="showRowCheck" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-delete-checked')">행삭제</button>
+      <button v-if="showRowCheck" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">취소</button>
+      <button v-if="showSave" class="btn-blue btn-sm" @click="handleBtnAction('toolbar-save')">저장</button>
     </div>
   </div>
   <div class="fo-grid-scroll" :style="'max-height:' + maxHeight + ';'">
@@ -641,12 +717,12 @@ window.FoGridCrud = {
           <th v-if="showRowId" style="width:54px;text-align:center;">ID</th>
           <th v-if="showRowStatus" style="width:40px;text-align:center;">상태</th>
           <th v-if="showRowCheck" style="width:28px;text-align:center;">
-            <input type="checkbox" :checked="allChecked" @change="onToggleCheckAll" />
+            <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
               :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;' : '')"
-              :title="fnColTitle(col)" @click="onSort(col)">
+              :title="fnColTitle(col)" @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
                 :style="sortActive(col) ? 'color:var(--accent);font-weight:bold;' : 'color:var(--text-muted);'">
@@ -658,6 +734,7 @@ window.FoGridCrud = {
         </tr>
       </thead>
       <tbody>
+        <!-- ▼ grid-row 영역 -->
         <tr v-if="!rows.length">
           <td :colspan="cfEmptyColspan" class="fo-grid-empty">{{ emptyText }}</td>
         </tr>
@@ -665,8 +742,10 @@ window.FoGridCrud = {
           class="fo-grid-clickable" :class="[ 's-row-' + row._row_status, focusedIdx===idx ? 'fo-grid-focused' : '' ]"
           :draggable="draggable"
           :style="focusedIdx===idx ? 'outline:2px solid var(--accent) inset;' : ''"
-          @click="onSetFocused(idx)"
-          @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+          @click="handleSelectAction('grid-row-focus', { idx })"
+          @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
+          @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
+          @dragend="handleSelectAction('grid-row-drag-end')">
           <td v-if="draggable" class="fo-grid-drag" title="드래그로 순서 변경">⠿</td>
           <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">{{ idx + 1 }}</td>
           <td v-if="showRowId" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">
@@ -683,16 +762,16 @@ window.FoGridCrud = {
               <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                 <input v-if="col.edit==='text'" class="fo-grid-input" :class="{ 'fo-grid-mono': col.mono }"
                   v-model="row[col.key]" :disabled="row._row_status==='D'"
-                  :placeholder="col.placeholder" @input="onCellChange(row)" />
+                  :placeholder="col.placeholder" @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                 <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"
                   v-model.number="row[col.key]" :disabled="row._row_status==='D'"
-                  @input="onCellChange(row)" />
+                  @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                 <input v-else-if="col.edit==='date'" type="date" class="fo-grid-input"
                   v-model="row[col.key]" :disabled="row._row_status==='D'"
-                  @input="onCellChange(row)" />
+                  @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                 <select v-else-if="col.edit==='select'" class="fo-grid-select"
                   v-model="row[col.key]" :disabled="row._row_status==='D'"
-                  @change="onCellChange(row)">
+                  @change="handleSelectAction('grid-row-cell-change', { row, col })">
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
@@ -731,9 +810,7 @@ window.FoModal = {
   },
   emits: ['close', 'confirm'],
   setup(props, { emit }) {
-    const onClose    = () => { emit('close'); if (typeof props.onCloseCb === 'function') props.onCloseCb(); };
-    const onConfirm  = () => { emit('confirm'); if (typeof props.onConfirmCb === 'function') props.onConfirmCb(); };
-    const onBackdrop = () => { if (props.closeOnBackdrop) onClose(); };
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfOverlayStyle = Vue.computed(() => 'z-index:' + props.zIndex + ';');
     const cfBoxStyle = Vue.computed(() =>
       'width:' + props.width + ';max-width:' + props.maxWidth + ';'
@@ -741,17 +818,44 @@ window.FoModal = {
       + 'text-align:left;padding:' + props.boxPad + ';');
     const cfBodyStyle = Vue.computed(() =>
       'flex:1;overflow-y:auto;' + (props.bodyPad !== '0' ? ('padding:' + props.bodyPad + ';') : ''));
-    return { onClose, onConfirm, onBackdrop, cfOverlayStyle, cfBoxStyle, cfBodyStyle };
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        emit('close');
+        if (typeof props.onCloseCb === 'function') props.onCloseCb();
+      } else if (cmd === 'modal-confirm') {
+        emit('confirm');
+        if (typeof props.onConfirmCb === 'function') props.onConfirmCb();
+      } else if (cmd === 'modal-backdrop') {
+        if (props.closeOnBackdrop) handleBtnAction('modal-close');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoModal : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    /* footer slot prop 호환용 — 외부 슬롯이 confirm()/close() 호출하면 dispatch 경유 */
+    const onClose = () => handleBtnAction('modal-close');
+    const onConfirm = () => handleBtnAction('modal-confirm');
+
+    return { onClose, onConfirm, cfOverlayStyle, cfBoxStyle, cfBodyStyle,
+             handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <teleport to="body" :disabled="!teleport">
-  <div v-if="show" class="modal-overlay" :style="cfOverlayStyle" @click.self="onBackdrop">
+  <div v-if="show" class="modal-overlay" :style="cfOverlayStyle" @click.self="handleBtnAction('modal-backdrop')">
     <div class="modal-box fo-modal-box" :style="cfBoxStyle">
       <div v-if="title" class="fo-modal-header">
         <span class="fo-modal-title">{{ title }}</span>
         <span style="display:flex;align-items:center;gap:8px;">
           <slot name="header-extra"></slot>
-          <button type="button" class="fo-modal-close" @click="onClose">✕</button>
+          <button type="button" class="fo-modal-close" @click="handleBtnAction('modal-close')">✕</button>
         </span>
       </div>
       <div :style="cfBodyStyle">
@@ -790,23 +894,39 @@ window.FoRowCancelDelete = {
   },
   emits: ['cancel', 'delete'],
   setup(props, { emit }) {
+    /* ── ▼ row 영역 (CRUD 행 취소/삭제 버튼) ──────────────────────────────── */
     const cfShowCancel = Vue.computed(() => ['U', 'I', 'D'].includes(props.row._row_status));
     const cfShowDelete = Vue.computed(() => {
       const s = props.row._row_status;
       if (props.allowDeleteNull && s == null) return true;
       return ['N', 'U'].includes(s);
     });
-    const onCancel = () => emit('cancel');
-    const onDelete = () => emit('delete');
-    return { cfShowCancel, cfShowDelete, onCancel, onDelete };
+
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoRowCancelDelete : handleBtnAction -> ', cmd, param);
+      if (cmd === 'row-cancel') {
+        return emit('cancel');
+      } else if (cmd === 'row-delete') {
+        return emit('delete');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoRowCancelDelete : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    return { cfShowCancel, cfShowDelete, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <span>
-  <button v-if="cfShowCancel" @click.stop="onCancel"
+  <button v-if="cfShowCancel" @click.stop="handleBtnAction('row-cancel')"
     style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">
     {{ cancelLabel }}
   </button>
-  <button v-if="cfShowDelete" @click.stop="onDelete"
+  <button v-if="cfShowDelete" @click.stop="handleBtnAction('row-delete')"
     style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">
     {{ deleteLabel }}
   </button>
@@ -848,7 +968,8 @@ window.FoFormArea = {
   emits: ['submit'],
   setup(props, { emit }) {
     const U = window._foAreaCompUtil;
-    /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈) */
+
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfRows = Vue.computed(() => {
       const rows = []; let cur = []; let used = 0;
       for (const col of props.columns) {
@@ -861,21 +982,39 @@ window.FoFormArea = {
       if (cur.length) rows.push(cur);
       return rows;
     });
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ FoFormArea : handleBtnAction -> ', cmd, param);
+      if (cmd === 'form-submit') {
+        return emit('submit');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ FoFormArea : handleSelectAction -> ', cmd, param);
+      if (cmd === 'field-change') {
+        /* errors 자동 제거 + col.onChange 콜백 */
+        const col = param.col;
+        if (col.clearErrOnInput !== false && props.errors[col.key] !== undefined) {
+          delete props.errors[col.key];
+        }
+        if (col.onChange) return col.onChange(props.form[col.key], props.form, param.event);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const normOpts = (opts) => U.normOptions(opts);
     const dispVal = (col) => {
       const v = props.form[col.key];
       if (col.fmt) return col.fmt(v, props.form);
       return (v == null || v === '') ? '-' : v;
     };
-    const onInputClear = (col) => {
-      if (col.clearErrOnInput === false) return;
-      if (props.errors[col.key] !== undefined) delete props.errors[col.key];
-    };
-    const onChange = (col, e) => {
-      onInputClear(col);
-      if (col.onChange) col.onChange(props.form[col.key], props.form, e);
-    };
-    return { cfRows, normOpts, dispVal, onChange, onSubmit: () => emit('submit') };
+
+    return { cfRows, normOpts, dispVal, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="fo-form-area">
@@ -900,29 +1039,29 @@ window.FoFormArea = {
         :readonly="col.readonly"
         :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @input="onChange(col, $event)" />
+        @input="handleSelectAction('field-change', { col, event: $event })" />
       <!-- number -->
       <input v-else-if="col.type === 'number'" class="form-input" type="number"
         v-model.number="form[col.key]" :placeholder="col.placeholder"
         :readonly="col.readonly" :min="col.min" :max="col.max"
         :style="col.readonly ? 'background:#f5f5f5;' : ''"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @input="onChange(col, $event)" />
+        @input="handleSelectAction('field-change', { col, event: $event })" />
       <!-- date -->
       <input v-else-if="col.type === 'date'" class="form-input" type="date"
         v-model="form[col.key]" :readonly="col.readonly"
-        :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
+        :class="errors[col.key] ? 'is-invalid' : ''" @change="handleSelectAction('field-change', { col, event: $event })" />
       <!-- textarea -->
       <textarea v-else-if="col.type === 'textarea'" class="form-input"
         v-model="form[col.key]" :placeholder="col.placeholder"
         :readonly="col.readonly" :rows="col.rows || 5"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @input="onChange(col, $event)"></textarea>
+        @input="handleSelectAction('field-change', { col, event: $event })"></textarea>
       <!-- select -->
       <select v-else-if="col.type === 'select'" class="form-input"
         v-model="form[col.key]" :disabled="col.readonly"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @change="onChange(col, $event)">
+        @change="handleSelectAction('field-change', { col, event: $event })">
         <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '선택해주세요' }}</option>
         <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
@@ -933,10 +1072,10 @@ window.FoFormArea = {
       <div v-else-if="col.hint" style="font-size:11px;color:#888;margin-top:4px;">{{ col.hint }}</div>
     </div>
   </div>
-  <!-- 폼 액션 버튼 (옵션) -->
+  <!-- ▼ form-actions 영역 -->
   <div v-if="showActions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
     <slot name="actions-before"></slot>
-    <button class="btn-blue" @click="onSubmit" style="padding:13px 24px;">{{ submitLabel }}</button>
+    <button class="btn-blue" @click="handleBtnAction('form-submit')" style="padding:13px 24px;">{{ submitLabel }}</button>
     <slot name="actions-after"></slot>
   </div>
 </div>

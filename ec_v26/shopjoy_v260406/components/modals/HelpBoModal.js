@@ -251,35 +251,65 @@ window.HelpBoModal = {
     watch(() => props.topic, (v) => { if (v) activeTab.value = v; });
     watch(() => props.show,  (v) => { if (v && props.topic) activeTab.value = props.topic; });
 
-    /* close — 닫기 */
-    const close = () => emit('close');
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ HelpBoModal.js : handleBtnAction -> ', cmd, param);
+      // 도움말 모달 닫기
+      if (cmd === 'modal-close') {
+        return emit('close');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 탭/서브탭 선택 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ HelpBoModal.js : handleSelectAction -> ', cmd, param);
+      // 좌측 메인 탭 전환
+      if (cmd === 'tab-select') {
+        activeTab.value = param;
+        return;
+      // 옵션설정 서브탭 전환
+      } else if (cmd === 'optSubTab-select') {
+        optSubTab.value = param;
+        return;
+      // 주문 서브탭 전환
+      } else if (cmd === 'orderSubTab-select') {
+        orderSubTab.value = param;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      TABS, OPT_SUB_TABS,
-      OPT_OVERVIEW_ROWS, OPT_CLOTHING_ROWS, OPT_SHOES_ROWS, OPT_ELEC_ROWS, OPT_SINGLE_ROWS, INPUT_TYPES,
-      OVERVIEW_CARDS, PRODUCT_STEPS, PRODUCT_TABS, MEMBER_TABS_LIST,
-      ORDER_STEPS, ORDER_STEP_DETAILS, ORDER_PARTIAL_SCENARIO,
-      REFUND_ORDER_ROWS, RETURN_FEE_ROWS, COUPON_REFUND_ROWS,
-      CLAIM_TYPES, CLAIM_DETAILS, PROMO_ITEMS, DISP_LEVELS, DISP_WIDGETS, SYS_ITEMS,
-      activeTab, optSubTab, orderSubTab, close,
+      handleBtnAction, handleSelectAction,                                  // dispatch
+      activeTab, optSubTab, orderSubTab,                                    // 탭 상태
+      TABS, OPT_SUB_TABS,                                                   // 탭 정의
+      OPT_OVERVIEW_ROWS, OPT_CLOTHING_ROWS, OPT_SHOES_ROWS, OPT_ELEC_ROWS, OPT_SINGLE_ROWS, INPUT_TYPES,  // 옵션 데이터
+      OVERVIEW_CARDS, PRODUCT_STEPS, PRODUCT_TABS, MEMBER_TABS_LIST,        // 개요/회원/상품
+      ORDER_STEPS, ORDER_STEP_DETAILS, ORDER_PARTIAL_SCENARIO,              // 주문
+      REFUND_ORDER_ROWS, RETURN_FEE_ROWS, COUPON_REFUND_ROWS,               // 환불/반품/쿠폰
+      CLAIM_TYPES, CLAIM_DETAILS, PROMO_ITEMS, DISP_LEVELS, DISP_WIDGETS, SYS_ITEMS,  // 클레임/프로모/전시/시스템
     };
   },
   template: `
 <!-- ===== ■. 모달 ====================================================== -->
 <bo-modal :show="show" max-width="860px" height="92vh" max-height="92vh"
-  box-pad="0" body-pad="0" :z-index="3000" @close="close">
+  box-pad="0" body-pad="0" :z-index="3000" @close="handleBtnAction('modal-close')">
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ===== ■.■. 헤더 ==================================================== -->
     <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #ffc9d6;">
       <div style="font-size:15px;font-weight:800;color:#9f2946;">
-        <span style="color:#e8587a;font-size:9px;margin-right:6px;">●</span>
+        <span style="color:#e8587a;font-size:9px;margin-right:6px;">
+          ●
+        </span>
         도움말 가이드
       </div>
-      <button @click="close" style="width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,0.6);color:#9f2946;font-size:14px;cursor:pointer;">
+      <button @click="handleBtnAction('modal-close')" style="width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,0.6);color:#9f2946;font-size:14px;cursor:pointer;">
         ✕
       </button>
     </div>
@@ -288,7 +318,7 @@ window.HelpBoModal = {
     <div style="flex:1;display:flex;overflow:hidden;">
       <!-- ===== ■.■.■. 좌측 탭 ================================================ -->
       <div style="width:148px;flex-shrink:0;background:#f7f8fa;border-right:1px solid #efe0e5;display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;">
-        <button v-for="t in TABS" :key="t.id" @click="activeTab=t.id"
+        <button v-for="t in TABS" :key="t.id" @click="handleSelectAction('tab-select', t.id)"
           :style="activeTab===t.id
           ? 'display:block;width:100%;text-align:left;padding:9px 16px;font-size:12px;font-weight:700;color:#e8587a;background:#fff;border:none;border-right:3px solid #e8587a;cursor:pointer;line-height:1.4;'
           : 'display:block;width:100%;text-align:left;padding:9px 16px;font-size:12px;font-weight:400;color:#666;background:transparent;border:none;border-right:3px solid transparent;cursor:pointer;line-height:1.4;'">
@@ -299,17 +329,25 @@ window.HelpBoModal = {
       <div style="flex:1;overflow-y:auto;padding:24px;">
         <!-- ===== ■.■.■.■. 개요 ================================================ -->
         <template v-if="activeTab==='overview'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 12px;">ShopJoy 관리자 시스템 개요</h3>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 12px;">
+            ShopJoy 관리자 시스템 개요
+          </h3>
           <p style="color:#555;font-size:13px;line-height:1.8;margin-bottom:16px;">
             ShopJoy BO는 전자상거래 통합 관리 시스템입니다. 좌측 메뉴에서 도메인을 선택하고, 상단 탭에서 열린 화면들을 전환합니다.
           </p>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
             <div v-for="item in OVERVIEW_CARDS" :key="item.tab"
-              @click="activeTab=item.tab"
+              @click="handleSelectAction('tab-select', item.tab)"
               style="border:1px solid #e8f0ff;border-radius:10px;padding:14px;background:#f8fbff;cursor:pointer;">
-              <div style="font-size:22px;margin-bottom:6px;">{{ item.icon }}</div>
-              <div style="font-weight:700;color:#1677ff;font-size:13px;margin-bottom:4px;">{{ item.title }}</div>
-              <div style="font-size:11px;color:#666;line-height:1.5;">{{ item.desc }}</div>
+              <div style="font-size:22px;margin-bottom:6px;">
+                {{ item.icon }}
+              </div>
+              <div style="font-weight:700;color:#1677ff;font-size:13px;margin-bottom:4px;">
+                {{ item.title }}
+              </div>
+              <div style="font-size:11px;color:#666;line-height:1.5;">
+                {{ item.desc }}
+              </div>
             </div>
           </div>
           <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:12px 16px;font-size:12px;color:#7c5500;">
@@ -319,23 +357,39 @@ window.HelpBoModal = {
         <!-- ===== ■.■.■.■. 회원관리 ============================================== -->
         <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <template v-else-if="activeTab==='member'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">👤 회원관리</h3>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">
+            👤 회원관리
+          </h3>
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">회원관리 기능</div>
+              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                회원관리 기능
+              </div>
               <div style="font-size:12px;color:#555;line-height:1.8;">
-                <div>• 전체 회원 목록 조회 (이름, 이메일, 전화번호, 상태 검색)</div>
+                <div>
+                  • 전체 회원 목록 조회 (이름, 이메일, 전화번호, 상태 검색)
+                </div>
                 <div>
                   • 회원 상태:
-                  <span style="background:#d1fae5;color:#065f46;border-radius:3px;padding:1px 6px;">활성</span>
-                  <span style="background:#fee2e2;color:#991b1b;border-radius:3px;padding:1px 6px;margin-left:4px;">정지</span>
-                  <span style="background:#f3f4f6;color:#374151;border-radius:3px;padding:1px 6px;margin-left:4px;">탈퇴</span>
+                  <span style="background:#d1fae5;color:#065f46;border-radius:3px;padding:1px 6px;">
+                    활성
+                  </span>
+                  <span style="background:#fee2e2;color:#991b1b;border-radius:3px;padding:1px 6px;margin-left:4px;">
+                    정지
+                  </span>
+                  <span style="background:#f3f4f6;color:#374151;border-radius:3px;padding:1px 6px;margin-left:4px;">
+                    탈퇴
+                  </span>
                 </div>
-                <div>• 행 클릭 - 상세(Dtl) 인라인 임베드</div>
+                <div>
+                  • 행 클릭 - 상세(Dtl) 인라인 임베드
+                </div>
               </div>
             </div>
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">회원 상세 탭 구성</div>
+              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                회원 상세 탭 구성
+              </div>
               <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
                 <span v-for="t in MEMBER_TABS_LIST" :key="t"
                   style="background:#e6f4ff;border:1px solid #bae0ff;border-radius:4px;padding:3px 8px;color:#0958d9;">
@@ -344,10 +398,24 @@ window.HelpBoModal = {
               </div>
             </div>
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">등급/그룹</div>
+              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                등급/그룹
+              </div>
               <div style="font-size:12px;color:#555;line-height:1.8;">
-                <div>• <b>회원등급</b>: 구매금액, 횟수 기준 자동 승급 조건 설정</div>
-                <div>• <b>회원그룹</b>: 수동 분류 (예: VIP고객, 임직원, 블랙리스트)</div>
+                <div>
+                  •
+                  <b>
+                    회원등급
+                  </b>
+                  : 구매금액, 횟수 기준 자동 승급 조건 설정
+                </div>
+                <div>
+                  •
+                  <b>
+                    회원그룹
+                  </b>
+                  : 수동 분류 (예: VIP고객, 임직원, 블랙리스트)
+                </div>
               </div>
             </div>
           </div>
@@ -355,24 +423,38 @@ window.HelpBoModal = {
         <!-- ===== ■.■.■.■. 상품관리 ============================================== -->
         <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <template v-else-if="activeTab==='product'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">📦 상품관리</h3>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">
+            📦 상품관리
+          </h3>
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">상품 등록 흐름</div>
+              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                상품 등록 흐름
+              </div>
               <div style="display:flex;align-items:center;gap:6px;font-size:12px;flex-wrap:wrap;">
                 <template v-for="(step,i) in PRODUCT_STEPS" :key="step">
-                  <span style="background:#1677ff;color:#fff;border-radius:4px;padding:3px 8px;">{{ step }}</span>
-                  <span v-if="i < PRODUCT_STEPS.length-1" style="color:#ccc;font-size:11px;">-&gt;</span>
+                  <span style="background:#1677ff;color:#fff;border-radius:4px;padding:3px 8px;">
+                    {{ step }}
+                  </span>
+                  <span v-if="i < PRODUCT_STEPS.length-1" style="color:#ccc;font-size:11px;">
+                    -&gt;
+                  </span>
                 </template>
               </div>
             </div>
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">상품 상세 탭</div>
+              <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                상품 상세 탭
+              </div>
               <!-- ===== ■.■.■.■.■.■.■. 테이블 ========================================= -->
               <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <tr v-for="row in PRODUCT_TABS" :key="row.tab" style="border-bottom:1px solid #f0f0f0;">
-                  <td style="padding:5px 8px;font-weight:600;color:#333;white-space:nowrap;width:110px;">{{ row.tab }}</td>
-                  <td style="padding:5px 8px;color:#555;">{{ row.desc }}</td>
+                  <td style="padding:5px 8px;font-weight:600;color:#333;white-space:nowrap;width:110px;">
+                    {{ row.tab }}
+                  </td>
+                  <td style="padding:5px 8px;color:#555;">
+                    {{ row.desc }}
+                  </td>
                 </tr>
               </table>
             </div>
@@ -380,11 +462,15 @@ window.HelpBoModal = {
         </template>
         <!-- ===== ■.■.■.■. 옵션설정 ============================================== -->
         <template v-else-if="activeTab==='prodOpt'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">⚙ 옵션설정 상세 가이드</h3>
-          <p style="font-size:12px;color:#888;margin:0 0 16px;">상품 상세 &gt; 옵션설정 탭</p>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">
+            ⚙ 옵션설정 상세 가이드
+          </h3>
+          <p style="font-size:12px;color:#888;margin:0 0 16px;">
+            상품 상세 &gt; 옵션설정 탭
+          </p>
           <!-- ===== ■.■.■.■.■. 서브탭 버튼 ========================================== -->
           <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
-            <button v-for="st in OPT_SUB_TABS" :key="st.id" @click="optSubTab=st.id"
+            <button v-for="st in OPT_SUB_TABS" :key="st.id" @click="handleSelectAction('optSubTab-select', st.id)"
               :style="optSubTab===st.id
               ? 'padding:5px 12px;font-size:11px;border:1px solid #1677ff;border-radius:6px;cursor:pointer;background:#e6f4ff;color:#1677ff;font-weight:700;'
               : 'padding:5px 12px;font-size:11px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:#f5f5f5;color:#555;'">
@@ -395,32 +481,67 @@ window.HelpBoModal = {
           <template v-if="optSubTab==='basic'">
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
-                <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">카테고리별 옵션 차원 구성</div>
+                <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                  카테고리별 옵션 차원 구성
+                </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">카테고리</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">1단</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">2단</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">SKU 예시</th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
+                        카테고리
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        1단
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        2단
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
+                        SKU 예시
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="r in OPT_OVERVIEW_ROWS" :key="r.cat" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;">{{ r.cat }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d1 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d2 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;color:#888;font-size:11px;">{{ r.ex }}</td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;">
+                        {{ r.cat }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d1 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d2 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;color:#888;font-size:11px;">
+                        {{ r.ex }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div style="border:1px solid #b7eb8f;border-radius:8px;padding:14px;background:#f6ffed;">
-                <div style="font-weight:700;color:#389e0d;margin-bottom:8px;font-size:13px;">입력 방식 요약</div>
-                <div style="font-size:12px;line-height:2;"><b style="color:#1677ff;">SELECT</b> — 드롭다운 1개 선택 (가장 일반적)</div>
-                <div style="font-size:12px;line-height:2;"><b style="color:#fa8c16;">SELECT_INPUT</b> — 드롭다운 또는 직접 타이핑</div>
-                <div style="font-size:12px;line-height:2;"><b style="color:#52c41a;">MULTI_SELECT</b> — 여러 항목 동시 선택</div>
+                <div style="font-weight:700;color:#389e0d;margin-bottom:8px;font-size:13px;">
+                  입력 방식 요약
+                </div>
+                <div style="font-size:12px;line-height:2;">
+                  <b style="color:#1677ff;">
+                    SELECT
+                  </b>
+                  — 드롭다운 1개 선택 (가장 일반적)
+                </div>
+                <div style="font-size:12px;line-height:2;">
+                  <b style="color:#fa8c16;">
+                    SELECT_INPUT
+                  </b>
+                  — 드롭다운 또는 직접 타이핑
+                </div>
+                <div style="font-size:12px;line-height:2;">
+                  <b style="color:#52c41a;">
+                    MULTI_SELECT
+                  </b>
+                  — 여러 항목 동시 선택
+                </div>
               </div>
               <div style="border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;">
                 상세 예시는 위 탭(의류, 신발, 전자기기 등)을 클릭하세요.
@@ -431,33 +552,61 @@ window.HelpBoModal = {
           <template v-else-if="optSubTab==='clothing'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
-                <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">👗 의류 — 색상(1단) x 사이즈(2단)</div>
-                <div style="font-size:11px;color:#888;margin-bottom:10px;">카테고리: CLOTHING</div>
+                <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">
+                  👗 의류 — 색상(1단) x 사이즈(2단)
+                </div>
+                <div style="font-size:11px;color:#888;margin-bottom:10px;">
+                  카테고리: CLOTHING
+                </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">색상 (1단)</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">사이즈 (2단)</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">생성되는 SKU</th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        색상 (1단)
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        사이즈 (2단)
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        생성되는 SKU
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="r in OPT_CLOTHING_ROWS" :key="r.sku" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d1 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d2 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">{{ r.sku }}</td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d1 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d2 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">
+                        {{ r.sku }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;font-size:12px;line-height:1.9;">
-                <div style="font-weight:700;margin-bottom:6px;">설정 방법</div>
-                <div>1. 카테고리: 의류 (색상+사이즈) 선택</div>
-                <div>2. 1단 값 추가: 블랙, 화이트, 레드 등 색상 입력</div>
-                <div>3. 2단 값 추가: S, M, L, XL 등 사이즈 입력</div>
-                <div>4. 저장 시 색상x사이즈 조합으로 SKU 자동 생성</div>
-                <div>5. 각 SKU별 추가금액, 재고 설정 가능</div>
+                <div style="font-weight:700;margin-bottom:6px;">
+                  설정 방법
+                </div>
+                <div>
+                  1. 카테고리: 의류 (색상+사이즈) 선택
+                </div>
+                <div>
+                  2. 1단 값 추가: 블랙, 화이트, 레드 등 색상 입력
+                </div>
+                <div>
+                  3. 2단 값 추가: S, M, L, XL 등 사이즈 입력
+                </div>
+                <div>
+                  4. 저장 시 색상x사이즈 조합으로 SKU 자동 생성
+                </div>
+                <div>
+                  5. 각 SKU별 추가금액, 재고 설정 가능
+                </div>
               </div>
             </div>
           </template>
@@ -465,32 +614,58 @@ window.HelpBoModal = {
           <template v-else-if="optSubTab==='shoes'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
-                <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">👟 신발 — 사이즈(1단) x 색상(2단)</div>
-                <div style="font-size:11px;color:#888;margin-bottom:10px;">카테고리: SHOES</div>
+                <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">
+                  👟 신발 — 사이즈(1단) x 색상(2단)
+                </div>
+                <div style="font-size:11px;color:#888;margin-bottom:10px;">
+                  카테고리: SHOES
+                </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">사이즈 (1단)</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">색상 (2단)</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">생성되는 SKU</th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        사이즈 (1단)
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        색상 (2단)
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        생성되는 SKU
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="r in OPT_SHOES_ROWS" :key="r.sku" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d1 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d2 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">{{ r.sku }}</td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d1 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d2 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">
+                        {{ r.sku }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;font-size:12px;line-height:1.9;">
-                <div style="font-weight:700;margin-bottom:6px;">설정 방법</div>
-                <div>1. 카테고리: 신발 (사이즈+색상) 선택</div>
-                <div>2. 1단 값 추가: 250, 255, 260, 265, 270 등 사이즈 입력</div>
-                <div>3. 2단 값 추가: 블랙, 화이트, 네이비 등 색상 입력</div>
-                <div>4. 의류와 달리 사이즈가 기준 차원(1단)이 됨</div>
+                <div style="font-weight:700;margin-bottom:6px;">
+                  설정 방법
+                </div>
+                <div>
+                  1. 카테고리: 신발 (사이즈+색상) 선택
+                </div>
+                <div>
+                  2. 1단 값 추가: 250, 255, 260, 265, 270 등 사이즈 입력
+                </div>
+                <div>
+                  3. 2단 값 추가: 블랙, 화이트, 네이비 등 색상 입력
+                </div>
+                <div>
+                  4. 의류와 달리 사이즈가 기준 차원(1단)이 됨
+                </div>
               </div>
             </div>
           </template>
@@ -498,32 +673,58 @@ window.HelpBoModal = {
           <template v-else-if="optSubTab==='elec'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
-                <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">💻 전자기기 — 색상(1단) x 저장용량(2단)</div>
-                <div style="font-size:11px;color:#888;margin-bottom:10px;">카테고리: 색상+커스텀 (CUSTOM_GRP)</div>
+                <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">
+                  💻 전자기기 — 색상(1단) x 저장용량(2단)
+                </div>
+                <div style="font-size:11px;color:#888;margin-bottom:10px;">
+                  카테고리: 색상+커스텀 (CUSTOM_GRP)
+                </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">색상 (1단)</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">용량 (2단/커스텀)</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;">생성되는 SKU</th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        색상 (1단)
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        용량 (2단/커스텀)
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;">
+                        생성되는 SKU
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="r in OPT_ELEC_ROWS" :key="r.sku" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d1 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">{{ r.d2 }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">{{ r.sku }}</td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d1 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;text-align:center;">
+                        {{ r.d2 }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-weight:600;">
+                        {{ r.sku }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;font-size:12px;line-height:1.9;">
-                <div style="font-weight:700;margin-bottom:6px;">설정 방법</div>
-                <div>1. 카테고리: 색상+커스텀 선택</div>
-                <div>2. 1단(색상) 값: 블랙, 실버, 골드 등 색상 입력</div>
-                <div>3. 2단(커스텀) 값: 128GB, 256GB, 512GB 직접 입력</div>
-                <div>4. 커스텀은 사전 정의 없이 자유 텍스트 입력 가능</div>
+                <div style="font-weight:700;margin-bottom:6px;">
+                  설정 방법
+                </div>
+                <div>
+                  1. 카테고리: 색상+커스텀 선택
+                </div>
+                <div>
+                  2. 1단(색상) 값: 블랙, 실버, 골드 등 색상 입력
+                </div>
+                <div>
+                  3. 2단(커스텀) 값: 128GB, 256GB, 512GB 직접 입력
+                </div>
+                <div>
+                  4. 커스텀은 사전 정의 없이 자유 텍스트 입력 가능
+                </div>
               </div>
             </div>
           </template>
@@ -531,21 +732,35 @@ window.HelpBoModal = {
           <template v-else-if="optSubTab==='single'">
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
-                <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">단독 옵션 — 1차원만 사용</div>
+                <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                  단독 옵션 — 1차원만 사용
+                </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">카테고리</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">사용 유형</th>
-                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">예시 값</th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
+                        카테고리
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
+                        사용 유형
+                      </th>
+                      <th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">
+                        예시 값
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="r in OPT_SINGLE_ROWS" :key="r.cat" style="border-bottom:1px solid #e8f0ff;">
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-size:11px;">{{ r.cat }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;">{{ r.type }}</td>
-                      <td style="padding:4px 8px;border:1px solid #e8f0ff;color:#888;">{{ r.ex }}</td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;font-size:11px;">
+                        {{ r.cat }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;">
+                        {{ r.type }}
+                      </td>
+                      <td style="padding:4px 8px;border:1px solid #e8f0ff;color:#888;">
+                        {{ r.ex }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -563,11 +778,25 @@ window.HelpBoModal = {
               <div v-for="item in INPUT_TYPES" :key="item.type"
                 :style="'border:1px solid '+item.border+';border-radius:8px;padding:14px;background:'+item.bg+';'">
                 <!-- ===== ■.■.■.■.■.■.■.■. 헤더 영역 ===================================== -->
-                <div :style="'font-weight:700;color:'+item.color+';margin-bottom:6px;font-size:13px;'">{{ item.title }}</div>
+                <div :style="'font-weight:700;color:'+item.color+';margin-bottom:6px;font-size:13px;'">
+                  {{ item.title }}
+                </div>
                 <div style="font-size:12px;line-height:1.8;">
-                  <div style="margin-bottom:4px;">{{ item.desc }}</div>
-                  <div><b>사용 시점:</b> {{ item.when }}</div>
-                  <div><b>예시:</b> {{ item.ex }}</div>
+                  <div style="margin-bottom:4px;">
+                    {{ item.desc }}
+                  </div>
+                  <div>
+                    <b>
+                      사용 시점:
+                    </b>
+                    {{ item.when }}
+                  </div>
+                  <div>
+                    <b>
+                      예시:
+                    </b>
+                    {{ item.ex }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -575,12 +804,16 @@ window.HelpBoModal = {
         </template>
         <!-- ===== ■.■.■.■. 주문관리 ============================================== -->
         <template v-else-if="activeTab==='order'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">🛒 주문관리</h3>
-          <p style="font-size:12px;color:#888;margin:0 0 12px;">주문접수부터 구매확정까지. 상품(order_item) 단위 부분처리 지원.</p>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">
+            🛒 주문관리
+          </h3>
+          <p style="font-size:12px;color:#888;margin:0 0 12px;">
+            주문접수부터 구매확정까지. 상품(order_item) 단위 부분처리 지원.
+          </p>
           <!-- ===== ■.■.■.■.■. 서브탭 ============================================= -->
           <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
             <button v-for="st in [{id:'flow',label:'상태 흐름'},{id:'partial',label:'부분처리/구매확정'},{id:'refund',label:'환불 순서'},{id:'bulk',label:'일괄 작업'}]"
-              :key="st.id" @click="orderSubTab=st.id"
+              :key="st.id" @click="handleSelectAction('orderSubTab-select', st.id)"
               :style="orderSubTab===st.id
               ? 'padding:5px 12px;font-size:11px;border:1px solid #1677ff;border-radius:6px;cursor:pointer;background:#e6f4ff;color:#1677ff;font-weight:700;'
               : 'padding:5px 12px;font-size:11px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;background:#f5f5f5;color:#555;'">
@@ -590,15 +823,23 @@ window.HelpBoModal = {
           <!-- ===== ■.■.■.■.■. 서브: 상태 흐름 ======================================= -->
           <template v-if="orderSubTab==='flow'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:12px;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">주문 상태 흐름</div>
+              <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">
+                주문 상태 흐름
+              </div>
               <div style="display:flex;align-items:center;gap:4px;font-size:11px;flex-wrap:wrap;margin-bottom:6px;">
                 <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <template v-for="(s,i) in ORDER_STEPS" :key="s">
-                  <span style="background:#1677ff;color:#fff;border-radius:4px;padding:3px 8px;">{{ s }}</span>
-                  <span v-if="i < ORDER_STEPS.length-1" style="color:#bbb;">-&gt;</span>
+                  <span style="background:#1677ff;color:#fff;border-radius:4px;padding:3px 8px;">
+                    {{ s }}
+                  </span>
+                  <span v-if="i < ORDER_STEPS.length-1" style="color:#bbb;">
+                    -&gt;
+                  </span>
                 </template>
               </div>
-              <div style="font-size:11px;color:#888;">* 주문 전체 상태는 활성 상품(미취소) 중 가장 앞선 상태로 집계</div>
+              <div style="font-size:11px;color:#888;">
+                * 주문 전체 상태는 활성 상품(미취소) 중 가장 앞선 상태로 집계
+              </div>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;">
               <div v-for="sd in ORDER_STEP_DETAILS" :key="sd.step"
@@ -609,8 +850,12 @@ window.HelpBoModal = {
                   </span>
                 </div>
                 <div style="flex:1;">
-                  <div style="font-size:12px;color:#333;line-height:1.7;">{{ sd.desc }}</div>
-                  <div style="font-size:11px;color:#1677ff;margin-top:2px;">▶ {{ sd.action }}</div>
+                  <div style="font-size:12px;color:#333;line-height:1.7;">
+                    {{ sd.desc }}
+                  </div>
+                  <div style="font-size:11px;color:#1677ff;margin-top:2px;">
+                    ▶ {{ sd.action }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -620,24 +865,62 @@ window.HelpBoModal = {
             <div style="display:flex;flex-direction:column;gap:12px;">
               <!-- ===== ■.■.■.■.■.■.■. 핵심 원칙 ======================================= -->
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
-                <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">핵심 원칙</div>
+                <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+                  핵심 원칙
+                </div>
                 <div style="font-size:12px;color:#333;line-height:2;">
-                  <div>• 클레임은 <b>상품(order_item) 단위</b>로 독립 처리 — 같은 주문의 다른 상품은 영향 없음</div>
-                  <div>• 취소/반품/교환은 <b>수량 단위</b>로도 부분 신청 가능 (예: 3개 중 1개만 반품)</div>
-                  <div>• <b>구매확정</b>은 상품 단위로 개별 처리 (배송완료 후 7일 경과 시 자동 확정)</div>
-                  <div>• 클레임 진행 중인 상품은 자동 확정 타이머 <b>보류</b> → 클레임 종결 후 재산정</div>
-                  <div>• 주문 전체 상태는 <b>취소되지 않은 활성 상품</b>들의 상태 중 가장 앞선 값으로 집계</div>
+                  <div>
+                    • 클레임은
+                    <b>
+                      상품(order_item) 단위
+                    </b>
+                    로 독립 처리 — 같은 주문의 다른 상품은 영향 없음
+                  </div>
+                  <div>
+                    • 취소/반품/교환은
+                    <b>
+                      수량 단위
+                    </b>
+                    로도 부분 신청 가능 (예: 3개 중 1개만 반품)
+                  </div>
+                  <div>
+                    •
+                    <b>
+                      구매확정
+                    </b>
+                    은 상품 단위로 개별 처리 (배송완료 후 7일 경과 시 자동 확정)
+                  </div>
+                  <div>
+                    • 클레임 진행 중인 상품은 자동 확정 타이머
+                    <b>
+                      보류
+                    </b>
+                    → 클레임 종결 후 재산정
+                  </div>
+                  <div>
+                    • 주문 전체 상태는
+                    <b>
+                      취소되지 않은 활성 상품
+                    </b>
+                    들의 상태 중 가장 앞선 값으로 집계
+                  </div>
                 </div>
               </div>
               <!-- ===== ■.■.■.■.■.■.■. 시나리오 ======================================== -->
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-                <div style="font-weight:700;color:#333;margin-bottom:4px;font-size:13px;">시나리오: 상품 3개 주문 — 1개 취소, 1개 반품진행중, 1개 정상완료</div>
-                <div style="font-size:11px;color:#888;margin-bottom:10px;">주문 전체 상태 = 활성 상품(B,C) 중 가장 앞선 상태 = 배송완료</div>
+                <div style="font-weight:700;color:#333;margin-bottom:4px;font-size:13px;">
+                  시나리오: 상품 3개 주문 — 1개 취소, 1개 반품진행중, 1개 정상완료
+                </div>
+                <div style="font-size:11px;color:#888;margin-bottom:10px;">
+                  주문 전체 상태 = 활성 상품(B,C) 중 가장 앞선 상태 = 배송완료
+                </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <div style="display:flex;flex-direction:column;gap:8px;">
                   <div v-for="sc in ORDER_PARTIAL_SCENARIO" :key="sc.item"
                     style="border:1px solid #e8e8e8;border-radius:6px;padding:10px 12px;background:#fff;display:flex;gap:10px;align-items:flex-start;">
-                    <div style="flex-shrink:0;width:60px;font-weight:700;font-size:12px;color:#333;">{{ sc.item }}</div>
+                    <div style="flex-shrink:0;width:60px;font-weight:700;font-size:12px;color:#333;">
+                      {{ sc.item }}
+                    </div>
                     <div style="flex:1;">
                       <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;flex-wrap:wrap;">
                         <span :style="'background:'+sc.color+';color:#fff;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;'">
@@ -647,29 +930,79 @@ window.HelpBoModal = {
                           클레임: {{ sc.claimStatus }}
                         </span>
                       </div>
-                      <div style="font-size:11px;color:#555;line-height:1.6;">{{ sc.desc }}</div>
+                      <div style="font-size:11px;color:#555;line-height:1.6;">
+                        {{ sc.desc }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               <!-- ===== ■.■.■.■.■.■.■. 구매확정 상세 ===================================== -->
               <div style="border:1px solid #d9f0e7;border-radius:8px;padding:14px;background:#f0fdf4;">
-                <div style="font-weight:700;color:#059669;margin-bottom:8px;font-size:13px;">구매확정 처리 방식</div>
+                <div style="font-weight:700;color:#059669;margin-bottom:8px;font-size:13px;">
+                  구매확정 처리 방식
+                </div>
                 <div style="font-size:12px;color:#333;line-height:2;">
-                  <div>• <b>수동 확정</b>: 고객이 마이페이지에서 상품별 "구매확정" 버튼 클릭</div>
-                  <div>• <b>자동 확정</b>: 배송완료 후 <b>7일 경과</b> 시 시스템이 자동 CONFIRMED 전환</div>
-                  <div>• 클레임(반품/교환) 진행 중 → 자동 확정 <b>타이머 정지</b></div>
-                  <div>• 클레임 종결(완료/거부/철회) → 남은 기간부터 타이머 <b>재산정</b></div>
-                  <div>• 구매확정 시: 적립금 지급, 리뷰 작성 가능, 추가 클레임 불가</div>
+                  <div>
+                    •
+                    <b>
+                      수동 확정
+                    </b>
+                    : 고객이 마이페이지에서 상품별 "구매확정" 버튼 클릭
+                  </div>
+                  <div>
+                    •
+                    <b>
+                      자동 확정
+                    </b>
+                    : 배송완료 후
+                    <b>
+                      7일 경과
+                    </b>
+                    시 시스템이 자동 CONFIRMED 전환
+                  </div>
+                  <div>
+                    • 클레임(반품/교환) 진행 중 → 자동 확정
+                    <b>
+                      타이머 정지
+                    </b>
+                  </div>
+                  <div>
+                    • 클레임 종결(완료/거부/철회) → 남은 기간부터 타이머
+                    <b>
+                      재산정
+                    </b>
+                  </div>
+                  <div>
+                    • 구매확정 시: 적립금 지급, 리뷰 작성 가능, 추가 클레임 불가
+                  </div>
                 </div>
               </div>
               <!-- ===== ■.■.■.■.■.■.■. 부분취소/반품/교환 제약 =============================== -->
               <div style="border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;line-height:1.9;">
-                <div style="font-weight:700;margin-bottom:4px;">부분처리 제약사항</div>
-                <div>• <b>취소</b>: 배송준비 착수 전(PREPARING 이전)만 가능. 이후는 반품으로 처리</div>
-                <div>• <b>반품/교환</b>: 배송완료 후 30일 이내 (상품하자 180일, 배송손상 7일)</div>
-                <div>• 동일 상품에 진행 중인 클레임 있으면 중복 신청 불가</div>
-                <div>• 위생상품, 개봉식품, 디지털상품, 주문제작품 반품/교환 불가</div>
+                <div style="font-weight:700;margin-bottom:4px;">
+                  부분처리 제약사항
+                </div>
+                <div>
+                  •
+                  <b>
+                    취소
+                  </b>
+                  : 배송준비 착수 전(PREPARING 이전)만 가능. 이후는 반품으로 처리
+                </div>
+                <div>
+                  •
+                  <b>
+                    반품/교환
+                  </b>
+                  : 배송완료 후 30일 이내 (상품하자 180일, 배송손상 7일)
+                </div>
+                <div>
+                  • 동일 상품에 진행 중인 클레임 있으면 중복 신청 불가
+                </div>
+                <div>
+                  • 위생상품, 개봉식품, 디지털상품, 주문제작품 반품/교환 불가
+                </div>
               </div>
             </div>
           </template>
@@ -679,7 +1012,9 @@ window.HelpBoModal = {
               <!-- ===== ■.■.■.■.■.■.■. 환불 우선순위 ===================================== -->
               <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
                 <!-- ===== ■.■.■.■.■.■.■.■. 헤더 영역 ===================================== -->
-                <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">환불 처리 우선순위</div>
+                <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">
+                  환불 처리 우선순위
+                </div>
                 <div style="display:flex;flex-direction:column;gap:6px;">
                   <div v-for="row in REFUND_ORDER_ROWS" :key="row.rank"
                     :style="'border:1px solid #e0e0e0;border-radius:6px;padding:10px 12px;background:'+row.bg+';display:flex;gap:10px;align-items:flex-start;'">
@@ -687,54 +1022,87 @@ window.HelpBoModal = {
                       {{ row.rank }}
                     </div>
                     <div style="flex:1;">
-                      <div :style="'font-weight:700;font-size:12px;color:'+row.color+';margin-bottom:2px;'">{{ row.method }}</div>
-                      <div style="font-size:11px;color:#555;line-height:1.6;">{{ row.desc }}</div>
+                      <div :style="'font-weight:700;font-size:12px;color:'+row.color+';margin-bottom:2px;'">
+                        {{ row.method }}
+                      </div>
+                      <div style="font-size:11px;color:#555;line-height:1.6;">
+                        {{ row.desc }}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.7;">* 복수 결제수단 혼용 시 적립금/캐쉬 먼저 복원 후 나머지를 결제수단 역순으로 환불</div>
+                <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.7;">
+                  * 복수 결제수단 혼용 시 적립금/캐쉬 먼저 복원 후 나머지를 결제수단 역순으로 환불
+                </div>
               </div>
               <!-- ===== ■.■.■.■.■.■.■. 반품 배송비 ====================================== -->
               <div style="border:1px solid #fee2e2;border-radius:8px;padding:14px;background:#fff5f5;">
-                <div style="font-weight:700;color:#ef4444;margin-bottom:10px;font-size:13px;">반품 배송비 부담 기준</div>
+                <div style="font-weight:700;color:#ef4444;margin-bottom:10px;font-size:13px;">
+                  반품 배송비 부담 기준
+                </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#fee2e2;">
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:left;">반품 사유</th>
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:center;">고객</th>
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:center;">판매자</th>
-                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:left;">비고</th>
+                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:left;">
+                        반품 사유
+                      </th>
+                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:center;">
+                        고객
+                      </th>
+                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:center;">
+                        판매자
+                      </th>
+                      <th style="padding:6px 8px;border:1px solid #fca5a5;text-align:left;">
+                        비고
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="row in RETURN_FEE_ROWS" :key="row.reason" style="border-bottom:1px solid #fecaca;">
-                      <td style="padding:5px 8px;border:1px solid #fecaca;font-weight:600;">{{ row.reason }}</td>
+                      <td style="padding:5px 8px;border:1px solid #fecaca;font-weight:600;">
+                        {{ row.reason }}
+                      </td>
                       <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.buyer!=='-'?'color:#ef4444;font-weight:700;':''">
                         {{ row.buyer }}
                       </td>
                       <td style="padding:5px 8px;border:1px solid #fecaca;text-align:center;" :style="row.seller==='100%'?'color:#3b82f6;font-weight:700;':''">
                         {{ row.seller }}
                       </td>
-                      <td style="padding:5px 8px;border:1px solid #fecaca;font-size:11px;color:#666;">{{ row.note }}</td>
+                      <td style="padding:5px 8px;border:1px solid #fecaca;font-size:11px;color:#666;">
+                        {{ row.note }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <!-- ===== ■.■.■.■.■.■.■. 쿠폰/할인 환불 처리 ================================= -->
               <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;">
-                <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">쿠폰/할인 환불 처리 방식</div>
+                <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">
+                  쿠폰/할인 환불 처리 방식
+                </div>
                 <div style="display:flex;flex-direction:column;gap:8px;">
                   <div v-for="row in COUPON_REFUND_ROWS" :key="row.type"
                     style="border:1px solid #a7f3d0;border-radius:6px;padding:10px 12px;background:#fff;">
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 헤더 영역 ================================= -->
-                    <div style="font-weight:700;font-size:12px;color:#065f46;margin-bottom:4px;">{{ row.type }}</div>
-                    <div style="font-size:11px;color:#333;margin-bottom:2px;"><b>규칙:</b> {{ row.rule }}</div>
-                    <div style="font-size:11px;color:#555;">{{ row.detail }}</div>
+                    <div style="font-weight:700;font-size:12px;color:#065f46;margin-bottom:4px;">
+                      {{ row.type }}
+                    </div>
+                    <div style="font-size:11px;color:#333;margin-bottom:2px;">
+                      <b>
+                        규칙:
+                      </b>
+                      {{ row.rule }}
+                    </div>
+                    <div style="font-size:11px;color:#555;">
+                      {{ row.detail }}
+                    </div>
                   </div>
                 </div>
                 <div style="margin-top:10px;font-size:11px;color:#065f46;background:#d1fae5;border-radius:6px;padding:8px 10px;line-height:1.7;">
-                  <b>환불액 계산 공식</b>
+                  <b>
+                    환불액 계산 공식
+                  </b>
                   <br>
                   환불액 = 반품상품금액 - 쿠폰/할인 안분액 - 반품배송비(고객부담) - 상품손상 감액
                   <br>
@@ -746,10 +1114,18 @@ window.HelpBoModal = {
           <!-- ===== ■.■.■.■.■. 서브: 일괄 작업 ======================================= -->
           <template v-else-if="orderSubTab==='bulk'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">일괄 작업 방법</div>
+              <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">
+                일괄 작업 방법
+              </div>
               <div style="font-size:12px;color:#555;line-height:1.9;">
                 <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
-                <div>• 목록 좌측 체크박스로 복수 선택 후 <b>[변경작업 선택]</b> 버튼 클릭</div>
+                <div>
+                  • 목록 좌측 체크박스로 복수 선택 후
+                  <b>
+                    [변경작업 선택]
+                  </b>
+                  버튼 클릭
+                </div>
               </div>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
@@ -764,30 +1140,46 @@ window.HelpBoModal = {
                 <span :style="'flex-shrink:0;display:inline-block;background:'+item.color+';color:#fff;border-radius:4px;padding:2px 10px;font-size:11px;font-weight:700;white-space:nowrap;'">
                   {{ item.title }}
                 </span>
-                <span style="font-size:12px;color:#444;line-height:1.7;">{{ item.desc }}</span>
+                <span style="font-size:12px;color:#444;line-height:1.7;">
+                  {{ item.desc }}
+                </span>
               </div>
             </div>
           </template>
         </template>
         <!-- ===== ■.■.■.■. 클레임 =============================================== -->
         <template v-else-if="activeTab==='claim'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">🔄 클레임 처리</h3>
-          <p style="font-size:12px;color:#888;margin:0 0 14px;">취소 / 반품 / 교환 3가지 유형으로 구분</p>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">
+            🔄 클레임 처리
+          </h3>
+          <p style="font-size:12px;color:#888;margin:0 0 14px;">
+            취소 / 반품 / 교환 3가지 유형으로 구분
+          </p>
           <!-- ===== ■.■.■.■.■. 상태 흐름 요약 ======================================== -->
           <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
             <div v-for="ct in CLAIM_TYPES" :key="ct.title"
               style="border:1px solid #e0e0e0;border-radius:8px;padding:12px;background:#fafafa;">
-              <div :style="'font-weight:700;color:'+ct.color+';margin-bottom:8px;font-size:13px;'">{{ ct.title }} 상태 흐름</div>
+              <div :style="'font-weight:700;color:'+ct.color+';margin-bottom:8px;font-size:13px;'">
+                {{ ct.title }} 상태 흐름
+              </div>
               <div style="display:flex;align-items:center;gap:4px;font-size:11px;flex-wrap:wrap;">
                 <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <template v-for="(s,i) in ct.steps" :key="s">
-                  <span :style="'background:'+ct.color+';color:#fff;border-radius:4px;padding:3px 8px;white-space:nowrap;'">{{ s }}</span>
+                  <span :style="'background:'+ct.color+';color:#fff;border-radius:4px;padding:3px 8px;white-space:nowrap;'">
+                    {{ s }}
+                  </span>
                   <template v-if="i < ct.steps.length-1">
                     <span v-if="ct.doubleArrowAfter.includes(i)" style="color:#bbb;display:inline-flex;gap:2px;">
-                      <span>-&gt;</span>
-                      <span>-&gt;</span>
+                      <span>
+                        -&gt;
+                      </span>
+                      <span>
+                        -&gt;
+                      </span>
                     </span>
-                    <span v-else style="color:#bbb;">-&gt;</span>
+                    <span v-else style="color:#bbb;">
+                      -&gt;
+                    </span>
                   </template>
                 </template>
               </div>
@@ -797,7 +1189,9 @@ window.HelpBoModal = {
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div v-for="cd in CLAIM_DETAILS" :key="cd.title"
               :style="'border:1px solid #ddd;border-radius:8px;padding:14px;background:'+cd.bg+';'">
-              <div :style="'font-weight:700;color:'+cd.color+';margin-bottom:10px;font-size:13px;'">{{ cd.title }} 상세</div>
+              <div :style="'font-weight:700;color:'+cd.color+';margin-bottom:10px;font-size:13px;'">
+                {{ cd.title }} 상세
+              </div>
               <!-- ===== ■.■.■.■.■.■.■. 단계별 설명 ====================================== -->
               <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
                 <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
@@ -806,58 +1200,102 @@ window.HelpBoModal = {
                   <span :style="'flex-shrink:0;min-width:68px;display:inline-block;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;color:#fff;background:'+cd.color+';text-align:center;'">
                     {{ sd.step }}
                   </span>
-                  <span style="color:#444;line-height:1.7;">{{ sd.desc }}</span>
+                  <span style="color:#444;line-height:1.7;">
+                    {{ sd.desc }}
+                  </span>
                 </div>
               </div>
               <!-- ===== ■.■.■.■.■.■.■. 정책 요약 ======================================= -->
               <div style="border-top:1px dashed #ddd;padding-top:8px;font-size:11px;color:#666;line-height:1.9;">
-                <div><b>신청기간:</b> {{ cd.period }}</div>
-                <div><b>환불/완료:</b> {{ cd.refund }}</div>
-                <div v-for="note in cd.notes" :key="note">• {{ note }}</div>
+                <div>
+                  <b>
+                    신청기간:
+                  </b>
+                  {{ cd.period }}
+                </div>
+                <div>
+                  <b>
+                    환불/완료:
+                  </b>
+                  {{ cd.refund }}
+                </div>
+                <div v-for="note in cd.notes" :key="note">
+                  • {{ note }}
+                </div>
               </div>
             </div>
           </div>
           <!-- ===== ■.■.■.■.■. 공통 제약사항 ========================================= -->
           <div style="margin-top:14px;border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;">
-            <div style="font-weight:700;margin-bottom:6px;">공통 제약사항</div>
+            <div style="font-weight:700;margin-bottom:6px;">
+              공통 제약사항
+            </div>
             <div style="line-height:1.9;">
-              <div>• 동일 상품당 취소/반품/교환 중 1가지만 신청 가능</div>
-              <div>• 진행 중인 클레임이 있으면 동일 상품 추가 신청 불가</div>
-              <div>• 위생상품, 개봉식품, 디지털상품, 주문제작품은 반품/교환 불가</div>
-              <div>• 첫 단계(요청) 상태에서만 신청 취소 가능</div>
+              <div>
+                • 동일 상품당 취소/반품/교환 중 1가지만 신청 가능
+              </div>
+              <div>
+                • 진행 중인 클레임이 있으면 동일 상품 추가 신청 불가
+              </div>
+              <div>
+                • 위생상품, 개봉식품, 디지털상품, 주문제작품은 반품/교환 불가
+              </div>
+              <div>
+                • 첫 단계(요청) 상태에서만 신청 취소 가능
+              </div>
             </div>
           </div>
         </template>
         <!-- ===== ■.■.■.■. 프로모션 ============================================== -->
         <template v-else-if="activeTab==='promotion'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🎫 프로모션</h3>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">
+            🎫 프로모션
+          </h3>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div v-for="item in PROMO_ITEMS" :key="item.title"
               style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-size:20px;margin-bottom:6px;">{{ item.icon }}</div>
-              <div style="font-weight:700;color:#1677ff;font-size:13px;margin-bottom:4px;">{{ item.title }}</div>
-              <div style="font-size:11px;color:#555;line-height:1.6;">{{ item.desc }}</div>
+              <div style="font-size:20px;margin-bottom:6px;">
+                {{ item.icon }}
+              </div>
+              <div style="font-weight:700;color:#1677ff;font-size:13px;margin-bottom:4px;">
+                {{ item.title }}
+              </div>
+              <div style="font-size:11px;color:#555;line-height:1.6;">
+                {{ item.desc }}
+              </div>
             </div>
           </div>
         </template>
         <!-- ===== ■.■.■.■. 전시관리 ============================================== -->
         <template v-else-if="activeTab==='display'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🖼 전시관리</h3>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">
+            🖼 전시관리
+          </h3>
           <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:14px;">
-            <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">계층 구조</div>
+            <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">
+              계층 구조
+            </div>
             <div style="display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap;">
               <template v-for="(lv,i) in DISP_LEVELS" :key="lv.l">
                 <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
                 <div style="text-align:center;">
-                  <div style="background:#1677ff;color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;">{{ lv.l }}</div>
-                  <div style="font-size:10px;color:#666;margin-top:2px;white-space:nowrap;">{{ lv.d }}</div>
+                  <div style="background:#1677ff;color:#fff;border-radius:6px;padding:4px 12px;font-weight:700;">
+                    {{ lv.l }}
+                  </div>
+                  <div style="font-size:10px;color:#666;margin-top:2px;white-space:nowrap;">
+                    {{ lv.d }}
+                  </div>
                 </div>
-                <span v-if="i < DISP_LEVELS.length-1" style="color:#bbb;font-size:16px;">&gt;</span>
+                <span v-if="i < DISP_LEVELS.length-1" style="color:#bbb;font-size:16px;">
+                  &gt;
+                </span>
               </template>
             </div>
           </div>
           <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-            <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">위젯 타입</div>
+            <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">
+              위젯 타입
+            </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
               <span v-for="w in DISP_WIDGETS" :key="w"
                 style="background:#f0f7ff;border:1px solid #bae0ff;border-radius:4px;padding:3px 8px;color:#0958d9;">
@@ -868,12 +1306,18 @@ window.HelpBoModal = {
         </template>
         <!-- ===== ■.■.■.■. 시스템 =============================================== -->
         <template v-else-if="activeTab==='system'">
-          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">🔧 시스템 관리</h3>
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 16px;">
+            🔧 시스템 관리
+          </h3>
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div v-for="item in SYS_ITEMS" :key="item.title"
               style="border:1px solid #e0e0e0;border-radius:8px;padding:12px 14px;background:#fafafa;display:flex;gap:10px;align-items:flex-start;">
-              <span style="font-size:12px;font-weight:700;color:#1677ff;white-space:nowrap;min-width:100px;">{{ item.title }}</span>
-              <span style="font-size:12px;color:#555;line-height:1.6;">{{ item.desc }}</span>
+              <span style="font-size:12px;font-weight:700;color:#1677ff;white-space:nowrap;min-width:100px;">
+                {{ item.title }}
+              </span>
+              <span style="font-size:12px;color:#555;line-height:1.6;">
+                {{ item.desc }}
+              </span>
             </div>
           </div>
         </template>
@@ -884,7 +1328,7 @@ window.HelpBoModal = {
     <!-- ===== ■.■. /바디 =================================================== -->
   </div>
 </bo-modal>
-
-    <!-- ===== □.□. /바디 =================================================== -->
-  <!-- ===== □. 본문 영역 =================================================== -->`,
+<!-- ===== □.□. /바디 =================================================== -->
+<!-- ===== □. 본문 영역 =================================================== -->
+`,
 };

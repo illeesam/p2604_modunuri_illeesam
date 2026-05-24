@@ -18,6 +18,25 @@ window.DispX03Panel = {
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX03Panel.js : handleBtnAction -> ', cmd, param);
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* handleSelectAction — 위젯 선택 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX03Panel.js : handleSelectAction -> ', cmd, param);
+      // 위젯 클릭 액션 부모로 전파
+      if (cmd === 'widgets-action') {
+        return emit('widget-action', param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
     /* mergedWidget — merged 위젯 */
     const mergedWidget = (w) => ({
       ...w,
@@ -42,15 +61,13 @@ window.DispX03Panel = {
       return 'display:flex;flex-direction:column;gap:12px;';
     });
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
-    /* onWidgetAction — 이벤트 */
-    const onWidgetAction = (payload) => emit('widget-action', payload);
-
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { uiState, codes, mergedWidget, cfLayoutStyle, onWidgetAction };
+    return {
+      uiState, codes,                                                       // 상태
+      handleBtnAction, handleSelectAction,                                  // dispatch
+      mergedWidget, cfLayoutStyle,                                          // 헬퍼 / computed
+    };
   },
   template: /* html */`
 <div class="disp-panel" :data-area="panelItem.area">
@@ -68,37 +85,34 @@ window.DispX03Panel = {
       :style="panelItem.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">
       {{ panelItem.status }}
     </span>
-    <span v-if="panelItem.condition && panelItem.condition!=='항상 표시'"
-      style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">
-      {{ panelItem.condition }}
-    </span>
-  </div>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. 패널 타이틀 ================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="panelItem.titleYn==='Y' && panelItem.title"
-    style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
-    {{ panelItem.title }}
-  </div>
-  <!-- ===== □. 조건부 영역 ================================================== -->
-  <!-- ===== ■. 위젯 목록 =================================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div :style="cfLayoutStyle">
-    <disp-x04-widget
+    <span v-if="panelItem.condition && panelItem.condition!=='항상 표시'" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">
+    {{ panelItem.condition }}
+  </span>
+</div>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 패널 타이틀 ================================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<div v-if="panelItem.titleYn==='Y' && panelItem.title" style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
+{{ panelItem.title }}
+</div>
+<!-- ===== □. 조건부 영역 ================================================== -->
+<!-- ===== ■. 위젯 목록 =================================================== -->
+<!-- ===== ■. 영역 ====================================================== -->
+<div :style="cfLayoutStyle">
+  <disp-x04-widget
       v-for="(w, wi) in (panelItem.rows || [])"
       :key="wi"
       :params="params"
       :disp-dataset="dispDataset"
       :disp-opt="dispOpt"
       :widget-item="mergedWidget(w)"
-      @click-action="onWidgetAction"
+      @click-action="payload => handleSelectAction('widgets-action', payload)"
       />
-    <div v-if="!(panelItem.rows && panelItem.rows.length)"
-      style="color:#ccc;font-size:12px;padding:8px;text-align:center;">
-      위젯 없음
-    </div>
-  </div>
+  <div v-if="!(panelItem.rows && panelItem.rows.length)" style="color:#ccc;font-size:12px;padding:8px;text-align:center;">
+  위젯 없음
 </div>
-
-  <!-- ===== □. 영역 ====================================================== -->`,
+</div>
+</div>
+<!-- ===== □. 영역 ====================================================== -->
+`,
 };

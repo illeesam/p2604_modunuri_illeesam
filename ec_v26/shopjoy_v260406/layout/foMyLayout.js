@@ -58,7 +58,33 @@ window.MyDateFilter = {
       emit('search', { startDate: startDate.value, endDate: endDate.value });
       emit('reset');
     };
-    return { period, startDate, endDate, PERIODS, onPeriodChange, search, onReset };
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MyDateFilter : handleBtnAction -> ', cmd, param);
+      if (cmd === 'filter-search') {
+        return search();
+      } else if (cmd === 'filter-reset') {
+        return onReset();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MyDateFilter : handleSelectAction -> ', cmd, param);
+      if (cmd === 'filter-period-change') {
+        return onPeriodChange();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return {
+      period, startDate, endDate, PERIODS,     // 상태
+      handleBtnAction, handleSelectAction,     // dispatch
+    };
   },
   template: `
 <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;">
@@ -70,13 +96,13 @@ window.MyDateFilter = {
     <span style="font-size:0.82rem;color:var(--text-muted);">~</span>
     <input type="date" v-model="endDate"
       style="padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-base);color:var(--text-primary);font-size:0.82rem;cursor:pointer;" />
-    <select v-model="period" @change="onPeriodChange"
+    <select v-model="period" @change="handleSelectAction('filter-period-change')"
       style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-base);color:var(--text-primary);font-size:0.82rem;cursor:pointer;">
       <option v-for="p in PERIODS" :key="p.value" :value="p.value">{{ p.label }}</option>
     </select>
-    <button @click="search"
+    <button @click="handleBtnAction('filter-search')"
       style="padding:6px 18px;border-radius:6px;border:none;background:var(--blue);color:#fff;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">조회</button>
-    <button @click="onReset"
+    <button @click="handleBtnAction('filter-reset')"
       style="padding:6px 14px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg-base);color:var(--text-secondary);font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">초기화</button>
   </div>
 </div>
@@ -111,20 +137,49 @@ window.Pagination = {
       const t = Math.max(1, Math.ceil(props.total / props.pager.size));
       return Array.from({ length: t }, (_, i) => i + 1);
     });
-    return { pages };
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Pagination : handleBtnAction -> ', cmd, param);
+      if (cmd === 'pager-prev') {
+        props.pager.page = Math.max(1, props.pager.page - 1);
+        return;
+      } else if (cmd === 'pager-next') {
+        props.pager.page = Math.min(pages.value.length, props.pager.page + 1);
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Pagination : handleSelectAction -> ', cmd, param);
+      if (cmd === 'pager-set-page') {
+        props.pager.page = param;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return {
+      pages,                                   // computed
+      handleBtnAction, handleSelectAction,     // dispatch
+    };
   },
   template: `
 <div v-if="pages.length>1" style="display:flex;gap:6px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
   <!-- ===== ■. 영역 ====================================================== -->
-  <button @click="pager.page=Math.max(1,pager.page-1)" :disabled="pager.page===1"
+  <button @click="handleBtnAction('pager-prev')" :disabled="pager.page===1"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
     :style="pager.page===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
-  <button v-for="p in pages" :key="p" @click="pager.page=p"
+  <button v-for="p in pages" :key="p" @click="handleSelectAction('pager-set-page', p)"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.82rem;min-width:36px;"
     :style="pager.page===p?'background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700;':'background:var(--bg-card);color:var(--text-secondary);'">{{ p }}</button>
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <button @click="pager.page=Math.min(pages.length,pager.page+1)" :disabled="pager.page===pages.length"
+  <button @click="handleBtnAction('pager-next')" :disabled="pager.page===pages.length"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
     :style="pager.page===pages.length?'opacity:0.4;cursor:not-allowed;':''">›</button>
 </div>
@@ -158,7 +213,30 @@ window.foMyLayout = {
       }
     };
 
-    return { MY_TABS, cfTabCounts, goTab };
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ foMyLayout : handleBtnAction -> ', cmd, param);
+      if (cmd === 'nav-go-home') {
+        return props.navigate('home');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ foMyLayout : handleSelectAction -> ', cmd, param);
+      if (cmd === 'nav-go-tab') {
+        return goTab(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return {
+      MY_TABS, cfTabCounts,                    // 상태 / computed
+      handleBtnAction, handleSelectAction,     // dispatch
+    };
   },
   template: /* html */ `
 <div style="padding:0 20px 24px;max-width:1100px;margin:0 auto;">
@@ -173,7 +251,7 @@ window.foMyLayout = {
       <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">My Account</div>
       <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">마이페이지</h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="navigate('home')">홈</span>
+        <span style="cursor:pointer;" @click="handleBtnAction('nav-go-home')">홈</span>
         <span>/</span>
         <span style="color:#333;">마이페이지</span>
       </div>
@@ -185,7 +263,7 @@ window.foMyLayout = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:8px;box-shadow:0 2px 12px rgba(0,0,0,0.05);align-items:stretch;">
     <template v-for="(t, ti) in MY_TABS" :key="t.pageId">
-      <button @click="goTab(t.pageId)"
+      <button @click="handleSelectAction('nav-go-tab', t.pageId)"
         style="padding:11px 18px;border:none;cursor:pointer;font-size:0.92rem;white-space:nowrap;border-radius:10px;transition:all 0.18s;display:flex;align-items:center;gap:7px;flex:1;justify-content:center;min-width:fit-content;"
         :style="activePage===t.pageId
           ? 'background:linear-gradient(135deg,#1a1a1a,#404040);color:#fff;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,0.18);transform:translateY(-1px);'

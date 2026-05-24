@@ -27,27 +27,47 @@ window.OrderDetailModal = {
   name: 'OrderDetailModal',
   props: ['show', 'order', 'reloadTrigger'],
   emits: ['close'],
-  setup() {
-    const { reactive } = Vue;
+  setup(props, { emit }) {
+    const { reactive, computed } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
-    return { uiState, codes };
-  },
-  computed: {
-    siteNm() { return boUtil.bofGetSiteNm(); },
-  },
-  methods: {
-    fnStatusColor(s) {
-      return ({
-        '주문완료': '#3b82f6', '결제완료': '#8b5cf6',
-        '배송준비중': '#f59e0b', '배송중': '#f97316',
-        '배송완료': '#22c55e', '완료': '#6b7280', '취소됨': '#9ca3af',
-      })[s] || '#9ca3af';
-    },
-    fnStatusLabel(s) { return s === '완료' ? '구매확정' : s; },
+
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+
+    /* fnStatusColor — 상태별 색상 */
+    const fnStatusColor = (s) => ({
+      '주문완료': '#3b82f6', '결제완료': '#8b5cf6',
+      '배송준비중': '#f59e0b', '배송중': '#f97316',
+      '배송완료': '#22c55e', '완료': '#6b7280', '취소됨': '#9ca3af',
+    })[s] || '#9ca3af';
+
+    /* fnStatusLabel — 상태 라벨 */
+    const fnStatusLabel = (s) => s === '완료' ? '구매확정' : s;
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ OrderDetailModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        return emit('close');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ OrderDetailModal : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    return {
+      uiState, codes, cfSiteNm,                // 상태 / computed
+      handleBtnAction, handleSelectAction,     // dispatch
+      fnStatusColor, fnStatusLabel,            // 헬퍼
+    };
   },
   template: /* html */ `
-<fo-modal :show="show" max-width="520px" max-height="90vh" box-pad="0" :z-index="400" @close="$emit('close')">
+<fo-modal :show="show" max-width="520px" max-height="90vh" box-pad="0" :z-index="400" @close="handleBtnAction('modal-close')">
   <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.28);border:1px solid var(--border);overflow:hidden;height:100%;"
     role="dialog" aria-modal="true">
     <!-- 헤더 -->
@@ -55,11 +75,11 @@ window.OrderDetailModal = {
       <div>
         <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">
           📦 주문 상세
-          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ siteNm }}</span>
+          <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">{{ cfSiteNm }}</span>
         </div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px;">{{ order && order.orderId }}</div>
       </div>
-      <button type="button" @click="$emit('close')" aria-label="닫기"
+      <button type="button" @click="handleBtnAction('modal-close')" aria-label="닫기"
         style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">
         ✕
       </button>
@@ -126,7 +146,7 @@ window.OrderDetailModal = {
     </div>
     <!-- 푸터 -->
     <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-      <button type="button" @click="$emit('close')" class="btn-blue"
+      <button type="button" @click="handleBtnAction('modal-close')" class="btn-blue"
         style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
         닫기
       </button>
@@ -144,7 +164,7 @@ window.ProductModal = {
   name: 'ProductModal',
   props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked', 'addToCart', 'cartMode', 'reloadTrigger'],
   emits: ['close'],
-  setup(props) {
+  setup(props, { emit }) {
     const { ref, watch, computed, reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -257,11 +277,64 @@ window.ProductModal = {
       return true;
     };
 
-    return { uiState, codes, selColor, selSize, qty, inCart, selThumb, cfThumbImgs, cfRating, cfStarStr,
-             toastMsg, toastShow, errColor, errSize, handleLike, handleCart, handleBuyNow, handleValidate };
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ ProductModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        return emit('close');
+      } else if (cmd === 'modal-like') {
+        return handleLike();
+      } else if (cmd === 'modal-cart') {
+        return handleCart();
+      } else if (cmd === 'modal-cart-close') {
+        if (handleCart()) emit('close');
+        return;
+      } else if (cmd === 'modal-buy-now-close') {
+        if (handleBuyNow(props.navigate)) emit('close');
+        return;
+      } else if (cmd === 'modal-go-prod-view') {
+        if (props.navigate) props.navigate('prodView');
+        return emit('close');
+      } else if (cmd === 'modal-qty-dec') {
+        if (qty.value > 1) qty.value--;
+        return;
+      } else if (cmd === 'modal-qty-inc') {
+        qty.value++;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ ProductModal : handleSelectAction -> ', cmd, param);
+      if (cmd === 'modal-sel-thumb') {
+        selThumb.value = param;
+        return;
+      } else if (cmd === 'modal-sel-color') {
+        selColor.value = param;
+        errColor.value = false;
+        selThumb.value = 0;
+        return;
+      } else if (cmd === 'modal-sel-size') {
+        selSize.value = param;
+        errSize.value = false;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return {
+      uiState, codes, selColor, selSize, qty, inCart, selThumb,             // 상태
+      cfThumbImgs, cfRating, cfStarStr,                                      // computed
+      toastMsg, toastShow, errColor, errSize,                                // UI 상태
+      handleBtnAction, handleSelectAction,                                   // dispatch
+    };
   },
   template: /* html */ `
-<fo-modal :show="show" max-width="840px" max-height="90vh" box-pad="0" :z-index="400" @close="$emit('close')">
+<fo-modal :show="show" max-width="840px" max-height="90vh" box-pad="0" :z-index="400" @close="handleBtnAction('modal-close')">
   <!-- 내부 토스트 -->
   <transition name="fade">
     <div v-if="toastShow"
@@ -280,7 +353,7 @@ window.ProductModal = {
       </div>
       <!-- 썸네일 목록 -->
       <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">
-        <div v-for="(img, i) in cfThumbImgs" :key="i" @click="selThumb=i"
+        <div v-for="(img, i) in cfThumbImgs" :key="i" @click="handleSelectAction('modal-sel-thumb', i)"
           :style="{
           width:'68px', height:'68px', background:'#fff', cursor:'pointer', boxSizing:'border-box',
           border: selThumb===i ? '2px solid #1a1a1a' : '2px solid transparent',
@@ -292,7 +365,7 @@ window.ProductModal = {
     </div>
     <!-- 우: 정보 -->
     <div v-if="product" style="flex:1;min-width:0;padding:28px 28px 24px;position:relative;display:flex;flex-direction:column;overflow-y:auto;">
-      <button @click="$emit('close')"
+      <button @click="handleBtnAction('modal-close')"
         style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#bbb;line-height:1;">
         ✕
       </button>
@@ -325,7 +398,7 @@ window.ProductModal = {
           <span v-if="selColor" style="font-size:0.75rem;color:#555;">{{ selColor.name }}</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button v-for="c in product.opt1s" :key="c.name" @click="selColor=c; errColor=false; selThumb=0"
+          <button v-for="c in product.opt1s" :key="c.name" @click="handleSelectAction('modal-sel-color', c)"
             :style="{
             width:'28px', height:'28px', borderRadius:'50%', background:c.hex, cursor:'pointer',
             border: selColor&&selColor.name===c.name ? '3px solid #1a1a1a' : '2px solid rgba(0,0,0,0.12)',
@@ -346,7 +419,7 @@ window.ProductModal = {
           border: errSize ? '1px solid #ef4444' : '1px solid transparent',
           borderRadius:'3px', transition:'border-color .2s',
           }">
-          <button v-for="s in product.opt2s" :key="s" @click="selSize=s; errSize=false"
+          <button v-for="s in product.opt2s" :key="s" @click="handleSelectAction('modal-sel-size', s)"
             :style="{
             padding:'5px 14px', borderRadius:'2px', cursor:'pointer', fontSize:'0.8rem',
             border: selSize===s ? '2px solid #1a1a1a' : '2px solid #ddd',
@@ -369,12 +442,12 @@ window.ProductModal = {
       <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-top:4px;">
         <span style="font-size:0.75rem;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;">수량</span>
         <div style="display:flex;align-items:center;border:1.5px solid #ddd;border-radius:2px;">
-          <button @click="qty>1&&qty--"
+          <button @click="handleBtnAction('modal-qty-dec')"
             style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">
             −
           </button>
           <span style="min-width:36px;text-align:center;font-size:0.88rem;font-weight:600;color:#1a1a1a;padding:0 4px;">{{ qty }}</span>
-          <button @click="qty++"
+          <button @click="handleBtnAction('modal-qty-inc')"
             style="width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.1rem;color:#555;line-height:1;">
             +
           </button>
@@ -384,7 +457,7 @@ window.ProductModal = {
       <div style="margin-top:auto;">
         <!-- 장바구니 모드: 장바구니 추가 버튼만 -->
         <template v-if="cartMode">
-          <button @click="handleCart() && $emit('close')"
+          <button @click="handleBtnAction('modal-cart-close')"
             style="width:100%;padding:13px;font-size:0.9rem;font-weight:700;background:#1a1a1a;color:#fff;border:none;border-radius:2px;cursor:pointer;letter-spacing:0.3px;">
             🛒 장바구니 추가
           </button>
@@ -392,16 +465,16 @@ window.ProductModal = {
         <!-- 일반 모드: 전체 버튼 -->
         <template v-else>
           <div style="display:flex;gap:8px;">
-            <button class="btn-blue" @click="navigate && navigate('prodView');$emit('close')"
+            <button class="btn-blue" @click="handleBtnAction('modal-go-prod-view')"
               style="flex:1;padding:12px;font-size:0.85rem;">
               상세보기
             </button>
-            <button class="btn-outline" @click="handleBuyNow(navigate) && $emit('close')"
+            <button class="btn-outline" @click="handleBtnAction('modal-buy-now-close')"
               style="flex:1;padding:12px;font-size:0.85rem;">
               바로구매
             </button>
             <!-- 좋아요 토글 -->
-            <button @click="handleLike"
+            <button @click="handleBtnAction('modal-like')"
               :style="{
               width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
               display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
@@ -415,7 +488,7 @@ window.ProductModal = {
               </svg>
             </button>
             <!-- 장바구니 토글 -->
-            <button @click="handleCart"
+            <button @click="handleBtnAction('modal-cart')"
               :style="{
               width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer',
               display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s',
@@ -445,8 +518,28 @@ window.CustomerModal = {
   name: 'CustomerModal',
   props: ['show', 'user', 'order', 'reloadTrigger'],
   emits: ['close'],
+  setup(props, { emit }) {
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ CustomerModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        return emit('close');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ CustomerModal : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    return { handleBtnAction, handleSelectAction };
+  },
   template: /* html */ `
-<fo-modal :show="show" max-width="380px" max-height="90vh" box-pad="0" :z-index="400" @close="$emit('close')">
+<fo-modal :show="show" max-width="380px" max-height="90vh" box-pad="0" :z-index="400" @close="handleBtnAction('modal-close')">
   <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;height:100%;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.28);border:1px solid var(--border);overflow:hidden;"
     role="dialog" aria-modal="true">
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -459,7 +552,7 @@ window.CustomerModal = {
           <div v-if="order" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">{{ order.orderId }}</div>
         </div>
       </div>
-      <button type="button" @click="$emit('close')" aria-label="닫기" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">
+      <button type="button" @click="handleBtnAction('modal-close')" aria-label="닫기" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);padding:4px;line-height:1;">
         ✕
       </button>
     </div>
@@ -494,7 +587,7 @@ window.CustomerModal = {
       </div>
     </div>
     <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-      <button type="button" @click="$emit('close')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
+      <button type="button" @click="handleBtnAction('modal-close')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
         닫기
       </button>
     </div>

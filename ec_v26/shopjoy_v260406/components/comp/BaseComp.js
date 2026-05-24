@@ -47,6 +47,34 @@ window.BaseAttachGrp = {
     /* 업로드된 파일 목록 (로컬 상태) */
     const files = reactive([]);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BaseAttachGrp : handleBtnAction -> ', cmd, param);
+      if (cmd === 'attach-open-picker') {
+        return openPicker();
+      } else if (cmd === 'attach-close-thumb') {
+        return fnCloseThumb();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BaseAttachGrp : handleSelectAction -> ', cmd, param);
+      if (cmd === 'attach-row-remove') {
+        return removeFile(param);
+      } else if (cmd === 'attach-row-open-thumb') {
+        return fnOpenThumb(param);
+      } else if (cmd === 'attach-row-show-hover') {
+        return fnShowHover(param.event, param.url);
+      } else if (cmd === 'attach-row-hide-hover') {
+        return fnHideHover();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* loadFiles */
     const loadFiles = async (attachGrpId) => {
       if (!attachGrpId) return;
@@ -258,11 +286,13 @@ window.BaseAttachGrp = {
       } catch(e) { console.warn('[BaseAttachGrp] sort update failed', e); }
     };
 
-    return { uiState, files, cfAcceptAttr, fileInputRef, openPicker, onFileChange, removeFile,
-      fnFmtSize, fnExtIcon, loadFiles, fnIsImage,
-      thumbState, fnOpenThumb, fnCloseThumb,
-      hoverState, fnShowHover, fnHideHover,
-      dragState, onDragStart, onDragOver, onDrop };
+    return {
+      uiState, files, cfAcceptAttr, fileInputRef,           // 상태 / computed
+      thumbState, hoverState, dragState,                    // UI 상태
+      handleBtnAction, handleSelectAction,                  // dispatch
+      onFileChange, onDragStart, onDragOver, onDrop,        // 직접 핸들러 (param 다양)
+      fnFmtSize, fnExtIcon, fnIsImage,                      // 헬퍼
+    };
   },
   template: /* html */`
 <div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">
@@ -300,26 +330,26 @@ window.BaseAttachGrp = {
           ⬇
         </a>
         <!-- 팝업보기: 이미지면 hover 미리보기 + 클릭 모달, 아니면 클릭 모달 -->
-        <button @click.stop="fnOpenThumb(f)" type="button"
+        <button @click.stop="handleSelectAction('attach-row-open-thumb', f)" type="button"
           :title="'팝업보기 | ' + (f.cdnImgUrl || f.attachUrl)"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
-          @mouseenter="e=>{e.currentTarget.style.borderColor='#7c5cbf';e.currentTarget.style.color='#7c5cbf';fnShowHover(e, f.cdnImgUrl||f.attachUrl);}"
-          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';fnHideHover();}">
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#7c5cbf';e.currentTarget.style.color='#7c5cbf';handleSelectAction('attach-row-show-hover', {event:e, url:f.cdnImgUrl||f.attachUrl});}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';e.currentTarget.style.color='#666';handleSelectAction('attach-row-hide-hover');}">
           ↗
         </button>
         <!-- 썸네일 아이콘: hover 미리보기 + 클릭 모달 -->
-        <button v-if="fnIsImage(f.fileExt)" @click.stop="fnOpenThumb(f)" type="button"
+        <button v-if="fnIsImage(f.fileExt)" @click.stop="handleSelectAction('attach-row-open-thumb', f)" type="button"
           :title="'썸네일보기 | ' + (f.thumbCdnUrl || f.cdnImgUrl || f.attachUrl)"
           style="width:22px;height:22px;border:1px solid #e0e0e0;border-radius:4px;background:#fff;cursor:pointer;font-size:12px;color:#666;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:all .15s;overflow:hidden;"
-          @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';fnShowHover(e, f.thumbCdnUrl||f.cdnImgUrl||f.attachUrl);}"
-          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';fnHideHover();}">
+          @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';handleSelectAction('attach-row-show-hover', {event:e, url:f.thumbCdnUrl||f.cdnImgUrl||f.attachUrl});}"
+          @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';handleSelectAction('attach-row-hide-hover');}">
           <img v-if="f.thumbCdnUrl" :src="f.thumbCdnUrl"
             style="width:100%;height:100%;object-fit:cover;display:block;" @error="e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='inline-flex';}" />
           <span style="font-size:12px;color:#666;" :style="{display:f.thumbCdnUrl?'none':'inline-flex'}">🖼</span>
         </button>
       </span>
       <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">{{ fnFmtSize(f.fileSize) }}</span>
-      <button @click.stop="removeFile(f.attachId)" title="삭제"
+      <button @click.stop="handleSelectAction('attach-row-remove', f.attachId)" title="삭제"
         style="flex-shrink:0;width:18px;height:18px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:10px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;transition:background .1s;"
         @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
         @mouseleave="e=>e.currentTarget.style.background='#f0f0f0'">
@@ -337,7 +367,7 @@ window.BaseAttachGrp = {
   </div>
   <!-- 하단 버튼 + 안내 -->
   <div style="display:flex;align-items:center;gap:10px;">
-    <button @click="openPicker" :disabled="uiState.uploading" type="button"
+    <button @click="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading" type="button"
       style="display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border:1px solid #d9d9d9;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555;font-weight:500;transition:all .15s;white-space:nowrap;"
       @mouseenter="e=>{if(!uiState.uploading){e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}}"
       @mouseleave="e=>{e.currentTarget.style.borderColor='#d9d9d9';e.currentTarget.style.color='#555';}">
@@ -358,14 +388,14 @@ window.BaseAttachGrp = {
     <img :src="hoverState.url" style="display:block;max-width:200px;max-height:200px;object-fit:contain;" />
   </div>
   <!-- 팝업 모달 -->
-  <div v-if="thumbState.show" @click.self="fnCloseThumb"
+  <div v-if="thumbState.show" @click.self="handleBtnAction('attach-close-thumb')"
     style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;padding:16px;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 40px rgba(0,0,0,.4);">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
         <span style="font-size:13px;color:#444;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw;" :title="thumbState.nm">
           {{ thumbState.nm }}
         </span>
-        <button @click="fnCloseThumb" type="button"
+        <button @click="handleBtnAction('attach-close-thumb')" type="button"
           style="flex-shrink:0;width:24px;height:24px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:13px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;"
           @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
           @mouseleave="e=>e.currentTarget.style.background='#f0f0f0'">
@@ -399,6 +429,24 @@ window.BaseAttachOne = {
     const uiState  = reactive({ uploading: false, loading: false });
     const file     = reactive({ attachId: null, cdnImgUrl: '', thumbCdnUrl: '', fileNm: '' });
     const inputRef = ref(null);
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BaseAttachOne : handleBtnAction -> ', cmd, param);
+      if (cmd === 'attach-open-picker') {
+        return openPicker();
+      } else if (cmd === 'attach-remove') {
+        return removeFile();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BaseAttachOne : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
 
     /* loadFile */
     const loadFile = async (grpId) => {
@@ -470,13 +518,17 @@ window.BaseAttachOne = {
       } catch(err) { props.showToast(err.response?.data?.message || '삭제 오류', 'error', 0); }
     };
 
-    return { uiState, file, inputRef, openPicker, onFileChange, removeFile };
+    return {
+      uiState, file, inputRef,                 // 상태
+      handleBtnAction, handleSelectAction,     // dispatch
+      onFileChange,                            // 직접 핸들러
+    };
   },
   template: /* html */`
 <div style="display:inline-flex;flex-direction:column;align-items:center;gap:8px;">
   <input ref="inputRef" type="file" style="display:none;" :accept="allowExt.split(',').map(e=>'.'+e.trim()).join(',')" @change="onFileChange" />
   <!-- 이미지 미리보기 박스 -->
-  <div @click="openPicker"
+  <div @click="handleBtnAction('attach-open-picker')"
     :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
     @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
     @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
@@ -489,13 +541,13 @@ window.BaseAttachOne = {
   </div>
   <!-- 버튼 -->
   <div style="display:flex;gap:6px;">
-    <button type="button" @click="openPicker" :disabled="uiState.uploading"
+    <button type="button" @click="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading"
       style="font-size:11px;padding:3px 10px;border:1px solid #d9d9d9;border-radius:5px;background:#fff;cursor:pointer;color:#555;transition:all .15s;"
       @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
       @mouseleave="e=>{e.currentTarget.style.borderColor='#d9d9d9';e.currentTarget.style.color='#555';}">
       {{ uiState.uploading ? '업로드중…' : '📷 변경' }}
     </button>
-    <button v-if="file.attachId" type="button" @click.stop="removeFile"
+    <button v-if="file.attachId" type="button" @click.stop="handleBtnAction('attach-remove')"
       style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fff;cursor:pointer;color:#e8587a;transition:all .15s;"
       @mouseenter="e=>{e.currentTarget.style.background='#fde8e8';}"
       @mouseleave="e=>{e.currentTarget.style.background='#fff';}">
@@ -534,6 +586,29 @@ window.BaseHtmlEditor = {
     const mode = ref('wysiwyg');  /* 'wysiwyg' | 'source' */
     let inst = null;
     let syncing = false;
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BaseHtmlEditor : handleBtnAction -> ', cmd, param);
+      if (cmd === 'editor-set-mode') {
+        mode.value = param;
+        return;
+      } else if (cmd === 'editor-clear') {
+        return emit('update:modelValue', '');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BaseHtmlEditor : handleSelectAction -> ', cmd, param);
+      if (cmd === 'editor-source-input') {
+        return emit('update:modelValue', param.target.value);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     /* _dispose */
     const _dispose = () => {
@@ -612,35 +687,33 @@ window.BaseHtmlEditor = {
       }
     });
 
-    /* onSourceInput */
-    const onSourceInput = (e) => {
-      emit('update:modelValue', e.target.value);
+    return {
+      editorEl, mode,                          // 상태
+      handleBtnAction, handleSelectAction,     // dispatch
     };
-
-    return { editorEl, mode, onSourceInput };
   },
   template: /* html */`
 <div>
   <div v-if="showSourceToggle" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
     <div style="display:flex;gap:4px;">
-      <button type="button" @click="mode = 'wysiwyg'"
+      <button type="button" @click="handleBtnAction('editor-set-mode', 'wysiwyg')"
         :style="mode === 'wysiwyg' ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
         style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;transition:all .15s;">
         디자인
       </button>
-      <button type="button" @click="mode = 'source'"
+      <button type="button" @click="handleBtnAction('editor-set-mode', 'source')"
         :style="mode === 'source' ? 'background:#1e1e2e;color:#7ec8e3;border-color:#7ec8e3;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
         style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
         &lt;/&gt; HTML
       </button>
     </div>
-    <button type="button" @click="$emit('update:modelValue', '')"
+    <button type="button" @click="handleBtnAction('editor-clear')"
       style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;">
       비우기
     </button>
   </div>
   <div v-show="mode === 'wysiwyg'" ref="editorEl" style="background:#fff;border-radius:6px;"></div>
-  <textarea v-show="mode === 'source'" :value="modelValue" @input="onSourceInput"
+  <textarea v-show="mode === 'source'" :value="modelValue" @input="handleSelectAction('editor-source-input', $event)"
     spellcheck="false"
     :style="{ width:'100%', minHeight: height, padding:'12px 14px', border:'1px solid #d9d9d9', borderRadius:'6px', fontFamily:\"'Consolas','D2Coding',monospace\", fontSize:'12px', lineHeight:'1.7', color:'#333', resize:'vertical', boxSizing:'border-box', margin:0, background:'#fafafa', outline:'none' }"></textarea>
 </div>

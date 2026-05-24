@@ -151,15 +151,45 @@ window.BoSearchArea = {
   emits: ['search', 'reset'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
-    const onSearch = () => { if (!props.loading) emit('search'); };
-    const onReset  = () => emit('reset');
+
+    /* ── ▼ search 영역 (검색바 전체) ─────────────────────────────────────── */
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoSearchArea : handleBtnAction -> ', cmd, param);
+      if (cmd === 'search-emit') {
+        if (!props.loading) return emit('search');
+      } else if (cmd === 'search-reset') {
+        return emit('reset');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 필드 변경/콜백 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoSearchArea : handleSelectAction -> ', cmd, param);
+      if (cmd === 'field-select-change') {
+        // param: { col, event }
+        return param.col && param.col.onChange ? param.col.onChange(param.event) : null;
+      } else if (cmd === 'field-range-change') {
+        return param.col && param.col.onRangeChange ? param.col.onRangeChange(param.event) : null;
+      } else if (cmd === 'field-pick-open') {
+        return param.col.onOpen(param.target);
+      } else if (cmd === 'field-pick-clear') {
+        return param.col.onClear(param.target);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const normOpts = (opts) => U.normOptions(opts);
     // col.paramObj 가 있으면 그 객체를, 없으면 props.param 사용 — 컬럼별 다른 reactive 매핑 지원
     const po = (col) => col.paramObj || props.param;
-    return { U, onSearch, onReset, normOpts, po };
+    return { U, normOpts, po, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
-<div class="search-bar" :style="barStyle" @keyup.enter="onSearch">
+<div class="search-bar" :style="barStyle" @keyup.enter="handleBtnAction('search-emit')">
+  <!-- ▼ search 영역 -->
   <template v-if="columns && param">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
       <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
@@ -175,11 +205,11 @@ window.BoSearchArea = {
         <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
           readonly :placeholder="col.placeholder || '선택'"
           class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
-          @click="col.onOpen(po(col))" />
-        <button class="btn btn-secondary btn-sm" @click="col.onOpen(po(col))">{{ col.openLabel || '검색' }}</button>
+          @click="handleSelectAction('field-pick-open', { col, target: po(col) })" />
+        <button class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pick-open', { col, target: po(col) })">{{ col.openLabel || '검색' }}</button>
         <button v-if="po(col)[col.key]" class="btn btn-sm"
           style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;"
-          @click="col.onClear(po(col))">
+          @click="handleSelectAction('field-pick-clear', { col, target: po(col) })">
           ✕
         </button>
       </template>
@@ -191,10 +221,10 @@ window.BoSearchArea = {
       <!-- 텍스트 입력 -->
       <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
         :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
-        @keyup.enter="onSearch" />
+        @keyup.enter="handleBtnAction('search-emit')" />
       <!-- select (col.onChange: fn 지원) -->
       <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
-        @change="col.onChange ? col.onChange($event) : null">
+        @change="handleSelectAction('field-select-change', { col, event: $event })">
         <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
         <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
       </select>
@@ -207,7 +237,7 @@ window.BoSearchArea = {
         </select>
         <!-- rangeFirst: true → rangeOptions select 를 date 앞에 표시 (옵션선택 placeholder는 col.rangeFirstLabel) -->
         <select v-if="col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]"
-          @change="col.onRangeChange ? col.onRangeChange($event) : null"
+          @change="handleSelectAction('field-range-change', { col, event: $event })"
           :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
           <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
           <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
@@ -218,7 +248,7 @@ window.BoSearchArea = {
         <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
         <select v-if="!col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]"
-          @change="col.onRangeChange ? col.onRangeChange($event) : null">
+          @change="handleSelectAction('field-range-change', { col, event: $event })">
           <option value="">옵션선택</option>
           <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
         </select>
@@ -228,8 +258,8 @@ window.BoSearchArea = {
   <slot></slot>
   <div v-if="showActions" class="search-actions">
     <slot name="actions-before"></slot>
-    <button class="btn btn-primary" :disabled="loading" @click="onSearch">{{ searchLabel }}</button>
-    <button class="btn btn-secondary btn-sm" @click="onReset">{{ resetLabel }}</button>
+    <button class="btn btn-primary" :disabled="loading" @click="handleBtnAction('search-emit')">{{ searchLabel }}</button>
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('search-reset')">{{ resetLabel }}</button>
     <slot name="actions-after"></slot>
   </div>
 </div>
@@ -362,15 +392,71 @@ window.BoGrid = {
           'toggle-check', 'toggle-check-all', 'ref-click'],
   setup(props, { emit, slots }) {
     const U = window._boAreaCompUtil;
+
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfTotal = Vue.computed(() => props.pager ? (props.pager.pageTotalCount || 0) : props.rows.length);
     /* tfoot 슬롯 가드 — 템플릿 속성값 && 금지 정책상 computed 로 분리 */
     const cfShowTfoot = Vue.computed(() => !!slots.tfoot && props.rows.length > 0);
+    /* 드래그 정렬 — rows 를 in-place splice 후 reorder emit */
+    const dragSrc = Vue.ref(null);
+    /* 빈행 colspan = 데이터컬럼 + 번호 + (체크/드래그/행액션) */
+    const cfColspan = Vue.computed(() => props.columns.length + 1
+      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
 
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    /* handleBtnAction — 버튼/페이지 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoGrid : handleBtnAction -> ', cmd, param);
+      if (cmd === 'toolbar-save') {
+        return emit('save');
+      } else if (cmd === 'pager-set') {
+        return emit('set-page', param.n);
+      } else if (cmd === 'pager-size-change') {
+        return emit('size-change');
+      } else if (cmd === 'grid-toggle-check-all') {
+        return emit('toggle-check-all');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/셀/정렬 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoGrid : handleSelectAction -> ', cmd, param);
+      if (cmd === 'sort-toggle') {
+        if (param.col.sortKey) return emit('sort', param.col.sortKey);
+      } else if (cmd === 'grid-row-click') {
+        return emit('row-click', param.row);
+      } else if (cmd === 'grid-row-ref-click') {
+        const id = param.col.refKey ? param.row[param.col.refKey] : param.row[param.col.key];
+        return emit('ref-click', { row: param.row, col: param.col, type: param.col.refLink, id });
+      } else if (cmd === 'grid-row-remove') {
+        return emit('row-remove', param.row);
+      } else if (cmd === 'grid-row-toggle-check') {
+        const val = param.row[props.checkedKey || props.rowKey];
+        return emit('toggle-check', val);
+      } else if (cmd === 'grid-row-cell-change') {
+        return emit('cell-change', param.row, param.col);
+      } else if (cmd === 'grid-row-drag-start') {
+        if (props.draggable) dragSrc.value = param.idx;
+      } else if (cmd === 'grid-row-drag-over') {
+        if (!props.draggable || dragSrc.value === null || dragSrc.value === param.idx) return;
+        param.event.preventDefault();
+        const moved = props.rows.splice(dragSrc.value, 1)[0];
+        props.rows.splice(param.idx, 0, moved);
+        dragSrc.value = param.idx;
+      } else if (cmd === 'grid-row-drag-end') {
+        if (dragSrc.value !== null) { dragSrc.value = null; emit('reorder'); }
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* ── ▼ 내장 유틸 함수 ─────────────────────────────────────────────────── */
     const rowNo = (idx) => props.pager
       ? (props.pager.pageNo - 1) * props.pager.pageSize + idx + 1
       : idx + 1;
 
-    const onSort = (col) => { if (col.sortKey) emit('sort', col.sortKey); };
     const sortIcon = (col) => {
       const st = props.sortState;
       if (!col.sortKey || !st) return '';
@@ -379,47 +465,17 @@ window.BoGrid = {
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
-    /* 드래그 정렬 — rows 를 in-place splice 후 reorder emit */
-    const dragSrc = Vue.ref(null);
-    const onDragStart = (idx) => { if (props.draggable) dragSrc.value = idx; };
-    const onDragOver  = (e, idx) => {
-      if (!props.draggable || dragSrc.value === null || dragSrc.value === idx) return;
-      e.preventDefault();
-      const moved = props.rows.splice(dragSrc.value, 1)[0];
-      props.rows.splice(idx, 0, moved);
-      dragSrc.value = idx;
-    };
-    const onDragEnd = () => { if (dragSrc.value !== null) { dragSrc.value = null; emit('reorder'); } };
-
-    const onRowClick = (row) => emit('row-click', row);
-    /* refLink: 'member'|... type 문자열. col.refKey 가 있으면 row[refKey] 를 id 로 자동 추출(없으면 row[col.key]).
-     * payload: { row, col, type, id } — 부모는 보통 id 만 받아 showRefModal(type, id) 호출 */
-    const onRefClick = (row, col) => {
-      const id = col.refKey ? row[col.refKey] : row[col.key];
-      emit('ref-click', { row, col, type: col.refLink, id });
-    };
-    const onSave     = () => emit('save');
-    const onRemove   = (row) => emit('row-remove', row);
-    const onSetPage  = (n) => emit('set-page', n);
-    const onSizeChg  = () => emit('size-change');
     const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : 'cursor:pointer');
     const fnRowClass = (row, idx) => (typeof props.rowClass === 'function' ? props.rowClass(row, idx) : (row._isNew ? 'status-I' : ''));
     const fnIsExpanded = (row, idx) => (typeof props.isExpanded === 'function' ? !!props.isExpanded(row, idx) : false);
 
-    /* 체크박스 — 부모 Set 기반. checkedKey(없으면 rowKey) 필드값을 식별자로 emit */
+    /* 체크박스 — 부모 Set 기반. checkedKey(없으면 rowKey) 필드값을 식별자로 */
     const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
     const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
-    const onToggleCheck = (row) => emit('toggle-check', fnRowChkVal(row));
-    const onToggleCheckAll = () => emit('toggle-check-all');
 
-    /* 빈행 colspan = 데이터컬럼 + 번호 + (체크/드래그/행액션) */
-    const cfColspan = Vue.computed(() => props.columns.length + 1
-      + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
-
-    return { U, cfTotal, cfShowTfoot, rowNo, onSort, sortIcon, sortActive, onDragStart, onDragOver, onDragEnd,
-             onRowClick, onRefClick, onSave, onRemove, onSetPage, onSizeChg,
-             fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
-             fnRowChecked, onToggleCheck, onToggleCheckAll };
+    return { U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
+             fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
+             handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div :class="bare ? '' : 'card'">
@@ -430,7 +486,7 @@ window.BoGrid = {
     </span>
     <div style="margin-left:auto;display:flex;gap:6px;">
       <slot name="toolbar-actions"></slot>
-      <button v-if="showSave" class="btn btn-primary btn-sm" @click="onSave">{{ saveLabel }}</button>
+      <button v-if="showSave" class="btn btn-primary btn-sm" @click="handleBtnAction('toolbar-save')">{{ saveLabel }}</button>
     </div>
   </div>
   <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정 -->
@@ -440,14 +496,14 @@ window.BoGrid = {
     <thead>
       <tr>
         <th v-if="selectable" style="width:36px;text-align:center;">
-          <input type="checkbox" :checked="allChecked" @change="onToggleCheckAll" />
+          <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
         </th>
         <th v-if="draggable" style="width:28px"></th>
         <th style="width:36px;text-align:center;">번호</th>
         <slot name="head">
           <th v-for="col in columns" :key="col.key" :class="col.cls"
             :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
-            @click="onSort(col)">
+            @click="handleSelectAction('sort-toggle', { col })">
             {{ col.noHead ? '' : col.label }}
             <span v-if="col.sortKey"
               :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
@@ -462,13 +518,16 @@ window.BoGrid = {
       </tr>
     </thead>
     <tbody>
+      <!-- ▼ grid-row 영역 -->
       <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
         <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
           :draggable="draggable"
-          @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd"
-          @click="rowClickable ? onRowClick(row) : null">
+          @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
+          @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
+          @dragend="handleSelectAction('grid-row-drag-end')"
+          @click="rowClickable ? handleSelectAction('grid-row-click', { row }) : null">
           <td v-if="selectable" style="text-align:center;" @click.stop>
-            <input type="checkbox" :checked="fnRowChecked(row)" @change="onToggleCheck(row)" />
+            <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
           </td>
           <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
           <td style="text-align:center;font-size:11px;color:#999;">{{ rowNo(idx) }}</td>
@@ -478,21 +537,21 @@ window.BoGrid = {
                 <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                 <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
                   :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
-                  @click.stop @input="$emit('cell-change', row, col)" />
+                  @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                 <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
                   style="padding:2px 6px;font-size:12px;width:80px;text-align:right;"
-                  @click.stop @input="$emit('cell-change', row, col)" />
+                  @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                 <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
                   style="padding:2px 4px;font-size:11px;width:130px;text-align:center;"
-                  @click.stop @input="$emit('cell-change', row, col)" />
+                  @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
                 <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
                   style="padding:2px 4px;font-size:12px;"
-                  @click.stop @change="$emit('cell-change', row, col)">
+                  @click.stop @change="handleSelectAction('grid-row-cell-change', { row, col })">
                   <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
                 <!-- 표시경로 picker (bo-path-pick-field 자동 임베드) -->
-                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="$emit('cell-change', row, col)" />
+                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row, col })" />
                 <!-- 모달 인터셉트 select (col.selectIntercept: { valueKey | value:fn(row), options, onChange:fn(row,newVal,$event), nullable, nullLabel, disabled:fn(row) }) — v-model 미사용 -->
                 <select v-else-if="col.selectIntercept" class="form-control grid-select" style="font-size:11px;padding:2px 4px;"
                   :value="typeof col.selectIntercept.value==='function' ? col.selectIntercept.value(row) : row[col.selectIntercept.valueKey]"
@@ -532,8 +591,8 @@ window.BoGrid = {
                 <!-- 일시 picker (bo-date-time-picker 자동 임베드) — col.dateTimePick: { dateKey, timeKey, dateWidth, timeWidth, onChange? } -->
                 <bo-date-time-picker v-else-if="col.dateTimePick"
                   :date="row[col.dateTimePick.dateKey]" :time="row[col.dateTimePick.timeKey]"
-                  @update:date="v => { row[col.dateTimePick.dateKey] = v; $emit('cell-change', row, col); }"
-                  @update:time="v => { row[col.dateTimePick.timeKey] = v; $emit('cell-change', row, col); }"
+                  @update:date="v => { row[col.dateTimePick.dateKey] = v; handleSelectAction('grid-row-cell-change', { row, col }); }"
+                  @update:time="v => { row[col.dateTimePick.timeKey] = v; handleSelectAction('grid-row-cell-change', { row, col }); }"
                   :show-now="col.dateTimePick.showNow !== false" :show-clear="col.dateTimePick.showClear !== false"
                   :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'" />
                 <!-- 인라인 path-button (라벨 + 🔍 버튼 + onOpen 콜백) -->
@@ -546,11 +605,11 @@ window.BoGrid = {
                   </button>
                 </div>
                 <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) -->
-                <span v-else-if="col.link" class="title-link" @click.stop="onRowClick(row)"
+                <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-row-click', { row })"
                   :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
                   {{ U.cellText(col, row) }}
                 </span>
-                <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="onRefClick(row, col)">
+                <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="handleSelectAction('grid-row-ref-click', { row, col })">
                   {{ U.cellText(col, row) }}
                 </a>
                 <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
@@ -564,7 +623,7 @@ window.BoGrid = {
           </template>
           <td v-if="rowActions" style="text-align:center">
             <slot name="row-actions" :row="row" :idx="idx">
-              <button class="btn btn-danger btn-xs" @click="onRemove(row)">✕</button>
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('grid-row-remove', { row })">✕</button>
             </slot>
           </td>
           <slot v-else name="row-actions" :row="row" :idx="idx"></slot>
@@ -587,9 +646,9 @@ window.BoGrid = {
     </tfoot>
   </table>
   </div><!-- /그리드 본문 스크롤 컨테이너 -->
-  <!-- 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 (margin-top 좁힘, nowrap 보장) -->
+  <!-- ▼ pager 영역: 한 줄 표시 + 카드 하단 깔끔 마감 -->
   <div v-if="pager && !bare" style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-    <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChg"
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('pager-set', { n })" :on-size-change="() => handleBtnAction('pager-size-change')"
       style="margin-top:0;min-height:34px;" />
   </div>
 </div>
@@ -633,37 +692,23 @@ window.BoGridCrud = {
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     /* 트리 모드 = flatRows + rowAccessor 둘 다 제공된 경우만 */
     const cfTreeMode = Vue.computed(() =>
       Array.isArray(props.flatRows) && typeof props.rowAccessor === 'function');
     /* 화면이 순회할 표시 행 목록 (트리: flatRows / 일반: rows) */
     const cfDispRows = Vue.computed(() => cfTreeMode.value ? props.flatRows : props.rows);
-    /* flatItem → 실제 행객체 (_row_status/_row_check 보유). 일반 모드는 자기 자신 */
-    const fnRow = (item) => (cfTreeMode.value ? props.rowAccessor(item) : item);
-    const fnRowKey = (item, idx) => {
-      if (cfTreeMode.value) return typeof props.treeRowKey === 'function' ? props.treeRowKey(item, idx) : idx;
-      return item[props.rowKey];
-    };
     /* 트리 모드에서 자동 비활성화되는 고정컬럼 */
     const cfShowDrag = Vue.computed(() => props.draggable  && !cfTreeMode.value);
     const cfShowNo   = Vue.computed(() => props.showRowNo  && !cfTreeMode.value);
     const cfShowId   = Vue.computed(() => props.showRowId  && !cfTreeMode.value);
-
     const cfVisibleCount = Vue.computed(() =>
       props.rows.filter(r => r._row_status !== 'D').length);
-
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-
-    /* 일반: 순회 idx 그대로. 트리: rows(원본 gridRows) 기준 인덱스로 변환 emit
-     * (부모 addRow 등이 focusedIdx 를 원본 배열 삽입기준으로 쓰는 계약 보존) */
-    const onSetFocused = (idx) => {
-      const out = cfTreeMode.value
-        ? props.rows.indexOf(props.rowAccessor(props.flatRows[idx]))
-        : idx;
-      if (props.focusedIdx !== out) emit('update:focusedIdx', out);
-    };
-    const fnColTitle = (col) => (typeof props.cellTitle === 'function' ? props.cellTitle(col) : '');
-
+    const allChecked = Vue.ref(props.checkAll);
+    Vue.watch(() => props.checkAll, v => { allChecked.value = v; });
+    /* 드래그 정렬 */
+    const dragSrc = Vue.ref(null);
+    const dragMoved = Vue.ref(false);
     /* 빈 행 colspan = 데이터컬럼 + 표시중인 고정컬럼(drag/번호/ID/상태/체크) + 액션 1(row-actions) */
     const cfEmptyColspan = Vue.computed(() => {
       let n = props.columns.length + 1;            // 데이터 + 액션
@@ -675,52 +720,78 @@ window.BoGridCrud = {
       return n;
     });
 
-    const allChecked = Vue.ref(props.checkAll);
-    Vue.watch(() => props.checkAll, v => { allChecked.value = v; });
-    const onToggleCheckAll = () => {
-      const v = !allChecked.value;
-      allChecked.value = v;
-      /* 트리 모드: 화면에 펼쳐진 행(flatRows→accessor)만 토글 */
-      if (cfTreeMode.value) props.flatRows.forEach(it => { props.rowAccessor(it)._row_check = v; });
-      else props.rows.forEach(r => { r._row_check = v; });
-      emit('update:checkAll', v);
-    };
-
-    /* 셀 변경 → _row_status 갱신(N↔U), 부모에 cell-change emit */
-    const onCellChange = (row) => {
-      if (row._row_status === 'I' || row._row_status === 'D') { emit('cell-change', row); return; }
-      if (row._row_org) {
-        const changed = Object.keys(row._row_org).some(f => String(row[f]) !== String(row._row_org[f]));
-        row._row_status = changed ? 'U' : 'N';
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    /* handleBtnAction — 툴바 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoGridCrud : handleBtnAction -> ', cmd, param);
+      if (cmd === 'toolbar-add') {
+        return emit('add');
+      } else if (cmd === 'toolbar-save') {
+        return emit('save');
+      } else if (cmd === 'toolbar-cancel-checked') {
+        return emit('cancel-checked');
+      } else if (cmd === 'toolbar-delete-checked') {
+        return emit('delete-checked');
+      } else if (cmd === 'toolbar-export') {
+        return emit('export');
+      } else if (cmd === 'grid-toggle-check-all') {
+        const v = !allChecked.value;
+        allChecked.value = v;
+        if (cfTreeMode.value) props.flatRows.forEach(it => { props.rowAccessor(it)._row_check = v; });
+        else props.rows.forEach(r => { r._row_check = v; });
+        return emit('update:checkAll', v);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
-      emit('cell-change', row);
     };
 
-    /* 드래그 정렬 */
-    const dragSrc = Vue.ref(null);
-    const dragMoved = Vue.ref(false);
-    const onDragStart = (idx) => { if (props.draggable) { dragSrc.value = idx; dragMoved.value = false; } };
-    const onDragOver  = (e, idx) => {
-      if (!props.draggable || dragSrc.value === null || dragSrc.value === idx) return;
-      e.preventDefault();
-      const moved = props.rows.splice(dragSrc.value, 1)[0];
-      props.rows.splice(idx, 0, moved);
-      dragSrc.value = idx;
-      dragMoved.value = true;
-    };
-    const onDragEnd = () => {
-      if (dragMoved.value) emit('reorder');
-      dragSrc.value = null; dragMoved.value = false;
+    /* handleSelectAction — 행/셀/정렬 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoGridCrud : handleSelectAction -> ', cmd, param);
+      if (cmd === 'sort-toggle') {
+        if (param.col.sortKey) return emit('sort', param.col.sortKey);
+      } else if (cmd === 'grid-row-focus') {
+        const out = cfTreeMode.value
+          ? props.rows.indexOf(props.rowAccessor(props.flatRows[param.idx]))
+          : param.idx;
+        if (props.focusedIdx !== out) return emit('update:focusedIdx', out);
+      } else if (cmd === 'grid-row-dblclick') {
+        return emit('row-dblclick', param.row, param.idx);
+      } else if (cmd === 'grid-row-cell-change') {
+        const row = param.row;
+        if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', row);
+        if (row._row_org) {
+          const changed = Object.keys(row._row_org).some(f => String(row[f]) !== String(row._row_org[f]));
+          row._row_status = changed ? 'U' : 'N';
+        }
+        return emit('cell-change', row);
+      } else if (cmd === 'grid-row-drag-start') {
+        if (props.draggable) { dragSrc.value = param.idx; dragMoved.value = false; }
+      } else if (cmd === 'grid-row-drag-over') {
+        if (!props.draggable || dragSrc.value === null || dragSrc.value === param.idx) return;
+        param.event.preventDefault();
+        const moved = props.rows.splice(dragSrc.value, 1)[0];
+        props.rows.splice(param.idx, 0, moved);
+        dragSrc.value = param.idx;
+        dragMoved.value = true;
+      } else if (cmd === 'grid-row-drag-end') {
+        if (dragMoved.value) emit('reorder');
+        dragSrc.value = null; dragMoved.value = false;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
     };
 
-    const onAdd           = () => emit('add');
-    const onSave          = () => emit('save');
-    const onCancelChecked = () => emit('cancel-checked');
-    const onDeleteChecked = () => emit('delete-checked');
-    const onExport        = () => emit('export');
+    /* ── ▼ 내장 유틸 함수 ─────────────────────────────────────────────────── */
+    /* flatItem → 실제 행객체 (_row_status/_row_check 보유). 일반 모드는 자기 자신 */
+    const fnRow = (item) => (cfTreeMode.value ? props.rowAccessor(item) : item);
+    const fnRowKey = (item, idx) => {
+      if (cfTreeMode.value) return typeof props.treeRowKey === 'function' ? props.treeRowKey(item, idx) : idx;
+      return item[props.rowKey];
+    };
+    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    const fnColTitle = (col) => (typeof props.cellTitle === 'function' ? props.cellTitle(col) : '');
 
-    /* 헤더 클릭 정렬 — col.sortKey 가 있고 sortState 전달 시 활성 */
-    const onSort = (col) => { if (col.sortKey) emit('sort', col.sortKey); };
     const sortIcon = (col) => {
       const st = props.sortState;
       if (!col.sortKey || !st) return '';
@@ -729,10 +800,9 @@ window.BoGridCrud = {
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
-    return { U, cfVisibleCount, fnStatusClass, allChecked, onToggleCheckAll, onCellChange,
-             onDragStart, onDragOver, onDragEnd, onAdd, onSave, onCancelChecked, onDeleteChecked,
-             onExport, onSetFocused, fnColTitle, cfEmptyColspan, onSort, sortIcon, sortActive,
-             cfTreeMode, cfDispRows, fnRow, fnRowKey, cfShowDrag, cfShowNo, cfShowId };
+    return { U, cfVisibleCount, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
+             sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey,
+             cfShowDrag, cfShowNo, cfShowId, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="card">
@@ -740,11 +810,11 @@ window.BoGridCrud = {
     <span class="list-title">{{ listTitle }} <span class="list-count">{{ cfVisibleCount }}건</span></span>
     <div style="display:flex;gap:6px;margin-left:auto;">
       <slot name="toolbar-actions"></slot>
-      <button v-if="showExport" class="btn btn-green btn-sm" @click="onExport">📥 엑셀</button>
-      <button v-if="showAdd" class="btn btn-green btn-sm" @click="onAdd">+ 행추가</button>
-      <button v-if="showRowCheck" class="btn btn-danger btn-sm" @click="onDeleteChecked">행삭제</button>
-      <button v-if="showRowCheck" class="btn btn-secondary btn-sm" @click="onCancelChecked">취소</button>
-      <button v-if="showSave" class="btn btn-primary btn-sm" @click="onSave">저장</button>
+      <button v-if="showExport" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-export')">📥 엑셀</button>
+      <button v-if="showAdd" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-add')">+ 행추가</button>
+      <button v-if="showRowCheck" class="btn btn-danger btn-sm" @click="handleBtnAction('toolbar-delete-checked')">행삭제</button>
+      <button v-if="showRowCheck" class="btn btn-secondary btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">취소</button>
+      <button v-if="showSave" class="btn btn-primary btn-sm" @click="handleBtnAction('toolbar-save')">저장</button>
     </div>
   </div>
   <div :style="'max-height:' + maxHeight + ';overflow-y:auto;'">
@@ -756,12 +826,12 @@ window.BoGridCrud = {
           <th v-if="cfShowId" class="col-id">ID</th>
           <th v-if="showRowStatus" class="col-status">상태</th>
           <th v-if="showRowCheck" class="col-check">
-            <input type="checkbox" :checked="allChecked" @change="onToggleCheckAll" />
+            <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
               :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
-              :title="fnColTitle(col)" @click="onSort(col)">
+              :title="fnColTitle(col)" @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
                 :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
@@ -773,15 +843,18 @@ window.BoGridCrud = {
         </tr>
       </thead>
       <tbody>
+        <!-- ▼ grid-row 영역 -->
         <tr v-if="!cfDispRows.length">
           <td :colspan="cfEmptyColspan" style="text-align:center;color:#999;padding:30px;">{{ emptyText }}</td>
         </tr>
         <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)"
           class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]"
           :draggable="cfShowDrag"
-          @click="onSetFocused(idx)"
-          @dblclick="$emit('row-dblclick', fnRow(item), idx)"
-          @dragstart="onDragStart(idx)" @dragover="onDragOver($event, idx)" @dragend="onDragEnd">
+          @click="handleSelectAction('grid-row-focus', { idx })"
+          @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })"
+          @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
+          @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
+          @dragend="handleSelectAction('grid-row-drag-end')">
           <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">⠿</td>
           <td v-if="cfShowNo" style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
           <td v-if="cfShowId" class="col-id-val">{{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}</td>
@@ -802,24 +875,24 @@ window.BoGridCrud = {
                   </span>
                   <input class="grid-input" :class="{ 'grid-mono': col.mono }"
                     v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                    :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" style="flex:1;" />
+                    :placeholder="col.placeholder" @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" style="flex:1;" />
                 </div>
                 <input v-else-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
                   v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                  :placeholder="col.placeholder" @input="onCellChange(fnRow(item))" />
+                  :placeholder="col.placeholder" @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
                 <input v-else-if="col.edit==='number'" type="number" class="grid-input grid-num"
                   v-model.number="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                  @input="onCellChange(fnRow(item))" />
+                  @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
                 <input v-else-if="col.edit==='date'" type="date" class="grid-input"
                   v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                  @input="onCellChange(fnRow(item))" />
+                  @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
                 <select v-else-if="col.edit==='select'" class="grid-select"
                   v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
-                  @change="onCellChange(fnRow(item))">
+                  @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })">
                   <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
                   <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
                 </select>
-                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="onCellChange(fnRow(item))" />
+                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
                 <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
                   <span style="flex:1;">
                     {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
@@ -891,9 +964,28 @@ window.BoPathTreeCard = {
   },
   emits: ['select'],
   setup(props, { emit }) {
-    const onSelect = (id) => emit('select', id);
+    /* ── ▼ tree 영역 (좌측 트리 카드) ─────────────────────────────────────── */
     const cfHasSel = Vue.computed(() => props.selected != null && props.selected !== '');
-    return { onSelect, cfHasSel };
+
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathTreeCard : handleBtnAction -> ', cmd, param);
+      if (cmd === 'tree-all') {
+        return emit('select', null);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoPathTreeCard : handleSelectAction -> ', cmd, param);
+      if (cmd === 'node-select') {
+        return emit('select', param.id);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return { cfHasSel, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="card" :style="'padding:' + pad + ';'">
@@ -902,10 +994,10 @@ window.BoPathTreeCard = {
       📂 {{ title }}
       <span v-if="showBizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#{{ bizCd }}</span>
     </span>
-    <span v-if="cfHasSel" @click="onSelect(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">{{ allLabel }}</span>
+    <span v-if="cfHasSel" @click="handleBtnAction('tree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">{{ allLabel }}</span>
   </div>
   <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
-    <bo-path-tree :biz-cd="bizCd" :show-biz-cd="showBizCd" :selected="selected" @select="onSelect" />
+    <bo-path-tree :biz-cd="bizCd" :show-biz-cd="showBizCd" :selected="selected" @select="id => handleSelectAction('node-select', { id })" />
   </div>
 </div>
 `,
@@ -949,15 +1041,37 @@ window.BoLocalTreeCard = {
   },
   emits: ['select', 'expand-all', 'collapse-all'],
   setup(props, { emit }) {
-    const onSelect = (id) => emit('select', id);
+    /* ── ▼ tree 영역 (로컬 트리 카드) ─────────────────────────────────────── */
     const cfHasSel = Vue.computed(() => props.selected != null && props.selected !== '');
     const cfCardStyle = Vue.computed(() =>
       'padding:12px;' + (props.sticky ? 'position:sticky;top:0;' : ''));
-    return {
-      onSelect, cfHasSel, cfCardStyle,
-      onExpandAll:   () => emit('expand-all'),
-      onCollapseAll: () => emit('collapse-all'),
+
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoLocalTreeCard : handleBtnAction -> ', cmd, param);
+      if (cmd === 'tree-all') {
+        return emit('select', null);
+      } else if (cmd === 'tree-expand-all') {
+        return emit('expand-all');
+      } else if (cmd === 'tree-collapse-all') {
+        return emit('collapse-all');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
     };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoLocalTreeCard : handleSelectAction -> ', cmd, param);
+      if (cmd === 'node-select') {
+        return emit('select', param.id);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* BoPathTreeNode 가 콜백 prop 으로 받는 onSelect — dispatch 경유 */
+    const fnOnSelect = (id) => handleSelectAction('node-select', { id });
+
+    return { cfHasSel, cfCardStyle, fnOnSelect, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="card" :style="cfCardStyle">
@@ -966,16 +1080,16 @@ window.BoLocalTreeCard = {
       📂 {{ title }}
       <span v-if="bizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#{{ bizCd }}</span>
     </span>
-    <div v-if="cfHasSel" style="font-size:11px;color:#1677ff;cursor:pointer" @click="onSelect(null)">{{ allLabel }}</div>
+    <div v-if="cfHasSel" style="font-size:11px;color:#1677ff;cursor:pointer" @click="handleBtnAction('tree-all')">{{ allLabel }}</div>
   </div>
   <slot name="filter"></slot>
   <div v-if="expandable" style="display:flex;gap:4px;margin-bottom:8px">
-    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="onExpandAll">▼ 전체펼치기</button>
-    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="onCollapseAll">▶ 전체닫기</button>
+    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">▼ 전체펼치기</button>
+    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">▶ 전체닫기</button>
   </div>
   <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
     <bo-path-tree-node :node="node" :expanded="expanded" :selected="selected"
-      :on-toggle="onToggle" :on-select="onSelect" :depth="0" />
+      :on-toggle="onToggle" :on-select="fnOnSelect" :depth="0" />
   </div>
 </div>
 `,
@@ -1033,9 +1147,7 @@ window.BoModal = {
   },
   emits: ['close', 'confirm'],
   setup(props, { emit }) {
-    const onClose    = () => { emit('close'); if (typeof props.onCloseCb === 'function') props.onCloseCb(); };
-    const onConfirm  = () => { emit('confirm'); if (typeof props.onConfirmCb === 'function') props.onConfirmCb(); };
-    const onBackdrop = () => { if (props.closeOnBackdrop) onClose(); };
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfOverlayStyle = Vue.computed(() =>
       'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;'
       + 'background:rgba(18,24,40,0.55);z-index:' + props.zIndex + ';');
@@ -1054,17 +1166,44 @@ window.BoModal = {
       if (props.boxPad === '0' || props.boxPad === '0px') return '';
       return 'padding:0 ' + props.boxPad + ';';
     });
-    return { onClose, onConfirm, onBackdrop, cfOverlayStyle, cfBoxStyle, cfBodyOuterStyle, cfBodyInnerStyle };
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        emit('close');
+        if (typeof props.onCloseCb === 'function') props.onCloseCb();
+      } else if (cmd === 'modal-confirm') {
+        emit('confirm');
+        if (typeof props.onConfirmCb === 'function') props.onConfirmCb();
+      } else if (cmd === 'modal-backdrop') {
+        if (props.closeOnBackdrop) handleBtnAction('modal-close');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoModal : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    /* footer slot prop 호환용 — 외부 슬롯이 confirm()/close() 호출하면 dispatch 경유 */
+    const onClose = () => handleBtnAction('modal-close');
+    const onConfirm = () => handleBtnAction('modal-confirm');
+
+    return { onClose, onConfirm, cfOverlayStyle, cfBoxStyle, cfBodyOuterStyle, cfBodyInnerStyle,
+             handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <teleport to="body" :disabled="!teleport">
-  <div v-if="show" class="modal-overlay" :style="cfOverlayStyle" @click.self="onBackdrop">
+  <div v-if="show" class="modal-overlay" :style="cfOverlayStyle" @click.self="handleBtnAction('modal-backdrop')">
     <div class="modal-box" :style="cfBoxStyle">
       <div v-if="title" class="modal-header" style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
         <span style="font-weight:800;font-size:15px;color:#9f2946;letter-spacing:-0.2px;">{{ title }}</span>
         <span style="display:flex;align-items:center;gap:8px;">
           <slot name="header-extra"></slot>
-          <button type="button" class="modal-close" @click="onClose">✕</button>
+          <button type="button" class="modal-close" @click="handleBtnAction('modal-close')">✕</button>
         </span>
       </div>
       <div :style="cfBodyOuterStyle">
@@ -1180,12 +1319,37 @@ window.BoCronModal = {
     };
     const cfDesc = computed(() => cronToKorean(st.preview));
 
-    const onApply = () => { emit('apply', st.preview); emit('close'); };
-    const onClose = () => emit('close');
-    return { PRESETS, FIELDS, st, updatePreview, applyPreset, cfDesc, onApply, onClose };
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoCronModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'cron-apply') {
+        emit('apply', st.preview);
+        return emit('close');
+      } else if (cmd === 'cron-close') {
+        return emit('close');
+      } else if (cmd === 'cron-update-preview') {
+        st.preview = st.minute + ' ' + st.hour + ' ' + st.day + ' ' + st.month + ' ' + st.weekday;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoCronModal : handleSelectAction -> ', cmd, param);
+      if (cmd === 'preset-apply') {
+        const pts = param.value.split(' ');
+        st.minute = pts[0]; st.hour = pts[1]; st.day = pts[2]; st.month = pts[3]; st.weekday = pts[4];
+        st.preview = param.value;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return { PRESETS, FIELDS, st, cfDesc, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
-<bo-modal :show="show" title="🕐 Cron 표현식 설정" width="500px" @close="onClose">
+<bo-modal :show="show" title="🕐 Cron 표현식 설정" width="500px" @close="handleBtnAction('cron-close')">
+  <!-- ▼ preset 영역 -->
   <div style="margin-bottom:18px;">
     <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">⚡ 프리셋</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -1195,12 +1359,13 @@ window.BoCronModal = {
         ? 'border:1.5px solid #e8587a;color:#e8587a;background:#fff5f7;font-weight:600;'
         : 'border:1px solid #d9d9d9;color:#555;background:#fff;'"
         style="font-size:11px;padding:5px 10px;text-align:left;line-height:1.5;"
-        @click="applyPreset(p.value)">
+        @click="handleSelectAction('preset-apply', { value: p.value })">
         <div>{{ p.label }}</div>
         <code style="font-size:10px;opacity:.65;letter-spacing:.5px;">{{ p.value }}</code>
       </button>
     </div>
   </div>
+  <!-- ▼ fields 영역 -->
   <div style="margin-bottom:18px;">
     <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">🔧 수동 설정</div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
@@ -1209,7 +1374,7 @@ window.BoCronModal = {
         <input class="form-control"
           style="text-align:center;font-family:monospace;font-size:13px;padding:5px 4px;"
           :placeholder="f.placeholder" :title="f.hint"
-          v-model="st[f.key]" @input="updatePreview" />
+          v-model="st[f.key]" @input="handleBtnAction('cron-update-preview')" />
         <div style="font-size:9px;color:#bbb;margin-top:3px;">{{ f.hint }}</div>
       </div>
     </div>
@@ -1220,8 +1385,8 @@ window.BoCronModal = {
     <span v-if="cfDesc" style="font-size:11px;color:#e8587a;margin-left:auto;font-weight:600;">{{ cfDesc }}</span>
   </div>
   <template #footer>
-    <button class="btn btn-secondary" @click="onClose">취소</button>
-    <button class="btn btn-primary" @click="onApply">적용</button>
+    <button class="btn btn-secondary" @click="handleBtnAction('cron-close')">취소</button>
+    <button class="btn btn-primary" @click="handleBtnAction('cron-apply')">적용</button>
   </template>
 </bo-modal>
 `,
@@ -1254,19 +1419,41 @@ window.BoTreeSelectorModal = {
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const onSelect = (id) => emit('select', id);
-    const onClose  = () => emit('close');
-    return { onSelect, onClose };
+    /* ── ▼ treeModal 영역 ────────────────────────────────────────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoTreeSelectorModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'treeModal-close') {
+        return emit('close');
+      } else if (cmd === 'treeModal-root-select') {
+        return emit('select', null);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoTreeSelectorModal : handleSelectAction -> ', cmd, param);
+      if (cmd === 'node-select') {
+        return emit('select', param.id);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* BoPathParentSelector 콜백 prop 호환 — dispatch 경유 */
+    const fnOnSelect = (id) => handleSelectAction('node-select', { id });
+
+    return { fnOnSelect, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
-<bo-modal :show="show" :title="title" width="420px" max-height="70vh" body-pad="0" @close="onClose">
+<bo-modal :show="show" :title="title" width="420px" max-height="70vh" body-pad="0" @close="handleBtnAction('treeModal-close')">
   <div style="border:1px solid #eee;border-radius:8px;overflow:hidden;">
     <div v-if="rootLabel" style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff;"
-      @click="onSelect(null)">
+      @click="handleBtnAction('treeModal-root-select')">
       {{ rootLabel }}
     </div>
     <bo-path-parent-selector :node="node" :expanded="expanded"
-      :on-toggle="onToggle" :on-select="onSelect" :depth="0" />
+      :on-toggle="onToggle" :on-select="fnOnSelect" :depth="0" />
   </div>
 </bo-modal>
 `,
@@ -1300,10 +1487,27 @@ window.BoRoleSelectModal = {
   },
   emits: ['close', 'confirm'],
   setup(props, { emit }) {
-    return { onClose: () => emit('close'), onConfirm: () => emit('confirm') };
+    /* ── ▼ roleModal 영역 ────────────────────────────────────────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoRoleSelectModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'roleModal-close') {
+        return emit('close');
+      } else if (cmd === 'roleModal-confirm') {
+        return emit('confirm');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoRoleSelectModal : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    return { handleBtnAction, handleSelectAction };
   },
   template: /* html */`
-<bo-modal :show="show" :title="title" width="1000px" height="720px" body-pad="0" @close="onClose">
+<bo-modal :show="show" :title="title" width="1000px" height="720px" body-pad="0" @close="handleBtnAction('roleModal-close')">
   <template #header-extra>
     <slot name="header-extra"></slot>
   </template>
@@ -1319,8 +1523,8 @@ window.BoRoleSelectModal = {
     <span style="margin-right:auto;">
       <slot name="footer-extra"></slot>
     </span>
-    <button class="btn btn-secondary" @click="onClose">취소</button>
-    <button class="btn btn-primary" :disabled="confirmDisabled" @click="onConfirm">✔ {{ confirmLabel }}</button>
+    <button class="btn btn-secondary" @click="handleBtnAction('roleModal-close')">취소</button>
+    <button class="btn btn-primary" :disabled="confirmDisabled" @click="handleBtnAction('roleModal-confirm')">✔ {{ confirmLabel }}</button>
   </template>
 </bo-modal>
 `,
@@ -1352,20 +1556,36 @@ window.BoRowCancelDelete = {
   },
   emits: ['cancel', 'delete'],
   setup(props, { emit }) {
+    /* ── ▼ row 영역 (CRUD 행 취소/삭제 버튼) ──────────────────────────────── */
     const cfShowCancel = Vue.computed(() => ['U', 'I', 'D'].includes(props.row._row_status));
     const cfShowDelete = Vue.computed(() => {
       const s = props.row._row_status;
       if (props.allowDeleteNull && s == null) return true;
       return ['N', 'U'].includes(s);
     });
-    const onCancel = () => emit('cancel');
-    const onDelete = () => emit('delete');
-    return { cfShowCancel, cfShowDelete, onCancel, onDelete };
+
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoRowCancelDelete : handleBtnAction -> ', cmd, param);
+      if (cmd === 'row-cancel') {
+        return emit('cancel');
+      } else if (cmd === 'row-delete') {
+        return emit('delete');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoRowCancelDelete : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    return { cfShowCancel, cfShowDelete, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <span>
-  <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="onCancel">{{ cancelLabel }}</button>
-  <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="onDelete">{{ deleteLabel }}</button>
+  <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="handleBtnAction('row-cancel')">{{ cancelLabel }}</button>
+  <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="handleBtnAction('row-delete')">{{ deleteLabel }}</button>
 </span>
 `,
 };
@@ -1405,6 +1625,8 @@ window.BoFormArea = {
   emits: ['save', 'cancel', 'edit', 'close'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
+
+    /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈) */
     const cfRows = Vue.computed(() => {
       const rows = []; let cur = []; let used = 0;
@@ -1418,6 +1640,39 @@ window.BoFormArea = {
       if (cur.length) rows.push(cur);
       return rows;
     });
+
+    /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoFormArea : handleBtnAction -> ', cmd, param);
+      if (cmd === 'form-save') {
+        return emit('save');
+      } else if (cmd === 'form-cancel') {
+        return emit('cancel');
+      } else if (cmd === 'form-edit') {
+        return emit('edit');
+      } else if (cmd === 'form-close') {
+        return emit('close');
+      } else if (cmd === 'form-pathPick-clear') {
+        props.form[param.col.key] = null;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoFormArea : handleSelectAction -> ', cmd, param);
+      if (cmd === 'field-change') {
+        if (param.col.onChange) return param.col.onChange(props.form[param.col.key], props.form, param.event);
+      } else if (cmd === 'field-checkbox-change') {
+        const col = param.col, e = param.event;
+        props.form[col.key] = e.target.checked ? (col.checkedValue || 'Y') : (col.uncheckedValue || 'N');
+      } else if (cmd === 'field-pathPick-open') {
+        if (param.col.onOpen) return param.col.onOpen(props.form);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const normOpts = (opts) => U.normOptions(opts);
     /* readonly 표시값 — fmt 가 있으면 사용, 없으면 form 값 그대로 */
     const dispVal = (col) => {
@@ -1425,12 +1680,8 @@ window.BoFormArea = {
       if (col.fmt) return col.fmt(v, props.form);
       return (v == null || v === '') ? '-' : v;
     };
-    const onChange = (col, e) => { if (col.onChange) col.onChange(props.form[col.key], props.form, e); };
-    const onSave = () => emit('save');
-    const onCancel = () => emit('cancel');
-    const onEdit = () => emit('edit');
-    const onClose = () => emit('close');
-    return { cfRows, normOpts, dispVal, onChange, onSave, onCancel, onEdit, onClose };
+
+    return { cfRows, normOpts, dispVal, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="bo-form-area">
@@ -1457,24 +1708,24 @@ window.BoFormArea = {
         :readonly="readonly || col.readonly"
         :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @input="onChange(col, $event)" />
+        @input="handleSelectAction('field-change', { col, event: $event })" />
       <!-- number -->
       <input v-else-if="col.type === 'number'" class="form-control" type="number"
         v-model.number="form[col.key]" :placeholder="col.placeholder"
         :readonly="readonly || col.readonly" :min="col.min" :max="col.max"
         :style="col.readonly ? 'background:#f5f5f5;' : ''"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @input="onChange(col, $event)" />
+        @input="handleSelectAction('field-change', { col, event: $event })" />
       <!-- date -->
       <input v-else-if="col.type === 'date'" class="form-control" type="date"
         v-model="form[col.key]" :readonly="readonly"
-        :class="errors[col.key] ? 'is-invalid' : ''" @change="onChange(col, $event)" />
+        :class="errors[col.key] ? 'is-invalid' : ''" @change="handleSelectAction('field-change', { col, event: $event })" />
       <!-- checkbox (Y/N 토글) -->
       <label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;">
         <input type="checkbox"
           :checked="form[col.key] === (col.checkedValue || 'Y')"
           :disabled="readonly"
-          @change="form[col.key] = $event.target.checked ? (col.checkedValue || 'Y') : (col.uncheckedValue || 'N')" />
+          @change="handleSelectAction('field-checkbox-change', { col, event: $event })" />
         <span>{{ col.checkboxLabel || col.label }}</span>
       </label>
       <!-- textarea -->
@@ -1482,12 +1733,12 @@ window.BoFormArea = {
         v-model="form[col.key]" :placeholder="col.placeholder"
         :readonly="readonly" :rows="col.rows || 3"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @input="onChange(col, $event)"></textarea>
+        @input="handleSelectAction('field-change', { col, event: $event })"></textarea>
       <!-- select -->
       <select v-else-if="col.type === 'select'" class="form-control"
         v-model="form[col.key]" :disabled="readonly"
         :class="errors[col.key] ? 'is-invalid' : ''"
-        @change="onChange(col, $event)">
+        @change="handleSelectAction('field-change', { col, event: $event })">
         <option v-if="col.nullable !== false && col.nullLabel" value="">
           {{ col.nullLabel }}
         </option>
@@ -1498,10 +1749,10 @@ window.BoFormArea = {
         <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
           {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}
         </div>
-        <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="col.onOpen && col.onOpen(form)">
+        <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pathPick-open', { col })">
           🔍 선택
         </button>
-        <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="form[col.key]=null" style="color:#999;">
+        <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="handleBtnAction('form-pathPick-clear', { col })" style="color:#999;">
           ✕
         </button>
       </div>
@@ -1512,16 +1763,16 @@ window.BoFormArea = {
       <span v-else-if="col.hint" class="form-hint" style="font-size:11px;color:#888;">{{ col.hint }}</span>
     </div>
   </div>
-  <!-- 폼 액션 버튼 -->
+  <!-- ▼ form-actions 영역 -->
   <div v-if="showActions" class="form-actions">
     <slot name="actions-before"></slot>
     <template v-if="readonly">
-      <button class="btn btn-primary" @click="onEdit">{{ editLabel }}</button>
-      <button class="btn btn-secondary" @click="onClose">{{ closeLabel }}</button>
+      <button class="btn btn-primary" @click="handleBtnAction('form-edit')">{{ editLabel }}</button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">{{ closeLabel }}</button>
     </template>
     <template v-else>
-      <button class="btn btn-primary" @click="onSave">{{ saveLabel }}</button>
-      <button class="btn btn-secondary" @click="onCancel">{{ cancelLabel }}</button>
+      <button class="btn btn-primary" @click="handleBtnAction('form-save')">{{ saveLabel }}</button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">{{ cancelLabel }}</button>
     </template>
     <slot name="actions-after"></slot>
   </div>

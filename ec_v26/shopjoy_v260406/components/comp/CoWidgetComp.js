@@ -27,6 +27,18 @@ window.CoBarcodeWidget = {
     const cfShowBarcode = computed(() => ['barcode', 'barcode_qrcode'].includes(props.widget.widgetType));
     const showQr      = computed(() => ['qrcode',  'barcode_qrcode'].includes(props.widget.widgetType));
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ CoBarcodeWidget : handleBtnAction -> ', cmd, param);
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ CoBarcodeWidget : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
     /* renderBarcode */
     const renderBarcode = () => {
       if (!barcodeEl.value || !window.JsBarcode) return;
@@ -100,7 +112,10 @@ window.CoBarcodeWidget = {
       });
     });
 
-    return { barcodeEl, qrcodeEl, cfShowBarcode, showQr };
+    return {
+      barcodeEl, qrcodeEl, cfShowBarcode, showQr,    // 상태 / computed
+      handleBtnAction, handleSelectAction,            // dispatch
+    };
   },
   template: /* html */`
 <div style="background:#fff;border-radius:10px;border:1px solid #e8e8e8;overflow:hidden;">
@@ -144,6 +159,18 @@ window.CoCountdownWidget = {
     const remaining = reactive({ d: 0, h: 0, m: 0, s: 0, expired: false, invalid: false });
     let timer = null;
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ CoCountdownWidget : handleBtnAction -> ', cmd, param);
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ CoCountdownWidget : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
     /* pad */
     const pad = (n) => String(n).padStart(2, '0');
 
@@ -180,7 +207,11 @@ window.CoCountdownWidget = {
     const bgColor   = computed(() => props.widget.countdownBgColor   || '#1a237e');
     const cfTextColor = computed(() => props.widget.countdownTextColor  || '#ffffff');
 
-    return { remaining, pad, bgColor, cfTextColor };
+    return {
+      remaining, bgColor, cfTextColor,         // 상태 / computed
+      handleBtnAction, handleSelectAction,     // dispatch
+      pad,                                     // 헬퍼
+    };
   },
   template: /* html */`
 <div :style="{ background: bgColor, borderRadius: '10px', overflow: 'hidden', padding: '20px 16px', textAlign: 'center', color: cfTextColor }">

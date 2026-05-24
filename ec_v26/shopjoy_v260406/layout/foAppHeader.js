@@ -5,7 +5,7 @@ window.foAppHeader = {
           'toggleTheme', 'appCartCount', 'appLikeCount', 'appAuth', 'onAppShowLogin', 'onAppLogout',
           'appShowSettings', 'appShowApiLog', 'appApiLogs'],
   emits: ['app-toggle-sidebar', 'app-toggle-mobile', 'app-toggle-settings', 'app-toggle-api-log'],
-  setup(props) {
+  setup(props, { emit }) {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
@@ -15,10 +15,106 @@ window.foAppHeader = {
     const codes = reactive({});
     const userMenuRoot = ref(null);
 
+    /* ── Profile 모달 ── */
+    const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
+                          postcode: '', address: '', addressDetail: '' });
+
+    /* ── 비밀번호 변경 모달 ── */
+    const pw = reactive({ current: '', next: '', next2: '', err: '', ok: false });
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ foAppHeader.js : handleBtnAction -> ', cmd, param);
+      // 모바일 사이드바 토글
+      if (cmd === 'sidebar-toggle-mobile') {
+        return emit('app-toggle-mobile');
+      // 데스크탑 사이드바 토글
+      } else if (cmd === 'sidebar-toggle-desktop') {
+        return emit('app-toggle-sidebar');
+      // 설정 드롭다운 토글
+      } else if (cmd === 'settings-toggle') {
+        return emit('app-toggle-settings');
+      // API 로그 패널 토글
+      } else if (cmd === 'settings-toggle-api-log') {
+        return emit('app-toggle-api-log');
+      // 사용자 메뉴 드롭다운 토글
+      } else if (cmd === 'userMenu-toggle') {
+        return toggleUserMenu();
+      // 사용자 메뉴 닫기
+      } else if (cmd === 'userMenu-close') {
+        return closeUserMenu();
+      // 로그인 모달 열기
+      } else if (cmd === 'nav-show-login') {
+        return props.onAppShowLogin();
+      // 로그아웃
+      } else if (cmd === 'userMenu-logout') {
+        return doLogout();
+      // 홈 이동
+      } else if (cmd === 'nav-go-home') {
+        return props.navigate('home');
+      // 좋아요(위시리스트) 이동
+      } else if (cmd === 'nav-go-like') {
+        props.navigate('like');
+        return closeUserMenu();
+      // 장바구니 이동
+      } else if (cmd === 'cart-go') {
+        props.navigate('cart');
+        return closeUserMenu();
+      // 테마 토글
+      } else if (cmd === 'theme-toggle') {
+        return props.toggleTheme();
+      // 사이트번호 배지 클릭 → 메뉴 바로가기 모달
+      } else if (cmd === 'siteSwitch-open-quick-menu') {
+        return window.dispatchEvent(new CustomEvent('open-quick-menu'));
+      // 프로필 모달 열기
+      } else if (cmd === 'profile-open') {
+        return openProfile();
+      // 프로필 모달 닫기
+      } else if (cmd === 'profile-close') {
+        uiState.profileOpen = false;
+        return;
+      // 프로필 저장
+      } else if (cmd === 'profile-save') {
+        return saveProfile();
+      // 카카오 주소 검색
+      } else if (cmd === 'profile-search-addr') {
+        return openKakaoAddrProfile();
+      // 비밀번호 변경 모달 열기
+      } else if (cmd === 'pw-open') {
+        return openPw();
+      // 비밀번호 변경 모달 닫기
+      } else if (cmd === 'pw-close') {
+        uiState.pwOpen = false;
+        return;
+      // 비밀번호 변경 저장
+      } else if (cmd === 'pw-save') {
+        return savePw();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 메뉴/탭 선택 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ foAppHeader.js : handleSelectAction -> ', cmd, param);
+      // 상단 네비게이션 메뉴 선택
+      if (cmd === 'nav-select-menu') {
+        return props.navigate(param);
+      // 사용자 드롭다운 항목 선택
+      } else if (cmd === 'userMenu-select-item') {
+        return param.action && param.action();
+      // 성별 라디오 선택
+      } else if (cmd === 'profile-select-gender') {
+        pf.gender = param;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* toggleUserMenu — 사용자 메뉴 토글 */
-
     const toggleUserMenu = () => { uiState.userMenuOpen = !uiState.userMenuOpen; };
 
     /* closeUserMenu — 사용자 메뉴 닫기 */
@@ -29,10 +125,6 @@ window.foAppHeader = {
 
     /* doLogout — 로그아웃 */
     const doLogout = () => { closeUserMenu(); props.onAppLogout(); };
-
-    /* ── Profile 모달 ── */
-    const pf = reactive({ memberNm: '', email: '', phone: '', birthdate: '', gender: '',
-                          postcode: '', address: '', addressDetail: '' });
 
     /* openProfile — 프로필 열기 */
     const openProfile = () => {
@@ -75,9 +167,6 @@ window.foAppHeader = {
 
     /* genderLabel — gender 라벨 */
     const genderLabel = g => ({ M: '남성', F: '여성', '': '선택안함' }[g] ?? '선택안함');
-
-    /* ── 비밀번호 변경 모달 ── */
-    const pw = reactive({ current: '', next: '', next2: '', err: '', ok: false });
 
     /* openPw — 비밀번호 변경 열기 */
     const openPw = () => { closeUserMenu(); pw.current=''; pw.next=''; pw.next2=''; pw.err=''; pw.ok=false; uiState.pwOpen=true; };
@@ -145,18 +234,14 @@ window.foAppHeader = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-
     return {
-      uiState, codes, userMenuRoot,
-      toggleUserMenu, closeUserMenu, goMy, doLogout, cfMenuItems,
-      pf, openProfile, saveProfile, openKakaoAddrProfile, genderLabel,
-      pw, openPw, savePw, IS,
-      cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu,
+      uiState, codes, userMenuRoot,                                         // 상태 / refs
+      handleBtnAction, handleSelectAction,                                  // dispatch
+      pf, pw, IS, cfMenuItems, genderLabel,                                 // 프로필/비번/입력
+      cfAuthUser, cfUserFirstChar, cfIsLogin, cfTopMenu,                    // computed - 인증/메뉴
       foSiteNo: window.FO_SITE_NO || '01',
       boSiteNo: '01', /* BO site_no — FO localStorage 접근 금지, 기본값 고정 */
       cfFoActive: computed(() => window.useFoAppStore?.()?.svActive || '-'),
-      openQuickMenu: () => window.dispatchEvent(new CustomEvent('open-quick-menu')),
     };
   },
 
@@ -165,7 +250,7 @@ window.foAppHeader = {
 
   <!-- ===== ■. Hamburger (mobile) ====================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <button @click="$emit('app-toggle-mobile')"
+  <button @click="handleBtnAction('sidebar-toggle-mobile')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;"
     class="lg:hidden" aria-label="메뉴">
     <span style="display:block;width:20px;height:2px;background:var(--text-primary);border-radius:2px;transition:all 0.25s;"></span>
@@ -176,7 +261,7 @@ window.foAppHeader = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. Collapse toggle (desktop) =============================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <button @click="$emit('app-toggle-sidebar')"
+  <button @click="handleBtnAction('sidebar-toggle-desktop')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:none;align-items:center;color:var(--text-secondary);flex-shrink:0;"
     class="hidden-sm" aria-label="사이드바 토글">
     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -185,7 +270,7 @@ window.foAppHeader = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. Logo ==================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <button @click="navigate('home')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0;">
+  <button @click="handleBtnAction('nav-go-home')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0;">
     <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <!-- ===== ■.■.■. 모래 ================================================== -->
       <ellipse cx="30" cy="92" rx="22" ry="6" fill="#d4a017"/>
@@ -222,7 +307,7 @@ window.foAppHeader = {
           :title="'FO_SITE_NO=' + (foSiteNo || '-') + ' BO_SITE_NO=' + (boSiteNo || '-') + ' — 클릭: 메뉴 바로가기'"
           :data-tip="'FO_SITE_NO=' + (foSiteNo || '-') + ' BO_SITE_NO=' + (boSiteNo || '-')"
           style="cursor:pointer;"
-          @click.stop="openQuickMenu">
+          @click.stop="handleBtnAction('siteSwitch-open-quick-menu')">
           <span :style="{fontWeight:800,marginLeft:'4px',color: foSiteNo==='03' ? '#7b1fa2' : foSiteNo==='02' ? '#2e7d6b' : foSiteNo==='9999' ? '#888' : '#9f2946'}">{{ foSiteNo || '-' }}</span>
           <span :style="{fontWeight:800,marginLeft:'3px',color: boSiteNo==='03' ? '#7b1fa2' : boSiteNo==='02' ? '#2e7d6b' : boSiteNo==='9999' ? '#888' : '#9f2946'}">{{ boSiteNo || '-' }}</span>
         </span>
@@ -247,7 +332,7 @@ window.foAppHeader = {
       <!-- ===== ■.■.■. Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) ======= -->
       <template v-if="foSiteNo==='01' && (m.menuId && (m.menuId.startsWith('dispUi') || m.menuId==='divider-disp'))"></template>
       <span v-else-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
-      <button v-else @click="navigate(m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
+      <button v-else @click="handleSelectAction('nav-select-menu', m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
         <span>{{ m.menuNm }}</span>
       </button>
     </template>
@@ -259,7 +344,7 @@ window.foAppHeader = {
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
 
     <!-- ===== ■.■. 비로그인 ================================================== -->
-    <button v-if="!cfIsLogin" @click="onAppShowLogin"
+    <button v-if="!cfIsLogin" @click="handleBtnAction('nav-show-login')"
       style="padding:7px 16px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:700;white-space:nowrap;transition:all 0.2s;"
       @mouseenter="$event.target.style.background='var(--blue)';$event.target.style.color='#fff';"
       @mouseleave="$event.target.style.background='transparent';$event.target.style.color='var(--blue)';">
@@ -269,7 +354,7 @@ window.foAppHeader = {
     <!-- ===== □.□. 비로그인 ================================================== -->
     <!-- ===== ■.■. 로그인 상태 ================================================ -->
     <div v-else ref="userMenuRoot" style="position:relative;">
-      <button type="button" @click="toggleUserMenu"
+      <button type="button" @click="handleBtnAction('userMenu-toggle')"
         style="display:flex;align-items:center;gap:8px;padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;color:var(--text-primary);font-weight:600;">
         <span style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0;">
           {{ cfUserFirstChar }}
@@ -298,7 +383,7 @@ window.foAppHeader = {
         <!-- ===== ■.■.■.■. 메뉴 항목 ============================================= -->
         <!-- ===== ■.■.■.■. 영역 ================================================ -->
         <div style="padding:4px 0;">
-          <button v-for="item in cfMenuItems" :key="item.label" @click="item.action()"
+          <button v-for="item in cfMenuItems" :key="item.label" @click="handleSelectAction('userMenu-select-item', item)"
             style="width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;text-align:left;font-size:0.86rem;display:flex;align-items:center;gap:9px;transition:background 0.15s;"
             :style="'color:'+item.color"
             @mouseenter="$event.currentTarget.style.background='var(--blue-dim)'"
@@ -310,7 +395,7 @@ window.foAppHeader = {
 
         <!-- ===== ■.■.■.■. 로그아웃 ============================================== -->
         <div style="border-top:1px solid var(--border);padding:4px 0;">
-          <button @click="doLogout"
+          <button @click="handleBtnAction('userMenu-logout')"
             style="width:100%;padding:10px 16px;border:none;background:none;cursor:pointer;text-align:left;font-size:0.86rem;color:#ef4444;display:flex;align-items:center;gap:9px;transition:background 0.15s;"
             @mouseenter="$event.currentTarget.style.background='#fef2f2'"
             @mouseleave="$event.currentTarget.style.background='transparent'">
@@ -323,7 +408,7 @@ window.foAppHeader = {
     <!-- ===== □.□. 로그인 상태 ================================================ -->
     <!-- ===== ■.■. 좋아요(위시리스트) 아이콘 ======================================== -->
     <!-- ===== ■.■. 버튼 영역 ================================================= -->
-    <button type="button" @click="navigate('like'); closeUserMenu()"
+    <button type="button" @click="handleBtnAction('nav-go-like')"
       style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
       title="위시리스트"
       @mouseenter="$event.currentTarget.style.borderColor='var(--blue)';$event.currentTarget.style.background='var(--blue-dim)'"
@@ -338,7 +423,7 @@ window.foAppHeader = {
 
     <!-- ===== □.□. 버튼 영역 ================================================= -->
     <!-- ===== ■.■. 장바구니: 아이콘 + 뱃지(개수) ==================================== -->
-    <button type="button" @click="navigate('cart'); closeUserMenu()"
+    <button type="button" @click="handleBtnAction('cart-go')"
       class="header-cart-link"
       style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;flex-shrink:0;transition:border-color 0.2s,background 0.2s;"
       :aria-label="appCartCount > 0 ? ('장바구니, ' + (appCartCount > 99 ? '99개 이상' : appCartCount + '개') + ' 상품') : '장바구니, 비어 있음'"
@@ -355,7 +440,7 @@ window.foAppHeader = {
     <!-- ===== □.□. 장바구니: 아이콘 + 뱃지(개수) ==================================== -->
     <!-- ===== ■.■. 테마 토글 (장바구니 오른쪽) ====================================== -->
     <!-- ===== ■.■. 버튼 영역 ================================================= -->
-    <button class="theme-toggle" @click="toggleTheme" :title="theme==='light'?'다크 모드로 전환':'라이트 모드로 전환'">
+    <button class="theme-toggle" @click="handleBtnAction('theme-toggle')" :title="theme==='light'?'다크 모드로 전환':'라이트 모드로 전환'">
       <span v-if="theme==='light'">🌙</span>
       <span v-else>☀️</span>
     </button>
@@ -363,14 +448,14 @@ window.foAppHeader = {
     <!-- ===== □.□. 버튼 영역 ================================================= -->
     <!-- ===== ■.■. 설정 아이콘 ================================================ -->
     <div data-fo-settings style="position:relative;flex-shrink:0;">
-      <button @click="$emit('app-toggle-settings')"
+      <button @click="handleBtnAction('settings-toggle')"
         style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1.5px solid var(--border);border-radius:50%;background:var(--bg-card);cursor:pointer;font-size:15px;color:var(--text-secondary);transition:all 0.2s;"
         :style="appShowSettings?'border-color:var(--accent,#c9a96e);background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);':''"
         title="설정">⚙</button>
       <!-- ===== ■.■.■. 설정 드롭다운 ============================================= -->
       <div v-if="appShowSettings"
         style="position:absolute;right:0;top:calc(100% + 8px);width:148px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
-        <button @click="$emit('app-toggle-api-log')"
+        <button @click="handleBtnAction('settings-toggle-api-log')"
           style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
           :style="appShowApiLog?'background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);font-weight:700;':''"
           @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
@@ -389,9 +474,9 @@ window.foAppHeader = {
   <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="uiState.profileOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.profileOpen=false">
+  <div v-if="uiState.profileOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('profile-close')">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-      <button @click="uiState.profileOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+      <button @click="handleBtnAction('profile-close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
 
       <div style="margin-bottom:22px;">
         <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">✏️ 프로필 수정</div>
@@ -420,7 +505,7 @@ window.foAppHeader = {
           <div style="display:flex;gap:8px;margin-bottom:6px;">
             <input v-model="pf.postcode" placeholder="우편번호" readonly
               style="width:100px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.85rem;cursor:default;outline:none;">
-            <button @click="openKakaoAddrProfile" type="button"
+            <button @click="handleBtnAction('profile-search-addr')" type="button"
               style="padding:0 14px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
               📮 주소 검색
             </button>
@@ -441,7 +526,7 @@ window.foAppHeader = {
             <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">성별</div>
             <div style="display:flex;gap:5px;">
               <button v-for="g in [{v:'M',l:'남'},{v:'F',l:'여'},{v:'',l:'미정'}]" :key="g.v"
-                @click="pf.gender=g.v" type="button"
+                @click="handleSelectAction('profile-select-gender', g.v)" type="button"
                 style="flex:1;padding:9px 2px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;"
                 :style="pf.gender===g.v?'background:var(--blue);color:#fff;border:1.5px solid var(--blue);':'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
                 {{ g.l }}
@@ -452,9 +537,9 @@ window.foAppHeader = {
       </div>
 
       <div style="display:flex;gap:10px;margin-top:22px;">
-        <button @click="uiState.profileOpen=false"
+        <button @click="handleBtnAction('profile-close')"
           style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:600;">취소</button>
-        <button @click="saveProfile" :disabled="!pf.memberNm.trim()"
+        <button @click="handleBtnAction('profile-save')" :disabled="!pf.memberNm.trim()"
           style="flex:2;padding:12px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.88rem;font-weight:700;"
           :style="!pf.memberNm.trim()?'opacity:0.5;cursor:not-allowed;':''">저장</button>
       </div>
@@ -467,9 +552,9 @@ window.foAppHeader = {
   <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="uiState.pwOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.pwOpen=false">
+  <div v-if="uiState.pwOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('pw-close')">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:400px;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-      <button @click="uiState.pwOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
+      <button @click="handleBtnAction('pw-close')" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
 
       <div style="margin-bottom:22px;">
         <div style="font-size:1.2rem;font-weight:800;color:var(--text-primary);">🔑 비밀번호 변경</div>
@@ -493,7 +578,7 @@ window.foAppHeader = {
         </div>
         <div>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">새 비밀번호 확인</div>
-          <input v-model="pw.next2" type="password" :style="IS" placeholder="새 비밀번호 재입력" @keyup.enter="savePw">
+          <input v-model="pw.next2" type="password" :style="IS" placeholder="새 비밀번호 재입력" @keyup.enter="handleBtnAction('pw-save')">
         </div>
 
         <!-- ===== ■.■.■.■. 비번 강도 표시 ========================================== -->
@@ -509,9 +594,9 @@ window.foAppHeader = {
         <div v-if="pw.err" style="color:#ef4444;font-size:0.82rem;padding:8px 12px;background:#fef2f2;border-radius:6px;">{{ pw.err }}</div>
 
         <div style="display:flex;gap:10px;margin-top:8px;">
-          <button @click="uiState.pwOpen=false"
+          <button @click="handleBtnAction('pw-close')"
             style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:600;">취소</button>
-          <button @click="savePw"
+          <button @click="handleBtnAction('pw-save')"
             style="flex:2;padding:12px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.88rem;font-weight:700;">변경하기</button>
         </div>
       </div>
@@ -520,6 +605,6 @@ window.foAppHeader = {
   </Teleport>
 
 </header>
-  
+
   <!-- ===== □. 조건부 영역 ================================================== -->`,
 };

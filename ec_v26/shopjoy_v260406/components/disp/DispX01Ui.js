@@ -40,6 +40,57 @@ window.DispX01Ui = {
       }
     });
 
+    /* 내용보기 구조 표시 토글 (기본 OFF = 순수 위젯만) */
+    const showContentStruct = ref(false);
+
+    /* ── 구조보기 트리 접기/펼치기 ── */
+    const structAreaOpen  = reactive(new Set());
+    const structPanelOpen = reactive(new Set());
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX01Ui.js : handleBtnAction -> ', cmd, param);
+      // 트리 전체 펼치기
+      if (cmd === 'struct-expand-all') {
+        return expandAll();
+      // 트리 전체 접기
+      } else if (cmd === 'struct-collapse-all') {
+        return collapseAll();
+      // 1레벨(영역) 전체 토글
+      } else if (cmd === 'struct-toggle-all-area') {
+        return toggleAll1();
+      // 2레벨(패널) 전체 토글
+      } else if (cmd === 'struct-toggle-all-panel') {
+        return toggleAll2();
+      // 내용보기 구조 토글
+      } else if (cmd === 'content-toggle-struct') {
+        showContentStruct.value = !showContentStruct.value;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 탭/영역/패널 선택 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DispX01Ui.js : handleSelectAction -> ', cmd, param);
+      // 상단 탭 전환
+      if (cmd === 'tab-select') {
+        activeTab.value = param;
+        return;
+      // 1레벨 영역 노드 토글
+      } else if (cmd === 'struct-area-toggle') {
+        return toggleArea(param);
+      // 2레벨 패널 노드 토글
+      } else if (cmd === 'struct-panel-toggle') {
+        return togglePanel(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
     /* ── 공통 상수 ── */
     const WIDGET_TYPE_LABELS = {
       'image_banner':'이미지 배너', 'product_slider':'상품 슬라이더', 'product':'상품',
@@ -102,12 +153,6 @@ window.DispX01Ui = {
       (props.params.areas || []).reduce((s, a) => s + panelsForArea(a).length, 0)
     );
 
-    /* ─────────────────────────────────────────
-       구조보기 — 트리 접기/펼치기
-    ───────────────────────────────────────── */
-    const structAreaOpen  = reactive(new Set());
-    const structPanelOpen = reactive(new Set());
-
     /* 처음 렌더링 시 모두 펼치기 */
     Vue.watchEffect(() => {
       (props.params.areas || []).forEach(code => structAreaOpen.add(code));
@@ -126,6 +171,8 @@ window.DispX01Ui = {
       )
     );
 
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더) =================================
+
     /* expandAll — 펼치기 전체 */
     const expandAll   = () => {
       (props.params.areas || []).forEach(c => structAreaOpen.add(c));
@@ -134,8 +181,6 @@ window.DispX01Ui = {
 
     /* collapseAll — 접기 전체 */
     const collapseAll = () => { structAreaOpen.clear(); structPanelOpen.clear(); };
-
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* toggleAll1 — 토글 */
     const toggleAll1  = () => {
@@ -249,24 +294,15 @@ window.DispX01Ui = {
       }
     };
 
-    /* 내용보기 구조 표시 토글 (기본 OFF = 순수 위젯만) */
-    const showContentStruct = ref(false);
-
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      uiState, codes,
-      cfActiveTabs, activeTab,
-      showContentStruct,
-      wLabel, areaLabel, areaInfo, panelsForArea, cfTotalPanels,
-      /* 구조보기 트리 */
-      structAreaOpen, structPanelOpen,
-      allAreas1Open, allPanels2Open,
-      expandAll, collapseAll, toggleAll1, toggleAll2,
-      toggleArea, togglePanel,
-      /* 소스보기 */
-      cfSourceLines, lineColor,
+      uiState, codes,                                                       // 상태
+      handleBtnAction, handleSelectAction,                                  // dispatch
+      cfActiveTabs, activeTab, showContentStruct,                           // 탭 상태
+      structAreaOpen, structPanelOpen, allAreas1Open, allPanels2Open,       // 트리 상태
+      cfSourceLines, cfTotalPanels,                                         // computed
+      wLabel, areaLabel, areaInfo, panelsForArea, lineColor,                // 헬퍼
       /* 렌더링 옵션 */
       layout: props.dispOpt?.layout || 'auto',
       showHeader: props.dispOpt?.showHeader !== false,
@@ -279,7 +315,9 @@ window.DispX01Ui = {
   <!-- ===== ■. 파라미터 요약 바 (보기옵션이 있을 때만) ================================= -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="params.viewOpts" style="background:#fff;border-bottom:1px solid #e8e0f8;padding:10px 24px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
-    <span style="font-size:11px;color:#888;margin-right:4px;">전달 파라미터:</span>
+    <span style="font-size:11px;color:#888;margin-right:4px;">
+      전달 파라미터:
+    </span>
     <span v-if="params.areas.length" style="font-size:11px;background:#ede7f6;color:#4a148c;border-radius:8px;padding:2px 10px;">
       영역: {{ params.areas.join(', ') }}
     </span>
@@ -315,58 +353,59 @@ window.DispX01Ui = {
       animation: skelShimmer 1.4s infinite linear;
     }
   </style>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 탭 바 ===================================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:flex;align-items:stretch;border-bottom:2px solid #e8e0f8;background:#faf8ff;">
-    <template v-if="cfActiveTabs.length > 1">
-      <template v-for="tab in cfActiveTabs" :key="tab.key">
-        <!-- ===== ■.■.■.■. 내용보기 탭: 구조보기 토글 내장 ================================ -->
-        <div v-if="tab.key==='content'"
+    <!-- ===== □. 영역 ====================================================== -->
+    <!-- ===== ■. 탭 바 ===================================================== -->
+    <!-- ===== ■. 본문 영역 =================================================== -->
+    <div style="display:flex;align-items:stretch;border-bottom:2px solid #e8e0f8;background:#faf8ff;">
+      <template v-if="cfActiveTabs.length > 1">
+        <template v-for="tab in cfActiveTabs" :key="tab.key">
+          <!-- ===== ■.■.■.■. 내용보기 탭: 구조보기 토글 내장 ================================ -->
+          <div v-if="tab.key==='content'"
           style="display:flex;align-items:center;border-bottom:3px solid transparent;margin-bottom:-2px;"
           :style="activeTab==='content' ? 'border-bottom-color:#6a1b9a;background:#fff;' : ''">
-          <button @click="activeTab='content'"
+            <button @click="handleSelectAction('tab-select', 'content')"
             style="padding:9px 12px 9px 20px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:transparent;transition:color .15s;"
             :style="activeTab==='content' ? 'color:#6a1b9a;' : 'color:#aaa;'">
-            {{ tab.label }}
-          </button>
-          <span @click.stop="showContentStruct=!showContentStruct"
+              {{ tab.label }}
+            </button>
+            <span @click.stop="handleBtnAction('content-toggle-struct')"
             style="font-size:11px;padding:1px 7px;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;margin-right:8px;border:1px solid;"
             :style="showContentStruct
             ? 'background:#ede7f6;color:#6a1b9a;border-color:#b39ddb;font-weight:600;'
             : 'background:#f5f5f5;color:#bbb;border-color:#e0e0e0;'"
             :title="showContentStruct?'구조 숨기기':'구조 보기'">
-            상세
-          </span>
-        </div>
-        <!-- ===== ■.■.■.■. 나머지 탭 ============================================= -->
-        <button v-else @click="activeTab=tab.key"
+              상세
+            </span>
+          </div>
+          <!-- ===== ■.■.■.■. 나머지 탭 ============================================= -->
+          <button v-else @click="handleSelectAction('tab-select', tab.key)"
           style="padding:9px 20px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;border-bottom:3px solid transparent;margin-bottom:-2px;"
           :style="activeTab===tab.key
           ? 'background:#fff;color:#6a1b9a;border-bottom-color:#6a1b9a;'
           : 'background:transparent;color:#aaa;'">
-          {{ tab.label }}
-        </button>
+            {{ tab.label }}
+          </button>
+        </template>
       </template>
-    </template>
-    <!-- ===== ■.■. 탭이 1개이거나 없을 때 (내용보기만): 구조 토글만 표시 ====================== -->
-    <div v-else style="display:flex;align-items:center;padding:6px 14px;gap:8px;">
-      <span style="font-size:13px;font-weight:600;color:#6a1b9a;">🖼 내용보기</span>
-      <span @click="showContentStruct=!showContentStruct"
+      <!-- ===== ■.■. 탭이 1개이거나 없을 때 (내용보기만): 구조 토글만 표시 ====================== -->
+      <div v-else style="display:flex;align-items:center;padding:6px 14px;gap:8px;">
+        <span style="font-size:13px;font-weight:600;color:#6a1b9a;">
+          🖼 내용보기
+        </span>
+        <span @click="handleBtnAction('content-toggle-struct')"
         style="font-size:11px;padding:1px 7px;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid;"
         :style="showContentStruct
         ? 'background:#ede7f6;color:#6a1b9a;border-color:#b39ddb;font-weight:600;'
         : 'background:#f5f5f5;color:#bbb;border-color:#e0e0e0;'">
-        상세
-      </span>
+          상세
+        </span>
+      </div>
     </div>
-  </div>
     <!-- ===== □.□. 탭이 1개이거나 없을 때 (내용보기만): 구조 토글만 표시 ====================== -->
-  <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 영역 없음 =================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="!(params.areas&&params.areas.length)"
-    style="text-align:center;padding:60px;color:#bbb;font-size:14px;">
+    <!-- ===== □. 본문 영역 =================================================== -->
+    <!-- ===== ■. 영역 없음 =================================================== -->
+    <!-- ===== ■. 조건부 영역 ================================================== -->
+    <div v-if="!(params.areas&&params.areas.length)" style="text-align:center;padding:60px;color:#bbb;font-size:14px;">
     전시영역 파라미터가 없습니다. 관리자 화면에서 영역을 선택 후 다시 열어주세요.
   </div>
   <!-- ===== □. 조건부 영역 ================================================== -->
@@ -391,23 +430,33 @@ window.DispX01Ui = {
               <div v-for="sk in 2" :key="sk"
                 style="border-radius:10px;overflow:hidden;background:#f5f5f7;padding:14px 16px;">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                  <div class="skel-pulse" style="width:52px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
-                  <div class="skel-pulse" style="width:110px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
-                  <div class="skel-pulse" style="margin-left:auto;width:36px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
+                  <div class="skel-pulse" style="width:52px;height:14px;border-radius:4px;background:#e0e0e0;">
+                  </div>
+                  <div class="skel-pulse" style="width:110px;height:14px;border-radius:4px;background:#e0e0e0;">
+                  </div>
+                  <div class="skel-pulse" style="margin-left:auto;width:36px;height:14px;border-radius:4px;background:#e0e0e0;">
+                  </div>
                 </div>
-                <div class="skel-pulse" style="width:100%;height:80px;border-radius:8px;background:#e0e0e0;"></div>
+                <div class="skel-pulse" style="width:100%;height:80px;border-radius:8px;background:#e0e0e0;">
+                </div>
               </div>
               <div style="border-radius:10px;overflow:hidden;background:#f5f5f7;padding:14px 16px;">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                  <div class="skel-pulse" style="width:52px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
-                  <div class="skel-pulse" style="width:80px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
-                  <div class="skel-pulse" style="margin-left:auto;width:36px;height:14px;border-radius:4px;background:#e0e0e0;"></div>
+                  <div class="skel-pulse" style="width:52px;height:14px;border-radius:4px;background:#e0e0e0;">
+                  </div>
+                  <div class="skel-pulse" style="width:80px;height:14px;border-radius:4px;background:#e0e0e0;">
+                  </div>
+                  <div class="skel-pulse" style="margin-left:auto;width:36px;height:14px;border-radius:4px;background:#e0e0e0;">
+                  </div>
                 </div>
                 <div style="display:flex;gap:8px;overflow:hidden;">
                   <div v-for="ci in 4" :key="ci" style="flex-shrink:0;width:90px;">
-                    <div class="skel-pulse" style="width:90px;height:90px;border-radius:8px;background:#e0e0e0;margin-bottom:6px;"></div>
-                    <div class="skel-pulse" style="width:70px;height:10px;border-radius:4px;background:#e0e0e0;margin-bottom:4px;"></div>
-                    <div class="skel-pulse" style="width:50px;height:10px;border-radius:4px;background:#e8e0e0;"></div>
+                    <div class="skel-pulse" style="width:90px;height:90px;border-radius:8px;background:#e0e0e0;margin-bottom:6px;">
+                    </div>
+                    <div class="skel-pulse" style="width:70px;height:10px;border-radius:4px;background:#e0e0e0;margin-bottom:4px;">
+                    </div>
+                    <div class="skel-pulse" style="width:50px;height:10px;border-radius:4px;background:#e8e0e0;">
+                    </div>
                   </div>
                 </div>
               </div>
@@ -433,12 +482,17 @@ window.DispX01Ui = {
             <div style="display:flex;flex-direction:column;gap:8px;">
               <div v-for="sk in 3" :key="sk"
                 style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f9f9f9;border-radius:6px;border:1px solid #f0f0f0;">
-                <div class="skel-pulse" style="width:56px;height:13px;border-radius:3px;background:#e8e8e8;"></div>
-                <div class="skel-pulse" :style="'width:'+(60+sk*20)+'px;height:13px;border-radius:3px;background:#e8e8e8;'"></div>
-                <div class="skel-pulse" style="margin-left:auto;width:44px;height:13px;border-radius:3px;background:#e8e8e8;"></div>
+                <div class="skel-pulse" style="width:56px;height:13px;border-radius:3px;background:#e8e8e8;">
+                </div>
+                <div class="skel-pulse" :style="'width:'+(60+sk*20)+'px;height:13px;border-radius:3px;background:#e8e8e8;'">
+                </div>
+                <div class="skel-pulse" style="margin-left:auto;width:44px;height:13px;border-radius:3px;background:#e8e8e8;">
+                </div>
               </div>
             </div>
-            <div style="margin-top:8px;text-align:center;font-size:10px;color:#ccc;">조건에 맞는 패널이 없습니다</div>
+            <div style="margin-top:8px;text-align:center;font-size:10px;color:#ccc;">
+              조건에 맞는 패널이 없습니다
+            </div>
           </div>
         </template>
       </div>
@@ -449,33 +503,36 @@ window.DispX01Ui = {
     <div v-else-if="activeTab==='struct'" style="padding:0;">
       <!-- ===== ■.■.■. 트리 컨트롤 바 ============================================ -->
       <div style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:#f5f5f5;border-bottom:1px solid #e0e0e0;flex-wrap:wrap;">
-        <button @click="expandAll"
+        <button @click="handleBtnAction('struct-expand-all')"
           style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:7px;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
           ▼ 전체펼치기
         </button>
-        <button @click="collapseAll"
+        <button @click="handleBtnAction('struct-collapse-all')"
           style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;cursor:pointer;">
           ▶ 전체접기
         </button>
-        <div style="width:1px;height:18px;background:#ddd;margin:0 2px;"></div>
+        <div style="width:1px;height:18px;background:#ddd;margin:0 2px;">
+        </div>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
-        <button @click="toggleAll1"
+        <button @click="handleBtnAction('struct-toggle-all-area')"
           style="font-size:11px;padding:3px 10px;border:1px solid #6a1b9a;border-radius:7px;cursor:pointer;font-weight:600;"
           :style="allAreas1Open?'background:#f3e5f5;color:#4a148c;':'background:#fff;color:#9c27b0;'">
           {{ allAreas1Open ? '▼' : '▶' }} 1레벨 (영역)
         </button>
-        <button @click="toggleAll2"
+        <button @click="handleBtnAction('struct-toggle-all-panel')"
           style="font-size:11px;padding:3px 10px;border:1px solid #2e7d32;border-radius:7px;cursor:pointer;font-weight:600;"
           :style="allPanels2Open?'background:#e8f5e9;color:#1b5e20;':'background:#fff;color:#388e3c;'">
           {{ allPanels2Open ? '▼' : '▶' }} 2레벨 (패널)
         </button>
-        <span style="font-size:11px;color:#aaa;margin-left:auto;">영역 {{ params.areas.length }}개 · 패널 {{ cfTotalPanels }}개</span>
+        <span style="font-size:11px;color:#aaa;margin-left:auto;">
+          영역 {{ params.areas.length }}개 · 패널 {{ cfTotalPanels }}개
+        </span>
       </div>
       <!-- ===== ■.■.■. 트리 본문 =============================================== -->
       <div style="padding:10px 16px;background:#fff;font-family:monospace;">
         <div v-for="(areaCode, ai) in params.areas" :key="areaCode" style="margin-bottom:2px;">
           <!-- ===== ■.■.■.■.■. 1레벨: Area 행 ===================================== -->
-          <div @click="toggleArea(areaCode)"
+          <div @click="handleSelectAction('struct-area-toggle', areaCode)"
             style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:7px;cursor:pointer;user-select:none;border:1px solid #d1c4e9;background:linear-gradient(90deg,#ede7f6,#f8f5ff);"
             onmouseover="this.style.background='linear-gradient(90deg,#e1d5f0,#ede7f6)'"
             onmouseout="this.style.background='linear-gradient(90deg,#ede7f6,#f8f5ff)'">
@@ -488,100 +545,117 @@ window.DispX01Ui = {
             <code style="font-size:11px;color:#4a148c;font-weight:700;background:#e8d5f8;padding:1px 6px;border-radius:4px;">
               {{ areaCode }}
             </code>
-            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
-            <span style="font-size:12px;color:#4a148c;font-weight:600;">{{ areaLabel(areaCode) }}</span>
-            <!-- ===== ■.■.■.■.■.■. Area 옵션 정보 ==================================== -->
-            <span style="margin-left:auto;font-size:10px;color:#9c6fb5;font-family:monospace;white-space:nowrap;flex-shrink:0;">
-              표시형식:{{ (areaInfo(areaCode)||{}).layoutType||'grid' }}:{{ (areaInfo(areaCode)||{}).gridCols||1 }}, 정렬:{{ (areaInfo(areaCode)||{}).sortOrd != null ? (areaInfo(areaCode)||{}).sortOrd : '-' }}, 타이틀:{{ (areaInfo(areaCode)||{}).titleYn==='Y' ? ((areaInfo(areaCode)||{}).title||'(제목없음)') : '미표시' }}, area="{{ areaCode }}"
-            </span>
-            <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:10px;">패널 {{ panelsForArea(areaCode).length }}개</span>
-          </div>
-          <!-- ===== ■.■.■.■.■. 2레벨: Panel 목록 (영역 펼쳐져 있을 때) ===================== -->
-          <div v-if="structAreaOpen.has(areaCode)" style="margin-left:20px;border-left:2px solid #d1c4e9;padding-left:8px;margin-top:2px;">
-            <div v-if="!panelsForArea(areaCode).length"
-              style="padding:6px 10px;font-size:11px;color:#bbb;font-style:italic;">
-              ── 해당 조건 패널 없음
+              <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
+              <span style="font-size:12px;color:#4a148c;font-weight:600;">
+                {{ areaLabel(areaCode) }}
+              </span>
+              <!-- ===== ■.■.■.■.■.■. Area 옵션 정보 ==================================== -->
+              <span style="margin-left:auto;font-size:10px;color:#9c6fb5;font-family:monospace;white-space:nowrap;flex-shrink:0;">
+                표시형식:{{ (areaInfo(areaCode)||{}).layoutType||'grid' }}:{{ (areaInfo(areaCode)||{}).gridCols||1 }}, 정렬:{{ (areaInfo(areaCode)||{}).sortOrd != null ? (areaInfo(areaCode)||{}).sortOrd : '-' }}, 타이틀:{{ (areaInfo(areaCode)||{}).titleYn==='Y' ? ((areaInfo(areaCode)||{}).title||'(제목없음)') : '미표시' }}, area="{{ areaCode }}"
+              </span>
+              <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:10px;">
+                패널 {{ panelsForArea(areaCode).length }}개
+              </span>
             </div>
-            <div v-for="(p, pi) in panelsForArea(areaCode)" :key="p.dispId" style="margin-bottom:2px;">
-              <!-- ===== ■.■.■.■.■.■.■. Panel 행 ===================================== -->
-              <div @click="togglePanel(p.dispId)"
+            <!-- ===== ■.■.■.■.■. 2레벨: Panel 목록 (영역 펼쳐져 있을 때) ===================== -->
+            <div v-if="structAreaOpen.has(areaCode)" style="margin-left:20px;border-left:2px solid #d1c4e9;padding-left:8px;margin-top:2px;">
+              <div v-if="!panelsForArea(areaCode).length"
+              style="padding:6px 10px;font-size:11px;color:#bbb;font-style:italic;">
+                ── 해당 조건 패널 없음
+              </div>
+              <div v-for="(p, pi) in panelsForArea(areaCode)" :key="p.dispId" style="margin-bottom:2px;">
+                <!-- ===== ■.■.■.■.■.■.■. Panel 행 ===================================== -->
+                <div @click="handleSelectAction('struct-panel-toggle', p.dispId)"
                 style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;cursor:pointer;user-select:none;border:1px solid #c8e6c9;background:linear-gradient(90deg,#e8f5e9,#f9fdf9);flex-wrap:wrap;"
                 onmouseover="this.style.background='linear-gradient(90deg,#dcedc8,#e8f5e9)'"
                 onmouseout="this.style.background='linear-gradient(90deg,#e8f5e9,#f9fdf9)'">
-                <!-- ===== ■.■.■.■.■.■.■.■. 좌측: 트리 + 이름 =============================== -->
-                <span style="font-size:11px;color:#a5d6a7;margin-left:-2px;width:12px;flex-shrink:0;">
-                  {{ pi === panelsForArea(areaCode).length - 1 ? '└' : '├' }}
-                </span>
-                <span style="font-size:11px;color:#2e7d32;width:14px;text-align:center;flex-shrink:0;">
-                  {{ structPanelOpen.has(p.dispId) ? '▼' : '▶' }}
-                </span>
-                <span style="font-size:9px;font-weight:700;background:#2e7d32;color:#fff;border-radius:3px;padding:1px 6px;flex-shrink:0;">
-                  Panel
-                </span>
-                <code style="font-size:10px;color:#888;flex-shrink:0;">#{{ String(p.dispId).padStart(4,'0') }}</code>
-                <span style="font-size:12px;font-weight:600;color:#1b5e20;">{{ p.name }}</span>
-                <!-- ===== ■.■.■.■.■.■.■.■. Panel 옵션 정보 (우측) ========================== -->
-                <span style="margin-left:auto;font-size:10px;color:#5a8a6a;font-family:monospace;white-space:nowrap;flex-shrink:0;">
-                  표시형식:{{ p.layoutType||'grid' }}:{{ p.gridCols||1 }}, 정렬:{{ p.sortOrder != null ? p.sortOrder : '-' }}, 타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }}, 기간: {{ (p.dispStartDt||p.dispEndDt) ? (p.dispStartDt||'∞')+' ~ '+(p.dispEndDt||'∞') : '기간없음' }} &nbsp;|&nbsp;상태: {{ p.status||'-' }}
-                </span>
-                <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px;">위젯 {{ (p.rows||[]).length }}개</span>
-              </div>
-              <!-- ===== ■.■.■.■.■.■.■. 3레벨: Widget 목록 (패널 펼쳐져 있을 때) ================ -->
-              <!-- ===== ■.■.■.■.■.■.■. 조건부 영역 ====================================== -->
-              <div v-if="structPanelOpen.has(p.dispId)"
+                  <!-- ===== ■.■.■.■.■.■.■.■. 좌측: 트리 + 이름 =============================== -->
+                  <span style="font-size:11px;color:#a5d6a7;margin-left:-2px;width:12px;flex-shrink:0;">
+                    {{ pi === panelsForArea(areaCode).length - 1 ? '└' : '├' }}
+                  </span>
+                  <span style="font-size:11px;color:#2e7d32;width:14px;text-align:center;flex-shrink:0;">
+                    {{ structPanelOpen.has(p.dispId) ? '▼' : '▶' }}
+                  </span>
+                  <span style="font-size:9px;font-weight:700;background:#2e7d32;color:#fff;border-radius:3px;padding:1px 6px;flex-shrink:0;">
+                    Panel
+                  </span>
+                  <code style="font-size:10px;color:#888;flex-shrink:0;">#{{ String(p.dispId).padStart(4,'0') }}</code>
+                    <span style="font-size:12px;font-weight:600;color:#1b5e20;">
+                      {{ p.name }}
+                    </span>
+                    <!-- ===== ■.■.■.■.■.■.■.■. Panel 옵션 정보 (우측) ========================== -->
+                    <span style="margin-left:auto;font-size:10px;color:#5a8a6a;font-family:monospace;white-space:nowrap;flex-shrink:0;">
+                      표시형식:{{ p.layoutType||'grid' }}:{{ p.gridCols||1 }}, 정렬:{{ p.sortOrder != null ? p.sortOrder : '-' }}, 타이틀:{{ p.titleYn==='Y' ? (p.title||'(제목없음)') : '미표시' }}, 기간: {{ (p.dispStartDt||p.dispEndDt) ? (p.dispStartDt||'∞')+' ~ '+(p.dispEndDt||'∞') : '기간없음' }} &nbsp;|&nbsp;상태: {{ p.status||'-' }}
+                    </span>
+                    <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px;">
+                      위젯 {{ (p.rows||[]).length }}개
+                    </span>
+                  </div>
+                  <!-- ===== ■.■.■.■.■.■.■. 3레벨: Widget 목록 (패널 펼쳐져 있을 때) ================ -->
+                  <!-- ===== ■.■.■.■.■.■.■. 조건부 영역 ====================================== -->
+                  <div v-if="structPanelOpen.has(p.dispId)"
                 style="margin-left:28px;border-left:2px solid #c8e6c9;padding-left:8px;margin-top:2px;margin-bottom:2px;">
-                <div v-if="!(p.rows&&p.rows.length)"
-                  style="padding:4px 10px;font-size:11px;color:#ccc;font-style:italic;">
-                  ── 위젯 없음
-                </div>
-                <div v-for="(w, wi) in (p.rows||[])" :key="wi"
+                    <div v-if="!(p.rows&&p.rows.length)" style="padding:4px 10px;font-size:11px;color:#ccc;font-style:italic;">
+                    ── 위젯 없음
+                  </div>
+                  <div v-for="(w, wi) in (p.rows||[])" :key="wi"
                   style="display:flex;align-items:center;gap:6px;padding:4px 10px;margin-bottom:1px;border-radius:5px;background:#f0f7ff;border:1px solid #dce7fb;">
-                  <span style="font-size:11px;color:#82b1ff;margin-left:-2px;width:12px;flex-shrink:0;">
-                    {{ wi === (p.rows||[]).length - 1 ? '└' : '├' }}
-                  </span>
-                  <span style="font-size:9px;font-weight:700;background:#1a73e8;color:#fff;border-radius:3px;padding:1px 5px;flex-shrink:0;">
-                    Widget
-                  </span>
-                  <span style="font-size:10px;color:#90caf9;flex-shrink:0;">{{ wi+1 }}.</span>
-                  <span style="font-size:11px;background:#e8f0fe;color:#1a73e8;border-radius:5px;padding:1px 7px;flex-shrink:0;">
-                    {{ wLabel(w.widgetType) }}
-                  </span>
-                  <span v-if="w.widgetNm" style="font-size:11px;color:#555;">{{ w.widgetNm }}</span>
+                    <span style="font-size:11px;color:#82b1ff;margin-left:-2px;width:12px;flex-shrink:0;">
+                      {{ wi === (p.rows||[]).length - 1 ? '└' : '├' }}
+                    </span>
+                    <span style="font-size:9px;font-weight:700;background:#1a73e8;color:#fff;border-radius:3px;padding:1px 5px;flex-shrink:0;">
+                      Widget
+                    </span>
+                    <span style="font-size:10px;color:#90caf9;flex-shrink:0;">
+                      {{ wi+1 }}.
+                    </span>
+                    <span style="font-size:11px;background:#e8f0fe;color:#1a73e8;border-radius:5px;padding:1px 7px;flex-shrink:0;">
+                      {{ wLabel(w.widgetType) }}
+                    </span>
+                    <span v-if="w.widgetNm" style="font-size:11px;color:#555;">
+                      {{ w.widgetNm }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <!-- ══════════════════════════════════════
+      <!-- ══════════════════════════════════════
          소스보기 — 컬럼 + 하이라이팅
     ══════════════════════════════════════ -->
-    <div v-else-if="activeTab==='source'" style="padding:0;">
-      <div style="background:#1e1e2e;min-height:300px;overflow-x:auto;">
-        <!-- ===== ■.■.■.■. 테이블 =============================================== -->
-        <table style="width:100%;border-collapse:collapse;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.9;">
-          <tbody>
-            <tr v-for="(line, idx) in cfSourceLines" :key="idx"
+      <div v-else-if="activeTab==='source'" style="padding:0;">
+        <div style="background:#1e1e2e;min-height:300px;overflow-x:auto;">
+          <!-- ===== ■.■.■.■. 테이블 =============================================== -->
+          <table style="width:100%;border-collapse:collapse;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.9;">
+            <tbody>
+              <tr v-for="(line, idx) in cfSourceLines" :key="idx"
               style="vertical-align:top;"
               onmouseover="this.style.background='rgba(255,255,255,0.04)'"
               onmouseout="this.style.background=''">
-              <!-- ===== ■.■.■.■.■.■.■. 라인 번호 ======================================= -->
-              <td style="width:40px;padding:0 10px 0 12px;text-align:right;color:#4b5263;font-size:11px;user-select:none;border-right:1px solid #2d2d40;white-space:nowrap;vertical-align:top;">
-                <span v-if="line.type!=='blank'">{{ idx+1 }}</span>
-              </td>
-              <!-- ===== ■.■.■.■.■.■.■. 소스 내용 ======================================= -->
-              <td style="padding:0 16px 0 14px;white-space:pre;vertical-align:top;">
-                <span v-if="line.type==='blank'">&nbsp;</span>
-                <span v-else :style="'color:'+lineColor(line)">{{ line.text }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <!-- ===== ■.■.■.■.■.■.■. 라인 번호 ======================================= -->
+                <td style="width:40px;padding:0 10px 0 12px;text-align:right;color:#4b5263;font-size:11px;user-select:none;border-right:1px solid #2d2d40;white-space:nowrap;vertical-align:top;">
+                  <span v-if="line.type!=='blank'">
+                    {{ idx+1 }}
+                  </span>
+                </td>
+                <!-- ===== ■.■.■.■.■.■.■. 소스 내용 ======================================= -->
+                <td style="padding:0 16px 0 14px;white-space:pre;vertical-align:top;">
+                  <span v-if="line.type==='blank'">
+                    &nbsp;
+                  </span>
+                  <span v-else :style="'color:'+lineColor(line)">
+                    {{ line.text }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  </template>
-</div>
-
-  <!-- ===== □. 영역 ====================================================== -->`,
+    </template>
+  </div>
+  <!-- ===== □. 영역 ====================================================== -->
+`,
 };
