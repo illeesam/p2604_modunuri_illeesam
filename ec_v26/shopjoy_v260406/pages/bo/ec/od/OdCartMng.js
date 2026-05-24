@@ -9,45 +9,106 @@ window.OdCartMng = {
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
-    const { ref, reactive, onMounted } = Vue;
+    const { ref, reactive, onMounted, computed } = Vue;
     const showToast   = window.boApp?.showToast   || props.showToast;
     const showConfirm = window.boApp?.showConfirm || props.showConfirm;
 
     /* ── 목록 상태 ── */
-    const rows   = reactive([]);
+    const carts = reactive([]);                                                // 장바구니 목록 (메인 그리드 데이터)
     const pager  = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 50, 100] });
-    const search = reactive({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [], cart_date_types: [] });
 
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => ({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
+    const searchParam = reactive(_initSearchParam());
+
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
-    const memberPick = reactive({ open: false });
+    const memberPick = reactive({ open: false });                              // 회원 선택 모달 상태
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ OdCartMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        if ((searchParam.dateStart || searchParam.dateEnd) && !searchParam.dateType) {
+          showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
+          return;
+        }
+        pager.pageNo = 1;
+        return handleSearchList();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList();
+      // 회원 선택 모달 열기
+      } else if (cmd === 'memberPickModal-open') {
+        memberPick.open = true;
+        return;
+      // 회원 선택 모달 닫기
+      } else if (cmd === 'memberPickModal-close') {
+        memberPick.open = false;
+        return;
+      // 회원 선택 해제
+      } else if (cmd === 'memberPickModal-clear') {
+        searchParam.memberId = ''; searchParam.memberNm = '';
+        return;
+      // 일괄 삭제
+      } else if (cmd === 'carts-bulk-delete') {
+        return handleBulkDelete();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ OdCartMng.js : handleSelectAction -> ', cmd, param);
+      // 페이지 번호 클릭
+      if (cmd === 'carts-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList(); }
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'carts-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList();
+      // 행 체크 토글
+      } else if (cmd === 'carts-row-toggle-check') {
+        const idx = uiState.selectedIds.indexOf(param);
+        if (idx >= 0) { uiState.selectedIds.splice(idx, 1); }
+        else { uiState.selectedIds.push(param); }
+        return;
+      // 전체 체크 토글
+      } else if (cmd === 'carts-row-toggle-check-all') {
+        uiState.selectedIds = cfAllChecked.value ? [] : carts.map(r => r.cartId);
+        return;
+      // 행 삭제
+      } else if (cmd === 'carts-row-delete') {
+        return handleDelete(param);
+      // 회원 선택 모달에서 회원 선택
+      } else if (cmd === 'memberPickModal-select') {
+        searchParam.memberId = param.memberId;
+        searchParam.memberNm = param.memberNm || param.loginId || param.memberId;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
-    /* openMemberPick — 열기 */
-    const openMemberPick = () => { memberPick.open = true; };
-    /* onSelectMember — 이벤트 */
-    const onSelectMember = (m) => { search.memberId = m.memberId; search.memberNm = m.memberNm || m.loginId || m.memberId; };
-    /* onClearMember — 이벤트 */
-    const onClearMember  = () => { search.memberId = ''; search.memberNm = ''; };
-
-    /* fnCheckedBadge — 유틸 */
-    const fnCheckedBadge = (v) => v === 'Y' ? 'badge badge-green' : 'badge badge-gray';
-
-    /* fnCheckedBadgeCls — 유틸 */
+    /* fnCheckedBadgeCls — 선택 여부 배지 클래스 */
     const fnCheckedBadgeCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    /* fnCheckedNm — 유틸 */
-    const fnCheckedNm    = (v) => v === 'Y' ? '선택' : '미선택';
+    /* fnCheckedNm — 선택 여부 라벨 */
+    const fnCheckedNm = (v) => v === 'Y' ? '선택' : '미선택';
 
-    /* fnPrice — 유틸 */
-    const fnPrice        = (v) => v != null ? Number(v).toLocaleString() + '원' : '-';
+    /* fnPrice — 가격 포맷 */
+    const fnPrice = (v) => v != null ? Number(v).toLocaleString() + '원' : '-';
 
-    /* fnDate — 유틸 */
-    const fnDate         = (v) => v ? String(v).substring(0, 16).replace('T', ' ') : '-';
-
-    /* fnAvatar — 유틸 */
-    const fnAvatar       = (nm) => nm ? nm.charAt(0) : '?';
+    /* fnDate — 일시 포맷 */
+    const fnDate = (v) => v ? String(v).substring(0, 16).replace('T', ' ') : '-';
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
@@ -55,13 +116,13 @@ window.OdCartMng = {
       try {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...(search.siteId    && { siteId:    search.siteId }),
-          ...(search.memberId  && { memberId:  search.memberId }),
-          ...(search.searchType && { searchType: search.searchType }),
-          ...(search.searchValue && { searchValue: search.searchValue }),
-          ...(search.dateType    && { dateType:    search.dateType }),
-          ...(search.dateStart   && { dateStart:   search.dateStart }),
-          ...(search.dateEnd     && { dateEnd:     search.dateEnd }),
+          ...(searchParam.siteId    && { siteId:    searchParam.siteId }),
+          ...(searchParam.memberId  && { memberId:  searchParam.memberId }),
+          ...(searchParam.searchType && { searchType: searchParam.searchType }),
+          ...(searchParam.searchValue && { searchValue: searchParam.searchValue }),
+          ...(searchParam.dateType    && { dateType:    searchParam.dateType }),
+          ...(searchParam.dateStart   && { dateStart:   searchParam.dateStart }),
+          ...(searchParam.dateEnd     && { dateEnd:     searchParam.dateEnd }),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
@@ -69,7 +130,7 @@ window.OdCartMng = {
         }
         const res = await boApiSvc.odCart.getPage(params, '장바구니관리', '조회');
         const d = res.data?.data || {};
-        rows.splice(0, rows.length, ...(d.pageList || []));
+        carts.splice(0, carts.length, ...(d.pageList || []));
         pager.pageTotalCount = d.pageTotalCount || 0;
         pager.pageTotalPage  = d.pageTotalPage  || 1;
         const tp = pager.pageTotalPage;
@@ -84,52 +145,59 @@ window.OdCartMng = {
       }
     };
 
-    /* onSearch — 조회 */
-    const onSearch    = () => {
-      if ((search.dateStart || search.dateEnd) && !search.dateType) {
-        showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
-        return;
-      }
-      pager.pageNo = 1; handleSearchList();
-    };
-
-    /* onReset — 초기화 */
-    const onReset     = () => {
-      search.siteId = ''; search.memberId = ''; search.memberNm = '';
-      search.searchType = ''; search.searchValue = '';
-      search.dateType = 'reg_date'; search.dateStart = ''; search.dateEnd = '';
-      onSearch();
-    };
-
-    /* setPage — 설정 */
-    const setPage = (no) => { if (no >= 1 && no <= pager.pageTotalPage) { pager.pageNo = no; handleSearchList(); } };
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
-
     /* ── BoGrid selectable 연동 ── */
-    const Vue3 = Vue;
     /* isChecked — 여부 확인 */
     const isChecked = (id) => uiState.selectedIds.includes(id);
-    const cfAllChecked = Vue3.computed(() =>
-      rows.length > 0 && uiState.selectedIds.length === rows.length);
-    /* toggleCheck — 토글 */
-    const toggleCheck = (id) => {
-      const idx = uiState.selectedIds.indexOf(id);
-      if (idx >= 0) { uiState.selectedIds.splice(idx, 1); }
-      else { uiState.selectedIds.push(id); }
-    };
-    /* toggleCheckAll — 전체 체크 토글 */
-    const toggleCheckAll = () => {
-      uiState.selectedIds = cfAllChecked.value ? [] : rows.map(r => r.cartId);
-    };
-    /* fnGridRowStyle — 유틸 */
-    const fnGridRowStyle = (r) =>
-      uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : '';
+    const cfAllChecked = computed(() => carts.length > 0 && uiState.selectedIds.length === carts.length);
 
+    /* fnGridRowStyle — 행 스타일 */
+    const fnGridRowStyle = (r) => uiState.selectedIds.includes(r.cartId) ? 'background:#fff5f8;' : '';
 
-    // --- [컬럼 정의] ---
+    /* handleDelete — 삭제 */
+    const handleDelete = async (cartId) => {
+      const ok = await showConfirm('삭제', '장바구니 항목을 삭제하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        await window.boApi.delete(`/bo/ec/od/cart/${cartId}`, coUtil.cofApiHdr('장바구니관리', '삭제'));
+        showToast('삭제되었습니다.', 'success');
+        handleSearchList();
+      } catch (err) {
+        showToast(err.response?.data?.message || '삭제 중 오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* handleBulkDelete — 일괄 삭제 */
+    const handleBulkDelete = async () => {
+      if (!uiState.selectedIds.length) { showToast('삭제할 항목을 선택해주세요.', 'error'); return; }
+      const ok = await showConfirm('일괄삭제', `선택한 ${uiState.selectedIds.length}건을 삭제하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await Promise.all(uiState.selectedIds.map(id =>
+          window.boApi.delete(`/bo/ec/od/cart/${id}`, coUtil.cofApiHdr('장바구니관리', '일괄삭제'))
+        ));
+        showToast(`${uiState.selectedIds.length}건 삭제되었습니다.`, 'success');
+        uiState.selectedIds = [];
+        handleSearchList();
+      } catch (err) {
+        showToast(err.response?.data?.message || '삭제 중 오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* loadCodes — 공통코드 로드 */
+    const loadCodes = async () => {
+      try {
+        const res = await coApiSvc.sySite.getList({}, '장바구니관리', '사이트목록');
+        codes.sites = res.data?.data || [];
+      } catch (_) {}
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        codes.cart_date_types = codeStore.sgGetGrpCodes('CART_DATE_TYPE');
+      } catch (_) {}
+    };
+
+    onMounted(() => { loadCodes(); handleSearchList(); });
+
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
 
     const baseSearchColumns = [
       { key: 'siteId', type: 'select', label: '사이트',
@@ -137,7 +205,8 @@ window.OdCartMng = {
         nullLabel: '전체' },
       { key: 'memberId', type: 'pick', label: '회원', nameKey: 'memberNm',
         display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택', width: '160px',
-        onOpen: () => openMemberPick(), onClear: () => onClearMember() },
+        onOpen: () => handleBtnAction('memberPickModal-open'),
+        onClear: () => handleBtnAction('memberPickModal-clear') },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'memberNm', label: '회원명' },
@@ -177,114 +246,78 @@ window.OdCartMng = {
         fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
     ];
 
-    /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (cartId) => {
-      const ok = await showConfirm('삭제', '장바구니 항목을 삭제하시겠습니까?');
-      if (!ok) { return; }
-      try {
-        await window.boApi.delete(`/bo/ec/od/cart/${cartId}`, coUtil.cofApiHdr('장바구니관리', '삭제'));
-        showToast('삭제되었습니다.', 'success');
-        handleSearchList();
-      } catch (err) {
-        showToast(err.response?.data?.message || '삭제 중 오류가 발생했습니다.', 'error', 0);
-      }
-    };
-
-    /* handleBulkDelete — 처리 */
-    const handleBulkDelete = async () => {
-      if (!uiState.selectedIds.length) { showToast('삭제할 항목을 선택해주세요.', 'error'); return; }
-      const ok = await showConfirm('일괄삭제', `선택한 ${uiState.selectedIds.length}건을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      try {
-        await Promise.all(uiState.selectedIds.map(id =>
-          window.boApi.delete(`/bo/ec/od/cart/${id}`, coUtil.cofApiHdr('장바구니관리', '일괄삭제'))
-        ));
-        showToast(`${uiState.selectedIds.length}건 삭제되었습니다.`, 'success');
-        uiState.selectedIds = [];
-        handleSearchList();
-      } catch (err) {
-        showToast(err.response?.data?.message || '삭제 중 오류가 발생했습니다.', 'error', 0);
-      }
-    };
-
-    /* loadCodes — 로드 */
-    const loadCodes = async () => {
-      try {
-        const res = await coApiSvc.sySite.getList({}, '장바구니관리', '사이트목록');
-        codes.sites = res.data?.data || [];
-      } catch (_) {}
-      try {
-        const codeStore = window.sfGetBoCodeStore();
-        codes.cart_date_types = codeStore.sgGetGrpCodes('CART_DATE_TYPE');
-      } catch (_) {}
-    };
-
-
-    onMounted(() => { loadCodes(); handleSearchList(); });
-
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      rows, pager, search, uiState, codes,
-      memberPick, openMemberPick, onSelectMember, onClearMember,
-      fnCheckedBadge, fnCheckedNm, fnPrice, fnDate, fnAvatar,
-      onSearch, onReset, setPage, onSizeChange,
-      baseSearchColumns, listGridColumns, isChecked, cfAllChecked, toggleCheck, toggleCheckAll, fnGridRowStyle,
-      handleDelete, handleBulkDelete,
+      carts, pager, searchParam, uiState, codes, memberPick,                   // 상태 / 데이터
+      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                     // dispatch (모든 이벤트 / 액션 라우팅)
+      cfAllChecked,                                                            // computed
+      isChecked, fnGridRowStyle,                                               // 헬퍼
     };
   },
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">장바구니관리</div>
+  <div class="page-title">
+    장바구니관리
+  </div>
   <!-- ===== ■. 검색 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-bottom:14px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;"
-      :columns="baseSearchColumns" :param="search"
-      @search="onSearch" @reset="onReset" />
+      :columns="baseSearchColumns" :param="searchParam"
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
-      <span class="list-title">장바구니 목록</span>
-      <span class="list-count">총 {{ pager.pageTotalCount.toLocaleString() }}건</span>
+      <span class="list-title">
+        장바구니 목록
+      </span>
+      <span class="list-count">
+        총 {{ pager.pageTotalCount.toLocaleString() }}건
+      </span>
       <div style="margin-left:auto;">
-        <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBulkDelete">
+        <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBtnAction('carts-bulk-delete')">
           🗑 선택삭제 ({{ uiState.selectedIds.length }})
         </button>
       </div>
     </div>
     <div v-if="uiState.loading" style="text-align:center;padding:48px;color:#bbb;">
-      <div style="font-size:28px;margin-bottom:8px;">⏳</div>
+      <div style="font-size:28px;margin-bottom:8px;">
+        ⏳
+      </div>
       조회 중...
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="rows" :pager="pager" row-key="cartId"
+    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="carts" :pager="pager" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
-      @toggle-check="toggleCheck" @toggle-check-all="toggleCheckAll" row-actions>
+      @toggle-check="id => handleSelectAction('carts-row-toggle-check', id)"
+      @toggle-check-all="handleSelectAction('carts-row-toggle-check-all')" row-actions>
       <template #row-actions="{ row }">
-        <button class="btn btn-danger btn-xs" @click="handleDelete(row.cartId)">삭제</button>
+        <button class="btn btn-danger btn-xs" @click="handleSelectAction('carts-row-delete', row.cartId)">
+          삭제
+        </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('carts-set-page', n)"
+      :on-size-change="() => handleSelectAction('carts-size-change')" />
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="장바구니관리"
     subtitle="장바구니를 조회할 회원을 선택해주세요"
-    @select="onSelectMember" @close="memberPick.open=false" />
+    @select="m => handleSelectAction('memberPickModal-select', m)"
+    @close="handleBtnAction('memberPickModal-close')" />
 </div>
-
-  <!-- ===== □. 영역 ====================================================== -->`
+<!-- ===== □. 영역 ====================================================== -->
+`
 };

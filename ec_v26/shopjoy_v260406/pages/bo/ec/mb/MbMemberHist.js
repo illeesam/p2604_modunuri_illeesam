@@ -3,45 +3,78 @@ window._ecMemberHistState = window._ecMemberHistState || { tab: 'orders', tabMod
 window.MbMemberHist = {
   name: 'MbMemberHist',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
-    memberId:     { type: String, default: null }, // 대상 ID
+    navigate:  { type: Function, default: () => {} }, // 페이지 이동
+    memberId:  { type: String, default: null },       // 대상 회원 ID
   },
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
     const { computed, reactive, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, tab: window._ecMemberHistState.tab || 'orders', tabMode2: window._ecMemberHistState.tabMode || 'tab'});
-    const tab = Vue.toRef(uiState, 'tab');
-    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const uiState = reactive({                     // UI 상태 (탭/뷰모드 영속화)
+      loading: false, isPageCodeLoad: false,
+      tab: window._ecMemberHistState.tab || 'orders',
+      tabMode2: window._ecMemberHistState.tabMode || 'tab',
+    });
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MbMemberHist.js : handleBtnAction -> ', cmd, param);
+      // 본 화면은 단순 탭/뷰모드 전환만 있어 별도 버튼 액션 없음
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
 
+    /* handleSelectAction — 그리드 행/탭/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MbMemberHist.js : handleSelectAction -> ', cmd, param);
+      // 탭 전환
+      if (cmd === 'tab-select') {
+        uiState.tab = param;
+        return;
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode2 = param;
+        return;
+      // 연관 주문 행 상세 이동
+      } else if (cmd === 'orders-row-view') {
+        return props.navigate('odOrderDtl', { id: param });
+      // 연관 클레임 행 상세 이동
+      } else if (cmd === 'claims-row-view') {
+        return props.navigate('odClaimDtl', { id: param });
+      // ref-link 클릭 (주문/클레임)
+      } else if (cmd === 'row-ref') {
+        return showRefModal(param.type, param.id);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* watch — memberId 변경 (computed 자동 갱신 - 별도 로드 불필요) */
+    watch(() => props.memberId, () => {
+      // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)
+    });
+
+    /* watch — 탭/뷰모드 변경 시 window 영속화 */
     watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
-
     watch(() => uiState.tabMode2, v => { window._ecMemberHistState.tabMode = v; });
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
     };
-
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    watch(() => props.memberId, () => {
-      // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)
-    });
 
     // ★ onMounted — 진입 시 코드 로드
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    /* 회원 showTab */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
 
-    /* showTab — 표시 */
+    /* showTab — 탭 표시 여부 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const cfMemberOrders = computed(() => {
@@ -60,9 +93,6 @@ window.MbMemberHist = {
       return sampleClaims[props.memberId] || [];
     });
 
-    // -- 그리드 컬럼 정의 ------------------------------------------------------
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
     const orderGridColumns = [
       { key: 'orderId', label: '주문ID', refLink: 'order' },
       { key: 'orderDate', label: '주문일' },
@@ -79,77 +109,101 @@ window.MbMemberHist = {
       { key: 'requestDate', label: '신청일', fmt: (v) => (v ? v.slice(0, 10) : '') },
     ];
 
-
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState,
-      cfMemberOrders,
-      cfMemberClaims,
-      showTab,
-      tab,
-      tabMode2,
-      orderGridColumns,
-      claimGridColumns,
-      navigate: props.navigate,
-      showRefModal: showRefModal
+      uiState,                                                                         // 상태 / 데이터
+      orderGridColumns, claimGridColumns,                                              // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      cfMemberOrders, cfMemberClaims,                                                  // computed
+      showTab,                                                                         // 헬퍼
     };
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 이력 화면 =================================================== -->
+  <!-- ===== ■. 이력 타이틀 ================================================== -->
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
-    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+      ●
+    </span>
     이력정보
   </div>
-  <!-- ===== □. 이력 화면 =================================================== -->
+  <!-- ===== □. 이력 타이틀 ================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='orders'}" :disabled="tabMode2!=='tab'" @click="tab='orders'">
+      <button class="tab-btn" :class="{active:uiState.tab==='orders'}" :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'orders')">
         🛒 연관 주문
-        <span class="tab-count">{{ cfMemberOrders.length }}</span>
+        <span class="tab-count">
+          {{ cfMemberOrders.length }}
+        </span>
       </button>
-      <button class="tab-btn" :class="{active:tab==='claims'}" :disabled="tabMode2!=='tab'" @click="tab='claims'">
+      <button class="tab-btn" :class="{active:uiState.tab==='claims'}" :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'claims')">
         ↩ 연관 클레임
-        <span class="tab-count">{{ cfMemberClaims.length }}</span>
+        <span class="tab-count">
+          {{ cfMemberClaims.length }}
+        </span>
       </button>
     </div>
     <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="tabMode2='tab'" title="탭으로 보기">📑</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
+      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='tab'}" @click="handleSelectAction('tab-mode', 'tab')" title="탭으로 보기">
+        📑
+      </button>
+      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='1col'}" @click="handleSelectAction('tab-mode', '1col')" title="1열로 보기">
+        1▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='2col'}" @click="handleSelectAction('tab-mode', '2col')" title="2열로 보기">
+        2▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='3col'}" @click="handleSelectAction('tab-mode', '3col')" title="3열로 보기">
+        3▭
+      </button>
+      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='4col'}" @click="handleSelectAction('tab-mode', '4col')" title="4열로 보기">
+        4▭
+      </button>
     </div>
   </div>
   <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
-  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+  <div :class="uiState.tabMode2!=='tab' ? 'dtl-tab-grid cols-'+uiState.tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 연관 주문 ================================================= -->
     <div class="card" v-show="showTab('orders')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfMemberOrders.length }}</span></div>
+      <div v-if="uiState.tabMode2!=='tab'" class="dtl-tab-card-title">
+        🛒 연관 주문
+        <span class="tab-count">
+          {{ cfMemberOrders.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-row-view', row.orderId)">
+            상세
+          </button>
         </template>
       </bo-grid>
     </div>
-    <!-- ===== □.□. 연관 주문 ================================================= -->
+    <!-- ===== □.■. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 연관 클레임 ================================================ -->
     <div class="card" v-show="showTab('claims')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfMemberClaims.length }}</span></div>
+      <div v-if="uiState.tabMode2!=='tab'" class="dtl-tab-card-title">
+        ↩ 연관 클레임
+        <span class="tab-count">
+          {{ cfMemberClaims.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('claims-row-view', row.claimId)">
+            상세
+          </button>
         </template>
       </bo-grid>
     </div>
+    <!-- ===== □.■. 연관 클레임 ================================================ -->
   </div>
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
 </div>
-
-    <!-- ===== □.□. 연관 클레임 ================================================ -->
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->`,
+`,
 };

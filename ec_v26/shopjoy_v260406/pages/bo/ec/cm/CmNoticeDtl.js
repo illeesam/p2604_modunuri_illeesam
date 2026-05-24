@@ -2,54 +2,68 @@
 window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: {
-    navigate:    { type: Function, required: true }, // 페이지 이동
-    dtlId:       { type: String, default: null }, // 수정 대상 ID
-    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
-    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} },
-    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    navigate:      { type: Function, required: true }, // 페이지 이동
+    dtlId:         { type: String, default: null },    // 수정 대상 ID
+    tabMode:       { type: String, default: 'tab' },   // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:       { type: String, default: 'view' },  // 상세 모드 (new/view/edit)
+    onListReload:  { type: Function, default: () => {} }, // 상위 Mng 재조회 콜백
+    reloadTrigger: { type: Number, default: 0 },       // 상위 reload signal
   },
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태
+    const codes = reactive({ noticeTypes: [], noticeStatuses: [] }); // 공통코드
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
-      codes.noticeStatuses = codeStore.sgGetGrpCodes('NOTICE_STATUS');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-
-    /* fnToday — 유틸 */
+    /* fnToday — 오늘 날짜 */
     const fnToday = () => new Date().toISOString().slice(0, 10);
 
-    /* fnDateAfter — 유틸 */
+    /* fnDateAfter — N일 후 날짜 */
     const fnDateAfter = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
-    const form = reactive({
+
+    const form = reactive({                        // 공지사항 폼 데이터
       noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: 'N',
       startDate: fnToday(), endDate: fnDateAfter(7), noticeStatusCd: '', contentHtml: '',
       attachGrpId: null,
     });
-    const errors = reactive({});
+    const errors = reactive({});                   // 폼 검증 에러
 
-    const schema = yup.object({
+    const schema = yup.object({                    // 폼 검증 스키마
       noticeTitle: yup.string().required('제목을 입력해주세요.'),
     });
 
-    /* handleSearchDetail — 처리 */
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용
+    const dtlId = computed(() => props.dtlId);
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ CmNoticeDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (신규 등록 또는 수정)
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 편집 취소 → 목록으로 이동
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('cmNoticeMng');
+      // 상세 보기 → 편집 모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 폼 닫기 → 목록으로 이동
+      } else if (cmd === 'form-close') {
+        return props.navigate('cmNoticeMng');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* handleSearchDetail — 상세 조회 */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) { return; }
       try {
@@ -60,21 +74,7 @@ window.CmNoticeDtl = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      await handleSearchDetail();
-    });
-    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
-    watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) { return; }
-      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      if (typeof handleSearchDetail === 'function') { await handleSearchDetail(); }
-    });
-
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
-    /* handleSave — 저장 */
+    /* handleSave — 저장 (신규 등록 / 수정) */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
@@ -106,13 +106,30 @@ window.CmNoticeDtl = {
       }
     };
 
-    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
-    const cfDtlMode = computed(() => props.dtlMode === 'view');
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
+      codes.noticeStatuses = codeStore.sgGetGrpCodes('NOTICE_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ★ onMounted — 진입 시 코드 로드 + 상세 초기 조회
+    onMounted(async () => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      await handleSearchDetail();
+    });
 
-    // --- [컬럼 정의] ---
+    /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) { return; }
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      if (typeof handleSearchDetail === 'function') { await handleSearchDetail(); }
+    });
+
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+
     const baseFormColumns = [
       { key: 'noticeTitle',    label: '제목', type: 'text', required: true, placeholder: '공지 제목', colSpan: 2 },
       { key: 'noticeTypeCd',   label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '선택' },
@@ -129,41 +146,48 @@ window.CmNoticeDtl = {
       { key: 'attachGrpId',    label: '첨부파일', type: 'slot', name: 'attachGrp', colSpan: 4 },
     ];
 
-    // ===== setup() return ===================================================
-    const dtlId = Vue.computed(() => props.dtlId);
     // ===== return (템플릿 노출) ===============================================
 
-    return { cfIsNew, dtlId, form, errors, handleSave, codes, navigate: props.navigate, cfDtlMode, baseFormColumns, showToast };
+    return {
+      uiState, codes, form, errors, dtlId,                                             // 상태 / 데이터
+      baseFormColumns,                                                                 // 컬럼 정의
+      handleBtnAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode,                                                              // computed
+      showToast,                                                                       // 첨부 컴포넌트 prop 전달용
+    };
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 + ID 표시 ========================================= -->
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '공지사항 등록' : (cfDtlMode ? '공지사항 상세' : '공지사항 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.noticeId }}</span>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ form.noticeId }}
+    </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="4"
-      @save="handleSave"
-      @cancel="navigate('cmNoticeMng')"
-      @edit="navigate('__switchToEdit__')"
-      @close="navigate('cmNoticeMng')">
+      @save="handleBtnAction('form-save')"
+      @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')"
+      @close="handleBtnAction('form-close')">
       <!-- ===== ■.■.■. 내용 (Quill 또는 view 모드 HTML) ========================== -->
       <template #contentHtml>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'">
+        </div>
         <base-html-editor v-else v-model="form.contentHtml" height="280px" />
       </template>
       <!-- ===== ■.■.■. 첨부파일 ================================================ -->
       <template #attachGrp>
         <div style="font-size:11px;font-weight:400;color:#aaa;margin-bottom:4px;">
           #NOTICE_ATTACH
-          <span v-if="form.attachGrpId" style="margin-left:4px;">#{{ form.attachGrpId }}</span>
+          <span v-if="form.attachGrpId" style="margin-left:4px;">
+            #{{ form.attachGrpId }}
+          </span>
         </div>
         <base-attach-grp
           :model-value="form.attachGrpId"
@@ -178,8 +202,7 @@ window.CmNoticeDtl = {
       </template>
     </bo-form-area>
   </div>
+  <!-- ===== □. 폼 영역 ==================================================== -->
 </div>
-
-    <!-- ===== □.□. 폼 영역 ================================================== -->
-  <!-- ===== □. 카드 영역 =================================================== -->`
+`,
 };

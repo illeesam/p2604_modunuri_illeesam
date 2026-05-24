@@ -37,6 +37,36 @@ window.PdProdHist = {
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdProdHist.js : handleBtnAction -> ', cmd, param);
+      // 이력 탭 변경 (qna/review/orders/stock/price/status/changes)
+      if (cmd === 'tab-change') {
+        uiState.botTab = param;
+        return;
+      // 뷰모드 변경 (tab/1col/2col/3col/4col)
+      } else if (cmd === 'tabMode-change') {
+        uiState.tabMode2 = param;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdProdHist.js : handleSelectAction -> ', cmd, param);
+      // 연관 주문 행 상세 보기
+      if (cmd === 'orders-row-detail') {
+        return props.navigate('odOrderDtl', { id: param.orderId });
+      // 참조 모달 열기 (ref-click)
+      } else if (cmd === 'orders-ref-click') {
+        return showRefModal(param.type, param.id);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* 상품 showTab */
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
@@ -216,11 +246,11 @@ window.PdProdHist = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState, botTab, tabMode2,
-      qnaList, reviewList,
-      relatedOrders, stockHistory, priceHistory, statusHistory, changeHistory,
-      showTab, fnFmtDate, fnStockBadge, showRefModal,
-      fnNoCursor, qnaGridColumns, reviewGridColumns, orderGridColumns, stockGridColumns, priceGridColumns, statusGridColumns, changeGridColumns
+      uiState, botTab, tabMode2,                                                            // 상태
+      qnaList, reviewList, relatedOrders, stockHistory, priceHistory, statusHistory, changeHistory, // 데이터
+      qnaGridColumns, reviewGridColumns, orderGridColumns, stockGridColumns, priceGridColumns, statusGridColumns, changeGridColumns, // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                  // dispatch
+      showTab, fnFmtDate, fnStockBadge, fnNoCursor,                                         // 헬퍼
     };
   },
   template: /* html */`
@@ -235,41 +265,41 @@ window.PdProdHist = {
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='qna'}"     :disabled="tabMode2!=='tab'" @click="botTab='qna'">
+      <button class="tab-btn" :class="{active:botTab==='qna'}"     :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'qna')">
         💬 상품 Q&amp;A
         <span class="tab-count">{{ qnaList.length }}</span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='review'}"  :disabled="tabMode2!=='tab'" @click="botTab='review'">
+      <button class="tab-btn" :class="{active:botTab==='review'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'review')">
         ⭐ 리뷰
         <span class="tab-count">{{ reviewList.length }}</span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="tabMode2!=='tab'" @click="botTab='orders'">
+      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'orders')">
         🛒 연관 주문
         <span class="tab-count">{{ relatedOrders.length }}</span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="tabMode2!=='tab'" @click="botTab='stock'">
+      <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'stock')">
         📦 재고 이력
         <span class="tab-count">{{ stockHistory.length }}</span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="tabMode2!=='tab'" @click="botTab='price'">
+      <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'price')">
         💰 가격변경이력
         <span class="tab-count">{{ priceHistory.length }}</span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="tabMode2!=='tab'" @click="botTab='status'">
+      <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'status')">
         🏷 상품상태 이력
         <span class="tab-count">{{ statusHistory.length }}</span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="tabMode2!=='tab'" @click="botTab='changes'">
+      <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'changes')">
         📝 상품정보 변경이력
         <span class="tab-count">{{ changeHistory.length }}</span>
       </button>
     </div>
     <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="tabMode2='tab'"  title="탭으로 보기">📑</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="tabMode2='1col'" title="1열로 보기">1▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="tabMode2='2col'" title="2열로 보기">2▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="tabMode2='3col'" title="3열로 보기">3▭</button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="handleBtnAction('tabMode-change', 'tab')"  title="탭으로 보기">📑</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tabMode-change', '1col')" title="1열로 보기">1▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tabMode-change', '2col')" title="2열로 보기">2▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tabMode-change', '3col')" title="3열로 보기">3▭</button>
+      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tabMode-change', '4col')" title="4열로 보기">4▭</button>
     </div>
   </div>
   <!-- ===== □. 탭 영역 ==================================================== -->
@@ -293,9 +323,9 @@ window.PdProdHist = {
     <div class="card" v-show="showTab('orders')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrders.length }}</span></div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+      <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-ref-click', { type, id })" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="navigate('odOrderDtl',{id:row.orderId})">상세</button>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-row-detail', row)">상세</button>
         </template>
       </bo-grid>
     </div>

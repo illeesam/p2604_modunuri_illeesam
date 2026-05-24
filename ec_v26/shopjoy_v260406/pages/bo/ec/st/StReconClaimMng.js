@@ -35,6 +35,46 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StReconClaimMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      // 안내 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StReconClaimMng.js : handleSelectAction -> ', cmd, param);
+      // 페이지 번호 변경
+      if (cmd === 'reconClaims-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'reconClaims-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
@@ -143,7 +183,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, baseSearchColumns, baseGridColumns, cfSummary, fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return {
+      uiState, codes, pager, rows, searchParam,                                       // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch
+      cfSummary,                                                                       // computed
+      fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW,                                   // 헬퍼
+    };
   },
   template: /* html */`
 <div>
@@ -152,7 +198,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">클레임(취소·반품·교환) 환불 데이터와 정산 조정액 간 불일치를 검출하고 대사 처리합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 클레임 환불금액(refund_amt) vs 정산 차감 조정액(settle_adj) 차이를 자동 비교합니다. • 클레임 유형: 취소 / 반품 / 교환 • 차이 발생 건은 조정(StSettleAdjMng) 또는 기타조정(StSettleEtcAdjMng)으로 보정합니다.
     </div>
@@ -161,7 +207,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -184,7 +230,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="claimId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      @set-page="setPage" @size-change="onSizeChange"></bo-grid>
+      @set-page="n => handleSelectAction('reconClaims-set-page', n)" @size-change="handleSelectAction('reconClaims-size-change')"></bo-grid>
   </div>
 </div>
 

@@ -36,6 +36,52 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StSettleAdjMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchData('DEFAULT');
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchData('DEFAULT');
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      } else if (cmd === 'settleAdjs-add') {
+        return openNew();
+      } else if (cmd === 'form-save') {
+        return handleSave();
+      } else if (cmd === 'form-cancel') {
+        return closeForm();
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StSettleAdjMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'settleAdjs-row-approve') {
+        return doApprove(param);
+      } else if (cmd === 'settleAdjs-row-edit') {
+        return openEdit(param);
+      } else if (cmd === 'settleAdjs-row-delete') {
+        return handleDelete(param);
+      } else if (cmd === 'settleAdjs-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        return;
+      } else if (cmd === 'settleAdjs-size-change') {
+        pager.pageNo = 1;
+        return handleSearchData('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
@@ -255,7 +301,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, codes, handleDateRangeChange, pager, adjList, baseSearchColumns, baseGridColumns, cfVendors, form, errors, openNew, openEdit, closeForm, handleSave, handleDelete, doApprove, fnAprvBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange, baseFormColumns };
+    return {
+      uiState, codes, pager, adjList, searchParam, form, errors,
+      baseSearchColumns, baseGridColumns, baseFormColumns,
+      handleBtnAction, handleSelectAction,
+      cfVendors,
+      fnAprvBadge, fnTypeBadge, fmtW,
+    };
   },
   template: /* html */`
 <div>
@@ -264,7 +316,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">수집원장 데이터에 업체별 추가·차감 조정 항목을 입력하여 최종 정산액을 보정합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 조정 유형: 추가(+) / 차감(-) / 위약금 / 프로모션 분담금 등 • 조정 항목은 담당자 승인 후 정산마감에 반영됩니다. • 승인 상태: 대기 / 승인 / 반려 • 마감 완료된 기간의 조정은 재오픈 후 처리해야 합니다.
     </div>
@@ -273,7 +325,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -281,7 +333,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div class="toolbar">
       <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       <div style="margin-left:auto">
-        <button class="btn btn-primary" @click="openNew">+ 조정 추가</button>
+        <button class="btn btn-primary" @click="handleBtnAction('settleAdjs-add')">+ 조정 추가</button>
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
@@ -289,12 +341,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseGridColumns" :rows="adjList" :pager="pager" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
-      @set-page="setPage" @size-change="onSizeChange">
+      @set-page="n => handleSelectAction('settleAdjs-set-page', n)" @size-change="handleSelectAction('settleAdjs-size-change')">
       <template #head-actions>액션</template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.aprvStatusCd==='대기'" class="btn btn-sm btn-green" @click="doApprove(r)">승인</button>
-        <button class="btn btn-sm btn-primary" @click="openEdit(r)">수정</button>
-        <button class="btn btn-sm btn-danger"  @click="handleDelete(r)">삭제</button>
+        <button v-if="r.aprvStatusCd==='대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settleAdjs-row-approve', r)">승인</button>
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('settleAdjs-row-edit', r)">수정</button>
+        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('settleAdjs-row-delete', r)">삭제</button>
       </template>
     </bo-grid>
   </div>
@@ -307,7 +359,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :cols="4"
-      @save="handleSave" @cancel="closeForm" />
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </div>
 </div>
 

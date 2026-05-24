@@ -8,50 +8,96 @@ window.CmBlogMng = {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const blogs = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, sortKey: '', sortDir: 'asc' });
-    const codes = reactive({
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const blogs = reactive([]);                    // 블로그 목록 (메인 그리드 데이터)
+    const uiState = reactive({                     // UI 상태
+      loading: false, error: null, isPageCodeLoad: false,
+      selectedId: null, sortKey: '', sortDir: 'asc',
+    });
+    const codes = reactive({                       // 공통코드 / 정적 옵션
       blog_display_statuses: [],
-      open_yn_opts: [{ codeValue: 'Y', codeLabel: '공개' }, { codeValue: 'N', codeLabel: '비공개' }],
+      open_yn_opts:   [{ codeValue: 'Y', codeLabel: '공개' }, { codeValue: 'N', codeLabel: '비공개' }],
       notice_yn_opts: [{ codeValue: 'Y', codeLabel: '공지' }, { codeValue: 'N', codeLabel: '일반' }],
     });
+    const SORT_MAP = { nm: { asc: 'blogTitle asc', desc: 'blogTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const selectedId = ref(null);
-
+    /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       return { searchType: '', searchValue: '', use: '', notice: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* 게시물 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.blog_display_statuses = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
-      uiState.isPageCodeLoad = true;
+    /* ===== 상세 인라인 패널 ===== */
+    const detailPanel = reactive({ show: false, isNew: false, dtlId: null, form: {} }); // 인라인 Dtl 패널 상태
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ CmBlogMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        uiState.sortKey = ''; uiState.sortDir = 'asc';
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 블로그 신규 등록 (인라인 패널)
+      } else if (cmd === 'blogs-add') {
+        return openNew();
+      // 상세 인라인 패널 저장
+      } else if (cmd === 'detailPanel-save') {
+        return handleSave();
+      // 상세 인라인 패널 삭제
+      } else if (cmd === 'detailPanel-delete') {
+        return handleDelete();
+      // 상세 인라인 패널 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDetail();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
     };
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ CmBlogMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 정렬 헤더 클릭
+      if (cmd === 'blogs-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'blogs-set-page') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'blogs-size-change') {
+        return onSizeChange();
+      // 그리드 행 클릭 → 상세 보기 토글
+      } else if (cmd === 'blogs-row-view') {
+        return openDetail(param);
+      // 그리드 행 공개/비공개 토글
+      } else if (cmd === 'blogs-row-toggle-use') {
+        return toggleUse(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
-    const SORT_MAP = { nm: { asc: 'blogTitle asc', desc: 'blogTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
-    /* getSortParam — 조회 */
+    /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
-
-    /* 게시물 onSort */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* onSort — 정렬 */
     const onSort = (key) => {
@@ -63,7 +109,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
+    /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     /* handleSearchList — 목록 조회 */
@@ -95,54 +141,50 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    /* setPage — 페이지 번호 변경 */
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* fnBuildPagerNums — 유틸 */
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    const detailModal = reactive({ show: false, isNew: false, dtlId: null, form: {} });
-
-    const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailModal.dtlId) || null);
-
-    /* openDetail — 열기 */
+    /* openDetail — 인라인 패널 열기 (토글) */
     const openDetail = (row) => {
-      if (detailModal.dtlId === row.blogId) { detailModal.show = false; detailModal.dtlId = null; return; }
-      Object.assign(detailModal.form, { ...row });
-      detailModal.dtlId = row.blogId; detailModal.isNew = false; detailModal.show = true;
+      if (detailPanel.dtlId === row.blogId) { detailPanel.show = false; detailPanel.dtlId = null; return; }
+      Object.assign(detailPanel.form, { ...row });
+      detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true;
     };
 
-    /* openNew — 신규 열기 */
+    /* openNew — 신규 등록 */
     const openNew = () => {
-      Object.assign(detailModal.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
-      detailModal.dtlId = '__new__'; detailModal.isNew = true; detailModal.show = true;
+      Object.assign(detailPanel.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
+      detailPanel.dtlId = '__new__'; detailPanel.isNew = true; detailPanel.show = true;
     };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
+    const closeDetail = () => { detailPanel.show = false; detailPanel.dtlId = null; };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!detailModal.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
-      const isNewPost = detailModal.isNew;
+      if (!detailPanel.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
+      const isNewPost = detailPanel.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
       if (isNewPost) {
-        detailModal.form.blogId = 'BL' + String(Date.now()).slice(-6);
-        detailModal.form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
-        blogs.unshift({ ...detailModal.form });
-        detailModal.dtlId = detailModal.form.blogId; detailModal.isNew = false;
+        detailPanel.form.blogId = 'BL' + String(Date.now()).slice(-6);
+        detailPanel.form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
+        blogs.unshift({ ...detailPanel.form });
+        detailPanel.dtlId = detailPanel.form.blogId; detailPanel.isNew = false;
       } else {
-        const si = blogs.findIndex(p => p.blogId === detailModal.form.blogId);
-        if (si !== -1) { Object.assign(blogs[si], detailModal.form); }
+        const si = blogs.findIndex(p => p.blogId === detailPanel.form.blogId);
+        if (si !== -1) { Object.assign(blogs[si], detailPanel.form); }
       }
       try {
         const res = await (isNewPost
-          ? boApiSvc.cmBlog.create({ ...detailModal.form }, '블로그관리', '등록')
-          : boApiSvc.cmBlog.update(detailModal.form.blogId, { ...detailModal.form }, '블로그관리', '저장'));
+          ? boApiSvc.cmBlog.create({ ...detailPanel.form }, '블로그관리', '등록')
+          : boApiSvc.cmBlog.update(detailPanel.form.blogId, { ...detailPanel.form }, '블로그관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
@@ -173,13 +215,13 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       }
     };
 
-    /* toggleUse — 토글 */
+    /* toggleUse — 공개/비공개 토글 */
     const toggleUse = async (row) => {
       const newYn = row.useYn === 'Y' ? 'N' : 'Y';
       const ok = await showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn === 'Y' ? '공개' : '비공개'} 처리하시겠습니까?`);
       if (!ok) { return; }
       row.useYn = newYn;
-      if (detailModal.form.blogId === row.blogId) { detailModal.form.useYn = newYn; }
+      if (detailPanel.form.blogId === row.blogId) { detailPanel.form.useYn = newYn; }
       try {
         const res = await boApiSvc.cmBlog.setUse(row.blogId, { useYn: newYn }, '블로그관리', '상태변경');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -192,38 +234,43 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       }
     };
 
-    /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.blog_display_statuses = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* onReset — 초기화 */
-    const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
 
-    /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
 
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailPanel.dtlId) || null);
 
-    /* fnYnBadge — 유틸 */
+    /* fnYnBadge — Y/N 배지 클래스 */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
-    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
-        // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+    /* fnGridRowClass — 그리드 행 클래스 (선택 행 강조) */
+    const fnGridRowClass = (row) => (detailPanel.dtlId === row.blogId ? 'active' : '');
+
+    const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
-            { value: 'blogTitle',  label: '제목' },
-            { value: 'blogAuthor', label: '작성자' },
-          ],
+          { value: 'blogTitle',  label: '제목' },
+          { value: 'blogAuthor', label: '작성자' },
+        ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'use', type: 'select', label: '공개여부', options: () => codes.open_yn_opts, nullLabel: '전체' },
       { key: 'notice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
     ];
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
-    const listGridColumns = [
+    const baseGridColumns = [
       { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
         fmt: (v, row) => {
           const prefix = row.isNotice === 'Y' ? '[공지] ' : '';
@@ -236,8 +283,6 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       { key: 'useYn',      label: '공개',     style: 'width:70px;', align: 'center', badge: row => fnYnBadge(row.useYn), fmt: v => v==='Y' ? '공개' : '비공개' },
       { key: 'regDate',    label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
     ];
-    /* fnGridRowClass — 유틸 */
-    const fnGridRowClass = (row) => (detailModal.dtlId === row.blogId ? 'active' : '');
 
     const blogFormColumns = [
       { key: 'blogTitle',   label: '제목', type: 'text', required: true, colSpan: 2 },
@@ -251,66 +296,81 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCou
       { type: 'rowBreak' },
       { key: 'blogContent', label: '본문', type: 'slot', name: 'blogContent', colSpan: 2 },
     ];
+
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      selectedId: computed(() => detailModal.dtlId), blogs, uiState, codes,
-      searchParam, pager, setPage,
-      onSearch, onReset, cfSelectedRow, detailModal, openDetail, openNew, closeDetail,
-      handleSave, handleDelete, toggleUse, fnYnBadge, onSizeChange, onSort, sortIcon,
-      baseSearchColumns, listGridColumns, fnGridRowClass, blogFormColumns,
+      blogs, uiState, codes, searchParam, pager, detailPanel,                          // 상태 / 데이터
+      baseSearchColumns, baseGridColumns, blogFormColumns,                             // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSelectedRow,                                                                   // computed
+      sortIcon, fnYnBadge, fnGridRowClass,                                             // 헬퍼
     };
   },
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">게시판(블로그)관리</div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
+  <div class="page-title">
+    게시판(블로그)관리
+  </div>
+  <!-- ===== ■. 검색 ======================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="listGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
+  <bo-grid :columns="baseGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
     :sort-state="uiState" list-title="게시글 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
-    @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="openDetail" row-actions>
+    @sort="key => handleSelectAction('blogs-sort', key)"
+    @set-page="n => handleSelectAction('blogs-set-page', n)"
+    @size-change="handleSelectAction('blogs-size-change')"
+    @row-click="row => handleSelectAction('blogs-row-view', row)" row-actions>
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('blogs-add')">
+        + 신규
+      </button>
     </template>
     <template #row-actions="{ row }">
-      <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="toggleUse(row)">
+      <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-row-toggle-use', row)">
         {{ row.useYn==='Y'?'비공개':'공개' }}
       </button>
     </template>
   </bo-grid>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 =================================================== -->
-  <div class="card" v-if="detailModal.show">
+  <div class="card" v-if="detailPanel.show">
     <div class="toolbar">
-      <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
+      <span class="list-title">
+        {{ detailPanel.isNew ? '신규 등록' : '상세 / 수정' }}
+      </span>
       <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
-        <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('detailPanel-save')">
+          저장
+        </button>
+        <button v-if="!detailPanel.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('detailPanel-delete')">
+          삭제
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+          닫기
+        </button>
       </div>
     </div>
     <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="blogFormColumns" :form="detailModal.form" :errors="{}"
+      <bo-form-area :columns="blogFormColumns" :form="detailPanel.form" :errors="{}"
         :cols="2" :show-actions="false">
         <template #blogContent>
-          <base-html-editor v-model="detailModal.form.blogContent" height="320px" />
+          <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />
         </template>
       </bo-form-area>
     </div>
+    <!-- ===== □.■. 블로그 detail 폼 ========================================== -->
   </div>
+  <!-- ===== □. 상세 패널 =================================================== -->
 </div>
-
-    <!-- ===== □.□. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
-  <!-- ===== □. 상세 패널 =================================================== -->`
+`,
 };

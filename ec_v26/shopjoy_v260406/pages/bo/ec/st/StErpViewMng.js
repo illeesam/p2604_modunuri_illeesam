@@ -37,6 +37,49 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StErpViewMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      // 안내 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StErpViewMng.js : handleSelectAction -> ', cmd, param);
+      // 전표 ERP 재전송
+      if (cmd === 'slips-row-resend') {
+        return doResend(param);
+      // 페이지 번호 변경
+      } else if (cmd === 'slips-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'slips-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
@@ -151,7 +194,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, handleDateRangeChange, codes, pager, slips, baseSearchColumns, baseGridColumns, doResend, fnStatusBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return {
+      uiState, codes, pager, slips, searchParam,                                     // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                            // dispatch
+      fnStatusBadge, fnTypeBadge, fmtW,                                               // 헬퍼
+    };
   },
   template: /* html */`
 <div>
@@ -160,7 +208,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 전표 유형: 정산지급 / 수수료 / 조정 / 기타 • 전송 상태: 미전송 / 전송완료 / 오류 • [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다. • 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.
     </div>
@@ -169,7 +217,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -178,10 +226,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="slips" :pager="pager" row-key="slipId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      @set-page="setPage" @size-change="onSizeChange">
+      @set-page="n => handleSelectAction('slips-set-page', n)" @size-change="handleSelectAction('slips-size-change')">
       <template #head-actions>액션</template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="doResend(r)">재전송</button>
+        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="handleSelectAction('slips-row-resend', r)">재전송</button>
       </template>
     </bo-grid>
   </div>

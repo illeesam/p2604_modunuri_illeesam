@@ -34,6 +34,33 @@ window.StSettleCloseMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StSettleCloseMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      } else if (cmd === 'settleCloses-do-close') {
+        return doClose();
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StSettleCloseMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'settleCloses-row-reopen') {
+        return doReopen(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const orders  = reactive([]);
     const claims  = reactive([]);
     const vendorList = reactive([]);
@@ -188,7 +215,13 @@ window.StSettleCloseMng = {
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, closeList, cfFilteredClose, baseGridColumns, baseSearchColumns, searchParam, onSearch, onReset, thisMonth, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed, doClose, doReopen, fnStatusBadge, fmtW, codes };
+    return {
+      uiState, codes, closeList, searchParam, thisMonth,
+      baseGridColumns, baseSearchColumns,
+      handleBtnAction, handleSelectAction,
+      cfFilteredClose, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed,
+      fnStatusBadge, fmtW,
+    };
   },
   template: /* html */`
 <div>
@@ -197,7 +230,7 @@ window.StSettleCloseMng = {
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">월별 업체 정산을 확정하는 마감 처리를 수행합니다. 마감 후 원장·조정 데이터 수정이 불가합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 마감 처리 시 해당 월의 수집원장 + 조정 + 기타조정 금액을 최종 집계합니다. • 마감 상태: 미마감 / 마감완료 / 지급완료 • [재오픈] 기능으로 마감을 취소하고 수정 후 재마감할 수 있습니다. • 자동마감 설정(StConfigMng) 시 지급일에 자동 마감됩니다.
     </div>
@@ -233,7 +266,7 @@ window.StSettleCloseMng = {
       </div>
     </div>
     <div style="text-align:right">
-      <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="doClose">📋 {{ thisMonth }} 정산마감 실행</button>
+      <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-do-close')">📋 {{ thisMonth }} 정산마감 실행</button>
       <span v-else class="badge badge-green" style="font-size:13px;padding:8px 16px">✓ 마감완료</span>
     </div>
   </div>
@@ -243,7 +276,7 @@ window.StSettleCloseMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="margin-bottom:12px"
       :columns="baseSearchColumns" :param="searchParam"
-      @search="onSearch" @reset="onReset" />
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
@@ -251,7 +284,7 @@ window.StSettleCloseMng = {
       list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
       <template #head-actions>액션</template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="doReopen(r)">마감취소</button>
+        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="handleSelectAction('settleCloses-row-reopen', r)">마감취소</button>
       </template>
     </bo-grid>
   </div>

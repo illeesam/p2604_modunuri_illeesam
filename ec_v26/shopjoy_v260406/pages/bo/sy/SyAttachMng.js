@@ -16,6 +16,7 @@ window.SyAttachMng = {
     const codes = reactive({ attach_type: [], active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
     const grpSearchType = ref('');
     const grpSearchValue = ref('');
+
     const pager = reactive({
       pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
       pageNums: [], pageSizes: [10, 20, 50, 100],
@@ -26,7 +27,97 @@ window.SyAttachMng = {
       pageNums: [], pageSizes: [5, 10, 20, 50],
     });
 
-    /* 그룹 검색은 클라이언트 filter 금지 — API 재조회(onGrpSearch)로만 갱신 (UI/UX 검색 방식 정책) */
+    const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
+
+    /* -- 첨부그룹 -- */
+    const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
+
+    /* -- 첨부파일 -- */
+    const fileForm = reactive({
+      attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
+      storedNm: '', storageType: '', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
+      thumbFileNm: '', thumbStoredNm: '', thumbUrl: '', thumbCdnUrl: '', thumbGeneratedYn: 'N',
+      sortOrd: 0, attachMemo: '', refId: '',
+    });
+
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyAttachMng.js : handleBtnAction -> ', cmd, param);
+      // 첨부파일 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 첨부파일 검색조건 초기화
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return onDateRangeChange();
+      // 첨부그룹 검색조건으로 그룹 조회
+      } else if (cmd === 'attachGrps-search') {
+        return onGrpSearch();
+      // 첨부그룹 신규 등록 폼 열기
+      } else if (cmd === 'attachGrps-add') {
+        return openGrpNew();
+      // 첨부그룹 폼 저장
+      } else if (cmd === 'attachGrps-save') {
+        return handleSaveGrp();
+      // 첨부그룹 폼 닫기
+      } else if (cmd === 'attachGrps-form-close') {
+        uiState.grpEditMode = false;
+        return;
+      // 첨부파일 신규 등록 폼 열기
+      } else if (cmd === 'attaches-add') {
+        return openFileNew();
+      // 첨부파일 폼 저장
+      } else if (cmd === 'attaches-save') {
+        return handleSaveFile();
+      // 첨부파일 폼 닫기
+      } else if (cmd === 'attaches-form-close') {
+        uiState.fileEditMode = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyAttachMng.js : handleSelectAction -> ', cmd, param);
+      // 첨부그룹 카드 선택 (좌측 패널)
+      if (cmd === 'attachGrps-row-select') {
+        return selectGrp(param);
+      // 첨부그룹 수정 버튼
+      } else if (cmd === 'attachGrps-row-edit') {
+        return openGrpEdit(param);
+      // 첨부그룹 삭제 버튼
+      } else if (cmd === 'attachGrps-row-delete') {
+        return handleDeleteGrp(param);
+      // 첨부그룹 페이지 번호 클릭
+      } else if (cmd === 'attachGrps-set-page') {
+        return setGrpPage(param);
+      // 첨부그룹 페이지 크기 변경
+      } else if (cmd === 'attachGrps-size-change') {
+        return onGrpSizeChange();
+      // 첨부파일 수정 버튼
+      } else if (cmd === 'attaches-row-edit') {
+        return openFileEdit(param);
+      // 첨부파일 삭제 버튼
+      } else if (cmd === 'attaches-row-delete') {
+        return handleDeleteFile(param);
+      // 첨부파일 페이지 번호 클릭
+      } else if (cmd === 'attaches-set-page') {
+        return setPage(param);
+      // 첨부파일 페이지 크기 변경
+      } else if (cmd === 'attaches-size-change') {
+        return onSizeChange();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnBuildPageNums — 유틸 */
     const fnBuildPageNums = () => {
@@ -40,12 +131,6 @@ window.SyAttachMng = {
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       grpPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
-
-    const searchParam = reactive({ searchType: '', searchValue: '', attachGrpId: '', dateRange: '', dateStart: '', dateEnd: '' });
-
-    /* 첨부파일 onDateRangeChange */
-
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
@@ -115,7 +200,6 @@ window.SyAttachMng = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
@@ -134,8 +218,6 @@ window.SyAttachMng = {
       handleSearchData();
     });
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
     /* onSearch — 조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
 
@@ -152,9 +234,6 @@ window.SyAttachMng = {
 
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
-
-    /* -- 첨부그룹 -- */
-    const grpForm = reactive({ attachGrpNm: '', attachGrpCode: '', attachGrpRemark: '', maxFileCount: 10, maxFileSize: 5, fileExtAllow: 'jpg,png', useYn: 'Y' });
 
     /* selectGrp — 선택 */
     const selectGrp = (id) => {
@@ -209,14 +288,6 @@ window.SyAttachMng = {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
-
-    /* -- 첨부파일 -- */
-    const fileForm = reactive({
-      attachGrpId: null, fileNm: '', fileSize: 0, fileExt: '', mimeTypeCd: '',
-      storedNm: '', storageType: '', storagePath: '', attachUrl: '', cdnHost: '', cdnImgUrl: '',
-      thumbFileNm: '', thumbStoredNm: '', thumbUrl: '', thumbCdnUrl: '', thumbGeneratedYn: 'N',
-      sortOrd: 0, attachMemo: '', refId: '',
-    });
 
     /* openFileNew — 열기 */
     const openFileNew = () => {
@@ -280,10 +351,6 @@ window.SyAttachMng = {
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('USE_YN', s, _USE_YN_FB[s] || 'badge-gray');
 
-    /* BoGrid 컬럼 정의 (첨부파일 목록) */
-
-    // --- [컬럼 정의] ---
-
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const fileGridColumns = [
@@ -340,26 +407,34 @@ window.SyAttachMng = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      attaches, uiState, codes, searchParam, onDateRangeChange, cfSiteNm,
-      attachGrps, grpSearchType, grpSearchValue, onGrpSearch, grpForm, pager,
-      grpPager, setGrpPage, onGrpSizeChange,
-      selectGrp, openGrpNew, openGrpEdit, handleSaveGrp, handleDeleteGrp,
-      fileForm, onSearch, onReset, setPage, onSizeChange, openFileNew, openFileEdit, handleSaveFile, handleDeleteFile,
-      fnFmtSize, fnStatusBadge, fileGridColumns, grpFormColumns, fileFormColumns,
+      attaches, attachGrps, uiState, codes, searchParam, pager, grpPager, grpSearchType, grpSearchValue, grpForm, fileForm, // 상태 / 데이터
+      fileGridColumns, grpFormColumns, fileFormColumns,                                                                     // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSiteNm,                                                                                                             // computed
+      fnFmtSize, fnStatusBadge,                                                                                             // 헬퍼
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">첨부관리</div>
+  <div class="page-title">
+    첨부관리
+  </div>
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 좌: 첨부그룹관리 (30%) ======================================= -->
     <div style="flex:0 0 30%;min-width:260px;">
       <div class="card" style="margin-bottom:0;">
         <div class="toolbar">
-          <b style="font-size:14px;">첨부그룹관리 <span class="list-count">{{ grpPager.pageTotalCount }}건</span></b>
-          <button class="btn btn-primary btn-sm" @click="openGrpNew">+ 신규</button>
+          <b style="font-size:14px;">
+            첨부그룹관리
+            <span class="list-count">
+              {{ grpPager.pageTotalCount }}건
+            </span>
+          </b>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('attachGrps-add')">
+            + 신규
+          </button>
         </div>
         <div style="padding:0 0 10px 0;">
           <bo-multi-check-select
@@ -372,8 +447,10 @@ window.SyAttachMng = {
             all-label="전체 선택"
             min-width="100%" />
           <div style="display:flex;gap:4px;margin-top:4px;">
-            <input v-model="grpSearchValue" @keyup.enter="onGrpSearch" placeholder="검색어 입력 후 Enter" style="flex:1;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" />
-            <button class="btn btn-primary btn-sm" style="font-size:12px;padding:4px 10px;flex-shrink:0;" @click="onGrpSearch">조회</button>
+            <input v-model="grpSearchValue" @keyup.enter="handleBtnAction('attachGrps-search')" placeholder="검색어 입력 후 Enter" style="flex:1;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" />
+            <button class="btn btn-primary btn-sm" style="font-size:12px;padding:4px 10px;flex-shrink:0;" @click="handleBtnAction('attachGrps-search')">
+              조회
+            </button>
           </div>
         </div>
         <!-- ===== ■.■.■.■. 그룹 폼 (BoFormArea 자동 렌더) =========================== -->
@@ -388,8 +465,12 @@ window.SyAttachMng = {
           <bo-form-area :columns="grpFormColumns" :form="grpForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <div style="display:flex;gap:6px;margin-top:8px;">
-            <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleSaveGrp">저장</button>
-            <button class="btn btn-secondary btn-sm" style="flex:1;" @click="uiState.grpEditMode=false">취소</button>
+            <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
+              저장
+            </button>
+            <button class="btn btn-secondary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-form-close')">
+              취소
+            </button>
           </div>
         </div>
         <!-- ===== ■.■.■.■. 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) ===== -->
@@ -397,26 +478,38 @@ window.SyAttachMng = {
           <div v-for="g in attachGrps" :key="g.attachGrpId"
             style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
             :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#fff0f4;border-left:3px solid #e8587a;' : ''"
-            @click="selectGrp(g.attachGrpId)">
+            @click="handleSelectAction('attachGrps-row-select', g.attachGrpId)">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div>
-                <div style="font-size:13px;font-weight:600;color:#333;">{{ g.attachGrpNm }}</div>
+                <div style="font-size:13px;font-weight:600;color:#333;">
+                  {{ g.attachGrpNm }}
+                </div>
                 <div style="font-size:11px;color:#888;margin-top:2px;">
                   {{ g.attachGrpCode }} | 최대 {{ g.maxFileCount }}개 / {{ g.maxFileSize }}MB
                 </div>
-                <div style="font-size:10px;color:#bbb;margin-top:1px;">#{{ g.attachGrpId }}</div>
+                <div style="font-size:10px;color:#bbb;margin-top:1px;">
+                  #{{ g.attachGrpId }}
+                </div>
               </div>
               <div style="display:flex;gap:4px;" @click.stop>
-                <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="openGrpEdit(g)">수정</button>
-                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleDeleteGrp(g)">삭제</button>
+                <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-row-edit', g)">
+                  수정
+                </button>
+                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-row-delete', g)">
+                  삭제
+                </button>
               </div>
             </div>
             <div style="margin-top:4px;">
               <span class="badge" :class="g.useYn==='Y' ? 'badge-green' : 'badge-gray'" style="font-size:10px;">
                 {{ g.useYn==='Y' ? '사용' : '미사용' }}
               </span>
-              <span style="font-size:11px;color:#aaa;margin-left:6px;">{{ g.fileExtAllow }}</span>
-              <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">{{ cfSiteNm }}</span>
+              <span style="font-size:11px;color:#aaa;margin-left:6px;">
+                {{ g.fileExtAllow }}
+              </span>
+              <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">
+                {{ cfSiteNm }}
+              </span>
             </div>
           </div>
           <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">
@@ -427,7 +520,7 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ====================== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
           <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
-          <bo-pager :pager="grpPager" :on-set-page="setGrpPage" :on-size-change="onGrpSizeChange"
+          <bo-pager :pager="grpPager" :on-set-page="n => handleSelectAction('attachGrps-set-page', n)" :on-size-change="() => handleSelectAction('attachGrps-size-change')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>
@@ -443,9 +536,11 @@ window.SyAttachMng = {
             <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">
               — {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}
             </span>
-            <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">(전체)</span>
+            <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">
+              (전체)
+            </span>
           </b>
-          <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="onSearch" />
+          <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="handleBtnAction('searchParam-list')" />
           <bo-multi-check-select
             v-model="searchParam.searchType"
             :options="[
@@ -455,26 +550,44 @@ window.SyAttachMng = {
             placeholder="검색대상 전체"
             all-label="전체 선택"
             min-width="140px" />
-          <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:150px;" @keyup.enter="onSearch" />
-          <span style="font-size:12px;color:#666;white-space:nowrap;">등록일</span>
+          <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:150px;" @keyup.enter="handleBtnAction('searchParam-list')" />
+          <span style="font-size:12px;color:#666;white-space:nowrap;">
+            등록일
+          </span>
           <input type="date" v-model="searchParam.dateStart" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" />
-          <span style="font-size:12px;color:#aaa;">~</span>
+          <span style="font-size:12px;color:#aaa;">
+            ~
+          </span>
           <input type="date" v-model="searchParam.dateEnd" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" />
-          <select v-model="searchParam.dateRange" @change="onDateRangeChange" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
-            <option value="">옵션선택</option>
-            <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
+          <select v-model="searchParam.dateRange" @change="handleBtnAction('searchParam-date-range')" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
+            <option value="">
+              옵션선택
+            </option>
+            <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">
+              {{ o.codeLabel }}
+            </option>
           </select>
-          <button class="btn btn-primary btn-sm" @click="onSearch">조회</button>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')">
+            조회
+          </button>
           <div style="margin-left:auto;display:flex;gap:6px;">
-            <button class="btn btn-secondary btn-sm" @click="onReset">초기화</button>
-            <button class="btn btn-primary btn-sm" @click="openFileNew">+ 신규</button>
+            <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
+              초기화
+            </button>
+            <button class="btn btn-primary btn-sm" @click="handleBtnAction('attaches-add')">
+              + 신규
+            </button>
           </div>
         </div>
         <span class="list-title">
           <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
-          <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+          <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+            ●
+          </span>
           첨부파일목록
-          <span class="list-count">{{ pager.pageTotalCount }}건</span>
+          <span class="list-count">
+            {{ pager.pageTotalCount }}건
+          </span>
         </span>
         <!-- ===== ■.■.■.■. 파일 폼 ============================================== -->
         <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px 12px;margin-bottom:10px;">
@@ -490,8 +603,12 @@ window.SyAttachMng = {
             :cols="4" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
           <div style="display:flex;gap:8px;justify-content:center;">
-            <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleSaveFile">저장</button>
-            <button class="btn btn-secondary btn-sm" style="min-width:60px;" @click="uiState.fileEditMode=false">취소</button>
+            <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-save')">
+              저장
+            </button>
+            <button class="btn btn-secondary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-form-close')">
+              취소
+            </button>
           </div>
         </div>
         <!-- ===== ■.■.■.■. 파일 그리드 (기본 10개 페이지 + 화면 높이에 따라 반응형으로 확장, 초과 시 내부 스크롤) ===== -->
@@ -505,12 +622,16 @@ window.SyAttachMng = {
             row-key="attachId"
             :loading="uiState.loading"
             :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
-            @set-page="setPage"
-            @size-change="onSizeChange" row-actions>
+            @set-page="n => handleSelectAction('attaches-set-page', n)"
+            @size-change="handleSelectAction('attaches-size-change')" row-actions>
             <template #row-actions="{ row }">
               <div class="actions">
-                <button class="btn btn-blue btn-sm" @click="openFileEdit(row)">수정</button>
-                <button class="btn btn-danger btn-sm" @click="handleDeleteFile(row)">삭제</button>
+                <button class="btn btn-blue btn-sm" @click="handleSelectAction('attaches-row-edit', row)">
+                  수정
+                </button>
+                <button class="btn btn-danger btn-sm" @click="handleSelectAction('attaches-row-delete', row)">
+                  삭제
+                </button>
               </div>
             </template>
           </bo-grid>
@@ -518,14 +639,14 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. /파일 그리드 스크롤 컨테이너 ================================== -->
         <!-- ===== ■.■.■.■. 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) ===== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-          <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange"
+          <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('attaches-set-page', n)" :on-size-change="() => handleSelectAction('attaches-size-change')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>
     </div>
   </div>
 </div>
-
-    <!-- ===== □.□. 우: 첨부파일관리 (70%) ======================================= -->
-  <!-- ===== □. 본문 영역 =================================================== -->`
+<!-- ===== □.□. 우: 첨부파일관리 (70%) ======================================= -->
+<!-- ===== □. 본문 영역 =================================================== -->
+`
 };

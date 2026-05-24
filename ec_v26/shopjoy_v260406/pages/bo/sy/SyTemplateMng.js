@@ -8,28 +8,136 @@ window.SyTemplateMng = {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const templates = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
-    const codes = reactive({ template_type: [], use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'], date_range_opts: [] });
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+
+    const templates = reactive([]);                // 템플릿 목록 (그리드 데이터)
+    const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
+    const codes     = reactive({ template_type: [], use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'templateNm asc', desc: 'templateNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* getSortParam — 조회 */
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam()); // 검색조건
+
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* -- 표시경로 선택 모달 (sy_path) -- */
+    const pathPickModal = reactive({ show: false, row: null }); // 표시경로 선택 모달 상태
+
+    /* -- 상세 인라인 패널 -- */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 상세 인라인 패널 상태
+
+    /* -- 미리보기 / 발송 모달 -- */
+    const previewModal = reactive({ show: false, template: null }); // 미리보기 모달
+    const sendModal    = reactive({ show: false, template: null }); // 발송하기 모달
+
+    const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
+    const cfDetailEditId  = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfIsViewMode    = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+    const cfDetailKey     = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyTemplateMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        uiState.sortKey = '';
+        uiState.sortDir = 'asc';
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return onDateRangeChange();
+      // 템플릿 신규 등록 (인라인 패널)
+      } else if (cmd === 'templates-add') {
+        return openNew();
+      // 엑셀 내보내기
+      } else if (cmd === 'templates-excel') {
+        return exportExcel();
+      // 상세 인라인 패널 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDetail();
+      // 표시경로 선택 모달 닫기
+      } else if (cmd === 'pathModal-close') {
+        return closePathPick();
+      // 미리보기 모달 닫기
+      } else if (cmd === 'previewModal-close') {
+        previewModal.show = false;
+        return;
+      // 발송 모달 닫기
+      } else if (cmd === 'sendModal-close') {
+        sendModal.show = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyTemplateMng.js : handleSelectAction -> ', cmd, param);
+      // 좌측 경로 트리 노드 선택 → 그리드 필터링
+      if (cmd === 'pathTree-select') {
+        uiState.selectedPath = param;
+        pager.pageNo = 1;
+        return handleSearchList();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'templates-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'templates-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'templates-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 그리드 행 클릭 / 수정 버튼 → 편집 패널 열기
+      } else if (cmd === 'templates-row-edit') {
+        return handleLoadDetail(param);
+      // 그리드 행 삭제
+      } else if (cmd === 'templates-row-delete') {
+        return handleDelete(param);
+      // 그리드 행 미리보기
+      } else if (cmd === 'templates-row-preview') {
+        return showPreview(param);
+      // 그리드 행 발송
+      } else if (cmd === 'templates-row-send') {
+        return openSend(param);
+      // 표시경로 picker 열기 (행 단위)
+      } else if (cmd === 'pathModal-open') {
+        return openPathPick(param);
+      // 표시경로 선택 → 행 pathId 갱신
+      } else if (cmd === 'pathModal-pick') {
+        return onPathPicked(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
-        // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
     /* onSort — 정렬 */
-
     const onSort = (key) => {
       if (uiState.sortKey === key) {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
@@ -39,16 +147,13 @@ window.SyTemplateMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
-    // onMounted에서 API 로드
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(),
+          ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'templateNm,templateSubject';
         }
@@ -67,8 +172,6 @@ window.SyTemplateMng = {
         uiState.loading = false;
       }
     };
-    /* -- 표시경로 선택 모달 (sy_path) -- */
-    const pathPickModal = reactive({ show: false, row: null });
 
     /* openPathPick — 경로 선택 열기 */
     const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
@@ -76,7 +179,7 @@ window.SyTemplateMng = {
     /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
-    /* onPathPicked — 이벤트 */
+    /* onPathPicked — 경로 선택 결과 적용 */
     const onPathPicked = (pathId) => {
       const row = pathPickModal.row;
       if (row) {
@@ -85,14 +188,10 @@ window.SyTemplateMng = {
       }
     };
 
-    /* pathLabel — 경로 라벨 */
+    /* pathLabel — 경로 라벨 변환 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* selectNode — 노드 선택 */
-    const selectNode = (path) => { uiState.selectedPath = path; pager.pageNo = 1; handleSearchList(); };
-
     /* fnLoadCodes — 공통코드 로드 */
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.template_type = codeStore.sgGetGrpCodes('TEMPLATE_TYPE');
@@ -108,88 +207,47 @@ window.SyTemplateMng = {
       handleSearchList('DEFAULT');
     });
 
-  /* 템플릿 _initSearchParam */
-  const _initSearchParam = () => {
-    const today = new Date();
-    const thisYear = today.getFullYear();
-    return { searchType: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
-  };
-  const searchParam = reactive(_initSearchParam());
-
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      if (searchParam.dateRange) {
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
       pager.pageNo = 1;
     };
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    /* loadView — 인라인 패널 뷰 모드로 열기 */
+    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
 
-    /* loadView — 뷰 로드 */
-    const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    /* openNew — 신규 등록 */
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    /* closeDetail — 상세 패널 닫기 */
+    const closeDetail = () => { detailPanel.selectedId = null; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { uiStateDetail.selectedId = null; };
-
-    /* inlineNavigate — 인라인 이동 */
+    /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syTemplateMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
+      if (pg === 'syTemplateMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchList('RELOAD'); } return; }
+      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
 
-    /* 미리보기 모달 */
-    const previewModal = reactive({ show: false, template: null });
-
-    /* showPreview — 표시 */
+    /* showPreview — 미리보기 모달 열기 */
     const showPreview = (t) => { previewModal.template = t; previewModal.show = true; };
 
-    /* closePreview — 미리보기 닫기 */
-    const closePreview = () => { previewModal.show = false; };
+    /* openSend — 발송 모달 열기 */
+    const openSend = (t) => { sendModal.template = t; sendModal.show = true; };
 
-    /* 발송하기 모달 */
-    const sendModal = reactive({ show: false, template: null });
-
-    /* openSend — 전송 모달 열기 */
-    const openSend  = (t) => { sendModal.template = t; sendModal.show = true; };
-
-    /* closeSend — 전송 모달 닫기 */
-    const closeSend = () => { sendModal.show = false; };
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => ({
-      '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
-      'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
-      '시스템알림': 'badge-red', '회원알림': 'badge-teal',
-    }[t] || 'badge-gray');
-
-    /* fnUseYnBadge — 사용여부 배지 */
-    const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
-
-    /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* onReset — 초기화 */
-    const onReset = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; onSearch(); };
-
-    /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (t) => {
@@ -197,7 +255,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       if (!ok) { return; }
       const idx = templates.findIndex(x => x.templateId === t.templateId);
       if (idx !== -1) { templates.splice(idx, 1); }
-      if (uiStateDetail.selectedId === t.templateId) { uiStateDetail.selectedId = null; }
+      if (detailPanel.selectedId === t.templateId) { detailPanel.selectedId = null; }
       try {
         const res = await boApiSvc.syTemplate.remove(t.templateId, '템플릿관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -211,15 +269,30 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     };
 
     /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(templates, [{label:'ID',key:'templateId'},{label:'템플릿명',key:'templateNm'},{label:'유형',key:'templateTypeCd'},{label:'사용여부',key:'useYn'},{label:'등록일',key:'regDate'}], '템플릿목록.csv');
-    /* 트리 path 변경 시 자동 reload (loadGrid 있으면 호출) */
+    const exportExcel = () => coUtil.cofExportCsv(templates, [
+      { label: 'ID', key: 'templateId' },
+      { label: '템플릿명', key: 'templateNm' },
+      { label: '유형', key: 'templateTypeCd' },
+      { label: '사용여부', key: 'useYn' },
+      { label: '등록일', key: 'regDate' },
+    ], '템플릿목록.csv');
 
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
 
+    /* fnTypeBadge — 유형 배지 */
+    const fnTypeBadge = t => ({
+      '메일템플릿': 'badge-blue', '문자템플릿': 'badge-green', 'MMS템플릿': 'badge-orange',
+      'kakao톡템플릿': 'badge-purple', 'kakao알림톡템플릿': 'badge-purple',
+      '시스템알림': 'badge-red', '회원알림': 'badge-teal',
+    }[t] || 'badge-gray');
 
-        // --- [컬럼 정의] ---
+    /* fnUseYnBadge — 사용여부 배지 */
+    const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
+    /* fnRowStyle — 행 스타일 (선택 행 강조) */
+    const fnRowStyle = (t) => detailPanel.selectedId === t.templateId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
-        const baseSearchColumns = [
+    const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'templateNm',      label: '템플릿명' },
@@ -229,107 +302,121 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'type', type: 'select', label: '유형', options: () => codes.template_types, nullLabel: '유형 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
-          // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
-{ key: 'dateRange', type: 'dateRange', label: '등록일',
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => onDateRangeChange() },
+        onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
     const baseGridColumns = [
       { key: 'pathId',         label: '표시경로',
-        pathLabelOpen: { label: pathLabel, open: openPathPick, placeholder: '경로 선택...' } },
+        pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
       { key: 'templateId',     label: 'ID' },
       { key: 'templateTypeCd', label: '템플릿유형', badge: (row) => fnTypeBadge(row.templateTypeCd) },
       { key: 'templateCode',   label: '템플릿코드',
         cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:11px;color:#555;font-family:monospace;' },
       { key: 'templateNm',     label: '템플릿명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'templateSubject', label: '제목(Subject)', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: 'useYn',          label: '사용여부', badge: (row) => fnUseYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'regDate',        label: '등록일', sortKey: 'reg' },
       { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
-    /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (t) => uiStateDetail.selectedId === t.templateId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // ===== return (템플릿 노출) ===============================================
 
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), templates, uiState, codes, pathPickModal, openPathPick, closePathPick, onPathPicked, pathLabel,
-      selectNode, searchParam, onDateRangeChange, cfSiteNm, pager, onSearch, onReset, setPage, onSizeChange, fnTypeBadge, fnUseYnBadge, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, previewModal, showPreview, closePreview, sendModal, openSend, closeSend, exportExcel, onSort, sortIcon,
-      baseSearchColumns, baseGridColumns, fnRowStyle };
+    return {
+      templates, uiState, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                                                  // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
+      cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
+      fnRowStyle,                                                                                          // 헬퍼
+      inlineNavigate, handleSearchList,                                                                    // Dtl 콜백 (closure 필요)
+      showToast, showConfirm, setApiRes,                                                                   // Dtl/모달 props
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">템플릿관리</div>
+  <div class="page-title">
+    템플릿관리
+  </div>
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="true"
-      :selected="uiState.selectedPath" @select="selectNode" />
+      :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
         :columns="baseGridColumns" :rows="templates" :pager="pager" row-key="templateId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="row => handleLoadDetail(row.templateId)">
+        @sort="key => handleSelectAction('templates-sort', key)"
+        @set-page="n => handleSelectAction('templates-set-page', n)"
+        @size-change="handleSelectAction('templates-size-change')"
+        @row-click="row => handleSelectAction('templates-row-edit', row.templateId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="exportExcel">📥 엑셀</button>
-            <button class="btn btn-primary btn-sm" @click="openNew">+ 신규</button>
+            <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
+              📥 엑셀
+            </button>
+            <button class="btn btn-primary btn-sm" @click="handleBtnAction('templates-add')">
+              + 신규
+            </button>
           </div>
         </template>
         <template #head-actions>
-          <th style="text-align:right">관리</th>
+          <th style="text-align:right">
+            관리
+          </th>
         </template>
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-secondary btn-sm" @click="showPreview(row)">미리보기</button>
-              <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="openSend(row)">발송</button>
-              <button class="btn btn-blue btn-sm" @click="handleLoadDetail(row.templateId)">수정</button>
-              <button class="btn btn-danger btn-sm" @click="handleDelete(row)">삭제</button>
+              <button class="btn btn-secondary btn-sm" @click="handleSelectAction('templates-row-preview', row)">
+                미리보기
+              </button>
+              <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-row-send', row)">
+                발송
+              </button>
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('templates-row-edit', row.templateId)">
+                수정
+              </button>
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('templates-row-delete', row)">
+                삭제
+              </button>
             </div>
           </td>
         </template>
       </bo-grid>
       <!-- ===== ■.■.■. 미리보기/발송 모달 (position:fixed) ========================= -->
-      <template-preview-modal v-if="previewModal && previewModal.show"
-        :tmpl="previewModal.template"
-        :sample-params="previewModal.template?.sampleParams || '{}'"
-        @close="closePreview" />
-      <template-send-modal v-if="sendModal && sendModal.show"
-        :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm"
-        @close="closeSend" />
+      <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" @close="handleBtnAction('previewModal-close')" />
+      <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" @close="handleBtnAction('sendModal-close')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
-    <div v-if="selectedId" style="grid-column:1/-1;margin-top:4px;">
+    <div v-if="detailPanel.selectedId" style="grid-column:1/-1;margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+          ✕ 닫기
+        </button>
       </div>
       <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-        :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        
-        :reload-trigger="uiStateDetail.reloadTrigger"
-        :on-list-reload="handleSearchList"
-        />
+        :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        :reload-trigger="detailPanel.reloadTrigger"
+        :on-list-reload="handleSearchList" />
     </div>
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template"
-      :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-      @select="onPathPicked" @close="closePathPick" />
+    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" @select="pid => handleSelectAction('pathModal-pick', pid)" @close="handleBtnAction('pathModal-close')" />
   </div>
+  <!-- ===== □.□. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
+  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
 </div>
-
-    <!-- ===== □.□. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
-  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->`
+`,
 };

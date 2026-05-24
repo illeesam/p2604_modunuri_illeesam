@@ -32,39 +32,6 @@ window.SyApiLogMng = {
 
     const codes = reactive({ date_range_opts: [], http_methods: [], app_types: [] });
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
-      codes.http_methods    = codeStore?.sgGetGrpCodes('HTTP_METHOD')    || [];
-      codes.app_types      = codeStore?.sgGetGrpCodes('APP_TYPE')      || [];
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // 기본 기간: 최근 1주일
-    (() => {
-      const r = boUtil.bofGetDateRange('1week');
-      uiState.dateStart = r.from;
-      uiState.dateEnd   = r.to;
-    })();
-
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
-    // --- [이벤트] 기간 변경 ---
-
-    /* onDateRangeChange — 기간 변경 */
-    const onDateRangeChange = () => {
-      if (uiState.dateRange) {
-        const r = boUtil.bofGetDateRange(uiState.dateRange);
-        uiState.dateStart = r ? r.from : '';
-        uiState.dateEnd   = r ? r.to   : '';
-      }
-      pager.pageNo = 1;
-    };
-
     const pager = reactive({
       pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
       pageSizes: [10, 20, 30, 50, 100], pageCond: {},
@@ -78,7 +45,85 @@ window.SyApiLogMng = {
     const expandedRows  = reactive(new Set());
     const allExpanded   = reactive({ value: false });
 
-    // --- [이벤트] 행 펼침 ---
+    // 기본 기간: 최근 1주일
+    (() => {
+      const r = boUtil.bofGetDateRange('1week');
+      uiState.dateStart = r.from;
+      uiState.dateEnd   = r.to;
+    })();
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyApiLogMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return onDateRangeChange();
+      // 펼침/접기 토글 (more search)
+      } else if (cmd === 'searchParam-toggle-more') {
+        uiState.srchOpen = !uiState.srchOpen;
+        return;
+      // 페이지 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      // 활성 탭(요청로그/오류로그) 전체 행 펼침 토글
+      } else if (cmd === 'apiLogs-toggle-expand-all') {
+        return toggleExpandAll();
+      // 활성 탭 로그 전체 삭제
+      } else if (cmd === 'apiLogs-clear') {
+        return handleClearLog();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyApiLogMng.js : handleSelectAction -> ', cmd, param);
+      // 탭 전환 (access/error)
+      if (cmd === 'tabs-select') {
+        return onTabChange(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'apiLogs-set-page') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'apiLogs-size-change') {
+        return onSizeChange();
+      // 행 클릭 → 상세정보 펼침 토글
+      } else if (cmd === 'apiLogs-row-toggle') {
+        return toggleRow(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.date_range_opts = codeStore?.sgGetGrpCodes('DATE_RANGE_OPT') || [];
+      codes.http_methods    = codeStore?.sgGetGrpCodes('HTTP_METHOD')    || [];
+      codes.app_types      = codeStore?.sgGetGrpCodes('APP_TYPE')      || [];
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    /* onDateRangeChange — 기간 변경 */
+    const onDateRangeChange = () => {
+      if (uiState.dateRange) {
+        const r = boUtil.bofGetDateRange(uiState.dateRange);
+        uiState.dateStart = r ? r.from : '';
+        uiState.dateEnd   = r ? r.to   : '';
+      }
+      pager.pageNo = 1;
+    };
 
     /* toggleRow — 토글 */
     const toggleRow     = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
@@ -93,16 +138,12 @@ window.SyApiLogMng = {
       else { list.forEach((r, i) => expandedRows.add(r.logId || i)); allExpanded.value = true; }
     };
 
-    // --- [페이지네이션 헬퍼] ---
-
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
-
-    // --- [데이터 로드] 검색 파라미터 / 요청·오류 로그 조회 ---
 
     /* buildSearchParams — 빌드 */
     const buildSearchParams = () => {
@@ -167,14 +208,11 @@ window.SyApiLogMng = {
       else { await handleSearchErrorLog(); }
     };
 
-    // --- [라이프사이클] ---
-
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList();
     });
-
-    // --- [이벤트] 탭 / 검색 / 페이지 / 사이즈 / 로그 비우기 ---
 
     /* onTabChange — 탭 변경 */
     const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
@@ -221,8 +259,6 @@ window.SyApiLogMng = {
 
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-    // --- [배지 함수] ---
-
     /* fnMethodBadge — sy_code HTTP_METHOD code_opt1 우선, 없으면 FB */
     const _HTTP_METHOD_FB = { GET: 'badge-blue', POST: 'badge-green', PUT: 'badge-orange', PATCH: 'badge-purple', DELETE: 'badge-red' };
     /* fnMethodBadge — 유틸 */
@@ -239,20 +275,17 @@ window.SyApiLogMng = {
       return 'badge-gray';
     };
 
-    // --- [컴퓨티드 / 디코드 헬퍼] ---
     const cfCurrentList = computed(() => uiState.activeTab === 'access' ? accessLogs : errorLogs);
 
     /* fnDecode — 유틸 */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
-    // --- [컬럼 정의] 검색 / 펼침검색 / 요청로그 그리드 / 오류로그 그리드 ---
-    /* BoGrid 컬럼 정의 (행펼침 #row-expand) */
     const baseSearchColumns = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
-        onRangeChange: () => onDateRangeChange() },
+        onRangeChange: () => handleBtnAction('searchParam-date-range') },
       { key: 'searchMethod', type: 'select', label: '메서드',
         options: () => codes.http_methods, nullLabel: '메서드 전체' },
       { key: 'searchPath', type: 'text', label: 'API 경로',
@@ -308,33 +341,27 @@ window.SyApiLogMng = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      // 상태 / 데이터
-      uiState, codes, pager, tabCounts, expandedRows, allExpanded, showRefModal,
-
-      // computed
-      cfCurrentList,
-
-      // 컬럼 정의
-      baseSearchColumns, moreSearchColumns, accessGridColumns, errorGridColumns, fnRowExpanded, fnRowClickStyle,
-
-      // 탭 / 검색 / 페이지 이벤트
-      onTabChange, onDateRangeChange, onSearch, onReset, setPage, onSizeChange,
-
-      // 행 펼침 / 로그 비우기
-      toggleRow, isExpanded, toggleExpandAll, handleClearLog,
-
-      // 표시 헬퍼
-      fnMethodBadge, fnStatusBadge, fnDecode,
+      uiState, codes, pager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
+      baseSearchColumns, moreSearchColumns, accessGridColumns, errorGridColumns,            // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      cfCurrentList,                                                                        // computed
+      fnMethodBadge, fnStatusBadge, fnDecode, fnRowExpanded, fnRowClickStyle, showRefModal, // 헬퍼
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">API로그조회</div>
+  <div class="page-title">
+    API로그조회
+  </div>
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
-    <span class="page-desc-summary">syh_access_log(API요청로그)와 syh_access_error_log(API오류로그)를 조회합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <span class="page-desc-summary">
+      syh_access_log(API요청로그)와 syh_access_error_log(API오류로그)를 조회합니다.
+    </span>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
+      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함 • API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함 • 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등) • 기본 조회기간: 최근 1주일.
     </div>
@@ -343,9 +370,9 @@ window.SyApiLogMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
+    <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
-        <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggle-more')" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
           {{ uiState.srchOpen?'▲':'▼' }}
         </button>
       </template>
@@ -355,19 +382,23 @@ window.SyApiLogMng = {
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="moreSearchColumns" :param="uiState"
-      @search="onSearch" />
+      @search="handleBtnAction('searchParam-list')" />
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 탭 + 목록 ================================================== -->
   <div class="tab-nav" style="margin-bottom:16px">
-    <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">
+    <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="handleSelectAction('tabs-select', 'access')">
       📋 API요청로그
-      <span class="tab-count">{{ tabCounts.access }}</span>
+      <span class="tab-count">
+        {{ tabCounts.access }}
+      </span>
     </button>
-    <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="onTabChange('error')">
+    <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="handleSelectAction('tabs-select', 'error')">
       🚨 API오류로그
-      <span class="tab-count">{{ tabCounts.error }}</span>
+      <span class="tab-count">
+        {{ tabCounts.error }}
+      </span>
     </button>
   </div>
   <!-- ===== □. 탭 + 목록 ================================================== -->
@@ -376,54 +407,98 @@ window.SyApiLogMng = {
     :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
+    @set-page="n => handleSelectAction('apiLogs-set-page', n)"
+    @size-change="handleSelectAction('apiLogs-size-change')"
+    @row-click="row => handleSelectAction('apiLogs-row-toggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
-        <button class="btn btn-secondary btn-xs" @click="toggleExpandAll">{{ allExpanded.value ? '전체닫기' : '전체펼치기' }}</button>
-        <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
+        <span style="font-size:11px;color:#aaa;">
+          행 클릭 시 상세정보 펼침
+        </span>
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggle-expand-all')">
+          {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
+        </button>
+        <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">
+          로그비우기
+        </button>
       </div>
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
           <div>
-            <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px;">📡 요청 정보</div>
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px;">
+              📡 요청 정보
+            </div>
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td>
-                <td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  경로
+                </td>
+                <td style="font-family:monospace;word-break:break-all;">
+                  {{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td>
-                <td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  메서드
+                </td>
+                <td>
+                  <span class="badge" :class="fnMethodBadge(row.reqMethod)">
+                    {{ row.reqMethod }}
+                  </span>
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">상태코드</td>
-                <td><span class="badge" :class="fnStatusBadge(row.respStatus)">{{ row.respStatus }}</span></td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  상태코드
+                </td>
+                <td>
+                  <span class="badge" :class="fnStatusBadge(row.respStatus)">
+                    {{ row.respStatus }}
+                  </span>
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  처리시간
+                </td>
                 <td :style="row.respTimeMs>1000?'color:#e74c3c;font-weight:700':''">
                   {{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}
                 </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td>
-                <td style="font-family:monospace;">{{ row.reqIp || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  IP
+                </td>
+                <td style="font-family:monospace;">
+                  {{ row.reqIp || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">Host</td>
-                <td style="font-family:monospace;">{{ row.reqHost || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  Host
+                </td>
+                <td style="font-family:monospace;">
+                  {{ row.reqHost || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">UA</td>
-                <td style="font-size:11px;color:#666;word-break:break-all;">{{ row.reqUa || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  UA
+                </td>
+                <td style="font-size:11px;color:#666;word-break:break-all;">
+                  {{ row.reqUa || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td>
-                <td>{{ String(row.regDate||'').slice(0,19) }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  등록일시
+                </td>
+                <td>
+                  {{ String(row.regDate||'').slice(0,19) }}
+                </td>
               </tr>
             </table>
           </div>
@@ -434,28 +509,52 @@ window.SyApiLogMng = {
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td>
-                <td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-ui-nm
+                </td>
+                <td style="color:#e8587a;font-weight:600;">
+                  {{ fnDecode(row.uiNm) || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td>
-                <td>{{ fnDecode(row.cmdNm) || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-cmd-nm
+                </td>
+                <td>
+                  {{ fnDecode(row.cmdNm) || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td>
-                <td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-file-nm
+                </td>
+                <td style="font-family:monospace;font-size:11px;">
+                  {{ row.fileNm || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td>
-                <td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-func-nm
+                </td>
+                <td style="font-family:monospace;font-size:11px;">
+                  {{ row.funcNm || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td>
-                <td style="font-family:monospace;">{{ row.lineNo || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-line-no
+                </td>
+                <td style="font-family:monospace;">
+                  {{ row.lineNo || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  x-trace-id
+                </td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
+                  {{ row.traceId || '-' }}
+                </td>
               </tr>
             </table>
           </div>
@@ -466,39 +565,73 @@ window.SyApiLogMng = {
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td>
-                <td>{{ row.userId || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td>
-                <td>{{ row.appTypeCd || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">역할ID</td>
-                <td>{{ row.roleId || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">부서ID</td>
-                <td>{{ row.deptId || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">업체ID</td>
-                <td>{{ row.vendorId || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td>
-                <td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  사용자ID
+                </td>
                 <td>
-                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span>
-                  <span v-else>-</span>
+                  {{ row.userId || '-' }}
                 </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  앱유형
+                </td>
+                <td>
+                  {{ row.appTypeCd || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  역할ID
+                </td>
+                <td>
+                  {{ row.roleId || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  부서ID
+                </td>
+                <td>
+                  {{ row.deptId || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  업체ID
+                </td>
+                <td>
+                  {{ row.vendorId || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  서버
+                </td>
+                <td style="font-family:monospace;font-size:11px;">
+                  {{ row.serverNm || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  프로파일
+                </td>
+                <td>
+                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">
+                    {{ row.profile }}
+                  </span>
+                  <span v-else>
+                    -
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  스레드
+                </td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
+                  {{ row.threadNm || '-' }}
+                </td>
               </tr>
             </table>
           </div>
@@ -512,68 +645,126 @@ window.SyApiLogMng = {
     :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="setPage" @size-change="onSizeChange" @row-click="row => toggleRow(row.logId)">
+    @set-page="n => handleSelectAction('apiLogs-set-page', n)"
+    @size-change="handleSelectAction('apiLogs-size-change')"
+    @row-click="row => handleSelectAction('apiLogs-row-toggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:11px;color:#aaa;">행 클릭 시 상세정보 펼침</span>
-        <button class="btn btn-secondary btn-xs" @click="toggleExpandAll">{{ allExpanded.value ? '전체닫기' : '전체펼치기' }}</button>
-        <button class="btn btn-danger btn-xs" @click="handleClearLog">로그비우기</button>
+        <span style="font-size:11px;color:#aaa;">
+          행 클릭 시 상세정보 펼침
+        </span>
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggle-expand-all')">
+          {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
+        </button>
+        <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">
+          로그비우기
+        </button>
       </div>
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
           <div>
-            <div style="font-weight:700;color:#e74c3c;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">🚨 오류 정보</div>
+            <div style="font-weight:700;color:#e74c3c;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">
+              🚨 오류 정보
+            </div>
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td>
-                <td style="font-family:monospace;word-break:break-all;">{{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  경로
+                </td>
+                <td style="font-family:monospace;word-break:break-all;">
+                  {{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">메서드</td>
-                <td><span class="badge" :class="fnMethodBadge(row.reqMethod)">{{ row.reqMethod }}</span></td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">처리시간</td>
-                <td>{{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">IP</td>
-                <td style="font-family:monospace;">{{ row.reqIp || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td>
-                <td>{{ row.userId || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">앱유형</td>
-                <td>{{ row.appTypeCd || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">오류유형</td>
-                <td style="color:#e74c3c;font-weight:600;word-break:break-all;">{{ row.errorType || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">오류메시지</td>
-                <td style="color:#c0392b;word-break:break-all;">{{ row.errorMsg || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">서버</td>
-                <td style="font-family:monospace;font-size:11px;">{{ row.serverNm || '-' }}</td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">프로파일</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  메서드
+                </td>
                 <td>
-                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">{{ row.profile }}</span>
-                  <span v-else>-</span>
+                  <span class="badge" :class="fnMethodBadge(row.reqMethod)">
+                    {{ row.reqMethod }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  처리시간
+                </td>
+                <td>
+                  {{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  IP
+                </td>
+                <td style="font-family:monospace;">
+                  {{ row.reqIp || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  사용자ID
+                </td>
+                <td>
+                  {{ row.userId || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  앱유형
+                </td>
+                <td>
+                  {{ row.appTypeCd || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  오류유형
+                </td>
+                <td style="color:#e74c3c;font-weight:600;word-break:break-all;">
+                  {{ row.errorType || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  오류메시지
+                </td>
+                <td style="color:#c0392b;word-break:break-all;">
+                  {{ row.errorMsg || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  서버
+                </td>
+                <td style="font-family:monospace;font-size:11px;">
+                  {{ row.serverNm || '-' }}
+                </td>
+              </tr>
+              <tr>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  프로파일
+                </td>
+                <td>
+                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">
+                    {{ row.profile }}
+                  </span>
+                  <span v-else>
+                    -
+                  </span>
                 </td>
               </tr>
               <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">등록일시</td>
-                <td>{{ String(row.regDate||'').slice(0,19) }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  등록일시
+                </td>
+                <td>
+                  {{ String(row.regDate||'').slice(0,19) }}
+                </td>
               </tr>
             </table>
           </div>
@@ -584,51 +775,87 @@ window.SyApiLogMng = {
             <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td>
-                <td style="color:#e8587a;font-weight:600;">{{ fnDecode(row.uiNm) || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-ui-nm
+                </td>
+                <td style="color:#e8587a;font-weight:600;">
+                  {{ fnDecode(row.uiNm) || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-cmd-nm</td>
-                <td>{{ fnDecode(row.cmdNm) || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-cmd-nm
+                </td>
+                <td>
+                  {{ fnDecode(row.cmdNm) || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-file-nm</td>
-                <td style="font-family:monospace;font-size:11px;">{{ row.fileNm || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-file-nm
+                </td>
+                <td style="font-family:monospace;font-size:11px;">
+                  {{ row.fileNm || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-func-nm</td>
-                <td style="font-family:monospace;font-size:11px;">{{ row.funcNm || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-func-nm
+                </td>
+                <td style="font-family:monospace;font-size:11px;">
+                  {{ row.funcNm || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-line-no</td>
-                <td style="font-family:monospace;">{{ row.lineNo || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  x-line-no
+                </td>
+                <td style="font-family:monospace;">
+                  {{ row.lineNo || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">x-trace-id</td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.traceId || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  x-trace-id
+                </td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
+                  {{ row.traceId || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">로거</td>
-                <td style="font-size:11px;word-break:break-all;">{{ row.loggerNm || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
+                  로거
+                </td>
+                <td style="font-size:11px;word-break:break-all;">
+                  {{ row.loggerNm || '-' }}
+                </td>
               </tr>
               <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">스레드</td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">{{ row.threadNm || '-' }}</td>
+                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
+                  스레드
+                </td>
+                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
+                  {{ row.threadNm || '-' }}
+                </td>
               </tr>
             </table>
           </div>
           <div>
-            <div style="font-weight:700;color:#c0392b;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">📋 스택트레이스</div>
+            <div style="font-weight:700;color:#c0392b;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">
+              📋 스택트레이스
+            </div>
             <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
               {{ row.stackTrace }}
             </div>
-            <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">스택트레이스 없음</div>
+            <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">
+              스택트레이스 없음
+            </div>
           </div>
         </div>
       </td>
     </template>
   </bo-grid>
 </div>
-
-  <!-- ===== □. API오류로그 탭 =============================================== -->`,
+<!-- ===== □. API오류로그 탭 =============================================== -->
+`,
 };

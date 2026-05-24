@@ -33,6 +33,24 @@ window.StErpGenMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StErpGenMng.js : handleBtnAction -> ', cmd, param);
+      // 대상월/유형 기반 데이터 조회 (미리보기)
+      if (cmd === 'preview-search') {
+        return handleSearchData('DEFAULT');
+      // ERP 전표 생성 실행
+      } else if (cmd === 'preview-generate') {
+        return doGenerate();
+      // 안내 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
 
@@ -141,8 +159,13 @@ window.StErpGenMng = {
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, targetMon, slipType, cfPreviewRows, genHistory, previewGridColumns, histGridColumns, doGenerate, fnStatusBadge, fmtW, onSearch, codes,
-             settingForm, baseFormColumns };
+    return {
+      uiState, codes, targetMon, slipType, genHistory, settingForm,                  // 상태 / 데이터
+      previewGridColumns, histGridColumns, baseFormColumns,                           // 컬럼 정의
+      handleBtnAction,                                                                // dispatch
+      cfPreviewRows,                                                                  // computed
+      fnStatusBadge, fmtW,                                                            // 헬퍼
+    };
   },
   template: /* html */`
 <div>
@@ -151,7 +174,7 @@ window.StErpGenMng = {
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다. • 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다. • 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다. • 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.
     </div>
@@ -167,8 +190,8 @@ window.StErpGenMng = {
       </template>
       <template #actions>
         <div style="display:flex;align-items:center;gap:8px;min-height:34px;">
-          <button class="btn btn-secondary" @click="onSearch">조회</button>
-          <button class="btn btn-primary" @click="doGenerate">📋 ERP 전표생성</button>
+          <button class="btn btn-secondary" @click="handleBtnAction('preview-search')">조회</button>
+          <button class="btn btn-primary" @click="handleBtnAction('preview-generate')">📋 ERP 전표생성</button>
         </div>
       </template>
     </bo-form-area>

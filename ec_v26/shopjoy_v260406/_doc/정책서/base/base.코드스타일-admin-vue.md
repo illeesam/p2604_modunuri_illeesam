@@ -814,6 +814,21 @@ const fnB = () => { ... };
   - JS 포매팅: 179 변경 / 15 변경 불필요 / 0 실패
   - 모두 `node --check` 통과 + 토큰 동등성 검증 통과
   - `boApp.js` 예외 적용 (자동 포매팅 제외)
+- **2026-05-24 SyRoleMng.js 재정렬** — dispatch 패턴(§14) 도입 후속 포매팅 재적용.
+  - `template_format.js`: template HTML 정렬 OK (1/1 변경)
+  - `js_format_simple.js`: JS 영역 NO CHANGE (이미 빈줄 압축/trailing ws 정리 완료 상태)
+  - `node --check` PASS
+
+### 12.7 표준 도구 부재 시 대체 (참고)
+
+외부 보관 도구(`template_format2.js`, `js_format.js`)에 접근할 수 없는 환경에서는
+다음 동등한 보수적 스크립트로 대체할 수 있다 (정책 §12.1/§12.3 동일 보존):
+
+- `c:/tmp/template_format.js` — template 백틱 내부 HTML 정렬 (깊이별 2칸 들여쓰기 + 단순 인라인 텍스트 보존). 렌더 동등성은 `node --check` 로 최소 검증.
+- `c:/tmp/js_format_simple.js` — JS 영역의 3+ 연속 빈줄 → 1 빈줄 압축 + trailing whitespace 제거. `template:` 백틱 영역은 마스킹 후 보존.
+
+> ⚠️ 어디까지나 임시 대체. 정식 검증 게이트(토큰 동등성 + 렌더 동등성)는 외부 표준 도구를 사용한다.
+> 일반 IDE 포매터(Prettier 등)는 §12.4 에 따라 여전히 **금지**.
 
 ---
 
@@ -856,77 +871,298 @@ for (const x of list) use(x);
 
 ---
 
-## 14. cmd dispatch 패턴 (`baseBtnAction` / `baseSelectAction`) ⭐ (2026-05-24 PoC)
+## 14. cmd dispatch 패턴 (`handleBtnAction` / `handleSelectAction`) ⭐ (2026-05-24)
 
-화면 안의 다수 버튼/행 액션을 **단일 dispatch 함수로 라우팅**하는 선택 패턴.
+화면 안의 모든 버튼/이벤트/행 액션을 **단일 dispatch 함수로 라우팅**하는 패턴. 기준 파일: [`pages/bo/sy/SyRoleMng.js`](../../../pages/bo/sy/SyRoleMng.js)
 
-### 설계
+### 명명 근거
+
+- **함수명**: `handle*` prefix — §7 "이벤트 처리 로직 함수" 정의에 부합.
+- **cmd 값**: `{영역명}-기능명` (영역명 camelCase, 기능명 kebab-case)
+  - **`base*` prefix 사용 안 함** ⭐ (2026-05-24 갱신) — `baseGrid` / `baseTree` 같은 추상 prefix 대신 **데이터/도메인 명사 기반** 영역명
+  - 영역명은 가능하면 setup() 안 reactive 변수명과 일치 (예: `roles`, `roleMenus`, `roleUsers`) → 코드 추적 용이
+- **분리 이유**: cmd 가 `'roles-save'` 면 어떤 데이터를 다루는지 즉시 인지, dispatch 로직과 reactive 데이터가 시각적으로 연결.
+
+### 설계 (SyRoleMng 최종 형태)
+
+각 `if` 위에 **무엇을 하는지 한글 주석** 한 줄을 붙여 가독성/디버깅 추적성을 높인다.
 
 ```js
-/**
- * baseBtnAction — 버튼 액션 dispatch
- * cmd 네이밍: '영역명-기능명' (소문자 + kebab-case, 영역명은 부모-자식 hierarchy 반영)
- *   영역: search / grid / config / parent / ...
- *   기능: list / reset / save / add / delete-checked / cancel-checked / excel / reload
- * @typedef {'search-list'|'search-reset'|'grid-save'|'grid-add'|'grid-delete-checked'|...} BtnCmd
- * @param {BtnCmd} cmd
- * @param {*} [param] — 액션별 추가 파라미터
- */
-const baseBtnAction = (cmd, param = {}) => {
-  console.log(' :: SyRoleMng.js : baseBtnAction : cmd, param -> ', cmd, param);
-  if (cmd === 'search-list')         { return onSearch(); }
-  if (cmd === 'search-reset')        { return onReset(); }
-  if (cmd === 'grid-save')           { return handleSave(); }
-  if (cmd === 'grid-add')            { return addRow(); }
-  if (cmd === 'grid-delete-checked') { return deleteRows(); }
-  if (cmd === 'grid-cancel-checked') { return cancelChecked(); }
-  if (cmd === 'grid-excel')          { return exportExcel(); }
-  if (cmd === 'grid-reload')         { return handleSearchList('RELOAD'); }
-  if (cmd === 'config-save')         { return handleSaveRoleConfig(); }
-  console.warn('[baseBtnAction] unknown cmd:', cmd);
+/* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleBtnAction = (cmd, param = {}) => {
+  console.log(' ■■ SyRoleMng.js : handleBtnAction -> ', cmd, param);
+  // 검색조건으로 목록 조회
+  if (cmd === 'searchParam-list') {
+    return handleSearchList('DEFAULT');
+  // 검색조건 초기화 + 재조회
+  } else if (cmd === 'searchParam-reset') {
+    Object.assign(searchParam, _initSearchParam());
+    return handleSearchList();
+  // 역할 그리드 저장
+  } else if (cmd === 'roles-save') {
+    return handleSave();
+  } else if (cmd === 'roles-add') {
+    return addRow();
+  } else if (cmd === 'roles-delete-checked') {
+    return deleteRows();
+  } else if (cmd === 'roles-cancel-checked') {
+    return cancelChecked();
+  } else if (cmd === 'roles-excel') {
+    return exportExcel();
+  } else if (cmd === 'roles-reload') {
+    return handleSearchList('RELOAD');
+  } else if (cmd === 'config-save') {
+    return handleSaveRoleConfig();
+  } else if (cmd === 'pathTree-expand-all') {
+    const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); };
+    walk(cfTree.value);
+    return;
+  } else if (cmd === 'pathTree-collapse-all') {
+    expanded.clear();
+    expanded.add('');
+    return;
+  } else if (cmd === 'pathTree-cat-change') {
+    return handleSearchList();
+  } else if (cmd === 'pathTree-toggle') {
+    if (expanded.has(param)) { expanded.delete(param); } else { expanded.add(param); }
+    return;
+  } else if (cmd === 'roleMenus-toggle-all') {
+    return setAllMenuPerm(param ? '읽기' : '없음');
+  } else if (cmd === 'roleMenus-set-all') {
+    return setAllMenuPerm(param);
+  } else if (cmd === 'roleUsers-open-select') {
+    uiState.userSelectOpen = true;
+    return;
+  } else if (cmd === 'roleUsers-close-select') {
+    uiState.userSelectOpen = false;
+    return;
+  } else if (cmd === 'parentModal-close') {
+    roleTreeModal.show = false;
+    return;
+  } else if (cmd === 'pathModal-close') {
+    pathPickModal.show = false;
+    pathPickModal.row = null;
+    return;
+  } else {
+    console.warn('[handleBtnAction] unknown cmd:', cmd);
+  }
 };
 
-/**
- * baseSelectAction — 그리드 행/노드 선택 액션 dispatch
- * cmd 네이밍: '영역명-기능명' (영역명은 부모-자식 hierarchy 반영)
- *   영역: grid-row / parent / ...
- * @typedef {'grid-row-edit'|'grid-row-delete'|'grid-row-cancel'|'grid-row-cell-change'|'grid-row-check-all'|'grid-row-open-setting'|'parent-open'} SelectCmd
- */
-const baseSelectAction = (cmd, param = {}) => {
-  console.log(' :: SyRoleMng.js : baseSelectAction : cmd, param -> ', cmd, param);
-  if (cmd === 'grid-row-edit')        { return handleLoadRoleDetail(param); }
-  if (cmd === 'grid-row-delete')      { return deleteRow(param); }
-  ...
+/* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '영역명-기능명'). 5줄 이하 짧은 로직은 인라인 */
+const handleSelectAction = (cmd, param = {}) => {
+  console.log(' ■■ SyRoleMng.js : handleSelectAction -> ', cmd, param);
+  if (cmd === 'roles-row-edit') {
+    return handleLoadRoleDetail(param);
+  } else if (cmd === 'roles-row-delete') {
+    return deleteRow(param);
+  } else if (cmd === 'roles-row-cancel') {
+    return cancelRow(param);
+  } else if (cmd === 'roles-row-cell-change') {
+    return onCellChange(param);
+  } else if (cmd === 'roles-row-check-all') {
+    gridRows.forEach(r => { r._row_check = uiState.checkAll; });
+    return;
+  } else if (cmd === 'roles-row-open-setting') {
+    return onOpenSetting(param);
+  } else if (cmd === 'parentModal-open') {
+    return openParentModal(param);
+  } else if (cmd === 'pathTree-select') {
+    uiState.selectedPath = param;
+    return handleSearchList();
+  } else if (cmd === 'roleMenus-set') {
+    return setMenuPerm(param.menuId, param.perm);
+  } else if (cmd === 'roleUsers-remove') {
+    if (!uiState.selectedRoleId) { return; }
+    const idx = roleUsers.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === param);
+    if (idx !== -1) { roleUsers.splice(idx, 1); }
+    return;
+  } else if (cmd === 'roleUsers-select') {
+    return onUserSelect(param);
+  } else if (cmd === 'parentModal-select') {
+    if (roleTreeModal.targetRow) {
+      roleTreeModal.targetRow.parentRoleId = param.roleId;
+      roleTreeModal.targetRow._depth = 0;
+      onCellChange(roleTreeModal.targetRow);
+    }
+    roleTreeModal.show = false;
+    return;
+  } else if (cmd === 'pathModal-pick') {
+    return onPathPicked(param);
+  } else {
+    console.warn('[handleSelectAction] unknown cmd:', cmd);
+  }
 };
 ```
 
-### cmd 네이밍 규칙
+### template 사용 예시
 
-- 형식: **`영역명-기능명`** (소문자 + kebab-case)
-- 영역명은 화면 구조의 hierarchy 를 반영. 예:
-  - `search` — 검색바
-  - `grid` — 메인 그리드 전체 (저장/삭제/엑셀)
-  - `grid-row` — 그리드 행 단위 액션 (수정/삭제/취소)
-  - `config` — 상세 설정 패널
-  - `parent` — 상위 선택 모달
-- 기능명: `list` (조회), `reset` (초기화), `save`, `add`, `delete`, `cancel`, `edit`, `excel`, `reload`, `open`, `close`, `cell-change` 등
+```html
+<!-- 검색바 -->
+<bo-search-area @search="handleBtnAction('search-list')" @reset="handleBtnAction('search-reset')" ... />
+
+<!-- 그리드 + 행 액션 -->
+<bo-grid-crud
+  @add="handleBtnAction('roles-add')" @save="handleBtnAction('roles-save')"
+  @delete-checked="handleBtnAction('roles-delete-checked')" @cancel-checked="handleBtnAction('roles-cancel-checked')"
+  @cell-change="row => handleSelectAction('roles-row-cell-change', row)" @export="handleBtnAction('roles-excel')">
+  <template #row-actions="{ row, idx }">
+    <bo-row-cancel-delete @cancel="handleSelectAction('roles-row-cancel', idx)" @delete="handleSelectAction('roles-row-delete', idx)" />
+    <button @click.stop="handleSelectAction('roles-row-open-setting', idx)">설정</button>
+  </template>
+</bo-grid-crud>
+
+<!-- 트리 (좌측 카드) -->
+<bo-local-tree-card
+  :on-toggle="path => handleBtnAction('pathTree-toggle', path)"
+  @select="path => handleSelectAction('pathTree-select', path)"
+  @expand-all="handleBtnAction('pathTree-expand-all')"
+  @collapse-all="handleBtnAction('pathTree-collapse-all')">
+  <select @change="handleBtnAction('pathTree-cat-change')">...</select>
+</bo-local-tree-card>
+
+<!-- 설정 영역 -->
+<button @click="handleBtnAction('config-save')">설정 저장</button>
+
+<!-- 메뉴 권한 -->
+<input type="checkbox" @change="e => handleBtnAction('roleMenus-toggle-all', e.target.checked)" />
+<button @click="handleBtnAction('roleMenus-set-all', p)">{{ p }}</button>
+<button @click="handleSelectAction('roleMenus-set', { menuId: m.menuId, perm: p })">{{ p }}</button>
+
+<!-- 사용자 -->
+<button @click="handleBtnAction('roleUsers-open-select')">+ 사용자</button>
+<button @click="handleSelectAction('roleUsers-remove', u.boUserId)">✕</button>
+<bo-user-select-modal v-if="..." @select="users => handleSelectAction('roleUsers-select', users)" @close="handleBtnAction('roleUsers-close-select')" />
+
+<!-- 모달 -->
+<role-tree-modal @select="role => handleSelectAction('parentModal-select', role)" @close="handleBtnAction('parentModal-close')" />
+<path-pick-modal @select="pid => handleSelectAction('pathModal-pick', pid)" @close="handleBtnAction('pathModal-close')" />
+```
+
+### 컬럼 정의 안 콜백도 dispatch 경유
+
+```js
+// ✅ 컬럼 정의 안 콜백도 dispatch 래퍼
+{ key: 'parentRoleId', label: '상위역할',
+  parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row), title: '상위역할 선택' } },
+```
+
+### cmd 네이밍 규칙 ⭐ (2026-05-24 최종)
+
+- 형식: **`{영역명}-기능명`** (영역명 camelCase, 기능명 kebab-case)
+- **`base*` 같은 추상 prefix 사용 안 함** — 도메인 명사를 그대로 영역명으로 사용
+- 가능하면 **setup() 안 reactive 변수명과 일치** (`roles`, `roleMenus`, `roleUsers` 등)
+- 행 단위 액션은 `{영역명}-row-기능명` hierarchy (예: `roles-row-edit`)
+
+#### SyRoleMng 영역 매핑 (실제 적용 사례)
+
+| 영역명 | 의미 | reactive 변수 | 사용 cmd |
+|---|---|---|---|
+| `searchParam` | 검색바 | `searchParam` | `searchParam-list`, `searchParam-reset` |
+| `roles` | 역할 목록 (메인 그리드) | `roles`, `gridRows` | `roles-save`, `roles-add`, `roles-delete-checked`, `roles-cancel-checked`, `roles-excel`, `roles-reload` |
+| `roles-row` | 역할 목록 행 단위 | (행 객체) | `roles-row-edit`, `roles-row-delete`, `roles-row-cancel`, `roles-row-cell-change`, `roles-row-check-all`, `roles-row-open-setting` |
+| `pathTree` | 좌측 경로 트리 | `expanded`, `cfTree` | `pathTree-select`, `pathTree-toggle`, `pathTree-expand-all`, `pathTree-collapse-all`, `pathTree-cat-change` |
+| `config` | 역할 설정 패널 | `uiState.selectedRoleId` | `config-save` |
+| `roleMenus` | 메뉴 권한 목록 | `roleMenus`, `menus` | `roleMenus-set`, `roleMenus-set-all`, `roleMenus-toggle-all` |
+| `roleUsers` | 역할 사용자 목록 | `roleUsers`, `boUsers` | `roleUsers-open-select`, `roleUsers-close-select`, `roleUsers-select`, `roleUsers-remove` |
+| `parentModal` | 상위역할 선택 모달 | `roleTreeModal` | `parentModal-open`, `parentModal-select`, `parentModal-close` |
+| `pathModal` | 표시경로 선택 모달 | `pathPickModal` | `pathModal-pick`, `pathModal-close` |
+
+#### 영역명 선정 가이드
+
+1. **데이터 영역**: reactive 변수명 그대로 — `roles`, `members`, `orders`, `products`, `claims`, `coupons` 등
+2. **행 단위 액션**: `{영역명}-row-*` hierarchy — `roles-row-edit`
+3. **트리 영역**: `xxxTree` 접미사 — `pathTree`, `categoryTree`, `menuTree`
+4. **모달**: `xxxModal` 접미사 — `parentModal`, `pathModal`, `userPickModal`
+5. **패널 영역**: `xxx` 또는 `xxxArea` (행위가 명확하면 단순화) — `config` (`configArea` 보다 짧음)
+6. **검색바**: `searchParam` (reactive 변수명과 동일)
+
+#### 기능명 표준
+
+`list` (조회), `reset` (초기화), `save`, `add`, `delete`, `cancel`, `edit`, `excel`, `reload`, `open`, `close`, `select`, `remove`, `set`, `set-all`, `toggle`, `toggle-all`, `cell-change`, `check-all`, `open-setting`, `expand-all`, `collapse-all`, `cat-change`, `pick`
+
+#### 예시
+
+```
+search-list           ← 메인 검색바 조회
+roles-save             ← 메인 그리드 저장
+roles-row-edit         ← 메인 그리드 행 편집
+pathTree-select           ← 메인 트리 노드 선택
+config-save           ← 보조 설정 패널 저장
+roleMenus-set              ← 메뉴 권한 목록 설정
+roleUsers-remove           ← 사용자 목록 행 제거
+parentModal-open          ← 상위역할 선택 모달 열기
+pathModal-pick            ← 경로 선택 모달 선택
+```
+
+### 명명 원칙 요약
+
+1. **도메인 명사 기반** ⭐ — 추상 prefix(`base*`) 사용 안 함. reactive 변수명 / 데이터 도메인 이름 그대로 (`roles`, `members`, `orders`).
+2. **행 단위 액션** → `{영역명}-row-*` hierarchy (`roles-row-edit`).
+3. **트리** → `xxxTree-*` (`pathTree`, `categoryTree`).
+4. **모달** → `xxxModal-*` (`parentModal`, `pathModal`).
+5. **검색바** → `searchParam` (reactive 변수명과 동일).
+6. **설정/구성 패널** → `config` 또는 `xxxConfig` (행위 명확하면 단순화).
 
 ### 작성 규칙
 
-1. **첫 줄에 console.log**: `console.log(' :: 파일명 : 함수명 : cmd, param -> ', cmd, param);`
-2. **param 기본값**: `(cmd, param = {}) => ...` — 인자 없이 호출도 안전
-3. **switch 사용 금지** — `if (cmd === '...') { return ...; }` 형식 (블록 강제 §13 따름)
-4. **각 케이스 한 줄**: 본문이 단순 함수 호출이면 한 줄. 복잡하면 별도 함수로 분리 후 호출만.
-5. **알 수 없는 cmd**: `console.warn` 으로 표시 (silent fail 방지)
-6. **JSDoc `@typedef`** 로 cmd union type 명시 → TS 전환 시 그대로 type alias 됨, VS Code checkJs 에서도 오타 검출
-7. **return 객체에 노출**: `return { baseBtnAction, baseSelectAction, ... }`
-8. **기존 핸들러는 유지**: dispatch 도입 후에도 onSearch/handleSave 등 기존 함수는 그대로 사용 가능 (점진적 마이그레이션)
+1. **위치**: setup() 본문 **상단** — "초기 변수 정의" 직후, "초기 함수" / "내장 사용 함수" 직전.
+2. **주석**: 한 줄 블럭 주석 `/* handleBtnAction — 버튼 액션 dispatch (cmd: '영역명-기능명') */` 형식. 멀티라인 JSDoc 안 씀 (간결성 우선).
+3. **첫 줄에 console.log**: `console.log(' ■■ 파일명 : 함수명 -> ', cmd, param);` (디버그 콘솔에서 시각적 식별을 위해 `■■` prefix)
+4. **param 기본값**: `(cmd, param = {}) => ...` — 인자 없이 호출도 안전.
+5. **switch 사용 금지** — `if (cmd === '...') { return ...; }` 형식 (블록 강제 §13 따름).
+6. **각 케이스 `if / else if / else` 체인** ⭐: `if (cmd === 'xxx') {` 줄 → `return xxx();` 줄 → `} else if (cmd === 'yyy') {` 줄 식으로 연결. 마지막은 `} else { console.warn(...) }` 로 unknown cmd 처리. §13 블록 강제 규칙 일관성 + 단일 디스패치 의미 강조.
+   - **각 if 위에 한글 주석 한 줄** ⭐ — 어떤 동작인지 명시. 코드 가독성 + 콘솔 디버깅 시 추적 용이. (return 아래 "완료" 주석은 노이즈라 사용 안 함.)
+     ```js
+     // 검색조건으로 목록 조회
+     if (cmd === 'searchParam-list') {
+       return handleSearchList('DEFAULT');
+     // 검색조건 초기화 + 재조회
+     } else if (cmd === 'searchParam-reset') {
+       Object.assign(searchParam, _initSearchParam());
+       return handleSearchList();
+     }
+     ```
+7. **5줄 이하 짧은 로직은 dispatch 안에서 직접 구현** ⭐: 단순 wrapper 함수(예: `const onSearch = () => handleSearchList('DEFAULT');`)는 dispatch 안에 인라인. 보일러플레이트 함수 제거 + cmd 흐름 가독성 향상.
+   ```js
+   // ✅ 인라인 권장 (5줄 이하)
+   } else if (cmd === 'search-list') {
+     return handleSearchList('DEFAULT');
+   } else if (cmd === 'search-reset') {
+     Object.assign(searchParam, _initSearchParam());
+     return handleSearchList();
+   }
+
+   // ⚠️ 비추천 — wrapper 함수 별도 정의 후 호출만
+   const onSearch = async () => { await handleSearchList('DEFAULT'); };
+   const onReset = () => { Object.assign(...); handleSearchList(); };
+   // dispatch:
+   } else if (cmd === 'search-list') { return onSearch(); }
+   } else if (cmd === 'search-reset') { return onReset(); }
+   ```
+   - 단 5줄 초과 / 비즈니스 로직 / 에러 처리(`try-catch`) / 비동기 API / 여러 함수에서 공유되는 로직은 **별도 함수로 분리 + 호출**.
+7. **알 수 없는 cmd**: `console.warn` 으로 표시 (silent fail 방지).
+8. **return 객체에 노출**: `return { handleBtnAction, handleSelectAction, ... }`. dispatch 도입 후 **return 객체는 대폭 단순화** — template 에서 직접 참조되는 식별자만 노출. **그룹별 한 줄 + 우측 인라인 주석** 형식:
+   ```js
+   return {
+     uiState, codes, searchParam, gridRows, expanded,                                  // 상태 / 데이터
+     baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
+     handleBtnAction, handleSelectAction,                                               // dispatch (모든 이벤트 / 액션 라우팅)
+     cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked,         // computed
+     fnPermColor, getMenuPerm, isMenuChecked,                                           // 헬퍼
+     pathPickModal, roleTreeModal,                                                      // 모달 상태
+   };
+   ```
+   - dispatch 안에서만 호출되고 template/외부에서 직접 참조 안 되는 함수(`onSearch`, `handleSave`, `addRow`, `deleteRow` 등)는 **return 에서 제거**.
+   - 컬럼 정의 안 콜백(`fmt`, `cellStyle`, `parentPick.open`)에서 참조되는 함수도 setup() 안에 정의는 유지하되 return 노출은 불필요 (closure 로 참조).
+   - 효과: dispatch 도입 화면은 보통 50+ 식별자 → **15-20 개** 로 70% 감소.
+9. **기존 핸들러는 유지**: dispatch 도입 후에도 onSearch/handleSave 등 기존 함수는 그대로 사용 가능 (점진적 마이그레이션).
+10. **TS 전환 대비**: 위 한 줄 주석은 추후 TS 전환 시 `BtnCmd`/`SelectCmd` literal union type 으로 승격 가능 (현 단계에선 간결성 우선).
 
 ### 장단점
 
 | 항목 | dispatch 도입 시 |
 |---|---|
-| template 일관성 | ⬆ (모든 버튼이 `@click="baseBtnAction('xx')"` 한 형태) |
+| template 일관성 | ⬆ (모든 버튼이 `@click="handleBtnAction('xx')"` 한 형태) |
 | 공통 처리 (권한/로깅/감사) | ⬆ dispatch 한 곳에서 일괄 |
 | 디버깅 (Cmd+Click 정의 이동) | ⬇ cmd 문자열 우회로 grep 필요 |
 | 자동완성 (IDE) | △ JSDoc `@typedef BtnCmd` 입히면 ⬆ |
@@ -935,9 +1171,25 @@ const baseSelectAction = (cmd, param = {}) => {
 
 ### 적용 범위
 
-- **권장**: 화면 표준 5종 + 그리드 행 액션까지 (옵션 B)
-- **PoC**: [SyRoleMng.js:608-643](../../../pages/bo/sy/SyRoleMng.js#L608) 1개 파일 적용 완료
-- **확장 전 검토 필요**: 적용은 신규 파일 또는 손볼 때 점진적으로. 184 파일 전면 재작업 비추천.
+- **권장**: 새 화면 작성 시 dispatch 패턴 채택, 기존 화면은 손볼 때 점진적 마이그레이션.
+- **기준 PoC**: [SyRoleMng.js:32-132](../../../pages/bo/sy/SyRoleMng.js#L32) — handleBtnAction 19 cmd + handleSelectAction 13 cmd, **9개 도메인 영역** (`searchParam`, `roles`, `roles-row`, `pathTree`, `config`, `roleMenus`, `roleUsers`, `parentModal`, `pathModal`). 모든 영역명이 setup() 안 reactive 변수명과 일치. template + 컬럼 콜백 안 모든 이벤트가 dispatch 경유. 각 if 위 + return 아래 한글 주석 부여.
+- **return 객체 단순화 효과**: SyRoleMng 기준 55개 → 17개 (-69%). [SyRoleMng.js:711-720](../../../pages/bo/sy/SyRoleMng.js#L711) 참조.
+- **확장 전 검토 필요**: 기존 184 파일 전면 재작업 비추천. 신규 작성 또는 손볼 때 점진적으로.
+
+### 인자 전달 규약
+
+dispatch 의 `param` 은 자유 형식이지만 일관성을 위해:
+
+- **단일 값** (id/idx/row): `handleSelectAction('roles-row-delete', idx)` — 그대로 전달
+- **여러 값** (필드 + 값): 객체로 묶어서 전달 → `handleSelectAction('baseMenu-set', { menuId, perm })`
+- **이벤트 객체**: 화살표 함수로 래핑하여 필요한 값만 추출 → `@change="e => handleBtnAction('baseMenu-toggle-all', e.target.checked)"`
+
+dispatch 내부에서 받을 때:
+```js
+if (cmd === 'roleMenus-set') {
+  return setMenuPerm(param.menuId, param.perm);
+}
+```
 
 ---
 

@@ -6,36 +6,56 @@ window.PdCategoryDtl = {
     dtlId:       { type: String, default: null }, // 수정 대상 ID
     dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
     onListReload: { type: Function, default: () => {} },
-    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng (UX-admin §18)
   },
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
-    const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const categories = reactive([]);
+    const categories = reactive([]);              // 카테고리 목록 (상위 카테고리 옵션용)
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ category_statuses: [] });
 
-    /* 상품 카테고리 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    const form = reactive({                       // 카테고리 폼 데이터
+      categoryId: null, parentCategoryId: null, categoryNm: '', categoryDepth: 1, sortOrd: 1, categoryStatusCd: 'ACTIVE', categoryDesc: '', imgUrl: '',
+    });
+    const errors = reactive({});                  // 폼 검증 에러
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
-      uiState.isPageCodeLoad = true;
+    const schema = yup.object({                   // 폼 검증 스키마
+      categoryNm: yup.string().required('카테고리명을 입력해주세요.'),
+    });
+
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
+    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdCategoryDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (신규 등록 또는 수정)
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 편집 취소 → 목록으로 이동
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('pdCategoryMng');
+      // 상세 보기 → 편집 모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 폼 닫기 → 목록으로 이동
+      } else if (cmd === 'form-close') {
+        return props.navigate('pdCategoryMng');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // onMounted에서 API 로드
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
-    /* handleSearchList — 목록 조회 */
+    /* handleSearchList — 카테고리 목록 조회 (상위 옵션용) */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -49,17 +69,8 @@ window.PdCategoryDtl = {
         uiState.loading = false;
       }
     };
-    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-    const form = reactive({
-      categoryId: null, parentCategoryId: null, categoryNm: '', categoryDepth: 1, sortOrd: 1, categoryStatusCd: 'ACTIVE', categoryDesc: '', imgUrl: '',
-    });
-    const errors = reactive({});
 
-    const schema = yup.object({
-      categoryNm: yup.string().required('카테고리명을 입력해주세요.'),
-    });
-
-    /* handleSearchDetail — 처리 */
+    /* handleSearchDetail — 상세 조회 */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) { return; }
       try {
@@ -71,25 +82,7 @@ window.PdCategoryDtl = {
       }
     };
 
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchDetail();
-      handleSearchList('DEFAULT');
-    });
-    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
-    watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) { return; }
-      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      await handleSearchDetail();
-    });
-
-    const cfParentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {
-      if (!cfIsNew.value && c.categoryId === props.dtlId) { return false; }
-      return true;
-    }));
-
-    /* onParentChange — 이벤트 */
+    /* onParentChange — 상위카테고리 변경 시 depth 자동 산정 */
     const onParentChange = () => {
       if (form.parentCategoryId === null || form.parentCategoryId === '') {
         form.categoryDepth = 1;
@@ -125,10 +118,33 @@ window.PdCategoryDtl = {
       }
     };
 
-    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
-    const cfDtlMode = computed(() => props.dtlMode === 'view');
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchDetail();
+      handleSearchList('DEFAULT');
+    });
+
+    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) { return; }
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleSearchDetail();
+    });
+
+    const cfParentOptions = computed(() => window.safeArrayUtils.safeFilter(categories, c => {
+      if (!cfIsNew.value && c.categoryId === props.dtlId) { return false; }
+      return true;
+    }));
+
     // 상위카테고리 옵션: depth indent 적용 + (최상위) null 옵션
     const cfParentSelectOptions = computed(() => {
       const list = cfParentOptions.value.map(c => ({
@@ -138,10 +154,7 @@ window.PdCategoryDtl = {
       return [{ value: null, label: '없음 (최상위)' }, ...list];
     });
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
-
-    // --- [컬럼 정의] ---
+    // ===== 사용자 함수 (헬퍼 / 컬럼정의) ======================================
 
     const baseFormColumns = [
       { key: 'parentCategoryId', label: '상위카테고리', type: 'select', nullable: false,
@@ -157,14 +170,17 @@ window.PdCategoryDtl = {
       { key: 'categoryDesc',     label: '설명', type: 'text', colSpan: 2 },
     ];
 
-    // ===== setup() return ===================================================
     // ===== return (템플릿 노출) ===============================================
 
-    return { cfIsNew, form, errors, handleSave, cfParentOptions, onParentChange, codes, cfDtlMode, baseFormColumns };
+    return {
+      form, errors, codes,                                       // 상태 / 데이터
+      baseFormColumns,                                           // 컬럼 정의
+      handleBtnAction,                                           // dispatch
+      cfIsNew, cfDtlMode, cfParentOptions,                       // computed
+    };
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 + ID 표시 ========================================= -->
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '카테고리 등록' : '카테고리 수정' }}
@@ -172,18 +188,16 @@ window.PdCategoryDtl = {
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2"
-      @save="handleSave"
-      @cancel="navigate('pdCategoryMng')"
-      @edit="navigate('__switchToEdit__')"
-      @close="navigate('pdCategoryMng')" />
+      @save="handleBtnAction('form-save')"
+      @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')"
+      @close="handleBtnAction('form-close')" />
   </div>
+  <!-- ===== □. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
 </div>
-
-    <!-- ===== □.□. 폼 영역 ================================================== -->
-  <!-- ===== □. 카드 영역 =================================================== -->`
+`
 };

@@ -49,7 +49,7 @@ public class MvcLogAspect {
         SERVICE("■■ ▶▶", "■■ ◀◀"),
         MAPPER("■■ ▶▶▶", "■■ ◀◀◀"),
         REPOSITORY("■■ ▶▶▶", "■■ ◀◀◀"),
-        REPOSITORY_QDSL("■■ ▶▶▶▩", "■■ ◀◀◀▩"),
+        REPOSITORY_QDSL("■■ ▶▶▶|", "■■ ◀◀◀|"),
         DEFAULT("■■ ▶", "■■ ◀");
 
         private final String inPrefix;

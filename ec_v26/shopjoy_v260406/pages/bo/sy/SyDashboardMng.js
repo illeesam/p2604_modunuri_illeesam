@@ -16,9 +16,42 @@ window.SyDashboardMng = {
     const uiState = reactive({ isPageCodeLoad: false });
     const codes = reactive({});
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    const shortcuts = [
+      { id: 'ecMemberMng',   label: '회원관리',   icon: '👥', color: '#e8587a' },
+      { id: 'ecProdMng',     label: '상품관리',   icon: '📦', color: '#1677ff' },
+      { id: 'ecOrderMng',    label: '주문관리',   icon: '🛒', color: '#52c41a' },
+      { id: 'ecClaimMng',    label: '클레임관리', icon: '⚠️', color: '#ff4d4f' },
+      { id: 'ecDlivMng',     label: '배송관리',   icon: '🚚', color: '#389e0d' },
+      { id: 'ecCouponMng',   label: '쿠폰관리',   icon: '🎫', color: '#722ed1' },
+      { id: 'ecEventMng',    label: '이벤트관리', icon: '🎉', color: '#d46b08' },
+      { id: 'syContactMng',  label: '문의관리',   icon: '💬', color: '#13c2c2' },
+      { id: 'sySiteMng',     label: '사이트관리', icon: '🌐', color: '#2563eb' },
+      { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
+    ];
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyDashboardMng.js : handleBtnAction -> ', cmd, param);
+      // 통계 카드 클릭 → 관련 화면 이동 (현재 disabled — 카드 자체 click 핸들러 없음)
+      if (cmd === 'stats-card-click') {
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
 
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyDashboardMng.js : handleSelectAction -> ', cmd, param);
+      // 바로가기 메뉴 선택 → 해당 페이지로 이동
+      if (cmd === 'shortcuts-select') {
+        return props.navigate(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -30,9 +63,12 @@ window.SyDashboardMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
     });
+
+    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const cfStats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,
@@ -61,36 +97,37 @@ window.SyDashboardMng = {
         sub: '활성 ' + (boUsers.value?.filter(u => u.status === '활성').length || 0) + '명' },
     ]);
 
-    const shortcuts = [
-      { id: 'ecMemberMng',   label: '회원관리',   icon: '👥', color: '#e8587a' },
-      { id: 'ecProdMng',     label: '상품관리',   icon: '📦', color: '#1677ff' },
-      { id: 'ecOrderMng',    label: '주문관리',   icon: '🛒', color: '#52c41a' },
-      { id: 'ecClaimMng',    label: '클레임관리', icon: '⚠️', color: '#ff4d4f' },
-      { id: 'ecDlivMng',     label: '배송관리',   icon: '🚚', color: '#389e0d' },
-      { id: 'ecCouponMng',   label: '쿠폰관리',   icon: '🎫', color: '#722ed1' },
-      { id: 'ecEventMng',    label: '이벤트관리', icon: '🎉', color: '#d46b08' },
-      { id: 'syContactMng',  label: '문의관리',   icon: '💬', color: '#13c2c2' },
-      { id: 'sySiteMng',     label: '사이트관리', icon: '🌐', color: '#2563eb' },
-      { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
-    ];
-
     // ===== return (템플릿 노출) ===============================================
 
-    return { uiState, codes, cfStats, shortcuts };
+    return {
+      uiState, codes, shortcuts,                          // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                // dispatch (모든 이벤트 / 액션 라우팅)
+      cfStats,                                            // computed
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">대시보드</div>
+  <div class="page-title">
+    대시보드
+  </div>
   <!-- ===== ■. 통계 카드 =================================================== -->
   <!-- ===== ■. 대시보드 영역 ================================================= -->
   <div class="dash-stats">
     <div v-for="s in cfStats" :key="s.label" class="dash-stat-card" :style="{'--accent': s.color}">
-      <div class="dash-stat-icon">{{ s.icon }}</div>
+      <div class="dash-stat-icon">
+        {{ s.icon }}
+      </div>
       <div class="dash-stat-body">
-        <div class="dash-stat-value">{{ s.value.toLocaleString() }}</div>
-        <div class="dash-stat-label">{{ s.label }}</div>
-        <div class="dash-stat-sub">{{ s.sub }}</div>
+        <div class="dash-stat-value">
+          {{ s.value.toLocaleString() }}
+        </div>
+        <div class="dash-stat-label">
+          {{ s.label }}
+        </div>
+        <div class="dash-stat-sub">
+          {{ s.sub }}
+        </div>
       </div>
     </div>
   </div>
@@ -98,16 +135,24 @@ window.SyDashboardMng = {
   <!-- ===== ■. 바로가기 ==================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <div class="section-title">바로가기</div>
+    <div class="section-title">
+      바로가기
+    </div>
     <div class="dash-shortcuts">
-      <div v-for="m in shortcuts" :key="m.id" class="dash-shortcut" @click="navigate(m.id)">
-        <span class="dash-sc-icon" :style="{background: m.color}">{{ m.icon }}</span>
-        <span class="dash-sc-label">{{ m.label }}</span>
-        <span class="dash-sc-arrow">›</span>
+      <div v-for="m in shortcuts" :key="m.id" class="dash-shortcut" @click="handleSelectAction('shortcuts-select', m.id)">
+        <span class="dash-sc-icon" :style="{background: m.color}">
+          {{ m.icon }}
+        </span>
+        <span class="dash-sc-label">
+          {{ m.label }}
+        </span>
+        <span class="dash-sc-arrow">
+          ›
+        </span>
       </div>
     </div>
   </div>
 </div>
-
-  <!-- ===== □. 카드 영역 =================================================== -->`,
+<!-- ===== □. 카드 영역 =================================================== -->
+`,
 };

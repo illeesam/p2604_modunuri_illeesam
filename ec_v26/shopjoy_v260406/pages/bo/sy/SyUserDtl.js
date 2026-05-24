@@ -2,65 +2,98 @@
 window.SyUserDtl = {
   name: 'SyUserDtl',
   props: {
-    navigate:    { type: Function, required: true }, // 페이지 이동
-    dtlId:       { type: String, default: null }, // 수정 대상 ID
-    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
-    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} },
-    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    dtlId:         { type: String, default: null },           // 수정 대상 ID
+    tabMode:       { type: String, default: 'tab' },          // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
+    onListReload:  { type: Function, default: () => {} },     // 상위 Mng 재조회 콜백
+    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
     const { reactive, computed, watch, onMounted, ref } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({ active_statuses: [], user_roles: [] });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태
+    const codes = reactive({ active_statuses: [], user_roles: [] });                  // 공통코드
 
-    /* 사용자(관리자) fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore();
-        codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-        codes.user_roles = codeStore.sgGetGrpCodes('USER_ROLE');
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-      uiState.isPageCodeLoad = true;
-    };
-
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    const form = reactive({
+    const form = reactive({                        // 사용자 폼 데이터
       userId: null, loginId: '', userNm: '', userEmail: '', userPhone: '',
       deptNm: '', deptId: null, roleId: null,
       zipcode: '', address: '', addressDetail: '',
       userStatusCd: 'ACTIVE', password: '',
       profileAttachId: null,
     });
-    const errors = reactive({});
-    const addrDetailRef = ref(null);
+    const errors = reactive({});                   // 폼 검증 에러
+    const addrDetailRef = ref(null);               // 상세주소 input ref
 
-    const schema = yup.object({
+    const schema = yup.object({                    // 폼 검증 스키마
       loginId:  yup.string().required('로그인ID를 입력해주세요.'),
       userNm:   yup.string().required('이름을 입력해주세요.'),
       userEmail: yup.string().required('이메일을 입력해주세요.'),
     });
 
-    /* 사용자(관리자) 상세조회 */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용, 'new'/'edit' 이면 편집
 
+    /* 부서 선택 팝업 */
+    const deptModal = reactive({ show: false });
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyUserDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (신규 등록 또는 수정)
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 편집 취소 → 목록으로 이동
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('syUserMng');
+      // 상세 보기 → 편집 모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 폼 닫기 → 목록으로 이동
+      } else if (cmd === 'form-close') {
+        return props.navigate('syUserMng');
+      // 카카오 우편번호 팝업 열기
+      } else if (cmd === 'addr-search') {
+        return openKakaoPostcode();
+      // 부서 선택 모달 열기
+      } else if (cmd === 'deptModal-open') {
+        deptModal.show = true;
+        return;
+      // 부서 선택 모달 닫기
+      } else if (cmd === 'deptModal-close') {
+        deptModal.show = false;
+        return;
+      // 부서 선택 비우기
+      } else if (cmd === 'deptModal-clear') {
+        form.deptId = null; form.deptNm = '';
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyUserDtl.js : handleSelectAction -> ', cmd, param);
+      // 부서 선택 모달에서 부서 선택
+      if (cmd === 'deptModal-select') {
+        form.deptId = param.deptId;
+        form.deptNm = param.deptNm;
+        deptModal.show = false;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
@@ -79,21 +112,8 @@ window.SyUserDtl = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      if (!cfIsNew.value) { await handleLoadDetail(); }
-    });
-    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
-    watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) { return; }
-      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      await handleLoadDetail();
-    });
-
-    /* openKakaoPostcode — 열기 */
+    /* openKakaoPostcode — 카카오 우편번호 팝업 열기 */
     const openKakaoPostcode = () => {
-      /* run — 실행 */
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
@@ -109,46 +129,6 @@ window.SyUserDtl = {
       s.onload = run;
       document.head.appendChild(s);
     };
-
-    /* ── 부서 선택 팝업 ── */
-    const deptModal = reactive({ show: false });
-
-    /* openDeptModal — 열기 */
-    const openDeptModal = () => { deptModal.show = true; };
-
-    /* onDeptSelect — 이벤트 */
-    const onDeptSelect = (dept) => {
-      form.deptId  = dept.deptId;
-      form.deptNm  = dept.deptNm;
-      deptModal.show = false;
-    };
-
-    /* clearDept — 비우기 */
-    const clearDept = () => { form.deptId = null; form.deptNm = ''; };
-
-    /* ── 현재 적용 역할 목록 (빈 배열 정적 — computed 불필요) ── */
-    const cfUserRoles = [];
-
-    /* BoGrid(bare) 컬럼 정의 — 적용 역할 목록 */
-    const userRoleGridColumns = [
-      { key: 'roleId',       label: 'ID',     style: 'width:50px;text-align:center;', align: 'center',
-        cellStyle: 'color:#888;' },
-      { key: 'roleCode',     label: '역할코드', style: 'width:130px;', mono: true,
-        cellStyle: 'font-size:11px;color:#2563eb;' },
-      { key: 'roleNm',       label: '역할명', cellStyle: 'font-weight:600;' },
-      { key: 'roleType',     label: '유형',   style: 'width:80px;text-align:center;', align: 'center',
-        badge: (row) => fnRoleTypeBadge(row.roleType) },
-      { key: 'restrictPerm', label: '제한',   style: 'width:80px;text-align:center;', align: 'center',
-        badge: (row) => row.restrictPerm === '없음' ? 'badge-green' : row.restrictPerm === '읽기' ? 'badge-orange' : 'badge-red' },
-      { key: 'useYn',        label: '사용',   style: 'width:60px;text-align:center;', align: 'center',
-        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-red' },
-      { key: 'remark',       label: '비고', cellStyle: 'color:#666;' },
-    ];
-
-    /* fnRoleTypeBadge — 유틸 */
-    const fnRoleTypeBadge = (t) => ({
-      '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
-    }[t] || 'badge-gray');
 
     /* handleSave — 저장 */
     const handleSave = async () => {
@@ -180,21 +160,63 @@ window.SyUserDtl = {
       }
     };
 
-    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
-    const cfDtlMode = computed(() => props.dtlMode === 'view');
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+        codes.user_roles = codeStore.sgGetGrpCodes('USER_ROLE');
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      if (!cfIsNew.value) { await handleLoadDetail(); }
+    });
 
+    /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) { return; }
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleLoadDetail();
+    });
 
-    // --- [컬럼 정의] ---
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+
+    /* fnRoleTypeBadge — 역할 유형 배지 */
+    const fnRoleTypeBadge = (t) => ({
+      '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
+    }[t] || 'badge-gray');
+
+    /* 현재 적용 역할 목록 (빈 배열 정적 — computed 불필요) */
+    const cfUserRoles = [];
+
+    /* userRoleGridColumns — 적용 역할 목록 컬럼 */
+    const userRoleGridColumns = [
+      { key: 'roleId',       label: 'ID',     style: 'width:50px;text-align:center;', align: 'center',
+        cellStyle: 'color:#888;' },
+      { key: 'roleCode',     label: '역할코드', style: 'width:130px;', mono: true,
+        cellStyle: 'font-size:11px;color:#2563eb;' },
+      { key: 'roleNm',       label: '역할명', cellStyle: 'font-weight:600;' },
+      { key: 'roleType',     label: '유형',   style: 'width:80px;text-align:center;', align: 'center',
+        badge: (row) => fnRoleTypeBadge(row.roleType) },
+      { key: 'restrictPerm', label: '제한',   style: 'width:80px;text-align:center;', align: 'center',
+        badge: (row) => row.restrictPerm === '없음' ? 'badge-green' : row.restrictPerm === '읽기' ? 'badge-orange' : 'badge-red' },
+      { key: 'useYn',        label: '사용',   style: 'width:60px;text-align:center;', align: 'center',
+        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-red' },
+      { key: 'remark',       label: '비고', cellStyle: 'color:#666;' },
+    ];
 
     const baseFormColumns = [
       { key: 'siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'loginId',      label: '로그인ID', type: 'text', required: true,
         placeholder: '로그인 아이디',
-        // 신규 등록 시에만 편집 가능, 수정 시는 readonly (form key 자체에 readonly 부여)
         readonly: !cfIsNew.value },
       { key: 'password',     label: '비밀번호', type: 'password',
         required: cfIsNew.value, placeholder: '비밀번호',
@@ -211,63 +233,73 @@ window.SyUserDtl = {
       { key: 'userStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
     ];
 
-    // 주소 영역 (BoFormArea slot 활용)
     const addrFormColumns = [
       { key: '_addr', label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
     ];
-    // 프로필 이미지 (slot)
+
     const profileFormColumns = [
       { key: 'profileAttachId', label: '프로필 이미지', type: 'slot', name: 'profile', colSpan: 2 },
     ];
 
-    // ===== setup() return ===================================================
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm,
-             cfDtlMode, addrDetailRef, openKakaoPostcode,
-             deptModal, openDeptModal, onDeptSelect, clearDept,
-             cfUserRoles, userRoleGridColumns, fnRoleTypeBadge, showToast, baseFormColumns,
-             addrFormColumns, profileFormColumns };
+    return {
+      uiState, codes, form, errors, addrDetailRef, deptModal,             // 상태 / 데이터
+      baseFormColumns, addrFormColumns, profileFormColumns,               // 컬럼 정의
+      userRoleGridColumns, cfUserRoles,                                   // 역할 목록 (하단)
+      handleBtnAction, handleSelectAction,                                // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode,                                                 // computed
+      showToast,                                                          // BaseAttachOne 콜백
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.userId }}</span>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ form.userId }}
+    </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== ■.■. 기본 정보 (BoFormArea 자동 렌더) ============================== -->
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
+    <!-- ===== ■.■. 기본정보 폼 ============================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
       <!-- ===== ■.■.■. 부서: picker ========================================== -->
       <template #dept>
-        <div v-if="cfDtlMode" class="readonly-field">{{ form.deptNm || '-' }}</div>
+        <div v-if="cfDtlMode" class="readonly-field">
+          {{ form.deptNm || '-' }}
+        </div>
         <div v-else style="display:flex;gap:8px;align-items:center;">
           <div class="form-control" style="flex:1;cursor:pointer;background:#fafafa;display:flex;align-items:center;min-height:36px;"
-            @click="openDeptModal">
-            <span v-if="form.deptNm" style="color:#1a1a2e;">{{ form.deptNm }}</span>
-            <span v-else style="color:#bbb;font-size:12px;">부서를 선택하세요</span>
+            @click="handleBtnAction('deptModal-open')">
+            <span v-if="form.deptNm" style="color:#1a1a2e;">
+              {{ form.deptNm }}
+            </span>
+            <span v-else style="color:#bbb;font-size:12px;">
+              부서를 선택하세요
+            </span>
           </div>
-          <button type="button" class="btn btn-blue btn-sm" @click="openDeptModal" style="white-space:nowrap;">🏢 선택</button>
-          <button v-if="form.deptId" type="button" class="btn btn-secondary btn-sm" @click="clearDept" >✕</button>
+          <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('deptModal-open')" style="white-space:nowrap;">
+            🏢 선택
+          </button>
+          <button v-if="form.deptId" type="button" class="btn btn-secondary btn-sm" @click="handleBtnAction('deptModal-clear')">
+            ✕
+          </button>
         </div>
       </template>
     </bo-form-area>
-    <!-- ===== □.□. 폼 영역 ================================================== -->
+    <!-- ===== □.□. 기본정보 폼 ============================================== -->
     <!-- ===== ■.■. 주소 영역 (BoFormArea 자동 렌더) ============================== -->
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="addrFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
       <template #addr>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
             style="width:110px;flex-shrink:0;" readonly />
-          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
             style="white-space:nowrap;">
             🔍 주소 검색
           </button>
@@ -278,9 +310,8 @@ window.SyUserDtl = {
           placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
       </template>
     </bo-form-area>
-    <!-- ===== □.□. 폼 영역 ================================================== -->
+    <!-- ===== □.□. 주소 영역 ================================================= -->
     <!-- ===== ■.■. 프로필 이미지 (BoFormArea 자동 렌더) ============================ -->
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="profileFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2" :show-actions="false">
       <template #profile>
@@ -295,40 +326,51 @@ window.SyUserDtl = {
           :show-toast="showToast" />
       </template>
     </bo-form-area>
+    <!-- ===== □.□. 프로필 이미지 ============================================== -->
+    <!-- ===== ■.■. 폼 액션 ================================================== -->
     <div class="form-actions" v-if="!cfDtlMode">
       <template v-if="cfDtlMode">
-        <button class="btn btn-primary" @click="navigate('__switchToEdit__')">수정</button>
-        <button class="btn btn-secondary" @click="navigate('syUserMng')">닫기</button>
+        <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
       </template>
       <template v-else>
-        <button class="btn btn-primary" @click="handleSave">저장</button>
-        <button class="btn btn-secondary" @click="navigate('syUserMng')">취소</button>
+        <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          취소
+        </button>
       </template>
     </div>
+    <!-- ===== □.□. 폼 액션 ================================================== -->
   </div>
-    <!-- ===== □.□. 폼 영역 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 적용 역할 목록 ================================================ -->
   <div v-if="!cfIsNew" class="card">
     <div class="toolbar" style="margin-bottom:12px;">
       <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+          ●
+        </span>
         적용 역할 목록
-        <span class="list-count">{{ cfUserRoles.length }}건</span>
+        <span class="list-count">
+          {{ cfUserRoles.length }}건
+        </span>
       </span>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare :columns="userRoleGridColumns" :rows="cfUserRoles" row-key="roleId"
       empty-text="배정된 역할이 없습니다." />
-  </div>
     <!-- ===== □.□. 목록 영역 ================================================= -->
+  </div>
   <!-- ===== □. 적용 역할 목록 ================================================ -->
   <!-- ===== ■. 부서 선택 팝업 ================================================ -->
-  <dept-tree-modal
-    v-if="deptModal && deptModal.show" :exclude-id="null"
-    @select="onDeptSelect"
-    @close="deptModal.show=false" />
+  <dept-tree-modal v-if="deptModal && deptModal.show" :exclude-id="null" @select="dept => handleSelectAction('deptModal-select', dept)" @close="handleBtnAction('deptModal-close')" />
+  <!-- ===== □. 부서 선택 팝업 ================================================ -->
 </div>
-
-  <!-- ===== □. 부서 선택 팝업 ================================================ -->`
+`,
 };

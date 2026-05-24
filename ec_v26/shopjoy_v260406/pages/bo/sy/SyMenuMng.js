@@ -9,15 +9,108 @@ window.SyMenuMng = {
 
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const menus = reactive([]);
-    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const menus = reactive([]);                    // 메뉴 목록 데이터
+    const uiState = reactive({                     // UI 상태
+      checkAll: false, loading: false, error: null, isPageCodeLoad: false,
+      selectedTreeId: null, focusedIdx: null,
+    });
     const codes = reactive({ menu_type: [], menu_status: [], use_yn: [], menu_types: ['페이지','폴더','외부링크','구분선'] });
 
-    // onMounted에서 API 로드
+    /* ===== 검색조건 ===== */
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== CRUD 그리드 ===== */
+    const gridRows   = reactive([]);
+    let   _tempId    = -1;
+    const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentMenuId', 'menuUrl', 'menuTypeCd', 'sortOrd', 'useYn', 'menuRemark'];
+
+    /* ===== 깊이 표시 상수 ===== */
+    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
+    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
+
+    /* depthBullet — 깊이 글머리 */
+    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
+
+    /* depthColor — 깊이 색상 */
+    const depthColor  = (d) => DEPTH_COLORS[d % 5];
+
+    /* ===== 상위메뉴 선택 모달 ===== */
+    const parentModal = reactive({ show: false, targetRow: null });
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyMenuMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return handleSearchList('DEFAULT');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        return handleSearchList();
+      // 메뉴 그리드 행 추가
+      } else if (cmd === 'menus-add') {
+        return addRow();
+      // 메뉴 그리드 저장
+      } else if (cmd === 'menus-save') {
+        return handleSave();
+      // 체크된 메뉴 일괄 삭제
+      } else if (cmd === 'menus-delete-checked') {
+        return deleteRows();
+      // 체크된 메뉴 일괄 취소
+      } else if (cmd === 'menus-cancel-checked') {
+        return cancelChecked();
+      // 메뉴 목록 엑셀 내보내기
+      } else if (cmd === 'menus-excel') {
+        return exportExcel();
+      // 상위메뉴 선택 모달 닫기
+      } else if (cmd === 'parentModal-close') {
+        parentModal.show = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyMenuMng.js : handleSelectAction -> ', cmd, param);
+      // 메뉴 그리드 셀 값 변경 감지
+      if (cmd === 'menus-row-cell-change') {
+        return onCellChange(param);
+      // 메뉴 그리드 행 삭제 마킹
+      } else if (cmd === 'menus-row-delete') {
+        return deleteRow(param);
+      // 메뉴 그리드 행 변경 취소
+      } else if (cmd === 'menus-row-cancel') {
+        return cancelRow(param);
+      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
+      } else if (cmd === 'pathTree-select') {
+        uiState.selectedTreeId = param;
+        return handleSearchList();
+      // 상위메뉴 선택 모달 열기 (parentPick 컬럼)
+      } else if (cmd === 'parentModal-open') {
+        return openParentModal(param);
+      // 상위메뉴 모달에서 상위 선택 → 행 parentMenuId 갱신
+      } else if (cmd === 'parentModal-select') {
+        if (parentModal.targetRow) {
+          parentModal.targetRow.parentMenuId = param.menuId;
+          parentModal.targetRow._depth = 0;
+          onCellChange(parentModal.targetRow);
+        }
+        parentModal.show = false;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
@@ -39,18 +132,7 @@ window.SyMenuMng = {
       }
     };
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedTreeId = id; handleSearchList(); };
-
     /* fnLoadCodes — 공통코드 로드 */
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
@@ -66,18 +148,7 @@ window.SyMenuMng = {
       handleSearchList('DEFAULT');
     });
 
-    const cfAllowedTreeIds = computed(() => {
-      if (uiState.selectedTreeId == null) { return null; }
-      return coUtil.cofCollectDescendantIds(menus, 'menuId', 'parentMenuId', uiState.selectedTreeId);
-    });
-
-    /* -- CRUD 그리드 -- */
-    const gridRows   = reactive([]);
-    let   _tempId    = -1;
-
-    const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentMenuId', 'menuUrl', 'menuTypeCd', 'sortOrd', 'useYn', 'menuRemark'];
-
-    /* buildTreeRows — 빌드 */
+    /* buildTreeRows — 그리드용 트리 행 빌드 */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(m => { map[m.menuId] = { ...m, _children: [] }; });
@@ -87,8 +158,6 @@ window.SyMenuMng = {
         else { roots.push(map[m.menuId]); }
       });
       const result = [];
-
-      /* traverse — traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
@@ -103,20 +172,6 @@ window.SyMenuMng = {
       _row_org: { menuCode: m.menuCode, menuNm: m.menuNm, parentMenuId: m.parentMenuId,
                menuUrl: m.menuUrl, menuTypeCd: m.menuTypeCd, sortOrd: m.sortOrd, useYn: m.useYn, menuRemark: m.menuRemark },
     });
-
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      await handleSearchList('DEFAULT');
-    };
-
-    /* onReset — 초기화 */
-    const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
-      handleSearchList();
-    };
-
-    /* setFocused — 포커스 설정 */
-    const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
 
     /* onCellChange — 셀 변경 */
     const onCellChange = (row) => {
@@ -210,42 +265,8 @@ window.SyMenuMng = {
       }
     };
 
-    /* toggleCheckAll — 전체 체크 토글 */
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
-
-    /* parentNm — 상위 Nm */
-    const parentNm = (parentId) => {
-      if (!parentId) { return ''; }
-      const p = menus.find(m => m.menuId === parentId);
-      return p ? p.menuNm : `ID:${parentId}`;
-    };
-
-    const menuTreeModal = reactive({ show: false, targetRow: null });
-
-    /* openParentModal — 열기 */
-    const openParentModal = async (row) => { menuTreeModal.targetRow = row; await handleSearchList('DEFAULT'); menuTreeModal.show = true; };
-
-    /* onParentSelect — 이벤트 */
-    const onParentSelect  = (menu) => {
-      if (menuTreeModal.targetRow) { menuTreeModal.targetRow.parentMenuId = menu.menuId; menuTreeModal.targetRow._depth = 0; onCellChange(menuTreeModal.targetRow); }
-      menuTreeModal.show = false;
-    };
-
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
-    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
-
-    /* depthBullet — 깊이 글머리 */
-    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
-
-    /* depthColor — 깊이 색상 */
-    const depthColor  = (d) => DEPTH_COLORS[d % 5];
-
-    /* fnStatusClass — 상태 배지 클래스 */
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-
-    /* fnTypeClass — 유틸 */
-    const fnTypeClass   = t => ({ '페이지': 'badge-blue', '폴더': 'badge-gray', '외부링크': 'badge-green', '구분선': 'badge-orange' }[t] || 'badge-gray');
+    /* openParentModal — 상위메뉴 선택 모달 열기 */
+    const openParentModal = async (row) => { parentModal.targetRow = row; await handleSearchList('DEFAULT'); parentModal.show = true; };
 
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(
@@ -254,11 +275,18 @@ window.SyMenuMng = {
       '메뉴목록.csv'
     );
 
-    /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
 
-        // --- [컬럼 정의] ---
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-        const baseSearchColumns = [
+    /* parentNm — 상위 메뉴명 */
+    const parentNm = (parentId) => {
+      if (!parentId) { return ''; }
+      const p = menus.find(m => m.menuId === parentId);
+      return p ? p.menuNm : `ID:${parentId}`;
+    };
+
+    const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'menuCode', label: '메뉴코드' },
@@ -270,14 +298,12 @@ window.SyMenuMng = {
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
     const baseGridColumns = [
       { key: 'menuCode',   label: '메뉴코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'menuNm',     label: '메뉴명',   style: 'min-width:180px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
       { key: 'parentMenuId', label: '상위메뉴', style: 'min-width:140px;',
-        parentPick: { label: parentNm, open: openParentModal, title: '상위메뉴 선택' } },
+        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row), title: '상위메뉴 선택' } },
       { key: 'menuUrl',    label: '메뉴URL',  style: 'min-width:160px;', edit: 'text', placeholder: '/path' },
       { key: 'menuTypeCd', label: '유형',     style: 'width:80px;',     edit: 'select', options: codes.menu_types.map(t => ({ value: t, label: t })) },
       { key: 'sortOrd',    label: '순서',     cls: 'col-ord',  edit: 'number' },
@@ -289,33 +315,30 @@ window.SyMenuMng = {
 
     // ===== return (템플릿 노출) ===============================================
 
-    return { menus, uiState, codes, selectNode,
-      searchParam,
-      cfSiteNm, baseSearchColumns, baseGridColumns,
-      gridRows,
-      setFocused, onSearch, onReset, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      toggleCheckAll, parentNm,
-      menuTreeModal, openParentModal, onParentSelect,
-      depthBullet, depthColor, fnStatusClass, fnTypeClass,
-      exportExcel,
+    return {
+      menus, uiState, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                // 컬럼 정의
+      handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">메뉴관리</div>
+  <div class="page-title">
+    메뉴관리
+  </div>
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_menu" title="메뉴" :show-biz-cd="true"
-      :selected="uiState.selectedTreeId" @select="selectNode" />
+      :selected="uiState.selectedTreeId"
+      @select="path => handleSelectAction('pathTree-select', path)" />
     <div>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
@@ -323,21 +346,21 @@ window.SyMenuMng = {
         list-title="메뉴목록" :show-export="true" :draggable="false"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
-        @add="addRow" @save="handleSave"
-        @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-        @cell-change="onCellChange" @export="exportExcel">
+        @add="handleBtnAction('menus-add')" @save="handleBtnAction('menus-save')"
+        @delete-checked="handleBtnAction('menus-delete-checked')" @cancel-checked="handleBtnAction('menus-cancel-checked')"
+        @cell-change="row => handleSelectAction('menus-row-cell-change', row)"
+        @export="handleBtnAction('menus-excel')">
         <template #row-actions="{ row, idx }">
-          <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
+          <bo-row-cancel-delete :row="row"
+            @cancel="handleSelectAction('menus-row-cancel', idx)"
+            @delete="handleSelectAction('menus-row-delete', idx)" />
         </template>
       </bo-grid-crud>
-      <menu-tree-modal
-        v-if="menuTreeModal && menuTreeModal.show" :exclude-id="menuTreeModal.targetRow && menuTreeModal.targetRow.menuId > 0 ? menuTreeModal.targetRow.menuId : null"
-        @select="onParentSelect"
-        @close="menuTreeModal.show=false" />
+      <!-- ===== ■.■.■. 상위메뉴 선택 모달 ========================================= -->
+      <menu-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.menuId > 0 ? parentModal.targetRow.menuId : null" @select="menu => handleSelectAction('parentModal-select', menu)" @close="handleBtnAction('parentModal-close')" />
     </div>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
 </div>
-
-    <!-- ===== □.□. 경로 트리 ================================================= -->
-  <!-- ===== □. 본문 영역 =================================================== -->`,
+`,
 };

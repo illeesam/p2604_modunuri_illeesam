@@ -2,40 +2,57 @@
 window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: {
-    detailModal:  { type: Object, default: () => ({}) }, // 전달값
-    handleSave:   { type: Function, default: () => {} }, // 콜백 함수
-    handleDelete: { type: Function, default: () => {} }, // 콜백 함수
-    closeDetail:  { type: Function, default: () => {} }, // 콜백 함수
-    dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} },
-    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    detailModal:   { type: Object, default: () => ({}) },     // 부모 Mng 의 detailPanel 객체
+    handleSave:    { type: Function, default: () => {} },     // 저장 콜백
+    handleDelete:  { type: Function, default: () => {} },     // 삭제 콜백
+    closeDetail:   { type: Function, default: () => {} },     // 닫기 콜백
+    dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
+    onListReload:  { type: Function, default: () => {} },     // 상위 Mng 재조회 콜백
+    reloadTrigger: { type: Number, default: 0 },              // 상위 reload signal
   },
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
     const { watch, ref, reactive, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const currentId = ref(props.detailModal.dtlId);
-    const codes = reactive({ member_grades: [], member_statuses: [] });
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const currentId = ref(props.detailModal.dtlId); // 현재 선택된 회원 ID (이력 컴포넌트 key용)
+    const codes = reactive({ member_grades: [], member_statuses: [] }); // 공통코드
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MbMemberDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (부모 콜백)
+      if (cmd === 'form-save') {
+        return props.handleSave();
+      // 폼 삭제 (부모 콜백)
+      } else if (cmd === 'form-delete') {
+        return props.handleDelete();
+      // 폼 닫기 (부모 콜백)
+      } else if (cmd === 'form-close') {
+        return props.closeDetail();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
 
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* watch — dtlId 변경 시 currentId 갱신 */
     watch(() => props.detailModal.dtlId, (newId) => {
       if (newId) { currentId.value = newId; }
     }, { immediate: true });
 
-
+    // ★ onMounted — 진입 시 공통코드 로드
     onMounted(() => {
       const codeStore = window.sfGetBoCodeStore();
       codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
       codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
     });
-    /* policy: parent Mng increments reloadTrigger → 상세 재조회.
-       MbMember 은 부모 Mng 의 openDetail() 에서 직접 getById 로 detailModal.form 을
-       채우는 패턴이므로, reloadTrigger 신호 수신 시 dtlId 기준으로 재조회한다. */
+
+    /* policy: 상위 Mng 이 reloadTrigger 증가시키면 detailModal.form 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
       const id = props.detailModal && props.detailModal.dtlId;
@@ -47,10 +64,8 @@ window.MbMemberDtl = {
       } catch (err) { console.error('[MbMemberDtl reloadTrigger]', err); }
     });
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
 
-
-    // --- [컬럼 정의] ---
     const baseFormColumns = [
       { key: 'loginId',        label: '이메일',    type: 'text', required: true, placeholder: '이메일 주소' },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },
@@ -65,40 +80,48 @@ window.MbMemberDtl = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { currentId, codes, baseFormColumns };
+    return {
+      currentId, codes,                                                                // 상태 / 데이터
+      baseFormColumns,                                                                 // 컬럼 정의
+      handleBtnAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
+    };
   },
   template: /* html */`
 <div v-if="detailModal.show">
-  <!-- ===== ■. 상세 화면 =================================================== -->
   <!-- ===== ■. 상세/수정 카드 ================================================ -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 ================================== -->
     <div class="toolbar">
-      <span class="list-title">{{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}</span>
+      <span class="list-title">
+        {{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}
+      </span>
       <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-blue btn-sm" @click="handleSave">저장</button>
-        <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleDelete">삭제</button>
-        <button class="btn btn-secondary btn-sm" @click="closeDetail">닫기</button>
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">
+          저장
+        </button>
+        <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">
+          삭제
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
       </div>
     </div>
-    <!-- ===== □.□. 상세 툴바: 제목 + 저장/삭제/닫기 ================================== -->
-    <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) - 상단 툴바 버튼 사용으로 :show-actions=false ===== -->
+    <!-- ===== □.■. 상세 툴바 ================================================ -->
+    <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
     <div style="padding:12px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="detailModal.form" :errors="{}"
         :readonly="false" :cols="2" :show-actions="false" />
     </div>
+    <!-- ===== □.■. 폼 영역 ================================================== -->
   </div>
-    <!-- ===== □.□. 폼 영역 (BoFormArea 자동 렌더) - 상단 툴바 버튼 사용으로 :show-actions=false ===== -->
-  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== □. 상세/수정 카드 ================================================ -->
   <!-- ===== ■. 이력정보 카드 ================================================= -->
-  <!-- ===== ■. 상세 패널 =================================================== -->
   <div v-if="!detailModal.isNew" class="card">
     <mb-member-hist :member-id="currentId" :key="currentId" />
   </div>
+  <!-- ===== □. 이력정보 카드 ================================================= -->
 </div>
-
-  <!-- ===== □. 상세 패널 =================================================== -->`
+`,
 };

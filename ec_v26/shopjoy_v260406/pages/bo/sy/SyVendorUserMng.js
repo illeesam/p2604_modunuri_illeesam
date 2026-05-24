@@ -24,12 +24,97 @@ window.SyVendorUserMng = {
     });
 
     /* -- 역할 트리 (좌측 패널) -- */
-        const expanded = reactive(new Set([null]));
+    const expanded = reactive(new Set([null]));
     const roles = reactive([]);
     const menus = reactive([]);
     const roleMenus = reactive([]);
+    const vendors = reactive([]);
+    const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    // onMounted에서 역할/메뉴/역할메뉴 API 로드
+    /* -- 인라인 폼 (사용자 등록/수정) -- */
+    const formData = reactive({});
+    const userRoles = reactive([]);
+    const roleTreeExpanded = reactive(new Set());
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyVendorUserMng.js : handleBtnAction -> ', cmd, param);
+      // 업체 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 사용자 인라인 폼: 신규 등록
+      } else if (cmd === 'vendorUsers-add') {
+        return openNew();
+      // 사용자 인라인 폼: 저장
+      } else if (cmd === 'vendorUsers-save') {
+        return handleSaveForm();
+      // 사용자 인라인 폼: 닫기/취소
+      } else if (cmd === 'vendorUsers-close') {
+        return closeForm();
+      // 회원가입 메일 전송
+      } else if (cmd === 'vendorUsers-send-join-mail') {
+        if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
+        return showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
+      // 비밀번호 초기화 메일 전송
+      } else if (cmd === 'vendorUsers-send-pwreset-mail') {
+        if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
+        return showToast(formData.vendorUserEmail + ' 로 비밀번호 초기화 메일을 보냈습니다.', 'success');
+      // 역할 추가 모달 열기
+      } else if (cmd === 'roleModal-open') {
+        return openRoleModal();
+      // 역할 추가 모달 닫기
+      } else if (cmd === 'roleModal-close') {
+        return closeRoleModal();
+      // 역할 모달: 확인 (선택된 역할 부여)
+      } else if (cmd === 'roleModal-confirm') {
+        return confirmRoleModal();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyVendorUserMng.js : handleSelectAction -> ', cmd, param);
+      // 업체 그리드 행 선택 (선택 업체 변경)
+      if (cmd === 'vendors-row-select') {
+        return pickVendorRow(param);
+      // 업체 그리드 페이지 번호 클릭
+      } else if (cmd === 'vendors-set-page') {
+        return setBizPage(param);
+      // 사용자 그리드 행 클릭 → 편집 모드 진입
+      } else if (cmd === 'vendorUsers-row-edit') {
+        return openEdit(param);
+      // 사용자 그리드 행 삭제
+      } else if (cmd === 'vendorUsers-row-delete') {
+        return handleDeleteRow(param);
+      // 사용자 그리드 페이지 번호 클릭
+      } else if (cmd === 'vendorUsers-set-page') {
+        return setPage(param);
+      // 사용자 그리드 페이지 크기 변경
+      } else if (cmd === 'vendorUsers-size-change') {
+        return onSizeChange();
+      // 부여된 역할 그리드 행 삭제
+      } else if (cmd === 'userRoles-row-delete') {
+        return handleDeleteRole(param);
+      // 역할 모달: 트리 노드 토글
+      } else if (cmd === 'roleModal-tree-toggle') {
+        return toggleRoleNode(param);
+      // 역할 모달: 트리 노드 선택
+      } else if (cmd === 'roleModal-tree-pick') {
+        return pickRoleInModal(param);
+      // 업체 picker 모달 (외부) 결과 선택
+      } else if (cmd === 'vendorPick-select') {
+        return onVendorPicked(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleLoadData — 처리 */
@@ -76,7 +161,6 @@ window.SyVendorUserMng = {
         kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
       }
 
-
       return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids };
     });
 
@@ -91,16 +175,11 @@ window.SyVendorUserMng = {
 
     /* collapseAll — 접기 전체 */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
-    /* -- 업체 목록 (상단 검색/선택) -- */
-
-    const vendors = reactive([]);
-    const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* fnBuildBizPagerNums — 유틸 */
     const fnBuildBizPagerNums = () => { bizPager.pageTotalCount=vendors.length; bizPager.pageTotalPage=Math.max(1,Math.ceil(vendors.length/bizPager.pageSize)); bizPager.pageList=vendors.slice((bizPager.pageNo-1)*bizPager.pageSize,bizPager.pageNo*bizPager.pageSize); const c=bizPager.pageNo,l=bizPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); bizPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* handleLoadDetail — 상세 조회 */
-
     const handleLoadDetail = async () => {
       uiState.loading = true;
       try {
@@ -126,7 +205,6 @@ window.SyVendorUserMng = {
     };
 
     /* fnLoadCodes — 공통코드 로드 */
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
@@ -230,8 +308,6 @@ window.SyVendorUserMng = {
       return new Set(roles.filter(r=>ids.has(r.roleId)).map(r=>r.roleCode));
     });
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { pager.pageTotalCount=vendorUsers.length; pager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/pager.pageSize)); pager.pageList=vendorUsers.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
@@ -240,9 +316,6 @@ window.SyVendorUserMng = {
 
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo=1; fnBuildPagerNums(); };
-
-    /* -- 인라인 폼 (사용자 등록/수정) -- */
-        const formData = reactive({});
 
     /* blank — 빈 폼 데이터 생성 */
     const blank = () => ({
@@ -314,9 +387,6 @@ window.SyVendorUserMng = {
       }
     };
 
-    /* -- 역할 관리 (sy_vendor_user_role) -- */
-    const userRoles = reactive([]);
-
     /* loadUserRoles — 로드 */
     const loadUserRoles = async (vendorUserId) => {
       if (!vendorUserId) { return; }
@@ -329,9 +399,6 @@ window.SyVendorUserMng = {
         uiState.roleLoading = false;
       }
     };
-
-    /* 역할 선택 모달 */
-        const roleTreeExpanded = reactive(new Set());
 
     const cfFormAllowedRootCode = computed(() => {
       const vt = fnVendorTypeCd(formData.vendorId);
@@ -473,10 +540,6 @@ window.SyVendorUserMng = {
       }
     };
 
-
-    // --- [컬럼 정의] ---
-
-
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     const baseSearchColumns = [
@@ -498,7 +561,6 @@ window.SyVendorUserMng = {
         nullLabel: '업체유형 전체' },
     ];
 
-    /* BoGrid 컬럼 정의 (특수셀 #cell-* 슬롯 override) */
     const vendorGridColumns = [
       { key: 'vendorTypeCd', label: '업체유형', align: 'center', badge: (row) => fnVendorTypeBadge(row.vendorTypeCd), fmt: (v) => fnVendorTypeLabel(v) },
       { key: 'vendorNm',     label: '업체명', cellStyle: 'font-weight:600' },
@@ -550,54 +612,38 @@ window.SyVendorUserMng = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState, codes,
-      vendorUsers, cfVendorMap, fnVendorNm, fnVendorTypeCd, fnVendorSummary,
-      baseSearchColumns,
-      vendorGridColumns, userGridColumns, userRoleGridColumns, fnVendorRowStyle, fnUserRowStyle,
-      vendors, bizPager, setBizPage,
-      onSearch, onReset,
-      pickVendorRow, fnVendorStatusBadge, fnVendorStatusLabel, fnVendorTypeBadge, fnVendorTypeLabel,
-      onVendorPicked,
-      cfTree, expanded, toggleNode, selectNode, expandAll, collapseAll,
-      fnStatusBadge, fnStatusLabel,
-      pager, setPage, onSizeChange,
-      formData, openNew, openEdit, closeForm, handleSaveForm, handleDeleteRow,
-      baseVendorUserFormColumns,
-      userRoles, roleTreeExpanded,
-      openRoleModal, closeRoleModal, confirmRoleModal, handleDeleteRole,
-      toggleRoleNode, pickRoleInModal, cfFormRoleTree, cfFormAllowedRootCode,
-      roleNmByCode, cfSelectedModalRole, cfModalMenuList, fnPermBadgeColor,
-      onRoleRootHover, onRoleChildHover, onRoleChildLeave,
-      sendJoinMail: () => {
-        if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
-        showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
-      },
-      sendPwResetMail: () => {
-        if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
-        showToast(formData.vendorUserEmail + ' 로 비밀번호 초기화 메일을 보냈습니다.', 'success');
-      },
+      uiState, codes, vendorUsers, vendors, bizPager, pager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터
+      baseSearchColumns, vendorGridColumns, userGridColumns, userRoleGridColumns, baseVendorUserFormColumns,   // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
+      cfVendorMap, cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                // computed
+      fnVendorNm, fnVendorTypeCd, fnVendorSummary, fnVendorStatusBadge, fnVendorStatusLabel,                   // 헬퍼
+      fnVendorTypeBadge, fnVendorTypeLabel, fnStatusBadge, fnStatusLabel, fnVendorRowStyle, fnUserRowStyle,    // 헬퍼
+      fnPermBadgeColor, roleNmByCode, onRoleRootHover, onRoleChildHover, onRoleChildLeave,                     // 헬퍼
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">업체사용자</div>
+  <div class="page-title">
+    업체사용자
+  </div>
   <!-- ===== ■. 업체 검색 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState"
-      :loading="uiState.loading" @search="onSearch" @reset="onReset" />
+      :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
+  <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 업체 검색 =================================================== -->
   <!-- ===== ■. 업체 목록 =================================================== -->
   <bo-grid
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
     list-title="업체목록" :count-text="vendors.length + '건'"
     :row-style="fnVendorRowStyle" row-clickable
-    @set-page="setBizPage" @row-click="pickVendorRow" row-actions>
+    @set-page="n => handleSelectAction('vendors-set-page', n)"
+    @row-click="row => handleSelectAction('vendors-row-select', row)" row-actions>
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="pickVendorRow(row)">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-row-select', row)">
         {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
       </button>
     </template>
@@ -608,29 +654,49 @@ window.SyVendorUserMng = {
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
     list-title="사용자목록" :count-text="vendorUsers.length + '건'"
     :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
-    @set-page="setPage" @size-change="onSizeChange" @row-click="openEdit">
+    @set-page="n => handleSelectAction('vendorUsers-set-page', n)"
+    @size-change="handleSelectAction('vendorUsers-size-change')"
+    @row-click="row => handleSelectAction('vendorUsers-row-edit', row)">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="openNew">+ 신규등록</button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
+        + 신규등록
+      </button>
     </template>
     <template #row-actions="{ row }">
-      <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
+      <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-row-delete', row)">
+        삭제
+      </button>
     </template>
   </bo-grid>
   <!-- ===== □. 사용자 목록 ================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
-  <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.</div>
+  <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">
+    상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
+  </div>
   <!-- ===== ■. 인라인 폼 =================================================== -->
   <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
     <div class="toolbar">
       <span class="list-title">
-        <span style="color:#e8587a;">{{ uiState.formMode==='new' ? '+ 신규 업체사용자' : '✏ 업체사용자 수정' }}</span>
-        <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">#{{ formData.vendorUserId }}</span>
+        <span style="color:#e8587a;">
+          {{ uiState.formMode==='new' ? '+ 신규 업체사용자' : '✏ 업체사용자 수정' }}
+        </span>
+        <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">
+          #{{ formData.vendorUserId }}
+        </span>
       </span>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn btn-blue btn-sm" @click="sendJoinMail">✉ 회원가입메일</button>
-        <button class="btn btn-blue btn-sm" @click="sendPwResetMail">🔑 비밀번호초기화</button>
-        <button class="btn btn-secondary btn-sm" @click="closeForm">취소</button>
-        <button class="btn btn-primary btn-sm" @click="handleSaveForm">저장</button>
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-send-join-mail')">
+          ✉ 회원가입메일
+        </button>
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-send-pwreset-mail')">
+          🔑 비밀번호초기화
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('vendorUsers-close')">
+          취소
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-save')">
+          저장
+        </button>
       </div>
     </div>
     <!-- ===== ■.■. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
@@ -643,28 +709,39 @@ window.SyVendorUserMng = {
     <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->
     <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
       <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title" style="font-size:13px;">🎭 부여된 역할 <span class="list-count">{{ userRoles.length }}개</span></span>
-        <button class="btn btn-blue btn-sm" @click="openRoleModal">+ 역할 추가</button>
+        <span class="list-title" style="font-size:13px;">
+          🎭 부여된 역할
+          <span class="list-count">
+            {{ userRoles.length }}개
+          </span>
+        </span>
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('roleModal-open')">
+          + 역할 추가
+        </button>
       </div>
-      <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
+      <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">
+        로딩 중...
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid v-else bare :columns="userRoleGridColumns" :rows="userRoles" row-key="vendorUserRoleId"
         empty-text="부여된 역할이 없습니다." row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-danger btn-xs" @click="handleDeleteRole(row)">삭제</button>
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('userRoles-row-delete', row)">
+            삭제
+          </button>
         </template>
       </bo-grid>
     </div>
   </div>
 </div>
 </div>
-    <!-- ===== □.□. 역할 목록 (수정 모드에서만) ====================================== -->
-  <!-- ===== □. 인라인 폼 =================================================== -->
+<!-- ===== □.□. 역할 목록 (수정 모드에서만) ====================================== -->
+<!-- ===== □. 인라인 폼 =================================================== -->
 <!-- ===== ■. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
 <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
   :confirm-disabled="!uiState.roleModalTemp"
-  @close="closeRoleModal" @confirm="confirmRoleModal">
-<!-- ===== □. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
+  @close="handleBtnAction('roleModal-close')" @confirm="handleBtnAction('roleModal-confirm')">
+  <!-- ===== □. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #header-extra>
     <span v-if="cfFormAllowedRootCode"
@@ -675,22 +752,28 @@ window.SyVendorUserMng = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #tree>
-    <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">📂 역할 트리</div>
+    <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">
+      📂 역할 트리
+    </div>
     <div v-if="!cfFormAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">
       선택한 업체의 업체유형이 없어 역할을 선택할 수 없습니다.
     </div>
     <template v-for="root in cfFormRoleTree" :key="root.roleId">
       <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
         color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
-        @click="toggleRoleNode(root.roleId)"
+        @click="handleSelectAction('roleModal-tree-toggle', root.roleId)"
         @mouseover="onRoleRootHover(root, $event)"
         @mouseout="$event.currentTarget.style.background='transparent'">
-        <span style="width:12px;font-size:10px;color:#9ca3af;">{{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}</span>
-        <span>📁 {{ root.roleNm }}</span>
+        <span style="width:12px;font-size:10px;color:#9ca3af;">
+          {{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}
+        </span>
+        <span>
+          📁 {{ root.roleNm }}
+        </span>
       </div>
       <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:14px;margin-bottom:6px;">
         <div v-for="ch in root.children" :key="ch.roleId"
-          @click="pickRoleInModal(ch)"
+          @click="handleSelectAction('roleModal-tree-pick', ch)"
           :style="{padding:'7px 10px',fontSize:'12.5px',cursor:ch.allowed?'pointer':'not-allowed',
           color:ch.allowed?(uiState.roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
           background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
@@ -698,8 +781,12 @@ window.SyVendorUserMng = {
           display:'flex',alignItems:'center',gap:'6px',transition:'all .1s'}"
           @mouseover="onRoleChildHover(ch, $event)"
           @mouseout="onRoleChildLeave(ch, $event)">
-          <span style="font-size:9px;">●</span>
-          <span>{{ ch.roleNm }}</span>
+          <span style="font-size:9px;">
+            ●
+          </span>
+          <span>
+            {{ ch.roleNm }}
+          </span>
         </div>
       </div>
     </template>
@@ -709,48 +796,69 @@ window.SyVendorUserMng = {
   <template #perm>
     <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">
       🔐 메뉴 접근권한
-      <span v-if="cfSelectedModalRole" style="color:#2563eb;margin-left:8px;">— {{ cfSelectedModalRole.roleNm }}</span>
+      <span v-if="cfSelectedModalRole" style="color:#2563eb;margin-left:8px;">
+        — {{ cfSelectedModalRole.roleNm }}
+      </span>
     </div>
     <div v-if="!cfSelectedModalRole" style="padding:60px 20px;text-align:center;font-size:13px;color:#9ca3af;">
-      <div style="font-size:28px;margin-bottom:8px;">👈</div>
+      <div style="font-size:28px;margin-bottom:8px;">
+        👈
+      </div>
       좌측에서 역할을 선택하세요
     </div>
     <!-- ===== ■.■. 테이블 =================================================== -->
     <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead>
         <tr style="background:#f9fafb;">
-          <th style="text-align:left;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;">메뉴</th>
-          <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">권한</th>
+          <th style="text-align:left;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;">
+            메뉴
+          </th>
+          <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">
+            권한
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(m,i) in cfModalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
           <td :style="{padding:'6px 12px 6px '+(12+m._depth*16)+'px',fontWeight:m.menuType==='폴더'?700:400,borderBottom:'1px solid #f3f4f6'}">
-            <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">📁</span>
-            <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>
+            <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">
+              📁
+            </span>
+            <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">
+              ·
+            </span>
             {{ m.menuNm }}
           </td>
           <td style="text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;">
             <span v-if="m._perm!=='없음'" :style="{background:fnPermBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">
               {{ m._perm }}
             </span>
-            <span v-else style="color:#d1d5db;font-size:11px;">—</span>
+            <span v-else style="color:#d1d5db;font-size:11px;">
+              —
+            </span>
           </td>
         </tr>
       </tbody>
     </table>
   </template>
-    <!-- ===== □.□. 테이블 =================================================== -->
+  <!-- ===== □.□. 테이블 =================================================== -->
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #footer-extra>
     <span style="font-size:11px;color:#6b7280;">
-      <span v-if="uiState.roleModalTemp">선택: <b style="color:#2563eb;">{{ roleNmByCode(uiState.roleModalTemp) }}</b></span>
-      <span v-else style="color:#9ca3af;">역할을 선택해주세요</span>
+      <span v-if="uiState.roleModalTemp">
+        선택:
+        <b style="color:#2563eb;">
+          {{ roleNmByCode(uiState.roleModalTemp) }}
+        </b>
+      </span>
+      <span v-else style="color:#9ca3af;">
+        역할을 선택해주세요
+      </span>
     </span>
   </template>
 </bo-role-select-modal>
 </div>
-
-  <!-- ===== □. 영역 ====================================================== -->`,
+<!-- ===== □. 영역 ====================================================== -->
+`,
 };

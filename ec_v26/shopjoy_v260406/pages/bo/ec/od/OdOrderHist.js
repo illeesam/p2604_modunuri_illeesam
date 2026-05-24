@@ -14,14 +14,47 @@ window.OdOrderHist = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const orders = reactive([]);
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', tabMode2: 'tab'});
-    const tab = Vue.toRef(uiState, 'tab');
-    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
-    const claims = reactive([]);
-    const deliveries = reactive([]);
 
-    // onMounted에서 API 로드
+    const orders = reactive([]);                                                // 주문 목록
+    const claims = reactive([]);                                                // 클레임 목록
+    const deliveries = reactive([]);                                            // 배송 목록
+    const orderItems = reactive([]);                                            // 주문 항목 목록
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', tabMode2: 'tab' });
+    const botTab = Vue.toRef(uiState, 'botTab');
+    const tabMode2 = Vue.toRef(uiState, 'tabMode2');
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ OdOrderHist.js : handleBtnAction -> ', cmd, param);
+      // 탭 전환
+      if (cmd === 'tab-change') {
+        if (uiState.tabMode2 === 'tab') { uiState.botTab = param; }
+        return;
+      // 주문 참조 모달 열기
+      } else if (cmd === 'histList-order-ref') {
+        return showRefModal('order', props.orderId);
+      // 배송 상세로 이동
+      } else if (cmd === 'histList-dliv-edit') {
+        return props.navigate('odDlivDtl', { id: param });
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ OdOrderHist.js : handleSelectAction -> ', cmd, param);
+      // 클레임 그리드 행 참조 클릭
+      if (cmd === 'histList-row-ref-click') {
+        return showRefModal(param.type, param.id);
+      // 클레임 그리드 행 상세로 이동
+      } else if (cmd === 'histList-row-claim-edit') {
+        return props.navigate('odClaimDtl', { id: param });
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchData — 처리 */
@@ -45,19 +78,16 @@ window.OdOrderHist = {
       }
     };
 
-        watch(botTab, v => { window._ecOrderHistState.tab = v; });
+    watch(botTab, v => { window._ecOrderHistState.tab = v; });
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       uiState.isPageCodeLoad = true;
-};
-
+    };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
-
-    const orderItems = reactive([]);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -82,11 +112,9 @@ window.OdOrderHist = {
       ].filter(h => h.date !== '-');
     });
 
-    const botTab = Vue.toRef(uiState, 'botTab');
-
-    /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
+    /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
     const itemGridColumns = [
       { key: 'no',         label: 'No',     style: 'width:40px;text-align:center;' },
       { key: 'prodNm',     label: '상품명' },
@@ -112,35 +140,47 @@ window.OdOrderHist = {
       { key: 'requestDate',   label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
     ];
 
-
     // ===== return (템플릿 노출) ===============================================
 
-    return { orders, uiState, orderItems, cfRelatedDliv, cfRelatedClaims, cfDlivHistory, showTab, claims, deliveries,
-             itemGridColumns, dlivHistGridColumns, claimGridColumns, showRefModal, orderId: props.orderId, navigate: props.navigate,
-             botTab, tabMode2 };
+    return {
+      uiState, orderItems, botTab, tabMode2,                                                              // 상태 / 데이터
+      itemGridColumns, dlivHistGridColumns, claimGridColumns,                                             // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
+      cfRelatedDliv, cfRelatedClaims, cfDlivHistory,                                                      // computed
+      showTab,                                                                                            // 헬퍼
+      orderId: props.orderId,                                                                             // template 직접 참조
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 이력 화면 =================================================== -->
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
-    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
+    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
+      ●
+    </span>
     이력정보
   </div>
   <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="tabMode2!=='tab'" @click="botTab='products'">
+      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'products')">
         📦 구성 상품
-        <span class="tab-count">{{ orderItems.length }}</span>
+        <span class="tab-count">
+          {{ orderItems.length }}
+        </span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="botTab='dliv'">
+      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'dliv')">
         🚚 배송 이력
-        <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span>
+        <span class="tab-count">
+          {{ cfRelatedDliv ? 1 : 0 }}
+        </span>
       </button>
-      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="botTab='claims'">
+      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'claims')">
         ↩ 연관 클레임
-        <span class="tab-count">{{ cfRelatedClaims.length }}</span>
+        <span class="tab-count">
+          {{ cfRelatedClaims.length }}
+        </span>
       </button>
     </div>
   </div>
@@ -149,54 +189,90 @@ window.OdOrderHist = {
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 구성 상품 ================================================= -->
     <div class="card" v-show="showTab('products')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 구성 상품 <span class="tab-count">{{ orderItems.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        📦 구성 상품
+        <span class="tab-count">
+          {{ orderItems.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
         empty-text="구성 상품 정보가 없습니다." row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-secondary btn-sm" @click="showRefModal('order', orderId)">보기</button>
+          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('histList-order-ref')">
+            보기
+          </button>
         </template>
       </bo-grid>
     </div>
     <!-- ===== □.□. 구성 상품 ================================================= -->
     <!-- ===== ■.■. 배송 이력 ================================================= -->
     <div class="card" v-show="showTab('dliv')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🚚 배송 이력 <span class="tab-count">{{ cfRelatedDliv ? 1 : 0 }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        🚚 배송 이력
+        <span class="tab-count">
+          {{ cfRelatedDliv ? 1 : 0 }}
+        </span>
+      </div>
       <template v-if="cfRelatedDliv">
         <div style="margin-bottom:14px;padding:12px 16px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;">
           <div style="font-size:13px;">
-            <span style="color:#888;">수령인</span>
-            <b>{{ cfRelatedDliv.recvNm }}</b>
+            <span style="color:#888;">
+              수령인
+            </span>
+            <b>
+              {{ cfRelatedDliv.recvNm }}
+            </b>
             &nbsp;·&nbsp;
-            <span style="color:#888;">택배사</span>
-            <b>{{ cfRelatedDliv.outboundCourierCdNm || cfRelatedDliv.outboundCourierCd }}</b>
+            <span style="color:#888;">
+              택배사
+            </span>
+            <b>
+              {{ cfRelatedDliv.outboundCourierCdNm || cfRelatedDliv.outboundCourierCd }}
+            </b>
             &nbsp;·&nbsp;
-            <span style="color:#888;">운송장</span>
-            <b>{{ cfRelatedDliv.outboundTrackingNo || '-' }}</b>
+            <span style="color:#888;">
+              운송장
+            </span>
+            <b>
+              {{ cfRelatedDliv.outboundTrackingNo || '-' }}
+            </b>
           </div>
-          <button class="btn btn-blue btn-sm" @click="navigate('odDlivDtl',{id:cfRelatedDliv.dlivId})">배송 수정</button>
+          <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-dliv-edit', cfRelatedDliv.dlivId)">
+            배송 수정
+          </button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="dlivHistGridColumns" :rows="cfDlivHistory"
-          empty-text="배송 이력이 없습니다."></bo-grid>
+          empty-text="배송 이력이 없습니다.">
+        </bo-grid>
       </template>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">배송 정보가 없습니다.</div>
+      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">
+        배송 정보가 없습니다.
+      </div>
     </div>
     <!-- ===== □.□. 배송 이력 ================================================= -->
     <!-- ===== ■.■. 연관 클레임 ================================================ -->
     <div class="card" v-show="showTab('claims')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+        ↩ 연관 클레임
+        <span class="tab-count">
+          {{ cfRelatedClaims.length }}
+        </span>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
-        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
+        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-row-ref-click', {type, id})" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="navigate('odClaimDtl',{id:row.claimId})">상세</button>
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('histList-row-claim-edit', row.claimId)">
+            상세
+          </button>
         </template>
       </bo-grid>
     </div>
   </div>
 </div>
-
-    <!-- ===== □.□. 연관 클레임 ================================================ -->
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->`,
+<!-- ===== □.□. 연관 클레임 ================================================ -->
+<!-- ===== □. 탭 컨텐츠 =================================================== -->
+`,
 };

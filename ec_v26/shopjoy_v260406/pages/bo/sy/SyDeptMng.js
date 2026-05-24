@@ -9,18 +9,125 @@ window.SyDeptMng = {
 
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const depts = reactive([]);
-    const uiState = reactive({ checkAll: false, loading: false, error: null, isPageCodeLoad: false, selectedTreeId: null, focusedIdx: null});
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const depts = reactive([]);                    // 부서 트리 데이터
+    const uiState = reactive({                     // UI 상태
+      checkAll: false, loading: false, error: null, isPageCodeLoad: false,
+      selectedTreeId: null, focusedIdx: null,
+    });
     const codes = reactive({ dept_status: [], use_yn: [], dept_types: ['경영','운영','기술','마케팅','CS','물류','재무','인사','법무','기타'] });
 
-    // 트리용 전체 로드 (dept_id, parent_dept_id, dept_nm 만)
+    /* ===== 검색조건 ===== */
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== 좌측 부서 트리 ===== */
+    const expanded = reactive(new Set([null]));
+
+    /* ===== CRUD 그리드 ===== */
+    const gridRows   = reactive([]);
+    let   _tempId    = -1;
+    const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
+
+    /* ===== 깊이 표시 상수 ===== */
+    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
+    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
+
+    /* depthBullet — 깊이 글머리 */
+    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
+
+    /* depthColor — 깊이 색상 */
+    const depthColor  = (d) => DEPTH_COLORS[d % 5];
+
+    /* ===== 상위부서 선택 모달 ===== */
+    const parentModal = reactive({ show: false, targetRow: null });
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyDeptMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return handleSearchList('DEFAULT');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        return handleSearchList();
+      // 부서 그리드 행 추가
+      } else if (cmd === 'depts-add') {
+        return addRow();
+      // 부서 그리드 저장
+      } else if (cmd === 'depts-save') {
+        return handleSave();
+      // 체크된 부서 일괄 삭제
+      } else if (cmd === 'depts-delete-checked') {
+        return deleteRows();
+      // 체크된 부서 일괄 취소
+      } else if (cmd === 'depts-cancel-checked') {
+        return cancelChecked();
+      // 부서 목록 엑셀 내보내기
+      } else if (cmd === 'depts-excel') {
+        return exportExcel();
+      // 부서 트리 전체 펼치기
+      } else if (cmd === 'deptTree-expand-all') {
+        return expandAll();
+      // 부서 트리 전체 접기
+      } else if (cmd === 'deptTree-collapse-all') {
+        return collapseAll();
+      // 부서 트리 노드 펼치기/접기 토글
+      } else if (cmd === 'deptTree-toggle') {
+        if (expanded.has(param)) { expanded.delete(param); } else { expanded.add(param); }
+        return;
+      // 상위부서 선택 모달 닫기
+      } else if (cmd === 'parentModal-close') {
+        parentModal.show = false;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyDeptMng.js : handleSelectAction -> ', cmd, param);
+      // 부서 그리드 셀 값 변경 감지
+      if (cmd === 'depts-row-cell-change') {
+        return onCellChange(param);
+      // 부서 그리드 행 삭제 마킹
+      } else if (cmd === 'depts-row-delete') {
+        return deleteRow(param);
+      // 부서 그리드 행 변경 취소
+      } else if (cmd === 'depts-row-cancel') {
+        return cancelRow(param);
+      // 좌측 트리 노드 선택 → 우측 그리드 필터링
+      } else if (cmd === 'deptTree-select') {
+        uiState.selectedTreeId = param;
+        return handleGridSearch();
+      // 상위부서 선택 모달 열기 (parentPick 컬럼)
+      } else if (cmd === 'parentModal-open') {
+        return openParentModal(param);
+      // 상위부서 모달에서 상위 선택 → 행 parentDeptId 갱신
+      } else if (cmd === 'parentModal-select') {
+        if (parentModal.targetRow) {
+          parentModal.targetRow.parentDeptId = param.deptId;
+          parentModal.targetRow._depth = 0;
+          onCellChange(parentModal.targetRow);
+        }
+        parentModal.show = false;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
-    /* handleSearchTree — 처리 */
+    /* handleSearchTree — 부서 트리 조회 */
     const handleSearchTree = async () => {
       try {
         const res = await boApiSvc.syDept.getTree('부서관리', '트리조회');
@@ -31,8 +138,7 @@ window.SyDeptMng = {
       }
     };
 
-    // 그리드용 조회 (트리 노드 선택 or 검색 조건 기반)
-    /* handleGridSearch — 처리 */
+    /* handleGridSearch — 그리드 목록 조회 (트리 노드 선택 or 검색 조건 기반) */
     const handleGridSearch = async () => {
       uiState.loading = true;
       try {
@@ -56,30 +162,13 @@ window.SyDeptMng = {
       }
     };
 
-    /* handleSearchList — 목록 조회 */
-
+    /* handleSearchList — 목록 조회 (트리 + 그리드) */
     const handleSearchList = async () => {
       await handleSearchTree();
       await handleGridSearch();
     };
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* 좌측 부서 트리 */
-    const expanded = reactive(new Set([null]));
-
-    /* toggleNode — 노드 토글 */
-    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-
-    /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedTreeId = id; handleGridSearch(); };
-
-    /* buildTree — 빌드 */
+    /* buildTree — 트리 빌드 */
     const buildTree = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
@@ -88,11 +177,7 @@ window.SyDeptMng = {
         if (d.parentDeptId && map[d.parentDeptId]) { map[d.parentDeptId].children.push(map[d.deptId]); }
         else { roots.push(map[d.deptId]); }
       });
-
-      /* sort — 정렬 */
       const sort = arr => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-
-      /* sortAll — 정렬 */
       const sortAll = (node) => { sort(node.children); node.children.forEach(sortAll); };
       sort(roots).forEach(sortAll);
       return { deptId: null, deptNm: '전체', children: roots };
@@ -100,26 +185,17 @@ window.SyDeptMng = {
 
     const cfTree = computed(() => buildTree(depts));
 
-    /* expandAll — 펼치기 전체 */
+    /* expandAll — 트리 전체 펼치기 */
     const expandAll = () => {
-      /* walk — walk */
       const walk = (n) => { expanded.add(n.deptId); n.children.forEach(walk); };
       cfTree.value.children.forEach(walk);
       expanded.add(null);
     };
 
-    /* collapseAll — 접기 전체 */
+    /* collapseAll — 트리 전체 접기 */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(async () => {
-      await handleSearchTree();
-      expanded.add(null);
-      await handleGridSearch();
-    });
-
     /* fnLoadCodes — 공통코드 로드 */
-
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.dept_status = codeStore.sgGetGrpCodes('DEPT_STATUS');
@@ -127,15 +203,14 @@ window.SyDeptMng = {
       uiState.isPageCodeLoad = true;
     };
 
-    const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
+    // ★ onMounted — 진입 시 트리 + 그리드 조회
+    onMounted(async () => {
+      await handleSearchTree();
+      expanded.add(null);
+      await handleGridSearch();
+    });
 
-    /* -- CRUD 그리드 -- */
-    const gridRows   = reactive([]);
-    let   _tempId    = -1;
-
-    const EDIT_FIELDS = ['deptCode', 'deptNm', 'parentDeptId', 'deptTypeCd', 'sortOrd', 'useYn', 'deptRemark'];
-
-    /* buildTreeRows — 빌드 */
+    /* buildTreeRows — 그리드용 트리 행 빌드 */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, _children: [] }; });
@@ -145,8 +220,6 @@ window.SyDeptMng = {
         else { roots.push(map[d.deptId]); }
       });
       const result = [];
-
-      /* traverse — traverse */
       const traverse = (node, depth) => {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
@@ -162,21 +235,7 @@ window.SyDeptMng = {
                deptTypeCd: d.deptTypeCd, sortOrd: d.sortOrd, useYn: d.useYn, deptRemark: d.deptRemark },
     });
 
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      await handleSearchList('DEFAULT');
-    };
-
-    /* onReset — 초기화 */
-    const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
-      handleSearchList();
-    };
-
-    /* setFocused — 포커스 설정 */
-    const setFocused = (realIdx) => { uiState.focusedIdx = realIdx; };
-
-    /* onCellChange — 셀 변경 */
+    /* onCellChange — 셀 변경 감지 */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') { return; }
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
@@ -268,39 +327,8 @@ window.SyDeptMng = {
       }
     };
 
-    /* toggleCheckAll — 전체 체크 토글 */
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
-
-    /* parentNm — 상위 Nm */
-    const parentNm = (parentDeptId) => {
-      if (!parentDeptId) { return ''; }
-      const p = depts.find(d => d.deptId === parentDeptId);
-      return p ? p.deptNm : `ID:${parentDeptId}`;
-    };
-
-    const deptTreeModal = reactive({ show: false, targetRow: null });
-
-    /* openParentModal — 열기 */
-    const openParentModal = async (row) => { deptTreeModal.targetRow = row; await handleSearchList(); deptTreeModal.show = true; };
-
-    /* onParentSelect — 이벤트 */
-    const onParentSelect  = (dept) => {
-      if (deptTreeModal.targetRow) { deptTreeModal.targetRow.parentDeptId = dept.deptId; deptTreeModal.targetRow._depth = 0; onCellChange(deptTreeModal.targetRow); }
-      deptTreeModal.show = false;
-    };
-
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
-    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
-
-    /* depthBullet — 깊이 글머리 */
-    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
-
-    /* depthColor — 깊이 색상 */
-    const depthColor  = (d) => DEPTH_COLORS[d % 5];
-
-    /* fnStatusClass — 상태 배지 클래스 */
-    const fnStatusClass = s => ({ null: 'badge-gray', N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
+    /* openParentModal — 상위부서 선택 모달 열기 */
+    const openParentModal = async (row) => { parentModal.targetRow = row; await handleSearchList(); parentModal.show = true; };
 
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(
@@ -309,11 +337,19 @@ window.SyDeptMng = {
       '부서목록.csv'
     );
 
-    /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
 
-        // --- [컬럼 정의] ---
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
 
-        const baseSearchColumns = [
+    /* parentNm — 상위 부서명 */
+    const parentNm = (parentDeptId) => {
+      if (!parentDeptId) { return ''; }
+      const p = depts.find(d => d.deptId === parentDeptId);
+      return p ? p.deptNm : `ID:${parentDeptId}`;
+    };
+
+    const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'deptCode', label: '부서코드' },
@@ -325,14 +361,12 @@ window.SyDeptMng = {
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
     const baseGridColumns = [
       { key: 'deptCode',     label: '부서코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
       { key: 'parentDeptId', label: '상위부서', style: 'min-width:150px;',
-        parentPick: { label: parentNm, open: openParentModal, title: '상위부서 선택' } },
+        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row), title: '상위부서 선택' } },
       { key: 'deptTypeCd',   label: '유형',     style: 'width:90px;',     edit: 'select', options: codes.dept_types.map(t => ({ value: t, label: t })) },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
       { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
@@ -343,38 +377,47 @@ window.SyDeptMng = {
 
     // ===== return (템플릿 노출) ===============================================
 
-    return { depts, uiState, codes, expanded, toggleNode, selectNode, expandAll, collapseAll, cfTree,
-      searchParam, cfTypeOptions,
-      cfSiteNm, baseSearchColumns, baseGridColumns,
-      gridRows,
-      setFocused, onSearch, onReset, onCellChange,
-      addRow, deleteRow, cancelRow, cancelChecked, deleteRows, handleSave,
-      toggleCheckAll, parentNm,
-      deptTreeModal, openParentModal, onParentSelect,
-      depthBullet, depthColor, fnStatusClass,
-      exportExcel,
+    return {
+      depts, uiState, codes, searchParam, gridRows, expanded, parentModal,                                   // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                                                    // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
+      cfTree,                                                                                                // computed
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">부서관리</div>
+  <div class="page-title">
+    부서관리
+  </div>
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+    <!-- ===== ■.■. 부서 트리 ================================================= -->
     <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 부서</span></div>
+      <div class="toolbar" style="margin-bottom:8px;">
+        <span class="list-title" style="font-size:13px;">
+          📂 부서
+        </span>
+      </div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="expandAll" style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-        <button class="btn btn-sm" @click="collapseAll" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expand-all')" style="flex:1;font-size:11px;">
+          ▼ 전체펼치기
+        </button>
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapse-all')" style="flex:1;font-size:11px;">
+          ▶ 전체닫기
+        </button>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId" :on-toggle="toggleNode" :on-select="selectNode" :depth="0" />
+        <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId"
+          :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
+          :on-select="id => handleSelectAction('deptTree-select', id)"
+          :depth="0" />
       </div>
     </div>
     <div>
@@ -384,23 +427,23 @@ window.SyDeptMng = {
         list-title="부서목록" :show-export="true" :draggable="false"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
-        @add="addRow" @save="handleSave"
-        @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-        @cell-change="onCellChange" @export="exportExcel">
+        @add="handleBtnAction('depts-add')" @save="handleBtnAction('depts-save')"
+        @delete-checked="handleBtnAction('depts-delete-checked')" @cancel-checked="handleBtnAction('depts-cancel-checked')"
+        @cell-change="row => handleSelectAction('depts-row-cell-change', row)"
+        @export="handleBtnAction('depts-excel')">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row" :allow-delete-null="true"
-            @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
+            @cancel="handleSelectAction('depts-row-cancel', idx)"
+            @delete="handleSelectAction('depts-row-delete', idx)" />
         </template>
       </bo-grid-crud>
-      <dept-tree-modal
-        v-if="deptTreeModal && deptTreeModal.show" :exclude-id="deptTreeModal.targetRow && deptTreeModal.targetRow.deptId > 0 ? deptTreeModal.targetRow.deptId : null"
-        @select="onParentSelect"
-        @close="deptTreeModal.show=false" />
+      <!-- ===== ■.■.■. 상위부서 선택 모달 ========================================= -->
+      <dept-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.deptId > 0 ? parentModal.targetRow.deptId : null" @select="dept => handleSelectAction('parentModal-select', dept)" @close="handleBtnAction('parentModal-close')" />
     </div>
   </div>
+  <!-- ===== □. 본문 영역 =================================================== -->
 </div>
-
-  <!-- ===== □. 본문 영역 =================================================== -->`,
+`,
 };
 
 /* BoDeptTreeNode (구 DeptTreeNode) 는 components/comp/BoComp.js 로 이동. 태그: <bo-dept-tree-node> */

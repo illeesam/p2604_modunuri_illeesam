@@ -8,26 +8,71 @@ window.MbMemGroupMng = {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, checkAll: false, focusedIdx: null });
-    const codes = reactive({ use_yn: [] });
-    const searchParam = reactive({ use: '' });
-    const gridRows = reactive([]);
-    let _tempId = -1;
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const uiState = reactive({                     // UI 상태
+      loading: false, error: null, isPageCodeLoad: false,
+      checkAll: false, focusedIdx: null,
+    });
+    const codes = reactive({ use_yn: [] }); // 공통코드
 
+    /* ===== 검색조건 ===== */
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => ({ searchValue: '', use: '' });
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== CRUD 그리드 ===== */
+    const groups = reactive([]);                   // 회원그룹 목록 (CRUD 그리드 데이터)
+    let _tempId = -1;                              // 신규 행 임시 ID (음수)
     const EDIT_FIELDS = ['groupNm', 'groupMemo', 'useYn'];
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MbMemGroupMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return handleSearchList();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        return handleSearchList();
+      // 회원그룹 그리드 저장
+      } else if (cmd === 'groups-save') {
+        return handleSave();
+      // 회원그룹 그리드 행 추가
+      } else if (cmd === 'groups-add') {
+        return addRow();
+      // 체크된 회원그룹 일괄 삭제
+      } else if (cmd === 'groups-delete-checked') {
+        return deleteRows();
+      // 체크된 회원그룹 일괄 취소
+      } else if (cmd === 'groups-cancel-checked') {
+        return cancelChecked();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
     };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MbMemGroupMng.js : handleSelectAction -> ', cmd, param);
+      // 회원그룹 그리드 행 삭제 마킹
+      if (cmd === 'groups-row-delete') {
+        return deleteRow(param);
+      // 회원그룹 그리드 행 변경 취소
+      } else if (cmd === 'groups-row-cancel') {
+        return cancelRow(param);
+      // 회원그룹 그리드 셀 값 변경 감지
+      } else if (cmd === 'groups-row-cell-change') {
+        return onCellChange(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* makeRow — 행 생성 */
     const makeRow = (b) => ({
@@ -36,8 +81,6 @@ window.MbMemGroupMng = {
       _row_check: false,
       _row_org: EDIT_FIELDS.reduce((acc, f) => { acc[f] = b[f]; return acc; }, {}),
     });
-
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
@@ -49,7 +92,7 @@ window.MbMemGroupMng = {
         };
         const res = await boApiSvc.mbMemGroup.getPage(params, '회원그룹관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
-        gridRows.splice(0, gridRows.length, ...list.map(b => makeRow(b)));
+        groups.splice(0, groups.length, ...list.map(b => makeRow(b)));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -59,20 +102,7 @@ window.MbMemGroupMng = {
       }
     };
 
-    onMounted(() => {
-      handleSearchList();
-    });
-
-    /* onSearch — 조회 */
-    const onSearch = async () => { await handleSearchList(); };
-
-    /* onReset — 초기화 */
-    const onReset = () => { Object.assign(searchParam, { use: '' }); handleSearchList(); };
-
-    /* setFocused — 포커스 설정 */
-    const setFocused = (idx) => { uiState.focusedIdx = idx; };
-
-    /* onCellChange — 셀 변경 */
+    /* onCellChange — 셀 변경 감지 */
     const onCellChange = (row) => {
       if (row._row_status === 'I' || row._row_status === 'D') { return; }
       const changed = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f]));
@@ -85,16 +115,16 @@ window.MbMemGroupMng = {
         memberGroupId: _tempId--, groupNm: '', groupMemo: '', memberCnt: 0, useYn: 'Y',
         _row_status: 'I', _row_check: false, _row_org: null,
       };
-      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
-      gridRows.splice(insertAt, 0, newRow);
+      const insertAt = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : groups.length;
+      groups.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
     };
 
     /* deleteRow — 행 삭제 */
     const deleteRow = (idx) => {
-      const row = gridRows[idx];
+      const row = groups[idx];
       if (row._row_status === 'I') {
-        gridRows.splice(idx, 1);
+        groups.splice(idx, 1);
         if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else {
         row._row_status = 'D';
@@ -103,9 +133,9 @@ window.MbMemGroupMng = {
 
     /* cancelRow — 행 취소 */
     const cancelRow = (idx) => {
-      const row = gridRows[idx];
+      const row = groups[idx];
       if (row._row_status === 'I') {
-        gridRows.splice(idx, 1);
+        groups.splice(idx, 1);
         if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
       } else {
         if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
@@ -115,34 +145,31 @@ window.MbMemGroupMng = {
 
     /* deleteRows — 선택 행 삭제 */
     const deleteRows = () => {
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        if (!gridRows[i]._row_check) { continue; }
-        if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
-        else { gridRows[i]._row_status = 'D'; }
+      for (let i = groups.length - 1; i >= 0; i--) {
+        if (!groups[i]._row_check) { continue; }
+        if (groups[i]._row_status === 'I') { groups.splice(i, 1); }
+        else { groups[i]._row_status = 'D'; }
       }
     };
 
     /* cancelChecked — 선택 행 취소 */
     const cancelChecked = () => {
-      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.memberGroupId));
+      const ids = new Set(groups.filter(r => r._row_check).map(r => r.memberGroupId));
       if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
-      for (let i = gridRows.length - 1; i >= 0; i--) {
-        const row = gridRows[i];
+      for (let i = groups.length - 1; i >= 0; i--) {
+        const row = groups[i];
         if (!ids.has(row.memberGroupId)) { continue; }
         if (row._row_status === 'N') { continue; }
-        if (row._row_status === 'I') { gridRows.splice(i, 1); }
+        if (row._row_status === 'I') { groups.splice(i, 1); }
         else if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; }
       }
     };
 
-    /* toggleCheckAll — 전체 체크 토글 */
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
-
     /* handleSave — 저장 */
     const handleSave = async () => {
-      const iRows = gridRows.filter(r => r._row_status === 'I');
-      const uRows = gridRows.filter(r => r._row_status === 'U');
-      const dRows = gridRows.filter(r => r._row_status === 'D');
+      const iRows = groups.filter(r => r._row_status === 'I');
+      const uRows = groups.filter(r => r._row_status === 'U');
+      const dRows = groups.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) {
         showToast('변경된 데이터가 없습니다.', 'error'); return;
       }
@@ -167,16 +194,26 @@ window.MbMemGroupMng = {
       }
     };
 
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // ★ onMounted — 진입 시 목록 초기 조회
+    onMounted(() => {
+      handleSearchList();
+    });
+
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+
     /* fnStatusClass — 상태 배지 클래스 */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
-    const cfVisibleCount = computed(() => gridRows.filter(r => r._row_status !== 'D').length);
 
-        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    const cfVisibleCount = computed(() => groups.filter(r => r._row_status !== 'D').length);
 
-
-        // --- [컬럼 정의] ---
-
-        const baseSearchColumns = [
+    const baseSearchColumns = [
       { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
       { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
@@ -194,39 +231,41 @@ window.MbMemGroupMng = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
     return {
-      uiState, codes, searchParam, gridRows, baseSearchColumns, baseGridColumns,
-      onSearch, onReset, setFocused, onCellChange,
-      addRow, deleteRow, cancelRow, deleteRows, cancelChecked, toggleCheckAll,
-      handleSave, fnStatusClass, cfVisibleCount,
+      uiState, codes, searchParam, groups,                                             // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      cfVisibleCount,                                                                  // computed
+      fnStatusClass,                                                                   // 헬퍼
     };
   },
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">회원그룹관리</div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
+  <div class="page-title">
+    회원그룹관리
+  </div>
+  <!-- ===== ■. 검색 ======================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. CRUD 그리드 ================================================ -->
   <bo-grid-crud
-    :columns="baseGridColumns" :rows="gridRows" row-key="memberGroupId"
+    :columns="baseGridColumns" :rows="groups" row-key="memberGroupId"
     list-title="회원그룹 목록"
     :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"
-    @add="addRow" @save="handleSave"
-    @delete-checked="deleteRows" @cancel-checked="cancelChecked"
-    @cell-change="onCellChange">
+    @add="handleBtnAction('groups-add')" @save="handleBtnAction('groups-save')"
+    @delete-checked="handleBtnAction('groups-delete-checked')" @cancel-checked="handleBtnAction('groups-cancel-checked')"
+    @cell-change="row => handleSelectAction('groups-row-cell-change', row)">
     <template #row-actions="{ row, idx }">
-      <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
+      <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-row-cancel', idx)" @delete="handleSelectAction('groups-row-delete', idx)" />
     </template>
   </bo-grid-crud>
+  <!-- ===== □. CRUD 그리드 ================================================ -->
 </div>
-
-  <!-- ===== □. CRUD 그리드 ================================================ -->`
+`,
 };

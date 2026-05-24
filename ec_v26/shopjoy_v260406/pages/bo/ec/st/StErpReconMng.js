@@ -37,6 +37,49 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StErpReconMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      // 안내 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StErpReconMng.js : handleSelectAction -> ', cmd, param);
+      // 대사 차이 조정 처리
+      if (cmd === 'recons-row-fix') {
+        return doFix(param);
+      // 페이지 번호 변경
+      } else if (cmd === 'recons-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'recons-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
@@ -153,7 +196,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, handleDateRangeChange, codes, pager, reconList, baseSearchColumns, baseGridColumns, cfSummary, doFix, fnDiffBadge, fnTypeBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return {
+      uiState, codes, pager, reconList, searchParam,                                  // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch
+      cfSummary,                                                                       // computed
+      fnDiffBadge, fnTypeBadge, fmtW,                                                  // 헬퍼
+    };
   },
   template: /* html */`
 <div>
@@ -162,7 +211,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다. • 차이 상태: 일치 / 차이발생 / 오류 • [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다. • 유형 필터: 정산지급 / 수수료 / 조정 / 기타
     </div>
@@ -171,7 +220,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -198,10 +247,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="reconList" :pager="pager" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      @set-page="setPage" @size-change="onSizeChange">
+      @set-page="n => handleSelectAction('recons-set-page', n)" @size-change="handleSelectAction('recons-size-change')">
       <template #head-actions>액션</template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="doFix(r)">조정</button>
+        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="handleSelectAction('recons-row-fix', r)">조정</button>
       </template>
     </bo-grid>
   </div>

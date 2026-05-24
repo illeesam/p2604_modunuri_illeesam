@@ -14,29 +14,67 @@ window.PdRestockNotiMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);
     const members = reactive([]);
-    const restockNotis = reactive([]);
+    const restockNotis = reactive([]);             // 재입고알림 목록 (메인 그리드)
+    const checkedIds = reactive(new Set());        // 선택된 알림 ID Set
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       product_statuses: [],
       send_yn_opts: [{codeValue:'Y',codeLabel:'발송완료'},{codeValue:'N',codeLabel:'미발송'}],
     });
 
-    /* 재입고 알림 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    /* ===== 검색조건 ===== */
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => ({ prod: '', noti: '' });
+    const searchParam = reactive(_initSearchParam());
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdRestockNotiMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList();
+      // 선택된 항목 알림 발송
+      } else if (cmd === 'restockNotis-send') {
+        return handleSend();
+      // 선택된 항목 전체 토글
+      } else if (cmd === 'restockNotis-toggle-all') {
+        if (allChecked.value) { restockNotis.forEach(r => checkedIds.delete(r.restockNotiId)); }
+        else { restockNotis.forEach(r => checkedIds.add(r.restockNotiId)); }
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // onMounted에서 API 로드
+    /* handleSelectAction — 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdRestockNotiMng.js : handleSelectAction -> ', cmd, param);
+      // 단일 행 체크 토글
+      if (cmd === 'restockNotis-row-toggle') {
+        if (checkedIds.has(param)) { checkedIds.delete(param); } else { checkedIds.add(param); }
+        return;
+      // 페이지 번호 변경
+      } else if (cmd === 'restockNotis-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'restockNotis-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchList — 목록 조회 */
@@ -59,39 +97,7 @@ window.PdRestockNotiMng = {
       }
     };
 
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ prod: '', noti: '' });
-    const searchParam = reactive(_initSearchParam());
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');    });
-    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const checkedIds = reactive(new Set());
-
-    /* getProdNm — 조회 */
-    const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
-
-    /* getMemNm — 조회 */
-    const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    const allChecked    = computed(() => restockNotis.length > 0 && restockNotis.every(r => checkedIds.has(r.restockNotiId)));
-
-    /* toggleAll — 전체 토글 */
-    const toggleAll     = () => { if (allChecked.value) restockNotis.forEach(r => checkedIds.delete(r.restockNotiId)); else restockNotis.forEach(r => checkedIds.add(r.restockNotiId)); };
-
-    /* toggleOne — 토글 */
-    const toggleOne     = id => { if (checkedIds.has(id)) checkedIds.delete(id); else checkedIds.add(id); };
-
-    /* fnIsChecked — 유틸 */
-    const fnIsChecked   = id => checkedIds.has(id);
-    const checkedCount  = computed(() => checkedIds.size);
-
-    /* handleSend — 처리 */
+    /* handleSend — 알림 발송 */
     const handleSend = async () => {
       const targets = (restockNotis||[]).filter(r => checkedIds.has(r.restockNotiId) && r.notiYn === 'N');
       if (!targets.length) { showToast('발송할 미발송 항목을 선택하세요.', 'info'); return; }
@@ -110,34 +116,45 @@ window.PdRestockNotiMng = {
       }
     };
 
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchList('DEFAULT');
+    /* getProdNm — 상품명 조회 */
+    const getProdNm = id => { const p = (products||[]).find(p => p.productId === id); return p ? p.productName : ('상품#'+id); };
+
+    /* getMemNm — 회원명 조회 */
+    const getMemNm = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
+
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* fnIsChecked — 체크 여부 */
+    const fnIsChecked = id => checkedIds.has(id);
+
+    /* fnYnBadge — 사용여부 배지 */
+    const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    const allChecked = computed(() => restockNotis.length > 0 && restockNotis.every(r => checkedIds.has(r.restockNotiId)));
+    const checkedCount = computed(() => checkedIds.size);
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
     };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* onReset — 초기화 */
-    const onReset = async () => {
-      Object.assign(searchParam, _initSearchParam());
-      pager.pageNo = 1;
-      await handleSearchList();
-    };
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
 
-    /* setPage — 설정 */
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    // ===== 사용자 함수 (헬퍼 / 컬럼정의) ======================================
 
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* fnYnBadge — 유틸 */
-    const fnYnBadge  = v => v === 'Y' ? 'badge-green' : 'badge-gray';
-
-    /* AG-Grid 식 컬럼 정의 — width/align 등 헤더·셀 속성을 컬럼 객체에 선언.
-       체크박스 열은 BoGrid 의 selectable 기능이 자동 렌더하므로 컬럼에서 제외. */
-        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-
-        // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+    const baseSearchColumns = [
       { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
       { key: 'noti', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
     ];
@@ -154,27 +171,30 @@ window.PdRestockNotiMng = {
 
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { restockNotis, uiState, searchParam, pager, baseSearchColumns, baseGridColumns, setPage, onSearch, onReset,
-             checkedIds, checkedCount, allChecked, toggleAll, toggleOne, fnIsChecked, handleSend, fnYnBadge, getProdNm, getMemNm, onSizeChange,
-             codes };
+    return {
+      restockNotis, uiState, codes, searchParam, pager,                                 // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                               // dispatch
+      checkedCount, allChecked,                                                          // computed
+      fnIsChecked, fnYnBadge,                                                            // 헬퍼
+    };
   },
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">재입고알림관리</div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
+  <!-- ===== □. 검색 ====================================================== -->
+  <!-- ===== ■. 목록 그리드 =================================================== -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">재입고알림 목록</span>
       <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
-      <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleSend">
+      <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleBtnAction('restockNotis-send')">
         📣 알림발송 ({{ checkedCount }}건)
       </button>
     </div>
@@ -183,11 +203,10 @@ window.PdRestockNotiMng = {
       :columns="baseGridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
-      @set-page="setPage" @size-change="onSizeChange"
-      @toggle-check="toggleOne" @toggle-check-all="toggleAll"></bo-grid>
+      @set-page="n => handleSelectAction('restockNotis-set-page', n)" @size-change="handleSelectAction('restockNotis-size-change')"
+      @toggle-check="id => handleSelectAction('restockNotis-row-toggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggle-all')"></bo-grid>
   </div>
+  <!-- ===== □. 목록 그리드 =================================================== -->
 </div>
-
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->`
+`
 };

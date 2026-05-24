@@ -35,6 +35,40 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StReconOrderMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StReconOrderMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'reconOrders-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      } else if (cmd === 'reconOrders-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
@@ -144,7 +178,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, handleDateRangeChange, codes, pager, rows, baseSearchColumns, baseGridColumns, cfSummary, fnDiffBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return {
+      uiState, codes, pager, rows, searchParam,                                       // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch
+      cfSummary,                                                                       // computed
+      fnDiffBadge, fmtW,                                                               // 헬퍼
+    };
   },
   template: /* html */`
 <div>
@@ -153,7 +193,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">주문 데이터와 정산 수집원장 간 금액 불일치를 검출하고 대사 처리합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 주문금액(order_amt) vs 정산수집 금액(recon_amt) 차이를 자동 비교합니다. • 차이 상태: 일치 / 차이발생 / 검토중 / 처리완료 • 차이 발생 건은 원인 파악 후 조정(StSettleAdjMng)으로 처리하거나 수동 대사 확인합니다.
     </div>
@@ -164,7 +204,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px"
       :columns="baseSearchColumns" :param="searchParam"
-      @search="onSearch" @reset="onReset" />
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
     <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
@@ -192,7 +232,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      @set-page="setPage" @size-change="onSizeChange"></bo-grid>
+      @set-page="n => handleSelectAction('reconOrders-set-page', n)" @size-change="handleSelectAction('reconOrders-size-change')"></bo-grid>
   </div>
 </div>
 

@@ -18,34 +18,15 @@ window.OdDlivDtl = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', tabMode2: window._odDlivDtlState.tabMode || 'tab' });
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
     const codes = reactive({ dliv_statuses: [] });
-    const relatedClaims = reactive([]);
-
-    /* 배송 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const relatedClaims = reactive([]);                                         // 연관 클레임 목록
+    const dlivItems = reactive([]);                                             // 배송 항목 목록
 
     const cfIsNew = computed(() => !props.dtlId);
-
-        watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });
-
-        watch(() => uiState.tabMode2, v => { window._odDlivDtlState.tabMode = v; });
-
-    /* 배송 showTab */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
-    /* showTab — 표시 */
-    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     const form = reactive({
       dlivId: '', orderId: '', memberId: '', memberNm: '', recvNm: '',
@@ -58,7 +39,71 @@ window.OdDlivDtl = {
       orderId: yup.string().required('주문ID를 입력해주세요.'),
     });
 
-    // 단건 GET
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ OdDlivDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (신규 등록 또는 수정)
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 편집 취소 → 목록으로 이동
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('odDlivMng');
+      // 상세 보기 → 편집 모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 폼 닫기 → 목록으로 이동
+      } else if (cmd === 'form-close') {
+        return props.navigate('odDlivMng');
+      // 주문 참조 모달 열기
+      } else if (cmd === 'form-order-ref') {
+        return showRefModal('order', form.orderId);
+      // 회원 참조 모달 열기
+      } else if (cmd === 'form-member-ref') {
+        return showRefModal('member', form.memberId);
+      // 결제정보 그리드 참조 클릭
+      } else if (cmd === 'payment-ref-click') {
+        return showRefModal(param.type, param.id);
+      // 탭 전환
+      } else if (cmd === 'tab-change') {
+        if (uiState.tabMode2 === 'tab') { uiState.tab = param; }
+        return;
+      // 뷰모드 전환
+      } else if (cmd === 'viewMode-change') {
+        uiState.tabMode2 = param;
+        return;
+      // 배송 추적 창 열기
+      } else if (cmd === 'tracking-open') {
+        return openTracking(param.courier, param.trackingNo);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ OdDlivDtl.js : handleSelectAction -> ', cmd, param);
+      // (현재 행 단위 액션 없음 — placeholder)
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    watch(() => uiState.tab, v => { window._odDlivDtlState.tab = v; });
+    watch(() => uiState.tabMode2, v => { window._odDlivDtlState.tabMode = v; });
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* showTab — 표시 */
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
+
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -130,39 +175,12 @@ window.OdDlivDtl = {
       }
     };
 
-    const dlivItems = reactive([]);
-
-    /* sampleDlivItems — 샘플 배송 Items */
-    const sampleDlivItems = () => {
-      const base = form.prodNm || form.recvNm || '배송상품';
-      const total = 30000;
-      const shares = [0.50, 0.30, 0.20];
-      const discRates = [0.10, 0.08, 0.00];
-      const discLabels = ['신규10%','멤버8%','사은품'];
-      const defs = [
-        { emoji:'📦', prodNm: base,           color:'블랙',    size:'M',   qty:1 },
-        { emoji:'👟', prodNm: base+' 세트품', color:'아이보리',size:'260', qty:1 },
-        { emoji:'🎁', prodNm: '사은품',        color:'-',       size:'-',   qty:1 },
-      ];
-      return defs.map((d,i) => {
-        const paid = Math.round(total * shares[i]);
-        if (paid <= 0) { return null; }
-        const sale = discRates[i] > 0 ? Math.round(paid / (1 - discRates[i])) : paid;
-
-
-        return { ...d, salePrice: sale, discInfo: discLabels[i], discAmount: sale - paid, price: paid };
-      }).filter(Boolean);
-    };
-
-    /* initItems — 초기화 */
-    const initItems = async () => {};
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
-      await initItems();
     });
+
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
@@ -191,10 +209,7 @@ window.OdDlivDtl = {
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
     const DLIV_STEPS = ['준비중', '출고완료', '배송중', '배송완료'];
-    const cfCurrentStepIdx = computed(() => {
-      const i = DLIV_STEPS.indexOf(form.dlivStatusCd);
-      return i;
-    });
+    const cfCurrentStepIdx = computed(() => DLIV_STEPS.indexOf(form.dlivStatusCd));
     const cfPaymentList = computed(() => form.orderId ? [{
       orderId: form.orderId, dlivFee: form.shippingFee || 0,
       payMethod: form.payMethod || '-', payStatus: form.payStatus || '-',
@@ -225,10 +240,9 @@ window.OdDlivDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    /* 결제정보 컬럼 */
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-    // --- [컬럼 정의] ---
+    /* 결제정보 컬럼 */
     const paymentGridColumns = [
       { key: 'orderId',   label: '주문ID', refLink: 'order' },
       { key: 'dlivFee',   label: '배송비',   style: 'text-align:right;',
@@ -305,50 +319,47 @@ window.OdDlivDtl = {
       { type: 'rowBreak' },
       { key: 'dlivMemo',     label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
     ];
+
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { cfIsNew, tab, form, errors, handleSave, dlivItems, fmt, DLIV_STEPS, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, openTracking, cfFirstClaim, CLAIM_TYPE_COLOR, cfDtlMode, tabMode2, showTab, relatedClaims, codes, paymentGridColumns, editHistGridColumns, dlivItemGridColumns, baseFormColumns, showRefModal };
+    return {
+      form, errors, codes, dlivItems, relatedClaims, tab, tabMode2,                                                       // 상태 / 데이터
+      baseFormColumns, paymentGridColumns, editHistGridColumns, dlivItemGridColumns,                                      // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode, cfCurrentStepIdx, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfFirstClaim,        // computed
+      DLIV_STEPS, CLAIM_TYPE_COLOR,                                                                                       // 상수
+      fmt, showTab,                                                                                                       // 헬퍼
+      showRefModal,                                                                                                       // 모달 (template 직접 참조)
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '배송 등록' : (cfDtlMode ? '배송 상세' : '배송 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.dlivId }}</span>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ form.dlivId }}
+    </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 ======================================================= -->
   <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
     <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="t in cfTabs" :key="t?.id"
-        @click="tab=t.id"
-        :disabled="tabMode2!=='tab'"
-        :style="{
-        flex:1, padding:'11px 12px', border:'none', cursor: tabMode2==='tab'?'pointer':'default', fontSize:'12.5px',
-        borderRadius:'9px', transition:'all .18s',
-        display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'6px',
-        opacity: tabMode2==='tab' ? 1 : 0.55,
-        fontWeight: tab===t.id ? 800 : 600,
-        background: (tabMode2==='tab' && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-        color: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#666',
-        boxShadow: (tabMode2==='tab' && tab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none',
-        borderBottom: (tabMode2==='tab' && tab===t.id) ? '2px solid #e8587a' : '2px solid transparent'
-        }">
-        <span style="font-size:14px;">{{ t.icon }}</span>
-        <span>{{ t.label }}</span>
-        <span v-if="t.count !== undefined" :style="{
-          fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px',
-          background: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#e5e7eb',
-          color: (tabMode2==='tab' && tab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center'
-          }">
-          {{ t.count }}
-        </span>
-      </button>
-    </div>
-    <div style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v?.id"
-        @click="tabMode2=v.id" :title="v.label+'로 보기'"
+      <button v-for="t in cfTabs" :key="t?.id" @click="handleBtnAction('tab-change', t.id)" :disabled="tabMode2!=='tab'" :style="{ flex:1, padding:'11px 12px', border:'none', cursor: tabMode2==='tab'?'pointer':'default', fontSize:'12.5px', borderRadius:'9px', transition:'all .18s', display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'6px', opacity: tabMode2==='tab' ? 1 : 0.55, fontWeight: tab===t.id ? 800 : 600, background: (tabMode2==='tab' && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent', color: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#666', boxShadow: (tabMode2==='tab' && tab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none', borderBottom: (tabMode2==='tab' && tab===t.id) ? '2px solid #e8587a' : '2px solid transparent' }">
+      <span style="font-size:14px;">
+        {{ t.icon }}
+      </span>
+      <span>
+        {{ t.label }}
+      </span>
+      <span v-if="t.count !== undefined" :style="{ fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px', background: (tabMode2==='tab' && tab===t.id) ? '#e8587a' : '#e5e7eb', color: (tabMode2==='tab' && tab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center' }">
+      {{ t.count }}
+    </span>
+  </button>
+</div>
+<div style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+  <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v?.id"
+        @click="handleBtnAction('viewMode-change', v.id)" :title="v.label+'로 보기'"
         :style="{
         padding:'8px 12px', border:'none', cursor:'pointer', fontSize:'13px', borderRadius:'8px',
         fontWeight: tabMode2===v.id ? 800 : 600,
@@ -356,149 +367,202 @@ window.OdDlivDtl = {
         color: tabMode2===v.id ? '#e8587a' : '#888',
         boxShadow: tabMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none'
         }">
-        <span style="font-size:15px;">{{ v.icon }}</span>
-      </button>
+    <span style="font-size:15px;">
+      {{ v.icon }}
+    </span>
+  </button>
+</div>
+</div>
+<!-- ===== □. 탭 ======================================================= -->
+<!-- ===== ■. 탭 컨텐츠 =================================================== -->
+<div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+  <div v-if="cfIsNew || showTab('info')" class="card">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      📋 상세정보
     </div>
-  </div>
-  <!-- ===== □. 탭 ======================================================= -->
-  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
-  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <div v-if="cfIsNew || showTab('info')" class="card">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
-      <!-- ===== ■.■.■. 배송 진행 상태 흐름 ========================================= -->
-      <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-          <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#0ea5e9;">🚚 배송</span>
-          <span style="font-size:13px;font-weight:700;color:#222;">{{ form.dlivId }}</span>
-          <span v-if="form.orderId" style="font-size:11px;color:#888;">주문: {{ form.orderId }}</span>
-          <span v-if="form.outboundCourierCd && form.outboundTrackingNo" style="font-size:11px;color:#888;margin-left:auto;">
-            {{ form.outboundCourierCd }} · {{ form.outboundTrackingNo }}
-          </span>
-        </div>
-        <div style="display:flex;align-items:flex-start;overflow-x:auto;">
-          <template v-for="(step, idx) in DLIV_STEPS" :key="step">
-            <div style="display:flex;flex-direction:column;align-items:center;min-width:80px;flex:1;">
-              <div :style="{
+    <!-- ===== ■.■.■. 배송 진행 상태 흐름 ========================================= -->
+    <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+        <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#0ea5e9;">
+          🚚 배송
+        </span>
+        <span style="font-size:13px;font-weight:700;color:#222;">
+          {{ form.dlivId }}
+        </span>
+        <span v-if="form.orderId" style="font-size:11px;color:#888;">
+          주문: {{ form.orderId }}
+        </span>
+        <span v-if="form.outboundCourierCd && form.outboundTrackingNo" style="font-size:11px;color:#888;margin-left:auto;">
+        {{ form.outboundCourierCd }} · {{ form.outboundTrackingNo }}
+      </span>
+    </div>
+    <div style="display:flex;align-items:flex-start;overflow-x:auto;">
+      <template v-for="(step, idx) in DLIV_STEPS" :key="step">
+        <div style="display:flex;flex-direction:column;align-items:center;min-width:80px;flex:1;">
+          <div :style="{
                 width: idx === cfCurrentStepIdx ? '14px' : '10px',
                 height: idx === cfCurrentStepIdx ? '14px' : '10px',
                 borderRadius:'50%', marginBottom:'6px', flexShrink:0, transition:'all .15s',
                 boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px rgba(14,165,233,0.3)' : 'none',
                 background: idx <= cfCurrentStepIdx ? '#0ea5e9' : '#bbb'
-                }"></div>
-              <div :style="{
+                }">
+          </div>
+          <div :style="{
                 fontSize:'11.5px', fontWeight: idx === cfCurrentStepIdx ? 800 : 600,
                 color: idx === cfCurrentStepIdx ? '#0284c7' : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
                 whiteSpace:'nowrap'
                 }">
-                {{ step }}
-              </div>
-              <span v-if="step==='배송완료' && form.outboundTrackingNo"
-                @click="openTracking(form.outboundCourierCd, form.outboundTrackingNo)"
-                title="배송조회 창 열기"
-                style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-                {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
-              </span>
-              <span v-else-if="step==='배송중' && form.outboundTrackingNo && cfCurrentStepIdx < 2"
-                @click="openTracking(form.outboundCourierCd, form.outboundTrackingNo)"
-                title="배송조회 창 열기"
-                style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-                {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송중 🔍
-              </span>
-            </div>
-            <div v-if="idx < DLIV_STEPS.length - 1"
+            {{ step }}
+          </div>
+          <span v-if="step==='배송완료' && form.outboundTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+          {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
+        </span>
+        <span v-else-if="step==='배송중' && form.outboundTrackingNo && cfCurrentStepIdx < 2" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+        {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송중 🔍
+      </span>
+    </div>
+    <div v-if="idx < DLIV_STEPS.length - 1"
               :style="{flex:'1', height:'2px', minWidth:'12px', marginTop:'6px',
-              background: idx < cfCurrentStepIdx ? '#0ea5e9' : '#bbb'}"></div>
-          </template>
-        </div>
-      </div>
-      <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2"
-        @save="handleSave"
-        @cancel="navigate('odDlivMng')"
-        @edit="navigate('__switchToEdit__')"
-        @close="navigate('odDlivMng')">
-        <!-- ===== ■.■.■.■. 주문ID + 보기 ========================================= -->
-        <template #orderId>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
-            <span v-if="form.orderId" class="ref-link" @click="showRefModal('order', form.orderId)">보기</span>
-          </div>
-          <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
-        </template>
-        <!-- ===== ■.■.■.■. 회원명 + 보기 ========================================== -->
-        <template #memberNm>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
-            <span v-if="form.memberId" class="ref-link" @click="showRefModal('member', form.memberId)">보기</span>
-          </div>
-        </template>
-        <!-- ===== ■.■.■.■. 메모: Quill 또는 view 모드 HTML ========================= -->
-        <template #memo>
-          <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.dlivMemo || '<span style=color:#bbb>-</span>'"></div>
-          <base-html-editor v-else v-model="form.dlivMemo" height="180px" />
-        </template>
-      </bo-form-area>
+              background: idx < cfCurrentStepIdx ? '#0ea5e9' : '#bbb'}">
     </div>
-    <!-- ===== ■.■. 배송항목목록 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 배송항목 <span class="tab-count">{{ dlivItems.length }}</span></div>
-      <div style="background:#f9fafb;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;">
-        <span><b style="color:#888;">택배사:</b> {{ form.outboundCourierCd || '미지정' }}</span>
-        <span><b style="color:#888;">운송장번호:</b> {{ form.outboundTrackingNo || '-' }}</span>
-        <a v-if="form.outboundCourierCd==='CJ대한통운' && form.outboundTrackingNo" :href="'https://trace.cjlogistics.com/next/tracking.html?wblNo='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
-          조회 →
-        </a>
-        <a v-else-if="form.outboundCourierCd==='롯데택배' && form.outboundTrackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
-          조회 →
-        </a>
-        <a v-else-if="form.outboundCourierCd==='한진택배' && form.outboundTrackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
-          조회 →
-        </a>
-      </div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="dlivItemGridColumns" :rows="dlivItems"
-        empty-text="배송 항목 정보가 없습니다.">
-        <template #tfoot>
-          <tr style="background:#fafafa;font-weight:700;">
-            <td style="width:36px;"></td>
-            <td colspan="4" style="text-align:right;color:#555;">합계</td>
-            <td style="width:90px;text-align:right;color:#666;">{{ fmt(dlivItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}</td>
-            <td style="width:80px;"></td>
-            <td style="width:90px;text-align:right;color:#d84315;">-{{ fmt(dlivItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}</td>
-            <td style="width:100px;text-align:right;color:#1a1a1a;">{{ fmt(dlivItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
-            <td colspan="3"></td>
-          </tr>
-        </template>
-      </bo-grid>
-    </div>
-    <!-- ===== □.□. 배송항목목록 탭 ============================================== -->
-    <!-- ===== ■.■. 결제정보 탭 ================================================ -->
-    <div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count">{{ cfPaymentList.length }}</span></div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => showRefModal(type, id)"></bo-grid>
-    </div>
-    <!-- ===== □.□. 결제정보 탭 ================================================ -->
-    <!-- ===== ■.■. 배송상태변경이력 탭 ============================================ -->
-    <div v-if="!cfIsNew && showTab('hist')" class="card">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">
-        🕒 상태변경이력
-        <span class="tab-count">{{ cfStatusHistList.length }}</span>
-      </div>
-      <od-dliv-hist :order-id="form.orderId" :navigate="navigate" :show-ref-modal="showRefModal" />
-    </div>
-    <!-- ===== □.□. 배송상태변경이력 탭 ============================================ -->
-    <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count">{{ cfEditHistList.length }}</span></div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="editHistGridColumns" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다."></bo-grid>
-    </div>
-  </div>
+  </template>
 </div>
-
-    <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->`
+</div>
+<!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
+<!-- ===== ■.■.■. 폼 영역 ================================================ -->
+<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="2"
+        @save="handleBtnAction('form-save')"
+        @cancel="handleBtnAction('form-cancel')"
+        @edit="handleBtnAction('form-edit')"
+        @close="handleBtnAction('form-close')">
+  <!-- ===== ■.■.■.■. 주문ID + 보기 ========================================= -->
+  <template #orderId>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
+      <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-order-ref')">
+        보기
+      </span>
+    </div>
+    <span v-if="errors.orderId" class="field-error">
+      {{ errors.orderId }}
+    </span>
+  </template>
+  <!-- ===== ■.■.■.■. 회원명 + 보기 ========================================== -->
+  <template #memberNm>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
+      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-member-ref')">
+        보기
+      </span>
+    </div>
+  </template>
+  <!-- ===== ■.■.■.■. 메모: Quill 또는 view 모드 HTML ========================= -->
+  <template #memo>
+    <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.dlivMemo || '<span style=color:#bbb>-</span>'">
+    </div>
+    <base-html-editor v-else v-model="form.dlivMemo" height="180px" />
+  </template>
+</bo-form-area>
+</div>
+<!-- ===== ■.■. 배송항목목록 탭 ============================================== -->
+<div v-if="!cfIsNew && showTab('items')" class="card" style="padding:20px;">
+<div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+  📦 배송항목
+  <span class="tab-count">
+    {{ dlivItems.length }}
+  </span>
+</div>
+<div style="background:#f9fafb;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;">
+  <span>
+    <b style="color:#888;">
+      택배사:
+    </b>
+    {{ form.outboundCourierCd || '미지정' }}
+  </span>
+  <span>
+    <b style="color:#888;">
+      운송장번호:
+    </b>
+    {{ form.outboundTrackingNo || '-' }}
+  </span>
+  <a v-if="form.outboundCourierCd==='CJ대한통운' && form.outboundTrackingNo" :href="'https://trace.cjlogistics.com/next/tracking.html?wblNo='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
+  조회 →
+</a>
+<a v-else-if="form.outboundCourierCd==='롯데택배' && form.outboundTrackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
+조회 →
+</a>
+<a v-else-if="form.outboundCourierCd==='한진택배' && form.outboundTrackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
+조회 →
+</a>
+</div>
+<!-- ===== ■.■.■. 목록 영역 =============================================== -->
+<bo-grid bare :columns="dlivItemGridColumns" :rows="dlivItems"
+        empty-text="배송 항목 정보가 없습니다.">
+  <template #tfoot>
+    <tr style="background:#fafafa;font-weight:700;">
+      <td style="width:36px;">
+      </td>
+      <td colspan="4" style="text-align:right;color:#555;">
+        합계
+      </td>
+      <td style="width:90px;text-align:right;color:#666;">
+        {{ fmt(dlivItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}
+      </td>
+      <td style="width:80px;">
+      </td>
+      <td style="width:90px;text-align:right;color:#d84315;">
+        -{{ fmt(dlivItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}
+      </td>
+      <td style="width:100px;text-align:right;color:#1a1a1a;">
+        {{ fmt(dlivItems.reduce((s,x)=>s+(x.price||0),0)) }}
+      </td>
+      <td colspan="3">
+      </td>
+    </tr>
+  </template>
+</bo-grid>
+</div>
+<!-- ===== □.□. 배송항목목록 탭 ============================================== -->
+<!-- ===== ■.■. 결제정보 탭 ================================================ -->
+<div v-if="!cfIsNew && showTab('payment')" class="card" style="padding:20px;">
+<div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+  💳 결제정보
+  <span class="tab-count">
+    {{ cfPaymentList.length }}
+  </span>
+</div>
+<!-- ===== ■.■.■. 목록 영역 =============================================== -->
+<bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => handleBtnAction('payment-ref-click', {type, id})">
+</bo-grid>
+</div>
+<!-- ===== □.□. 결제정보 탭 ================================================ -->
+<!-- ===== ■.■. 배송상태변경이력 탭 ============================================ -->
+<div v-if="!cfIsNew && showTab('hist')" class="card">
+<div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">
+  🕒 상태변경이력
+  <span class="tab-count">
+    {{ cfStatusHistList.length }}
+  </span>
+</div>
+<od-dliv-hist :order-id="form.orderId" :navigate="navigate" />
+</div>
+<!-- ===== □.□. 배송상태변경이력 탭 ============================================ -->
+<!-- ===== ■.■. 정보수정이력 탭 ============================================== -->
+<div v-if="!cfIsNew && showTab('editHist')" class="card" style="padding:20px;">
+<div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+  📝 정보수정이력
+  <span class="tab-count">
+    {{ cfEditHistList.length }}
+  </span>
+</div>
+<!-- ===== ■.■.■. 목록 영역 =============================================== -->
+<bo-grid bare :columns="editHistGridColumns" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
+</bo-grid>
+</div>
+</div>
+</div>
+<!-- ===== □.□. 정보수정이력 탭 ============================================== -->
+<!-- ===== □. 탭 컨텐츠 =================================================== -->
+`
 };

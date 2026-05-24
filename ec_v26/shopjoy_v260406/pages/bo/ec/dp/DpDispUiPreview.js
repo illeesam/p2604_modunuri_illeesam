@@ -8,10 +8,6 @@ const _WP_DispUiPreview = {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
       const w = props.lib;
@@ -21,12 +17,6 @@ const _WP_DispUiPreview = {
       const max = Math.max(...values, 1);
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
-    const dragOverIdx = Vue.toRef(uiState, 'dragOverIdx');
-    const previewGrid = Vue.toRef(uiState, 'previewGrid');
-    const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
-    const spanPopupIdx = Vue.toRef(uiState, 'spanPopupIdx');
-    const viewportMode = Vue.toRef(uiState, 'viewportMode');
-
 
     // ===== return (템플릿 노출) ===============================================
 
@@ -155,7 +145,6 @@ const _WP_DispUiPreview = {
     </div>
   </template>
 </div>
-
   <!-- ===== □. 기타 ====================================================== -->`,
 };
 
@@ -166,7 +155,14 @@ window.DpDispUiPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+    // ===== 초기 변수 정의 =====================================================
+
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+
     const codes = reactive({ disp_widget_types: [], disp_ui: [], active_statuses: [], disp_envs: [], visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
@@ -180,8 +176,89 @@ window.DpDispUiPreview = {
     ] });
     const widgetLibs = reactive([]);
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
-    const tab = Vue.toRef(uiState, 'tab');
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+
+    const today   = new Date().toISOString().slice(0, 10);
+    const nowTime = new Date().toTimeString().slice(0, 5);
+
+    /* ===== 검색조건 ===== */
+    const searchParam = reactive({
+      previewDate: today,
+      previewTime: nowTime,
+      filterType: '',
+      filterStatus: '활성',
+      filterVisibility: '',
+      filterDispEnv: 'PROD',
+      searchType: '',
+      searchValue: ''});
+
+    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', searchType: '', searchValue: '', visibility: '' });
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiPreview.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 적용
+      if (cmd === 'searchParam-apply') {
+        return onSearch();
+      // 검색조건 초기화 + 재적용
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 좌측 트리 전체 펼치기
+      } else if (cmd === 'pathTree-expand-all') {
+        return expandAll();
+      // 좌측 트리 전체 접기
+      } else if (cmd === 'pathTree-collapse-all') {
+        return collapseAll();
+      // 현재 그리드 초기화
+      } else if (cmd === 'preview-reset') {
+        return resetCurrent();
+      // 실제컨텐츠 토글
+      } else if (cmd === 'preview-toggle-real') {
+        gridState.showRealContent = !gridState.showRealContent;
+        return;
+      // 스팬 팝업 닫기
+      } else if (cmd === 'preview-close-span') {
+        return closeSpanPopup();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiPreview.js : handleSelectAction -> ', cmd, param);
+      // 좌측 트리 노드 토글
+      if (cmd === 'pathTree-toggle') {
+        return toggleNode(param);
+      // 좌측 트리 위젯 선택
+      } else if (cmd === 'pathTree-select') {
+        return onTreeSelect(param);
+      // 미리보기 그리드 탭 변경
+      } else if (cmd === 'preview-grid') {
+        uiState.previewGrid = param;
+        return;
+      // 미리보기 뷰포트 모드 변경
+      } else if (cmd === 'preview-viewport') {
+        uiState.viewportMode = param;
+        return;
+      // 슬롯 위치 스팬 팝업 토글
+      } else if (cmd === 'preview-span-popup') {
+        return toggleSpanPopup(param.e, param.idx);
+      // 슬롯 스팬 변경
+      } else if (cmd === 'preview-span-set') {
+        return setSpan(param.idx, param.axis, param.delta);
+      // 슬롯 제거
+      } else if (cmd === 'preview-slot-remove') {
+        return removeSlot(param);
+      // 대시보드 아이템 제거
+      } else if (cmd === 'preview-dash-remove') {
+        return removeDashItem(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -193,8 +270,6 @@ window.DpDispUiPreview = {
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // 코드 주입
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -210,9 +285,6 @@ window.DpDispUiPreview = {
       handleSearchList('DEFAULT');
     });
 
-    const today   = new Date().toISOString().slice(0, 10);
-    const nowTime = new Date().toTimeString().slice(0, 5);
-
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
       'cond_product':'🔍', 'chart_bar':'📊',      'chart_line':'📈',
@@ -225,24 +297,11 @@ window.DpDispUiPreview = {
       'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
 
-    /* wIcon — w 아이콘 */
+    /* wIcon — 위젯 아이콘 */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
-    /* wTypeLabel — w 유형 라벨 */
+    /* wTypeLabel — 위젯 유형 라벨 */
     const wTypeLabel = (v) => codes.disp_widget_types.find(t => t.codeValue === v)?.codeLabel || v;
-
-    /* -- 조회 조건 -- */
-    const searchParam = reactive({
-      previewDate: today,
-      previewTime: nowTime,
-      filterType: '',
-      filterStatus: '활성',
-      filterVisibility: '',
-      filterDispEnv: 'PROD',
-      searchType: '',
-      searchValue: ''});
-
-    const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', searchType: '', searchValue: '', visibility: '' });
 
     /* onSearch — 조회 */
     const onSearch = () => {
@@ -288,9 +347,8 @@ window.DpDispUiPreview = {
     });
 
     /* -- 트리 선택 -- */
-        const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
+    const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
 
-    /* -- 트리 상태 -- */
     /* -- UI 트리: uiType > codeLabel > (codeValue codeLabel) -- */
     const cfTree = computed(() => {
       const map = {};
@@ -325,14 +383,14 @@ window.DpDispUiPreview = {
       else { openNodes.add(key); }
     };
 
-    /* isOpen — 여부 확인 */
+    /* isOpen — 열려있는지 여부 */
     const isOpen = (key) => openNodes.has(key);
 
-    /* allChildrenOpen — 전체 자식 열기 */
+    /* allChildrenOpen — 전체 자식 열림 여부 */
     const allChildrenOpen = (node) =>
       node.children.every(sub => openNodes.has(node.label + '_' + sub.label));
 
-    /* toggleAllChildren — 전체 토글 */
+    /* toggleAllChildren — 전체 자식 토글 */
     const toggleAllChildren = (e, node) => {
       e.stopPropagation();
       const open = !allChildrenOpen(node);
@@ -352,13 +410,13 @@ window.DpDispUiPreview = {
       }
     });
 
-    /* expandAll — 펼치기 전체 */
+    /* expandAll — 전체 펼치기 */
     const expandAll = () => { window.safeArrayUtils.safeForEach(cfTree.value, n => openNodes.add(n.label)); openNodes.add('__root__'); };
 
-    /* collapseAll — 접기 전체 */
+    /* collapseAll — 전체 접기 */
     const collapseAll = () => { openNodes.clear(); openNodes.add('__root__'); };
 
-    /* onItemDragStart — 이벤트 */
+    /* onItemDragStart — 드래그 시작 */
     const onItemDragStart = (e, lib) => {
       window._dragWidgetLib  = lib;
       window._dragWidgetLibs = null;
@@ -366,16 +424,16 @@ window.DpDispUiPreview = {
       e.dataTransfer.setData('text/plain', lib.libId);
     };
 
-    /* onItemDragEnd — 이벤트 */
+    /* onItemDragEnd — 드래그 종료 */
     const onItemDragEnd = () => { window._dragWidgetLib = null; };
 
-    /* dedupeLibs — dedupeLibs */
+    /* dedupeLibs — 중복 제거 */
     const dedupeLibs = (arr) => {
       const seen = new Set();
       return window.safeArrayUtils.safeFilter(arr, lib => { if (seen.has(lib.libId)) return false; seen.add(lib.libId); return true; });
     };
 
-    /* onNodeDragStart — 이벤트 */
+    /* onNodeDragStart — 노드 드래그 시작 */
     const onNodeDragStart = (e, allLibs) => {
       const libs = dedupeLibs(allLibs);
       window._dragWidgetLib  = null;
@@ -384,11 +442,11 @@ window.DpDispUiPreview = {
       e.dataTransfer.setData('text/plain', 'node:' + libs.length);
     };
 
-    /* onNodeDragEnd — 이벤트 */
+    /* onNodeDragEnd — 노드 드래그 종료 */
     const onNodeDragEnd = () => { window._dragWidgetLibs = null; };
 
     /* -- 그리드 탭 -- */
-        const GRID_TABS   = [
+    const GRID_TABS   = [
       { id:'grid1',     label:'grid1',     cols:1 },
       { id:'grid2',     label:'grid2',     cols:2 },
       { id:'grid3',     label:'grid3',     cols:3 },
@@ -398,7 +456,7 @@ window.DpDispUiPreview = {
     const GRID_COLS = { grid1:1, grid2:2, grid3:3, grid4:4 };
 
     /* -- 반응형 뷰포트 (grid1~4 전용) -- */
-        const VIEWPORT = {
+    const VIEWPORT = {
       desktop: { label:'🖥 PC',     width: null  },
       tablet:  { label:'📟 태블릿', width:'768px' },
       mobile:  { label:'📱 모바일', width:'375px' },
@@ -417,7 +475,7 @@ window.DpDispUiPreview = {
     /* 실제컨텐츠 토글 */
     const gridState = reactive({ dashDragOver: false, showRealContent: false });
 
-    /* makeInit — 생성 */
+    /* makeInit — 초기 슬롯 생성 */
     const makeInit = (cols) => Array(cols * 2).fill(null);
     const tabSlots = reactive({
       grid1: makeInit(1),
@@ -439,12 +497,12 @@ window.DpDispUiPreview = {
     };
 
     /* -- 드래그·드롭 (그리드) -- */
-        const onDragOver  = (e, idx) => { e.preventDefault(); uiState.dragOverIdx = idx; };
+    const onDragOver  = (e, idx) => { e.preventDefault(); uiState.dragOverIdx = idx; };
 
-    /* onDragLeave — 이벤트 */
+    /* onDragLeave — 드래그 떠남 */
     const onDragLeave = () => { uiState.dragOverIdx = -1; };
 
-    /* onDrop — 이벤트 */
+    /* onDrop — 드롭 */
     const onDrop = (e, idx) => {
       e.preventDefault(); uiState.dragOverIdx = -1;
 
@@ -479,10 +537,10 @@ window.DpDispUiPreview = {
       autoExpand(tabId);
     };
 
-    /* removeSlot — 제거 */
+    /* removeSlot — 슬롯 제거 */
     const removeSlot = (idx) => { tabSlots[uiState.previewGrid].splice(idx, 1, null); };
 
-    /* setSpan — 설정 */
+    /* setSpan — 스팬 설정 */
     const setSpan = (idx, axis, delta) => {
       const slot = tabSlots[uiState.previewGrid][idx];
       if (!slot) { return; }
@@ -492,25 +550,25 @@ window.DpDispUiPreview = {
     };
 
     /* -- span 팝업 -- */
-        const toggleSpanPopup = (e, idx) => {
+    const toggleSpanPopup = (e, idx) => {
       e.stopPropagation();
       uiState.spanPopupIdx = uiState.spanPopupIdx === idx ? -1 : idx;
     };
 
-    /* closeSpanPopup — 닫기 */
+    /* closeSpanPopup — 스팬 팝업 닫기 */
     const closeSpanPopup = () => { uiState.spanPopupIdx = -1; };
 
     /* -- 대시보드: 자유 배치 + 크기 조절 -- */
     const dashCanvas = ref(null);
     const dashItems  = reactive([]); // { id, lib, x, y, w, h }
 
-    /* onDashDragOver — 이벤트 */
+    /* onDashDragOver — 대시보드 드래그 오버 */
     const onDashDragOver = (e) => { e.preventDefault(); gridState.dashDragOver = true; };
 
-    /* onDashDragLeave — 이벤트 */
+    /* onDashDragLeave — 대시보드 드래그 떠남 */
     const onDashDragLeave = () => { gridState.dashDragOver = false; };
 
-    /* onDashDrop — 이벤트 */
+    /* onDashDrop — 대시보드 드롭 */
     const onDashDrop = (e) => {
       e.preventDefault(); gridState.dashDragOver = false;
       if (!dashCanvas.value) { return; }
@@ -543,24 +601,22 @@ window.DpDispUiPreview = {
       dashItems.push({ id: Date.now(), lib: { ...lib }, x, y, w: 240, h: 180 });
     };
 
-    /* removeDashItem — 제거 */
+    /* removeDashItem — 대시보드 아이템 제거 */
     const removeDashItem = (id) => {
       const i = dashItems.findIndex(d => d.id === id);
       if (i >= 0) { dashItems.splice(i, 1); }
     };
 
-    /* startItemMove — 시작 항목 이동 */
+    /* startItemMove — 아이템 이동 시작 */
     const startItemMove = (e, item) => {
       e.preventDefault();
       const ox = e.clientX - item.x;
       const oy = e.clientY - item.y;
-
       /* onMove — 이벤트 */
       const onMove = (me) => {
         item.x = Math.max(0, me.clientX - ox);
         item.y = Math.max(0, me.clientY - oy);
       };
-
       /* onUp — 이벤트 */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
@@ -570,18 +626,16 @@ window.DpDispUiPreview = {
       document.addEventListener('mouseup', onUp);
     };
 
-    /* startItemResize — 시작 항목 Resize */
+    /* startItemResize — 아이템 리사이즈 시작 */
     const startItemResize = (e, item) => {
       e.preventDefault(); e.stopPropagation();
       const sx = e.clientX, sy = e.clientY;
       const sw = item.w,    sh = item.h;
-
       /* onMove — 이벤트 */
       const onMove = (me) => {
         item.w = Math.max(160, sw + (me.clientX - sx));
         item.h = Math.max(120, sh + (me.clientY - sy));
       };
-
       /* onUp — 이벤트 */
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
@@ -598,7 +652,7 @@ window.DpDispUiPreview = {
         : window.safeArrayUtils.safeFilter(cfCurrentSlots.value, Boolean).length
     );
 
-    /* resetCurrent — 초기화 */
+    /* resetCurrent — 현재 영역 초기화 */
     const resetCurrent = () => {
       if (uiState.previewGrid === 'dashboard') {
         dashItems.splice(0);
@@ -609,24 +663,21 @@ window.DpDispUiPreview = {
       }
     };
 
+    // ===== return (템플릿 노출) ===============================================
+
     return {
-      cfSiteNm, today,
-      VIEWPORT,
-      wIcon, wTypeLabel,
-      searchParam, codes,
-      applied, onSearch, onReset, cfFilteredLibs,
-      onTreeSelect,
-      cfTree, openNodes, toggleNode, isOpen, allChildrenOpen, toggleAllChildren, expandAll, collapseAll,
-      onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,
-      GRID_TABS,
-      cfAutoGridColumns, uiState, gridState,
-      tabSlots, cfCurrentSlots,
-      onDragOver, onDragLeave, onDrop, removeSlot, setSpan, GRID_COLS,
-      toggleSpanPopup, closeSpanPopup,
-      dashCanvas, dashItems,
-      onDashDragOver, onDashDragLeave, onDashDrop,
-      removeDashItem, startItemMove, startItemResize,
-      cfPlacedCount, resetCurrent,
+      codes, searchParam, applied, widgetLibs, uiState, gridState,                  // 상태 / 데이터
+      tabSlots, dashCanvas, dashItems, openNodes,                                   // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSiteNm, cfFilteredLibs, cfTree, cfAutoGridColumns, cfCurrentSlots, cfPlacedCount, // computed
+      GRID_TABS, GRID_COLS, VIEWPORT,                                               // 상수
+      wIcon, wTypeLabel, isOpen, allChildrenOpen,                                   // 헬퍼
+      toggleAllChildren,                                                            // 헬퍼 (이벤트인자 인라인)
+      onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,               // dnd 핸들러 (이벤트인자 인라인 필요)
+      onDragOver, onDragLeave, onDrop,                                              // dnd 핸들러
+      onDashDragOver, onDashDragLeave, onDashDrop,                                  // dnd 핸들러
+      startItemMove, startItemResize,                                               // mouse 핸들러
+      today,                                                                        // 상수
     };
   },
   template: /* html */`
@@ -669,7 +720,7 @@ window.DpDispUiPreview = {
         </select>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
-      <!-- ===== ■.■.■. 영역 ================================================== -->
+      <!-- ===== ■.■.■. 위젯유형 + 검색 ============================================ -->
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">위젯유형</span>
         <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
@@ -686,11 +737,11 @@ window.DpDispUiPreview = {
         placeholder="검색대상 전체"
         all-label="전체 선택"
         min-width="130px" />
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="onSearch" />
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-apply')" />
       <span style="font-size:12px;color:#888;">총 <b>{{ cfFilteredLibs.length }}</b>건</span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-        <button @click="onSearch" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
-        <button @click="onReset" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
+        <button @click="handleBtnAction('searchParam-apply')" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">검색</button>
+        <button @click="handleBtnAction('searchParam-reset')" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">초기화</button>
       </div>
     </div>
   </div>
@@ -705,18 +756,18 @@ window.DpDispUiPreview = {
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
       <div style="padding:6px 12px;display:flex;gap:4px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;">
-        <button @click="expandAll"
+        <button @click="handleBtnAction('pathTree-expand-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▼ 전체펼치기
         </button>
-        <button @click="collapseAll"
+        <button @click="handleBtnAction('pathTree-collapse-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▶ 전체닫기
         </button>
       </div>
       <div style="flex:1;overflow-y:auto;padding:4px 0;">
         <!-- ===== ■.■.■.■. 루트 노드 ============================================= -->
-        <div @click="toggleNode('__root__')"
+        <div @click="handleSelectAction('pathTree-toggle', '__root__')"
           style="display:flex;align-items:center;gap:6px;padding:7px 12px;cursor:pointer;font-size:12px;font-weight:700;color:#222;user-select:none;background:#f8f9fb;border-radius:4px;margin:1px 4px;"
           :style="isOpen('__root__') ? 'background:#f0f4ff;' : ''">
           <span style="font-size:10px;color:#9ca3af;transition:transform .2s;"
@@ -730,7 +781,7 @@ window.DpDispUiPreview = {
         </div>
         <div v-if="isOpen('__root__')" style="padding-left:8px;">
           <div v-for="node in cfTree" :key="node?.label">
-            <div @click="toggleNode(node.label)"
+            <div @click="handleSelectAction('pathTree-toggle', node.label)"
               draggable="true"
               @dragstart="onNodeDragStart($event, node.children.flatMap(c => c.libs))"
               @dragend="onNodeDragEnd"
@@ -748,7 +799,7 @@ window.DpDispUiPreview = {
             <!-- ===== ■.■.■.■.■.■. 조건부 영역 ======================================== -->
             <template v-if="isOpen(node.label)">
               <div v-for="sub in node.children" :key="node.label+'_'+sub.label">
-                <div @click="toggleNode(node.label+'_'+sub.label)"
+                <div @click="handleSelectAction('pathTree-toggle', node.label+'_'+sub.label)"
                   draggable="true"
                   @dragstart="onNodeDragStart($event, sub.libs)"
                   @dragend="onNodeDragEnd"
@@ -768,7 +819,7 @@ window.DpDispUiPreview = {
                     draggable="true"
                     @dragstart="onItemDragStart($event, lib)"
                     @dragend="onItemDragEnd"
-                    @click="onTreeSelect(lib)"
+                    @click="handleSelectAction('pathTree-select', lib)"
                     style="display:flex;align-items:center;gap:7px;padding:5px 10px 5px 42px;cursor:grab;font-size:11px;border-radius:4px;margin:1px 4px;transition:background .15s;"
                     :style="uiState.selectedLibId===lib.libId ? 'background:#dbeafe;color:#1d4ed8;font-weight:700;' : 'color:#374151;'">
                     <span style="font-size:9px;color:#c4c4c4;flex-shrink:0;">⠿</span>
@@ -797,7 +848,7 @@ window.DpDispUiPreview = {
       <!-- ===== ■.■.■. 탭바 + 뷰포트 토글 + 배치수 =================================== -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">
-          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="uiState.previewGrid=tab.id"
+          <button v-for="tab in GRID_TABS" :key="tab?.id" @click="handleSelectAction('preview-grid', tab.id)"
             style="padding:5px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-bottom:-1px;"
             :style="uiState.previewGrid===tab.id
             ? 'background:#fff;border-color:#e8e8e8;border-bottom-color:#fff;color:#1d4ed8;z-index:1;'
@@ -807,13 +858,13 @@ window.DpDispUiPreview = {
         </div>
         <!-- ===== ■.■.■.■. 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ===================== -->
         <div v-if="uiState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="gridState.showRealContent=!gridState.showRealContent"
+          <button @click="handleBtnAction('preview-toggle-real')"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="gridState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
             {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="uiState.viewportMode=key"
+          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="handleSelectAction('preview-viewport', key)"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="uiState.viewportMode===key
             ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -823,14 +874,14 @@ window.DpDispUiPreview = {
         </div>
         <div style="display:flex;align-items:center;gap:8px;padding:0 0 0 12px;">
           <span style="font-size:12px;color:#555;font-weight:600;">{{ cfPlacedCount }}개</span>
-          <button @click="resetCurrent"
+          <button @click="handleBtnAction('preview-reset')"
             style="font-size:11px;padding:3px 10px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;white-space:nowrap;">
             초기화
           </button>
         </div>
       </div>
       <!-- ===== ■.■.■. 그리드 캔버스 (grid1~4) =================================== -->
-      <div v-if="uiState.previewGrid!=='dashboard'" @click="closeSpanPopup" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
+      <div v-if="uiState.previewGrid!=='dashboard'" @click="handleBtnAction('preview-close-span')" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
         <!-- ===== ■.■.■.■. 뷰포트 래퍼 ============================================ -->
         <div :style="{
           width: VIEWPORT[uiState.viewportMode].width || '100%',
@@ -893,13 +944,13 @@ window.DpDispUiPreview = {
                         {{ slot.name }}
                       </span>
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. span 설정 아이콘 ========================= -->
-                      <button @click="toggleSpanPopup($event, idx)"
+                      <button @click="handleSelectAction('preview-span-popup', { e: $event, idx })"
                         :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                         style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                         :style="uiState.spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">
                         ⚙
                       </button>
-                      <button @click="removeSlot(idx)"
+                      <button @click="handleSelectAction('preview-slot-remove', idx)"
                         style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
                         ✕
                       </button>
@@ -910,14 +961,14 @@ window.DpDispUiPreview = {
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 닫기 ================================== -->
                       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                         <span style="font-size:11px;font-weight:700;color:#374151;">그리드 스팬 설정</span>
-                        <button @click="closeSpanPopup" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
+                        <button @click="handleBtnAction('preview-close-span')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
                           ✕
                         </button>
                       </div>
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 열(colspan) ========================== -->
                       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
                         <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
-                        <button @click="setSpan(idx,'col',-1)" :disabled="(slot.colSpan||1)<=1"
+                        <button @click="handleSelectAction('preview-span-set', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">
                           −
@@ -925,7 +976,7 @@ window.DpDispUiPreview = {
                         <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                           {{ slot.colSpan||1 }}
                         </span>
-                        <button @click="setSpan(idx,'col',+1)" :disabled="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)"
+                        <button @click="handleSelectAction('preview-span-set', { idx, axis: 'col', delta: 1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)?'opacity:.3;cursor:default;':''">
                           +
@@ -935,7 +986,7 @@ window.DpDispUiPreview = {
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 행(rowspan) ========================== -->
                       <div style="display:flex;align-items:center;gap:6px;">
                         <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
-                        <button @click="setSpan(idx,'row',-1)" :disabled="(slot.rowSpan||1)<=1"
+                        <button @click="handleSelectAction('preview-span-set', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">
                           −
@@ -943,7 +994,7 @@ window.DpDispUiPreview = {
                         <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                           {{ slot.rowSpan||1 }}
                         </span>
-                        <button @click="setSpan(idx,'row',+1)" :disabled="(slot.rowSpan||1)>=4"
+                        <button @click="handleSelectAction('preview-span-set', { idx, axis: 'row', delta: 1 })" :disabled="(slot.rowSpan||1)>=4"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">
                           +
@@ -953,7 +1004,7 @@ window.DpDispUiPreview = {
                     </div>
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×버튼만 ======================== -->
                     <div v-else style="position:relative;">
-                      <button @click="removeSlot(idx)"
+                      <button @click="handleSelectAction('preview-slot-remove', idx)"
                         style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
                         ✕
                       </button>
@@ -1027,7 +1078,7 @@ window.DpDispUiPreview = {
               <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">
                 {{ item.lib.name }}
               </span>
-              <button @mousedown.stop @click="removeDashItem(item.id)"
+              <button @mousedown.stop @click="handleSelectAction('preview-dash-remove', item.id)"
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
                 ✕
               </button>
@@ -1065,7 +1116,6 @@ window.DpDispUiPreview = {
   </div>
   <!-- ===== /2단 ======================================================== -->
 </div>
-
     <!-- ===== □.□. 오른쪽 (카드) ============================================== -->
   <!-- ===== □. 2단 레이아웃 ================================================= -->`,
   components: {

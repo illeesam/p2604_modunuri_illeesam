@@ -2,62 +2,66 @@
 window.SyVendorDtl = {
   name: 'SyVendorDtl',
   props: {
-    navigate:    { type: Function, required: true }, // 페이지 이동
-    dtlId:       { type: String, default: null }, // 수정 대상 ID
-    tabMode:     { type: String, default: 'tab' }, // 뷰모드 (tab/1col/2col/3col/4col)
-    dtlMode:     { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload: { type: Function, default: () => {} },
-    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    dtlId:         { type: String, default: null },           // 수정 대상 ID
+    tabMode:       { type: String, default: 'tab' },          // 뷰모드 (tab/1col/2col/3col/4col)
+    dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
+    onListReload:  { type: Function, default: () => {} },     // 상위 Mng 재조회 콜백
+    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
     const { reactive, computed, watch, onMounted, ref, onBeforeUnmount, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({ active_statuses: [], vendor_type_kr: [] });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태
+    const codes = reactive({ active_statuses: [], vendor_type_kr: [] });              // 공통코드
 
-    /* 업체(판매자) fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore();
-        codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-        codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-      uiState.isPageCodeLoad = true;
-    };
-
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    const form = reactive({
+    const form = reactive({                        // 업체 폼 데이터
       vendorId: null, vendorType: '판매업체', vendorNm: '', ceoNm: '', vendorNo: '', vendorPhone: '', vendorEmail: '',
       vendorZipCode: '', vendorAddr: '', vendorAddrDetail: '',
       contractDate: '', vendorStatusCd: '활성', vendorRemark: '',
     });
-    const errors = reactive({});
-    const addrDetailRef = ref(null);
+    const errors = reactive({});                   // 폼 검증 에러
+    const addrDetailRef = ref(null);               // 상세주소 input ref
 
-    const schema = yup.object({
+    const schema = yup.object({                    // 폼 검증 스키마
       vendorNm: yup.string().required('업체명을 입력해주세요.'),
       vendorNo: yup.string().required('사업자등록번호를 입력해주세요.'),
     });
 
-    /* 업체(판매자) 상세조회 */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용, 'new'/'edit' 이면 편집
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ SyVendorDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (신규 등록 또는 수정)
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 편집 취소 → 목록으로 이동
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('syVendorMng');
+      // 상세 보기 → 편집 모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 폼 닫기 → 목록으로 이동
+      } else if (cmd === 'form-close') {
+        return props.navigate('syVendorMng');
+      // 카카오 우편번호 팝업 열기
+      } else if (cmd === 'addr-search') {
+        return openKakaoPostcode();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
@@ -76,21 +80,8 @@ window.SyVendorDtl = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      if (!cfIsNew.value) { await handleLoadDetail(); }
-    });
-    /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
-    watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) { return; }
-      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
-      await handleLoadDetail();
-    });
-
-    /* openKakaoPostcode — 열기 */
+    /* openKakaoPostcode — 카카오 우편번호 팝업 열기 */
     const openKakaoPostcode = () => {
-      /* run — 실행 */
       const run = () => {
         new window.daum.Postcode({
           oncomplete(data) {
@@ -133,14 +124,33 @@ window.SyVendorDtl = {
       }
     };
 
-    // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
-    const cfDtlMode = computed(() => props.dtlMode === 'view');
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+        codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) ================================
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ★ onMounted — 진입 시 코드 로드 + 상세 조회
+    onMounted(async () => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      if (!cfIsNew.value) { await handleLoadDetail(); }
+    });
 
+    /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
+    watch(() => props.reloadTrigger, async (n, o) => {
+      if (n === o || n === 0) { return; }
+      try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
+      await handleLoadDetail();
+    });
 
-    // --- [컬럼 정의] ---
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
 
     const baseFormColumns = [
       { key: 'siteNm',         label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
@@ -161,36 +171,40 @@ window.SyVendorDtl = {
       { key: 'vendorRemark',   label: '메모', type: 'slot', name: 'remark', colSpan: 2 },
     ];
 
-    // ===== setup() return ===================================================
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { uiState, codes, cfIsNew, form, errors, handleSave, cfSiteNm, cfDtlMode, addrDetailRef, openKakaoPostcode, baseFormColumns };
+    return {
+      uiState, codes, form, errors, addrDetailRef,           // 상태 / 데이터
+      baseFormColumns,                                       // 컬럼 정의
+      handleBtnAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfDtlMode,                                    // computed
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.vendorId }}</span>
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ form.vendorId }}
+    </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="2"
-      @save="handleSave"
-      @cancel="navigate('syVendorMng')"
-      @edit="navigate('__switchToEdit__')"
-      @close="navigate('syVendorMng')">
+      @save="handleBtnAction('form-save')"
+      @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')"
+      @close="handleBtnAction('form-close')">
       <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소+상세주소 ============================= -->
       <template #addr>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
             style="width:110px;flex-shrink:0;" readonly />
-          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="openKakaoPostcode"
+          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
             style="white-space:nowrap;">
             🔍 주소 검색
           </button>
@@ -202,13 +216,14 @@ window.SyVendorDtl = {
       </template>
       <!-- ===== ■.■.■. 메모: Quill 또는 view 모드 HTML =========================== -->
       <template #remark>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'"></div>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'">
+        </div>
         <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
       </template>
     </bo-form-area>
-  </div>
-</div>
-
     <!-- ===== □.□. 폼 영역 ================================================== -->
-  <!-- ===== □. 카드 영역 =================================================== -->`
+  </div>
+  <!-- ===== □. 카드 영역 =================================================== -->
+</div>
+`,
 };

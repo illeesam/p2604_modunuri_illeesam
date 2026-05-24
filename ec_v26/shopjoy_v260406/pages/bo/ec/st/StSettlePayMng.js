@@ -34,6 +34,42 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StSettlePayMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StSettlePayMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'settlePays-row-pay') {
+        return doPay(param);
+      } else if (cmd === 'settlePays-set-page') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
+      } else if (cmd === 'settlePays-size-change') {
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     /* 정산 지급 목록조회 */
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
@@ -165,7 +201,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== return (템플릿 노출) ===============================================
 
 
-    return { uiState, codes, handleDateRangeChange, pager, payList, baseSearchColumns, baseGridColumns, cfSummary, doPay, fnStatusBadge, fmtW, onSearch, onReset, searchParam, setPage, onSizeChange };
+    return {
+      uiState, codes, pager, payList, searchParam,
+      baseSearchColumns, baseGridColumns,
+      handleBtnAction, handleSelectAction,
+      cfSummary, fnStatusBadge, fmtW,
+    };
   },
   template: /* html */`
 <div>
@@ -174,7 +215,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">마감된 정산액의 업체별 지급 요청·확인·완료 처리 및 이의신청을 관리합니다.</span>
-    <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
+    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
     <div v-if="uiState.descOpen" class="page-desc-detail">
       • 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청 • [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다. • 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다. • 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.
     </div>
@@ -183,7 +224,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -206,10 +247,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="payList" :pager="pager" row-key="payId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      @set-page="setPage" @size-change="onSizeChange">
+      @set-page="n => handleSelectAction('settlePays-set-page', n)" @size-change="handleSelectAction('settlePays-size-change')">
       <template #head-actions>액션</template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="doPay(r)">지급처리</button>
+        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settlePays-row-pay', r)">지급처리</button>
       </template>
     </bo-grid>
   </div>

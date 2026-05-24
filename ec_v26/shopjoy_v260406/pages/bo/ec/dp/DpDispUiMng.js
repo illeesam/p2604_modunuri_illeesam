@@ -10,19 +10,86 @@ window.DpDispUiMng = {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const displays = reactive([]);
+    const showToast    = window.boApp.showToast;   // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm; // 확인 모달
+    const showRefModal = window.boApp.showRefModal; // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
+    const uis = reactive([]);                      // UI 목록
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
-    const codes = reactive({
-      disp_ui_types: [],
-      use_yn: [],
-      date_range_opts: [],
-    });
+    const codes = reactive({ disp_ui_types: [], use_yn: [], date_range_opts: [] });
+    const SORT_MAP = { nm: { asc: 'uiNm asc', desc: 'uiNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    /* ===== 상세 인라인 패널 ===== */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* ===== 검색조건 ===== */
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { type: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        Object.assign(searchParam, _initSearchParam());
+        uiState.sortKey = ''; uiState.sortDir = 'asc';
+        pager.pageNo = 1;
+        return handleSearchList('SEARCH');
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return handleDateRangeChange();
+      // UI 신규 등록 (인라인 패널)
+      } else if (cmd === 'uis-add') {
+        return openNew();
+      // 상세 인라인 패널 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDetail();
+      // 좌측 표시경로 트리 전체 보기
+      } else if (cmd === 'pathTree-all') {
+        uiState.selectedPath = null;
+        pager.pageNo = 1;
+        return handleSearchList('DEFAULT');
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 정렬 헤더 클릭
+      if (cmd === 'uis-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'uis-set-page') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'uis-size-change') {
+        return onSizeChange();
+      // 그리드 행 클릭 → 상세 보기
+      } else if (cmd === 'uis-row-view') {
+        return loadView(param);
+      // 그리드 행 수정 버튼 → 편집 패널 열기
+      } else if (cmd === 'uis-row-edit') {
+        return handleLoadDetail(param);
+      // 좌측 표시경로 트리 노드 선택
+      } else if (cmd === 'pathTree-select') {
+        return selectNode(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -34,25 +101,12 @@ window.DpDispUiMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // 코드 주입
-
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { type: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    const SORT_MAP = { nm: { asc: 'uiNm asc', desc: 'uiNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    /* getSortParam — 조회 */
+    /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
       if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
-
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* onSort — 정렬 */
     const onSort = (key) => {
@@ -64,7 +118,7 @@ window.DpDispUiMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
+    /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
     /* handleSearchList — 목록 조회 */
@@ -82,7 +136,7 @@ window.DpDispUiMng = {
         };
         const res = await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회');
         const d = res.data?.data;
-        displays.splice(0, displays.length, ...(d?.pageList || d?.list || []));
+        uis.splice(0, uis.length, ...(d?.pageList || d?.list || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
         fnBuildPagerNums();
@@ -116,44 +170,44 @@ window.DpDispUiMng = {
       }
     };
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
-
     /* loadView — 뷰 로드 */
-    const loadView         = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+    const loadView         = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { uiStateDetail.selectedId = null; };
+    const closeDetail = () => { detailPanel.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispUiMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
+      if (pg === 'dpDispUiMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
 
-    /* fnBuildPagerNums — 유틸 */
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm'/'reg' 와 sortKey 일치) */
-        // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+    /* setPage — 페이지 번호 변경 */
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+
+    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+
+    const baseSearchColumns = [
       { key: 'searchValue', type: 'text', label: '키워드', placeholder: 'UI명 검색', width: '200px' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
-
-    const listGridColumns = [
+    const baseGridColumns = [
       { key: 'uiNm',         label: 'UI명',     sortKey: 'nm', link: true },
       { key: 'deviceTypeCd', label: '유형' },
       { key: 'useYn',        label: '사용여부',
@@ -163,37 +217,27 @@ window.DpDispUiMng = {
         fmt: v => (v||'').slice(0,10) },
     ];
 
-    /* onSearch — 조회 */
-    const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
-
-    /* onReset — 초기화 */
-    const onReset  = () => { Object.assign(searchParam, _initSearchParam()); uiState.sortKey = ''; uiState.sortDir = 'asc'; pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* setPage — 설정 */
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
-
     // ===== return (템플릿 노출) ===============================================
 
-
-    return { displays, uiState, codes, pager, searchParam,
-      onSearch, onReset, setPage, onSizeChange, handleDateRangeChange,
-      selectNode, pathLabel,
-      uiStateDetail, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfDetailEditId,
-      onSort, sortIcon, baseSearchColumns, listGridColumns };
+    return {
+      uis, uiState, codes, searchParam, pager, detailPanel,                           // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      cfDetailEditId,                                                                 // computed
+      pathLabel, sortIcon,                                                            // 헬퍼
+      inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
+    };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">전시 UI 관리</div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">
@@ -202,47 +246,46 @@ window.DpDispUiMng = {
           📂 표시경로
           <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_ui</span>
         </span>
-        <span v-if="uiState.selectedPath != null" @click="selectNode(null)" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
+        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="selectNode" />
+        <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="listGridColumns" :rows="displays" :pager="pager" row-key="uiId"
+    <bo-grid :columns="baseGridColumns" :rows="uis" :pager="pager" row-key="uiId"
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
-      @sort="onSort" @set-page="setPage" @size-change="onSizeChange" @row-click="(r) => loadView(r.uiId)" row-actions>
+      @sort="key => handleSelectAction('uis-sort', key)"
+      @set-page="n => handleSelectAction('uis-set-page', n)"
+      @size-change="handleSelectAction('uis-size-change')"
+      @row-click="(r) => handleSelectAction('uis-row-view', r.uiId)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
         </span>
-        <button class="btn btn-primary btn-sm" @click="openNew">✚ 신규등록</button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('uis-add')">✚ 신규등록</button>
       </template>
       <template #row-actions="{ row }">
-        <button class="btn btn-sm btn-secondary" @click="loadView(row.uiId)">상세</button>
-        <button class="btn btn-sm btn-primary" @click="handleLoadDetail(row.uiId)">수정</button>
+        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('uis-row-view', row.uiId)">상세</button>
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('uis-row-edit', row.uiId)">수정</button>
       </template>
     </bo-grid>
   </div>
-    <!-- ===== □.□. 목록 영역 ================================================= -->
+  <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 =================================================== -->
-  <div v-if="uiStateDetail.selectedId" class="card" style="margin-top:10px;">
+  <div v-if="detailPanel.selectedId" class="card" style="margin-top:10px;">
     <dp-disp-ui-dtl
       :navigate="inlineNavigate"
-      :show-toast="$showToast"
-      :show-confirm="$showConfirm"
-      :set-api-res="$setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :tab-mode="uiStateDetail.openMode"
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      :on-list-reload="handleSearchList"
+      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :tab-mode="detailPanel.openMode"
+      :reload-trigger="detailPanel.reloadTrigger"
       />
   </div>
+  <!-- ===== □. 상세 패널 =================================================== -->
 </div>
-
-  <!-- ===== □. 상세 패널 =================================================== -->`
+`,
 };
