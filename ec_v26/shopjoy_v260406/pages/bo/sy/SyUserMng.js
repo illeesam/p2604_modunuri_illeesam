@@ -290,12 +290,14 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">사용자관리</div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 부서</span></div>
@@ -308,7 +310,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
       </div>
     </div>
     <div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
         :columns="baseGridColumns" :rows="users" :pager="pager" row-key="userId"
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
@@ -335,6 +337,7 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
     </div>
   </div>
   <!-- 사용자 수정: 2열 그리드 밖 → 좌측 부서트리 영역까지 전체폭 사용 -->
+  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

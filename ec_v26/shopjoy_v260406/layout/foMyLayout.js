@@ -62,6 +62,7 @@ window.MyDateFilter = {
   },
   template: `
 <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;">
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
     <span style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);white-space:nowrap;">등록기간</span>
     <input type="date" v-model="startDate"
@@ -86,7 +87,9 @@ window.PagerHeader = {
   props: ['total', 'pager'],
   template: `
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="font-size:0.85rem;color:var(--text-secondary);">총 <strong style="color:var(--text-primary);">{{ total }}</strong>건</div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <select v-model="pager.size" @change="pager.page=1"
     style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:0.82rem;cursor:pointer;">
     <option :value="5">5개씩</option>
@@ -110,12 +113,15 @@ window.Pagination = {
   },
   template: `
 <div v-if="pages.length>1" style="display:flex;gap:6px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
+  <!-- ===== ■. 영역 ====================================================== -->
   <button @click="pager.page=Math.max(1,pager.page-1)" :disabled="pager.page===1"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
     :style="pager.page===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
+  <!-- ===== ■. 영역 ====================================================== -->
   <button v-for="p in pages" :key="p" @click="pager.page=p"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.82rem;min-width:36px;"
     :style="pager.page===p?'background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700;':'background:var(--bg-card);color:var(--text-secondary);'">{{ p }}</button>
+  <!-- ===== ■. 영역 ====================================================== -->
   <button @click="pager.page=Math.min(pages.length,pager.page+1)" :disabled="pager.page===pages.length"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
     :style="pager.page===pages.length?'opacity:0.4;cursor:not-allowed;':''">›</button>
@@ -155,6 +161,7 @@ window.foMyLayout = {
 <div style="padding:0 20px 24px;max-width:1100px;margin:0 auto;">
 
   <!-- 페이지 타이틀 배너 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="position:relative;overflow:hidden;height:220px;margin-bottom:28px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="마이페이지"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -171,6 +178,7 @@ window.foMyLayout = {
   </div>
 
   <!-- 탭 바 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;margin-bottom:24px;overflow-x:auto;scrollbar-width:none;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:8px;box-shadow:0 2px 12px rgba(0,0,0,0.05);align-items:stretch;">
     <template v-for="(t, ti) in MY_TABS" :key="t.pageId">
       <button @click="goTab(t.pageId)"
@@ -194,6 +202,7 @@ window.foMyLayout = {
   </div>
 
   <!-- 탭 컨텐츠 (슬롯) -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <slot />
 
 </div>

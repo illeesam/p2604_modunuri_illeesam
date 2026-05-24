@@ -236,8 +236,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">정산기타조정</div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">판촉비·위약금·보증금 등 정산조정 외 기타 항목을 별도 관리합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
@@ -245,10 +246,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       • 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다. • 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등 • 승인 후 정산마감 집계에 포함됩니다. • 승인 상태: 대기 / 승인 / 반려
     </div>
   </div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
       <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
@@ -256,7 +259,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         <button class="btn btn-primary" @click="openNew">+ 기타조정 추가</button>
       </div>
     </div>
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="etcAdjList" :pager="pager" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
@@ -270,9 +273,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </bo-grid>
   </div>
   <!-- 편집 폼 (BoFormArea 자동 렌더) -->
+  <!-- ===== ■. 상세 패널 =================================================== -->
   <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
     <div style="font-weight:700;margin-bottom:16px">{{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}</div>
-    <!-- ===== 폼 영역 ======================================================= -->
+    <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :cols="4"
       @save="handleSave" @cancel="closeForm" />

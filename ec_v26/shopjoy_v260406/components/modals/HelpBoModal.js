@@ -268,9 +268,10 @@ window.HelpBoModal = {
     };
   },
   template: `
-<!-- ===== 모달 ========================================================= -->
+<!-- ===== ■. 모달 ====================================================== -->
 <bo-modal :show="show" max-width="860px" height="92vh" max-height="92vh"
   box-pad="0" body-pad="0" :z-index="3000" @close="close">
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- 헤더 -->
     <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid #ffc9d6;">
@@ -364,6 +365,7 @@ window.HelpBoModal = {
             </div>
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
               <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">상품 상세 탭</div>
+              <!-- ===== ■.■.■.■.■.■.■. 테이블 ========================================= -->
               <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <tr v-for="row in PRODUCT_TABS" :key="row.tab" style="border-bottom:1px solid #f0f0f0;">
                   <td style="padding:5px 8px;font-weight:600;color:#333;white-space:nowrap;width:110px;">{{ row.tab }}</td>
@@ -391,6 +393,7 @@ window.HelpBoModal = {
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
                 <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">카테고리별 옵션 차원 구성</div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
@@ -427,6 +430,7 @@ window.HelpBoModal = {
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
                 <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">👗 의류 — 색상(1단) x 사이즈(2단)</div>
                 <div style="font-size:11px;color:#888;margin-bottom:10px;">카테고리: CLOTHING</div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
@@ -460,6 +464,7 @@ window.HelpBoModal = {
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
                 <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">👟 신발 — 사이즈(1단) x 색상(2단)</div>
                 <div style="font-size:11px;color:#888;margin-bottom:10px;">카테고리: SHOES</div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
@@ -492,6 +497,7 @@ window.HelpBoModal = {
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
                 <div style="font-weight:700;color:#1677ff;margin-bottom:4px;font-size:13px;">💻 전자기기 — 색상(1단) x 저장용량(2단)</div>
                 <div style="font-size:11px;color:#888;margin-bottom:10px;">카테고리: 색상+커스텀 (CUSTOM_GRP)</div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
@@ -523,6 +529,7 @@ window.HelpBoModal = {
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;">
                 <div style="font-weight:700;color:#1677ff;margin-bottom:8px;font-size:13px;">단독 옵션 — 1차원만 사용</div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#e6f4ff;">
@@ -683,6 +690,7 @@ window.HelpBoModal = {
               <!-- 반품 배송비 -->
               <div style="border:1px solid #fee2e2;border-radius:8px;padding:14px;background:#fff5f5;">
                 <div style="font-weight:700;color:#ef4444;margin-bottom:10px;font-size:13px;">반품 배송비 부담 기준</div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
                 <table style="width:100%;border-collapse:collapse;font-size:12px;">
                   <thead>
                     <tr style="background:#fee2e2;">

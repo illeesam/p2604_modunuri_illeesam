@@ -261,14 +261,14 @@ window.CmNoticeMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">공지사항관리</div>
-  <!-- ===== 검색 영역 ====================================================== -->
+  <!-- ===== ■. 검색 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 목록 영역 (BoGrid) ============================================= -->
+  <!-- ===== ■. 목록 영역 (BoGrid) ========================================== -->
   <bo-grid :columns="listGridColumns" :rows="notices" :pager="pager" row-key="noticeId"
     :sort-state="uiState" list-title="공지사항목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
@@ -286,11 +286,13 @@ window.CmNoticeMng = {
     </template>
   </bo-grid>
 </div>
-<!-- ===== 상세 패널 (인라인 임베드) ============================================ -->
+<!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
 <div v-if="selectedId" style="margin-top:4px;">
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
     <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>
   </div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <cm-notice-dtl
     :key="cfDetailKey"
     :navigate="inlineNavigate"

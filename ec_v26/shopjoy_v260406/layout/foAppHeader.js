@@ -164,6 +164,7 @@ window.foAppHeader = {
 <header class="glass" style="height:var(--header-h,60px);min-height:60px;flex-shrink:0;display:flex;align-items:center;padding:0 20px;gap:14px;position:sticky;top:0;z-index:50;border-left:none;border-right:none;border-top:none;">
 
   <!-- Hamburger (mobile) -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <button @click="$emit('app-toggle-mobile')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:flex;flex-direction:column;gap:4px;flex-shrink:0;"
     class="lg:hidden" aria-label="메뉴">
@@ -173,6 +174,7 @@ window.foAppHeader = {
   </button>
 
   <!-- Collapse toggle (desktop) -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <button @click="$emit('app-toggle-sidebar')"
     style="background:none;border:none;cursor:pointer;padding:6px;display:none;align-items:center;color:var(--text-secondary);flex-shrink:0;"
     class="hidden-sm" aria-label="사이드바 토글">
@@ -180,6 +182,7 @@ window.foAppHeader = {
   </button>
 
   <!-- Logo -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <button @click="navigate('home')" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-shrink:0;padding:0;">
     <svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <!-- 모래 -->
@@ -234,6 +237,7 @@ window.foAppHeader = {
   </button>
 
   <!-- Top nav -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
     <template v-for="m in cfTopMenu" :key="m.menuId">
       <!-- Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) -->
@@ -246,6 +250,7 @@ window.foAppHeader = {
   </nav>
 
   <!-- 우측: 로그인/유저 → 테마 순 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
 
     <!-- 비로그인 -->
@@ -366,7 +371,9 @@ window.foAppHeader = {
   </div>
 
   <!-- ══ Profile 모달 ══ -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="uiState.profileOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.profileOpen=false">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:440px;max-height:88vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
       <button @click="uiState.profileOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>
@@ -440,7 +447,9 @@ window.foAppHeader = {
   </Teleport>
 
   <!-- ══ 비밀번호 변경 모달 ══ -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="uiState.pwOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="uiState.pwOpen=false">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:400px;padding:28px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
       <button @click="uiState.pwOpen=false" style="position:absolute;top:16px;right:16px;background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">✕</button>

@@ -333,6 +333,7 @@
     template: /* html */`
 <div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
   <!-- 헤더 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
     <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
@@ -342,6 +343,7 @@
     </span>
   </div>
   <!-- 필터 바: 조회기간 + 상세필터 토글 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <span style="font-size:11px;font-weight:700;color:#666;width:74px;">조회기간</span>
@@ -387,6 +389,7 @@
     </div>
   </div>
   <!-- 탭 바 + 뷰모드 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
       <button v-for="t in TABS" :key="t.key" class="tab-btn"
@@ -410,6 +413,7 @@
     </div>
   </div>
   <!-- 탭 컨텐츠: 뷰모드에 따라 grid -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">
     <!-- 1) 월별 매출현황 -->
     <div v-show="showPanel('sales')" class="card" style="padding:14px;">

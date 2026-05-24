@@ -161,12 +161,14 @@ window.PdRestockNotiMng = {
   },
   template: `
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">재입고알림관리</div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">재입고알림 목록</span>
@@ -175,7 +177,7 @@ window.PdRestockNotiMng = {
         📣 알림발송 ({{ checkedCount }}건)
       </button>
     </div>
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"

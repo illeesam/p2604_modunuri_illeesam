@@ -262,9 +262,10 @@ window.PdDlivTmpltMng = {
   template: `
 <div>
   <!-- 페이지 타이틀 -->
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">배송템플릿관리</div>
   <!-- 안내 박스 (접기/펼치기) -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#1a7a52">배송템플릿</strong>은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다.</span>
     <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
@@ -285,18 +286,20 @@ window.PdDlivTmpltMng = {
     </div>
   </div>
   <!-- 검색영역 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- 목록영역 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">배송템플릿 목록</span>
       <span class="list-count">총 {{ pager.pageTotalCount }}건</span>
       <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="openNew">+ 신규</button>
     </div>
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="dlivTmplts" :pager="pager" row-key="dlivTmpltId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
@@ -305,6 +308,7 @@ window.PdDlivTmpltMng = {
       @sort="onSort" @row-click="openDetail" @set-page="setPage" @size-change="onSizeChange"></bo-grid>
   </div>
   <!-- 상세영역 (신규/수정 폼) -->
+  <!-- ===== ■. 상세 패널 =================================================== -->
   <div class="card" v-if="uiState.selectedId">
     <!-- 상세 툴바: 제목 + 저장/삭제/닫기 -->
     <div class="toolbar">
@@ -317,7 +321,7 @@ window.PdDlivTmpltMng = {
     </div>
     <!-- 상세 입력폼 (BoFormArea 자동 렌더) -->
     <div style="padding:12px">
-      <!-- ===== 폼 영역 ======================================================= -->
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}"
         :cols="2" :show-actions="false" />
     </div>

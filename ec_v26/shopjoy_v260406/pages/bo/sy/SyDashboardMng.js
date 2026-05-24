@@ -80,9 +80,10 @@ window.SyDashboardMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">대시보드</div>
   <!-- 통계 카드 -->
+  <!-- ===== ■. 대시보드 영역 ================================================= -->
   <div class="dash-stats">
     <div v-for="s in cfStats" :key="s.label" class="dash-stat-card" :style="{'--accent': s.color}">
       <div class="dash-stat-icon">{{ s.icon }}</div>
@@ -94,6 +95,7 @@ window.SyDashboardMng = {
     </div>
   </div>
   <!-- 바로가기 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="section-title">바로가기</div>
     <div class="dash-shortcuts">

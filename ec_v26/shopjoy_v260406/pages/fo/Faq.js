@@ -34,7 +34,7 @@ window.Faq = {
   },
   template: /* html */ `
 <div class="page-wrap">
-  <!-- ===== 페이지 타이틀 배너 ================================================= -->
+  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="FAQ"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -49,6 +49,7 @@ window.Faq = {
       </div>
     </div>
   </div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
       <button class="faq-question" @click="uiState.openFaq=(uiState.openFaq===idx?null:idx)">
@@ -58,6 +59,7 @@ window.Faq = {
       <div v-show="uiState.openFaq===idx" class="faq-answer">{{ faq.a }}</div>
     </div>
   </div>
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="text-align:center;padding:clamp(12px,3vw,24px) 0;">
     <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px;">원하시는 답변을 찾지 못하셨나요?</p>
     <button class="btn-blue" @click="navigate('contact')">1:1 문의하기</button>

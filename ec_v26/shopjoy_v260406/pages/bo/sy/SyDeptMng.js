@@ -357,12 +357,14 @@ window.SyDeptMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">부서관리</div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;"><span class="list-title" style="font-size:13px;">📂 부서</span></div>
@@ -375,7 +377,7 @@ window.SyDeptMng = {
       </div>
     </div>
     <div>
-      <!-- ===== CRUD 그리드 =================================================== -->
+      <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="baseGridColumns" :rows="gridRows" row-key="deptId"
         list-title="부서목록" :show-export="true" :draggable="false"
@@ -413,6 +415,7 @@ window.DeptTreeNode = {
   created() { this.$options.components['dept-tree-node'] = window.DeptTreeNode; },
   template: `
 <div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div :style="{ paddingLeft: (depth * 14) + 'px', display:'flex', alignItems:'center',
     cursor:'pointer', padding:'4px 6px 4px ' + (depth*14+6) + 'px',
     borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
@@ -427,6 +430,7 @@ window.DeptTreeNode = {
     <span v-else style="margin-right:4px;width:14px;flex-shrink:0;"></span>
     <span style="font-size:13px;">{{ node.deptNm }}</span>
   </div>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="node.children && node.children.length && expanded.has(node.deptId)">
     <dept-tree-node v-for="child in node.children" :key="child.deptId"
       :node="child" :expanded="expanded" :selected="selected"

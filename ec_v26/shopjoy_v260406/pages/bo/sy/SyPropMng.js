@@ -220,19 +220,19 @@ window.SyPropMng = {
 
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">프로퍼티관리</div>
-  <!-- ===== 검색 바 ======================================================= -->
+  <!-- ===== ■. 검색 바 ==================================================== -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area @search="fetchData" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 좌 트리 + 우 그리드 =============================================== -->
+  <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
   <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
-    <!-- ===== 트리 ========================================================= -->
+    <!-- ===== ■.■. 트리 ==================================================== -->
     <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
-    <!-- ===== 그리드 (BoGridCrud) =========================================== -->
+    <!-- ===== ■.■. 그리드 (BoGridCrud) ====================================== -->
     <bo-grid-crud
       :columns="baseGridColumns" :rows="rows" row-key="propId"
       list-title="프로퍼티목록" :draggable="false"
@@ -264,6 +264,7 @@ window.PropTreeNode = {
   },
   template: /* html */`
 <div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',
     paddingLeft: (8 + depth*14) + 'px',
     background: selected===node.path ? '#fff0f4' : 'transparent',
@@ -283,6 +284,7 @@ window.PropTreeNode = {
     </span>
     <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
   </div>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="expanded.has(node.path) && node.children.length>0">
     <bo-path-tree-node v-for="ch in node.children" :key="ch.path"
       :node="ch" :expanded="expanded" :selected="selected"

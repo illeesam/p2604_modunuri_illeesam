@@ -381,12 +381,13 @@
 
     template: /* html */`
 <div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-header">
     <h2 class="page-title">고객종합정보</h2>
   </div>
-  <!-- ===== 검색 바 ======================================================= -->
+  <!-- ===== ■. 검색 바 ==================================================== -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:14px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-    <!-- ===== 모드 세그먼트 ==================================================== -->
+    <!-- ===== ■.■. 모드 세그먼트 =============================================== -->
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;flex-shrink:0;">
       <button v-for="m in SEARCH_MODES" :key="m?.id"
         @click="uiState.searchMode=m.id;uiState.searchInput=''"
@@ -396,7 +397,7 @@
         {{ m.label }}
       </button>
     </div>
-    <!-- ===== 고객 선택 ====================================================== -->
+    <!-- ===== ■.■. 고객 선택 ================================================= -->
     <template v-if="uiState.searchMode==='member'">
       <button @click="openMemberModal"
         style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #1976d2;color:#1976d2;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;">
@@ -404,7 +405,7 @@
       </button>
       <span style="font-size:12px;color:#aaa;">이름 · 이메일 · 전화번호로 검색</span>
     </template>
-    <!-- ===== 번호 입력 ====================================================== -->
+    <!-- ===== ■.■. 번호 입력 ================================================= -->
     <template v-else>
       <div style="display:flex;align-items:center;gap:0;background:#f8f9fa;border:1.5px solid #ddd;border-radius:8px;overflow:hidden;flex:1;max-width:360px;">
         <input type="text" v-model="uiState.searchInput"
@@ -423,7 +424,7 @@
       ✕ 초기화
     </button>
   </div>
-  <!-- ===== 기간 필터 바 ==================================================== -->
+  <!-- ===== ■. 기간 필터 바 ================================================= -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <span style="font-size:12px;color:#888;font-weight:500;white-space:nowrap;">조회기간</span>
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
@@ -444,24 +445,25 @@
     </template>
     <span v-else style="font-size:12px;color:#aaa;">{{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}</span>
   </div>
-  <!-- ===== 고객 없음 안내 =================================================== -->
+  <!-- ===== ■. 고객 없음 안내 ================================================ -->
   <div v-if="!uiState.customer"
     style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;color:#ccc;gap:12px;">
     <div style="font-size:48px;line-height:1;">👤</div>
     <div style="font-size:15px;color:#bbb;">고객을 검색하여 선택하면 종합 정보가 표시됩니다.</div>
     <div style="font-size:12px;color:#d0d0d0;">고객 선택 · 주문번호 · 클레임번호 세 가지 방법으로 조회할 수 있습니다.</div>
   </div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <template v-else>
-    <!-- ===== 1. 고객 프로필 카드 =============================================== -->
+    <!-- ===== ■.■. 1. 고객 프로필 카드 ========================================== -->
     <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden;">
-      <!-- ===== 상단 컬러 배너 =================================================== -->
+      <!-- ===== ■.■.■. 상단 컬러 배너 ============================================ -->
       <div :style="'height:6px;background:'+(uiState.customer.grade==='VIP'?'linear-gradient(90deg,#9c27b0,#e040fb)':uiState.customer.grade==='우수'?'linear-gradient(90deg,#1976d2,#42a5f5)':'linear-gradient(90deg,#78909c,#b0bec5)')"></div>
       <div style="display:flex;align-items:flex-start;gap:20px;padding:20px 24px;">
-        <!-- ===== 아바타 ======================================================== -->
+        <!-- ===== ■.■.■.■. 아바타 =============================================== -->
         <div :style="'width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;'+(uiState.customer.grade==='VIP'?'background:linear-gradient(135deg,#9c27b0,#e040fb);':uiState.customer.grade==='우수'?'background:linear-gradient(135deg,#1976d2,#42a5f5);':'background:linear-gradient(135deg,#78909c,#b0bec5);')">
           {{ uiState.customer.memberNm ? uiState.customer.memberNm[0] : '' }}
         </div>
-        <!-- ===== 이름/등급/상태 =================================================== -->
+        <!-- ===== ■.■.■.■. 이름/등급/상태 ========================================== -->
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
             <span style="font-size:20px;font-weight:700;color:#212121;">{{ uiState.customer.memberNm }}</span>
@@ -479,7 +481,7 @@
             <span style="color:#999;">최근로그인 {{ uiState.customer.lastLogin }}</span>
           </div>
         </div>
-        <!-- ===== 핵심 지표 ====================================================== -->
+        <!-- ===== ■.■.■.■. 핵심 지표 ============================================= -->
         <div style="display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;">
           <div style="background:#f0f7ff;border:1px solid #bbdefb;border-radius:8px;padding:10px 18px;text-align:center;min-width:88px;">
             <div style="font-size:11px;color:#1976d2;font-weight:600;margin-bottom:2px;">총 주문</div>
@@ -499,7 +501,7 @@
         </div>
       </div>
     </div>
-    <!-- ===== 이력 탭바 + 뷰모드 ================================================ -->
+    <!-- ===== ■.■. 이력 탭바 + 뷰모드 =========================================== -->
     <div class="tab-bar-row">
       <div class="tab-nav">
         <button class="tab-btn" :class="{active:histTab==='orders'}"   :disabled="tabMode2!=='tab'" @click="histTab='orders'">
@@ -547,9 +549,9 @@
         <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열로 보기">4▭</button>
       </div>
     </div>
-    <!-- ===== 이력 패널 ====================================================== -->
+    <!-- ===== ■.■. 이력 패널 ================================================= -->
     <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-      <!-- ===== 주문이력 ======================================================= -->
+      <!-- ===== ■.■.■. 주문이력 ================================================ -->
       <div v-show="showTab('orders')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#1976d2;border-radius:2px;display:inline-block;"></span>
@@ -559,12 +561,12 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="orderGridColumns" :rows="cfCustOrders" row-key="orderId" empty-text="주문 내역이 없습니다."
             @ref-click="({type,id}) => showRefModal(type, id)"></bo-grid>
         </div>
       </div>
-      <!-- ===== 클레임이력 ====================================================== -->
+      <!-- ===== ■.■.■. 클레임이력 =============================================== -->
       <div v-show="showTab('claims')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ef5350;border-radius:2px;display:inline-block;"></span>
@@ -574,12 +576,12 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="claimGridColumns" :rows="cfCustClaims" row-key="claimId" empty-text="클레임 내역이 없습니다."
             @ref-click="({type,id}) => showRefModal(type, id)"></bo-grid>
         </div>
       </div>
-      <!-- ===== 배송이력 ======================================================= -->
+      <!-- ===== ■.■.■. 배송이력 ================================================ -->
       <div v-show="showTab('dliv')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#00897b;border-radius:2px;display:inline-block;"></span>
@@ -589,11 +591,11 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="dlivGridColumns" :rows="cfCustDeliveries" row-key="dlivId" empty-text="배송 내역이 없습니다."></bo-grid>
         </div>
       </div>
-      <!-- ===== 캐쉬내역 ======================================================= -->
+      <!-- ===== ■.■.■. 캐쉬내역 ================================================ -->
       <div v-show="showTab('cache')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#f57c00;border-radius:2px;display:inline-block;"></span>
@@ -604,11 +606,11 @@
           <span style="margin-left:auto;font-size:12px;color:#7b1fa2;font-weight:600;">잔액 {{ fnFmtPrice(cfCustCacheBalance) }}</span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="cacheGridColumns" :rows="cfCustCache" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."></bo-grid>
         </div>
       </div>
-      <!-- ===== 문의이력 ======================================================= -->
+      <!-- ===== ■.■.■. 문의이력 ================================================ -->
       <div v-show="showTab('contacts')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#5c6bc0;border-radius:2px;display:inline-block;"></span>
@@ -618,11 +620,11 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="contactGridColumns" :rows="cfCustContacts" row-key="inquiryId" empty-text="문의 내역이 없습니다."></bo-grid>
         </div>
       </div>
-      <!-- ===== 채팅이력 ======================================================= -->
+      <!-- ===== ■.■.■. 채팅이력 ================================================ -->
       <div v-show="showTab('chats')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#26a69a;border-radius:2px;display:inline-block;"></span>
@@ -632,11 +634,11 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="chatGridColumns" :rows="cfCustChats" row-key="chatId" empty-text="채팅 내역이 없습니다."></bo-grid>
         </div>
       </div>
-      <!-- ===== 로그인이력 ====================================================== -->
+      <!-- ===== ■.■.■. 로그인이력 =============================================== -->
       <div v-show="showTab('login')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#546e7a;border-radius:2px;display:inline-block;"></span>
@@ -646,11 +648,11 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="loginGridColumns" :rows="cfCustLoginHist" row-key="loginId" empty-text="로그인 내역이 없습니다."></bo-grid>
         </div>
       </div>
-      <!-- ===== 쿠폰사용이력 ===================================================== -->
+      <!-- ===== ■.■.■. 쿠폰사용이력 ============================================== -->
       <div v-show="showTab('coupon')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#e91e63;border-radius:2px;display:inline-block;"></span>
@@ -660,12 +662,12 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="couponGridColumns" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
             @ref-click="({type,id}) => showRefModal(type, id)"></bo-grid>
         </div>
       </div>
-      <!-- ===== 발송이력 ======================================================= -->
+      <!-- ===== ■.■.■. 발송이력 ================================================ -->
       <div v-show="showTab('send')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
         <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafbfc;">
           <span style="width:4px;height:18px;background:#ff7043;border-radius:2px;display:inline-block;"></span>
@@ -675,14 +677,14 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="sendGridColumns" :rows="cfCustSendHist" row-key="sendId" empty-text="발송 내역이 없습니다."></bo-grid>
         </div>
       </div>
     </div>
     <!-- ===== /grid ====================================================== -->
   </template>
-  <!-- ===== 고객 선택 모달 =================================================== -->
+  <!-- ===== ■. 고객 선택 모달 ================================================ -->
   <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
     max-height="85vh" @close="memberModal.show=false">
     <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
@@ -701,7 +703,7 @@
         style="flex:1;font-size:13px;" />
       <button class="btn btn-primary btn-sm" @click="searchMemberModal" style="white-space:nowrap;">🔍 검색</button>
     </div>
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare :columns="memberModalGridColumns" :rows="memberModal.list" row-key="userId" row-clickable empty-text="검색 결과가 없습니다." @row-click="selectMember" row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-primary btn-sm" @click.stop="selectMember(row)">선택</button>

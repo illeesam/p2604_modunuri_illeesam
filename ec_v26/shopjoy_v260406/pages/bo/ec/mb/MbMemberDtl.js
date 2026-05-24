@@ -70,7 +70,9 @@ window.MbMemberDtl = {
   },
   template: /* html */`
 <div v-if="detailModal.show">
+  <!-- ===== ■. 상세 화면 =================================================== -->
   <!-- 상세/수정 카드 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- 상세 툴바: 제목 + 저장/삭제/닫기 -->
     <div class="toolbar">
@@ -83,12 +85,13 @@ window.MbMemberDtl = {
     </div>
     <!-- 폼 영역 (BoFormArea 자동 렌더) - 상단 툴바 버튼 사용으로 :show-actions=false -->
     <div style="padding:12px;">
-      <!-- ===== 폼 영역 ======================================================= -->
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="detailModal.form" :errors="{}"
         :readonly="false" :cols="2" :show-actions="false" />
     </div>
   </div>
   <!-- 이력정보 카드 -->
+  <!-- ===== ■. 상세 패널 =================================================== -->
   <div v-if="!detailModal.isNew" class="card">
     <mb-member-hist :member-id="currentId" :key="currentId" />
   </div>

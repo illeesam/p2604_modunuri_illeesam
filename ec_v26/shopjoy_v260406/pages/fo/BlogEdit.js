@@ -113,7 +113,7 @@ window.BlogEdit = {
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:760px;">
-  <!-- ===== 헤더 ========================================================= -->
+  <!-- ===== ■. 헤더 ====================================================== -->
   <div style="margin-bottom:28px;">
     <button @click="cancel"
       style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:16px;padding:0;">
@@ -121,11 +121,11 @@ window.BlogEdit = {
     </button>
     <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">{{ cfIsEdit ? '글 수정' : '새 글 작성' }}</h1>
   </div>
-  <!-- ===== 폼 ========================================================== -->
+  <!-- ===== ■. 폼 ======================================================= -->
   <div class="card" style="padding:clamp(16px,3vw,28px);">
-    <!-- ===== 제목 / 카테고리 / 요약 / 본문 ======================================== -->
+    <!-- ===== ■.■. 제목 / 카테고리 / 요약 / 본문 =================================== -->
     <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
-    <!-- ===== 이미지 첨부 ===================================================== -->
+    <!-- ===== ■.■. 이미지 첨부 ================================================ -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">이미지 첨부</label>
       <button @click="addImage" class="btn-outline" style="padding:8px 16px;font-size:0.82rem;margin-bottom:10px;">+ 이미지 추가</button>
@@ -138,7 +138,7 @@ window.BlogEdit = {
         </button>
       </div>
     </div>
-    <!-- ===== 태그 ========================================================= -->
+    <!-- ===== ■.■. 태그 ==================================================== -->
     <div style="margin-bottom:28px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">태그 (쉼표로 구분)</label>
       <input v-model="form.tags" type="text" placeholder="패션, 트렌드, 2026SS"
@@ -150,7 +150,7 @@ window.BlogEdit = {
         </span>
       </div>
     </div>
-    <!-- ===== 버튼 ========================================================= -->
+    <!-- ===== ■.■. 버튼 ==================================================== -->
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button class="btn-outline" @click="cancel" style="padding:11px 28px;font-size:0.88rem;">취소</button>
       <button class="btn-blue" @click="handleSave" style="padding:11px 28px;font-size:0.88rem;">{{ cfIsEdit ? '수정' : '등록' }}</button>

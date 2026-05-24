@@ -126,16 +126,16 @@ window.BlogView = {
   },
   template: /* html */ `
 <div class="page-wrap" style="max-width:1100px;">
-  <!-- ===== ══ 2컬럼 레이아웃 ══ ============================================= -->
+  <!-- ===== ■. ══ 2컬럼 레이아웃 ══ ========================================== -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(20px,4vw,48px);align-items:start;">
-    <!-- ===== 좌: 본문 영역 =================================================== -->
+    <!-- ===== ■.■. 좌: 본문 영역 ============================================== -->
     <div>
-      <!-- ===== 뒤로 ========================================================= -->
+      <!-- ===== ■.■.■. 뒤로 ================================================== -->
       <button @click="navigate('blog')"
         style="display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;margin-bottom:20px;padding:0;">
         ← 블로그 목록으로
       </button>
-      <!-- ===== 카테고리 + 메타 ================================================== -->
+      <!-- ===== ■.■.■. 카테고리 + 메타 =========================================== -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:0.75rem;">
         <span style="background:var(--blue);color:#fff;padding:2px 10px;border-radius:2px;font-weight:600;">{{ cfPost.category }}</span>
         <span style="color:var(--text-muted);">By <strong style="color:var(--text-secondary);">{{ cfPost.author }}</strong></span>
@@ -144,25 +144,25 @@ window.BlogView = {
         <span style="color:var(--text-muted);">·</span>
         <span style="color:var(--text-muted);">{{ cfPost.readTime }} 읽기</span>
       </div>
-      <!-- ===== 제목 ========================================================= -->
+      <!-- ===== ■.■.■. 제목 ================================================== -->
       <h1 style="font-size:1.8rem;font-weight:900;color:var(--text-primary);line-height:1.35;margin-bottom:24px;">{{ cfPost.title }}</h1>
-      <!-- ===== 히어로 이미지 ==================================================== -->
+      <!-- ===== ■.■.■. 히어로 이미지 ============================================= -->
       <div v-if="cfPost.img" style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:28px;background:var(--bg-base);">
         <img :src="cfPost.img" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;" />
       </div>
-      <!-- ===== 본문 첫 단락 ==================================================== -->
+      <!-- ===== ■.■.■. 본문 첫 단락 ============================================= -->
       <div v-if="cfBodyParagraphs[0]"
         style="font-size:0.92rem;color:var(--text-secondary);line-height:1.95;margin-bottom:24px;"
         v-html="cfBodyParagraphs[0]"></div>
-      <!-- ===== 중간 이미지 ===================================================== -->
+      <!-- ===== ■.■.■. 중간 이미지 ============================================== -->
       <div v-if="cfPost.imgMid" style="width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:4px;margin-bottom:24px;background:var(--bg-base);">
         <img :src="cfPost.imgMid" :alt="cfPost.title" style="width:100%;height:100%;object-fit:cover;" />
       </div>
-      <!-- ===== 나머지 본문 단락 ================================================== -->
+      <!-- ===== ■.■.■. 나머지 본문 단락 =========================================== -->
       <div v-for="(para, i) in cfBodyParagraphs.slice(1)" :key="i"
         style="font-size:0.92rem;color:var(--text-secondary);line-height:1.95;margin-bottom:20px;"
         v-html="para"></div>
-      <!-- ===== 태그 + 공유 ==================================================== -->
+      <!-- ===== ■.■.■. 태그 + 공유 ============================================= -->
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:20px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:36px;">
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           <span style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-right:4px;">Tags:</span>
@@ -193,7 +193,7 @@ window.BlogView = {
           </a>
         </div>
       </div>
-      <!-- ===== 첨부 파일 ====================================================== -->
+      <!-- ===== ■.■.■. 첨부 파일 =============================================== -->
       <div v-if="cfPost.files && cfPost.files.length" style="margin-bottom:36px;">
         <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">첨부 ({{ cfPost.files.length }})</h3>
         <div style="display:flex;flex-wrap:wrap;gap:10px;">
@@ -204,7 +204,7 @@ window.BlogView = {
           </a>
         </div>
       </div>
-      <!-- ===== 댓글 ========================================================= -->
+      <!-- ===== ■.■.■. 댓글 ================================================== -->
       <div style="margin-bottom:40px;">
         <h3 style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
           댓글
@@ -222,7 +222,7 @@ window.BlogView = {
           </div>
           <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.7;padding-left:46px;">{{ c.text }}</div>
         </div>
-        <!-- ===== 댓글 입력 ====================================================== -->
+        <!-- ===== ■.■.■.■. 댓글 입력 ============================================= -->
         <div style="margin-top:24px;">
           <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:12px;">댓글 남기기</h4>
           <div style="display:flex;gap:10px;">
@@ -236,9 +236,9 @@ window.BlogView = {
         </div>
       </div>
     </div>
-    <!-- ===== 우: 사이드바 ==================================================== -->
+    <!-- ===== ■.■. 우: 사이드바 =============================================== -->
     <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:clamp(16px,2.5vw,32px);">
-      <!-- ===== 검색 ========================================================= -->
+      <!-- ===== ■.■.■. 검색 ================================================== -->
       <div>
         <div style="position:relative;">
           <input v-model="searchParam.searchValue" type="text" placeholder="Search..."
@@ -246,7 +246,7 @@ window.BlogView = {
           <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);">🔍</span>
         </div>
       </div>
-      <!-- ===== Prod Categories ============================================ -->
+      <!-- ===== ■.■.■. Prod Categories ===================================== -->
       <div>
         <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
           Prod Categories
@@ -261,7 +261,7 @@ window.BlogView = {
           </div>
         </div>
       </div>
-      <!-- ===== Latest Posts =============================================== -->
+      <!-- ===== ■.■.■. Latest Posts ======================================== -->
       <div>
         <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
           Latest Posts
@@ -282,7 +282,7 @@ window.BlogView = {
           </div>
         </div>
       </div>
-      <!-- ===== Recent Comments ============================================ -->
+      <!-- ===== ■.■.■. Recent Comments ===================================== -->
       <div>
         <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
           Recent Comments
@@ -301,7 +301,7 @@ window.BlogView = {
           </div>
         </div>
       </div>
-      <!-- ===== Archives =================================================== -->
+      <!-- ===== ■.■.■. Archives ============================================ -->
       <div>
         <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
           Archives
@@ -317,7 +317,7 @@ window.BlogView = {
       </div>
     </div>
   </div>
-  <!-- ===== ══ 하단: You Might Also Like ══ ============================== -->
+  <!-- ===== ■. ══ 하단: You Might Also Like ══ =========================== -->
   <div v-if="cfRelatedPosts.length" style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);">
     <h2 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-bottom:28px;text-align:center;">You Might Also Like</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:clamp(14px,2vw,28px);">

@@ -246,14 +246,16 @@ window.PmCacheMng = {
   template: /* html */`
 <div>
   <!-- 페이지 타이틀 -->
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">캐쉬관리</div>
   <!-- 검색영역 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
   <!-- 목록영역 (리스트/카드 토글) -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 -->
     <div class="toolbar">
@@ -278,7 +280,7 @@ window.PmCacheMng = {
       </div>
     </div>
     <!-- 리스트 뷰 (BoGrid) -->
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="baseGridColumns" :rows="caches" :pager="pager" row-key="cacheId"
       :row-actions="true"
@@ -325,6 +327,7 @@ window.PmCacheMng = {
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
   <!-- 하단 상세영역: PmCacheDtl 인라인 임베드 -->
+  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

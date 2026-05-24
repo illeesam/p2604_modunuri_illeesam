@@ -173,14 +173,15 @@ window.SyBbmDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.bbmId }}</span>
   </div>
   <!-- 폼 영역 (BoFormArea 자동 렌더) -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 폼 영역 ======================================================= -->
+    <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3"
       @save="handleSave"
@@ -189,6 +190,7 @@ window.SyBbmDtl = {
       @close="navigate('syBbmMng')" />
   </div>
   <!-- 표시경로 선택 모달 -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
     :value="form.pathId"
     title="게시판 표시경로 선택"

@@ -82,6 +82,7 @@ window.DispX02Area = {
   template: /* html */`
 <div class="disp-area" style="margin-bottom:28px;">
   <!-- 영역 헤더 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;border-radius:8px 8px 0 0;">
     <span v-if="showDesc" style="font-size:9px;background:rgba(99,179,237,.35);color:#bee3f8;border:1px solid rgba(99,179,237,.4);border-radius:4px;padding:1px 5px;letter-spacing:.3px;flex-shrink:0;">
       DispX02Area
@@ -93,14 +94,16 @@ window.DispX02Area = {
     <span style="margin-left:auto;font-size:11px;opacity:.6;">패널 {{ areaItem.panels.length }}개</span>
   </div>
   <!-- 영역 타이틀 -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="areaItem.info && areaItem.info.titleYn==='Y' && areaItem.info.title"
     style="padding:12px 16px 8px;font-size:16px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:16px;">
     {{ areaItem.info.title }}
   </div>
-  <!-- ===== 리스트 모드 ===================================================== -->
+  <!-- ===== ■. 리스트 모드 ================================================== -->
   <div v-if="mode==='list'"
     style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">이 영역에 등록된 패널이 없습니다.</div>
+    <!-- ===== ■.■. 테이블 =================================================== -->
     <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead>
         <tr style="background:#f5f5f5;border-bottom:1px solid #e8e8e8;">
@@ -143,7 +146,7 @@ window.DispX02Area = {
       </tbody>
     </table>
   </div>
-  <!-- ===== 카드 모드 ====================================================== -->
+  <!-- ===== ■. 카드 모드 =================================================== -->
   <div v-else-if="mode==='card'"
     style="display:flex;flex-wrap:wrap;gap:12px;padding:18px 14px 14px;background:#f8f8f8;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;min-height:80px;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;width:100%;text-align:center;">
@@ -180,7 +183,7 @@ window.DispX02Area = {
       </div>
     </div>
   </div>
-  <!-- ===== 상세정보 모드 (모든 패널 펼침) ========================================= -->
+  <!-- ===== ■. 상세정보 모드 (모든 패널 펼침) ====================================== -->
   <div v-else-if="mode==='expand'"
     style="padding:14px;background:#f0f0f0;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;display:flex;flex-direction:column;gap:10px;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">이 영역에 등록된 패널이 없습니다.</div>
@@ -260,7 +263,7 @@ window.DispX02Area = {
         />
     </template>
   </div>
-  <!-- ===== 영역-위젯 상세보기 모드 (area_detail) ================================ -->
+  <!-- ===== ■. 영역-위젯 상세보기 모드 (area_detail) ============================= -->
   <div v-else-if="mode==='area_detail'"
     style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">
     <div v-if="areaItem.panels.length===0" style="color:#ccc;font-size:13px;padding:16px;text-align:center;">이 영역에 등록된 패널이 없습니다.</div>

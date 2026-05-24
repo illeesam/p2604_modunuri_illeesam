@@ -247,11 +247,13 @@ window.DpDispWidgetLibMng = {
   },
   template: /* html */`
 <div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}</style>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">위젯라이브러리관리</div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :show-actions="false"
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset">
@@ -267,6 +269,7 @@ window.DpDispWidgetLibMng = {
       </div>
     </bo-search-area>
   </div>
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
     <div class="card" style="padding:12px;min-width:180px;">
       <div class="toolbar" style="margin-bottom:6px;">
@@ -281,7 +284,7 @@ window.DpDispWidgetLibMng = {
       </div>
     </div>
     <div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid :columns="listGridColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
@@ -314,6 +317,7 @@ window.DpDispWidgetLibMng = {
       </bo-grid>
     </div>
   </div>
+  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

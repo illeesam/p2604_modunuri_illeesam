@@ -275,7 +275,9 @@ window.DispX01Ui = {
   },
   template: /* html */`
 <div>
+  <!-- ===== ■. 메인 영역 =================================================== -->
   <!-- 파라미터 요약 바 (보기옵션이 있을 때만) -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="params.viewOpts" style="background:#fff;border-bottom:1px solid #e8e0f8;padding:10px 24px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
     <span style="font-size:11px;color:#888;margin-right:4px;">전달 파라미터:</span>
     <span v-if="params.areas.length" style="font-size:11px;background:#ede7f6;color:#4a148c;border-radius:8px;padding:2px 10px;">
@@ -300,6 +302,7 @@ window.DispX01Ui = {
       보기: {{ params.viewOpts }}
     </span>
   </div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <style>
     @keyframes skelShimmer {
       0%   { background-position: -400px 0; }
@@ -312,6 +315,7 @@ window.DispX01Ui = {
     }
   </style>
   <!-- 탭 바 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:stretch;border-bottom:2px solid #e8e0f8;background:#faf8ff;">
     <template v-if="cfActiveTabs.length > 1">
       <template v-for="tab in cfActiveTabs" :key="tab.key">
@@ -356,16 +360,18 @@ window.DispX01Ui = {
     </div>
   </div>
   <!-- 영역 없음 -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!(params.areas&&params.areas.length)"
     style="text-align:center;padding:60px;color:#bbb;font-size:14px;">
     전시영역 파라미터가 없습니다. 관리자 화면에서 영역을 선택 후 다시 열어주세요.
   </div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <template v-else>
     <!-- ══════════════════════════════════════
          내용보기 — 위젯 시각적 렌더링
     ══════════════════════════════════════ -->
     <div v-if="activeTab==='' || activeTab==='content' || cfActiveTabs.length===0">
-      <!-- ===== 구조보기 OFF: 순수 위젯만 =========================================== -->
+      <!-- ===== ■.■.■. 구조보기 OFF: 순수 위젯만 ==================================== -->
       <div v-if="!showContentStruct" style="display:flex;flex-direction:column;gap:0;">
         <template v-for="areaCode in params.areas" :key="areaCode">
           <disp-x02-area v-if="panelsForArea(areaCode).length"
@@ -407,7 +413,7 @@ window.DispX01Ui = {
           </div>
         </template>
       </div>
-      <!-- ===== 구조보기 ON: DispX02Area에 위임 =================================== -->
+      <!-- ===== ■.■.■. 구조보기 ON: DispX02Area에 위임 ============================ -->
       <div v-else style="padding:16px;background:#f0f0f0;display:flex;flex-direction:column;gap:4px;">
         <template v-for="areaCode in params.areas" :key="areaCode">
           <disp-x02-area
@@ -545,6 +551,7 @@ window.DispX01Ui = {
     ══════════════════════════════════════ -->
     <div v-else-if="activeTab==='source'" style="padding:0;">
       <div style="background:#1e1e2e;min-height:300px;overflow-x:auto;">
+        <!-- ===== ■.■.■.■. 테이블 =============================================== -->
         <table style="width:100%;border-collapse:collapse;font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.9;">
           <tbody>
             <tr v-for="(line, idx) in cfSourceLines" :key="idx"

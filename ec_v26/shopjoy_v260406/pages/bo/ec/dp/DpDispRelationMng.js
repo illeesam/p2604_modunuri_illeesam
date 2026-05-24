@@ -165,18 +165,18 @@ window.DpDispRelationMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">전시관계도 <span style="font-size:13px;font-weight:400;color:#888;">UI · 영역 · 패널 계층 구조</span></div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="onSearch" @reset="onReset" />
   </div>
-  <!-- ===== 내용 ========================================================= -->
+  <!-- ===== ■. 내용 ====================================================== -->
   <div class="card" style="padding:12px;">
     <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">데이터가 없습니다.</div>
     <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
-      <!-- ===== UI 행 ======================================================= -->
+      <!-- ===== ■.■.■. UI 행 ================================================ -->
       <div @click="toggleNode('ui_'+ui.id)"
         style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">
         <span style="font-size:12px;color:#999;width:20px;text-align:center;">{{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}</span>
@@ -194,7 +194,7 @@ window.DpDispRelationMng = {
         </span>
         <span style="font-size:10px;color:#aaa;">하위: {{ ui.childCount }}</span>
       </div>
-      <!-- ===== 영역들 ======================================================== -->
+      <!-- ===== ■.■.■. 영역들 ================================================= -->
       <div v-if="isNodeExpanded('ui_'+ui.id)" style="background:#fafafa;">
         <div v-for="area in ui.children" :key="area?.id" style="border-top:1px solid #f0f0f0;">
           <div @click="toggleNode('area_'+area.id)"
@@ -214,7 +214,7 @@ window.DpDispRelationMng = {
             </span>
             <span style="font-size:10px;color:#aaa;">하위: {{ area.childCount }}</span>
           </div>
-          <!-- ===== 패널들 ======================================================== -->
+          <!-- ===== ■.■.■.■.■. 패널들 ============================================= -->
           <div v-if="isNodeExpanded('area_'+area.id)" style="background:#fff;">
             <div v-for="panel in area.children" :key="panel?.id"
               style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 68px;border-top:1px solid #f5f5f5;font-size:11px;">

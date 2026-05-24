@@ -197,14 +197,16 @@ window.ZdStore = {
   },
   template: `
 <div>
+  <!-- ===== ■. 메인 영역 =================================================== -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-    <!-- ===== 페이지 타이틀 ==================================================== -->
+    <!-- ===== ■.■. 페이지 타이틀 =============================================== -->
     <div class="page-title" style="margin: 0;">Store 정보 관리</div>
     <button @click="loadAllStoreData()" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
       🔄 재로드
     </button>
   </div>
   <!-- Store 선택 탭 + 뷰모드 버튼 -->
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
     <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; flex: 1; border-bottom: 1px solid #e5e7eb;">
       <div v-for="store in storeList" :key="store.name"
@@ -261,6 +263,7 @@ window.ZdStore = {
     </div>
   </div>
   <!-- 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) -->
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="['dtl-tab-grid', 'cols-' + (uiState.tabMode === 'col1' ? '1' : uiState.tabMode === 'col2' ? '2' : uiState.tabMode === 'col3' ? '3' : uiState.tabMode === 'col4' ? '4' : uiState.tabMode === 'col5' ? '5' : 'tab')]"
     style="display: grid; gap: 4px; padding: 0; auto-flow: row;">
     <div v-for="store in storeList" :key="store.name"

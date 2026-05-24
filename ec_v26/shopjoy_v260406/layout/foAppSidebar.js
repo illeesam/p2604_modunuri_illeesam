@@ -100,6 +100,7 @@ window.foAppSidebar = {
   },
   template: /* html */ `
 <div id="sidebar" :class="[appSidebarOpen?'':'collapsed', appMobileOpen?'open':'']" @click.stop>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div class="sidebar-inner" style="padding:16px 10px;overflow-y:auto;height:100%;display:flex;flex-direction:column;gap:6px;">
 
     <!-- 기존 sidebarMenu 섹션 (샘플 전시 제외) -->

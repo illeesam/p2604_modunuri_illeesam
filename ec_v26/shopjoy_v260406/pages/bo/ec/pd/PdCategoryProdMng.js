@@ -404,16 +404,16 @@ window.PdCategoryProdMng = {
 
   template: `
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">카테고리상품관리</div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 좌 트리 + 우 상품목록 ============================================== -->
+  <!-- ===== ■. 좌 트리 + 우 상품목록 =========================================== -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
-    <!-- ===== 좌측 카테고리 트리 ================================================= -->
+    <!-- ===== ■.■. 좌측 카테고리 트리 ============================================ -->
     <div class="card" style="padding:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <span style="font-size:13px;font-weight:600;color:#555">📁 카테고리</span>
@@ -421,15 +421,15 @@ window.PdCategoryProdMng = {
       </div>
       <bo-category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="selectNode" />
     </div>
-    <!-- ===== 우측 상품 목록 =================================================== -->
+    <!-- ===== ■.■. 우측 상품 목록 ============================================== -->
     <div class="card">
-      <!-- ===== 선택 전 안내 ==================================================== -->
+      <!-- ===== ■.■.■. 선택 전 안내 ============================================= -->
       <div v-if="!cfSelectedCatId" style="text-align:center;padding:60px;color:#aaa">
         <div style="font-size:32px;margin-bottom:12px">📂</div>
         <div>좌측에서 카테고리를 선택하세요.</div>
       </div>
       <template v-else>
-        <!-- ===== 카테고리명 + 저장/추가 버튼 =========================================== -->
+        <!-- ===== ■.■.■.■. 카테고리명 + 저장/추가 버튼 ================================== -->
         <div class="toolbar" style="margin-bottom:0">
           <span class="list-title">
             <span :style="{ color: fnDepthColor((cfSelectedCat?.categoryDepth||1)-1), fontWeight:700, marginRight:'4px' }">
@@ -443,7 +443,7 @@ window.PdCategoryProdMng = {
             <button class="btn btn-primary btn-sm" @click="onSave">저장</button>
           </div>
         </div>
-        <!-- ===== 탭바 + 뷰모드 버튼 ================================================ -->
+        <!-- ===== ■.■.■.■. 탭바 + 뷰모드 버튼 ======================================= -->
         <div class="tab-bar-row" style="margin:12px 0 0">
           <div class="tab-nav" style="flex:1;flex-wrap:wrap">
             <button v-for="tab in TYPE_TABS" :key="(tab && tab.cd)"
@@ -472,7 +472,7 @@ window.PdCategoryProdMng = {
           </div>
         </div>
         <div style="font-size:12px;color:#aaa;margin:8px 0 4px;padding:0 2px">≡ 드래그로 순서 변경 · 저장 후 반영됩니다.</div>
-        <!-- ===== TABLE 뷰 (tab / 1col) ======================================= -->
+        <!-- ===== ■.■.■.■. TABLE 뷰 (tab / 1col) ============================== -->
         <bo-grid v-if="uiState.tabMode==='tab'||uiState.tabMode==='1col'"
           bare :columns="cfCatProdGridColumns" :rows="categoryProds" row-key="_id"
           draggable row-actions :row-style="fnCatProdRowStyle"
@@ -513,7 +513,7 @@ window.PdCategoryProdMng = {
             </td>
           </template>
         </bo-grid>
-        <!-- ===== CARD GRID 뷰 (2col / 3col / 4col) =========================== -->
+        <!-- ===== ■.■.■.■. CARD GRID 뷰 (2col / 3col / 4col) ================== -->
         <div v-else
           :style="{
           display:'grid',
@@ -529,7 +529,7 @@ window.PdCategoryProdMng = {
             :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe'
             : row._isNew ? 'border-color:#52c41a'
             : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
-            <!-- ===== 카드 헤더 ====================================================== -->
+            <!-- ===== ■.■.■.■.■.■. 카드 헤더 ========================================= -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
               <div style="display:flex;align-items:center;gap:5px">
                 <span style="cursor:grab;color:#bbb;font-size:15px;user-select:none">≡</span>
@@ -538,15 +538,15 @@ window.PdCategoryProdMng = {
               </div>
               <button class="btn btn-danger btn-xs" @click="removeRow(row)">✕</button>
             </div>
-            <!-- ===== 상품명 ======================================================== -->
+            <!-- ===== ■.■.■.■.■.■. 상품명 =========================================== -->
             <div style="font-weight:600;font-size:13px;margin-bottom:3px;line-height:1.4;word-break:keep-all">
               {{ getProdNm(row.prodId) }}
             </div>
-            <!-- ===== 카테고리경로 ===================================================== -->
+            <!-- ===== ■.■.■.■.■.■. 카테고리경로 ======================================== -->
             <div style="font-size:10px;color:#888;margin-bottom:6px;background:#f5f5f5;border-radius:4px;padding:2px 6px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
               {{ getCatPath(row.categoryId) }}
             </div>
-            <!-- ===== 가격/재고/상태 =================================================== -->
+            <!-- ===== ■.■.■.■.■.■. 가격/재고/상태 ====================================== -->
             <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;flex-wrap:wrap">
               <span style="font-size:12px;font-weight:700;color:#e8587a">
                 {{ ((getProd(row.prodId)?.salePrice||0)).toLocaleString() }}원
@@ -561,7 +561,7 @@ window.PdCategoryProdMng = {
                 {{ getProd(row.prodId)?.prodStatusCdNm || '-' }}
               </span>
             </div>
-            <!-- ===== 강조옵션 chips ================================================= -->
+            <!-- ===== ■.■.■.■.■.■. 강조옵션 chips ==================================== -->
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
               <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)"
                 @click="toggleEmphasis(row, opt.cd)"
@@ -572,7 +572,7 @@ window.PdCategoryProdMng = {
                 {{ opt.icon }} {{ opt.nm }}
               </button>
             </div>
-            <!-- ===== 전시기간 (NORMAL 제외) =========================================== -->
+            <!-- ===== ■.■.■.■.■.■. 전시기간 (NORMAL 제외) ============================== -->
             <template v-if="uiState.activeTypeCd!=='NORMAL'">
               <div style="display:flex;align-items:center;gap:2px;margin-bottom:4px">
                 <input type="date" class="form-control" v-model="row.dispStartDate"
@@ -581,7 +581,7 @@ window.PdCategoryProdMng = {
                 <input type="date" class="form-control" v-model="row.dispEndDate"
                   style="flex:1;padding:2px 4px;font-size:10px;min-width:0" />
               </div>
-              <!-- ===== 전시여부 ======================================================= -->
+              <!-- ===== ■.■.■.■.■.■.■. 전시여부 ======================================== -->
               <select class="form-control" v-model="row.dispYn"
                 style="width:100%;padding:2px 6px;font-size:11px"
                 :style="row.dispYn==='Y' ? 'color:#16a34a;font-weight:600' : 'color:#9ca3af'">
@@ -597,7 +597,7 @@ window.PdCategoryProdMng = {
       </template>
     </div>
   </div>
-  <!-- ===== 상품 추가 피커 모달 ================================================ -->
+  <!-- ===== ■. 상품 추가 피커 모달 ============================================= -->
   <teleport to="body">
     <div v-if="pickerOpen"
       style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
@@ -628,7 +628,7 @@ window.PdCategoryProdMng = {
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-          <!-- ===== 목록 영역 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid bare :columns="catProdPickerGridColumns" :rows="pickerResults" row-key="prodId"
             empty-text="검색 결과가 없습니다." row-actions>
             <template #row-actions="{ row }">

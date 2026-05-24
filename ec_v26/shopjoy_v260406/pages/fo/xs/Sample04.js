@@ -249,12 +249,12 @@ window.XsSample04 = {
 
   template: /* html */`
 <div style="padding:16px;">
-  <!-- ===== 제목 ========================================================= -->
+  <!-- ===== ■. 제목 ====================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:16px;">
     04. 모달 / 팝업
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">Modal &amp; Popup 전시관 — 커스텀 10종 + BaseModal 17종</span>
   </div>
-  <!-- ===== ━━━ 카탈로그 카드 그리드 ━━━ ======================================== -->
+  <!-- ===== ■. ━━━ 카탈로그 카드 그리드 ━━━ ===================================== -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:22px;">
     <div v-for="item in CATALOG" :key="item.id"
       style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
@@ -265,7 +265,7 @@ window.XsSample04 = {
           <div style="font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.4;">{{ item.desc }}</div>
         </div>
       </div>
-      <!-- ===== Alert: 4 variant 버튼 ======================================== -->
+      <!-- ===== ■.■.■. Alert: 4 variant 버튼 ================================= -->
       <div v-if="item.id==='alert'" style="display:flex;gap:4px;flex-wrap:wrap;">
         <button @click="openModal('alert',{variant:'info',    data:{msg:'시스템 점검이 2026-04-15 02:00 예정되어 있습니다.'}})"
           style="font-size:10px;padding:3px 8px;border:none;border-radius:4px;background:#dbeafe;color:#1e40af;cursor:pointer;font-weight:700;">
@@ -284,27 +284,27 @@ window.XsSample04 = {
           ✕ error
         </button>
       </div>
-      <!-- ===== Loading: async ============================================= -->
+      <!-- ===== ■.■.■. Loading: async ====================================== -->
       <button v-else-if="item.id==='loading'" @click="loadingDemo()"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
         :style="'background:'+item.color">
         열기 →
       </button>
-      <!-- ===== Confirm: 확인 시 success alert 표시 ============================= -->
+      <!-- ===== ■.■.■. Confirm: 확인 시 success alert 표시 ====================== -->
       <button v-else-if="item.id==='confirm'"
         @click="openModal('confirm',{onConfirm:()=>openModal('alert',{variant:'success',data:{msg:'확인 처리되었습니다.'}})})"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
         :style="'background:'+item.color">
         열기 →
       </button>
-      <!-- ===== Detail: 첫 번째 회원 데이터로 오픈 ==================================== -->
+      <!-- ===== ■.■.■. Detail: 첫 번째 회원 데이터로 오픈 ============================= -->
       <button v-else-if="item.id==='detail' && members.length"
         @click="openModal('detail',{data:members[0]})"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
         :style="'background:'+item.color">
         열기 →
       </button>
-      <!-- ===== 그 외 ======================================================== -->
+      <!-- ===== ■.■.■. 그 외 ================================================= -->
       <button v-else-if="item.id!=='detail'" @click="openModal(item.id)"
         style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;"
         :style="'background:'+item.color">
@@ -312,9 +312,9 @@ window.XsSample04 = {
       </button>
     </div>
   </div>
-  <!-- ===== ━━━ BaseModals.js 공통 모달 (17종) ━━━ ========================== -->
+  <!-- ===== ■. ━━━ BaseModals.js 공통 모달 (17종) ━━━ ======================= -->
   <div style="margin-top:22px;display:flex;flex-direction:column;gap:14px;">
-    <!-- ===== 섹션 헤더 ====================================================== -->
+    <!-- ===== ■.■. 섹션 헤더 ================================================= -->
     <div>
       <div style="font-size:13px;font-weight:700;color:#333;">
         BaseModals.js 공통 모달
@@ -371,7 +371,7 @@ window.XsSample04 = {
         </div>
       </div>
     </div>
-    <!-- ===== ③ BO 전용 (13종) ============================================== -->
+    <!-- ===== ■.■. ③ BO 전용 (13종) ========================================= -->
     <div style="border:1px solid #fecaca;border-radius:10px;padding:14px 16px;background:#fff7f7;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span style="font-size:11px;font-weight:800;background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;">BO 전용</span>
@@ -397,14 +397,14 @@ window.XsSample04 = {
       </div>
     </div>
   </div>
-  <!-- ===== ━━━ 회원 그리드 (상세보기 클릭) ━━━ =================================== -->
+  <!-- ===== ■. ━━━ 회원 그리드 (상세보기 클릭) ━━━ ================================ -->
   <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-top:22px;">
     <div style="padding:8px 14px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:6px;">
       <span style="font-size:12px;font-weight:800;color:#333;">회원 목록</span>
       <span style="font-size:12px;font-weight:700;color:#e8587a;">{{ members.length }}명 중 3행</span>
       <span style="font-size:11px;color:#aaa;margin-left:4px;">— 행 클릭 → 상세보기 모달</span>
     </div>
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <fo-grid bare :columns="sample04GridColumns" :rows="sample04Top3"
       row-key="memberId" :show-row-no="false" min-width="680px" row-actions
       empty-text="데이터 로딩 중…"
@@ -417,8 +417,8 @@ window.XsSample04 = {
       </template>
     </fo-grid>
   </div>
-  <!-- ===== ━━━━━━ MODALS ━━━━━━ ======================================= -->
-  <!-- ===== ① Alert 모달 ================================================= -->
+  <!-- ===== ■. ━━━━━━ MODALS ━━━━━━ ==================================== -->
+  <!-- ===== ■. ① Alert 모달 ============================================== -->
   <template v-if="uiState.modalType==='alert'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
@@ -442,7 +442,7 @@ window.XsSample04 = {
       </div>
     </div>
   </template>
-  <!-- ===== ② Confirm 다이얼로그 ============================================ -->
+  <!-- ===== ■. ② Confirm 다이얼로그 ========================================= -->
   <template v-if="uiState.modalType==='confirm'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
@@ -468,7 +468,7 @@ window.XsSample04 = {
       </div>
     </div>
   </template>
-  <!-- ===== ③ 폼 입력 모달 ================================================== -->
+  <!-- ===== ■. ③ 폼 입력 모달 =============================================== -->
   <template v-if="uiState.modalType==='form'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
@@ -523,7 +523,7 @@ window.XsSample04 = {
       </div>
     </div>
   </template>
-  <!-- ===== ④ 상세보기 모달 ================================================== -->
+  <!-- ===== ■. ④ 상세보기 모달 =============================================== -->
   <template v-if="uiState.modalType==='detail' && uiState.modalData">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
@@ -580,7 +580,7 @@ window.XsSample04 = {
               <div style="font-size:11px;color:#333;">{{ uiState.modalData.address }}</div>
             </div>
           </div>
-          <!-- ===== 구매 통계 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 구매 통계 =========================================== -->
           <div style="background:#f8f9fa;border-radius:8px;padding:12px 16px;display:flex;gap:0;margin-bottom:10px;">
             <div style="flex:1;text-align:center;border-right:1px solid #e5e7eb;">
               <div style="font-size:10px;color:#aaa;margin-bottom:4px;">총 주문</div>
@@ -611,7 +611,7 @@ window.XsSample04 = {
       </div>
     </div>
   </template>
-  <!-- ===== ⑤ 이미지 팝업 =================================================== -->
+  <!-- ===== ■. ⑤ 이미지 팝업 ================================================ -->
   <template v-if="uiState.modalType==='image'">
     <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
@@ -628,7 +628,7 @@ window.XsSample04 = {
       <div style="color:rgba(255,255,255,.45);font-size:11px;">배경 또는 ✕ 클릭 시 닫기</div>
     </div>
   </template>
-  <!-- ===== ⑥ 우측 Drawer ================================================ -->
+  <!-- ===== ■. ⑥ 우측 Drawer ============================================= -->
   <template v-if="uiState.modalType==='drawer'">
     <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
     <div @click.stop
@@ -660,7 +660,7 @@ window.XsSample04 = {
       </div>
     </div>
   </template>
-  <!-- ===== ⑦ 바텀시트 ===================================================== -->
+  <!-- ===== ■. ⑦ 바텀시트 ================================================== -->
   <template v-if="uiState.modalType==='bottom'">
     <div @click="closeModal" style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.4);"></div>
     <div @click.stop
@@ -690,7 +690,7 @@ window.XsSample04 = {
       </div>
     </div>
   </template>
-  <!-- ===== ⑧ 전체화면 모달 ================================================== -->
+  <!-- ===== ■. ⑧ 전체화면 모달 =============================================== -->
   <template v-if="uiState.modalType==='fullscreen'">
     <div style="position:fixed;inset:0;z-index:9000;background:#fff;display:flex;flex-direction:column;animation:s04_fadeIn .18s ease;">
       <div style="padding:12px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#9f1239;color:#fff;flex-shrink:0;">
@@ -713,7 +713,7 @@ window.XsSample04 = {
       </div>
     </div>
   </template>
-  <!-- ===== ⑨ 중첩 모달 ==================================================== -->
+  <!-- ===== ■. ⑨ 중첩 모달 ================================================= -->
   <template v-if="uiState.modalType==='nested'">
     <div @click="uiState.nested2 ? uiState.nested2=false : closeModal()"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
@@ -741,7 +741,7 @@ window.XsSample04 = {
         </div>
       </div>
     </div>
-    <!-- ===== 2단계 inner 모달 =============================================== -->
+    <!-- ===== ■.■. 2단계 inner 모달 ========================================== -->
     <template v-if="uiState.nested2">
       <div @click="uiState.nested2=false"
         style="position:fixed;inset:0;z-index:9010;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;">
@@ -762,7 +762,7 @@ window.XsSample04 = {
       </div>
     </template>
   </template>
-  <!-- ===== ⑩ 로딩 모달 ==================================================== -->
+  <!-- ===== ■. ⑩ 로딩 모달 ================================================= -->
   <template v-if="uiState.modalType==='loading'">
     <div style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;">
       <div style="width:56px;height:56px;border:5px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:s04_spin .75s linear infinite;"></div>
@@ -770,61 +770,72 @@ window.XsSample04 = {
       <div style="color:rgba(255,255,255,.45);font-size:11px;">2.5초 후 자동으로 닫힙니다</div>
     </div>
   </template>
-  <!-- ===== ━━━━━━ BaseModal 17종 ━━━━━━ ================================ -->
-  <!-- ===== ① 주문상세 / ② 상품상세 / ③ 주문자 — show prop 방식 ===================== -->
+  <!-- ===== ■. ━━━━━━ BaseModal 17종 ━━━━━━ ============================= -->
+  <!-- ===== ■. ① 주문상세 / ② 상품상세 / ③ 주문자 — show prop 방식 ================== -->
   <order-detail-modal
     :show="bModal.type==='orderDetail'"
     :order="demoOrder"
     @close="closeBModal" />
+  <!-- ===== ■. 영역 ====================================================== -->
   <product-modal
     :show="bModal.type==='productModal'"
     :product="demoProduct"
     @close="closeBModal" />
+  <!-- ===== ■. 영역 ====================================================== -->
   <customer-modal
     :show="bModal.type==='customerModal'"
     :user="demoUser"
     :order="demoOrder"
     @close="closeBModal" />
-  <!-- ===== ④~⑨ 선택 모달 — 조건부 마운트 방식 ===================================== -->
+  <!-- ===== ■. ④~⑨ 선택 모달 — 조건부 마운트 방식 ================================== -->
   <template v-if="bModal.type==='siteSelect'">
     <site-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.siteNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='vendorSelect'">
     <vendor-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.vendorNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='boUserSelect'">
     <bo-user-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.length+'명','success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='memberSelect'">
     <member-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.memberNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='orderSelect'">
     <order-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.orderId,'success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='bbmSelect'">
     <bbm-select-modal :bo-data="boData" @select="bShowToast('선택: '+$event.bbmNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
-  <!-- ===== ⑩~⑪ 템플릿 모달 ================================================= -->
+  <!-- ===== ■. ⑩~⑪ 템플릿 모달 ============================================== -->
   <template v-if="bModal.type==='tmplPreview'">
     <template-preview-modal :tmpl="demoTmpl" :sample-params="demoSampleParams" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='tmplSend'">
     <template-send-modal :tmpl="demoTmpl" :bo-data="boData" :show-toast="bShowToast" :show-confirm="bShowConfirm" @close="closeBModal" />
   </template>
-  <!-- ===== ⑫~⑮ 트리 모달 ================================================== -->
+  <!-- ===== ■. ⑫~⑮ 트리 모달 =============================================== -->
   <template v-if="bModal.type==='roleTree'">
     <role-tree-modal :bo-data="boData" @select="bShowToast('선택: '+$event.roleNm,'success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='menuTree'">
     <menu-tree-modal :bo-data="boData" @select="bShowToast($event.menuId?'선택: '+$event.menuNm:'상위없음 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='deptTree'">
     <dept-tree-modal :bo-data="boData" @select="bShowToast($event.deptId?'선택: '+$event.deptNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="bModal.type==='categoryTree'">
     <bo-category-tree-modal :bo-data="boData" @select="bShowToast($event.categoryId?'선택: '+$event.categoryNm:'최상위 선택','success'); closeBModal()" @close="closeBModal" />
   </template>
-  <!-- ===== ⑯ 전시 미리보기 ================================================== -->
+  <!-- ===== ■. ⑯ 전시 미리보기 =============================================== -->
   <disp-preview-modal
     :show="bModal.type==='dispPreview'"
     mode="all"
@@ -833,12 +844,13 @@ window.XsSample04 = {
     :widgets="[]"
     :widget="{}"
     @close="closeBModal" />
-  <!-- ===== ⑰ 카테고리 멀티선택 ================================================ -->
+  <!-- ===== ■. ⑰ 카테고리 멀티선택 ============================================= -->
   <category-select-modal
     :show="bModal.type==='catSelect'"
     :selected-ids="catSelIds"
     @close="closeBModal"
     @apply="ids => { catSelIds.splice(0, catSelIds.length, ...ids); bShowToast(ids.length+'개 카테고리 선택됨','success'); closeBModal(); }" />
+  <!-- ===== ■. 영역 ====================================================== -->
   <style>
     @keyframes s04_slideRight  { from { transform:translateX(100%); } to { transform:translateX(0); } }
     @keyframes s04_slideBottom { from { transform:translateY(100%); } to { transform:translateY(0); } }

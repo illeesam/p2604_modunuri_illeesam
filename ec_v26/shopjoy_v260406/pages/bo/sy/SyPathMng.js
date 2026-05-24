@@ -314,14 +314,14 @@ window.SyPathMng = {
 
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">표시경로</div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 좌 트리 + 우 그리드 =============================================== -->
+  <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
   <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
     <!-- 트리 -->
     <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
@@ -329,7 +329,7 @@ window.SyPathMng = {
       :on-toggle="toggleNode"
       @select="selectNode" @expand-all="expandAll" @collapse-all="collapseAll" />
     <!-- 그리드 -->
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
@@ -345,7 +345,7 @@ window.SyPathMng = {
       </template>
     </bo-grid>
   </div>
-  <!-- ===== 부모경로 선택 모달 (BoTreeSelectorModal) =========================== -->
+  <!-- ===== ■. 부모경로 선택 모달 (BoTreeSelectorModal) ======================== -->
   <bo-tree-selector-modal :show="parentModal.show" title="부모경로 선택"
     :node="cfParentTree" :expanded="parentModal.expanded" :on-toggle="toggleParentNode"
     root-label="(루트 — 상위없음)"

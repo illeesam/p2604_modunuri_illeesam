@@ -503,8 +503,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
 
   template: `
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">묶음상품관리</div>
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0f4ff;border-left:3px solid #6b7fe3;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
     <span><strong style="color:#3b4dbf">묶음상품</strong>은 여러 단품을 하나의 묶음으로 판매하는 방식입니다.</span>
     <button @click="uiState.descOpen=!uiState.descOpen" style="margin-left:8px;font-size:12px;color:#6b7fe3;background:none;border:none;cursor:pointer;padding:0">
@@ -524,12 +525,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       <span style="color:#888;font-size:12px">예) 상의+하의 코디 세트, 3개 묶음 할인 패키지</span>
     </div>
   </div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 목록 ========================================================= -->
+  <!-- ===== ■. 목록 ====================================================== -->
   <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList"
     :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
     empty-text="데이터가 없습니다." :row-actions="true"
@@ -560,10 +561,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       <button class="btn btn-danger btn-xs" @click="handleDelete(g.bundleProdId)">삭제</button>
     </template>
   </bo-grid>
-  <!-- ===== 신규등록 / 구성관리 (인라인 Dtl) ====================================== -->
+  <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
   <div v-if="uiState.dtlMode !== null" class="card"
     :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
-    <!-- ===== Dtl 헤더 ===================================================== -->
+    <!-- ===== ■.■. Dtl 헤더 ================================================ -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
         <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-blue']">{{ uiState.dtlMode==='new' ? '신규' : '묶음' }}</span>
@@ -584,7 +585,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     <!-- 신규 묶음상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">묶음상품 기본정보 (pd_prod)</div>
-      <!-- ===== 폼 영역 ======================================================= -->
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="newBundleFormColumns" :form="newForm" :errors="newErrors"
         :cols="3" :show-actions="false">
         <!-- 브랜드/판매업체는 빈 옵션 선택 (실데이터 미반영) — 슬롯 처리 -->
@@ -606,7 +607,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </template>
       </bo-form-area>
     </div>
-    <!-- ===== ② 카테고리 N개 (신규/편집 공통) ======================================= -->
+    <!-- ===== ■.■. ② 카테고리 N개 (신규/편집 공통) ================================== -->
     <div class="form-row" style="margin-bottom:16px">
       <div class="form-group">
         <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400">N개 등록 · 첫 번째 = 대표</span></label>
@@ -633,11 +634,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </div>
       </div>
     </div>
-    <!-- ===== ③ 구성품 목록 =================================================== -->
+    <!-- ===== ■.■. ③ 구성품 목록 ============================================== -->
     <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:10px">
       구성품 목록 (pd_prod_bundle_item)
       <span style="font-weight:400;color:#aaa;margin-left:6px">※ 안분율 합계 = 100% 필수</span>
     </div>
+    <!-- ===== ■.■. 테이블 =================================================== -->
     <table class="bo-table">
       <thead>
         <tr>
@@ -698,7 +700,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         </tr>
       </tbody>
     </table>
-    <!-- ===== 구성품 추가 / 안분율 안내 ============================================ -->
+    <!-- ===== ■.■. 구성품 추가 / 안분율 안내 ======================================= -->
     <div style="margin-top:12px;display:flex;align-items:flex-start;gap:12px">
       <button class="btn btn-secondary btn-sm" style="flex-shrink:0" @click="openPicker()">+ 구성품 추가</button>
       <div v-if="dtlItems.length" style="flex:1;padding:7px 14px;border-radius:6px;font-size:12px"
@@ -714,7 +716,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
   </div>
-  <!-- ===== 구성품 Picker Modal =========================================== -->
+  <!-- ===== ■. 구성품 Picker Modal ======================================== -->
   <teleport to="body" v-if="uiState.pickerOpen">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
       @click.self="uiState.pickerOpen=false">
@@ -739,6 +741,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           <button class="btn btn-primary btn-sm" @click="onPickerSearch">조회</button>
         </div>
         <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
+          <!-- ===== ■.■.■.■.■. 테이블 ============================================= -->
           <table class="bo-table" style="margin:0">
             <thead>
               <tr>
@@ -768,7 +771,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
       </div>
     </div>
   </teleport>
-  <!-- ===== 카테고리 피커 모달 ================================================= -->
+  <!-- ===== ■. 카테고리 피커 모달 ============================================== -->
   <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
     @select="addCategory" @close="uiState.catPickerOpen=false" />
 </div>

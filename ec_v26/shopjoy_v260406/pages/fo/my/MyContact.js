@@ -74,9 +74,13 @@ window.MyContact = {
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
+  <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" />
+  <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredInquiries.length" :pager="inquiryPager" />
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!cfDateFilteredInquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">문의 내역이 없습니다.</div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div v-for="q in paginate(cfDateFilteredInquiries, inquiryPager)" :key="q.inquiryId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;">
     <div style="display:flex;align-items:flex-start;gap:12px;">
@@ -106,6 +110,7 @@ window.MyContact = {
       </div>
     </div>
   </div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="inquiries.length" :pager="inquiryPager" />
 </fo-my-layout>
 `,

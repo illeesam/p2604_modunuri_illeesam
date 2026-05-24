@@ -232,11 +232,12 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '마일리지 등록' : '마일리지 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.saveId }}</span>
   </div>
+  <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="tab='info'">📋 기본정보</button>
@@ -251,11 +252,12 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <!-- ===== 폼 영역 ======================================================= -->
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="2" :show-actions="false">
         <!-- 판매업체 picker -->
@@ -281,7 +283,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
     </div>
-    <!-- ===== 공개대상 ======================================================= -->
+    <!-- ===== ■.■. 공개대상 ================================================== -->
     <div class="card" v-show="showTab('visibility')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔒 공개대상</div>
       <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">하나라도 해당하면 노출</div>
@@ -299,7 +301,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         <button class="btn btn-secondary" @click="navigate('pmSaveMng')">취소</button>
       </div>
     </div>
-    <!-- ===== 미리보기 ======================================================= -->
+    <!-- ===== ■.■. 미리보기 ================================================== -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">

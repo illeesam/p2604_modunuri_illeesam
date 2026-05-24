@@ -345,20 +345,20 @@ window.SyBatchMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">배치스케즐관리</div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 좌 트리 + 우 영역 ================================================ -->
+  <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
-    <!-- ===== 경로 트리 ====================================================== -->
+    <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-      <!-- ===== CRUD 그리드 =================================================== -->
+      <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="baseGridColumns" :rows="gridRows" row-key="batchId"
         list-title="배치목록" :show-export="true"
@@ -382,17 +382,18 @@ window.SyBatchMng = {
           <bo-row-cancel-delete :row="row" @cancel="cancelRow(idx)" @delete="deleteRow(idx)" />
         </template>
       </bo-grid-crud>
-      <!-- ===== Cron 편집 모달 (BoCronModal 컴포넌트) ============================== -->
+      <!-- ===== ■.■.■. Cron 편집 모달 (BoCronModal 컴포넌트) ======================= -->
       <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
         @apply="onCronApply" @close="cronModal.show=false" />
     </div>
     <!-- /우측 영역 -->
   </div>
   <!-- /grid 컨테이너 -->
-  <!-- ===== 배치 실행이력 (전체 폭) ============================================= -->
+  <!-- ===== ■. 배치 실행이력 (전체 폭) ========================================== -->
   <div class="card" style="margin-top:12px;width:100%;">
     <sy-batch-hist />
   </div>
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch"
     :value="pathPickModal.row ? pathPickModal.row.pathId : null"
     @select="onPathPicked" @close="closePathPick" />

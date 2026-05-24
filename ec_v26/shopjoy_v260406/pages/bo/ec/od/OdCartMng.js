@@ -238,16 +238,18 @@ window.OdCartMng = {
   },
   template: `
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">장바구니관리</div>
   <!-- 검색 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-bottom:14px;">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;"
       :columns="baseSearchColumns" :param="search"
       @search="onSearch" @reset="onReset" />
   </div>
   <!-- 목록 -->
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div class="toolbar">
       <span class="list-title">장바구니 목록</span>
@@ -262,7 +264,7 @@ window.OdCartMng = {
       <div style="font-size:28px;margin-bottom:8px;">⏳</div>
       조회 중...
     </div>
-    <!-- ===== 목록 영역 ====================================================== -->
+    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-else bare selectable :columns="listGridColumns" :rows="rows" :pager="pager" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
@@ -274,6 +276,7 @@ window.OdCartMng = {
     <bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
   </div>
   <!-- 회원 선택 팝업 -->
+  <!-- ===== ■. 영역 ====================================================== -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="장바구니관리"
     subtitle="장바구니를 조회할 회원을 선택해주세요"
     @select="onSelectMember" @close="memberPick.open=false" />

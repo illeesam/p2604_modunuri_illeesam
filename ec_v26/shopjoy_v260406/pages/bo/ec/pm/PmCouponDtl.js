@@ -371,11 +371,12 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ cfIsNew ? '쿠폰 등록' : '쿠폰 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">#{{ form.couponId }}</span>
   </div>
+  <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="onTabChange('info')">📋 기본정보</button>
@@ -394,11 +395,12 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="tabMode2='4col'" title="4열">4▭</button>
     </div>
   </div>
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- 기본정보 탭 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
-      <!-- ===== 폼 영역 ======================================================= -->
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="false" :cols="2" :show-actions="false">
         <!-- 메모: Quill 에디터 -->
@@ -422,13 +424,13 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => selectVendor(v.vendorId, v.vendorNm)" @close="showVendorModal=false" />
     </div>
-    <!-- ===== 미리보기 ======================================================= -->
+    <!-- ===== ■.■. 미리보기 ================================================== -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
-        <!-- ===== 좌측 컬럼 ====================================================== -->
+        <!-- ===== ■.■.■.■. 좌측 컬럼 ============================================= -->
         <div style="display:flex;flex-direction:column;gap:16px;">
-          <!-- ===== 바코드 ======================================================== -->
+          <!-- ===== ■.■.■.■.■. 바코드 ============================================= -->
           <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(to right, #fff 0%, rgba(232,88,122,0.02) 100%);">
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:80px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:8px;">
               ShopJoy
@@ -454,7 +456,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
               </div>
             </div>
           </div>
-          <!-- ===== SNS전송형태 ==================================================== -->
+          <!-- ===== ■.■.■.■.■. SNS전송형태 ========================================= -->
           <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;overflow:hidden;">
             <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.08;pointer-events:none;white-space:nowrap;letter-spacing:6px;z-index:0;">
               ShopJoy
@@ -476,7 +478,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
               <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
             </div>
           </div>
-          <!-- ===== 이메일 내용 ===================================================== -->
+          <!-- ===== ■.■.■.■.■. 이메일 내용 ========================================== -->
           <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
             <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">
               📧 이메일 내용
@@ -515,9 +517,9 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
             </div>
           </div>
         </div>
-        <!-- ===== 우측 컬럼 ====================================================== -->
+        <!-- ===== ■.■.■.■. 우측 컬럼 ============================================= -->
         <div style="display:flex;flex-direction:column;gap:16px;">
-          <!-- ===== QR코드 ======================================================= -->
+          <!-- ===== ■.■.■.■.■. QR코드 ============================================ -->
           <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(135deg, #fff 0%, rgba(232,88,122,0.01) 100%);">
             <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">📱</div>
             <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">
@@ -537,7 +539,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
               </div>
             </div>
           </div>
-          <!-- ===== 종이형태 ======================================================= -->
+          <!-- ===== ■.■.■.■.■. 종이형태 ============================================ -->
           <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;">
             <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;">
               🎟 종이형태
@@ -573,10 +575,10 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
         </div>
       </div>
     </div>
-    <!-- ===== 상세정보 ======================================================= -->
+    <!-- ===== ■.■. 상세정보 ================================================== -->
     <div class="card" v-show="showTab('detail')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
-      <!-- ===== 발급대상 ======================================================= -->
+      <!-- ===== ■.■.■. 발급대상 ================================================ -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🎁 발급대상</h3>
         <div class="form-group">
@@ -604,7 +606,7 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <!-- 지급방법/조건 (BoFormArea 자동 렌더) -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
-        <!-- ===== 폼 영역 ======================================================= -->
+        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="detailIssueFormColumns" :form="form" :errors="errors"
           :cols="2" :show-actions="false" />
         <!-- 적용 회원 등급 (체크박스 그룹, KEEP) -->
@@ -622,26 +624,27 @@ watch(() => uiState.tab, v => { window._pmCouponDtlState.tab = v; });
       <!-- 사용방법 (BoFormArea 자동 렌더) -->
       <div>
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🔍 사용방법</h3>
-        <!-- ===== 폼 영역 ======================================================= -->
+        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="detailUseFormColumns" :form="form" :errors="errors"
           :cols="2" :show-actions="false" />
       </div>
     </div>
-    <!-- ===== 발급목록 ======================================================= -->
+    <!-- ===== ■.■. 발급목록 ================================================== -->
     <div class="card" v-show="showTab('issued')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count">{{ cfIssuedList.length }}</span></div>
       <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid v-else bare :columns="issuedGridColumns" :rows="cfIssuedTop"></bo-grid>
     </div>
-    <!-- ===== 사용목록 ======================================================= -->
+    <!-- ===== ■.■. 사용목록 ================================================== -->
     <div class="card" v-show="showTab('used')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count">{{ cfUsedList.length }}</span></div>
       <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid v-else bare :columns="usedGridColumns" :rows="cfUsedTop"></bo-grid>
     </div>
   </div>
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleSave" style="min-width:120px;">
       저장

@@ -213,8 +213,9 @@ const rawList = reactive([]);
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">정산수집원장</div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
@@ -222,11 +223,11 @@ const rawList = reactive([]);
       • 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다. • 수집 단위: od_order_item / od_claim_item (상품 행 단위) • [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다. • 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)
     </div>
   </div>
-  <!-- ===== 검색 카드 ====================================================== -->
+  <!-- ===== ■. 검색 카드 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'" @search="onSearch" @reset="onReset">
-      <!-- ===== 1행: 기간 + 기본 필터 ============================================= -->
+      <!-- ===== ■.■.■. 1행: 기간 + 기본 필터 ====================================== -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px">
         <select v-model="uiState.dateRange" @change="handleDateRangeChange" style="min-width:110px">
           <option value="">기간 선택</option>
@@ -257,7 +258,7 @@ const rawList = reactive([]);
           min-width="160px" />
         <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="width:230px" @keyup.enter="() => onSearch?.()" />
       </div>
-      <!-- ===== 2행: 추가 필터 ================================================== -->
+      <!-- ===== ■.■.■. 2행: 추가 필터 =========================================== -->
       <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px">
         <select v-model="searchParam.vendorType" style="width:110px">
           <option value="">업체구분 전체</option>
@@ -281,7 +282,7 @@ const rawList = reactive([]);
         </select>
         <input v-model="searchParam.period" placeholder="정산기간(YYYY-MM)" style="width:150px" maxlength="7" />
       </div>
-      <!-- ===== 3행: 상세검색 펼치기 =============================================== -->
+      <!-- ===== ■.■.■. 3행: 상세검색 펼치기 ======================================== -->
       <div v-if="uiState.searchMoreOpen" style="display:flex;flex-wrap:wrap;gap:8px;width:100%;padding-top:8px;border-top:1px solid #f0f0f0">
         <select v-model="searchParam.orderStatus" style="width:120px">
           <option value="">주문상태 전체</option>
@@ -299,7 +300,7 @@ const rawList = reactive([]);
       </template>
     </bo-search-area>
   </div>
-  <!-- ===== 집계 카드 ====================================================== -->
+  <!-- ===== ■. 집계 카드 =================================================== -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
     <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
       <div style="font-size:11px;color:#888">수집건수</div>
@@ -332,7 +333,7 @@ const rawList = reactive([]);
       <div style="font-size:15px;font-weight:700;color:#2980b9">{{ fmtW(cfSummary.settleAmt) }}</div>
     </div>
   </div>
-  <!-- ===== 목록 카드 ====================================================== -->
+  <!-- ===== ■. 목록 카드 =================================================== -->
   <bo-grid
     :columns="rawGridColumns"
     :rows="rawList"
@@ -356,9 +357,10 @@ const rawList = reactive([]);
     <template #row-expand="{ row: r, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px">
-          <!-- ===== 주문정보 ======================================================= -->
+          <!-- ===== ■.■.■.■.■. 주문정보 ============================================ -->
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">주문 정보</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">주문ID</td>
@@ -389,9 +391,10 @@ const rawList = reactive([]);
               </tr>
             </table>
           </div>
-          <!-- ===== 상품/가격 정보 =================================================== -->
+          <!-- ===== ■.■.■.■.■. 상품/가격 정보 ======================================== -->
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">상품 · 가격</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">상품명</td>
@@ -423,9 +426,10 @@ const rawList = reactive([]);
               </tr>
             </table>
           </div>
-          <!-- ===== 할인/혜택 ====================================================== -->
+          <!-- ===== ■.■.■.■.■. 할인/혜택 =========================================== -->
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">할인 · 혜택</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">직접할인</td>
@@ -461,11 +465,12 @@ const rawList = reactive([]);
               </tr>
             </table>
           </div>
-          <!-- ===== 정산/마감/ERP ================================================== -->
+          <!-- ===== ■.■.■.■.■. 정산/마감/ERP ======================================= -->
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:6px;border-bottom:1px solid #f0c0d0;padding-bottom:3px">
               정산 · 마감 · ERP
             </div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:2px 4px 2px 0;white-space:nowrap">정산대상금액</td>

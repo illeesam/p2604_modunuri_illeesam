@@ -223,19 +223,20 @@ const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCou
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">업체정보</div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 좌 트리 + 우 영역 ================================================ -->
+  <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
-    <!-- ===== 경로 트리 ====================================================== -->
+    <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="true"
       :selected="selectedPath" @select="selectNode" />
     <div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
         :columns="baseGridColumns" :rows="vendors" :pager="pager" row-key="vendorId"
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"

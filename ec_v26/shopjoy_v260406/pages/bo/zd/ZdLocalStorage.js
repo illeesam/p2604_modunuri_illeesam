@@ -152,8 +152,9 @@ window.ZdLocalStorage = {
   },
   template: `
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">localStorage 정보 관리</div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div style="display: flex; gap: 16px; margin-bottom: 16px;">
       <div style="flex: 1;">
@@ -170,6 +171,7 @@ window.ZdLocalStorage = {
       </div>
     </div>
     <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: isResizing ? 'col-resize' : 'auto' }">
+      <!-- ===== ■.■.■. 테이블 ================================================= -->
       <table class="bo-table" style="width: 100%;">
         <thead>
           <tr>

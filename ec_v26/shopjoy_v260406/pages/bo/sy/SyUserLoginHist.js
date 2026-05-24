@@ -259,8 +259,9 @@ window.SyUserLoginHist = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">사용자로그인이력</div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">관리자 사용자의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen?'▲ 접기':'▼ 더보기' }}</button>
@@ -268,9 +269,9 @@ window.SyUserLoginHist = {
       • 로그인 로그: syh_user_login_log — 로그인 시도·결과·IP·디바이스·x-헤더 • 토큰 이력: syh_user_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료) • 행 클릭 → 상세정보 펼치기 (x-헤더 포함) • 이상 로그인(외부IP/연속실패/REVOKE)은 보안 담당자에게 즉시 보고하세요.
     </div>
   </div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
@@ -278,13 +279,13 @@ window.SyUserLoginHist = {
         </button>
       </template>
     </bo-search-area>
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="moreSearchColumns" :param="uiState"
       @search="onSearch" />
   </div>
-  <!-- ===== 탭 + 목록 ===================================================== -->
+  <!-- ===== ■. 탭 + 목록 ================================================== -->
   <div class="tab-nav" style="margin-bottom:16px">
     <button class="tab-btn" :class="{active:uiState.activeTab==='log'}"   @click="onTabChange('log')">
       로그인 로그
@@ -295,7 +296,7 @@ window.SyUserLoginHist = {
       <span class="tab-count">{{ tabCounts.token }}</span>
     </button>
   </div>
-  <!-- ===== 로그인 로그 탭 =================================================== -->
+  <!-- ===== ■. 로그인 로그 탭 ================================================ -->
   <bo-grid v-if="uiState.activeTab==='log'"
     :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
@@ -313,6 +314,7 @@ window.SyUserLoginHist = {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">📡 접속 정보</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">로그인일시</td>
@@ -344,6 +346,7 @@ window.SyUserLoginHist = {
             <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">
               🏷 X-헤더 (호출 추적)
             </div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td>
@@ -373,6 +376,7 @@ window.SyUserLoginHist = {
           </div>
           <div>
             <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px">🔐 인증 · 토큰</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">사용자ID</td>
@@ -400,7 +404,7 @@ window.SyUserLoginHist = {
       </td>
     </template>
   </bo-grid>
-  <!-- ===== 토큰 이력 탭 ==================================================== -->
+  <!-- ===== ■. 토큰 이력 탭 ================================================= -->
   <bo-grid v-if="uiState.activeTab==='token'"
     :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
@@ -418,6 +422,7 @@ window.SyUserLoginHist = {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">🔑 토큰 정보</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">액션</td>
@@ -455,6 +460,7 @@ window.SyUserLoginHist = {
             <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">
               🏷 X-헤더 (호출 추적)
             </div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">x-ui-nm</td>
@@ -484,6 +490,7 @@ window.SyUserLoginHist = {
           </div>
           <div>
             <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px">🔐 토큰 해시</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">현재 토큰</td>

@@ -61,9 +61,13 @@ window.MyChatt = {
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myChatt">
+  <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" />
+  <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredChats.length" :pager="chatPager" />
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="!cfDateFilteredChats.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">채팅 내역이 없습니다.</div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div v-for="c in paginate(cfDateFilteredChats, chatPager)" :key="c.chatId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
     <div style="padding:16px;cursor:pointer;display:flex;align-items:center;gap:12px;" @click="myStore.openChat(c)">
@@ -102,6 +106,7 @@ window.MyChatt = {
       </div>
     </div>
   </div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <Pagination :total="chats.length" :pager="chatPager" />
 </fo-my-layout>
 `,

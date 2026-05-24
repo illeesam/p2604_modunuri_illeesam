@@ -134,10 +134,12 @@ window.OdClaimHist = {
   },
   template: /* html */`
 <div>
+  <!-- ===== ■. 이력 화면 =================================================== -->
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
     <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
     이력정보
   </div>
+  <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:botTab==='items'}"   :disabled="tabMode2!=='tab'" @click="botTab='items'">
@@ -151,14 +153,16 @@ window.OdClaimHist = {
       </button>
     </div>
   </div>
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- ===== 클레임 항목 ===================================================== -->
+    <!-- ===== ■.■. 클레임 항목 ================================================ -->
     <div class="card" v-show="showTab('items')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임 항목 <span class="tab-count">{{ claimItems.length }}</span></div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
         <button class="btn btn-sm btn-secondary" @click="addClaimItem">+ 항목 추가</button>
       </div>
       <div v-if="claimItems.length" style="overflow-x:auto;">
+        <!-- ===== ■.■.■.■. 테이블 =============================================== -->
         <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:1000px;">
           <thead>
             <tr>
@@ -264,14 +268,14 @@ window.OdClaimHist = {
     <!-- 처리 정보 (BoFormArea 자동 렌더) -->
     <div class="card" v-show="showTab('process')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 처리 정보</div>
-      <!-- ===== 폼 영역 ======================================================= -->
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="processFormColumns" :form="processForm" :errors="{}"
         :cols="2" :show-actions="false" />
       <div class="form-actions">
         <button class="btn btn-primary" @click="handleSaveProcess">저장</button>
       </div>
     </div>
-    <!-- ===== 연관 주문 ====================================================== -->
+    <!-- ===== ■.■. 연관 주문 ================================================= -->
     <div class="card" v-show="showTab('order')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ relatedOrder ? 1 : 0 }}</span></div>
       <template v-if="relatedOrder">

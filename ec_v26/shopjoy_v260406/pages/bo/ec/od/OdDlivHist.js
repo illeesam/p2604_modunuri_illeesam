@@ -77,10 +77,12 @@ window.OdDlivHist = {
   },
   template: /* html */`
 <div>
+  <!-- ===== ■. 이력 화면 =================================================== -->
   <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
     <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
     이력정보
   </div>
+  <!-- ===== ■. 탭 영역 ==================================================== -->
   <div class="tab-bar-row">
     <div class="tab-nav">
       <button class="tab-btn" :class="{active:botTab==='order'}"  :disabled="tabMode2!=='tab'" @click="botTab='order'">
@@ -93,8 +95,9 @@ window.OdDlivHist = {
       </button>
     </div>
   </div>
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- ===== 연관 주문 ====================================================== -->
+    <!-- ===== ■.■. 연관 주문 ================================================= -->
     <div class="card" v-show="showTab('order')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🛒 연관 주문 <span class="tab-count">{{ cfRelatedOrder ? 1 : 0 }}</span></div>
       <template v-if="cfRelatedOrder">
@@ -117,10 +120,10 @@ window.OdDlivHist = {
       </template>
       <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">연관 주문 정보가 없습니다.</div>
     </div>
-    <!-- ===== 연관 클레임 ===================================================== -->
+    <!-- ===== ■.■. 연관 클레임 ================================================ -->
     <div class="card" v-show="showTab('claims')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 연관 클레임 <span class="tab-count">{{ cfRelatedClaims.length }}</span></div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
         empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => showRefModal(type, id)" row-actions>
         <template #row-actions="{ row }">

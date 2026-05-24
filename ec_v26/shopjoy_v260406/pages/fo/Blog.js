@@ -106,7 +106,7 @@ window.Blog = {
   },
   template: /* html */ `
 <div class="page-wrap">
-  <!-- ===== 페이지 타이틀 배너 ================================================= -->
+  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
   <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
     <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="블로그"
       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
@@ -121,18 +121,18 @@ window.Blog = {
       </div>
     </div>
   </div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div style="display:flex;justify-content:center;margin-bottom:32px;">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area bar-style="max-width:640px;width:100%;justify-content:center;"
       :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
-  <!-- ===== 레이아웃: 사이드바 + 본문 ============================================ -->
+  <!-- ===== ■. 레이아웃: 사이드바 + 본문 ========================================= -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,3vw,32px);" class="blog-grid">
-    <!-- ===== 사이드바 ======================================================= -->
+    <!-- ===== ■.■. 사이드바 ================================================== -->
     <aside>
-      <!-- ===== 카테고리 ======================================================= -->
+      <!-- ===== ■.■.■. 카테고리 ================================================ -->
       <div style="margin-bottom:28px;">
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
           Prod Categories
@@ -151,7 +151,7 @@ window.Blog = {
           </li>
         </ul>
       </div>
-      <!-- ===== 최신 글 ======================================================= -->
+      <!-- ===== ■.■.■. 최신 글 ================================================ -->
       <div>
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
           Latest Posts
@@ -172,19 +172,19 @@ window.Blog = {
         </div>
       </div>
     </aside>
-    <!-- ===== 포스트 목록 ===================================================== -->
+    <!-- ===== ■.■. 포스트 목록 ================================================ -->
     <div>
       <div v-for="post in posts" :key="post.id"
         class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
         @click="navigate('blogView', { dtlId: post.id })"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.boxShadow=''">
-        <!-- ===== 썸네일 ======================================================== -->
+        <!-- ===== ■.■.■.■. 썸네일 =============================================== -->
         <div style="width:clamp(200px,30%,280px);min-height:180px;flex-shrink:0;overflow:hidden;background:var(--bg-base);">
           <img v-if="post.thumb" :src="post.thumb" :alt="post.title" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
             @mouseenter="$event.target.style.transform='scale(1.05)'" @mouseleave="$event.target.style.transform=''" />
         </div>
-        <!-- ===== 내용 ========================================================= -->
+        <!-- ===== ■.■.■.■. 내용 ================================================ -->
         <div style="flex:1;min-width:200px;padding:clamp(14px,2vw,24px) clamp(14px,2vw,24px) clamp(14px,2vw,24px) 0;display:flex;flex-direction:column;justify-content:center;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">
@@ -204,7 +204,7 @@ window.Blog = {
           </div>
         </div>
       </div>
-      <!-- ===== 빈 상태 ======================================================= -->
+      <!-- ===== ■.■.■. 빈 상태 ================================================ -->
       <div v-if="posts.length === 0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
         <div style="font-size:2rem;margin-bottom:12px;">📝</div>
         <div style="font-size:0.95rem;">검색 결과가 없습니다.</div>

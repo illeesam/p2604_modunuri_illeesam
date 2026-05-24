@@ -265,19 +265,20 @@ const detailModal = reactive({
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">사이트관리</div>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 좌 트리 + 우 영역 ================================================ -->
+  <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
-    <!-- ===== 경로 트리 ====================================================== -->
+    <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="true"
       :selected="uiState.selectedPath" @select="selectNode" />
     <div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
         :columns="baseGridColumns" :rows="sites" :pager="pager" row-key="siteId"
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
@@ -302,7 +303,7 @@ const detailModal = reactive({
         </template>
       </bo-grid>
     </div>
-    <!-- ===== 수정 패널 (grid 직접 자식 → 전체 폭) ================================== -->
+    <!-- ===== ■.■. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
     <div v-if="detailModal.show" style="grid-column:1/-1;margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
         <button class="btn btn-secondary btn-sm" @click="closeDetail">✕ 닫기</button>

@@ -224,20 +224,23 @@ window.XsSample09 = {
   },
   template: /* html */`
 <div style="padding:clamp(12px,3vw,24px);">
+  <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="toast.show" style="position:fixed;top:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);pointer-events:none;"
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">
     {{ toast.msg }}
   </div>
+  <!-- ===== ■. 헤더 영역 =================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
     09. FAQ 관리
     <span style="font-size:12px;font-weight:400;color:#888;margin-left:8px;">CRUD Grid 예제</span>
   </div>
+  <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area :columns="baseSearchColumns" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
-  <!-- ===== 목록 영역 ====================================================== -->
+  <!-- ===== ■. 목록 영역 =================================================== -->
   <fo-grid-crud
     list-title="FAQ 목록" row-key="faqId"
     :columns="baseGridColumns" :rows="gridRows"

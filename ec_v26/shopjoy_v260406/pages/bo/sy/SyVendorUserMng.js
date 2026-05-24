@@ -580,15 +580,15 @@ window.SyVendorUserMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">업체사용자</div>
-  <!-- ===== 업체 검색 ====================================================== -->
+  <!-- ===== ■. 업체 검색 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState"
       :loading="uiState.loading" @search="onSearch" @reset="onReset" />
   </div>
-  <!-- ===== 업체 목록 ====================================================== -->
+  <!-- ===== ■. 업체 목록 =================================================== -->
   <bo-grid
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
     list-title="업체목록" :count-text="vendors.length + '건'"
@@ -600,7 +600,7 @@ window.SyVendorUserMng = {
       </button>
     </template>
   </bo-grid>
-  <!-- ===== 사용자 목록 ===================================================== -->
+  <!-- ===== ■. 사용자 목록 ================================================== -->
   <bo-grid v-if="uiState.searchVendorId != null" style="margin-top:16px;"
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
     list-title="사용자목록" :count-text="vendorUsers.length + '건'"
@@ -613,8 +613,9 @@ window.SyVendorUserMng = {
       <button class="btn btn-danger btn-xs" @click.stop="handleDeleteRow(row)">삭제</button>
     </template>
   </bo-grid>
+  <!-- ===== ■. 카드 영역 =================================================== -->
   <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.</div>
-  <!-- ===== 인라인 폼 ====================================================== -->
+  <!-- ===== ■. 인라인 폼 =================================================== -->
   <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
     <div class="toolbar">
       <span class="list-title">
@@ -630,18 +631,18 @@ window.SyVendorUserMng = {
     </div>
     <!-- 업체사용자 상세 폼 (BoFormArea 자동 렌더) -->
     <div style="padding:16px;">
-      <!-- ===== 폼 영역 ======================================================= -->
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
         :cols="4" :show-actions="false" />
     </div>
-    <!-- ===== 역할 목록 (수정 모드에서만) =========================================== -->
+    <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->
     <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
       <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title" style="font-size:13px;">🎭 부여된 역할 <span class="list-count">{{ userRoles.length }}개</span></span>
         <button class="btn btn-blue btn-sm" @click="openRoleModal">+ 역할 추가</button>
       </div>
       <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
-      <!-- ===== 목록 영역 ====================================================== -->
+      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid v-else bare :columns="userRoleGridColumns" :rows="userRoles" row-key="vendorUserRoleId"
         empty-text="부여된 역할이 없습니다." row-actions>
         <template #row-actions="{ row }">
@@ -652,16 +653,18 @@ window.SyVendorUserMng = {
   </div>
 </div>
 </div>
-<!-- ===== 역할 선택 모달 (BoRoleSelectModal) =============================== -->
+<!-- ===== ■. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
 <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
   :confirm-disabled="!uiState.roleModalTemp"
   @close="closeRoleModal" @confirm="confirmRoleModal">
+  <!-- ===== ■. 영역 ====================================================== -->
   <template #header-extra>
     <span v-if="cfFormAllowedRootCode"
       :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:cfFormAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
       {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
     </span>
   </template>
+  <!-- ===== ■. 영역 ====================================================== -->
   <template #tree>
     <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">📂 역할 트리</div>
     <div v-if="!cfFormAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">
@@ -692,6 +695,7 @@ window.SyVendorUserMng = {
       </div>
     </template>
   </template>
+  <!-- ===== ■. 영역 ====================================================== -->
   <template #perm>
     <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">
       🔐 메뉴 접근권한
@@ -701,6 +705,7 @@ window.SyVendorUserMng = {
       <div style="font-size:28px;margin-bottom:8px;">👈</div>
       좌측에서 역할을 선택하세요
     </div>
+    <!-- ===== ■.■. 테이블 =================================================== -->
     <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
       <thead>
         <tr style="background:#f9fafb;">
@@ -725,6 +730,7 @@ window.SyVendorUserMng = {
       </tbody>
     </table>
   </template>
+  <!-- ===== ■. 영역 ====================================================== -->
   <template #footer-extra>
     <span style="font-size:11px;color:#6b7280;">
       <span v-if="uiState.roleModalTemp">선택: <b style="color:#2563eb;">{{ roleNmByCode(uiState.roleModalTemp) }}</b></span>

@@ -329,8 +329,9 @@ window.SyApiLogMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">API로그조회</div>
+  <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-desc-bar">
     <span class="page-desc-summary">syh_access_log(API요청로그)와 syh_access_error_log(API오류로그)를 조회합니다.</span>
     <button class="page-desc-toggle" @click="uiState.descOpen=!uiState.descOpen">{{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}</button>
@@ -338,9 +339,9 @@ window.SyApiLogMng = {
       • API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함 • API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함 • 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등) • 기본 조회기간: 최근 1주일.
     </div>
   </div>
-  <!-- ===== 검색 ========================================================= -->
+  <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="onSearch" @reset="onReset">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="uiState.srchOpen=!uiState.srchOpen" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
@@ -348,13 +349,13 @@ window.SyApiLogMng = {
         </button>
       </template>
     </bo-search-area>
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="moreSearchColumns" :param="uiState"
       @search="onSearch" />
   </div>
-  <!-- ===== 탭 + 목록 ===================================================== -->
+  <!-- ===== ■. 탭 + 목록 ================================================== -->
   <div class="tab-nav" style="margin-bottom:16px">
     <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="onTabChange('access')">
       📋 API요청로그
@@ -365,7 +366,7 @@ window.SyApiLogMng = {
       <span class="tab-count">{{ tabCounts.error }}</span>
     </button>
   </div>
-  <!-- ===== API요청로그 탭 ================================================== -->
+  <!-- ===== ■. API요청로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='access'"
     :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
@@ -383,6 +384,7 @@ window.SyApiLogMng = {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
           <div>
             <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px;">📡 요청 정보</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td>
@@ -424,6 +426,7 @@ window.SyApiLogMng = {
             <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">
               🏷 X-헤더 (호출 추적)
             </div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td>
@@ -455,6 +458,7 @@ window.SyApiLogMng = {
             <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px;">
               🔐 인증 · 서버
             </div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">사용자ID</td>
@@ -497,7 +501,7 @@ window.SyApiLogMng = {
       </td>
     </template>
   </bo-grid>
-  <!-- ===== API오류로그 탭 ================================================== -->
+  <!-- ===== ■. API오류로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='error'"
     :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
@@ -515,6 +519,7 @@ window.SyApiLogMng = {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
           <div>
             <div style="font-weight:700;color:#e74c3c;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">🚨 오류 정보</div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">경로</td>
@@ -569,6 +574,7 @@ window.SyApiLogMng = {
             <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">
               🏷 X-헤더 (호출 추적)
             </div>
+            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
             <table style="width:100%;border-collapse:collapse;">
               <tr>
                 <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">x-ui-nm</td>

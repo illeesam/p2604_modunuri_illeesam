@@ -681,19 +681,19 @@ window.SyCodeMng = {
   },
   template: /* html */`
 <div>
-  <!-- ===== 페이지 타이틀 ==================================================== -->
+  <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">공통코드관리</div>
-  <!-- ===== 검색 영역 ====================================================== -->
+  <!-- ===== ■. 검색 영역 =================================================== -->
   <div class="card">
-    <!-- ===== 검색 영역 ====================================================== -->
+    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
   </div>
-  <!-- ===== 표시경로 트리 + 코드그룹 CRUD ======================================== -->
+  <!-- ===== ■. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;margin-bottom:16px;align-items:flex-start;">
-    <!-- ===== 경로 트리 ====================================================== -->
+    <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="true"
       :selected="uiState.grpSelectedPath" @select="grpSelectNode" />
-    <!-- ===== CRUD 그리드 =================================================== -->
+    <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-grid-crud
       :columns="grpGridColumns" :rows="uiState.grpRows" row-key="codeGrp"
       list-title="공통코드그룹관리"
@@ -728,9 +728,9 @@ window.SyCodeMng = {
       </template>
     </bo-grid-crud>
   </div>
-  <!-- ===== 코드 목록 영역 =================================================== -->
+  <!-- ===== ■. 코드 목록 영역 ================================================ -->
   <div class="card">
-    <!-- ===== 일반/트리 탭 ==================================================== -->
+    <!-- ===== ■.■. 일반/트리 탭 =============================================== -->
     <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="uiState.activeCodeTab='일반'"
         style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
@@ -743,9 +743,9 @@ window.SyCodeMng = {
         트리
       </button>
     </div>
-    <!-- ===== 일반 탭 ======================================================= -->
+    <!-- ===== ■.■. 일반 탭 ================================================== -->
     <div v-if="uiState.activeCodeTab==='일반'">
-      <!-- ===== CRUD 그리드 =================================================== -->
+      <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="fnCodeGridColumns()" :rows="uiState.gridRows" row-key="codeId"
         :list-title="fnCodeListTitle()" :show-export="true" :draggable="true"
@@ -762,9 +762,9 @@ window.SyCodeMng = {
         </template>
       </bo-grid-crud>
     </div>
-    <!-- ===== 트리 탭 (BoGridCrud 트리 모드) ==================================== -->
+    <!-- ===== ■.■. 트리 탭 (BoGridCrud 트리 모드) =============================== -->
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
-      <!-- ===== CRUD 그리드 =================================================== -->
+      <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="treeGridColumns"
         :rows="uiState.gridRows" row-key="codeId"
@@ -820,7 +820,7 @@ window.SyCodeMng = {
       </bo-grid-crud>
     </div>
   </div>
-  <!-- ===== 코드 상세 패널 (인라인 임베드) ========================================= -->
+  <!-- ===== ■. 코드 상세 패널 (인라인 임베드) ====================================== -->
   <div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
       <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">코드 상세</h3>
