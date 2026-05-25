@@ -6,8 +6,108 @@ window.XsSample07 = {
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0 });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0, histResSending: false, settingsOpen: false, treeLoaded: false });
     const codes = reactive({ http_method_opts: ['GET','POST','PUT','PATCH','DELETE'] });
+
+    /* ===== Tree (JSON 로딩) ===== */
+    const treeRoot = reactive([]);
+
+    /* ===== App Filter ===== */
+    const appFilter = reactive({ fo: true, bo: true, samples: true });
+    const APP_META  = {
+      fo:   { label: 'FO',   color: '#1a73e8' },
+      bo:   { label: 'BO',   color: '#e8587a' },
+      samples: { label: 'Samples', color: '#34a853' },
+    };
+
+    /* ===== Settings (localStorage 자동저장) ===== */
+    const SETTINGS_KEY = 'sj_sample07_v2';
+    const treeSearch   = ref('');
+    const hostUrl      = ref(window.location.origin);
+    const token        = ref('');
+    const defHeaders   = reactive([{ k: 'Content-Type', v: 'application/json' }, { k: '', v: '' }]);
+    const settingsOpen = ref(false);
+
+    /* ===== LocalStorage Viewer ===== */
+    const lsItems = reactive([]);
+
+    /* ===== Tab System ===== */
+    const openTabs    = reactive([]);
+    const activeTabId = ref(null);
+    let   _tabSeq     = 0;
+
+    /* ===== 자동실행 타이머 관리 ===== */
+    const _timers   = {};   // tabId → intervalId
+    const _nextFire = {};   // tabId → 다음 실행 timestamp
+    const countdown = reactive({});  // tabId → 남은 초 (화면 표시용)
+    const autoPopupTabId = ref(null);
+    const autoPopupPos   = reactive({ top: 0, left: 0 });
+
+    const SECS  = [1,2,3,4,5,6,7,10,15,20,30,50,60];
+    const MINS  = [1,2,3,4,5,10,15,20,30];
+    const HOURS = [1,2,3,4,6,12];
+    const MAX_ROWS = Math.max(SECS.length, MINS.length, HOURS.length);
+    // 행별 [초값, 분값, 시값] (없으면 null)
+    const POPUP_ROWS = Array.from({ length: MAX_ROWS }, (_, i) => ({
+      s: SECS[i]  != null ? SECS[i]  : null,
+      m: MINS[i]  != null ? MINS[i]  : null,
+      h: HOURS[i] != null ? HOURS[i] : null,
+    }));
+
+    /* ===== Toast ===== */
+    const TOAST_MS = 20000;
+    const toasts   = reactive([]);
+    let _toastSeq  = 0;
+
+    /* ===== History ===== */
+    const history     = reactive([]);
+    const histSelIdx  = ref(null);
+    const histModal   = ref(null);
+    const histModalTab = ref('req');
+    // 편집용 복사본 (histModal 원본은 건드리지 않음)
+    const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
+    const histResJson    = ref('');
+    const histResStatus  = ref(null);
+    const histResTime    = ref(null);
+    const histResTs      = ref('');
+    const histResProgress = ref(0);
+    const histResSending = ref(false);
+
+    /* ===== Auto CRUD 정의 ===== */
+    const AUTO_CRUD_DOMAINS = [
+      { domain:'ec', sub:'cm', label:'EC CM', tables:['cm_blog_cate','cm_blog_file','cm_blog_good','cm_blog_reply','cm_blog_tag','cm_blog','cm_chatt_msg','cm_chatt_room','cm_path','cmh_push_log'] },
+      { domain:'ec', sub:'dp', label:'EC DP', tables:['dp_area_panel','dp_area','dp_panel_item','dp_panel','dp_ui_area','dp_ui','dp_widget_lib','dp_widget'] },
+      { domain:'ec', sub:'mb', label:'EC MB', tables:['mb_dvc_token','mb_like','mb_member_addr','mb_member_grade','mb_member_group','mb_member','mb_member_sns','mbh_member_login_hist','mbh_member_login_log','mbh_member_token_log'] },
+      { domain:'ec', sub:'od', label:'EC OD', tables:['od_cart','od_claim_item','od_claim','od_dliv_item','od_dliv','od_order_discnt','od_order_item_discnt','od_order_item','od_order','od_pay_method','od_pay','od_refund_method','od_refund','odh_claim_chg_hist','odh_claim_item_chg_hist','odh_claim_item_status_hist','odh_claim_status_hist','odh_dliv_chg_hist','odh_dliv_item_chg_hist','odh_dliv_status_hist','odh_order_chg_hist','odh_order_item_chg_hist','odh_order_item_status_hist','odh_order_status_hist','odh_pay_chg_hist','odh_pay_status_hist'] },
+      { domain:'ec', sub:'pd', label:'EC PD', tables:['pd_category_prod','pd_category','pd_dliv_tmplt','pd_prod_bundle_item','pd_prod_content','pd_prod_img','pd_prod_opt_item','pd_prod_opt','pd_prod_qna','pd_prod_rel','pd_prod_set_item','pd_prod_sku','pd_prod_tag','pd_prod','pd_restock_noti','pd_review_attach','pd_review_comment','pd_review','pd_tag','pdh_prod_chg_hist','pdh_prod_content_chg_hist','pdh_prod_sku_chg_hist','pdh_prod_sku_price_hist','pdh_prod_sku_stock_hist','pdh_prod_status_hist','pdh_prod_view_log'] },
+      { domain:'ec', sub:'pm', label:'EC PM', tables:['pm_cache','pm_coupon_issue','pm_coupon_item','pm_coupon_usage','pm_coupon','pm_discnt_item','pm_discnt_usage','pm_discnt','pm_event_benefit','pm_event_item','pm_event','pm_gift_cond','pm_gift_issue','pm_gift','pm_plan_item','pm_plan','pm_save_issue','pm_save_usage','pm_save','pm_voucher_issue','pm_voucher'] },
+      { domain:'ec', sub:'st', label:'EC ST', tables:['st_erp_voucher_line','st_erp_voucher','st_recon','st_settle_adj','st_settle_close','st_settle_config','st_settle_etc_adj','st_settle_item','st_settle_pay','st_settle_raw','st_settle'] },
+      { domain:'sy', sub:'sy', label:'SY',    tables:['sy_alarm','sy_attach_grp','sy_attach','sy_batch','sy_bbm','sy_bbs','sy_brand','sy_code_grp','sy_code','sy_contact','sy_dept','sy_i18n_msg','sy_i18n','sy_menu','sy_notice','sy_path','sy_prop','sy_role_menu','sy_role','sy_site','sy_template','sy_user_role','sy_user','sy_vendor_brand','sy_vendor_content','sy_vendor_user','sy_vendor','sy_voc','syh_alarm_send_hist','syh_api_log','syh_batch_hist','syh_batch_log','syh_send_email_log','syh_send_msg_log','syh_user_login_hist','syh_user_login_log','syh_user_token_log'] },
+    ];
+    const CRUD_OPS = [
+      { label:'단건',    urlFn: p => `select${p}`,              method:'POST'   },
+      { label:'목록',    urlFn: p => `select${p}List`,           method:'POST'   },
+      { label:'페이지',  urlFn: p => `select${p}Page`,           method:'POST'   },
+      { label:'건수',    urlFn: p => `select${p}Count`,          method:'POST'   },
+      { label:'등록',    urlFn: p => `insert${p}Insert`,         method:'POST'   },
+      { label:'수정',    urlFn: p => `update${p}Update`,         method:'PUT'    },
+      { label:'부분수정',urlFn: p => `update${p}UpdateOption`,   method:'PUT'    },
+      { label:'삭제',    urlFn: p => `delete${p}Delete`,         method:'DELETE' },
+      { label:'일괄삭제',urlFn: p => `delete${p}DeleteList`,     method:'DELETE' },
+    ];
+    const REST_CRUD_OPS = [
+      { label:'목록 조회',  urlFn: t => t,              method:'GET'    },
+      { label:'페이지 조회',urlFn: t => `${t}/page`,    method:'GET'    },
+      { label:'건수 조회',  urlFn: t => `${t}/count`,   method:'GET'    },
+      { label:'단건 조회',  urlFn: t => `${t}/{id}`,    method:'GET'    },
+      { label:'등록',       urlFn: t => t,              method:'POST'   },
+      { label:'수정',       urlFn: t => `${t}/{id}`,    method:'PUT'    },
+      { label:'부분수정',   urlFn: t => `${t}/{id}`,    method:'PATCH'  },
+      { label:'삭제',       urlFn: t => `${t}/{id}`,    method:'DELETE' },
+      { label:'일괄삭제',   urlFn: t => t,              method:'DELETE' },
+    ];
+    let _acSeq = 0;
+    let _arSeq = 0;
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -70,9 +170,6 @@ window.XsSample07 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* ===== Tree (JSON 로딩) ===== */
-    const treeRoot   = reactive([]);
-
     /* makeNode — 생성 */
     const makeNode = n => {
       const node = reactive({
@@ -98,43 +195,8 @@ window.XsSample07 = {
       return null;
     };
 
-    /* ===== Auto CRUD 트리 생성 ===== */
-    const AUTO_CRUD_DOMAINS = [
-      { domain:'ec', sub:'cm', label:'EC CM', tables:['cm_blog_cate','cm_blog_file','cm_blog_good','cm_blog_reply','cm_blog_tag','cm_blog','cm_chatt_msg','cm_chatt_room','cm_path','cmh_push_log'] },
-      { domain:'ec', sub:'dp', label:'EC DP', tables:['dp_area_panel','dp_area','dp_panel_item','dp_panel','dp_ui_area','dp_ui','dp_widget_lib','dp_widget'] },
-      { domain:'ec', sub:'mb', label:'EC MB', tables:['mb_dvc_token','mb_like','mb_member_addr','mb_member_grade','mb_member_group','mb_member','mb_member_sns','mbh_member_login_hist','mbh_member_login_log','mbh_member_token_log'] },
-      { domain:'ec', sub:'od', label:'EC OD', tables:['od_cart','od_claim_item','od_claim','od_dliv_item','od_dliv','od_order_discnt','od_order_item_discnt','od_order_item','od_order','od_pay_method','od_pay','od_refund_method','od_refund','odh_claim_chg_hist','odh_claim_item_chg_hist','odh_claim_item_status_hist','odh_claim_status_hist','odh_dliv_chg_hist','odh_dliv_item_chg_hist','odh_dliv_status_hist','odh_order_chg_hist','odh_order_item_chg_hist','odh_order_item_status_hist','odh_order_status_hist','odh_pay_chg_hist','odh_pay_status_hist'] },
-      { domain:'ec', sub:'pd', label:'EC PD', tables:['pd_category_prod','pd_category','pd_dliv_tmplt','pd_prod_bundle_item','pd_prod_content','pd_prod_img','pd_prod_opt_item','pd_prod_opt','pd_prod_qna','pd_prod_rel','pd_prod_set_item','pd_prod_sku','pd_prod_tag','pd_prod','pd_restock_noti','pd_review_attach','pd_review_comment','pd_review','pd_tag','pdh_prod_chg_hist','pdh_prod_content_chg_hist','pdh_prod_sku_chg_hist','pdh_prod_sku_price_hist','pdh_prod_sku_stock_hist','pdh_prod_status_hist','pdh_prod_view_log'] },
-      { domain:'ec', sub:'pm', label:'EC PM', tables:['pm_cache','pm_coupon_issue','pm_coupon_item','pm_coupon_usage','pm_coupon','pm_discnt_item','pm_discnt_usage','pm_discnt','pm_event_benefit','pm_event_item','pm_event','pm_gift_cond','pm_gift_issue','pm_gift','pm_plan_item','pm_plan','pm_save_issue','pm_save_usage','pm_save','pm_voucher_issue','pm_voucher'] },
-      { domain:'ec', sub:'st', label:'EC ST', tables:['st_erp_voucher_line','st_erp_voucher','st_recon','st_settle_adj','st_settle_close','st_settle_config','st_settle_etc_adj','st_settle_item','st_settle_pay','st_settle_raw','st_settle'] },
-      { domain:'sy', sub:'sy', label:'SY',    tables:['sy_alarm','sy_attach_grp','sy_attach','sy_batch','sy_bbm','sy_bbs','sy_brand','sy_code_grp','sy_code','sy_contact','sy_dept','sy_i18n_msg','sy_i18n','sy_menu','sy_notice','sy_path','sy_prop','sy_role_menu','sy_role','sy_site','sy_template','sy_user_role','sy_user','sy_vendor_brand','sy_vendor_content','sy_vendor_user','sy_vendor','sy_voc','syh_alarm_send_hist','syh_api_log','syh_batch_hist','syh_batch_log','syh_send_email_log','syh_send_msg_log','syh_user_login_hist','syh_user_login_log','syh_user_token_log'] },
-    ];
-    const CRUD_OPS = [
-      { label:'단건',    urlFn: p => `select${p}`,              method:'POST'   },
-      { label:'목록',    urlFn: p => `select${p}List`,           method:'POST'   },
-      { label:'페이지',  urlFn: p => `select${p}Page`,           method:'POST'   },
-      { label:'건수',    urlFn: p => `select${p}Count`,          method:'POST'   },
-      { label:'등록',    urlFn: p => `insert${p}Insert`,         method:'POST'   },
-      { label:'수정',    urlFn: p => `update${p}Update`,         method:'PUT'    },
-      { label:'부분수정',urlFn: p => `update${p}UpdateOption`,   method:'PUT'    },
-      { label:'삭제',    urlFn: p => `delete${p}Delete`,         method:'DELETE' },
-      { label:'일괄삭제',urlFn: p => `delete${p}DeleteList`,     method:'DELETE' },
-    ];
-    const REST_CRUD_OPS = [
-      { label:'목록 조회',  urlFn: t => t,              method:'GET'    },
-      { label:'페이지 조회',urlFn: t => `${t}/page`,    method:'GET'    },
-      { label:'건수 조회',  urlFn: t => `${t}/count`,   method:'GET'    },
-      { label:'단건 조회',  urlFn: t => `${t}/{id}`,    method:'GET'    },
-      { label:'등록',       urlFn: t => t,              method:'POST'   },
-      { label:'수정',       urlFn: t => `${t}/{id}`,    method:'PUT'    },
-      { label:'부분수정',   urlFn: t => `${t}/{id}`,    method:'PATCH'  },
-      { label:'삭제',       urlFn: t => `${t}/{id}`,    method:'DELETE' },
-      { label:'일괄삭제',   urlFn: t => t,              method:'DELETE' },
-    ];
-
     /* toPascal — → 파스칼 */
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
-    let _acSeq = 0;
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
@@ -145,9 +207,6 @@ window.XsSample07 = {
         id: `ac_${domain}_${sub}`, label, type: 'folder', open: false,
         children: tables.map(tbl => {
           const pascal = toPascal(tbl);
-
-          // ===== return (템플릿 노출) ===============================================
-
           return {
             id: `ac_${tbl}`, label: tbl, type: 'folder', open: false,
             children: CRUD_OPS.map(op => ({
@@ -162,7 +221,6 @@ window.XsSample07 = {
         }),
       })),
     });
-    let _arSeq = 0;
 
     /* buildAutoCrudRestNodes — 빌드 */
     const buildAutoCrudRestNodes = () => makeNode({
@@ -183,16 +241,8 @@ window.XsSample07 = {
       })),
     });
 
-    /* ===== App Filter ===== */
-    const appFilter = reactive({ fo: true, bo: true, samples: true });
-    const APP_META  = {
-      fo:   { label: 'FO',   color: '#1a73e8' },
-      bo:   { label: 'BO',   color: '#e8587a' },
-      samples: { label: 'Samples', color: '#34a853' },
-    };
-
     /* ===== Tree Search & Flatten ===== */
-        const toggleNode = node => { if (node.type !== 'req') node.open = !node.open; };
+    const toggleNode = node => { if (node.type !== 'req') node.open = !node.open; };
 
     /* flattenTree — 평탄화 트리 */
     const flattenTree = (nodes, depth = 0) => {
@@ -209,12 +259,6 @@ window.XsSample07 = {
       return result;
     };
     const cfFlatTree = computed(() => flattenTree(treeRoot));
-
-    /* ===== Settings (localStorage 자동저장) ===== */
-    const SETTINGS_KEY = 'sj_sample07_v2';
-    const hostUrl      = ref(window.location.origin);
-    const token        = ref('');
-    const defHeaders   = reactive([{ k: 'Content-Type', v: 'application/json' }, { k: '', v: '' }]);
 
     /* saveSettings — 저장 */
     const saveSettings = () => {
@@ -242,9 +286,6 @@ window.XsSample07 = {
 
     watch([hostUrl, token, defHeaders], saveSettings, { deep: true });
 
-    /* ===== LocalStorage Viewer ===== */
-    const lsItems = reactive([]);
-
     /* refreshLs — 새로고침 */
     const refreshLs = () => {
       lsItems.splice(0);
@@ -254,10 +295,6 @@ window.XsSample07 = {
       }
       if (!lsItems.length) { lsItems.push({ k: '(비어 있음)', v: '-' }); }
     };
-
-    /* ===== Tab System ===== */
-    const openTabs    = reactive([]);
-        let _tabSeq = 0;
 
     const cfActiveTab = computed(() => openTabs.find(t => t.tabId === uiState.activeTabId) || null);
 
@@ -300,11 +337,6 @@ window.XsSample07 = {
       uiState.activeTabId = tab.tabId;
     };
 
-    /* ===== 자동실행 타이머 관리 ===== */
-    const _timers   = {};   // tabId → intervalId
-    const _nextFire = {};   // tabId → 다음 실행 timestamp
-    const countdown = reactive({});  // tabId → 남은 초 (화면 표시용)
-
     // 0.5초마다 카운트다운 갱신
     setInterval(() => {
       for (const tabId of Object.keys(_nextFire)) {
@@ -332,20 +364,6 @@ window.XsSample07 = {
         _nextFire[tab.tabId] = Date.now() + ms;
       }, ms);
     };
-
-    /* ===== 자동실행 팝업 ===== */
-        const autoPopupPos   = reactive({ top: 0, left: 0 });
-
-    const SECS  = [1,2,3,4,5,6,7,10,15,20,30,50,60];
-    const MINS  = [1,2,3,4,5,10,15,20,30];
-    const HOURS = [1,2,3,4,6,12];
-    const MAX_ROWS = Math.max(SECS.length, MINS.length, HOURS.length);
-    // 행별 [초값, 분값, 시값] (없으면 null)
-    const POPUP_ROWS = Array.from({ length: MAX_ROWS }, (_, i) => ({
-      s: SECS[i]  != null ? SECS[i]  : null,
-      m: MINS[i]  != null ? MINS[i]  : null,
-      h: HOURS[i] != null ? HOURS[i] : null,
-    }));
 
     /* openAutoPopup — 열기 */
     const openAutoPopup = (tab, evt) => {
@@ -389,11 +407,6 @@ window.XsSample07 = {
       uiState.activeTabId = null;
       uiState.autoPopupTabId = null;
     };
-
-    /* ===== Toast ===== */
-    const TOAST_MS = 20000;
-    const toasts   = reactive([]);
-    let _toastSeq  = 0;
 
     /* safeStr — 안전 문자열 */
     const safeStr  = v => (v != null ? String(v) : '');
@@ -502,20 +515,11 @@ window.XsSample07 = {
       }
     };
 
-    /* ===== History ===== */
-    const history      = reactive([]);
-    const histSelIdx   = ref(null);
-    const histModal    = ref(null);
-      // 'req' | 'res'
-
-    // 편집용 복사본 (histModal 원본은 건드리지 않음)
-    const editReq = reactive({ method:'', host:'', url:'', token:'', body:'', params:[], headers:[] });
-
     /* selectHistory — 선택 */
     const selectHistory = (h, idx) => {
-      uiState.histSelIdx   = idx;
-      uiState.histModal    = h;
-      uiState.histModalTab = 'req';
+      uiState.histSelIdx = idx; histSelIdx.value = idx;
+      uiState.histModal = h; histModal.value = h;
+      uiState.histModalTab = 'req'; histModalTab.value = 'req';
       // editReq 에 딥카피
       editReq.method  = h.reqInfo.method  || '';
       editReq.host    = h.reqInfo.host    || '';
@@ -527,13 +531,7 @@ window.XsSample07 = {
     };
 
     /* closeHistModal — 닫기 */
-    const closeHistModal = () => { uiState.histModal = null; };
-
-    const histResJson     = ref('');
-    const histResStatus   = ref(null);
-    const histResTime     = ref(null);
-    const histResTs       = ref('');
-      // 0~100, 전송 중 진행 표시
+    const closeHistModal = () => { uiState.histModal = null; histModal.value = null; };
 
     /* resendHist — 재전송 이력 */
     const resendHist = async () => {
@@ -544,30 +542,32 @@ window.XsSample07 = {
       tab.reqBody   = editReq.body || '';
       tab.reqParams.splice(0, tab.reqParams.length, ...editReq.params.map(p=>({...p})), {k:'',v:''});
       tab.reqHeaders.splice(0, tab.reqHeaders.length, ...editReq.headers.map(h=>({...h})), {k:'',v:''});
-      if (editReq.token) { uiState.token   = editReq.token; }
-      if (editReq.host) { uiState.hostUrl = editReq.host; }
+      if (editReq.token) { uiState.token = editReq.token; token.value = editReq.token; }
+      if (editReq.host) { uiState.hostUrl = editReq.host; hostUrl.value = editReq.host; }
       // 응답 초기화 + 전송 시작
-      uiState.histResJson     = '';
-      uiState.histResStatus   = null;
-      uiState.histResTime     = null;
-      uiState.histResTs       = '';
-      uiState.histResProgress = 0;
-      uiState.histResSending  = true;
+      uiState.histResJson = ''; histResJson.value = '';
+      uiState.histResStatus = null; histResStatus.value = null;
+      uiState.histResTime = null; histResTime.value = null;
+      uiState.histResTs = ''; histResTs.value = '';
+      uiState.histResProgress = 0; histResProgress.value = 0;
+      uiState.histResSending = true; histResSending.value = true;
       // progress 애니메이션: 0→85 느리게, 나머지는 완료 후 100
       const _start = Date.now();
       const _tick = setInterval(() => {
         const elapsed = Date.now() - _start;
         // 5초 안에 85까지 수렴
-        uiState.histResProgress = Math.min(85, Math.round((elapsed / 5000) * 85));
+        const v = Math.min(85, Math.round((elapsed / 5000) * 85));
+        uiState.histResProgress = v; histResProgress.value = v;
       }, 80);
       await doSend(tab);
       clearInterval(_tick);
-      uiState.histResProgress = 100;
-      uiState.histResSending  = false;
-      uiState.histResJson     = tab.resJson;
-      uiState.histResStatus   = tab.resStatus;
-      uiState.histResTime     = tab.resTime;
-      uiState.histResTs       = new Date().toTimeString().slice(0, 8);
+      uiState.histResProgress = 100; histResProgress.value = 100;
+      uiState.histResSending = false; histResSending.value = false;
+      uiState.histResJson = tab.resJson; histResJson.value = tab.resJson;
+      uiState.histResStatus = tab.resStatus; histResStatus.value = tab.resStatus;
+      uiState.histResTime = tab.resTime; histResTime.value = tab.resTime;
+      const _ts = new Date().toTimeString().slice(0, 8);
+      uiState.histResTs = _ts; histResTs.value = _ts;
     };
 
     /* ===== Response Grid (active tab) ===== */
@@ -660,7 +660,7 @@ window.XsSample07 = {
       cfFlatTree, treeSearch, toggleNode, selectApiNode, appFilter, APP_META,
       openTabs, activeTabId, cfActiveTab, closeTab, closeAllTabs,
       // ===== settings / ls 영역 ===============================================
-      hostUrl, token, defHeaders, lsItems, refreshLs,
+      hostUrl, token, defHeaders, lsItems, refreshLs, settingsOpen,
       // ===== toast 영역 =======================================================
       toasts, closeToast,
       // ===== history / response 영역 ==========================================
@@ -672,7 +672,7 @@ window.XsSample07 = {
       // ===== shared (헬퍼) ====================================================
       addRow, removeRow, fnMethodStyle, fnStatusStyle, fnMethodDot, quickRun,
       // ===== auto-run 영역 ====================================================
-      autoPopupTabId, autoPopupPos, POPUP_ROWS, SECS, MINS, HOURS,
+      autoPopupTabId, autoPopupPos, POPUP_ROWS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
     };
   },

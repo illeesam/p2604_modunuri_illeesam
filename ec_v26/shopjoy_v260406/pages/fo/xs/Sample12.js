@@ -14,6 +14,39 @@ window.XsSample12 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
+    const today = new Date().toISOString().slice(0, 10);
+    const selectedAreas  = reactive(new Set());
+    const expandedAreas  = reactive(new Set());
+    const checkedPanels  = reactive(new Set());
+    const checkedWidgets = reactive(new Set()); // key: dispId_wi
+    const selectedCatIds = reactive(new Set());
+
+    /* 현재 사용자 인증 상태 */
+    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
+    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
+    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
+    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
+
+    /* searchParam (template 참조용) */
+    const searchParam = reactive({ status: '', condition: '', authrequired: '', authgrade: '' });
+
+    const WIDGET_LABELS = {
+      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
+      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
+      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
+      popup:'팝업',              file:'파일',                    file_list:'파일목록',
+      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
+      cache_banner:'캐시',       widget_embed:'위젯',
+    };
+    const WIDGET_ICONS = {
+      image_banner:'🖼', product_slider:'🛒', product:'📦',
+      cond_product:'🔍', chart_bar:'📊',      chart_line:'📈',
+      chart_pie:'🥧',   text_banner:'📝',     info_card:'ℹ',
+      popup:'💬',        file:'📎',            file_list:'📁',
+      coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
+      cache_banner:'💰', widget_embed:'🧩',
+    };
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ XsSample12.js : handleBtnAction -> ', cmd, param);
@@ -92,13 +125,6 @@ window.XsSample12 = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-    const today = new Date().toISOString().slice(0, 10);
-    const selectedAreas = reactive(new Set());
-    const expandedAreas = reactive(new Set());
-    const checkedPanels  = reactive(new Set());
-    const checkedWidgets = reactive(new Set()); // key: dispId_wi
-    /* 카테고리 선택 */
-    const selectedCatIds = reactive(new Set());
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -110,11 +136,7 @@ window.XsSample12 = {
 
     /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
-    /* 현재 사용자 인증 상태 */
-    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
-    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
-    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
-    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
+
     /* 검색 필터 */
     const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
@@ -124,22 +146,6 @@ window.XsSample12 = {
       if (userGrade === 'VIP') { c.push('로그인+VIP'); }
       return c;
     });
-    const WIDGET_LABELS = {
-      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
-      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
-      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
-      popup:'팝업',              file:'파일',                    file_list:'파일목록',
-      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
-      cache_banner:'캐시',       widget_embed:'위젯',
-    };
-    const WIDGET_ICONS = {
-      image_banner:'🖼', product_slider:'🛒', product:'📦',
-      cond_product:'🔍', chart_bar:'📊',      chart_line:'📈',
-      chart_pie:'🥧',   text_banner:'📝',     info_card:'ℹ',
-      popup:'💬',        file:'📎',            file_list:'📁',
-      coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
-      cache_banner:'💰', widget_embed:'🧩',
-    };
 
     /* fnWLabel — 유틸 */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
@@ -166,12 +172,12 @@ window.XsSample12 = {
 
     /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
-      if (searchStatus.value       && p.status !== searchStatus.value) { return false; }
+      if (searchParam.status       && p.status !== searchParam.status) { return false; }
       if (!isInRange(p)) { return false; }
-      if (searchCondition.value    && (p.condition || '항상 표시') !== searchCondition.value) { return false; }
-      if (searchAuthRequired.value === 'Y' && !p.authRequired) { return false; }
-      if (searchAuthRequired.value === 'N' &&  p.authRequired) { return false; }
-      if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) { return false; }
+      if (searchParam.condition    && (p.condition || '항상 표시') !== searchParam.condition) { return false; }
+      if (searchParam.authrequired === 'Y' && !p.authRequired) { return false; }
+      if (searchParam.authrequired === 'N' &&  p.authRequired) { return false; }
+      if (searchParam.authgrade    && p.authGrade !== searchParam.authgrade) { return false; }
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
@@ -284,20 +290,17 @@ window.XsSample12 = {
     initExpand();
 
     return {
-      previewDate, previewTime, uiState,
-      handleBtnAction, handleSelectAction,
+      uiState, codes, searchParam,                                     // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                              // dispatch
+      // ===== 영역 / 카테고리 ==================================================
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
-      toggleArea, selectAllAreas, clearAllAreas, resetDate,
-      searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
-      codes,
+      selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
+      // ===== 사용자 ==========================================================
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      showCatModal, selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
-      cfStructAreaList, expandedAreas, toggleAreaExpand, initExpand,
+      // ===== 트리 / 위젯 ======================================================
+      cfStructAreaList, expandedAreas,
       checkedPanels, checkedWidgets,
-      togglePanel, toggleWidget,
-      checkAll, clearAll,
-      isAreaAllChecked, checkAreaAll,
-      isPanelAllChecked,
+      isAreaAllChecked, isPanelAllChecked,
       cfCheckedWidgetList,
       fnWLabel, fnWIcon,
     };
@@ -319,8 +322,8 @@ window.XsSample12 = {
         <span style="font-size:12px;font-weight:600;color:#555;">
           📅 전시일시
         </span>
-        <input type="date" v-model="previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <input type="time" v-model="previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
+        <input type="date" v-model="uiState.previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
+        <input type="time" v-model="uiState.previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <button @click="handleBtnAction('filter-reset-date')" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
           현재
         </button>

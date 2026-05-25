@@ -14,6 +14,107 @@ window.XsSample04 = {
       ],
     });
 
+    /* -- 회원 데이터 -- */
+    const members = reactive([]);
+
+    /* -- 폼 모달 -- */
+    const form = reactive({ name: '', email: '', phone: '', grade: '일반' });
+    const formErrors = reactive({});
+
+    /* -- Confirm 콜백 저장 -- */
+    let _confirmCb = null;
+
+    /* -- boUtil mock (index.html 미포함 → 가드) -- */
+    if (!globalThis.boUtil) {
+      globalThis.boUtil = {
+        getSiteNm: () => 'ShopJoy', DATE_RANGE_OPTIONS: [],
+        getDateRange: () => ({ from: '', to: '' }),
+        isInRange: () => true, exportCsv: () => {},
+      };
+    }
+
+    /* -- BaseModal 데모 상태 -- */
+    const boData = { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
+    const bModal = reactive({ type: null });
+
+    /* -- 데모 데이터 -- */
+    const demoOrder = {
+      orderId: 'ORD-2026-00123', orderDate: '2026-04-10', status: '배송중',
+      orderItems: [
+        { emoji: '👕', prodNm: '프리미엄 코튼 티셔츠', color: '화이트', size: 'M',   qty: 2, price: 58000,
+          productCoupon: { name: '상품10%할인', discount: 5800 } },
+        { emoji: '👟', prodNm: '에어맥스 스니커즈',    color: '블랙',   size: '270', qty: 1, price: 129000 },
+      ],
+      shippingFee: 3000, shippingCoupon: { discount: 3000 },
+      cashPaid: 0, transferPaid: 0, totalPrice: 184200,
+      courier: 'CJ대한통운', trackingNo: '1234567890',
+      paymentDetails: [{ type: '카드', amount: 184200, account: '' }],
+    };
+    const demoProduct = {
+      productId: 'PRD-1001', prodNm: '프리미엄 코튼 티셔츠', emoji: '👕',
+      price: '58,000원', badge: '베스트셀러',
+      desc: '고급 코튼 소재로 제작된 프리미엄 티셔츠. 통기성이 우수하고 세탁 후에도 형태가 유지됩니다.',
+      opt1s: [{ name: '화이트', hex: '#f8f9fa' }, { name: '블랙', hex: '#212529' }, { name: '네이비', hex: '#1e3a5f' }],
+      opt2s: ['S', 'M', 'L', 'XL', 'XXL'],
+      tags: ['베스트셀러', '신상품', '코튼100%'],
+    };
+    const demoUser = { name: '홍길동', phone: '010-1234-5678', email: 'hong@shopjoy.kr' };
+    const demoTmpl = {
+      templateId: 1, templateType: '메일템플릿', templateNm: '회원가입 환영 메일',
+      subject: '[ShopJoy] {{name}}님, 회원가입을 축하합니다!',
+      content: '<p>안녕하세요, <b>{{name}}</b>님!</p><p>ShopJoy 회원이 되신 것을 환영합니다. 지금 바로 쇼핑을 시작해보세요.</p><p>🎁 신규 회원 혜택: <span style="color:#e8587a;font-weight:700;">5,000원 쿠폰</span>이 발급되었습니다.</p>',
+    };
+    const demoSampleParams = JSON.stringify({ name: '홍길동', coupon: '5000' });
+    const catSelIds = reactive([]);
+
+    /* -- 카탈로그 정의 -- */
+    const CATALOG = [
+      { id: 'alert',      icon: '🔔', name: '알림 모달',          desc: '정보 · 성공 · 경고 · 오류 4가지 타입', color: '#1a73e8' },
+      { id: 'confirm',    icon: '❓', name: 'Confirm 다이얼로그',  desc: '확인/취소 선택, 콜백 연결',            color: '#e8587a' },
+      { id: 'form',       icon: '📝', name: '폼 입력 모달',        desc: '유효성 검사 포함 입력 폼',             color: '#34a853' },
+      { id: 'detail',     icon: '🔍', name: '상세보기 모달',       desc: '회원 정보 상세 — 그리드 행 클릭',      color: '#7c3aed' },
+      { id: 'image',      icon: '🖼', name: '이미지 팝업',         desc: '이미지 확대 뷰어 (어두운 배경)',        color: '#b45309' },
+      { id: 'drawer',     icon: '◧',  name: '우측 Drawer',        desc: '화면 오른쪽에서 슬라이드인',            color: '#0f766e' },
+      { id: 'bottom',     icon: '⬆',  name: '바텀시트',            desc: '화면 하단에서 슬라이드업',              color: '#9333ea' },
+      { id: 'fullscreen', icon: '⛶',  name: '전체화면 모달',       desc: '화면 전체를 덮는 모달',                color: '#9f1239' },
+      { id: 'nested',     icon: '⧉',  name: '중첩 모달',           desc: '모달 위에 또 다른 모달 오픈',           color: '#1e40af' },
+      { id: 'loading',    icon: '⏳', name: '로딩 모달',            desc: '2.5초 후 자동으로 닫힘',               color: '#374151' },
+    ];
+
+    /* -- BaseModal 카탈로그 — 3그룹 분류 -- */
+
+    /*/* ① FO + BO 공통 (3종)
+         show prop 방식, boData 의존성 없음 → 양쪽 모두 사용 */
+    const CATALOG2_COMMON = [
+      { id: 'orderDetail',   icon: '📦', name: '주문상세 모달',    desc: 'OrderDetailModal — 상품/결제/배송',   color: '#2563eb' },
+      { id: 'productModal',  icon: '🛍',  name: '상품상세 모달',    desc: 'ProductModal — 색상/사이즈/태그',      color: '#7c3aed' },
+      { id: 'customerModal', icon: '👤', name: '주문자 정보 모달',  desc: 'CustomerModal — 주문자/결제 정보',     color: '#0891b2' },
+    ];
+
+    /*/* ② FO 전용 (1종)
+         window._foCats||[] 직접 참조, 사용자 카테고리 필터용 */
+    const CATALOG2_FO = [
+      { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: 'CategorySelectModal — 트리+멀티체크', color: '#7e22ce' },
+    ];
+
+    /* ③ BO 전용 (13종)
+         boData prop 필수, 관리 기능 전용 */
+    const CATALOG2_BO = [
+      { id: 'siteSelect',      icon: '🌐', name: '사이트 선택',       desc: 'SiteSelectModal — 검색+선택',          color: '#0f766e' },
+      { id: 'vendorSelect',    icon: '🏢', name: '판매업체 선택',     desc: 'VendorSelectModal — 검색+선택',        color: '#b45309' },
+      { id: 'boUserSelect', icon: '👥', name: '사용자 선택',       desc: 'BoUserSelectModal — 부서트리+멀티', color: '#1e40af' },
+      { id: 'memberSelect',    icon: '🙋', name: '회원 선택',         desc: 'MemberSelectModal — 회원 검색선택',   color: '#9333ea' },
+      { id: 'orderSelect',     icon: '🧾', name: '주문 선택',         desc: 'OrderSelectModal — 주문 검색선택',    color: '#be185d' },
+      { id: 'bbmSelect',       icon: '📬', name: '게시판 선택',       desc: 'BbmSelectModal — 페이지네이션',        color: '#065f46' },
+      { id: 'tmplPreview',     icon: '📄', name: '템플릿 미리보기',   desc: 'TemplatePreviewModal — {{파라미터}} 치환', color: '#374151' },
+      { id: 'tmplSend',        icon: '📨', name: '템플릿 발송',       desc: 'TemplateSendModal — 회원/관리자 탭',   color: '#92400e' },
+      { id: 'roleTree',        icon: '🔐', name: '권한 트리',         desc: 'RoleTreeModal — 권한 계층 선택',       color: '#dc2626' },
+      { id: 'menuTree',        icon: '🗂',  name: '메뉴 트리',         desc: 'MenuTreeModal — 상위메뉴 선택',        color: '#0369a1' },
+      { id: 'deptTree',        icon: '🏗',  name: '부서 트리',         desc: 'DeptTreeModal — 부서 계층 선택',       color: '#4338ca' },
+      { id: 'categoryTree',    icon: '📁', name: '카테고리 트리',     desc: 'CategoryTreeModal — 계층 선택',        color: '#15803d' },
+      { id: 'dispPreview',     icon: '👁',  name: '전시 미리보기',     desc: 'DispPreviewModal — 위젯 미리보기',     color: '#b91c1c' },
+    ];
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Sample04.js : handleBtnAction -> ', cmd, param);
@@ -47,6 +148,20 @@ window.XsSample04 = {
       }
     };
 
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample04.js : handleSelectAction -> ', cmd, param);
+      // 회원 상세 모달 열기
+      if (cmd === 'member-detail-open') {
+        return openModal('detail', { data: param });
+      // 회원 수정 확인 모달
+      } else if (cmd === 'member-edit-confirm') {
+        return openEditConfirm(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -59,15 +174,8 @@ window.XsSample04 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* -- 회원 데이터 -- */
-    const members = reactive([]);
-
-    /* -- 폼 모달 -- */
-    const form = reactive({ name: '', email: '', phone: '', grade: '일반' });
-    const formErrors = reactive({});
-
-    /* -- Confirm 콜백 저장 -- */
-    let _confirmCb = null;
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
@@ -118,19 +226,7 @@ window.XsSample04 = {
       });
     };
 
-    /* -- 카탈로그 정의 -- */
-    const CATALOG = [
-      { id: 'alert',      icon: '🔔', name: '알림 모달',          desc: '정보 · 성공 · 경고 · 오류 4가지 타입', color: '#1a73e8' },
-      { id: 'confirm',    icon: '❓', name: 'Confirm 다이얼로그',  desc: '확인/취소 선택, 콜백 연결',            color: '#e8587a' },
-      { id: 'form',       icon: '📝', name: '폼 입력 모달',        desc: '유효성 검사 포함 입력 폼',             color: '#34a853' },
-      { id: 'detail',     icon: '🔍', name: '상세보기 모달',       desc: '회원 정보 상세 — 그리드 행 클릭',      color: '#7c3aed' },
-      { id: 'image',      icon: '🖼', name: '이미지 팝업',         desc: '이미지 확대 뷰어 (어두운 배경)',        color: '#b45309' },
-      { id: 'drawer',     icon: '◧',  name: '우측 Drawer',        desc: '화면 오른쪽에서 슬라이드인',            color: '#0f766e' },
-      { id: 'bottom',     icon: '⬆',  name: '바텀시트',            desc: '화면 하단에서 슬라이드업',              color: '#9333ea' },
-      { id: 'fullscreen', icon: '⛶',  name: '전체화면 모달',       desc: '화면 전체를 덮는 모달',                color: '#9f1239' },
-      { id: 'nested',     icon: '⧉',  name: '중첩 모달',           desc: '모달 위에 또 다른 모달 오픈',           color: '#1e40af' },
-      { id: 'loading',    icon: '⏳', name: '로딩 모달',            desc: '2.5초 후 자동으로 닫힘',               color: '#374151' },
-    ];
+    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) =====================================
 
     /* fnGradeBadge — 유틸 */
     const fnGradeBadge = g => ({
@@ -173,22 +269,6 @@ window.XsSample04 = {
       error:   { icon: '❌', label: '오류',  bg: '#ef4444', bar: '#ef4444' },
     }[v] || { icon: 'ℹ️', label: '안내', bg: '#3b82f6', bar: '#3b82f6' });
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-
-    /* -- boUtil mock (index.html 미포함 → 가드) -- */
-    if (!globalThis.boUtil) {
-      globalThis.boUtil = {
-        getSiteNm: () => 'ShopJoy', DATE_RANGE_OPTIONS: [],
-        getDateRange: () => ({ from: '', to: '' }),
-        isInRange: () => true, exportCsv: () => {},
-      };
-    }
-
-    /* -- BaseModal 데모 상태 -- */
-    const boData = { sites: [], vendors: [], members: [], orders: [], bbms: [], boUsers: [], depts: [], roles: [], menus: [], categories: [] };
-    const bModal      = reactive({ type: null });
-
     /* openBModal — 열기 */
     const openBModal  = (type) => { bModal.type = type; };
 
@@ -201,74 +281,11 @@ window.XsSample04 = {
     /* bShowConfirm — b 표시 확인 */
     const bShowConfirm  = (title, msg) => Promise.resolve(window.confirm(`${title}\n\n${msg}`));
 
-    /* -- 데모 데이터 -- */
-    const demoOrder = {
-      orderId: 'ORD-2026-00123', orderDate: '2026-04-10', status: '배송중',
-      orderItems: [
-        { emoji: '👕', prodNm: '프리미엄 코튼 티셔츠', color: '화이트', size: 'M',   qty: 2, price: 58000,
-          productCoupon: { name: '상품10%할인', discount: 5800 } },
-        { emoji: '👟', prodNm: '에어맥스 스니커즈',    color: '블랙',   size: '270', qty: 1, price: 129000 },
-      ],
-      shippingFee: 3000, shippingCoupon: { discount: 3000 },
-      cashPaid: 0, transferPaid: 0, totalPrice: 184200,
-      courier: 'CJ대한통운', trackingNo: '1234567890',
-      paymentDetails: [{ type: '카드', amount: 184200, account: '' }],
-    };
-    const demoProduct = {
-      productId: 'PRD-1001', prodNm: '프리미엄 코튼 티셔츠', emoji: '👕',
-      price: '58,000원', badge: '베스트셀러',
-      desc: '고급 코튼 소재로 제작된 프리미엄 티셔츠. 통기성이 우수하고 세탁 후에도 형태가 유지됩니다.',
-      opt1s: [{ name: '화이트', hex: '#f8f9fa' }, { name: '블랙', hex: '#212529' }, { name: '네이비', hex: '#1e3a5f' }],
-      opt2s: ['S', 'M', 'L', 'XL', 'XXL'],
-      tags: ['베스트셀러', '신상품', '코튼100%'],
-    };
-    const demoUser   = { name: '홍길동', phone: '010-1234-5678', email: 'hong@shopjoy.kr' };
-    const demoTmpl   = {
-      templateId: 1, templateType: '메일템플릿', templateNm: '회원가입 환영 메일',
-      subject: '[ShopJoy] {{name}}님, 회원가입을 축하합니다!',
-      content: '<p>안녕하세요, <b>{{name}}</b>님!</p><p>ShopJoy 회원이 되신 것을 환영합니다. 지금 바로 쇼핑을 시작해보세요.</p><p>🎁 신규 회원 혜택: <span style="color:#e8587a;font-weight:700;">5,000원 쿠폰</span>이 발급되었습니다.</p>',
-    };
-    const demoSampleParams = JSON.stringify({ name: '홍길동', coupon: '5000' });
-    const catSelIds  = reactive([]);
-
-    /* -- BaseModal 카탈로그 — 3그룹 분류 -- */
-
-    /*/* ① FO + BO 공통 (3종)
-         show prop 방식, boData 의존성 없음 → 양쪽 모두 사용 */
-    const CATALOG2_COMMON = [
-      { id: 'orderDetail',   icon: '📦', name: '주문상세 모달',    desc: 'OrderDetailModal — 상품/결제/배송',   color: '#2563eb' },
-      { id: 'productModal',  icon: '🛍',  name: '상품상세 모달',    desc: 'ProductModal — 색상/사이즈/태그',      color: '#7c3aed' },
-      { id: 'customerModal', icon: '👤', name: '주문자 정보 모달',  desc: 'CustomerModal — 주문자/결제 정보',     color: '#0891b2' },
-    ];
-
-    /*/* ② FO 전용 (1종)
-         window._foCats||[] 직접 참조, 사용자 카테고리 필터용 */
-    const CATALOG2_FO = [
-      { id: 'catSelect', icon: '🏷', name: '카테고리 멀티선택', desc: 'CategorySelectModal — 트리+멀티체크', color: '#7e22ce' },
-    ];
-
-    /* ③ BO 전용 (13종)
-         boData prop 필수, 관리 기능 전용 */
-    const CATALOG2_BO = [
-      { id: 'siteSelect',      icon: '🌐', name: '사이트 선택',       desc: 'SiteSelectModal — 검색+선택',          color: '#0f766e' },
-      { id: 'vendorSelect',    icon: '🏢', name: '판매업체 선택',     desc: 'VendorSelectModal — 검색+선택',        color: '#b45309' },
-      { id: 'boUserSelect', icon: '👥', name: '사용자 선택',       desc: 'BoUserSelectModal — 부서트리+멀티', color: '#1e40af' },
-      { id: 'memberSelect',    icon: '🙋', name: '회원 선택',         desc: 'MemberSelectModal — 회원 검색선택',   color: '#9333ea' },
-      { id: 'orderSelect',     icon: '🧾', name: '주문 선택',         desc: 'OrderSelectModal — 주문 검색선택',    color: '#be185d' },
-      { id: 'bbmSelect',       icon: '📬', name: '게시판 선택',       desc: 'BbmSelectModal — 페이지네이션',        color: '#065f46' },
-      { id: 'tmplPreview',     icon: '📄', name: '템플릿 미리보기',   desc: 'TemplatePreviewModal — {{파라미터}} 치환', color: '#374151' },
-      { id: 'tmplSend',        icon: '📨', name: '템플릿 발송',       desc: 'TemplateSendModal — 회원/관리자 탭',   color: '#92400e' },
-      { id: 'roleTree',        icon: '🔐', name: '권한 트리',         desc: 'RoleTreeModal — 권한 계층 선택',       color: '#dc2626' },
-      { id: 'menuTree',        icon: '🗂',  name: '메뉴 트리',         desc: 'MenuTreeModal — 상위메뉴 선택',        color: '#0369a1' },
-      { id: 'deptTree',        icon: '🏗',  name: '부서 트리',         desc: 'DeptTreeModal — 부서 계층 선택',       color: '#4338ca' },
-      { id: 'categoryTree',    icon: '📁', name: '카테고리 트리',     desc: 'CategoryTreeModal — 계층 선택',        color: '#15803d' },
-      { id: 'dispPreview',     icon: '👁',  name: '전시 미리보기',     desc: 'DispPreviewModal — 위젯 미리보기',     color: '#b91c1c' },
-    ];
     // ===== return (템플릿 노출) ===============================================
 
     return {
       uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction,                                                       // dispatch
+      handleBtnAction, handleSelectAction,                                   // dispatch
       // ===== modals 영역 ======================================================
       members, form, formErrors, CATALOG,
       sample04GridColumns, sample04Top3,

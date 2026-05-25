@@ -6,13 +6,43 @@ window.XsSample13 = {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), copiedPanel: null, previewTime: new Date().toTimeString().slice(0, 5) });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), copiedPanel: null, previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false, copied: false });
     const codes = reactive({
       active_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}],
       need_yn_opts:       [{value:'Y',label:'필요'},{value:'N',label:'불필요'}],
       condition_opts:     ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'],
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const selectedAreas  = reactive(new Set());
+    const selectedCatIds = reactive(new Set());
+
+    /* 현재 사용자 인증 상태 */
+    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
+    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
+    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
+    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
+
+    /* searchParam (template 참조용) */
+    const searchParam = reactive({ status: '', condition: '', authrequired: '', authgrade: '' });
+
+    const WIDGET_LABELS = {
+      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
+      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
+      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
+      popup:'팝업',              file:'파일',                    file_list:'파일목록',
+      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
+      cache_banner:'캐시',       widget_embed:'위젯',
+    };
+    const WIDGET_ICONS = {
+      image_banner:'🖼', product_slider:'🛍', product:'📦',
+      cond_product:'🔍', chart_bar:'📊', chart_line:'📈',
+      chart_pie:'🥧', text_banner:'📝', info_card:'ℹ',
+      popup:'💬', file:'📎', file_list:'📁',
+      coupon:'🎟', html_editor:'</>', event_banner:'🎉',
+      cache_banner:'💰', widget_embed:'🧩',
+    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -77,9 +107,6 @@ window.XsSample13 = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-    const today = new Date().toISOString().slice(0, 10);
-    const selectedAreas = reactive(new Set());
-    const selectedCatIds = reactive(new Set());
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -91,11 +118,7 @@ window.XsSample13 = {
 
     /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
-    /* 현재 사용자 인증 상태 */
-    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
-    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
-    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
-    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
+
     /* 검색 필터 */
     const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
@@ -125,12 +148,12 @@ window.XsSample13 = {
 
     /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
-      if (uiState.searchStatus       && p.status !== uiState.searchStatus) { return false; }
+      if (searchParam.status       && p.status !== searchParam.status) { return false; }
       if (!isInRange(p)) { return false; }
-      if (uiState.searchCondition    && (p.condition || '항상 표시') !== uiState.searchCondition) { return false; }
-      if (uiState.searchAuthRequired === 'Y' && !p.authRequired) { return false; }
-      if (uiState.searchAuthRequired === 'N' &&  p.authRequired) { return false; }
-      if (uiState.searchAuthGrade    && p.authGrade !== uiState.searchAuthGrade) { return false; }
+      if (searchParam.condition    && (p.condition || '항상 표시') !== searchParam.condition) { return false; }
+      if (searchParam.authrequired === 'Y' && !p.authRequired) { return false; }
+      if (searchParam.authrequired === 'N' &&  p.authRequired) { return false; }
+      if (searchParam.authgrade    && p.authGrade !== searchParam.authgrade) { return false; }
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
@@ -139,25 +162,9 @@ window.XsSample13 = {
       }
       return true;
     };
-    const WIDGET_LABELS = {
-      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
-      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
-      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
-      popup:'팝업',              file:'파일',                    file_list:'파일목록',
-      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
-      cache_banner:'캐시',       widget_embed:'위젯',
-    };
 
     /* fnWLabel — 유틸 */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
-    const WIDGET_ICONS = {
-      image_banner:'🖼', product_slider:'🛍', product:'📦',
-      cond_product:'🔍', chart_bar:'📊', chart_line:'📈',
-      chart_pie:'🥧', text_banner:'📝', info_card:'ℹ',
-      popup:'💬', file:'📎', file_list:'📁',
-      coupon:'🎟', html_editor:'</>', event_banner:'🎉',
-      cache_banner:'💰', widget_embed:'🧩',
-    };
 
     /* fnWIcon — 유틸 */
     const fnWIcon = (t) => WIDGET_ICONS[t] || '◻';
@@ -199,7 +206,7 @@ window.XsSample13 = {
     /* 전체 소스 복사 */
     const cfSourceText = computed(() => {
       const parts = [];
-      uiState.cfPanelsByArea.forEach(({ area, panels }) => {
+      cfPanelsByArea.value.forEach(({ area, panels }) => {
         parts.push(`<!-- ===== ${area.codeValue} ${area.codeLabel} (${panels.length}개) ===== -->`);
         panels.forEach(p => { parts.push(panelSource(p)); });
         parts.push('');
@@ -257,14 +264,15 @@ window.XsSample13 = {
     };
 
     return {
-      uiState, previewDate, previewTime,
-      handleBtnAction, handleSelectAction,
+      uiState, codes, searchParam,                                     // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                              // dispatch
+      // ===== 영역 / 카테고리 ==================================================
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
-      toggleArea, selectAllAreas, clearAllAreas, resetDate,
-      codes,
+      selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
+      // ===== 사용자 ==========================================================
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
-      cfPanelsByArea, panelSource, panelSourceHtml, copiedPanel, copySource, copyPanel,
+      // ===== 패널 / 소스 ======================================================
+      cfPanelsByArea, panelSource, panelSourceHtml,
       fnWLabel, fnWIcon,
     };
   },
@@ -279,8 +287,8 @@ window.XsSample13 = {
       </span>
     </div>
     <button @click="handleBtnAction('source-copy-all')" style="margin-left:auto;font-size:12px;padding:4px 14px;border:1px solid #ddd;border-radius:6px;cursor:pointer;"
-      :style="copied?'background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;font-weight:600;':'background:#fff;color:#555;'">
-      {{ copied ? '✓ 전체 복사됨' : '📋 전체 소스 복사' }}
+      :style="uiState.copied?'background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;font-weight:600;':'background:#fff;color:#555;'">
+      {{ uiState.copied ? '✓ 전체 복사됨' : '📋 전체 소스 복사' }}
     </button>
   </div>
   <!-- ===== □. 제목 ====================================================== -->
@@ -291,8 +299,8 @@ window.XsSample13 = {
         <span style="font-size:12px;font-weight:600;color:#555;">
           📅 전시일시
         </span>
-        <input type="date" v-model="previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <input type="time" v-model="previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
+        <input type="date" v-model="uiState.previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
+        <input type="time" v-model="uiState.previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <button @click="handleBtnAction('filter-reset-date')" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
           현재
         </button>
@@ -778,8 +786,8 @@ window.XsSample13 = {
         <div style="width:260px;flex-shrink:0;background:#161b22;position:relative;display:flex;flex-direction:column;">
           <button @click="handleBtnAction('source-copy-panel', panel)"
           style="position:absolute;top:6px;right:8px;font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid;cursor:pointer;z-index:1;"
-          :style="copiedPanel===panel.dispId?'background:rgba(46,125,50,.35);color:#81c784;border-color:rgba(129,199,132,.4);':'background:rgba(255,255,255,.06);color:#888;border-color:rgba(255,255,255,.12);'">
-            {{ copiedPanel===panel.dispId ? '✓ 복사됨' : '📋' }}
+          :style="uiState.copiedPanel===panel.dispId?'background:rgba(46,125,50,.35);color:#81c784;border-color:rgba(129,199,132,.4);':'background:rgba(255,255,255,.06);color:#888;border-color:rgba(255,255,255,.12);'">
+            {{ uiState.copiedPanel===panel.dispId ? '✓ 복사됨' : '📋' }}
           </button>
           <pre style="margin:0;padding:12px 12px 12px 14px;font-family:'Consolas','Menlo',monospace;font-size:11px;line-height:1.75;overflow-x:auto;white-space:pre;flex:1;"
           v-html="panelSourceHtml(panel)"></pre>

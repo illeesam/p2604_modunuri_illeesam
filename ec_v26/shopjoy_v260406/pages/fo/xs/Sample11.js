@@ -14,6 +14,37 @@ window.XsSample11 = {
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
 
+    const today = new Date().toISOString().slice(0, 10);
+    const selectedAreas = reactive(new Set());
+    /* 카테고리 선택 */
+    const selectedCatIds = reactive(new Set());
+
+    /* 현재 사용자 인증 상태 */
+    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
+    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
+    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
+    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
+
+    /* searchParam (template 참조용) */
+    const searchParam = reactive({ status: '', condition: '', authrequired: '', authgrade: '' });
+
+    const WIDGET_LABELS = {
+      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
+      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
+      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
+      popup:'팝업',              file:'파일',                    file_list:'파일목록',
+      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
+      cache_banner:'캐시',       widget_embed:'위젯',
+    };
+    const WIDGET_ICONS = {
+      image_banner:'🖼', product_slider:'🛒', product:'📦',
+      cond_product:'🔍', chart_bar:'📊',      chart_line:'📈',
+      chart_pie:'🥧',   text_banner:'📝',     info_card:'ℹ',
+      popup:'💬',        file:'📎',            file_list:'📁',
+      coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
+      cache_banner:'💰', widget_embed:'🧩',
+    };
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ XsSample11.js : handleBtnAction -> ', cmd, param);
@@ -77,10 +108,6 @@ window.XsSample11 = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-    const today = new Date().toISOString().slice(0, 10);
-    const selectedAreas = reactive(new Set());
-    /* 카테고리 선택 */
-    const selectedCatIds = reactive(new Set());
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -92,12 +119,7 @@ window.XsSample11 = {
 
     /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
-    /* 현재 사용자 인증 상태 */
-    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
-    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
-    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
-    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
-    /* 검색 필터 (기본값: 현재 사용자 상태 반영) */
+
     /* 현재 사용자가 접근 가능한 조건 목록 */
     const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
@@ -107,22 +129,6 @@ window.XsSample11 = {
       if (userGrade === 'VIP') { c.push('로그인+VIP'); }
       return c;
     });
-    const WIDGET_LABELS = {
-      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
-      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
-      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
-      popup:'팝업',              file:'파일',                    file_list:'파일목록',
-      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
-      cache_banner:'캐시',       widget_embed:'위젯',
-    };
-    const WIDGET_ICONS = {
-      image_banner:'🖼', product_slider:'🛒', product:'📦',
-      cond_product:'🔍', chart_bar:'📊',      chart_line:'📈',
-      chart_pie:'🥧',   text_banner:'📝',     info_card:'ℹ',
-      popup:'💬',        file:'📎',            file_list:'📁',
-      coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
-      cache_banner:'💰', widget_embed:'🧩',
-    };
 
     /* fnWLabel — 유틸 */
     const fnWLabel = (t) => WIDGET_LABELS[t] || t || '-';
@@ -170,12 +176,12 @@ window.XsSample11 = {
 
     /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
-      if (searchStatus.value       && p.status !== searchStatus.value) { return false; }
+      if (searchParam.status       && p.status !== searchParam.status) { return false; }
       if (!isInRange(p)) { return false; }
-      if (searchCondition.value    && (p.condition || '항상 표시') !== searchCondition.value) { return false; }
-      if (searchAuthRequired.value === 'Y' && !p.authRequired) { return false; }
-      if (searchAuthRequired.value === 'N' &&  p.authRequired) { return false; }
-      if (searchAuthGrade.value    && p.authGrade !== searchAuthGrade.value) { return false; }
+      if (searchParam.condition    && (p.condition || '항상 표시') !== searchParam.condition) { return false; }
+      if (searchParam.authrequired === 'Y' && !p.authRequired) { return false; }
+      if (searchParam.authrequired === 'N' &&  p.authRequired) { return false; }
+      if (searchParam.authgrade    && p.authGrade !== searchParam.authgrade) { return false; }
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
@@ -197,14 +203,13 @@ window.XsSample11 = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState, codes,
-      handleBtnAction, handleSelectAction,
+      uiState, codes, searchParam,                                     // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                              // dispatch
+      // ===== 영역 / 카테고리 ==================================================
       selectedAreas, cfAllAreas, cfAreaList, cfAreaBtnLabel,
-      toggleArea, selectAllAreas, clearAllAreas, resetDate,
-      searchStatus, searchCondition, searchAuthRequired, searchAuthGrade,
-      AUTH_GRADE_OPTS,
+      selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
+      // ===== 사용자 / 패널 ====================================================
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
       panelsForArea, cfTotalPanels,
       fnWLabel, fnWIcon,
     };
@@ -369,20 +374,20 @@ window.XsSample11 = {
         <span style="font-size:11px;background:#fff8e1;color:#f57c00;border-radius:8px;padding:2px 8px;">
           📅 {{ uiState.previewDate }} {{ uiState.previewTime }}
         </span>
-        <span v-if="searchStatus" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;">
-          상태: {{ searchStatus }}
+        <span v-if="searchParam.status" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;">
+          상태: {{ searchParam.status }}
         </span>
-        <span v-if="searchCondition" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">
-          {{ searchCondition }}
+        <span v-if="searchParam.condition" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">
+          {{ searchParam.condition }}
         </span>
-        <span v-if="searchAuthRequired==='Y'" style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 8px;">
+        <span v-if="searchParam.authrequired==='Y'" style="font-size:11px;background:#fff3e0;color:#e65100;border-radius:8px;padding:2px 8px;">
           인증 필요
         </span>
-        <span v-if="searchAuthRequired==='N'" style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:8px;padding:2px 8px;">
+        <span v-if="searchParam.authrequired==='N'" style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:8px;padding:2px 8px;">
           인증 불필요
         </span>
-        <span v-if="searchAuthGrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">
-          등급: {{ searchAuthGrade }}↑
+        <span v-if="searchParam.authgrade" style="font-size:11px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:2px 8px;">
+          등급: {{ searchParam.authgrade }}↑
         </span>
         <template v-for="nm in cfSelectedCatNames" :key="nm">
           <span style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:8px;padding:2px 8px;">

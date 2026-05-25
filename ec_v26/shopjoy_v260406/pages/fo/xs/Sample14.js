@@ -6,13 +6,71 @@ window.XsSample14 = {
     // ===== 초기 변수 정의 =====================================================
 
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5) });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), activeTab: 'grid1', dragSrc: null, dragSrcList: null, dropZoneIdx: -1, spanPopupIdx: -1, popoverKey: null, popoverWidget: null, popoverArea: null, popoverPanel: null, viewportMode: 'desktop', previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false });
     const codes = reactive({
       active_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}],
       need_yn_opts:       [{value:'Y',label:'필요'},{value:'N',label:'불필요'}],
       condition_opts:     ['항상 표시', '로그인 필요', '로그인+VIP', '로그인+우수', '비로그인 전용'],
       auth_grade_opts:    ['일반', '우수', 'VIP'],
     });
+
+    const today = new Date().toISOString().slice(0, 10);
+    const selectedAreas  = reactive(new Set());
+    const expandedAreas  = reactive(new Set());
+    const checkedPanels  = reactive(new Set());
+    const checkedWidgets = reactive(new Set()); // key: dispId_wi
+    const selectedCatIds = reactive(new Set());
+
+    /* 현재 사용자 인증 상태 */
+    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
+    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
+    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
+    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
+
+    /* searchParam (template 참조용) */
+    const searchParam = reactive({ status: '', condition: '', authrequired: '', authgrade: '' });
+
+    const WIDGET_LABELS = {
+      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
+      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
+      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
+      popup:'팝업',              file:'파일',                    file_list:'파일목록',
+      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
+      cache_banner:'캐시',       widget_embed:'위젯',
+    };
+    const WIDGET_ICONS = {
+      image_banner:'🖼', product_slider:'🛒', product:'📦',
+      cond_product:'🔍', chart_bar:'📊',      chart_line:'📈',
+      chart_pie:'🥧',   text_banner:'📝',     info_card:'ℹ',
+      popup:'💬',        file:'📎',            file_list:'📁',
+      coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
+      cache_banner:'💰', widget_embed:'🧩',
+    };
+
+    /* 드래그&드롭 — 탭별 미리보기 */
+    const TABS      = ['grid1', 'grid2', 'grid3', 'grid4', 'dashboard'];
+    const GRID_COLS = { grid1: 1, grid2: 2, grid3: 3, grid4: 4 };
+
+    /* mkCells — 생성 셀 */
+    const mkCells = (n) => Array.from({ length: n * 2 }, () => ({ widget: null }));
+    const gridCells = reactive({ grid1: mkCells(1), grid2: mkCells(2), grid3: mkCells(3), grid4: mkCells(4) });
+    // dashboard — 자유 배치
+    const dashItems  = reactive([]);
+    const DASH_SNAP  = 20;
+    const dashDrag   = reactive({ on: false, idx: -1, sx: 0, sy: 0, ox: 0, oy: 0 });
+    const dashResize = reactive({ on: false, idx: -1, sx: 0, sy: 0, ow: 0, oh: 0 });
+    // 위젯 색상
+    const WIDGET_COLORS = {
+      image_banner:'#667eea', product_slider:'#e8587a', product:'#e8587a',
+      cond_product:'#1565c0', chart_bar:'#667eea',      chart_line:'#667eea',
+      chart_pie:'#667eea',   text_banner:'#546e7a',     info_card:'#1565c0',
+      popup:'#546e7a',       file:'#607d8b',            file_list:'#607d8b',
+      coupon:'#e8587a',      html_editor:'#263238',     event_banner:'#f5576c',
+      cache_banner:'#ef6c00',widget_embed:'#718096',
+    };
+
+    /* 위젯 정보 팝오버 */
+    const popoverPos    = reactive({ top: 0, left: 0 });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -119,12 +177,6 @@ window.XsSample14 = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-    const today = new Date().toISOString().slice(0, 10);
-    const selectedAreas = reactive(new Set());
-    const expandedAreas = reactive(new Set());
-    const checkedPanels  = reactive(new Set());
-    const checkedWidgets = reactive(new Set()); // key: dispId_wi
-    const selectedCatIds = reactive(new Set());
     const cfAllCats = computed(() => (window._foCats||[] || []).filter(c => c.status === '활성'));
     const cfSelectedCatNames = computed(() => [...selectedCatIds].map(id => { const c = cfAllCats.value.find(c => c.categoryId === id); return c ? c.categoryNm : ''; }).filter(Boolean));
     const cfCatBtnLabel = computed(() => {
@@ -136,11 +188,7 @@ window.XsSample14 = {
 
     /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
-    /* 현재 사용자 인증 상태 */
-    const auth       = window.useFoAuthStore ? window.useFoAuthStore() : null;
-    const isLoggedIn = auth ? auth.sgIsLoggedIn : false;
-    const userGrade  = (auth && auth.svAuthUser) ? (auth.svAuthUser.grade  || '일반') : '';
-    const userNm     = (auth && auth.svAuthUser) ? (auth.svAuthUser.authNm || auth.svAuthUser.memberNm || auth.svAuthUser.email || '') : '';
+
     /* 검색 필터 */
     const cfAccessibleConds = computed(() => {
       const c = ['항상 표시'];
@@ -150,22 +198,6 @@ window.XsSample14 = {
       if (userGrade === 'VIP') { c.push('로그인+VIP'); }
       return c;
     });
-    const WIDGET_LABELS = {
-      image_banner:'이미지 배너', product_slider:'상품 슬라이더', product:'상품',
-      cond_product:'조건상품',   chart_bar:'차트(Bar)',          chart_line:'차트(Line)',
-      chart_pie:'차트(Pie)',     text_banner:'텍스트 배너',      info_card:'정보카드',
-      popup:'팝업',              file:'파일',                    file_list:'파일목록',
-      coupon:'쿠폰',             html_editor:'HTML 에디터',      event_banner:'이벤트',
-      cache_banner:'캐시',       widget_embed:'위젯',
-    };
-    const WIDGET_ICONS = {
-      image_banner:'🖼', product_slider:'🛒', product:'📦',
-      cond_product:'🔍', chart_bar:'📊',      chart_line:'📈',
-      chart_pie:'🥧',   text_banner:'📝',     info_card:'ℹ',
-      popup:'💬',        file:'📎',            file_list:'📁',
-      coupon:'🎟',       html_editor:'📄',     event_banner:'🎉',
-      cache_banner:'💰', widget_embed:'🧩',
-    };
 
     /* wLabel — w 라벨 */
     const wLabel = (t) => WIDGET_LABELS[t] || t || '-';
@@ -192,12 +224,12 @@ window.XsSample14 = {
 
     /* panelFilter — 패널 필터 */
     const panelFilter = (p) => {
-      if (uiState.searchStatus       && p.status !== uiState.searchStatus) { return false; }
+      if (searchParam.status       && p.status !== searchParam.status) { return false; }
       if (!isInRange(p)) { return false; }
-      if (uiState.searchCondition    && (p.condition || '항상 표시') !== uiState.searchCondition) { return false; }
-      if (uiState.searchAuthRequired === 'Y' && !p.authRequired) { return false; }
-      if (uiState.searchAuthRequired === 'N' &&  p.authRequired) { return false; }
-      if (uiState.searchAuthGrade    && p.authGrade !== uiState.searchAuthGrade) { return false; }
+      if (searchParam.condition    && (p.condition || '항상 표시') !== searchParam.condition) { return false; }
+      if (searchParam.authrequired === 'Y' && !p.authRequired) { return false; }
+      if (searchParam.authrequired === 'N' &&  p.authRequired) { return false; }
+      if (searchParam.authgrade    && p.authGrade !== searchParam.authgrade) { return false; }
       if (selectedCatIds.size > 0) {
         const names = cfSelectedCatNames.value;
         const hit = names.some(nm => p.name.includes(nm)) ||
@@ -306,27 +338,6 @@ window.XsSample14 = {
       uiState.previewDate = today;
       uiState.previewTime = new Date().toTimeString().slice(0, 5);
     };
-    /* 드래그&드롭 — 탭별 미리보기 */
-    const TABS      = ['grid1', 'grid2', 'grid3', 'grid4', 'dashboard'];
-        const GRID_COLS = { grid1: 1, grid2: 2, grid3: 3, grid4: 4 };
-    // grid1~4 — N열 셀 배열 (초기 2행)
-    /* mkCells — 생성 셀 */
-    const mkCells = (n) => Array.from({ length: n * 2 }, () => ({ widget: null }));
-    const gridCells = reactive({ grid1: mkCells(1), grid2: mkCells(2), grid3: mkCells(3), grid4: mkCells(4) });
-    // dashboard — 자유 배치
-    const dashItems  = reactive([]);
-    const DASH_SNAP  = 20;
-    const dashDrag   = reactive({ on: false, idx: -1, sx: 0, sy: 0, ox: 0, oy: 0 });
-    const dashResize = reactive({ on: false, idx: -1, sx: 0, sy: 0, ow: 0, oh: 0 });
-    // 위젯 색상
-    const WIDGET_COLORS = {
-      image_banner:'#667eea', product_slider:'#e8587a', product:'#e8587a',
-      cond_product:'#1565c0', chart_bar:'#667eea',      chart_line:'#667eea',
-      chart_pie:'#667eea',   text_banner:'#546e7a',     info_card:'#1565c0',
-      popup:'#546e7a',       file:'#607d8b',            file_list:'#607d8b',
-      coupon:'#e8587a',      html_editor:'#263238',     event_banner:'#f5576c',
-      cache_banner:'#ef6c00',widget_embed:'#718096',
-    };
 
     /* wColor — w 색상 */
     const wColor = (t) => WIDGET_COLORS[t] || '#888';
@@ -335,9 +346,6 @@ window.XsSample14 = {
       if (uiState.activeTab === 'dashboard') { return dashItems; }
       return (gridCells[uiState.activeTab] || []).filter(c => c.widget);
     });
-    const dragSrc      = ref(null);
-    const dragSrcList  = ref(null);
-    const dropZoneIdx  = ref(-1);
 
     /* onWidgetDragStart — 이벤트 */
     const onWidgetDragStart = (w, p, area, evt) => {
@@ -516,12 +524,6 @@ window.XsSample14 = {
         dashItems.splice(0, dashItems.length);
       }
     };
-    /* 위젯 정보 팝오버 */
-    const popoverKey    = ref(null);
-        const popoverArea   = ref(null);
-    const popoverPanel  = ref(null);
-    const popoverPos    = reactive({ top: 0, left: 0 });
-
     /* showWidgetInfo — 표시 */
     const showWidgetInfo = (w, p, area, key, evt) => {
       evt.stopPropagation();
@@ -558,33 +560,29 @@ window.XsSample14 = {
     initExpand();
 
     return {
-      uiState, previewDate, previewTime,
-      handleBtnAction, handleSelectAction,
+      uiState, codes, searchParam,                                     // 상태 / 데이터
+      handleBtnAction, handleSelectAction,                              // dispatch
+      // ===== 영역 / 카테고리 ==================================================
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
-      toggleArea, selectAllAreas, clearAllAreas, resetDate,
-      codes,
+      selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
+      // ===== 사용자 ==========================================================
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      selectedCatIds, cfCatBtnLabel, onCatApply, cfSelectedCatNames,
-      cfStructAreaList, expandedAreas, toggleAreaExpand, initExpand,
+      // ===== 트리 / 위젯 ======================================================
+      cfStructAreaList, expandedAreas,
       checkedPanels, checkedWidgets,
-      togglePanel, toggleWidget,
-      checkAll, clearAll,
-      isAreaAllChecked, checkAreaAll,
-      isPanelAllChecked,
+      isAreaAllChecked, isPanelAllChecked,
       cfCheckedWidgetList,
-      TABS, activeTab, GRID_COLS, gridCells, wColor,
-      cfPreviewWidgets, dragSrc, dropZoneIdx,
+      // ===== 미리보기 / 드래그 ================================================
+      TABS, GRID_COLS, gridCells, wColor,
+      cfPreviewWidgets,
       onWidgetDragStart, onAreaNodeDragStart, onPanelNodeDragStart, onDragEnd,
-      spanPopupIdx, toggleSpanPopup, closeSpanPopup, setSpan,
-      onCellDrop, removeCellWidget,
+      onCellDrop,
       dashItems, dashDrag, dashResize,
-      onDashDrop, onDashItemMd, onDashResizeMd, onDashMm, onDashMu, removeDashItem,
-      clearPreview,
+      onDashDrop, onDashItemMd, onDashResizeMd, onDashMm, onDashMu,
+      // ===== 위젯정보 / 뷰포트 ================================================
+      popoverPos, showWidgetInfo,
+      cfAutoGridColumns, cfViewportWidth,
       wLabel, wIcon,
-      popoverKey, popoverWidget, popoverArea, popoverPanel, popoverPos,
-      showWidgetInfo, closePopover,
-      viewportMode, cfAutoGridColumns, cfViewportWidth,
-      showRealContent,
     };
   },
   template: /* html */`
@@ -604,8 +602,8 @@ window.XsSample14 = {
         <span style="font-size:12px;font-weight:600;color:#555;">
           📅 전시일시
         </span>
-        <input type="date" v-model="previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <input type="time" v-model="previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
+        <input type="date" v-model="uiState.previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
+        <input type="time" v-model="uiState.previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <button @click="handleBtnAction('filter-reset-date')" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
           현재
         </button>
