@@ -202,7 +202,7 @@ window.SySiteDtl = {
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2"
+      :readonly="cfDtlMode" :cols="3"
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')"

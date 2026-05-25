@@ -107,7 +107,7 @@ window.MbMemberDtl = {
     <div style="padding:12px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="detailModal.form" :errors="{}"
-        :readonly="false" :cols="2" :show-actions="false" />
+        :readonly="false" :cols="3" :show-actions="false" />
     </div>
     <!-- ===== □.■. 폼 영역 ================================================== -->
   </div>

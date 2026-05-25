@@ -291,7 +291,7 @@ window.SyContactDtl = {
       </div>
       <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
       <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="2" :show-actions="false">
+          :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">

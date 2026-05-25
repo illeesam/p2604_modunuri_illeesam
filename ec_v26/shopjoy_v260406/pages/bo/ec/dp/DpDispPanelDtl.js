@@ -1873,7 +1873,7 @@ window.DpDispPanelDtl = {
                         <!-- ===== ■.■.■.■.■.■. 위젯 유형/노출 순서 (BoFormArea 자동 렌더, r 로컬 변수에 바인딩) ===== -->
                         <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
                         <bo-form-area :columns="widgetRowFormColumns" :form="r" :errors="{}"
-              :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+              :readonly="cfDtlMode" :cols="3" :show-actions="false" />
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                           <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">
                             타이틀 표시

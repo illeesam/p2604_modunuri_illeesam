@@ -784,7 +784,7 @@ window.DpDispWidgetDtl = {
             <!-- ===== ■.■.■.■. 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) =========== -->
             <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
             <bo-form-area :columns="baseWidgetFormColumns" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+          :readonly="cfDtlMode" :cols="3" :show-actions="false" />
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
               🌍 전시환경
             </div>
@@ -883,7 +883,7 @@ window.DpDispWidgetDtl = {
             </div>
             <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
             <bo-form-area :columns="clickActionFormColumns" :form="form" :errors="errors"
-            :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+            :readonly="cfDtlMode" :cols="3" :show-actions="false" />
           </div>
           <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->
           <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">

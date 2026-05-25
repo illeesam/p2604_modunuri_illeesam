@@ -471,7 +471,7 @@ window.PmCouponDtl = {
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
-        :readonly="false" :cols="2" :show-actions="false">
+        :readonly="false" :cols="3" :show-actions="false">
         <!-- ===== ■.■.■.■. 메모: Quill 에디터 ===================================== -->
         <template #memo>
           <base-html-editor v-model="form.memo" height="200px" />
@@ -761,7 +761,7 @@ window.PmCouponDtl = {
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="detailIssueFormColumns" :form="form" :errors="errors"
-          :cols="2" :show-actions="false" />
+          :cols="3" :show-actions="false" />
         <!-- ===== ■.■.■.■. 적용 회원 등급 (체크박스 그룹, KEEP) ========================== -->
         <div class="form-group" style="margin-top:12px;">
           <label class="form-label">
@@ -785,7 +785,7 @@ window.PmCouponDtl = {
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="detailUseFormColumns" :form="form" :errors="errors"
-          :cols="2" :show-actions="false" />
+          :cols="3" :show-actions="false" />
       </div>
     </div>
     <!-- ===== □.□. 상세정보 ================================================== -->

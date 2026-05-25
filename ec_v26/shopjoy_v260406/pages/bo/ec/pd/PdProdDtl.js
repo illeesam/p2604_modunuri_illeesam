@@ -1453,11 +1453,11 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 상품명 / 상품코드 (BoFormArea 자동 렌더) ======================= -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="prodNameFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
       <!-- ===== ■.■.■. 카테고리 / 브랜드 (BoFormArea 자동 렌더) ======================= -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="categoryBrandFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #categories>
           <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
             <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">
@@ -1508,7 +1508,7 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 업체 / 상품유형 (BoFormArea 자동 렌더) ======================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="vendorTypeFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #vendor>
           <select class="form-control" v-model="form.vendorId">
             <option value="">
@@ -1523,7 +1523,7 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 담당MD / 배송템플릿 (BoFormArea 자동 렌더) ===================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="mdDlivFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #mdUser>
           <div style="display:flex;gap:6px;align-items:center;">
             <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
@@ -1595,11 +1595,11 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 상태 / 미판매메시지 (BoFormArea 자동 렌더) ====================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="prodStatusFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
       <!-- ===== ■.■.■. 판매기간 (BoFormArea 자동 렌더, BoDateTimePicker slot) ====== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="salePeriodFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #saleStart>
           <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
         </template>
@@ -1610,7 +1610,7 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 무게 / 사이즈 (BoFormArea 자동 렌더) ========================= -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="prodSizeFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
       <!-- ===== ■.■.■. 체크박스 그룹 ============================================= -->
       <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
@@ -2091,7 +2091,7 @@ window.PdProdDtl = {
   <!-- ===== ■.■.■. 광고 노출 기간 (BoFormArea 자동 렌더) ========================= -->
   <!-- ===== ■.■.■. 폼 영역 ================================================ -->
   <bo-form-area :columns="advrtPeriodFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" :show-actions="false">
     <template #advrtStart>
       <bo-date-time-picker v-model="form.advrtStartDate" />
     </template>
@@ -2108,7 +2108,7 @@ window.PdProdDtl = {
   </div>
   <!-- ===== ■.■.■. 폼 영역 ================================================ -->
   <bo-form-area :columns="buyLimitFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
   <!-- ===== ■.■.■. 혜택 적용 여부 ============================================ -->
   <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
     혜택 적용 여부
@@ -2399,7 +2399,7 @@ window.PdProdDtl = {
   </div>
   <!-- ===== ■.■.■. 폼 영역 ================================================ -->
   <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="2" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" :show-actions="false">
     <!-- ===== ■.■.■.■. 마진율 (purchasePrice 입력 시 자동 계산) ==================== -->
     <template #marginRate>
       <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
@@ -2738,7 +2738,7 @@ window.PdProdDtl = {
     <!-- ===== ■.■.■.■. 재고수량 (BoFormArea 자동 렌더) =========================== -->
     <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
     <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="2" :show-actions="false" />
+          :readonly="cfDtlMode" :cols="3" :show-actions="false" />
     <template v-if="tabData.skus.length">
       <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
         잔존 SKU 데이터

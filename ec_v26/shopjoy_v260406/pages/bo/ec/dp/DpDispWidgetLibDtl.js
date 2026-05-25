@@ -788,7 +788,7 @@ window.DpDispWidgetLibDtl = {
         </div>
         <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
         <bo-form-area :columns="clickActionFormColumns" :form="form" :errors="errors"
-            :readonly="false" :cols="2" :show-actions="false" />
+            :readonly="false" :cols="3" :show-actions="false" />
       </div>
       <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->
       <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">

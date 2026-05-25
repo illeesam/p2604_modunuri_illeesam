@@ -329,18 +329,18 @@ window.SyVendorMng = {
           </td>
         </template>
       </bo-grid>
-      <!-- ===== ■.■.■. 상세 패널 (인라인 임베드) ==================================== -->
-      <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-        <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-            ✕ 닫기
-          </button>
-        </div>
-        <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-          :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-          :reload-trigger="detailPanel.reloadTrigger"
-          :on-list-reload="handleSearchList" />
+    </div>
+    <!-- ===== ■.■. 상세 패널 (전체 폭, grid 직접 자식) ============================ -->
+    <div v-if="detailPanel.selectedId" style="grid-column:1/-1;margin-top:4px;">
+      <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+          ✕ 닫기
+        </button>
       </div>
+      <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+        :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        :reload-trigger="detailPanel.reloadTrigger"
+        :on-list-reload="handleSearchList" />
     </div>
   </div>
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->

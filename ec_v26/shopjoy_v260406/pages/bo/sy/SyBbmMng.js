@@ -335,22 +335,23 @@ window.SyBbmMng = {
           </td>
         </template>
       </bo-grid>
-      <!-- ===== ■.■.■. 상세 인라인 패널 ======================================== -->
-      <div v-if="detailModal.show" style="margin-top:4px;">
-        <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-            ✕ 닫기
-          </button>
-        </div>
-        <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
-          :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-          :reload-trigger="detailModal.reloadTrigger"
-          :on-list-reload="handleSearchList" />
-      </div>
     </div>
-    <!-- ===== □.□. 우: 목록 + 상세 ============================================ -->
+    <!-- ===== □.□. 우: 목록 ================================================= -->
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 상세 인라인 패널 (전체 폭) ====================================== -->
+  <div v-if="detailModal.show" style="margin-top:4px;">
+    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        ✕ 닫기
+      </button>
+    </div>
+    <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
+      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="detailModal.reloadTrigger"
+      :on-list-reload="handleSearchList" />
+  </div>
+  <!-- ===== □. 상세 인라인 패널 ============================================= -->
 </div>
 `,
 };

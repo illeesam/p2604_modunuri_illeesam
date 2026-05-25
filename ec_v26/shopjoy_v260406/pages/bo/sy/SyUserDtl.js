@@ -263,7 +263,7 @@ window.SyUserDtl = {
   <div class="card">
     <!-- ===== ■.■. 기본정보 폼 ============================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      :readonly="cfDtlMode" :cols="3" :show-actions="false">
       <!-- ===== ■.■.■. 부서: picker ========================================== -->
       <template #dept>
         <div v-if="cfDtlMode" class="readonly-field">
@@ -291,7 +291,7 @@ window.SyUserDtl = {
     <!-- ===== □.□. 기본정보 폼 ============================================== -->
     <!-- ===== ■.■. 주소 영역 (BoFormArea 자동 렌더) ============================== -->
     <bo-form-area :columns="addrFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      :readonly="cfDtlMode" :cols="3" :show-actions="false">
       <template #addr>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
@@ -310,7 +310,7 @@ window.SyUserDtl = {
     <!-- ===== □.□. 주소 영역 ================================================= -->
     <!-- ===== ■.■. 프로필 이미지 (BoFormArea 자동 렌더) ============================ -->
     <bo-form-area :columns="profileFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="2" :show-actions="false">
+      :readonly="cfDtlMode" :cols="3" :show-actions="false">
       <template #profile>
         <base-attach-one
           v-model="form.profileAttachId"

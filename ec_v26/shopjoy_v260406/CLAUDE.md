@@ -591,6 +591,25 @@ Vue `app.component('EcOrderMng', window.EcOrderMng)` → 템플릿에서 `<ec-or
 
 목록 행의 "수정" 클릭 → Mng 하단에 Dtl 인라인 임베드. `loadDetail(id)` / `closeDetail()` / `inlineNavigate`로 분리 제어. 탭/뷰모드는 `window._ec{X}DtlState`로 행 전환에도 유지.
 
+**Dtl 인라인 패널 폭** ⭐ (2026-05-25):
+- Mng가 좌측 트리 + 우측 목록의 grid 레이아웃을 사용하는 경우, **Dtl 인라인 패널은 전체 폭(좌측 트리 영역까지)을 사용**한다.
+- 두 가지 동등한 방법:
+  - A) Dtl 패널을 grid 컨테이너 **밖**에 배치 (SyBbmMng/SyUserMng/SyCodeMng 패턴)
+  - B) Dtl 패널을 grid 직접 자식으로 두되 `style="grid-column:1/-1;"` 적용 (SyAlarmMng/SySiteMng/SyTemplateMng 패턴)
+- ❌ 금지: Dtl 패널을 우측 영역(grid의 두 번째 자식 div) 안에 두면 좌측 트리 폭만큼 잘림
+
+**트리 노드 선택 시 Dtl 패널 자동 닫기** ⭐ (2026-05-25):
+- 좌측 트리 노드 선택 시(`pathTree-select` / `deptTree-select` 등) 우측 그리드 필터 변경됨 → 기존 선택된 Dtl 행이 더 이상 목록에 없을 수 있으므로 패널 자동 닫기 필수
+- 패턴: dispatch 내 또는 `selectNode(id)` 헬퍼 안에 `detailPanel.selectedId = null;` 한 줄 추가
+- 적용 화면: SyUserMng, SyTemplateMng, SyVendorMng, DpDispAreaMng, DpDispUiMng, DpDispWidgetLibMng, DpDispWidgetMng
+
+**Dtl 기본 폼 컬럼 수 cols=3** ⭐ (2026-05-25):
+- BoFormArea의 `cols` 기본값은 3 (한 줄에 필드 3개)
+- 모든 Dtl의 메인 폼은 `:cols="3"` 기준
+- 좁은 영역(2열 그리드 카드, 모달 등)에서만 `:cols="2"` 또는 `:cols="1"` 명시
+- 넓은 영역(상세 폼 전체 폭, 펼침 정보 영역)은 `:cols="4"` 또는 `:cols="5"`/`:cols="6"` 사용 + `label-left` 모드
+- 이전에 `:cols="2"`로 명시되어 있던 24개 Dtl 파일을 2026-05-25 일괄 `:cols="3"`으로 변경 → 게시판 수정 화면처럼 한 줄에 3필드 표시
+
 ### Dtl 탭 뷰모드 (최근 도입)
 
 Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt Dtl + Prod/Member/Order/Claim/Dliv Hist에 5개 뷰모드 버튼 노출:

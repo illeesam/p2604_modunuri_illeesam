@@ -423,7 +423,7 @@ window.CmChattDtl = {
       <div v-show="uiState.tab==='new'">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="newFormColumns" :form="form" :errors="errors"
-          :readonly="false" :cols="2" :show-actions="false">
+          :readonly="false" :cols="3" :show-actions="false">
           <!-- ===== ■.■.■.■.■. 회원ID + 보기 ======================================= -->
           <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">
