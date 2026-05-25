@@ -1010,6 +1010,18 @@ window.BoPathPickField = {
   setup(props, { emit }) {
     const show = Vue.ref(false);
     const cfLabel = Vue.computed(() => {
+      const id = props.row ? props.row[props.pathField] : null;
+      return (window.boUtil && window.boUtil.bofGetPathLabel(id)) || '';
+    });
+    const cfHasVal = Vue.computed(() =>
+      props.row != null && props.row[props.pathField] != null);
+    const onOpen  = () => { if (!props.disabled) show.value = true; };
+    const onClose = () => { show.value = false; };
+    const onPicked = (pathId) => {
+      if (props.row) props.row[props.pathField] = pathId;
+      show.value = false;
+      emit('change', pathId);
+    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -1038,18 +1050,6 @@ window.BoPathPickField = {
       }
     };
 
-      const id = props.row ? props.row[props.pathField] : null;
-      return (window.boUtil && window.boUtil.bofGetPathLabel(id)) || '';
-    });
-    const cfHasVal = Vue.computed(() =>
-      props.row != null && props.row[props.pathField] != null);
-    const onOpen  = () => { if (!props.disabled) show.value = true; };
-    const onClose = () => { show.value = false; };
-    const onPicked = (pathId) => {
-      if (props.row) props.row[props.pathField] = pathId;
-      show.value = false;
-      emit('change', pathId);
-    };
     return {
       show, cfLabel, cfHasVal,                // 상태 / computed
       handleBtnAction, handleSelectAction,    // dispatch

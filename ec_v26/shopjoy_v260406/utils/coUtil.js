@@ -424,6 +424,7 @@
   /* ─────────────────────────────────────────────────────────────────────
    * CSV/엑셀 다운로드 (FO/BO 공통)
    * columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
+   * filename: 영역명.csv → 자동으로 영역명_YYYYMMDD_hhmmss.csv 로 변환
    * ───────────────────────────────────────────────────────────────────── */
   function cofExportCsv(rows, columns, filename) {
     const header = columns.map(c => `"${c.label}"`).join(',');
@@ -437,8 +438,30 @@
     const blob = new Blob([bom + header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = filename || 'export.csv'; a.click();
+    a.href = url; a.download = cofBuildExportFilename(filename || 'export.csv'); a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /* cofBuildExportFilename — 다운로드 파일명 표준화 (영역명_YYYYMMDD_hhmmss.확장자)
+   * 입력 예: '주문목록.csv' → '주문목록_20260525_143012.csv'
+   * 이미 _YYYYMMDD_hhmmss 형식이 포함되어 있으면 중복 추가하지 않음. */
+  function cofBuildExportFilename(filename) {
+    if (!filename) return 'export.csv';
+    /* 확장자 분리 (마지막 .기준, 확장자 없으면 .csv 기본) */
+    const lastDot = filename.lastIndexOf('.');
+    const base = lastDot > 0 ? filename.slice(0, lastDot) : filename;
+    const ext  = lastDot > 0 ? filename.slice(lastDot)    : '.csv';
+    /* 이미 _YYYYMMDD_hhmmss 포함된 경우 중복 추가 방지 */
+    if (/_\d{8}_\d{6}$/.test(base)) return filename;
+    const d  = new Date();
+    const p2 = (n) => String(n).padStart(2, '0');
+    const ts = d.getFullYear()
+             + p2(d.getMonth() + 1)
+             + p2(d.getDate()) + '_'
+             + p2(d.getHours())
+             + p2(d.getMinutes())
+             + p2(d.getSeconds());
+    return `${base}_${ts}${ext}`;
   }
 
   /* ─────────────────────────────────────────────────────────────────────
@@ -560,6 +583,7 @@
   global.coUtil.cofCodeNm = global.coUtil.cofCodeNm || cofCodeNm;
   // CSV/트리 헬퍼
   global.coUtil.cofExportCsv = global.coUtil.cofExportCsv || cofExportCsv;
+  global.coUtil.cofBuildExportFilename = global.coUtil.cofBuildExportFilename || cofBuildExportFilename;
   global.coUtil.cofBuildGenericTree = global.coUtil.cofBuildGenericTree || cofBuildGenericTree;
   global.coUtil.cofCollectDescendantIds = global.coUtil.cofCollectDescendantIds || cofCollectDescendantIds;
   global.coUtil.cofCollectExpandedToDepth = global.coUtil.cofCollectExpandedToDepth || cofCollectExpandedToDepth;

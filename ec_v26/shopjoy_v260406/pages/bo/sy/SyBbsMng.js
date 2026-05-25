@@ -253,7 +253,7 @@ window.SyBbsMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 게시판 게시물 fnStatusBadge */
-    const _BBS_POST_STATUS_FB = { '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' };
+    const _BBS_POST_STATUS_FB = { PUBLISH: 'badge-green', DRAFT: 'badge-gray', DELETED: 'badge-red', PRIVATE: 'badge-orange' };
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('BBS_POST_STATUS', s, _BBS_POST_STATUS_FB[s] || 'badge-gray');
 

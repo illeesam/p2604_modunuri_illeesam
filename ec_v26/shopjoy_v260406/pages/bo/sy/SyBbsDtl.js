@@ -21,7 +21,7 @@ window.SyBbsDtl = {
     const codes = reactive({ bbs_post_statuses: [] });
 
     const form = reactive({                        // 게시글 폼 데이터
-      bbsId: null, bbmId: null, bbsTitle: '', authorNm: '', bbsStatusCd: '게시',
+      bbsId: null, bbmId: null, bbsTitle: '', authorNm: '', bbsStatusCd: 'PUBLISH',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
     const errors = reactive({});                   // 폼 검증 에러
@@ -97,7 +97,7 @@ window.SyBbsDtl = {
       // 게시판 변경 시 레이아웃 초기화
       form.bbsTitle    = '';
       form.authorNm    = '';
-      form.bbsStatusCd = '게시';
+      form.bbsStatusCd = 'PUBLISH';
       form.attachGrpId = null;
       form.contentHtml = '';
     };

@@ -114,7 +114,7 @@ window.DashboardBoEc01 = {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'dashboard_'+filters.startDt+'_'+filters.endDt+'.csv';
+        a.download = coUtil.cofBuildExportFilename('대시보드.csv');
         a.click();
         URL.revokeObjectURL(url);
       };

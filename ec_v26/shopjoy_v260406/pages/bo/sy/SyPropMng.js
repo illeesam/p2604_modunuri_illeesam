@@ -204,7 +204,7 @@ window.SyPropMng = {
       const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'sy_prop.csv'; a.click();
+      a.href = url; a.download = coUtil.cofBuildExportFilename('프로퍼티.csv'); a.click();
       URL.revokeObjectURL(url);
     };
 
