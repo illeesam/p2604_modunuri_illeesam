@@ -229,8 +229,31 @@ window.SiteSelectModal = {
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'siteId',     label: '사이트번호' },
+          { value: 'siteCode',   label: '사이트코드' },
+          { value: 'siteNm',     label: '사이트명' },
+          { value: 'siteDomain', label: '도메인' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 */
+    const listGridColumns = [
+      { key: 'siteNm',   label: '사이트명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
+      { key: 'siteCode', label: '사이트코드', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'siteId',   label: '사이트번호', align: 'right', cellStyle: 'font-family:monospace;font-weight:700;color:#e8587a;', fmt: (v) => String(v).padStart(2, '0') },
+    ];
+
     return {
       cfSiteNm, searchParam, list, loading, pager,                          // 데이터
+      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
+      onSetPage,                                                             // BoPager 콜백
       handleBtnAction, handleSelectAction,                                  // dispatch
     };
   },
@@ -251,61 +274,19 @@ window.SiteSelectModal = {
       ✕
     </span>
   </div>
-  <bo-multi-check-select
-    v-model="searchParam.searchType"
-    :options="[
-    { value: 'siteId',     label: '사이트번호' },
-    { value: 'siteCode',   label: '사이트코드' },
-    { value: 'siteNm',     label: '사이트명' },
-    { value: 'siteDomain', label: '도메인' },
-    ]"
-    placeholder="검색대상 전체"
-    all-label="전체 선택"
-    min-width="100%" />
-  <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
-  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
-    총 {{ pager.pageTotalCount }}건
-  </div>
-  <div class="sel-modal-list">
-    <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      로딩 중...
-    </div>
-    <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      검색 결과가 없습니다.
-    </div>
-    <div v-for="s in list" :key="s.siteId" class="sel-modal-item">
-      <div class="sel-modal-item-name">
-        {{ s.siteNm }}
-      </div>
-      <span class="sel-modal-item-id">
-        {{ s.siteCode }}
-      </span>
-      <span style="font-family:monospace;font-size:12px;color:#e8587a;font-weight:700;min-width:26px;text-align:right;">
-        {{ String(s.siteId).padStart(2,'0') }}
-      </span>
-      <button class="sel-modal-item-btn" @click="handleSelectAction('list-select', s)">
+  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+    @search="handleBtnAction('pager-set', 1)" />
+  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="siteId"
+    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => handleSelectAction('list-select', row)"
+    @set-page="onSetPage">
+    <template #row-actions="{ row }">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
-    </div>
-  </div>
-  <!-- 페이징 -->
-  <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', 1)">
-      «
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', pager.pageNo-1)">
-      ‹
-    </button>
-    <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="handleBtnAction('pager-set', n)">
-      {{ n }}
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageNo+1)">
-      ›
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageTotalPage)">
-      »
-    </button>
-  </div>
+    </template>
+  </bo-grid>
 </bo-modal>
 `,
 };
@@ -377,8 +358,28 @@ window.VendorSelectModal = {
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'corpNo',   label: '사업자번호' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 */
+    const listGridColumns = [
+      { key: 'vendorNm', label: '업체명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
+      { key: 'vendorId', label: 'ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
+    ];
+
     return {
       cfSiteNm, searchParam, list, loading, pager,                          // 데이터
+      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
+      onSetPage,                                                             // BoGrid pager 콜백
       handleBtnAction, handleSelectAction,                                  // dispatch
     };
   },
@@ -395,56 +396,19 @@ window.VendorSelectModal = {
       ✕
     </span>
   </div>
-  <bo-multi-check-select
-    v-model="searchParam.searchType"
-    :options="[
-    { value: 'vendorNm', label: '업체명' },
-    { value: 'corpNo',   label: '사업자번호' },
-    ]"
-    placeholder="검색대상 전체"
-    all-label="전체 선택"
-    min-width="100%" />
-  <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
-  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
-    총 {{ pager.pageTotalCount }}건
-  </div>
-  <div class="sel-modal-list">
-    <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      로딩 중...
-    </div>
-    <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      검색 결과가 없습니다.
-    </div>
-    <div v-for="v in list" :key="v.vendorId" class="sel-modal-item">
-      <div class="sel-modal-item-name">
-        {{ v.vendorNm }}
-      </div>
-      <span class="sel-modal-item-id">
-        {{ v.vendorId }}
-      </span>
-      <button class="sel-modal-item-btn" @click="handleSelectAction('list-select', v)">
+  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+    @search="handleBtnAction('pager-set', 1)" />
+  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="vendorId"
+    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => handleSelectAction('list-select', row)"
+    @set-page="onSetPage">
+    <template #row-actions="{ row }">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
-    </div>
-  </div>
-  <!-- 페이징 -->
-  <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', 1)">
-      «
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', pager.pageNo-1)">
-      ‹
-    </button>
-    <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="handleBtnAction('pager-set', n)">
-      {{ n }}
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageNo+1)">
-      ›
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageTotalPage)">
-      »
-    </button>
-  </div>
+    </template>
+  </bo-grid>
 </bo-modal>
 `,
 };
@@ -870,8 +834,30 @@ window.MemberSelectModal = {
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'memberNm',    label: '이름' },
+          { value: 'memberEmail', label: '이메일' },
+          { value: 'memberId',    label: 'ID' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 */
+    const listGridColumns = [
+      { key: 'memberNm',    label: '이름', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
+      { key: 'memberEmail', label: '이메일', cellStyle: 'color:#888;font-size:11px;', fmt: (v, row) => row.memberEmail || row.email || '-' },
+      { key: '_id',         label: 'ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v, row) => row.memberId || row.userId || '-' },
+    ];
+
     return {
       cfSiteNm, searchParam, list, loading, pager,                          // 데이터
+      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
+      onSetPage,                                                             // BoGrid pager 콜백
       handleBtnAction, handleSelectAction,                                  // dispatch
     };
   },
@@ -888,60 +874,19 @@ window.MemberSelectModal = {
       ✕
     </span>
   </div>
-  <bo-multi-check-select
-    v-model="searchParam.searchType"
-    :options="[
-    { value: 'memberNm',    label: '이름' },
-    { value: 'memberEmail', label: '이메일' },
-    { value: 'memberId',    label: 'ID' },
-    ]"
-    placeholder="검색대상 전체"
-    all-label="전체 선택"
-    min-width="100%" />
-  <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
-  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
-    총 {{ pager.pageTotalCount }}건
-  </div>
-  <div class="sel-modal-list">
-    <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      로딩 중...
-    </div>
-    <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      검색 결과가 없습니다.
-    </div>
-    <div v-for="m in list" :key="m.memberId || m.userId" class="sel-modal-item">
-      <div class="sel-modal-item-name">
-        {{ m.memberNm }}
-        <span style="font-size:11px;color:#888;">
-          {{ m.memberEmail || m.email }}
-        </span>
-      </div>
-      <span class="sel-modal-item-id">
-        {{ m.memberId || m.userId }}
-      </span>
-      <button class="sel-modal-item-btn" @click="handleSelectAction('list-select', m)">
+  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+    @search="handleBtnAction('pager-set', 1)" />
+  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="memberId"
+    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => handleSelectAction('list-select', row)"
+    @set-page="onSetPage">
+    <template #row-actions="{ row }">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
-    </div>
-  </div>
-  <!-- 페이징 -->
-  <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', 1)">
-      «
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', pager.pageNo-1)">
-      ‹
-    </button>
-    <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="handleBtnAction('pager-set', n)">
-      {{ n }}
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageNo+1)">
-      ›
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageTotalPage)">
-      »
-    </button>
-  </div>
+    </template>
+  </bo-grid>
 </bo-modal>
 `,
 };
@@ -5031,8 +4976,17 @@ window.BizPickModal = {
       }
     };
 
+    /* bizGridColumns — BoGrid 컬럼 정의 */
+    const bizGridColumns = [
+      { key: 'vendorTypeCd', label: '업체유형', badge: (row) => vtBadge(row.vendorTypeCd), fmt: (v) => vtLabel(v) },
+      { key: 'bizNo',        label: '사업자번호', cellInnerStyle: 'font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-family:monospace;', fmt: (v) => v || '-' },
+      { key: 'bizNm',        label: '상호', cellStyle: 'font-weight:600;', fmt: (v) => v || '-' },
+      { key: 'ceoNm',        label: '대표자', fmt: (v) => v || '-' },
+    ];
+
     return {
       searchParam, VENDOR_TYPES, vtLabel, vtBadge, cfFiltered,                // 데이터
+      bizGridColumns,                                                          // 컬럼 정의
       selectedPathId, expanded, cfTree,                                       // 트리
       toggleNode, selectNode,                                                 // 트리 헬퍼 (자식 컴포넌트 props 전달용)
       handleBtnAction, handleSelectAction,                                    // dispatch
@@ -5097,63 +5051,24 @@ window.BizPickModal = {
       </div>
       <!-- 우측 사업자 목록 -->
       <div style="overflow:auto;">
-        <table class="bo-table" style="background:#fff;">
-          <thead>
-            <tr>
-              <th>
-                업체유형
-              </th>
-              <th>
-                사업자번호
-              </th>
-              <th>
-                상호
-              </th>
-              <th>
-                대표자
-              </th>
-              <th>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="cfFiltered.length===0">
-              <td colspan="5" style="text-align:center;color:#999;padding:30px;">
-                검색 결과가 없습니다.
-              </td>
-            </tr>
-            <tr v-for="b in cfFiltered" :key="b.bizId" @dblclick="handleSelectAction('list-pick', b)" style="cursor:pointer;">
-              <td>
-                <span class="badge" :class="vtBadge(b.vendorTypeCd)" style="font-size:10px;">
-                  {{ vtLabel(b.vendorTypeCd) }}
-                </span>
-              </td>
-              <td>
-                <code style="font-size:11px;background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;">{{ b.bizNo }}</code>
-                </td>
-                <td style="font-weight:600;">
-                  {{ b.bizNm }}
-                </td>
-                <td>
-                  {{ b.ceoNm }}
-                </td>
-                <td style="text-align:right;">
-                  <button class="btn btn-primary btn-xs" @click="handleSelectAction('list-pick', b)">
-                    선택
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
-        <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
-          취소
-        </button>
+        <bo-grid bare :columns="bizGridColumns" :rows="cfFiltered" row-key="bizId"
+          empty-text="검색 결과가 없습니다." row-clickable :row-actions="true"
+          @row-click="row => handleSelectAction('list-pick', row)">
+          <template #row-actions="{ row }">
+            <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-pick', row)">
+              선택
+            </button>
+          </template>
+        </bo-grid>
       </div>
     </div>
-  </bo-modal>
+    <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
+      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+        취소
+      </button>
+    </div>
+  </div>
+</bo-modal>
 `,
 };
 
@@ -5225,8 +5140,17 @@ window.SimpleUserPickModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+    /* userGridColumns — BoGrid 컬럼 정의 */
+    const userGridColumns = [
+      { key: 'name',    label: '이름',     cellStyle: 'font-weight:600;', fmt: (v) => v || '-' },
+      { key: 'loginId', label: '로그인ID', mono: true, cellStyle: 'color:#2563eb;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'email',   label: '이메일',   cellStyle: 'color:#0369a1;font-size:11.5px;', fmt: (v) => v || '-' },
+      { key: 'dept',    label: '부서',     cellStyle: 'color:#666;font-size:11.5px;', fmt: (v) => v || '-' },
+    ];
+
     return {
       searchParam, cfFiltered,                                                // 데이터
+      userGridColumns,                                                        // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
@@ -5271,60 +5195,23 @@ window.SimpleUserPickModal = {
       </div>
     </div>
     <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
-      <table class="bo-table" style="background:#fff;">
-        <thead>
-          <tr>
-            <th>
-              이름
-            </th>
-            <th>
-              로그인ID
-            </th>
-            <th>
-              이메일
-            </th>
-            <th>
-              부서
-            </th>
-            <th>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="cfFiltered.length===0">
-            <td colspan="5" style="text-align:center;color:#999;padding:30px;">
-              결과가 없습니다.
-            </td>
-          </tr>
-          <tr v-for="u in cfFiltered" :key="u.boUserId" @dblclick="handleSelectAction('list-pick', u)" style="cursor:pointer;">
-            <td style="font-weight:600;">
-              {{ u.name }}
-            </td>
-            <td>
-              <code style="font-size:11px;color:#2563eb;">{{ u.loginId }}</code>
-              </td>
-              <td style="font-size:11.5px;color:#0369a1;">
-                {{ u.email }}
-              </td>
-              <td style="font-size:11.5px;color:#666;">
-                {{ u.dept }}
-              </td>
-              <td style="text-align:right;">
-                <button class="btn btn-primary btn-xs" @click="handleSelectAction('list-pick', u)">
-                  선택
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
-        <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
-          취소
-        </button>
-      </div>
+      <bo-grid bare :columns="userGridColumns" :rows="cfFiltered" row-key="boUserId"
+        empty-text="결과가 없습니다." row-clickable :row-actions="true"
+        @row-click="row => handleSelectAction('list-pick', row)">
+        <template #row-actions="{ row }">
+          <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-pick', row)">
+            선택
+          </button>
+        </template>
+      </bo-grid>
     </div>
-  </bo-modal>
+    <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
+      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+        취소
+      </button>
+    </div>
+  </div>
+</bo-modal>
 `,
 };
 
@@ -6255,8 +6142,20 @@ window.BoCodeGrpModal = {
       }
     };
 
+    /* codeGridColumns — BoGrid 컬럼 정의 */
+    const codeGridColumns = [
+      { key: 'codeId',          label: '코드ID',     style: 'width:120px;', cellInnerStyle: 'background:#f3e5f5;padding:2px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'codeValue',       label: '코드값',     style: 'width:160px;', cellInnerStyle: 'background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:monospace;color:#1565c0;', fmt: (v) => v || '-' },
+      { key: 'codeLabel',       label: '코드명',     fmt: (v) => v || '-' },
+      { key: 'codeLevel',       label: '레벨',       style: 'width:60px;', align: 'center', badge: (row) => row.codeLevel === 1 ? 'badge-blue' : row.codeLevel === 2 ? 'badge-green' : 'badge-orange', fmt: (v) => 'L' + (v || '-') },
+      { key: 'parentCodeValue', label: '부모코드값', style: 'width:140px;', html: true, fmt: (v) => v ? `<code style="background:#fafafa;padding:2px 6px;border-radius:4px;font-family:monospace;color:#888;font-size:11px;">${v}</code>` : '<span style="color:#ccc;">-</span>' },
+      { key: 'sortOrd',         label: '정렬',       style: 'width:60px;', align: 'right', cellStyle: 'color:#666;', fmt: (v) => v != null ? v : '-' },
+      { key: 'useYn',           label: '사용',       style: 'width:50px;', align: 'center', badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v || '-' },
+    ];
+
     return {
       codes, loading, error, tab, cfTree, cfHasTree, onSelect,                 // 데이터
+      codeGridColumns,                                                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                     // dispatch
     };
   },
@@ -6311,77 +6210,11 @@ window.BoCodeGrpModal = {
           등록된 코드가 없습니다.
         </div>
         <!-- ── 일반 코드목록 ── -->
-        <table v-else-if="tab==='list'" class="bo-table" style="width:100%;font-size:12px;">
-          <thead>
-            <tr>
-              <th style="width:36px;text-align:center;">
-                번호
-              </th>
-              <th style="width:120px;">
-                코드ID
-              </th>
-              <th style="width:160px;">
-                코드값
-              </th>
-              <th>
-                코드명
-              </th>
-              <th style="width:60px;text-align:center;">
-                레벨
-              </th>
-              <th style="width:140px;">
-                부모코드값
-              </th>
-              <th style="width:60px;text-align:right;">
-                정렬
-              </th>
-              <th style="width:50px;text-align:center;">
-                사용
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, idx) in codes" :key="(row && (row.codeId || row.codeValue)) || idx" @dblclick="handleSelectAction('codes-pick', row)" style="cursor:pointer;" title="더블클릭하여 선택">
-            <td style="text-align:center;color:#999;">
-              {{ idx + 1 }}
-            </td>
-            <td>
-              <code style="background:#f3e5f5;padding:2px 6px;border-radius:4px;font-family:monospace;color:#6a1b9a;font-size:11px;">
-                {{ row.codeId }}
-              </code>
-              </td>
-              <td>
-                <code style="background:#f5f5f7;padding:2px 6px;border-radius:4px;font-family:monospace;color:#1565c0;">
-                {{ row.codeValue }}
-              </code>
-                </td>
-                <td>
-                  {{ row.codeLabel }}
-                </td>
-                <td style="text-align:center;">
-                  <span class="badge" :class="row.codeLevel===1?'badge-blue':row.codeLevel===2?'badge-green':'badge-orange'" style="font-size:10px;">
-                    L{{ row.codeLevel }}
-                  </span>
-                </td>
-                <td>
-                  <code v-if="row.parentCodeValue" style="background:#fafafa;padding:2px 6px;border-radius:4px;font-family:monospace;color:#888;font-size:11px;">
-                {{ row.parentCodeValue }}
-              </code>
-                    <span v-else style="color:#ccc;">
-                      -
-                    </span>
-                  </td>
-                  <td style="text-align:right;color:#666;">
-                    {{ row.sortOrd != null ? row.sortOrd : '-' }}
-                  </td>
-                  <td style="text-align:center;">
-                    <span :class="['badge', row.useYn==='Y' ? 'badge-green' : 'badge-gray']" style="font-size:10px;">
-                      {{ row.useYn || '-' }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <bo-grid v-else-if="tab==='list'" bare
+          :columns="codeGridColumns" :rows="codes"
+          row-key="codeId" row-clickable
+          empty-text="등록된 코드가 없습니다."
+          @row-click="row => handleSelectAction('codes-pick', row)" />
             <!-- ── 트리목록 ── -->
             <div v-else-if="tab==='tree'" style="font-size:12px;">
               <div v-if="!cfTree.length" style="padding:32px;text-align:center;color:#aaa;">
@@ -6636,8 +6469,21 @@ window.AuthUserPickModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+    /* userGridColumns — BoGrid 컬럼 정의 */
+    const userGridColumns = [
+      { key: 'userNm',       label: '이름', cellStyle: 'font-weight:700;color:#1a1a2e;', fmt: (v, row) => v || row.label || '-' },
+      { key: 'loginId',      label: '로그인ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'siteNm',       label: '사이트', cellStyle: 'color:#777;', fmt: (v) => v || '-' },
+      { key: 'deptNm',       label: '부서', cellStyle: 'color:#777;', fmt: (v) => v || '-' },
+      { key: 'roleNm',       label: '권한', html: true, fmt: (v) => v ? `<span style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;">${v}</span>` : '<span style="color:#ddd;">—</span>' },
+      { key: 'userStatusCd', label: '상태', align: 'center', html: true, fmt: (v, row) => v === 'ACTIVE'
+        ? `<span style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">활성</span>`
+        : `<span style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">${row.userStatusCdNm || '비활성'}</span>` },
+      { key: 'userEmail',    label: '이메일', cellStyle: 'color:#999;font-size:11px;', fmt: (v) => v || '-' },
+    ];
+
     return {
-      fnPageVisible,                                                           // 헬퍼
+      fnPageVisible, userGridColumns,                                          // 헬퍼 / 컬럼
       handleBtnAction, handleSelectAction,                                     // dispatch
     };
   },
@@ -6689,105 +6535,17 @@ window.AuthUserPickModal = {
       </div>
       <!-- 테이블 -->
       <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead>
-            <tr style="background:linear-gradient(90deg,#fdf0f4,#fce8ef);">
-              <th style="padding:6px 8px;text-align:center;width:32px;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;white-space:nowrap;">
-                번호
-              </th>
-              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">
-                이름
-              </th>
-              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">
-                로그인ID
-              </th>
-              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">
-                사이트
-              </th>
-              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">
-                부서
-              </th>
-              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">
-                권한
-              </th>
-              <th style="padding:6px 8px;text-align:center;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">
-                상태
-              </th>
-              <th style="padding:6px 8px;text-align:left;font-weight:700;color:#c04070;border-bottom:2px solid #f5c0d0;">
-                이메일
-              </th>
-              <th style="padding:6px 8px;text-align:center;width:44px;border-bottom:2px solid #f5c0d0;">
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="modal.loading">
-              <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">
-                ⏳ 조회 중...
-              </td>
-            </tr>
-            <tr v-else-if="!rows.length">
-              <td colspan="9" style="text-align:center;color:#ccc;padding:24px;font-size:12px;">
-                🔍 검색 결과가 없습니다.
-              </td>
-            </tr>
-            <template v-else>
-              <tr v-for="(u, idx) in rows" :key="u.loginId || u.userId"
-                @click="handleSelectAction('users-pick', u)"
-                :style="loginId===(u.loginId||u.userId)
-                ? 'background:#fff0f4;cursor:pointer;'
-                : 'background:'+(idx%2===0?'#fff':'#fdfafe')+';cursor:pointer;'"
-                onmouseover="this.style.background='#fff5f8'" onmouseout="this.style.background=''">
-                <td style="padding:5px 8px;text-align:center;color:#ccc;font-size:11px;border-bottom:1px solid #f5eef2;">
-                  {{ (modal.pageNo-1)*pageSize+idx+1 }}
-                </td>
-                <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
-                  <div style="display:flex;align-items:center;gap:6px;">
-                    <div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                      {{ (u.userNm||u.label||'?').charAt(0) }}
-                    </div>
-                    <span style="font-weight:700;color:#1a1a2e;white-space:nowrap;">
-                      {{ u.userNm || u.label || '-' }}
-                    </span>
-                  </div>
-                </td>
-                <td style="padding:5px 8px;color:#888;border-bottom:1px solid #f5eef2;font-family:monospace;font-size:11px;">
-                  {{ u.loginId }}
-                </td>
-                <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">
-                  {{ u.siteNm || '-' }}
-                </td>
-                <td style="padding:5px 8px;color:#777;border-bottom:1px solid #f5eef2;white-space:nowrap;">
-                  {{ u.deptNm || '-' }}
-                </td>
-                <td style="padding:5px 8px;border-bottom:1px solid #f5eef2;">
-                  <span v-if="u.roleNm" style="display:inline-block;padding:1px 7px;border-radius:9px;background:#ede9fe;color:#7c3aed;font-size:10px;font-weight:700;white-space:nowrap;">
-                    {{ u.roleNm }}
-                  </span>
-                  <span v-else style="color:#ddd;">
-                    —
-                  </span>
-                </td>
-                <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
-                  <span v-if="u.userStatusCd==='ACTIVE'" style="display:inline-block;padding:1px 8px;border-radius:9px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;">
-                    활성
-                  </span>
-                  <span v-else style="display:inline-block;padding:1px 8px;border-radius:9px;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:700;">
-                    {{ u.userStatusCdNm || '비활성' }}
-                  </span>
-                </td>
-                <td style="padding:5px 8px;color:#999;font-size:11px;border-bottom:1px solid #f5eef2;">
-                  {{ u.userEmail || '-' }}
-                </td>
-                <td style="padding:5px 8px;text-align:center;border-bottom:1px solid #f5eef2;">
-                  <button @click.stop="handleSelectAction('users-pick', u)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
-                    선택
-                  </button>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+        <bo-grid bare :columns="userGridColumns" :rows="modal.loading ? [] : rows" row-key="loginId"
+          :empty-text="modal.loading ? '⏳ 조회 중...' : '🔍 검색 결과가 없습니다.'"
+          row-clickable :row-actions="true"
+          :row-style="row => loginId===(row.loginId||row.userId) ? 'background:#fff0f4;' : ''"
+          @row-click="row => handleSelectAction('users-pick', row)">
+          <template #row-actions="{ row }">
+            <button @click.stop="handleSelectAction('users-pick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
+              선택
+            </button>
+          </template>
+        </bo-grid>
       </div>
     </div>
     <!-- 페이지네이션 (스크롤 밖 고정) -->
@@ -6852,39 +6610,22 @@ window.AuthPwChangeModal = {
       console.log(' ■■ AuthPwChangeModal : handleSelectAction -> ', cmd, param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
+
+    /* BoFormArea 컬럼 정의 — 비밀번호 변경 폼 */
+    const basePwFormColumns = [
+      { key: 'current', label: '현재 비밀번호',    type: 'password', required: true, placeholder: '현재 비밀번호' },
+      { key: 'next',    label: '새 비밀번호',      type: 'password', required: true, placeholder: '새 비밀번호 (6자 이상)' },
+      { key: 'confirm', label: '새 비밀번호 확인', type: 'password', required: true, placeholder: '새 비밀번호 재입력' },
+    ];
+
     return {
+      basePwFormColumns,                                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
 <bo-modal :show="show" title="🔑 비밀번호 변경" width="380px" @close="handleBtnAction('modal-close')">
-  <div class="form-group">
-    <label class="form-label">
-      현재 비밀번호
-      <span class="req">
-        *
-      </span>
-    </label>
-    <input class="form-control" type="password" v-model="form.current" placeholder="현재 비밀번호" autocomplete="current-password" />
-  </div>
-  <div class="form-group">
-    <label class="form-label">
-      새 비밀번호
-      <span class="req">
-        *
-      </span>
-    </label>
-    <input class="form-control" type="password" v-model="form.next" placeholder="새 비밀번호 (6자 이상)" autocomplete="new-password" />
-  </div>
-  <div class="form-group">
-    <label class="form-label">
-      새 비밀번호 확인
-      <span class="req">
-        *
-      </span>
-    </label>
-    <input class="form-control" type="password" v-model="form.confirm" placeholder="새 비밀번호 재입력" @keyup.enter="handleBtnAction('modal-save')" autocomplete="new-password" />
-  </div>
+  <bo-form-area :columns="basePwFormColumns" :form="form" :cols="1" :show-actions="false" />
   <div v-if="error" class="login-error">
     {{ error }}
   </div>
@@ -6955,8 +6696,15 @@ window.AuthLoginModal = {
         options: () => (props.userRoles || []).map(c => ({ value: c.codeValue, label: c.codeLabel })) },
     ];
 
+    /* BoFormArea 컬럼 정의 — 로그인 폼 (ID/PWD만, 인증방식은 slot) */
+    const baseLoginFormColumns = [
+      { key: 'loginId',    label: '로그인 ID', type: 'text',     placeholder: '로그인 ID 입력' },
+      { key: 'loginPwd',   label: '비밀번호',  type: 'password', placeholder: '비밀번호 입력' },
+      { key: 'authMethod', label: '인증방식',  type: 'slot', name: 'authMethod' },
+    ];
+
     return {
-      baseRegFormColumns,                                                     // 컬럼 정의
+      baseRegFormColumns, baseLoginFormColumns,                               // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
@@ -6978,30 +6726,17 @@ window.AuthLoginModal = {
     </div>
     <!-- 로그인 폼 -->
     <div v-if="modal.tab==='login'">
-      <div class="form-group">
-        <label class="form-label">
-          로그인 ID
-        </label>
-        <input class="form-control" v-model="loginForm.loginId" placeholder="로그인 ID 입력" @keyup.enter="handleBtnAction('modal-login')" autocomplete="username" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          비밀번호
-        </label>
-        <input class="form-control" type="password" v-model="loginForm.loginPwd" placeholder="비밀번호 입력" @keyup.enter="handleBtnAction('modal-login')" autocomplete="current-password" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          인증방식
-        </label>
-        <div class="auth-methods">
-          <label v-for="m in authMethods" :key="m"
-            class="auth-method-item" :class="{active: loginForm.authMethod===m}">
-            <input type="radio" :value="m" v-model="loginForm.authMethod" style="display:none" />
-            {{ m }}
-          </label>
-        </div>
-      </div>
+      <bo-form-area :columns="baseLoginFormColumns" :form="loginForm" :cols="1" :show-actions="false">
+        <template #authMethod>
+          <div class="auth-methods">
+            <label v-for="m in authMethods" :key="m"
+              class="auth-method-item" :class="{active: loginForm.authMethod===m}">
+              <input type="radio" :value="m" v-model="loginForm.authMethod" style="display:none" />
+              {{ m }}
+            </label>
+          </div>
+        </template>
+      </bo-form-area>
       <div v-if="error" class="login-error">
         {{ error }}
       </div>
