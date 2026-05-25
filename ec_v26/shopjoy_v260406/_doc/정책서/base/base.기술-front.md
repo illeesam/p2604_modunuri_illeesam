@@ -231,7 +231,7 @@ api/
 
 ## 10. window.SITE_CONFIG
 
-`base/config.js` 에서 정의. frontApi 로 `api/base/site-config.json` 을 불러와 병합.
+`base/config.js` 에서 정의. `foApi.get('api/base/site-config.json')` 으로 불러와 병합.
 
 주요 항목:
 

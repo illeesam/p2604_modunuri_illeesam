@@ -225,7 +225,7 @@ const doSave = async () => {
     props.showToast('입력 내용을 확인해주세요.', 'error');
     return;
   }
-  // ... adminApiCall
+  // ... boApi.post / boApi.put 호출 (§6 참조)
 };
 ```
 
