@@ -108,23 +108,6 @@
       background:rgba(255,255,255,0.6); color:#9f2946 !important; font-size:13px !important; cursor:pointer; transition:all .15s;
     }
     .modal-close:hover { background:#e8587a !important; color:#fff !important; transform:rotate(90deg); }
-    .sel-modal-list { border:1px solid #eef0f3; border-radius:10px; overflow:hidden; background:#fafbfc; }
-    .sel-modal-item {
-      display:flex; align-items:center; gap:10px; padding:12px 14px !important;
-      border-bottom:1px solid #f0f2f5 !important; background:#fff; transition:background .15s;
-    }
-    .sel-modal-item:last-child { border-bottom:none !important; }
-    .sel-modal-item:hover { background:#fff5f8 !important; }
-    .sel-modal-item-name { flex:1; font-size:13px; font-weight:600; color:#1a1a2e; }
-    .sel-modal-item-id {
-      font-size:11px; color:#6b7280; background:#eef2f7; padding:3px 9px; border-radius:12px; font-weight:600; font-family:monospace;
-    }
-    .sel-modal-item-btn {
-      border:none; padding:5px 14px !important; border-radius:8px !important; cursor:pointer; font-size:12px; font-weight:700 !important;
-      background: linear-gradient(135deg,#e8587a,#d64669) !important; color:#fff !important;
-      box-shadow: 0 2px 6px rgba(232,88,122,0.35); transition:all .15s;
-    }
-    .sel-modal-item-btn:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(232,88,122,0.5); }
     .tree-modal-header {
       display:flex; align-items:center; justify-content:space-between;
       padding:14px 18px !important;
@@ -225,7 +208,6 @@ window.SiteSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
@@ -354,7 +336,6 @@ window.VendorSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
@@ -830,7 +811,6 @@ window.MemberSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
@@ -954,7 +934,6 @@ window.OrderSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
@@ -1078,7 +1057,6 @@ window.BbmSelectModal = {
     const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
     onMounted(() => { handleSearchListWrap(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
-    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; handleSearchListWrap(); });
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
@@ -1708,7 +1686,7 @@ window.RoleTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '', hoverId: null });
+    const uiState = reactive({ searchValue: '' });
     const allRoles = reactive([]);
 
     /* 목록조회 */
@@ -1773,10 +1751,6 @@ window.RoleTreeModal = {
       // 상위없음 선택
       } else if (cmd === 'rolesTree-select-none') {
         return onSelectNone();
-      // hover
-      } else if (cmd === 'rolesTree-hover') {
-        uiState.hoverId = param;
-        return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -1866,7 +1840,7 @@ window.MenuTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '', hoverId: null });
+    const uiState = reactive({ searchValue: '' });
     const allMenus = reactive([]);
 
     /* 목록조회 */
@@ -1937,10 +1911,6 @@ window.MenuTreeModal = {
       // 상위없음 선택
       } else if (cmd === 'menuTree-select-none') {
         return onSelectNone();
-      // hover
-      } else if (cmd === 'menuTree-hover') {
-        uiState.hoverId = param;
-        return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -2035,7 +2005,7 @@ window.DeptTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '', hoverId: null });
+    const uiState = reactive({ searchValue: '' });
     const allDepts = reactive([]);
 
     /* 목록조회 */
@@ -2106,10 +2076,6 @@ window.DeptTreeModal = {
       // 상위없음 선택
       } else if (cmd === 'deptTree-select-none') {
         return selectNone();
-      // hover
-      } else if (cmd === 'deptTree-hover') {
-        uiState.hoverId = param;
-        return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -2214,7 +2180,7 @@ window.CategoryTreeModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '', hoverId: null });
+    const uiState = reactive({ searchValue: '' });
     const allCategories = reactive([]);
 
     /* 목록조회 */
@@ -2280,10 +2246,6 @@ window.CategoryTreeModal = {
       // 상위없음 선택
       } else if (cmd === 'categoryTree-select-none') {
         return selectNone();
-      // hover
-      } else if (cmd === 'categoryTree-hover') {
-        uiState.hoverId = param;
-        return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
