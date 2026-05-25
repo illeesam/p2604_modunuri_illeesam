@@ -1850,7 +1850,9 @@ window.BoFormArea = {
 ·
 </label>
 <!-- readonly 표시 -->
-<div v-if="col.type === 'readonly'" class="readonly-field">
+<div v-if="col.type === 'readonly' && col.html" class="readonly-field" v-html="dispVal(col)">
+</div>
+<div v-else-if="col.type === 'readonly'" class="readonly-field">
   {{ dispVal(col) }}
 </div>
 <!-- text / password -->

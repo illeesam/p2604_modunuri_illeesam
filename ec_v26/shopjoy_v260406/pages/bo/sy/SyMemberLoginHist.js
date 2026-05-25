@@ -301,7 +301,7 @@ window.SyMemberLoginHist = {
       { key: '_browser',    label: '브라우저',    type: 'readonly', fmt: (v, row) => row.browser || '-' },
       { key: '_country',    label: '국가',       type: 'readonly', fmt: (v, row) => row.country || '-' },
       { key: '_failCnt',    label: '연속실패',    type: 'readonly', fmt: (v, row) => row.failCnt > 0 ? (row.failCnt + '회') : '-' },
-      { key: '_result',     label: '결과',       type: 'slot', name: 'result' },
+      { key: '_result',     label: '결과',       type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnResultBadge(row.resultCd)}">${fnResultLabel(row.resultCd)}</span>` },
       { key: '_uiNm',       label: 'x-ui-nm',    type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
       { key: '_cmdNm',      label: 'x-cmd-nm',   type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
       { key: '_fileNm',     label: 'x-file-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
@@ -317,8 +317,8 @@ window.SyMemberLoginHist = {
 
     /* tokenExpandColumns — 토큰 이력 행 펼침 BoFormArea 컬럼 (cols=6) */
     const tokenExpandColumns = [
-      { key: '_action',      label: '액션',     type: 'slot', name: 'action' },
-      { key: '_tokenType',   label: '토큰유형', type: 'slot', name: 'tokenType' },
+      { key: '_action',      label: '액션',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnActionBadge(row.actionCd)}">${fnActionLabel(row.actionCd)}</span>` },
+      { key: '_tokenType',   label: '토큰유형', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnTypeBadge(row.tokenTypeCd)}">${row.tokenTypeCd || '-'}</span>` },
       { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => String(row.accessTokenExp || '').slice(0, 19) || '-' },
       { key: '_rtExp',       label: 'RT만료',   type: 'readonly', fmt: (v, row) => String(row.tokenExp || '').slice(0, 19) || '-' },
       { key: '_ip',          label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
@@ -421,15 +421,7 @@ window.SyMemberLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="logExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false">
-          <template #result>
-            <div class="readonly-field">
-              <span class="badge" :class="fnResultBadge(row.resultCd)">
-                {{ fnResultLabel(row.resultCd) }}
-              </span>
-            </div>
-          </template>
-        </bo-form-area>
+        <bo-form-area :columns="logExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -457,22 +449,7 @@ window.SyMemberLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="tokenExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false">
-          <template #action>
-            <div class="readonly-field">
-              <span class="badge" :class="fnActionBadge(row.actionCd)">
-                {{ fnActionLabel(row.actionCd) }}
-              </span>
-            </div>
-          </template>
-          <template #tokenType>
-            <div class="readonly-field">
-              <span class="badge" :class="fnTypeBadge(row.tokenTypeCd)">
-                {{ row.tokenTypeCd }}
-              </span>
-            </div>
-          </template>
-        </bo-form-area>
+        <bo-form-area :columns="tokenExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
         <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
           ℹ SHA-256 해시. 원문 복원 불가
         </div>

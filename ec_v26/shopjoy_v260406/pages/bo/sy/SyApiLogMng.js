@@ -339,10 +339,60 @@ window.SyApiLogMng = {
       return 'cursor:pointer;' + (exp ? ('background:' + bg + ';') : '');
     };
 
+    /* accessExpandColumns — API요청로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    const accessExpandColumns = [
+      { key: '_path',     label: '경로',     type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
+      { key: '_method',   label: '메서드',   type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
+      { key: '_status',   label: '상태코드', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnStatusBadge(row.respStatus)}">${row.respStatus || '-'}</span>` },
+      { key: '_respTime', label: '처리시간', type: 'readonly', fmt: (v, row) => row.respTimeMs != null ? row.respTimeMs + 'ms' : '-' },
+      { key: '_ip',       label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.reqIp || '-' },
+      { key: '_host',     label: 'Host',     type: 'readonly', mono: true, fmt: (v, row) => row.reqHost || '-' },
+      { key: '_ua',       label: 'UA',       type: 'readonly', colSpan: 3, fmt: (v, row) => row.reqUa || '-' },
+      { key: '_uiNm',     label: 'x-ui-nm',  type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
+      { key: '_cmdNm',    label: 'x-cmd-nm', type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
+      { key: '_fileNm',   label: 'x-file-nm',type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
+      { key: '_funcNm',   label: 'x-func-nm',type: 'readonly', mono: true, fmt: (v, row) => row.funcNm || '-' },
+      { key: '_lineNo',   label: 'x-line-no',type: 'readonly', mono: true, fmt: (v, row) => row.lineNo || '-' },
+      { key: '_traceId',  label: 'x-trace-id',type: 'readonly', mono: true, colSpan: 3, fmt: (v, row) => row.traceId || '-' },
+      { key: '_userId',   label: '사용자ID', type: 'readonly', fmt: (v, row) => row.userId || '-' },
+      { key: '_appType',  label: '앱유형',   type: 'readonly', fmt: (v, row) => row.appTypeCd || '-' },
+      { key: '_roleId',   label: '역할ID',   type: 'readonly', fmt: (v, row) => row.roleId || '-' },
+      { key: '_deptId',   label: '부서ID',   type: 'readonly', fmt: (v, row) => row.deptId || '-' },
+      { key: '_vendorId', label: '업체ID',   type: 'readonly', fmt: (v, row) => row.vendorId || '-' },
+      { key: '_server',   label: '서버',     type: 'readonly', mono: true, fmt: (v, row) => row.serverNm || '-' },
+      { key: '_profile',  label: '프로파일', type: 'readonly', html: true, fmt: (v, row) => row.profile ? `<span class="badge badge-blue" style="font-size:10px;">${row.profile}</span>` : '-' },
+      { key: '_thread',   label: '스레드',   type: 'readonly', mono: true, colSpan: 3, fmt: (v, row) => row.threadNm || '-' },
+      { key: '_regDate',  label: '등록일시', type: 'readonly', fmt: (v, row) => String(row.regDate || '').slice(0, 19) || '-' },
+    ];
+
+    /* errorExpandColumns — API오류로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    const errorExpandColumns = [
+      { key: '_path',     label: '경로',       type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
+      { key: '_method',   label: '메서드',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
+      { key: '_respTime', label: '처리시간',   type: 'readonly', fmt: (v, row) => row.respTimeMs != null ? row.respTimeMs + 'ms' : '-' },
+      { key: '_ip',       label: 'IP',         type: 'readonly', mono: true, fmt: (v, row) => row.reqIp || '-' },
+      { key: '_userId',   label: '사용자ID',   type: 'readonly', fmt: (v, row) => row.userId || '-' },
+      { key: '_appType',  label: '앱유형',     type: 'readonly', fmt: (v, row) => row.appTypeCd || '-' },
+      { key: '_errorType',label: '오류유형',   type: 'readonly', colSpan: 3, fmt: (v, row) => row.errorType || '-' },
+      { key: '_errorMsg', label: '오류메시지', type: 'readonly', colSpan: 4, fmt: (v, row) => row.errorMsg || '-' },
+      { key: '_server',   label: '서버',       type: 'readonly', mono: true, fmt: (v, row) => row.serverNm || '-' },
+      { key: '_profile',  label: '프로파일',   type: 'readonly', html: true, fmt: (v, row) => row.profile ? `<span class="badge badge-blue" style="font-size:10px;">${row.profile}</span>` : '-' },
+      { key: '_uiNm',     label: 'x-ui-nm',    type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
+      { key: '_cmdNm',    label: 'x-cmd-nm',   type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
+      { key: '_fileNm',   label: 'x-file-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
+      { key: '_funcNm',   label: 'x-func-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.funcNm || '-' },
+      { key: '_lineNo',   label: 'x-line-no',  type: 'readonly', mono: true, fmt: (v, row) => row.lineNo || '-' },
+      { key: '_traceId',  label: 'x-trace-id', type: 'readonly', mono: true, fmt: (v, row) => row.traceId || '-' },
+      { key: '_logger',   label: '로거',       type: 'readonly', colSpan: 2, fmt: (v, row) => row.loggerNm || '-' },
+      { key: '_thread',   label: '스레드',     type: 'readonly', mono: true, colSpan: 2, fmt: (v, row) => row.threadNm || '-' },
+      { key: '_regDate',  label: '등록일시',   type: 'readonly', fmt: (v, row) => String(row.regDate || '').slice(0, 19) || '-' },
+    ];
+
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, pager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
       baseSearchColumns, moreSearchColumns, accessGridColumns, errorGridColumns,            // 컬럼 정의
+      accessExpandColumns, errorExpandColumns,                                              // 행 펼침 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCurrentList,                                                                        // computed
       fnMethodBadge, fnStatusBadge, fnDecode, fnRowExpanded, fnRowClickStyle, showRefModal, // 헬퍼
@@ -425,217 +475,7 @@ window.SyApiLogMng = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
-          <div>
-            <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px;">
-              📡 요청 정보
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  경로
-                </td>
-                <td style="font-family:monospace;word-break:break-all;">
-                  {{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  메서드
-                </td>
-                <td>
-                  <span class="badge" :class="fnMethodBadge(row.reqMethod)">
-                    {{ row.reqMethod }}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  상태코드
-                </td>
-                <td>
-                  <span class="badge" :class="fnStatusBadge(row.respStatus)">
-                    {{ row.respStatus }}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  처리시간
-                </td>
-                <td :style="row.respTimeMs>1000?'color:#e74c3c;font-weight:700':''">
-                  {{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  IP
-                </td>
-                <td style="font-family:monospace;">
-                  {{ row.reqIp || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  Host
-                </td>
-                <td style="font-family:monospace;">
-                  {{ row.reqHost || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  UA
-                </td>
-                <td style="font-size:11px;color:#666;word-break:break-all;">
-                  {{ row.reqUa || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  등록일시
-                </td>
-                <td>
-                  {{ String(row.regDate||'').slice(0,19) }}
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">
-              🏷 X-헤더 (호출 추적)
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-ui-nm
-                </td>
-                <td style="color:#e8587a;font-weight:600;">
-                  {{ fnDecode(row.uiNm) || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-cmd-nm
-                </td>
-                <td>
-                  {{ fnDecode(row.cmdNm) || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-file-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px;">
-                  {{ row.fileNm || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-func-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px;">
-                  {{ row.funcNm || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-line-no
-                </td>
-                <td style="font-family:monospace;">
-                  {{ row.lineNo || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  x-trace-id
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
-                  {{ row.traceId || '-' }}
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px;">
-              🔐 인증 · 서버
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  사용자ID
-                </td>
-                <td>
-                  {{ row.userId || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  앱유형
-                </td>
-                <td>
-                  {{ row.appTypeCd || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  역할ID
-                </td>
-                <td>
-                  {{ row.roleId || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  부서ID
-                </td>
-                <td>
-                  {{ row.deptId || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  업체ID
-                </td>
-                <td>
-                  {{ row.vendorId || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  서버
-                </td>
-                <td style="font-family:monospace;font-size:11px;">
-                  {{ row.serverNm || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  프로파일
-                </td>
-                <td>
-                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">
-                    {{ row.profile }}
-                  </span>
-                  <span v-else>
-                    -
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  스레드
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
-                  {{ row.threadNm || '-' }}
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
+        <bo-form-area :columns="accessExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -663,193 +503,16 @@ window.SyApiLogMng = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px;">
-          <div>
-            <div style="font-weight:700;color:#e74c3c;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">
-              🚨 오류 정보
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  경로
-                </td>
-                <td style="font-family:monospace;word-break:break-all;">
-                  {{ row.reqPath }}{{ row.reqQuery ? '?'+row.reqQuery : '' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  메서드
-                </td>
-                <td>
-                  <span class="badge" :class="fnMethodBadge(row.reqMethod)">
-                    {{ row.reqMethod }}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  처리시간
-                </td>
-                <td>
-                  {{ row.respTimeMs != null ? row.respTimeMs+'ms' : '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  IP
-                </td>
-                <td style="font-family:monospace;">
-                  {{ row.reqIp || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  사용자ID
-                </td>
-                <td>
-                  {{ row.userId || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  앱유형
-                </td>
-                <td>
-                  {{ row.appTypeCd || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  오류유형
-                </td>
-                <td style="color:#e74c3c;font-weight:600;word-break:break-all;">
-                  {{ row.errorType || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  오류메시지
-                </td>
-                <td style="color:#c0392b;word-break:break-all;">
-                  {{ row.errorMsg || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  서버
-                </td>
-                <td style="font-family:monospace;font-size:11px;">
-                  {{ row.serverNm || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  프로파일
-                </td>
-                <td>
-                  <span v-if="row.profile" class="badge badge-blue" style="font-size:10px;">
-                    {{ row.profile }}
-                  </span>
-                  <span v-else>
-                    -
-                  </span>
-                </td>
-              </tr>
-              <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  등록일시
-                </td>
-                <td>
-                  {{ String(row.regDate||'').slice(0,19) }}
-                </td>
-              </tr>
-            </table>
+        <bo-form-area :columns="errorExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
+        <div style="margin-top:12px;">
+          <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
+            📋 스택트레이스
           </div>
-          <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px;">
-              🏷 X-헤더 (호출 추적)
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-ui-nm
-                </td>
-                <td style="color:#e8587a;font-weight:600;">
-                  {{ fnDecode(row.uiNm) || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-cmd-nm
-                </td>
-                <td>
-                  {{ fnDecode(row.cmdNm) || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-file-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px;">
-                  {{ row.fileNm || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-func-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px;">
-                  {{ row.funcNm || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  x-line-no
-                </td>
-                <td style="font-family:monospace;">
-                  {{ row.lineNo || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  x-trace-id
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
-                  {{ row.traceId || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;">
-                  로거
-                </td>
-                <td style="font-size:11px;word-break:break-all;">
-                  {{ row.loggerNm || '-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top;">
-                  스레드
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;">
-                  {{ row.threadNm || '-' }}
-                </td>
-              </tr>
-            </table>
+          <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
+            {{ row.stackTrace }}
           </div>
-          <div>
-            <div style="font-weight:700;color:#c0392b;margin-bottom:8px;border-bottom:1px solid #fcc;padding-bottom:4px;">
-              📋 스택트레이스
-            </div>
-            <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
-              {{ row.stackTrace }}
-            </div>
-            <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">
-              스택트레이스 없음
-            </div>
+          <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">
+            스택트레이스 없음
           </div>
         </div>
       </td>

@@ -294,10 +294,51 @@ window.SyUserLoginHist = {
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
 
+    /* logExpandColumns — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    const logExpandColumns = [
+      { key: '_loginDate',  label: '로그인일시', type: 'readonly', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) || '-' },
+      { key: '_ip',         label: 'IP',         type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
+      { key: '_os',         label: 'OS',         type: 'readonly', fmt: (v, row) => row.os || '-' },
+      { key: '_browser',    label: '브라우저',    type: 'readonly', fmt: (v, row) => row.browser || '-' },
+      { key: '_failCnt',    label: '연속실패',    type: 'readonly', fmt: (v, row) => row.failCnt > 0 ? (row.failCnt + '회') : '-' },
+      { key: '_result',     label: '결과',       type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnResultBadge(row.resultCd)}">${fnResultLabel(row.resultCd)}</span>` },
+      { key: '_uiNm',       label: 'x-ui-nm',    type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
+      { key: '_cmdNm',      label: 'x-cmd-nm',   type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
+      { key: '_fileNm',     label: 'x-file-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
+      { key: '_funcNm',     label: 'x-func-nm',  type: 'readonly', mono: true, fmt: (v, row) => row.funcNm || '-' },
+      { key: '_lineNo',     label: 'x-line-no',  type: 'readonly', mono: true, fmt: (v, row) => row.lineNo || '-' },
+      { key: '_traceId',    label: 'x-trace-id', type: 'readonly', mono: true, fmt: (v, row) => row.traceId || '-' },
+      { key: '_userId',     label: '사용자ID',   type: 'readonly', fmt: (v, row) => row.userId || '-' },
+      { key: '_loginId',    label: '로그인ID',   type: 'readonly', fmt: (v, row) => row.loginId || '-' },
+      { key: '_site',       label: '사이트',     type: 'readonly', fmt: (v, row) => row.siteNm || row.siteId || '-' },
+      { key: '_atExp',      label: 'AT만료',     type: 'readonly', fmt: (v, row) => row.accessTokenExp || '-' },
+      { key: '_accessToken',label: 'AccessToken',type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => row.accessToken || '미발급' },
+    ];
+
+    /* tokenExpandColumns — 토큰 이력 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    const tokenExpandColumns = [
+      { key: '_action',      label: '액션',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnActionBadge(row.actionCd)}">${fnActionLabel(row.actionCd)}</span>` },
+      { key: '_tokenType',   label: '토큰유형', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnTypeBadge(row.tokenTypeCd)}">${row.tokenTypeCd || '-'}</span>` },
+      { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => String(row.accessTokenExp || '').slice(0, 19) || '-' },
+      { key: '_rtExp',       label: 'RT만료',   type: 'readonly', fmt: (v, row) => String(row.tokenExp || '').slice(0, 19) || '-' },
+      { key: '_ip',          label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
+      { key: '_userId',      label: '사용자ID', type: 'readonly', fmt: (v, row) => row.userId || '-' },
+      { key: '_revokeReason',label: '폐기사유', type: 'readonly', visible: (row) => !!row.revokeReason, fmt: (v, row) => row.revokeReason || '-' },
+      { key: '_uiNm',        label: 'x-ui-nm',  type: 'readonly', fmt: (v, row) => fnDecode(row.uiNm) || '-' },
+      { key: '_cmdNm',       label: 'x-cmd-nm', type: 'readonly', fmt: (v, row) => fnDecode(row.cmdNm) || '-' },
+      { key: '_fileNm',      label: 'x-file-nm',type: 'readonly', mono: true, fmt: (v, row) => row.fileNm || '-' },
+      { key: '_funcNm',      label: 'x-func-nm',type: 'readonly', mono: true, fmt: (v, row) => row.funcNm || '-' },
+      { key: '_lineNo',      label: 'x-line-no',type: 'readonly', mono: true, fmt: (v, row) => row.lineNo || '-' },
+      { key: '_traceId',     label: 'x-trace-id',type: 'readonly', mono: true, colSpan: 2, fmt: (v, row) => row.traceId || '-' },
+      { key: '_curToken',    label: '현재 토큰', type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => row.accessToken || '-' },
+      { key: '_prevToken',   label: '이전 토큰', type: 'readonly', mono: true, colSpan: 4, visible: (row) => !!row.prevToken, fmt: (v, row) => row.prevToken || '-' },
+    ];
+
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       searchParam, codes, pager, tabCounts, cfCurrentList, allExpanded,                                // 상태 / 데이터
       baseSearchColumns, moreSearchColumns, logGridColumns, tokenGridColumns,                          // 컬럼 정의
+      logExpandColumns, tokenExpandColumns,                                                             // 행 펼침 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,                // template 표현식에서 사용
       fnRowExpanded, fnRowClickStyle,                                                                   // 행 표시
@@ -380,170 +421,7 @@ window.SyUserLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
-          <div>
-            <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">
-              📡 접속 정보
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  로그인일시
-                </td>
-                <td>
-                  {{ String(row.loginDate||row.regDate||'').slice(0,19) }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  IP
-                </td>
-                <td style="font-family:monospace">
-                  {{ row.ip||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  OS
-                </td>
-                <td>
-                  {{ row.os||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  브라우저
-                </td>
-                <td>
-                  {{ row.browser||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  연속실패
-                </td>
-                <td :style="row.failCnt>0?'color:#e74c3c;font-weight:700':''">
-                  {{ row.failCnt>0?row.failCnt+'회':'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  결과
-                </td>
-                <td>
-                  <span class="badge" :class="fnResultBadge(row.resultCd)">
-                    {{ fnResultLabel(row.resultCd) }}
-                  </span>
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">
-              🏷 X-헤더 (호출 추적)
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-ui-nm
-                </td>
-                <td style="color:#e8587a;font-weight:600">
-                  {{ fnDecode(row.uiNm)||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-cmd-nm
-                </td>
-                <td>
-                  {{ fnDecode(row.cmdNm)||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-file-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px">
-                  {{ row.fileNm||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-func-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px">
-                  {{ row.funcNm||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-line-no
-                </td>
-                <td style="font-family:monospace">
-                  {{ row.lineNo||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">
-                  x-trace-id
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all">
-                  {{ row.traceId||'-' }}
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px">
-              🔐 인증 · 토큰
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  사용자ID
-                </td>
-                <td>
-                  {{ row.userId||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  로그인ID
-                </td>
-                <td>
-                  {{ row.loginId||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  사이트
-                </td>
-                <td>
-                  {{ row.siteNm||row.siteId||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">
-                  AccessToken
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">
-                  {{ row.accessToken||'미발급' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  AT만료
-                </td>
-                <td style="color:#8e44ad">
-                  {{ row.accessTokenExp||'-' }}
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
+        <bo-form-area :columns="logExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -571,158 +449,9 @@ window.SyUserLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:12px">
-          <div>
-            <div style="font-weight:700;color:#e91e8c;margin-bottom:8px;border-bottom:1px solid #f0c0d0;padding-bottom:4px">
-              🔑 토큰 정보
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  액션
-                </td>
-                <td>
-                  <span class="badge" :class="fnActionBadge(row.actionCd)">
-                    {{ fnActionLabel(row.actionCd) }}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  토큰유형
-                </td>
-                <td>
-                  <span class="badge" :class="fnTypeBadge(row.tokenTypeCd)">
-                    {{ row.tokenTypeCd }}
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  AT만료
-                </td>
-                <td style="color:#8e44ad">
-                  {{ String(row.accessTokenExp||'').slice(0,19)||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  RT만료
-                </td>
-                <td :style="row.actionCd==='EXPIRE'||row.actionCd==='REVOKE'?'color:#e74c3c;font-weight:700':''">
-                  {{ String(row.tokenExp||'').slice(0,19)||'-' }}
-                </td>
-              </tr>
-              <tr v-if="row.revokeReason">
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  폐기사유
-                </td>
-                <td style="color:#e74c3c;font-weight:600">
-                  {{ row.revokeReason }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  IP
-                </td>
-                <td style="font-family:monospace">
-                  {{ row.ip||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  사용자ID
-                </td>
-                <td>
-                  {{ row.userId||'-' }}
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#8e44ad;margin-bottom:8px;border-bottom:1px solid #e0c0f0;padding-bottom:4px">
-              🏷 X-헤더 (호출 추적)
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-ui-nm
-                </td>
-                <td style="color:#e8587a;font-weight:600">
-                  {{ fnDecode(row.uiNm)||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-cmd-nm
-                </td>
-                <td>
-                  {{ fnDecode(row.cmdNm)||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-file-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px">
-                  {{ row.fileNm||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-func-nm
-                </td>
-                <td style="font-family:monospace;font-size:11px">
-                  {{ row.funcNm||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap">
-                  x-line-no
-                </td>
-                <td style="font-family:monospace">
-                  {{ row.lineNo||'-' }}
-                </td>
-              </tr>
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">
-                  x-trace-id
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all">
-                  {{ row.traceId||'-' }}
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#2980b9;margin-bottom:8px;border-bottom:1px solid #c0d8f0;padding-bottom:4px">
-              🔐 토큰 해시
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 테이블 =========================================== -->
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">
-                  현재 토큰
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;color:#555">
-                  {{ row.accessToken||'-' }}
-                </td>
-              </tr>
-              <tr v-if="row.prevToken">
-                <td style="color:#888;padding:3px 10px 3px 0;white-space:nowrap;vertical-align:top">
-                  이전 토큰
-                </td>
-                <td style="font-family:monospace;font-size:11px;word-break:break-all;color:#aaa">
-                  {{ row.prevToken }}
-                </td>
-              </tr>
-            </table>
-            <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
-              ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log
-            </div>
-          </div>
+        <bo-form-area :columns="tokenExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
+        <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
+          ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log
         </div>
       </td>
     </template>
