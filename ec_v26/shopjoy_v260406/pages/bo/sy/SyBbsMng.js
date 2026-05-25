@@ -16,13 +16,30 @@ window.SyBbsMng = {
     const bbms = reactive([]);                     // 게시판 마스터 (select 옵션용)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
-      selectedPath: null, sortKey: '', sortDir: 'asc',
+      sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ bbs_status: [], bbs_post_statuses: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'authorNm asc', desc: 'authorNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* ===== 상세 인라인 패널 ===== */
+    const detailModal = reactive({
+      show: false,
+      dtlId: null,
+      dtlMode: 'view',     // 'view' | 'edit'
+      reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
+    });
 
     // ===== [02] 액션 모음 (dispatch) ==============================================
 
@@ -51,21 +68,12 @@ window.SyBbsMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
-      // 좌측 경로 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
-        return expandAll();
-      // 좌측 경로 트리 전체 접기
-      } else if (cmd === 'pathTree-collapse-all') {
-        return collapseAll();
-      // 표시경로 선택 모달 닫기
-      } else if (cmd === 'pathModal-close') {
-        return closePathPick();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
 
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    /* handleSelectAction — 그리드 행/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbsMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
@@ -83,48 +91,11 @@ window.SyBbsMng = {
       // 그리드 행 삭제
       } else if (cmd === 'bbsList-row-delete') {
         return handleDelete(param);
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
-      } else if (cmd === 'pathTree-select') {
-        uiState.selectedPath = param;
-        pager.pageNo = 1;
-        return handleSearchBbs();
-      // 좌측 경로 트리 노드 펼치기/접기 토글
-      } else if (cmd === 'pathTree-toggle') {
-        return toggleNode(param);
-      // 표시경로 picker 열기 (행 단위)
-      } else if (cmd === 'pathModal-open') {
-        return openPathPick(param);
-      // 표시경로 선택 → 행 pathId 갱신
-      } else if (cmd === 'pathModal-pick') {
-        return onPathPicked(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
 
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* ===== 표시경로 선택 모달 (sy_path) ===== */
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* ===== 좌측 표시경로 트리 ===== */
-    const expanded = reactive(new Set(['']));
-
-    /* ===== 상세 인라인 패널 ===== */
-    const detailModal = reactive({
-      show: false,
-      dtlId: null,
-      dtlMode: 'view',     // 'view' | 'edit'
-      reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
-    });
     // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
 
     /* getSortParam — 정렬 파라미터 */
@@ -148,7 +119,8 @@ window.SyBbsMng = {
     const handleSearchBbs = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(),
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'bbsTitle,authorNm';
@@ -178,33 +150,6 @@ window.SyBbsMng = {
         console.error('[handleLoadBbmList]', err);
       }
     };
-
-    /* openPathPick — 표시경로 선택 모달 열기 */
-    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
-
-    /* closePathPick — 표시경로 선택 모달 닫기 */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
-
-    /* onPathPicked — 표시경로 선택 결과 적용 */
-    const onPathPicked = (pathId) => {
-      const row = pathPickModal.row;
-      if (row) {
-        row.pathId = pathId;
-        if (row._row_status === 'N') { row._row_status = 'U'; }
-      }
-    };
-
-    /* pathLabel — 경로 라벨 변환 */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
-
-    /* toggleNode — 좌측 트리 노드 토글 */
-    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
-
-    /* expandAll — 좌측 트리 전체 펼치기 */
-    const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
-
-    /* collapseAll — 좌측 트리 전체 접기 */
-    const collapseAll = () => { expanded.clear(); expanded.add(''); };
 
     /* handleDateRangeChange — 기간 옵션 변경 */
     const handleDateRangeChange = () => {
@@ -291,6 +236,8 @@ window.SyBbsMng = {
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -306,8 +253,6 @@ window.SyBbsMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadBbmList();
       await handleSearchBbs('DEFAULT');
-      const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
     });
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
@@ -323,7 +268,6 @@ window.SyBbsMng = {
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
     const fnRowStyle = (b) => detailModal.dtlId === b.bbsId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
-    const cfTree = computed(() => boUtil.bofBuildPathTree('sy_bbs'));
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfBbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
@@ -362,7 +306,7 @@ window.SyBbsMng = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      bbsList, uiState, codes, searchParam, pager, detailModal, pathPickModal,         // 상태 / 데이터
+      bbsList, uiState, codes, searchParam, pager, detailModal,                          // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                               // computed
@@ -385,7 +329,7 @@ window.SyBbsMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
     :columns="baseGridColumns" :rows="bbsList" :pager="pager" row-key="bbsId"
-    list-title="게시글목록" :count-text="pager.pageTotalCount + '건' + (uiState.selectedPath != null ? '  #' + uiState.selectedPath : '')"
+    list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('bbsList-sort', key)"
     @set-page="n => handleSelectAction('bbsList-set-page', n)"
