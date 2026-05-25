@@ -7,8 +7,7 @@ window.OdOrderHist = {
     orderId:      { type: String, default: null }, // 대상 ID
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -22,6 +21,8 @@ window.OdOrderHist = {
     const uiState = reactive({ loading: false, isPageCodeLoad: false, botTab: window._ecOrderHistState.tab || 'products', tabMode2: 'tab' });
     const botTab = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -55,7 +56,7 @@ window.OdOrderHist = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -112,7 +113,7 @@ window.OdOrderHist = {
       ].filter(h => h.date !== '-');
     });
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
     const itemGridColumns = [
@@ -140,7 +141,7 @@ window.OdOrderHist = {
       { key: 'requestDate',   label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, orderItems, botTab, tabMode2,                                                              // 상태 / 데이터

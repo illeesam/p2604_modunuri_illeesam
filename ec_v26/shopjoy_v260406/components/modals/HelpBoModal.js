@@ -7,8 +7,7 @@ window.HelpBoModal = {
   props: ['show', 'topic'],
   emits: ['close'],
   setup(props, { emit }) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, watch } = Vue;
 
     const TABS = [
@@ -251,6 +250,8 @@ window.HelpBoModal = {
     watch(() => props.topic, (v) => { if (v) activeTab.value = v; });
     watch(() => props.show,  (v) => { if (v && props.topic) activeTab.value = props.topic; });
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ HelpBoModal.js : handleBtnAction -> ', cmd, param);
@@ -282,7 +283,7 @@ window.HelpBoModal = {
       }
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       handleBtnAction, handleSelectAction,                                  // dispatch

@@ -155,6 +155,8 @@ window.FoSearchArea = {
   setup(props, { emit }) {
     const U = window._foAreaCompUtil;
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
     /* ── ▼ search 영역 (검색바 전체) ─────────────────────────────────────── */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ FoSearchArea : handleBtnAction -> ', cmd, param);

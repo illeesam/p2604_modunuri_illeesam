@@ -9,8 +9,7 @@ window.DpDispUiDtl = {
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -66,6 +65,8 @@ window.DpDispUiDtl = {
       { code: 'DEV',  label: 'DEV' },
       { code: 'TEST', label: 'TEST' },
     ];
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -145,7 +146,7 @@ window.DpDispUiDtl = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -424,7 +425,7 @@ window.DpDispUiDtl = {
       }
     };
 
-    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     // 폼 컬럼 정의 (BoFormArea :columns) - UI코드/UI명/UI유형
     const baseUiFormColumns = [
@@ -447,7 +448,7 @@ window.DpDispUiDtl = {
         hint: 'UI가 노출되는 경로 (예: FO.모바일메인)' },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       codes, uis, areas, uiState, pathPickModal, form, errors,                       // 상태 / 데이터

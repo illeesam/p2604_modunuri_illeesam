@@ -9,11 +9,12 @@ window.DispX04Widget = {
   },
   emits: ['click-action'],
   setup(props, { emit }) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { computed, reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -32,7 +33,7 @@ window.DispX04Widget = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* 노출 여부 판단 */
     const cfVisible = computed(() => {
@@ -174,7 +175,7 @@ window.DispX04Widget = {
       /* fromCfg — 에서 Cfg */
       const fromCfg = (k1, k2) => cfg[k1] != null ? cfg[k1] : (k2 != null && cfg[k2] != null ? cfg[k2] : undefined);
 
-      // ===== return (템플릿 노출) ===============================================
+      // ===== [06] return (템플릿 노출) ==============================================
 
 
       return {

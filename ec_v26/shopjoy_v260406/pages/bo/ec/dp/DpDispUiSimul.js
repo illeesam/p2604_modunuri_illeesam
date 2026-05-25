@@ -5,8 +5,7 @@ window.DpDispUiSimul = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -27,6 +26,8 @@ window.DpDispUiSimul = {
     const sites = reactive([]);
     const members = reactive([]);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -241,7 +242,7 @@ window.DpDispUiSimul = {
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
     const tab = Vue.toRef(uiState, 'tab');
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -345,7 +346,7 @@ window.DpDispUiSimul = {
       (Array.isArray(displays) ? displays : []).filter(p => panelFilter(p)).length
     );
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* onReset — 초기화 */
     const onReset = () => {
@@ -380,7 +381,7 @@ window.DpDispUiSimul = {
       handleSearchData();
     });
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return { ...area, panels };
       }).filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))

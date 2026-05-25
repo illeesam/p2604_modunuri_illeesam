@@ -6,8 +6,7 @@
 window.XsSample08 = {
   name: 'XsSample08',
   setup() {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({                     // UI 상태
@@ -82,6 +81,8 @@ window.XsSample08 = {
     /* getRealIdx — 표시 인덱스 → 원본 인덱스 */
     const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Sample08.js : handleBtnAction -> ', cmd, param);
@@ -128,7 +129,7 @@ window.XsSample08 = {
       }
     };
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -146,7 +147,7 @@ window.XsSample08 = {
       handleSearchList();
     });
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -295,7 +296,7 @@ window.XsSample08 = {
     /* onRowDelete — 행 삭제 이벤트 */
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* fnStatusBadge — 상태 배지 스타일 */
     const fnStatusBadge = s => ({
@@ -334,7 +335,7 @@ window.XsSample08 = {
       { key: 'regDate',    label: '등록일', width: '100px', align: 'center' },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, toast, searchParam, gridRows, pager,    // 상태 / 데이터

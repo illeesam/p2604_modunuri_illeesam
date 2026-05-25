@@ -5,8 +5,7 @@ const _WP_DispPanelPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -23,6 +22,8 @@ const _WP_DispPanelPreview = {
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
     const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -88,7 +89,7 @@ const _WP_DispPanelPreview = {
       }
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return { codes, cfChartBars };
   },
@@ -284,8 +285,7 @@ window.DpDispPanelPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -735,7 +735,7 @@ window.DpDispPanelPreview = {
       }
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       codes, searchParam, applied, widgetLibs, uiState, gridState,                  // 상태 / 데이터

@@ -5,8 +5,7 @@ window.StRawMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -17,6 +16,8 @@ window.StRawMng = {
       confirm_yn_opts: [], close_yn_opts: [], send_yn_opts: [],
       date_range_opts: [],
     });
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -55,7 +56,7 @@ window.StRawMng = {
       }
     };
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -91,7 +92,7 @@ window.StRawMng = {
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const rawList = reactive([]);
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -234,7 +235,7 @@ const rawList = reactive([]);
       }
     };
 
-  // ===== return (템플릿 노출) ===============================================
+  // ===== [06] return (템플릿 노출) ==============================================
 
   return {
       uiState, handleDateRangeChange,

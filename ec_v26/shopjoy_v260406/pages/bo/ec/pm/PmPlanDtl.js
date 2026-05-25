@@ -11,8 +11,7 @@ window.PmPlanDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -65,6 +64,8 @@ window.PmPlanDtl = {
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 신규 등록은 info 탭에서만 가능. 그 외 탭(banner/content/products/preview)은 ID 없으면 비활성 */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -175,7 +176,7 @@ window.PmPlanDtl = {
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 프로모션 플랜 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) =================================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -186,7 +187,7 @@ window.PmPlanDtl = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* 프로모션 플랜 onTabChange */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
 
     /* onTabChange — 탭 변경 */
     const onTabChange = (newTab) => {
@@ -325,7 +326,7 @@ window.PmPlanDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (기획전 단순 필드만) ===
     const infoFormColumns = [
@@ -351,7 +352,7 @@ window.PmPlanDtl = {
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       vendors, products, uiState, codes, form, errors, VISIBILITY_OPTIONS,           // 상태 / 데이터

@@ -5,8 +5,7 @@ const _WidgetPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watchEffect, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -21,6 +20,8 @@ const _WidgetPreview = {
       const max = Math.max(...values, 1);
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -89,7 +90,7 @@ const _WidgetPreview = {
       }
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return { cfChartBars };
   },
@@ -285,8 +286,7 @@ window.DpDispWidgetLibPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
     const showToast = window.boApp.showToast;
     const codes = reactive({ widget_status_opts: [{value:'활성',label:'활성'},{value:'비활성',label:'비활성'}], need_yn_opts: [{codeValue:'Y',codeLabel:'필요'},{codeValue:'N',codeLabel:'불필요'}], condition_opts: ['항상 표시','로그인 필요','로그인+VIP','로그인+우수','비로그인 전용'], auth_grade_opts: ['일반','우수','VIP'] });
@@ -296,7 +296,7 @@ window.DpDispWidgetLibPreview = {
     });
     const widgetLibs = reactive([]);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -696,7 +696,7 @@ window.DpDispWidgetLibPreview = {
       }
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, searchParam, applied,                                          // 상태 / 데이터

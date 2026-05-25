@@ -6,8 +6,7 @@ window.Cart = {
   },
   emits: [],
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { computed, ref, reactive, watch, onMounted } = Vue;
     const showConfirm    = window.foApp.showConfirm;     // 확인 모달
     const clearCart      = window.foApp.clearCart;       // 장바구니 비우기
@@ -20,6 +19,8 @@ window.Cart = {
       checkedIdxs: new Set(), sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({});
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -64,7 +65,7 @@ window.Cart = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -134,7 +135,7 @@ window.Cart = {
       if (ok) { clearCart(); uiState.checkedIdxs.clear(); }
     };
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더) =================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* parsePrice — 가격 문자열 → 숫자 */
     function parsePrice(priceStr) {
@@ -192,7 +193,7 @@ window.Cart = {
       uiState.checkedIdxs.size > 0 ? uiState.checkedIdxs.size : cart.length
     );
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, cart,                                                // 상태 / 데이터

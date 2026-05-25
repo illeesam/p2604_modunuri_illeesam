@@ -6,8 +6,10 @@ window.PmDiscntMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
+    // ===== [01] 초기 변수 정의 ==================================================
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmDiscntMng.js : handleBtnAction -> ', cmd, param);
@@ -85,7 +87,7 @@ window.PmDiscntMng = {
 
     // ===== 공통코드 로딩 ===================================================
     /* 할인 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -114,7 +116,7 @@ window.PmDiscntMng = {
     };
 
     /* 할인 onSort */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* onSort — 정렬 */
     const onSort = (key) => {
@@ -283,7 +285,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
         onRangeChange: () => onDateRangeChange() },
     ];
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseGridColumns = [
       { key: 'discntNm',       label: '할인명', sortKey: 'nm', link: true,
@@ -300,7 +302,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       { key: 'siteNm',         label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };

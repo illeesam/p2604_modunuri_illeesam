@@ -5,8 +5,7 @@ window.DpDispPanelMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -15,6 +14,8 @@ window.DpDispPanelMng = {
     const panels = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null, sortKey: '', sortDir: 'asc' });
     const displays = reactive([]);
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -114,7 +115,7 @@ window.DpDispPanelMng = {
       date_range_opts: [],
     });
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -138,7 +139,7 @@ window.DpDispPanelMng = {
       return { sort: SORT_MAP[sortKey][sortDir] };
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* onSort — 정렬 */
     const onSort = (key) => {
@@ -328,7 +329,7 @@ window.DpDispPanelMng = {
       'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
     }[t] || t);
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* 1행: 일반 검색 :columns */
     // --- [컬럼 정의] ---
@@ -584,7 +585,7 @@ window.DpDispPanelMng = {
       }));
     });
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiStateDetail, panels, uiState, displays, codes, searchParam, pager,            // 상태 / 데이터

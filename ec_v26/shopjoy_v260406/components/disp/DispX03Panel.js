@@ -12,11 +12,12 @@ window.DispX03Panel = {
   },
   emits: ['widget-action'],
   setup(props, { emit }) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { computed, reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -35,7 +36,7 @@ window.DispX03Panel = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* mergedWidget — merged 위젯 */
     const mergedWidget = (w) => ({
@@ -61,7 +62,7 @@ window.DispX03Panel = {
       return 'display:flex;flex-direction:column;gap:12px;';
     });
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes,                                                       // 상태

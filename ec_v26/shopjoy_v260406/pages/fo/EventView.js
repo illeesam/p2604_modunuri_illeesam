@@ -6,8 +6,7 @@ window.EventView = {
     dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 0});
@@ -15,6 +14,8 @@ window.EventView = {
 
     /* -- 이벤트 데이터 -- */
     const events = reactive([]);
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -42,7 +43,7 @@ window.EventView = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -110,7 +111,7 @@ window.EventView = {
       handleSearchData();
     });
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes,                                  // 상태

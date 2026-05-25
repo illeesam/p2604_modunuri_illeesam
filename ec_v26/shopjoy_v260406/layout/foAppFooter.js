@@ -5,11 +5,12 @@ window.foAppFooter = {
   emits: [],
   setup() {
 
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive } = Vue;
     const uiState = reactive({ menuOpen: false, loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -36,7 +37,7 @@ window.foAppFooter = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* toggleMenu — 토글 */
     const toggleMenu = () => { uiState.menuOpen = !uiState.menuOpen; };
@@ -133,7 +134,7 @@ window.foAppFooter = {
       { fo:'03',   bo:'03',   siteId: toSiteId('03')   },
       { fo:'9999', bo:'9999', siteId: toSiteId('9999') },
     ];
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes,                                                       // 상태

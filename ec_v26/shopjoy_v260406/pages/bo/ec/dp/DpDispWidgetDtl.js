@@ -10,8 +10,7 @@ window.DpDispWidgetDtl = {
   },
   emits: ['close'],
   setup(props, { emit }) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -19,6 +18,8 @@ window.DpDispWidgetDtl = {
     const codes = reactive({ disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 실행'},{value:'modal',label:'모달 열기'}] });
     const uiState = reactive({ isPageCodeLoad: false, loading: false, error: null, previewMode: 'default', previewPaneWidth: 460, libPickMode: 'copy', libPickOpen: false, showComponentTooltip: false, jsonCopied: false });
     const previewMode = Vue.toRef(uiState, 'previewMode');
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -91,7 +92,7 @@ window.DpDispWidgetDtl = {
       }
     };
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -185,7 +186,7 @@ window.DpDispWidgetDtl = {
     const form   = reactive(makeForm());
     const errors = reactive({});
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
@@ -647,7 +648,7 @@ window.DpDispWidgetDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 위젯 기본 설정 ================
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseWidgetFormColumns = [
       { key: 'libCode', label: '위젯코드', type: 'text', required: true,
@@ -666,7 +667,7 @@ window.DpDispWidgetDtl = {
       { key: 'clickTarget', label: '클릭 대상', type: 'text', placeholder: '/products 또는 이벤트명' },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터

@@ -152,6 +152,8 @@ window.BoSearchArea = {
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
     /* ── ▼ search 영역 (검색바 전체) ─────────────────────────────────────── */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {

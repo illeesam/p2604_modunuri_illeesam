@@ -6,8 +6,7 @@ window.foAppHeader = {
           'appShowSettings', 'appShowApiLog', 'appApiLogs'],
   emits: ['app-toggle-sidebar', 'app-toggle-mobile', 'app-toggle-settings', 'app-toggle-api-log'],
   setup(props, { emit }) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
 
     /* ── UI 상태 ── */
@@ -21,6 +20,8 @@ window.foAppHeader = {
 
     /* ── 비밀번호 변경 모달 ── */
     const pw = reactive({ current: '', next: '', next2: '', err: '', ok: false });
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -112,7 +113,7 @@ window.foAppHeader = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* toggleUserMenu — 사용자 메뉴 토글 */
     const toggleUserMenu = () => { uiState.userMenuOpen = !uiState.userMenuOpen; };
@@ -232,7 +233,7 @@ window.foAppHeader = {
 
     const cfTopMenu = computed(() => window.sfGetFoMenuStore?.()?.svTopMenu || []);
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, userMenuRoot,                                         // 상태 / refs

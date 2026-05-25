@@ -7,8 +7,7 @@ window.MbMemberHist = {
     memberId:  { type: String, default: null },       // 대상 회원 ID
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { computed, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -19,6 +18,8 @@ window.MbMemberHist = {
       tab: window._ecMemberHistState.tab || 'orders',
       tabMode2: window._ecMemberHistState.tabMode || 'tab',
     });
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -52,7 +53,7 @@ window.MbMemberHist = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* watch — memberId 변경 (computed 자동 갱신 - 별도 로드 불필요) */
     watch(() => props.memberId, () => {
@@ -72,7 +73,7 @@ window.MbMemberHist = {
     // ★ onMounted — 진입 시 코드 로드
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* showTab — 탭 표시 여부 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
@@ -109,7 +110,7 @@ window.MbMemberHist = {
       { key: 'requestDate', label: '신청일', fmt: (v) => (v ? v.slice(0, 10) : '') },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState,                                                                         // 상태 / 데이터

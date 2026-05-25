@@ -5,8 +5,7 @@ window.SyDashboardMng = {
     navigate:  { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { computed, reactive, watch, onMounted } = Vue;
 
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -28,6 +27,8 @@ window.SyDashboardMng = {
       { id: 'sySiteMng',     label: '사이트관리', icon: '🌐', color: '#2563eb' },
       { id: 'syUserMng',     label: '사용자관리', icon: '🔑', color: '#c41d7f' },
     ];
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -51,7 +52,7 @@ window.SyDashboardMng = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -68,7 +69,7 @@ window.SyDashboardMng = {
       if (isAppReady.value) { fnLoadCodes(); }
     });
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const cfStats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,
@@ -97,7 +98,7 @@ window.SyDashboardMng = {
         sub: '활성 ' + (boUsers.value?.filter(u => u.status === '활성').length || 0) + '명' },
     ]);
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, shortcuts,                          // 상태 / 데이터

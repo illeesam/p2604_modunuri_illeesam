@@ -174,6 +174,8 @@ window.SiteSelectModal = {
     const list = reactive([]);
     const loading = ref(false);
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SiteSelectModal : handleBtnAction -> ', cmd, param);

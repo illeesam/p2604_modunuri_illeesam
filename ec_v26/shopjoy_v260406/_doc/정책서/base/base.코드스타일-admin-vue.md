@@ -132,39 +132,53 @@ reactive 값이 변할 때 자동으로 반응해야 하는가?
 
 ---
 
-## 1. setup() 내부 구역 순서 ⭐ (2026-05-24 갱신)
+## 1. setup() 내부 구역 순서 ⭐ (2026-05-25 갱신 — 6섹션 [01]~[06])
 
-`setup()` 함수 안은 **4개 메인 섹션 + return 마커** 형식으로 구역을 구분한다. 기준 파일: [`pages/bo/sy/SyCodeMng.js`](../../../pages/bo/sy/SyCodeMng.js).
+`setup()` 함수 안은 **6개 메인 섹션** 형식으로 구역을 구분한다. 각 마커에 **번호 [01]~[06]** 부여. 기준 파일: [`pages/bo/sy/SyRoleMng.js`](../../../pages/bo/sy/SyRoleMng.js), [`pages/fo/xs/Sample05.js`](../../../pages/fo/xs/Sample05.js).
 
-### 메인 5섹션 (필수) + dispatch 위치
+### 6섹션 표준 (필수)
 
 ```js
 setup(props) {
-  // ===== 초기 변수 정의 =====================================================
-  // (Vue 구조분해, window 함수 참조, reactive/ref, 상수, 임시 ID 시퀀스, 매핑 테이블)
-  // 데이터 변환 헬퍼(toRow/toPayload/makeRow)도 이 영역
+  // ===== [01] 초기 변수 정의 ====================================================
+  // (Vue 분해, window.boApp.* 참조, reactive/ref/const, 상수, 임시 ID, 매핑)
+  // 데이터 변환 헬퍼 (toRow/toPayload/makeRow) 도 이 영역
   // 페이지네이션 reactive 도 이 영역
-  // 토스트 reactive + showToast 헬퍼도 이 영역 (변수 + 그 변수를 다루는 단일 setter)
+  // 토스트 reactive + showToast 헬퍼도 이 영역 (변수 + 1:1 setter)
 
-  /* handleBtnAction — 버튼 액션 dispatch */
-  /* handleSelectAction — 행/선택 액션 dispatch */
-  // ↑ dispatch 는 "초기 변수 정의" 직후 (다른 모든 함수보다 앞)
+  // ===== [02] 액션 모음 (dispatch) ==============================================
+  // handleBtnAction / handleSelectAction
+  // 다른 모든 함수보다 앞 (closure 로 비즈니스 함수 참조)
 
-  // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-  // (fnLoadCodes, checkAndLoadCodes, watch, isAppReady, onMounted)
+  // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
+  // fnLoadCodes / isAppReady / watch / onMounted
 
-  // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-  // (onSearch/onReset/onCell*/onDrag*, handleLoadXxx/handleSearchList/handleSave,
-  //  addRow/deleteRow/cancelRow 등 행 조작, openDtl/closeDtl 등)
+  // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
+  // handleSearchList / handleSave / onCellChange / addRow / deleteRow / cancelRow
+  // 드래그 (onDragStart/Over/End) / toggleCheckAll / onRowCancel / onRowDelete
+  // openDtl / closeDtl / inlineNavigate 등
 
-  // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
-  // (syncDirty, codeTotal, fnXxxTitle, cfXxxSortParam, statusBadgeCls,
-  //  exportCsv, baseSearchColumns, xxxGridColumns 등)
+  // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
+  // fnStatusBadge / rowBg / cf* (computed) / 정렬 헬퍼 / 트리 빌드
+  // baseSearchColumns / baseGridColumns / baseFormColumns
 
-  // ===== return (템플릿 노출) ===============================================
-  return { ... };
+  // ===== [06] return (템플릿 노출) ==============================================
+  return {
+    uiState, codes, searchParam, ...,           // 상태 / 데이터
+    baseSearchColumns, baseGridColumns,         // 컬럼 정의
+    handleBtnAction, handleSelectAction,        // dispatch
+    cfXxx, cfYyy,                                // computed
+    fnXxx, fnYyy,                                // 헬퍼
+  };
 }
 ```
+
+### [01]~[06] 번호 부여 규칙 ⭐ (2026-05-25)
+
+- 각 섹션 마커는 **`// ===== [NN] 라벨 ====...`** 형식 (NN = 2자리 영숫자)
+- 빠진 섹션이 있더라도 번호는 그대로 유지 (예: dispatch 가 없는 단순 컴포넌트는 [02] 생략, 다른 섹션 번호는 [03]/[04]/[05]/[06] 유지)
+- **191개 파일 일괄 적용 완료** (2026-05-25, 자동 도구 `c:/tmp/migrate_section_numbers.js`)
+- 마커는 자동으로 padding 처리 (78~79자 길이)
 
 ### ⛔ 변수 선언 위치 엄격화 ⭐ (2026-05-25)
 

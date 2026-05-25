@@ -5,8 +5,7 @@ window.PdRestockNotiMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -24,6 +23,8 @@ window.PdRestockNotiMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -75,7 +76,7 @@ window.PdRestockNotiMng = {
 
     /* ===== 페이지네이션 ===== */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -152,7 +153,7 @@ window.PdRestockNotiMng = {
       handleSearchList('DEFAULT');
     });
 
-    // ===== 사용자 함수 (헬퍼 / 컬럼정의) ======================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseSearchColumns = [
       { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
@@ -169,7 +170,7 @@ window.PdRestockNotiMng = {
       { key: 'regDate',  label: '신청일',  style: 'width:140px' },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       restockNotis, uiState, codes, searchParam, pager,                                 // 상태 / 데이터

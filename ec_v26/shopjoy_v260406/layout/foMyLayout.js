@@ -29,6 +29,8 @@ window.MyDateFilter = {
   setup(props, { emit }) {
     const { ref } = Vue;
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MyDateFilter : handleBtnAction -> ', cmd, param);

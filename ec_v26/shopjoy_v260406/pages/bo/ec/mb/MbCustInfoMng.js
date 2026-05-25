@@ -70,8 +70,7 @@
       navigate:     { type: Function, required: true }, // 페이지 이동
     },
     setup(props) {
-      // ===== 초기 변수 정의 =====================================================
-
+      // ===== [01] 초기 변수 정의 ==================================================
       const { reactive, ref, computed, watch, onMounted } = Vue;
       const showToast    = window.boApp.showToast;   // 토스트 알림
       const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -107,6 +106,8 @@
 
       /* ===== 고객 검색 모달 ===== */
       const memberModal = reactive({ show: false, searchType: '', keyword: '', list: [] }); // 고객 검색 모달
+
+      // ===== [02] 액션 모음 (dispatch) ==============================================
 
       /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
       const handleBtnAction = (cmd, param = {}) => {
@@ -163,7 +164,7 @@
         }
       };
 
-      // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+      // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
       /* handleSearchData — 데이터 조회 (전체 영역 통합) */
       const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -278,7 +279,7 @@
         }
       });
 
-      // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+      // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
       const cfDateFrom = computed(() => calcFrom(searchParam.period, searchParam.customFrom));
       const cfDateTo   = computed(() => searchParam.period === 'custom' ? searchParam.customTo : today());
@@ -410,7 +411,7 @@
         { key: 'status', label: '상태', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.status === '활성' ? 'badge-green' : 'badge-red') },
       ];
 
-      // ===== return (템플릿 노출) ===============================================
+      // ===== [06] return (템플릿 노출) ==============================================
 
       return {
         uiState, codes, searchParam, memberModal,                                                                                   // 상태 / 데이터

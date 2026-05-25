@@ -5,8 +5,7 @@ window.SyApiLogMng = {
     navigate: { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     // --- Vue API / boApp 전역 함수 참조 ---
     const { reactive, computed, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -51,6 +50,8 @@ window.SyApiLogMng = {
       uiState.dateStart = r.from;
       uiState.dateEnd   = r.to;
     })();
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -103,7 +104,7 @@ window.SyApiLogMng = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -257,7 +258,7 @@ window.SyApiLogMng = {
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* fnMethodBadge — sy_code HTTP_METHOD code_opt1 우선, 없으면 FB */
     const _HTTP_METHOD_FB = { GET: 'badge-blue', POST: 'badge-green', PUT: 'badge-orange', PATCH: 'badge-purple', DELETE: 'badge-red' };
@@ -338,7 +339,7 @@ window.SyApiLogMng = {
       return 'cursor:pointer;' + (exp ? ('background:' + bg + ';') : '');
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, pager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터

@@ -47,6 +47,8 @@ window.BaseAttachGrp = {
     /* 업로드된 파일 목록 (로컬 상태) */
     const files = reactive([]);
 
+    // ===== [02] 액션 모음 (dispatch) ==============================================
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ BaseAttachGrp : handleBtnAction -> ', cmd, param);

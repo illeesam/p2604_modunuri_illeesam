@@ -5,8 +5,7 @@ window.StConfigMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -14,6 +13,8 @@ window.StConfigMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
     const configs = reactive([]);
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -44,7 +45,7 @@ window.StConfigMng = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleLoadList — 목록 조회 */
     const handleLoadList = async () => {
@@ -194,7 +195,7 @@ window.StConfigMng = {
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     // --- [컬럼 정의] ---
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseGridColumns = [
       { key: 'siteNm',             label: '사이트' },
@@ -226,7 +227,7 @@ window.StConfigMng = {
       { key: 'settleConfigRemark', label: '비고', type: 'text', placeholder: '비고 입력', colSpan: 4 },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, configs, form, errors,

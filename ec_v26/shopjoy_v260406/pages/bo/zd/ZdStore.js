@@ -8,8 +8,7 @@ window.ZdStore = {
     adminData: { type: Object, default: () => ({}) }, // 목업 데이터
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -41,6 +40,8 @@ window.ZdStore = {
       if (window.useFoMyStore) { stores.push({ name: 'useFoMyStore', label: 'foMyStore.js', api: null, hasLocalStorage: false }); }
       return stores;
     });
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -85,7 +86,7 @@ window.ZdStore = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* selectStore — 선택 */
     const selectStore = (storeName) => {
@@ -230,7 +231,7 @@ window.ZdStore = {
       loadAllStoreData();
     });
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, openStores, editedStoreInfo,                                // 상태 / 데이터

@@ -9,8 +9,7 @@ window.SyMemberLoginHist = {
     setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { reactive, computed, onMounted } = Vue;
 
     /* ===== 검색조건 + UI 상태 (searchParam 이 검색 + 탭 상태 겸함) ===== */
@@ -38,6 +37,8 @@ window.SyMemberLoginHist = {
     /* ===== 행 펼치기 상태 ===== */
     const expandedRows    = reactive(new Set());
     const allExpanded     = reactive({ value: false });
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -97,7 +98,7 @@ window.SyMemberLoginHist = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* onDateRangeChange — 기간 옵션 변경 */
     const onDateRangeChange = () => {
@@ -211,7 +212,7 @@ window.SyMemberLoginHist = {
       }
     };
 
-    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const cfCurrentList = computed(() => searchParam.activeTab==='log' ? logList : tokenList);
 
@@ -292,7 +293,7 @@ window.SyMemberLoginHist = {
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       searchParam, codes, pager, tabCounts, cfCurrentList, allExpanded,                                // 상태 / 데이터

@@ -5,8 +5,7 @@ window.StStatusMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     /* 적용된 검색조건 스냅샷 — 입력(uiState.*)은 즉시 화면에 반영하지 않고, [조회] 시점에만 이 값으로 동기화 (UI/UX 검색 방식 정책) */
     const applied = reactive({
@@ -20,6 +19,8 @@ window.StStatusMng = {
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -79,7 +80,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -109,7 +110,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* -- 공통 날짜 필터 -- */
             const dateEnd   = ref('');
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
@@ -185,7 +186,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
 
-        // ===== return (템플릿 노출) ===============================================
+        // ===== [06] return (템플릿 노출) ==============================================
 
         return { vendorId: v.vendorId, vendorNm: v.vendorNm, orderCnt: vOrders.length, sales, refund, netSales, comm, settle: netSales - comm };
       }).filter(r => !applied.vendorSearchValue || r.vendorNm.includes(applied.vendorSearchValue));

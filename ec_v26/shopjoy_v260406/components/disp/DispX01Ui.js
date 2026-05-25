@@ -15,8 +15,7 @@ window.DispX01Ui = {
     dispOpt:     { type: Object, default: () => ({ layout: 'auto', showHeader: true, showBadges: true }) },
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -28,6 +27,8 @@ window.DispX01Ui = {
       { key: 'source',  label: '</> 소스보기' },
     ];
     const cfActiveTabs = computed(() => {
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -89,7 +90,7 @@ window.DispX01Ui = {
     /* ── 구조보기 트리 접기/펼치기 ── */
     const structAreaOpen  = reactive(new Set());
     const structPanelOpen = reactive(new Set());
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
 
     /* ── 공통 상수 ── */
     const WIDGET_TYPE_LABELS = {
@@ -171,7 +172,7 @@ window.DispX01Ui = {
       )
     );
 
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더) =================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* expandAll — 펼치기 전체 */
     const expandAll   = () => {
@@ -294,7 +295,7 @@ window.DispX01Ui = {
       }
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes,                                                       // 상태

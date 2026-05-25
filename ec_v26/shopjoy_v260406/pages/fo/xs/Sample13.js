@@ -3,8 +3,7 @@ window.XsSample13 = {
   name: 'XsSample13',
   components: { 'category-select-modal': window.CategorySelectModal },
   setup() {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, previewDate: new Date().toISOString().slice(0, 10), copiedPanel: null, previewTime: new Date().toTimeString().slice(0, 5), showAreaDrop: false, showCatModal: false, copied: false });
     const codes = reactive({
@@ -43,6 +42,8 @@ window.XsSample13 = {
       coupon:'🎟', html_editor:'</>', event_banner:'🎉',
       cache_banner:'💰', widget_embed:'🧩',
     };
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -93,7 +94,7 @@ window.XsSample13 = {
       }
     };
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -114,7 +115,7 @@ window.XsSample13 = {
       return selectedCatIds.size <= 2 ? cfSelectedCatNames.value.join(', ') : `${selectedCatIds.size}개`;
     });
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* onCatApply — 이벤트 */
     const onCatApply = (ids) => { selectedCatIds.clear(); ids.forEach(id => selectedCatIds.add(id)); };
@@ -178,7 +179,7 @@ window.XsSample13 = {
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-        // ===== return (템플릿 노출) ===============================================
+        // ===== [06] return (템플릿 노출) ==============================================
 
         return { area, panels , uiState, codes };
       })

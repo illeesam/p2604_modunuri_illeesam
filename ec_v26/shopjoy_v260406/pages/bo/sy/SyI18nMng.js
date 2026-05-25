@@ -5,8 +5,7 @@ window.SyI18nMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -19,6 +18,8 @@ window.SyI18nMng = {
     const codes    = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
     /* _initSearchParam — 초기화 */
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -82,7 +83,7 @@ window.SyI18nMng = {
       (i18nMsgs||[]).filter(m => m.i18nId === uiState.selectedId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
       return msgs;
     });
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => {
@@ -165,7 +166,7 @@ window.SyI18nMng = {
       handleSearchData();
     });
 
-    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* fnScopeBadge — 범위 배지 클래스 */
     const fnScopeBadge = s => ({ COMMON:'badge-blue', FO:'badge-green', BO:'badge-orange' }[s] || 'badge-gray');
@@ -213,7 +214,7 @@ window.SyI18nMng = {
       placeholder: LANG_LABELS[lang] + ' 번역 입력',
     }));
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, searchParam, pager, i18n, msgForm,                         // 상태 / 데이터

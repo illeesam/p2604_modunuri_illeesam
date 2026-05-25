@@ -5,8 +5,7 @@ window.PdCategoryProdMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -23,6 +22,8 @@ window.PdCategoryProdMng = {
     });
 
     /* 카테고리-상품 매핑 fnLoadCodes */
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -92,7 +93,7 @@ window.PdCategoryProdMng = {
       }
     };
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -187,7 +188,7 @@ window.PdCategoryProdMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* 카테고리-상품 매핑 목록조회 */
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -402,7 +403,7 @@ window.PdCategoryProdMng = {
       }
     };
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
-        // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+        // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
         // --- [컬럼 정의] ---
         const baseSearchColumns = [
@@ -450,7 +451,7 @@ window.PdCategoryProdMng = {
       { key: 'prodStock', label: '재고',     style: 'width:60px;text-align:center', align: 'center', fmt: v => v != null ? v : '-' },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       codes, uiState, categories, categoryProds, searchParam, pager, pickerResults,         // 상태 / 데이터

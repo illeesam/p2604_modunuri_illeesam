@@ -5,13 +5,14 @@ window.Prod01View = {
     navigate:   { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const prod              = window.foApp.selectedProd;  // 선택된 상품
     const addToCart            = window.foApp.addToCart;  // 장바구니 추가
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showAlert            = window.foApp.showAlert;  // 알림 모달
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -142,7 +143,7 @@ window.Prod01View = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* toggleLike — 토글 */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
@@ -373,7 +374,7 @@ window.Prod01View = {
       ['XL', '44', '102','68'],
       ['XXL','46', '108','70'],
     ];
-    // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     /* fo-grid 컬럼 — sizeGuideRows 는 위치배열 → fmt 로 인덱스 접근 */
     const sizeGuideGridColumns = [
@@ -966,7 +967,7 @@ window.Prod01View = {
         : 1;
     };
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, prod: svProduct,                                                                          // 상태 / 데이터

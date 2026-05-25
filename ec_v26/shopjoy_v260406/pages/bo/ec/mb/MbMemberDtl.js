@@ -11,8 +11,7 @@ window.MbMemberDtl = {
     reloadTrigger: { type: Number, default: 0 },              // 상위 reload signal
   },
   setup(props) {
-    // ===== 초기 변수 정의 =====================================================
-
+    // ===== [01] 초기 변수 정의 ====================================================
     const { watch, ref, reactive, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -20,6 +19,8 @@ window.MbMemberDtl = {
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const currentId = ref(props.detailModal.dtlId); // 현재 선택된 회원 ID (이력 컴포넌트 key용)
     const codes = reactive({ member_grades: [], member_statuses: [] }); // 공통코드
+
+    // ===== [02] 액션 모음 (dispatch) ==============================================
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -38,7 +39,7 @@ window.MbMemberDtl = {
       }
     };
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
     /* watch — dtlId 변경 시 currentId 갱신 */
     watch(() => props.detailModal.dtlId, (newId) => {
@@ -64,7 +65,7 @@ window.MbMemberDtl = {
       } catch (err) { console.error('[MbMemberDtl reloadTrigger]', err); }
     });
 
-    // ===== 사용자 함수 (헬퍼 / 컬럼 정의) ====================================
+    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseFormColumns = [
       { key: 'loginId',        label: '이메일',    type: 'text', required: true, placeholder: '이메일 주소' },
@@ -78,7 +79,7 @@ window.MbMemberDtl = {
         placeholder: '관리자 메모', colSpan: 2 },
     ];
 
-    // ===== return (템플릿 노출) ===============================================
+    // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       currentId, codes,                                                                // 상태 / 데이터
