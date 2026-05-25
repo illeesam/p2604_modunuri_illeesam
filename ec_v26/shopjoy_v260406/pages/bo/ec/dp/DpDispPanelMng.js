@@ -62,19 +62,19 @@ window.DpDispPanelMng = {
       if (cmd === 'panels-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'panels-set-page') {
+      } else if (cmd === 'panels-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'panels-size-change') {
+      } else if (cmd === 'panels-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기
-      } else if (cmd === 'panels-row-view') {
+      } else if (cmd === 'panels-rowView') {
         return loadView(param);
       // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'panels-row-edit') {
+      } else if (cmd === 'panels-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제 버튼
-      } else if (cmd === 'panels-row-delete') {
+      } else if (cmd === 'panels-rowDelete') {
         return handleDelete(param);
       // 그리드 행 펼치기/접기 토글
       } else if (cmd === 'panels-toggle-expand') {
@@ -729,7 +729,7 @@ window.DpDispPanelMng = {
                 <td style="padding:10px 12px;">
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 패널명 ===================================== -->
                   <div style="margin-bottom:6px;">
-                    <span class="title-link" @click="handleSelectAction('panels-row-edit', d.dispId)"
+                    <span class="title-link" @click="handleSelectAction('panels-rowEdit', d.dispId)"
                       :style="'font-size:14px;font-weight:700;'+(uiStateDetail.selectedId===d.dispId?'color:#e8587a;':'color:#222;')">
                       {{ d.name }}
                       <span v-if="uiStateDetail.selectedId===d.dispId" style="font-size:10px;margin-left:3px;">
@@ -840,10 +840,10 @@ window.DpDispPanelMng = {
                   </td>
                   <td style="vertical-align:top;padding-top:10px;">
                     <div class="actions" style="justify-content:flex-end;">
-                      <button class="btn btn-blue btn-sm" @click="handleSelectAction('panels-row-edit', d.dispId)">
+                      <button class="btn btn-blue btn-sm" @click="handleSelectAction('panels-rowEdit', d.dispId)">
                         수정
                       </button>
-                      <button class="btn btn-danger btn-sm" @click="handleSelectAction('panels-row-delete', d)">
+                      <button class="btn btn-danger btn-sm" @click="handleSelectAction('panels-rowDelete', d)">
                         삭제
                       </button>
                     </div>
@@ -926,7 +926,7 @@ window.DpDispPanelMng = {
           </template>
         </tbody>
       </table>
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('panels-set-page', n)" :on-size-change="() => handleSelectAction('panels-size-change')" />
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
     </div>
   </div>
   <!-- ===== /우측 목록 ===================================================== -->

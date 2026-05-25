@@ -47,10 +47,10 @@ window.XsStore = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ XsStore.js : handleSelectAction -> ', cmd, param);
       // 스토어 탭 선택 (param: storeName)
-      if (cmd === 'stores-row-select') {
+      if (cmd === 'stores-rowSelect') {
         return selectStore(param);
       // 탭 닫기 (param: storeName)
-      } else if (cmd === 'stores-row-close') {
+      } else if (cmd === 'stores-rowClose') {
         return closeTab(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -245,7 +245,7 @@ window.XsStore = {
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb;">
       <div style="display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0;">
         <button v-for="store in cfStoreList" :key="store.name"
-          @click="handleSelectAction('stores-row-select', store.name)"
+          @click="handleSelectAction('stores-rowSelect', store.name)"
           :style="{
           padding: '8px 14px',
           background: uiState.selectedStore === store.name ? '#fff0f4' : 'transparent',

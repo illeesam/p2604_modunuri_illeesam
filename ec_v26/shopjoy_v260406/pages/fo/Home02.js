@@ -64,13 +64,13 @@ window.Home02 = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Home02.js : handleSelectAction -> ', cmd, param);
       // 카테고리 선택 → 상품목록 이동
-      if (cmd === 'categories-row-select') {
+      if (cmd === 'categories-rowSelect') {
         return props.navigate('prodList');
       // 상품 카드 선택
-      } else if (cmd === 'prods-row-select') {
+      } else if (cmd === 'prods-rowSelect') {
         return selectProd(param);
       // 좋아요 토글
-      } else if (cmd === 'prods-row-like') {
+      } else if (cmd === 'prods-rowLike') {
         return toggleLike(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -219,7 +219,7 @@ window.Home02 = {
   <div style="padding:0 clamp(12px,3vw,32px);margin:-40px auto 0;max-width:820px;position:relative;z-index:3;">
     <div class="home-cat-grid">
       <div v-for="(cat, ci) in (siteConfig.categorys || []).slice(0,3)" :key="cat.categoryId"
-        @click="handleSelectAction('categories-row-select', cat)"
+        @click="handleSelectAction('categories-rowSelect', cat)"
         style="background:#fff;border-radius:14px;padding:clamp(14px,3vw,24px);cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,0.09);display:flex;align-items:center;gap:clamp(10px,2vw,20px);transition:transform .2s,box-shadow .2s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 8px 30px rgba(0,0,0,0.14)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow='0 4px 24px rgba(0,0,0,0.09)'">
@@ -253,7 +253,7 @@ window.Home02 = {
         style="cursor:pointer;transition:transform .25s,box-shadow .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-6px)';$event.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''"
-        @click="handleSelectAction('prods-row-select', p)">
+        @click="handleSelectAction('prods-rowSelect', p)">
         <div style="background:#f5f5f5;padding:24px;margin-bottom:14px;overflow:hidden;position:relative;aspect-ratio:1;"
           @mouseenter="$event.currentTarget.querySelector('.prod-hover').style.opacity='1'"
           @mouseleave="$event.currentTarget.querySelector('.prod-hover').style.opacity='0'">
@@ -263,7 +263,7 @@ window.Home02 = {
             {{ p.badge }}
           </span>
           <!-- ===== ■.■.■.■.■. 좋아요 (좋아요 상태면 항상 표시) ============================= -->
-          <button @click.stop="handleSelectAction('prods-row-like', p.prodId)"
+          <button @click.stop="handleSelectAction('prods-rowLike', p.prodId)"
             :style="{ position:'absolute', right:'12px', top:'12px', width:'32px', height:'32px', borderRadius:'50%', border:'none', background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }"
             class="prod-like" title="위시리스트">
             <svg width="16" height="16" viewBox="0 0 24 24" :fill="isLiked(p.prodId)?'#ef4444':'none'" :stroke="isLiked(p.prodId)?'#ef4444':'#555'" stroke-width="2">
@@ -392,7 +392,7 @@ window.Home02 = {
         style="cursor:pointer;text-align:center;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="handleSelectAction('prods-row-select', p)">
+        @click="handleSelectAction('prods-rowSelect', p)">
       <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
         <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.originalPrice && p.priceNum" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">

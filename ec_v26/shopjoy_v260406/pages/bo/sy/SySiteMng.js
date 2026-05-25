@@ -71,19 +71,19 @@ window.SySiteMng = {
       if (cmd === 'sites-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'sites-set-page') {
+      } else if (cmd === 'sites-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'sites-size-change') {
+      } else if (cmd === 'sites-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기 토글
-      } else if (cmd === 'sites-row-view') {
+      } else if (cmd === 'sites-rowView') {
         return loadView(param);
       // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'sites-row-edit') {
+      } else if (cmd === 'sites-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'sites-row-delete') {
+      } else if (cmd === 'sites-rowDelete') {
         return handleDelete(param);
       // 표시경로 picker 열기 (행 단위)
       } else if (cmd === 'pathModal-open') {
@@ -378,9 +378,9 @@ window.SySiteMng = {
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('sites-sort', key)"
-        @set-page="n => handleSelectAction('sites-set-page', n)"
-        @size-change="handleSelectAction('sites-size-change')"
-        @row-click="row => handleSelectAction('sites-row-edit', row.siteId)">
+        @set-page="n => handleSelectAction('sites-pager-setPage', n)"
+        @size-change="handleSelectAction('sites-pager-sizeChange')"
+        @row-click="row => handleSelectAction('sites-rowEdit', row.siteId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('sites-excel')">
@@ -399,10 +399,10 @@ window.SySiteMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('sites-row-edit', row.siteId)">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('sites-rowEdit', row.siteId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('sites-row-delete', row)">
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('sites-rowDelete', row)">
                 삭제
               </button>
             </div>

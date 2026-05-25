@@ -40,7 +40,7 @@ window.StSettleCloseMng = {
     /* handleSelectAction — 행 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StSettleCloseMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'settleCloses-row-reopen') {
+      if (cmd === 'settleCloses-rowReopen') {
         return doReopen(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -322,7 +322,7 @@ window.StSettleCloseMng = {
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="handleSelectAction('settleCloses-row-reopen', r)">
+        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="handleSelectAction('settleCloses-rowReopen', r)">
           마감취소
         </button>
       </template>

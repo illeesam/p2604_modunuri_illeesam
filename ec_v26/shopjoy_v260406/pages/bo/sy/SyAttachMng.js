@@ -87,31 +87,31 @@ window.SyAttachMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyAttachMng.js : handleSelectAction -> ', cmd, param);
       // 첨부그룹 카드 선택 (좌측 패널)
-      if (cmd === 'attachGrps-row-select') {
+      if (cmd === 'attachGrps-rowSelect') {
         return selectGrp(param);
       // 첨부그룹 수정 버튼
-      } else if (cmd === 'attachGrps-row-edit') {
+      } else if (cmd === 'attachGrps-rowEdit') {
         return openGrpEdit(param);
       // 첨부그룹 삭제 버튼
-      } else if (cmd === 'attachGrps-row-delete') {
+      } else if (cmd === 'attachGrps-rowDelete') {
         return handleDeleteGrp(param);
       // 첨부그룹 페이지 번호 클릭
-      } else if (cmd === 'attachGrps-set-page') {
+      } else if (cmd === 'attachGrps-pager-setPage') {
         return setGrpPage(param);
       // 첨부그룹 페이지 크기 변경
-      } else if (cmd === 'attachGrps-size-change') {
+      } else if (cmd === 'attachGrps-pager-sizeChange') {
         return onGrpSizeChange();
       // 첨부파일 수정 버튼
-      } else if (cmd === 'attaches-row-edit') {
+      } else if (cmd === 'attaches-rowEdit') {
         return openFileEdit(param);
       // 첨부파일 삭제 버튼
-      } else if (cmd === 'attaches-row-delete') {
+      } else if (cmd === 'attaches-rowDelete') {
         return handleDeleteFile(param);
       // 첨부파일 페이지 번호 클릭
-      } else if (cmd === 'attaches-set-page') {
+      } else if (cmd === 'attaches-pager-setPage') {
         return setPage(param);
       // 첨부파일 페이지 크기 변경
-      } else if (cmd === 'attaches-size-change') {
+      } else if (cmd === 'attaches-pager-sizeChange') {
         return onSizeChange();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -482,7 +482,7 @@ window.SyAttachMng = {
           <div v-for="g in attachGrps" :key="g.attachGrpId"
             style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
             :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#fff0f4;border-left:3px solid #e8587a;' : ''"
-            @click="handleSelectAction('attachGrps-row-select', g.attachGrpId)">
+            @click="handleSelectAction('attachGrps-rowSelect', g.attachGrpId)">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div>
                 <div style="font-size:13px;font-weight:600;color:#333;">
@@ -496,10 +496,10 @@ window.SyAttachMng = {
                 </div>
               </div>
               <div style="display:flex;gap:4px;" @click.stop>
-                <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-row-edit', g)">
+                <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowEdit', g)">
                   수정
                 </button>
-                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-row-delete', g)">
+                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowDelete', g)">
                   삭제
                 </button>
               </div>
@@ -524,7 +524,7 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ====================== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
           <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
-          <bo-pager :pager="grpPager" :on-set-page="n => handleSelectAction('attachGrps-set-page', n)" :on-size-change="() => handleSelectAction('attachGrps-size-change')"
+          <bo-pager :pager="grpPager" :on-set-page="n => handleSelectAction('attachGrps-pager-setPage', n)" :on-size-change="() => handleSelectAction('attachGrps-pager-sizeChange')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>
@@ -626,14 +626,14 @@ window.SyAttachMng = {
             row-key="attachId"
             :loading="uiState.loading"
             :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
-            @set-page="n => handleSelectAction('attaches-set-page', n)"
-            @size-change="handleSelectAction('attaches-size-change')" row-actions>
+            @set-page="n => handleSelectAction('attaches-pager-setPage', n)"
+            @size-change="handleSelectAction('attaches-pager-sizeChange')" row-actions>
             <template #row-actions="{ row }">
               <div class="actions">
-                <button class="btn btn-blue btn-sm" @click="handleSelectAction('attaches-row-edit', row)">
+                <button class="btn btn-blue btn-sm" @click="handleSelectAction('attaches-rowEdit', row)">
                   수정
                 </button>
-                <button class="btn btn-danger btn-sm" @click="handleSelectAction('attaches-row-delete', row)">
+                <button class="btn btn-danger btn-sm" @click="handleSelectAction('attaches-rowDelete', row)">
                   삭제
                 </button>
               </div>
@@ -643,7 +643,7 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. /파일 그리드 스크롤 컨테이너 ================================== -->
         <!-- ===== ■.■.■.■. 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) ===== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-          <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('attaches-set-page', n)" :on-size-change="() => handleSelectAction('attaches-size-change')"
+          <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>

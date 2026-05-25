@@ -57,7 +57,7 @@ window.PdCategoryMng = {
         catPickerModal.show = false;
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'categories-size-change') {
+      } else if (cmd === 'categories-pager-sizeChange') {
         return onSizeChange();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -71,34 +71,34 @@ window.PdCategoryMng = {
       if (cmd === 'categoryTree-select') {
         return selectNode(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'categories-set-page') {
+      } else if (cmd === 'categories-pager-setPage') {
         return setPage(param);
       // 그리드 행 포커스
-      } else if (cmd === 'categories-row-focus') {
+      } else if (cmd === 'categories-rowFocus') {
         return setFocused(param);
       // 그리드 행 셀 변경
-      } else if (cmd === 'categories-row-cell-change') {
+      } else if (cmd === 'categories-rowCellChange') {
         return onCellChange(param);
       // 하위 행 추가
-      } else if (cmd === 'categories-row-add-child') {
+      } else if (cmd === 'categories-rowAddChild') {
         return addChildRow(param.row, param.idx);
       // 행 취소
-      } else if (cmd === 'categories-row-cancel') {
+      } else if (cmd === 'categories-rowCancel') {
         return cancelRow(param);
       // 행 삭제
-      } else if (cmd === 'categories-row-delete') {
+      } else if (cmd === 'categories-rowDelete') {
         return deleteRow(param);
       // 행 체크 토글 (전체 체크)
-      } else if (cmd === 'categories-row-check-all') {
+      } else if (cmd === 'categories-rowCheckAll') {
         return toggleCheckAll();
       // 그리드 행 드래그 시작
-      } else if (cmd === 'categories-row-drag-start') {
+      } else if (cmd === 'categories-rowDragStart') {
         return onRowDragStart(param);
       // 그리드 행 드래그 오버
-      } else if (cmd === 'categories-row-drag-over') {
+      } else if (cmd === 'categories-rowDragOver') {
         return onRowDragOver(param);
       // 그리드 행 드롭
-      } else if (cmd === 'categories-row-drop') {
+      } else if (cmd === 'categories-rowDrop') {
         return onRowDrop();
       // 상위카테고리 모달 열기
       } else if (cmd === 'parentModal-open') {
@@ -609,7 +609,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               상태
             </th>
             <th>
-              <input type="checkbox" v-model="checkAll" @change="handleSelectAction('categories-row-check-all')">
+              <input type="checkbox" v-model="checkAll" @change="handleSelectAction('categories-rowCheckAll')">
             </th>
             <th>
               카테고리명
@@ -640,7 +640,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-else v-for="(row, idx) in pager.pageList" :key="(row && row.categoryId)" :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]" draggable="true" @dragstart="handleSelectAction('categories-row-drag-start', getRealIdx(idx))" @dragover.prevent="handleSelectAction('categories-row-drag-over', getRealIdx(idx))" @drop="handleSelectAction('categories-row-drop')" :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''" @click="handleSelectAction('categories-row-focus', getRealIdx(idx))">
+          <tr v-else v-for="(row, idx) in pager.pageList" :key="(row && row.categoryId)" :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]" draggable="true" @dragstart="handleSelectAction('categories-rowDragStart', getRealIdx(idx))" @dragover.prevent="handleSelectAction('categories-rowDragOver', getRealIdx(idx))" @drop="handleSelectAction('categories-rowDrop')" :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''" @click="handleSelectAction('categories-rowFocus', getRealIdx(idx))">
           <!-- ===== ■.■.■.■.■.■. 번호 ============================================ -->
           <td style="text-align:center;font-size:11px;color:#999;">
             {{ getRealIdx(idx) + 1 }}
@@ -667,7 +667,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
                 {{ fnDepthBullet(row._depth) }}
               </span>
               <input class="grid-input" v-model="row.categoryNm" :disabled="row._row_status==='D'"
-                  @input="handleSelectAction('categories-row-cell-change', row)" style="flex:1" placeholder="카테고리명">
+                  @input="handleSelectAction('categories-rowCellChange', row)" style="flex:1" placeholder="카테고리명">
             </div>
           </td>
           <!-- ===== ■.■.■.■.■.■. 상위카테고리 ======================================== -->
@@ -687,17 +687,17 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           <!-- ===== ■.■.■.■.■.■. 순서 ============================================ -->
           <td style="padding:3px 4px">
             <input class="grid-input grid-num" type="number" v-model.number="row.sortOrd"
-                :disabled="row._row_status==='D'" @input="handleSelectAction('categories-row-cell-change', row)" style="text-align:center">
+                :disabled="row._row_status==='D'" @input="handleSelectAction('categories-rowCellChange', row)" style="text-align:center">
           </td>
           <!-- ===== ■.■.■.■.■.■. 설명 ============================================ -->
           <td style="padding:3px 6px">
             <input class="grid-input" v-model="row.categoryDesc"
-                :disabled="row._row_status==='D'" @input="handleSelectAction('categories-row-cell-change', row)" placeholder="설명">
+                :disabled="row._row_status==='D'" @input="handleSelectAction('categories-rowCellChange', row)" placeholder="설명">
           </td>
           <!-- ===== ■.■.■.■.■.■. 활성 ============================================ -->
           <td style="padding:3px 4px;text-align:center">
             <select class="grid-select" v-model="row.categoryStatusCd"
-                :disabled="row._row_status==='D'" @change="handleSelectAction('categories-row-cell-change', row)" style="width:58px">
+                :disabled="row._row_status==='D'" @change="handleSelectAction('categories-rowCellChange', row)" style="width:58px">
               <option v-for="c in codes.category_statuses" :key="c.codeValue" :value="c.codeValue">
                 {{ c.codeLabel }}
               </option>
@@ -705,21 +705,21 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           </td>
           <!-- ===== ■.■.■.■.■.■. 하위 추가 ========================================= -->
           <td style="text-align:center;padding:2px">
-            <button v-if="row._row_status!=='D' && row.categoryId>0" class="btn btn-xs" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff" title="하위 카테고리 추가" @click.stop="handleSelectAction('categories-row-add-child', { row, idx: getRealIdx(idx) })">
+            <button v-if="row._row_status!=='D' && row.categoryId>0" class="btn btn-xs" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff" title="하위 카테고리 추가" @click.stop="handleSelectAction('categories-rowAddChild', { row, idx: getRealIdx(idx) })">
             +하위
           </button>
         </td>
         <!-- ===== ■.■.■.■.■.■. 취소 ============================================ -->
         <td style="text-align:center;padding:2px">
           <button v-if="['U','I','D'].includes(row._row_status)"
-                class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('categories-row-cancel', getRealIdx(idx))">
+                class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('categories-rowCancel', getRealIdx(idx))">
             취소
           </button>
         </td>
         <!-- ===== ■.■.■.■.■.■. 삭제 ============================================ -->
         <td style="text-align:center;padding:2px">
           <button v-if="row._row_status !== 'D'"
-                class="btn btn-danger btn-xs" @click.stop="handleSelectAction('categories-row-delete', getRealIdx(idx))">
+                class="btn btn-danger btn-xs" @click.stop="handleSelectAction('categories-rowDelete', getRealIdx(idx))">
             삭제
           </button>
         </td>
@@ -727,7 +727,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </tbody>
   </table>
   <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
-  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('categories-set-page', n)" :on-size-change="() => handleBtnAction('categories-size-change')" />
+  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('categories-pager-setPage', n)" :on-size-change="() => handleBtnAction('categories-pager-sizeChange')" />
 </div>
 </div>
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->

@@ -60,16 +60,16 @@ window.CmNoticeMng = {
       if (cmd === 'notices-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'notices-set-page') {
+      } else if (cmd === 'notices-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'notices-size-change') {
+      } else if (cmd === 'notices-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 편집 패널 열기
-      } else if (cmd === 'notices-row-edit') {
+      } else if (cmd === 'notices-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'notices-row-delete') {
+      } else if (cmd === 'notices-rowDelete') {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -296,9 +296,9 @@ window.CmNoticeMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="key => handleSelectAction('notices-sort', key)"
-    @set-page="n => handleSelectAction('notices-set-page', n)"
-    @size-change="handleSelectAction('notices-size-change')"
-    @row-click="row => handleSelectAction('notices-row-edit', row.noticeId)" row-actions>
+    @set-page="n => handleSelectAction('notices-pager-setPage', n)"
+    @size-change="handleSelectAction('notices-pager-sizeChange')"
+    @row-click="row => handleSelectAction('notices-rowEdit', row.noticeId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">
         📥 엑셀
@@ -309,10 +309,10 @@ window.CmNoticeMng = {
     </template>
     <template #row-actions="{ row }">
       <div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleSelectAction('notices-row-edit', row.noticeId)">
+        <button class="btn btn-blue btn-sm" @click="handleSelectAction('notices-rowEdit', row.noticeId)">
           수정
         </button>
-        <button class="btn btn-danger btn-sm" @click="handleSelectAction('notices-row-delete', row)">
+        <button class="btn btn-danger btn-sm" @click="handleSelectAction('notices-rowDelete', row)">
           삭제
         </button>
       </div>

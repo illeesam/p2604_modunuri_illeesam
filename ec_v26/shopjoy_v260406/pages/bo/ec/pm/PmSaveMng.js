@@ -51,16 +51,16 @@ window.PmSaveMng = {
       if (cmd === 'saves-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'saves-set-page') {
+      } else if (cmd === 'saves-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'saves-size-change') {
+      } else if (cmd === 'saves-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 상세 편집
-      } else if (cmd === 'saves-row-edit') {
+      } else if (cmd === 'saves-rowEdit') {
         return handleLoadDetail(param);
       // 행 삭제
-      } else if (cmd === 'saves-row-delete') {
+      } else if (cmd === 'saves-rowDelete') {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -351,16 +351,16 @@ window.PmSaveMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(s) => detailPanel.selectedId===s.saveId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleSelectAction('saves-sort', key)" @row-click="s => handleSelectAction('saves-row-edit', s.saveId)">
+      @sort="key => handleSelectAction('saves-sort', key)" @row-click="s => handleSelectAction('saves-rowEdit', s.saveId)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: s }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('saves-row-edit', s.saveId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('saves-rowEdit', s.saveId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('saves-row-delete', s)">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('saves-rowDelete', s)">
             삭제
           </button>
         </div>
@@ -374,12 +374,12 @@ window.PmSaveMng = {
       </div>
       <div v-for="s in saves" :key="s?.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===s.saveId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('saves-row-edit', s.saveId)">
+        @click="handleSelectAction('saves-rowEdit', s.saveId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             마일리지 #{{ s.saveId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('saves-row-edit', s.saveId)" :style="detailPanel.selectedId===s.saveId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('saves-rowEdit', s.saveId)" :style="detailPanel.selectedId===s.saveId?{color:'#e8587a'}:{}">
             {{ s.saveNm }}
             <span v-if="detailPanel.selectedId===s.saveId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -406,10 +406,10 @@ window.PmSaveMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('saves-row-edit', s.saveId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('saves-rowEdit', s.saveId)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('saves-row-delete', s)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('saves-rowDelete', s)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">
@@ -420,7 +420,7 @@ window.PmSaveMng = {
     </div>
     <!-- ===== □.□. 카드 뷰 ================================================== -->
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('saves-set-page', n)" :on-size-change="() => handleSelectAction('saves-size-change')" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('saves-pager-setPage', n)" :on-size-change="() => handleSelectAction('saves-pager-sizeChange')" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmSaveDtl 인라인 임베드 ============================== -->

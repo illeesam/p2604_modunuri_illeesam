@@ -32,10 +32,10 @@ window.Like = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Like.js : handleSelectAction -> ', cmd, param);
       // 상품 선택 (param: prod)
-      if (cmd === 'likes-row-select') {
+      if (cmd === 'likes-rowSelect') {
         return window.foApp.selectProd(param);
       // 좋아요 해제 (param: prodId)
-      } else if (cmd === 'likes-row-toggle-like') {
+      } else if (cmd === 'likes-rowToggleLike') {
         return window.foApp.toggleLike(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -104,14 +104,14 @@ window.Like = {
       @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.08)'"
       @mouseleave="$event.currentTarget.style.boxShadow=''">
       <!-- ===== ■.■.■. 이미지 ================================================= -->
-      <div style="position:relative;aspect-ratio:1;background:#fff;padding:clamp(8px,2vw,16px);overflow:hidden;" @click="handleSelectAction('likes-row-select', p)">
+      <div style="position:relative;aspect-ratio:1;background:#fff;padding:clamp(8px,2vw,16px);overflow:hidden;" @click="handleSelectAction('likes-rowSelect', p)">
         <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
         <span v-if="p.badge" style="position:absolute;top:10px;left:10px;font-size:0.68rem;font-weight:600;padding:3px 8px;border-radius:2px;color:#fff;"
           :style="{ background: p.badge==='NEW' ? '#1a1a1a' : '#8b7355' }">
           {{ p.badge }}
         </span>
         <!-- ===== ■.■.■.■. 좋아요 해제 ============================================ -->
-        <button @click.stop="handleSelectAction('likes-row-toggle-like', p.prodId)"
+        <button @click.stop="handleSelectAction('likes-rowToggleLike', p.prodId)"
           style="position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
@@ -120,7 +120,7 @@ window.Like = {
         </button>
       </div>
       <!-- ===== ■.■.■. 정보 ================================================== -->
-      <div style="padding:14px 16px;" @click="handleSelectAction('likes-row-select', p)">
+      <div style="padding:14px 16px;" @click="handleSelectAction('likes-rowSelect', p)">
         <div style="font-size:0.88rem;font-weight:600;color:var(--text-primary);margin-bottom:4px;">
           {{ p.prodNm }}
         </div>

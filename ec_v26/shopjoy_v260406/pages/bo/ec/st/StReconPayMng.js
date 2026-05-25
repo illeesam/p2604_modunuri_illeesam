@@ -40,10 +40,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconPayMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'reconPays-set-page') {
+      if (cmd === 'reconPays-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
-      } else if (cmd === 'reconPays-size-change') {
+      } else if (cmd === 'reconPays-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -240,7 +240,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      @set-page="n => handleSelectAction('reconPays-set-page', n)" @size-change="handleSelectAction('reconPays-size-change')">
+      @set-page="n => handleSelectAction('reconPays-pager-setPage', n)" @size-change="handleSelectAction('reconPays-pager-sizeChange')">
     </bo-grid>
   </div>
 </div>

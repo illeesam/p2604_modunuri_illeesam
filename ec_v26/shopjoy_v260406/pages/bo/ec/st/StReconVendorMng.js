@@ -39,10 +39,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconVendorMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'reconVendors-set-page') {
+      if (cmd === 'reconVendors-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
-      } else if (cmd === 'reconVendors-size-change') {
+      } else if (cmd === 'reconVendors-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -223,7 +223,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="vendorId"
       list-title="목록" :count-text="pager.pageTotalCount + '개 업체'"
-      @set-page="n => handleSelectAction('reconVendors-set-page', n)" @size-change="handleSelectAction('reconVendors-size-change')">
+      @set-page="n => handleSelectAction('reconVendors-pager-setPage', n)" @size-change="handleSelectAction('reconVendors-pager-sizeChange')">
     </bo-grid>
   </div>
 </div>

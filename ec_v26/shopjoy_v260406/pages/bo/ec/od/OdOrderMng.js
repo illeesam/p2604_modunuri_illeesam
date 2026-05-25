@@ -99,34 +99,34 @@ window.OdOrderMng = {
       if (cmd === 'orders-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'orders-set-page') {
+      } else if (cmd === 'orders-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'orders-size-change') {
+      } else if (cmd === 'orders-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 클릭 → 편집 인라인 패널 열기
-      } else if (cmd === 'orders-row-edit') {
+      } else if (cmd === 'orders-rowEdit') {
         detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
         return;
       // 그리드 행 보기
-      } else if (cmd === 'orders-row-view') {
+      } else if (cmd === 'orders-rowView') {
         detailPanel.selectedId = param; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++;
         return;
       // 그리드 행 삭제
-      } else if (cmd === 'orders-row-delete') {
+      } else if (cmd === 'orders-rowDelete') {
         return handleDelete(param);
       // 그리드 행 참조 모달 열기
-      } else if (cmd === 'orders-row-ref-click') {
+      } else if (cmd === 'orders-rowRefClick') {
         return showRefModal(param.type, param.id);
       // 그리드 행 체크 토글
-      } else if (cmd === 'orders-row-toggle-check') {
+      } else if (cmd === 'orders-rowToggleCheck') {
         if (checked.has(param)) { checked.delete(param); }
         else { checked.add(param); }
         return;
       // 그리드 전체 체크 토글
-      } else if (cmd === 'orders-row-toggle-check-all') {
+      } else if (cmd === 'orders-rowToggleCheckAll') {
         if (cfAllChecked.value) { orders.forEach(o => checked.delete(o.orderId)); }
         else { orders.forEach(o => checked.add(o.orderId)); }
         return;
@@ -585,16 +585,16 @@ window.OdOrderMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleSelectAction('orders-sort', key)"
-        @toggle-check="id => handleSelectAction('orders-row-toggle-check', id)"
-        @toggle-check-all="handleSelectAction('orders-row-toggle-check-all')"
-        @row-click="row => handleSelectAction('orders-row-edit', row.orderId)"
-        @ref-click="({type,id}) => handleSelectAction('orders-row-ref-click', {type, id})" row-actions>
+        @toggle-check="id => handleSelectAction('orders-rowToggleCheck', id)"
+        @toggle-check-all="handleSelectAction('orders-rowToggleCheckAll')"
+        @row-click="row => handleSelectAction('orders-rowEdit', row.orderId)"
+        @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-row-edit', row.orderId)">
+            <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowEdit', row.orderId)">
               수정
             </button>
-            <button class="btn btn-danger btn-sm" @click="handleSelectAction('orders-row-delete', row)">
+            <button class="btn btn-danger btn-sm" @click="handleSelectAction('orders-rowDelete', row)">
               삭제
             </button>
           </div>
@@ -605,8 +605,8 @@ window.OdOrderMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('orders-set-page', n)"
-        :on-size-change="() => handleSelectAction('orders-size-change')"
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('orders-pager-setPage', n)"
+        :on-size-change="() => handleSelectAction('orders-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

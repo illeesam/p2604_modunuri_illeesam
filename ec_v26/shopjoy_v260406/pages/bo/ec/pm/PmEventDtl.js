@@ -115,7 +115,7 @@ window.PmEventDtl = {
       if (cmd === 'prodPickModal-toggle') {
         return toggleProduct(param);
       // 상품 제거 (선택 목록에서)
-      } else if (cmd === 'items-row-delete') {
+      } else if (cmd === 'items-rowDelete') {
         return removeProduct(param);
       // 참조 모달 열기
       } else if (cmd === 'items-ref') {
@@ -600,7 +600,7 @@ window.PmEventDtl = {
   <bo-grid bare :columns="productGridColumns" :rows="cfSelectedProducts" row-key="productId"
         empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => handleSelectAction('items-ref', {type, id})" row-actions>
     <template #row-actions="{ row }">
-      <button class="btn btn-danger btn-sm" @click="handleSelectAction('items-row-delete', row.productId)">
+      <button class="btn btn-danger btn-sm" @click="handleSelectAction('items-rowDelete', row.productId)">
         제거
       </button>
     </template>

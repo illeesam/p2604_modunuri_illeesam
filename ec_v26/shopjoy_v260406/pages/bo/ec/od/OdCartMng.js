@@ -62,25 +62,25 @@ window.OdCartMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdCartMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭
-      if (cmd === 'carts-set-page') {
+      if (cmd === 'carts-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList(); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'carts-size-change') {
+      } else if (cmd === 'carts-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList();
       // 행 체크 토글
-      } else if (cmd === 'carts-row-toggle-check') {
+      } else if (cmd === 'carts-rowToggleCheck') {
         const idx = uiState.selectedIds.indexOf(param);
         if (idx >= 0) { uiState.selectedIds.splice(idx, 1); }
         else { uiState.selectedIds.push(param); }
         return;
       // 전체 체크 토글
-      } else if (cmd === 'carts-row-toggle-check-all') {
+      } else if (cmd === 'carts-rowToggleCheckAll') {
         uiState.selectedIds = cfAllChecked.value ? [] : carts.map(r => r.cartId);
         return;
       // 행 삭제
-      } else if (cmd === 'carts-row-delete') {
+      } else if (cmd === 'carts-rowDelete') {
         return handleDelete(param);
       // 회원 선택 모달에서 회원 선택
       } else if (cmd === 'memberPickModal-select') {
@@ -300,16 +300,16 @@ window.OdCartMng = {
     <bo-grid v-else bare selectable :columns="listGridColumns" :rows="carts" :pager="pager" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
-      @toggle-check="id => handleSelectAction('carts-row-toggle-check', id)"
-      @toggle-check-all="handleSelectAction('carts-row-toggle-check-all')" row-actions>
+      @toggle-check="id => handleSelectAction('carts-rowToggleCheck', id)"
+      @toggle-check-all="handleSelectAction('carts-rowToggleCheckAll')" row-actions>
       <template #row-actions="{ row }">
-        <button class="btn btn-danger btn-xs" @click="handleSelectAction('carts-row-delete', row.cartId)">
+        <button class="btn btn-danger btn-xs" @click="handleSelectAction('carts-rowDelete', row.cartId)">
           삭제
         </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('carts-set-page', n)"
-      :on-size-change="() => handleSelectAction('carts-size-change')" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('carts-pager-setPage', n)"
+      :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->

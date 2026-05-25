@@ -67,16 +67,16 @@ window.SyBatchMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBatchMng.js : handleSelectAction -> ', cmd, param);
       // 배치 그리드 행 삭제 마킹
-      if (cmd === 'batches-row-delete') {
+      if (cmd === 'batches-rowDelete') {
         return deleteRow(param);
       // 배치 그리드 행 변경 취소
-      } else if (cmd === 'batches-row-cancel') {
+      } else if (cmd === 'batches-rowCancel') {
         return cancelRow(param);
       // 배치 그리드 셀 값 변경 감지
-      } else if (cmd === 'batches-row-cell-change') {
+      } else if (cmd === 'batches-rowCellChange') {
         return onCellChange(param);
       // 배치 즉시 실행
-      } else if (cmd === 'batches-row-run-now') {
+      } else if (cmd === 'batches-rowRunNow') {
         return runNow(param);
       // Cron 편집 모달 열기
       } else if (cmd === 'cronModal-open') {
@@ -398,11 +398,11 @@ window.SyBatchMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('batches-add')" @save="handleBtnAction('batches-save')"
         @delete-checked="handleBtnAction('batches-delete-checked')" @cancel-checked="handleBtnAction('batches-cancel-checked')"
-        @cell-change="row => handleSelectAction('batches-row-cell-change', row)" @export="handleBtnAction('batches-excel')">
+        @cell-change="row => handleSelectAction('batches-rowCellChange', row)" @export="handleBtnAction('batches-excel')">
         <template #cell-cronExpr="{ row, idx }">
           <td>
             <div style="display:flex;align-items:center;gap:3px;">
-              <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="handleSelectAction('batches-row-cell-change', row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
+              <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="handleSelectAction('batches-rowCellChange', row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs" style="flex-shrink:0;padding:2px 5px;font-size:11px;" title="Cron 편집" @click.stop="handleSelectAction('cronModal-open', idx)">
                 🕐
               </button>
@@ -410,10 +410,10 @@ window.SyBatchMng = {
           </td>
         </template>
         <template #row-actions="{ row, idx }">
-          <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="handleSelectAction('batches-row-run-now', row)">
+          <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="handleSelectAction('batches-rowRunNow', row)">
             ▶
           </button>
-          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('batches-row-cancel', idx)" @delete="handleSelectAction('batches-row-delete', idx)" />
+          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('batches-rowCancel', idx)" @delete="handleSelectAction('batches-rowDelete', idx)" />
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. Cron 편집 모달 (BoCronModal 컴포넌트) ======================= -->

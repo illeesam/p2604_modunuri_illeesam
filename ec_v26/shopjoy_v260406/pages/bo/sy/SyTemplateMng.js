@@ -75,24 +75,24 @@ window.SyTemplateMng = {
       } else if (cmd === 'templates-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'templates-set-page') {
+      } else if (cmd === 'templates-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'templates-size-change') {
+      } else if (cmd === 'templates-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 그리드 행 클릭 / 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'templates-row-edit') {
+      } else if (cmd === 'templates-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'templates-row-delete') {
+      } else if (cmd === 'templates-rowDelete') {
         return handleDelete(param);
       // 그리드 행 미리보기
-      } else if (cmd === 'templates-row-preview') {
+      } else if (cmd === 'templates-rowPreview') {
         return showPreview(param);
       // 그리드 행 발송
-      } else if (cmd === 'templates-row-send') {
+      } else if (cmd === 'templates-rowSend') {
         return openSend(param);
       // 표시경로 picker 열기 (행 단위)
       } else if (cmd === 'pathModal-open') {
@@ -361,9 +361,9 @@ window.SyTemplateMng = {
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('templates-sort', key)"
-        @set-page="n => handleSelectAction('templates-set-page', n)"
-        @size-change="handleSelectAction('templates-size-change')"
-        @row-click="row => handleSelectAction('templates-row-edit', row.templateId)">
+        @set-page="n => handleSelectAction('templates-pager-setPage', n)"
+        @size-change="handleSelectAction('templates-pager-sizeChange')"
+        @row-click="row => handleSelectAction('templates-rowEdit', row.templateId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
@@ -382,16 +382,16 @@ window.SyTemplateMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-secondary btn-sm" @click="handleSelectAction('templates-row-preview', row)">
+              <button class="btn btn-secondary btn-sm" @click="handleSelectAction('templates-rowPreview', row)">
                 미리보기
               </button>
-              <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-row-send', row)">
+              <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
                 발송
               </button>
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('templates-row-edit', row.templateId)">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('templates-rowEdit', row.templateId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('templates-row-delete', row)">
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('templates-rowDelete', row)">
                 삭제
               </button>
             </div>

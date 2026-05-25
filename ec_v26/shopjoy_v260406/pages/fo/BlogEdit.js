@@ -46,7 +46,7 @@ window.BlogEdit = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ BlogEdit.js : handleSelectAction -> ', cmd, param);
       // 이미지 행 삭제 (param: imageId)
-      if (cmd === 'form-row-remove-image') {
+      if (cmd === 'form-rowRemoveImage') {
         return removeImage(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -175,7 +175,7 @@ window.BlogEdit = {
         <span style="font-size:0.82rem;color:var(--text-secondary);flex:1;">
           📎 {{ img.name }} ({{ img.size }})
         </span>
-        <button @click="handleSelectAction('form-row-remove-image', img.id)"
+        <button @click="handleSelectAction('form-rowRemoveImage', img.id)"
           style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:0.78rem;font-weight:600;">
           삭제
         </button>

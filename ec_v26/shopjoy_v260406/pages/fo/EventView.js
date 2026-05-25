@@ -36,7 +36,7 @@ window.EventView = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ EventView.js : handleSelectAction -> ', cmd, param);
       // 관련 이벤트 카드 클릭 (param: eventId)
-      if (cmd === 'relatedEvents-row-view') {
+      if (cmd === 'relatedEvents-rowView') {
         return props.navigate('eventView', { eventId: param });
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -223,7 +223,7 @@ window.EventView = {
     </h2>
     <div style="display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;">
       <div v-for="ev in cfPromoEvents" :key="ev.id"
-          @click="handleSelectAction('relatedEvents-row-view', ev.id)"
+          @click="handleSelectAction('relatedEvents-rowView', ev.id)"
           style="flex:0 0 260px;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:transform .15s,box-shadow .15s;"
           @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 16px rgba(0,0,0,0.1)'"
           @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">

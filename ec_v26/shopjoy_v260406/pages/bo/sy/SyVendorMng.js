@@ -63,16 +63,16 @@ window.SyVendorMng = {
       if (cmd === 'vendors-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'vendors-set-page') {
+      } else if (cmd === 'vendors-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'vendors-size-change') {
+      } else if (cmd === 'vendors-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 편집 패널 열기
-      } else if (cmd === 'vendors-row-edit') {
+      } else if (cmd === 'vendors-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'vendors-row-delete') {
+      } else if (cmd === 'vendors-rowDelete') {
         return handleDelete(param);
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'pathTree-select') {
@@ -301,9 +301,9 @@ window.SyVendorMng = {
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('vendors-sort', key)"
-        @set-page="n => handleSelectAction('vendors-set-page', n)"
-        @size-change="handleSelectAction('vendors-size-change')"
-        @row-click="row => handleSelectAction('vendors-row-edit', row.vendorId)">
+        @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
+        @size-change="handleSelectAction('vendors-pager-sizeChange')"
+        @row-click="row => handleSelectAction('vendors-rowEdit', row.vendorId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('vendors-excel')">
@@ -322,10 +322,10 @@ window.SyVendorMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('vendors-row-edit', row.vendorId)">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('vendors-rowEdit', row.vendorId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('vendors-row-delete', row)">
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('vendors-rowDelete', row)">
                 삭제
               </button>
             </div>

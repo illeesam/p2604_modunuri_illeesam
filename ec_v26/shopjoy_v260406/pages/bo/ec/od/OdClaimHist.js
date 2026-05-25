@@ -63,7 +63,7 @@ window.OdClaimHist = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdClaimHist.js : handleSelectAction -> ', cmd, param);
       // 클레임 항목 삭제
-      if (cmd === 'claimItems-row-remove') {
+      if (cmd === 'claimItems-rowRemove') {
         return removeClaimItem(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -299,7 +299,7 @@ window.OdClaimHist = {
                 <input class="form-control" v-model="item.afDate" style="font-size:12px;background:transparent;border-color:#ffadd2;" placeholder="2026-04-09 10:00" />
               </td>
               <td style="border:1px solid #e0e0e0;padding:4px;text-align:center;">
-                <button class="btn btn-danger btn-sm" @click="handleSelectAction('claimItems-row-remove', item._id)">
+                <button class="btn btn-danger btn-sm" @click="handleSelectAction('claimItems-rowRemove', item._id)">
                   삭제
                 </button>
               </td>

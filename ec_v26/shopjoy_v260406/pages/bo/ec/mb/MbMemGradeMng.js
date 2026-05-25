@@ -51,13 +51,13 @@ window.MbMemGradeMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MbMemGradeMng.js : handleSelectAction -> ', cmd, param);
       // 회원등급 그리드 행 삭제 마킹
-      if (cmd === 'grades-row-delete') {
+      if (cmd === 'grades-rowDelete') {
         return deleteRow(param);
       // 회원등급 그리드 행 변경 취소
-      } else if (cmd === 'grades-row-cancel') {
+      } else if (cmd === 'grades-rowCancel') {
         return cancelRow(param);
       // 회원등급 그리드 셀 값 변경 감지
-      } else if (cmd === 'grades-row-cell-change') {
+      } else if (cmd === 'grades-rowCellChange') {
         return onCellChange(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -279,9 +279,9 @@ window.MbMemGradeMng = {
     v-model:checkAll="uiState.checkAll"
     @add="handleBtnAction('grades-add')" @save="handleBtnAction('grades-save')"
     @delete-checked="handleBtnAction('grades-delete-checked')" @cancel-checked="handleBtnAction('grades-cancel-checked')"
-    @cell-change="row => handleSelectAction('grades-row-cell-change', row)">
+    @cell-change="row => handleSelectAction('grades-rowCellChange', row)">
     <template #row-actions="{ row, idx }">
-      <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('grades-row-cancel', idx)" @delete="handleSelectAction('grades-row-delete', idx)" />
+      <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('grades-rowCancel', idx)" @delete="handleSelectAction('grades-rowDelete', idx)" />
     </template>
   </bo-grid-crud>
   <!-- ===== □. CRUD 그리드 ================================================ -->

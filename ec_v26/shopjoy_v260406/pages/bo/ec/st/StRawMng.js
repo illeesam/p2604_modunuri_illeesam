@@ -44,10 +44,10 @@ window.StRawMng = {
     /* handleSelectAction — 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StRawMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'rawData-set-page') {
+      if (cmd === 'rawData-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
-      } else if (cmd === 'rawData-size-change') {
+      } else if (cmd === 'rawData-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -455,8 +455,8 @@ const rawList = reactive([]);
     list-title="정산수집원장"
     :is-expanded="(r) => isExpanded(r.settleRawId)"
     empty-text="데이터가 없습니다." row-clickable
-    @set-page="n => handleSelectAction('rawData-set-page', n)"
-    @size-change="handleSelectAction('rawData-size-change')"
+    @set-page="n => handleSelectAction('rawData-pager-setPage', n)"
+    @size-change="handleSelectAction('rawData-pager-sizeChange')"
     @row-click="(r) => toggleRow(r.settleRawId)">
     <template #toolbar-actions>
       <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">

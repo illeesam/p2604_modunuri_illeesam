@@ -59,19 +59,19 @@ window.SyContactMng = {
       if (cmd === 'contacts-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'contacts-set-page') {
+      } else if (cmd === 'contacts-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'contacts-size-change') {
+      } else if (cmd === 'contacts-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기/편집 토글
-      } else if (cmd === 'contacts-row-edit') {
+      } else if (cmd === 'contacts-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'contacts-row-delete') {
+      } else if (cmd === 'contacts-rowDelete') {
         return handleDelete(param);
       // 참조 모달 열기 (회원 등)
-      } else if (cmd === 'contacts-row-ref') {
+      } else if (cmd === 'contacts-rowRef') {
         return showRefModal(param.type, param.id);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -285,10 +285,10 @@ window.SyContactMng = {
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('contacts-sort', key)"
-    @set-page="n => handleSelectAction('contacts-set-page', n)"
-    @size-change="handleSelectAction('contacts-size-change')"
-    @ref-click="({type,id}) => handleSelectAction('contacts-row-ref', {type, id})"
-    @row-click="row => handleSelectAction('contacts-row-edit', row.contactId)">
+    @set-page="n => handleSelectAction('contacts-pager-setPage', n)"
+    @size-change="handleSelectAction('contacts-pager-sizeChange')"
+    @ref-click="({type,id}) => handleSelectAction('contacts-rowRef', {type, id})"
+    @row-click="row => handleSelectAction('contacts-rowEdit', row.contactId)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('contacts-excel')">
@@ -307,10 +307,10 @@ window.SyContactMng = {
     <template #row-actions="{ row }">
       <td>
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('contacts-row-edit', row.contactId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('contacts-rowEdit', row.contactId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('contacts-row-delete', row)">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('contacts-rowDelete', row)">
             삭제
           </button>
         </div>

@@ -45,13 +45,13 @@ window.SyBatchHist = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBatchHist.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭
-      if (cmd === 'batchLogs-set-page') {
+      if (cmd === 'batchLogs-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'batchLogs-size-change') {
+      } else if (cmd === 'batchLogs-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 펼침 토글
-      } else if (cmd === 'batchLogs-row-toggle') {
+      } else if (cmd === 'batchLogs-rowToggle') {
         return toggleExpand(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -193,9 +193,9 @@ window.SyBatchHist = {
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
     empty-text="실행이력이 없습니다."
-    @set-page="n => handleSelectAction('batchLogs-set-page', n)"
-    @size-change="handleSelectAction('batchLogs-size-change')"
-    @row-click="row => handleSelectAction('batchLogs-row-toggle', row.batchLogId)">
+    @set-page="n => handleSelectAction('batchLogs-pager-setPage', n)"
+    @size-change="handleSelectAction('batchLogs-pager-sizeChange')"
+    @row-click="row => handleSelectAction('batchLogs-rowToggle', row.batchLogId)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expand-all')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">

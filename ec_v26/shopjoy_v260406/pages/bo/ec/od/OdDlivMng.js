@@ -98,30 +98,30 @@ window.OdDlivMng = {
       if (cmd === 'dlivs-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'dlivs-set-page') {
+      } else if (cmd === 'dlivs-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'dlivs-size-change') {
+      } else if (cmd === 'dlivs-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 수정
-      } else if (cmd === 'dlivs-row-edit') {
+      } else if (cmd === 'dlivs-rowEdit') {
         detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
         return;
       // 그리드 행 삭제
-      } else if (cmd === 'dlivs-row-delete') {
+      } else if (cmd === 'dlivs-rowDelete') {
         return handleDelete(param);
       // 그리드 행 참조 모달 열기
-      } else if (cmd === 'dlivs-row-ref-click') {
+      } else if (cmd === 'dlivs-rowRefClick') {
         return showRefModal(param.type, param.id);
       // 그리드 행 체크 토글
-      } else if (cmd === 'dlivs-row-toggle-check') {
+      } else if (cmd === 'dlivs-rowToggleCheck') {
         if (checked.has(param)) { checked.delete(param); }
         else { checked.add(param); }
         return;
       // 그리드 전체 체크 토글
-      } else if (cmd === 'dlivs-row-toggle-check-all') {
+      } else if (cmd === 'dlivs-rowToggleCheckAll') {
         if (cfAllChecked.value) { dlivs.forEach(d => checked.delete(d.dlivId)); }
         else { dlivs.forEach(d => checked.add(d.dlivId)); }
         return;
@@ -594,15 +594,15 @@ window.OdDlivMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleSelectAction('dlivs-sort', key)"
-        @toggle-check="id => handleSelectAction('dlivs-row-toggle-check', id)"
-        @toggle-check-all="handleSelectAction('dlivs-row-toggle-check-all')"
-        @ref-click="({type,id}) => handleSelectAction('dlivs-row-ref-click', {type, id})" row-actions>
+        @toggle-check="id => handleSelectAction('dlivs-rowToggleCheck', id)"
+        @toggle-check-all="handleSelectAction('dlivs-rowToggleCheckAll')"
+        @ref-click="({type,id}) => handleSelectAction('dlivs-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('dlivs-row-edit', row.dlivId)">
+            <button class="btn btn-blue btn-sm" @click="handleSelectAction('dlivs-rowEdit', row.dlivId)">
               수정
             </button>
-            <button class="btn btn-danger btn-sm" @click="handleSelectAction('dlivs-row-delete', row)">
+            <button class="btn btn-danger btn-sm" @click="handleSelectAction('dlivs-rowDelete', row)">
               삭제
             </button>
           </div>
@@ -613,8 +613,8 @@ window.OdDlivMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('dlivs-set-page', n)"
-        :on-size-change="() => handleSelectAction('dlivs-size-change')"
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('dlivs-pager-setPage', n)"
+        :on-size-change="() => handleSelectAction('dlivs-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

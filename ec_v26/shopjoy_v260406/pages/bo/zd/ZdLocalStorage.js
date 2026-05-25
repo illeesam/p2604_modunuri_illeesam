@@ -28,19 +28,19 @@ window.ZdLocalStorage = {
       } else if (cmd === 'lsItems-clear-all') {
         return clearAllStorage();
       // 행 값 복사 (param: value)
-      } else if (cmd === 'lsItems-row-copy') {
+      } else if (cmd === 'lsItems-rowCopy') {
         return copyValue(param);
       // 행 수정 시작 (param: { key, value })
-      } else if (cmd === 'lsItems-row-edit') {
+      } else if (cmd === 'lsItems-rowEdit') {
         return startEdit(param.key, param.value);
       // 행 편집 저장 (param: key)
-      } else if (cmd === 'lsItems-row-save') {
+      } else if (cmd === 'lsItems-rowSave') {
         return saveEdit(param);
       // 행 편집 취소
-      } else if (cmd === 'lsItems-row-cancel') {
+      } else if (cmd === 'lsItems-rowCancel') {
         return cancelEdit();
       // 행 삭제 (param: key)
-      } else if (cmd === 'lsItems-row-delete') {
+      } else if (cmd === 'lsItems-rowDelete') {
         return deleteItem(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -256,10 +256,10 @@ window.ZdLocalStorage = {
                   style="width: 100%; height: 80px; padding: 8px; border: 1px solid #0066cc; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical;">
                 </textarea>
                   <div style="display: flex; gap: 6px; margin-top: 8px;">
-                    <button @click="handleBtnAction('lsItems-row-save', item.key)" class="btn btn-blue" style="padding: 4px 12px; font-size: 12px;">
+                    <button @click="handleBtnAction('lsItems-rowSave', item.key)" class="btn btn-blue" style="padding: 4px 12px; font-size: 12px;">
                       저장
                     </button>
-                    <button @click="handleBtnAction('lsItems-row-cancel')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">
+                    <button @click="handleBtnAction('lsItems-rowCancel')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">
                       취소
                     </button>
                   </div>
@@ -272,13 +272,13 @@ window.ZdLocalStorage = {
               </td>
               <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
               <td style="padding: 12px; text-align: center; white-space: nowrap;">
-                <button @click="handleBtnAction('lsItems-row-copy', item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                <button @click="handleBtnAction('lsItems-rowCopy', item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
                   복사
                 </button>
-                <button v-if="uiState.editingKey !== item.key" @click="handleBtnAction('lsItems-row-edit', { key: item.key, value: item.value })" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                <button v-if="uiState.editingKey !== item.key" @click="handleBtnAction('lsItems-rowEdit', { key: item.key, value: item.value })" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
                   수정
                 </button>
-                <button @click="handleBtnAction('lsItems-row-delete', item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">
+                <button @click="handleBtnAction('lsItems-rowDelete', item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">
                   삭제
                 </button>
               </td>

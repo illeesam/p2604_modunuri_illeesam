@@ -31,7 +31,7 @@ window.Faq = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Faq.js : handleSelectAction -> ', cmd, param);
       // FAQ 항목 토글 (param: idx)
-      if (cmd === 'faqs-row-toggle') {
+      if (cmd === 'faqs-rowToggle') {
         uiState.openFaq = (uiState.openFaq === param ? null : param);
         return;
       } else {
@@ -93,7 +93,7 @@ window.Faq = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
-      <button class="faq-question" @click="handleSelectAction('faqs-row-toggle', idx)">
+      <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', idx)">
         <span style="flex:1;">
           {{ faq.q }}
         </span>

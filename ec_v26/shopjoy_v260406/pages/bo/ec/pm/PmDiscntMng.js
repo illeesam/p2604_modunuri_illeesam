@@ -51,16 +51,16 @@ window.PmDiscntMng = {
       if (cmd === 'discnts-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'discnts-set-page') {
+      } else if (cmd === 'discnts-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'discnts-size-change') {
+      } else if (cmd === 'discnts-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 상세 편집
-      } else if (cmd === 'discnts-row-edit') {
+      } else if (cmd === 'discnts-rowEdit') {
         return handleLoadDetail(param);
       // 행 삭제
-      } else if (cmd === 'discnts-row-delete') {
+      } else if (cmd === 'discnts-rowDelete') {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);

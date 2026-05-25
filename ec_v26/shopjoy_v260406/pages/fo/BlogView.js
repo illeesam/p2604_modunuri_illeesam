@@ -34,7 +34,7 @@ window.BlogView = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ BlogView.js : handleSelectAction -> ', cmd, param);
       // 최신글/관련글 클릭 (param: postId)
-      if (cmd === 'blogs-row-view') {
+      if (cmd === 'blogs-rowView') {
         return props.navigate('blogView', { dtlId: param });
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -349,7 +349,7 @@ window.BlogView = {
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div v-for="lp in cfLatestPosts" :key="lp.id"
             style="display:flex;gap:12px;cursor:pointer;"
-            @click="handleSelectAction('blogs-row-view', lp.id)">
+            @click="handleSelectAction('blogs-rowView', lp.id)">
           <div style="width:64px;height:64px;border-radius:4px;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
             <img v-if="lp.imgSm" :src="lp.imgSm" :alt="lp.title" style="width:100%;height:100%;object-fit:cover;" />
           </div>
@@ -413,7 +413,7 @@ window.BlogView = {
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="handleSelectAction('blogs-row-view', rp.id)">
+        @click="handleSelectAction('blogs-rowView', rp.id)">
       <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;margin-bottom:14px;background:var(--bg-base);">
         <img v-if="rp.img" :src="rp.img" :alt="rp.title"
             style="width:100%;height:100%;object-fit:cover;transition:transform .35s;"

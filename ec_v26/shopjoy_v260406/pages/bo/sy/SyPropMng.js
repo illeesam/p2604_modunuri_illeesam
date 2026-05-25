@@ -68,11 +68,11 @@ window.SyPropMng = {
       } else if (cmd === 'props-cell-change') {
         return onCellChange(param);
       // 그리드 행 삭제 마킹
-      } else if (cmd === 'props-row-delete') {
+      } else if (cmd === 'props-rowDelete') {
         param._row_status = 'D';
         return;
       // 그리드 행 복원 (D → N/I)
-      } else if (cmd === 'props-row-restore') {
+      } else if (cmd === 'props-rowRestore') {
         param._row_status = param._row_org ? 'N' : 'I';
         return;
       } else {
@@ -272,10 +272,10 @@ window.SyPropMng = {
       @delete-checked="handleBtnAction('props-delete-checked')" @cancel-checked="handleBtnAction('props-cancel-checked')"
       @cell-change="row => handleSelectAction('props-cell-change', row)">
       <template #row-actions="{ row }">
-        <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="handleSelectAction('props-row-delete', row)">
+        <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="handleSelectAction('props-rowDelete', row)">
           삭제
         </button>
-        <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="handleSelectAction('props-row-restore', row)">
+        <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="handleSelectAction('props-rowRestore', row)">
           복원
         </button>
       </template>

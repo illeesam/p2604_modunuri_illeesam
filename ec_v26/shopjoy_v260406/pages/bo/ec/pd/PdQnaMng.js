@@ -44,11 +44,11 @@ window.PdQnaMng = {
       if (cmd === 'qnas-sort') {
         return onSort(param);
       // 페이지 번호 변경
-      } else if (cmd === 'qnas-set-page') {
+      } else if (cmd === 'qnas-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'qnas-size-change') {
+      } else if (cmd === 'qnas-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -191,7 +191,7 @@ window.PdQnaMng = {
         </span>
       </span>
       <div class="pager-right">
-        <select class="size-select" v-model.number="pager.pageSize" @change="handleSelectAction('qnas-size-change')">
+        <select class="size-select" v-model.number="pager.pageSize" @change="handleSelectAction('qnas-pager-sizeChange')">
           <option v-for="s in pager.pageSizes" :key="s" :value="s">
             {{ s }}개
           </option>
@@ -205,9 +205,9 @@ window.PdQnaMng = {
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
-      @sort="key => handleSelectAction('qnas-sort', key)" @set-page="n => handleSelectAction('qnas-set-page', n)" @size-change="handleSelectAction('qnas-size-change')">
+      @sort="key => handleSelectAction('qnas-sort', key)" @set-page="n => handleSelectAction('qnas-pager-setPage', n)" @size-change="handleSelectAction('qnas-pager-sizeChange')">
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('qnas-set-page', n)" :on-size-change="() => handleSelectAction('qnas-size-change')" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>

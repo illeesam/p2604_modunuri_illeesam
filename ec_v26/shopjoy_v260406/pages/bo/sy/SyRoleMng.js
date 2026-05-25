@@ -109,23 +109,23 @@ window.SyRoleMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyRoleMng.js : handleSelectAction -> ', cmd, param);
       // 역할 그리드 행 편집 (상세 로드)
-      if (cmd === 'roles-row-edit') {
+      if (cmd === 'roles-rowEdit') {
         return handleLoadRoleDetail(param);
       // 역할 그리드 행 삭제 마킹
-      } else if (cmd === 'roles-row-delete') {
+      } else if (cmd === 'roles-rowDelete') {
         return deleteRow(param);
       // 역할 그리드 행 변경 취소
-      } else if (cmd === 'roles-row-cancel') {
+      } else if (cmd === 'roles-rowCancel') {
         return cancelRow(param);
       // 역할 그리드 셀 값 변경 감지
-      } else if (cmd === 'roles-row-cell-change') {
+      } else if (cmd === 'roles-rowCellChange') {
         return onCellChange(param);
       // 역할 그리드 전체 체크/해제 토글
-      } else if (cmd === 'roles-row-check-all') {
+      } else if (cmd === 'roles-rowCheckAll') {
         gridRows.forEach(r => { r._row_check = uiState.checkAll; });
         return;
       // 역할 그리드 행에서 설정 패널 열기 (선택된 역할 변경)
-      } else if (cmd === 'roles-row-open-setting') {
+      } else if (cmd === 'roles-rowOpenSetting') {
         return onOpenSetting(param);
       // 상위역할 선택 모달 열기 (parentPick 컬럼)
       } else if (cmd === 'parentModal-open') {
@@ -788,15 +788,15 @@ window.SyRoleMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('roles-add')" @save="handleBtnAction('roles-save')"
         @delete-checked="handleBtnAction('roles-delete-checked')" @cancel-checked="handleBtnAction('roles-cancel-checked')"
-        @cell-change="row => handleSelectAction('roles-row-cell-change', row)" @export="handleBtnAction('roles-excel')">
+        @cell-change="row => handleSelectAction('roles-rowCellChange', row)" @export="handleBtnAction('roles-excel')">
         <template #row-actions="{ row, idx }">
-          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-row-cancel', idx)" @delete="handleSelectAction('roles-row-delete', idx)">
+          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-rowCancel', idx)" @delete="handleSelectAction('roles-rowDelete', idx)">
           </bo-row-cancel-delete>
           <button v-if="cfShowRoleSetting(row)"
             class="btn btn-blue btn-xs"
             :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
             outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
-            @click.stop="handleSelectAction('roles-row-open-setting', idx)"
+            @click.stop="handleSelectAction('roles-rowOpenSetting', idx)"
             title="하단 메뉴접근권한 / 대상사용자 설정">
             설정
           </button>

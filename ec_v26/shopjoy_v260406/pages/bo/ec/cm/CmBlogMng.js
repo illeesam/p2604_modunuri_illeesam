@@ -64,16 +64,16 @@ window.CmBlogMng = {
       if (cmd === 'blogs-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'blogs-set-page') {
+      } else if (cmd === 'blogs-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'blogs-size-change') {
+      } else if (cmd === 'blogs-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기 토글
-      } else if (cmd === 'blogs-row-view') {
+      } else if (cmd === 'blogs-rowView') {
         return openDetail(param);
       // 그리드 행 공개/비공개 토글
-      } else if (cmd === 'blogs-row-toggle-use') {
+      } else if (cmd === 'blogs-rowToggleUse') {
         return toggleUse(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -328,16 +328,16 @@ window.CmBlogMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
     @sort="key => handleSelectAction('blogs-sort', key)"
-    @set-page="n => handleSelectAction('blogs-set-page', n)"
-    @size-change="handleSelectAction('blogs-size-change')"
-    @row-click="row => handleSelectAction('blogs-row-view', row)" row-actions>
+    @set-page="n => handleSelectAction('blogs-pager-setPage', n)"
+    @size-change="handleSelectAction('blogs-pager-sizeChange')"
+    @row-click="row => handleSelectAction('blogs-rowView', row)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('blogs-add')">
         + 신규
       </button>
     </template>
     <template #row-actions="{ row }">
-      <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-row-toggle-use', row)">
+      <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-rowToggleUse', row)">
         {{ row.useYn==='Y'?'비공개':'공개' }}
       </button>
     </template>

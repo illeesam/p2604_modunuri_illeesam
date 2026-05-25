@@ -117,13 +117,13 @@ window.XsSample01 = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Sample01.js : handleSelectAction -> ', cmd, param);
       // 행 셀 변경
-      if (cmd === 'members-row-cell-change') {
+      if (cmd === 'members-rowCellChange') {
         return onCellChange(param);
       // 행 취소
-      } else if (cmd === 'members-row-cancel') {
+      } else if (cmd === 'members-rowCancel') {
         return onRowCancel(param);
       // 행 삭제
-      } else if (cmd === 'members-row-delete') {
+      } else if (cmd === 'members-rowDelete') {
         return onRowDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -382,9 +382,9 @@ window.XsSample01 = {
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('members-add')" @save="handleBtnAction('members-save')"
     @delete-checked="handleBtnAction('members-delete-checked')" @cancel-checked="handleBtnAction('members-cancel-checked')"
-    @reorder="handleBtnAction('members-reorder')" @cell-change="handleSelectAction('members-row-cell-change', $event)">
+    @reorder="handleBtnAction('members-reorder')" @cell-change="handleSelectAction('members-rowCellChange', $event)">
     <template #row-actions="{ row }">
-      <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('members-row-cancel', row)" @delete="handleSelectAction('members-row-delete', row)" />
+      <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('members-rowCancel', row)" @delete="handleSelectAction('members-rowDelete', row)" />
     </template>
   </fo-grid-crud>
 </div>

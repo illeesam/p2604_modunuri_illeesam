@@ -81,25 +81,25 @@ window.SyVendorUserMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyVendorUserMng.js : handleSelectAction -> ', cmd, param);
       // 업체 그리드 행 선택 (선택 업체 변경)
-      if (cmd === 'vendors-row-select') {
+      if (cmd === 'vendors-rowSelect') {
         return pickVendorRow(param);
       // 업체 그리드 페이지 번호 클릭
-      } else if (cmd === 'vendors-set-page') {
+      } else if (cmd === 'vendors-pager-setPage') {
         return setBizPage(param);
       // 사용자 그리드 행 클릭 → 편집 모드 진입
-      } else if (cmd === 'vendorUsers-row-edit') {
+      } else if (cmd === 'vendorUsers-rowEdit') {
         return openEdit(param);
       // 사용자 그리드 행 삭제
-      } else if (cmd === 'vendorUsers-row-delete') {
+      } else if (cmd === 'vendorUsers-rowDelete') {
         return handleDeleteRow(param);
       // 사용자 그리드 페이지 번호 클릭
-      } else if (cmd === 'vendorUsers-set-page') {
+      } else if (cmd === 'vendorUsers-pager-setPage') {
         return setPage(param);
       // 사용자 그리드 페이지 크기 변경
-      } else if (cmd === 'vendorUsers-size-change') {
+      } else if (cmd === 'vendorUsers-pager-sizeChange') {
         return onSizeChange();
       // 부여된 역할 그리드 행 삭제
-      } else if (cmd === 'userRoles-row-delete') {
+      } else if (cmd === 'userRoles-rowDelete') {
         return handleDeleteRole(param);
       // 역할 모달: 트리 노드 토글
       } else if (cmd === 'roleModal-tree-toggle') {
@@ -644,10 +644,10 @@ window.SyVendorUserMng = {
     :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
     list-title="업체목록" :count-text="vendors.length + '건'"
     :row-style="fnVendorRowStyle" row-clickable
-    @set-page="n => handleSelectAction('vendors-set-page', n)"
-    @row-click="row => handleSelectAction('vendors-row-select', row)" row-actions>
+    @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
+    @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-row-select', row)">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
         {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
       </button>
     </template>
@@ -658,16 +658,16 @@ window.SyVendorUserMng = {
     :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
     list-title="사용자목록" :count-text="vendorUsers.length + '건'"
     :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
-    @set-page="n => handleSelectAction('vendorUsers-set-page', n)"
-    @size-change="handleSelectAction('vendorUsers-size-change')"
-    @row-click="row => handleSelectAction('vendorUsers-row-edit', row)">
+    @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
+    @size-change="handleSelectAction('vendorUsers-pager-sizeChange')"
+    @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
         + 신규등록
       </button>
     </template>
     <template #row-actions="{ row }">
-      <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-row-delete', row)">
+      <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">
         삭제
       </button>
     </template>
@@ -730,7 +730,7 @@ window.SyVendorUserMng = {
       <bo-grid v-else bare :columns="userRoleGridColumns" :rows="userRoles" row-key="vendorUserRoleId"
         empty-text="부여된 역할이 없습니다." row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('userRoles-row-delete', row)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('userRoles-rowDelete', row)">
             삭제
           </button>
         </template>

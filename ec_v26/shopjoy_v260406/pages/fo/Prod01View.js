@@ -119,7 +119,7 @@ window.Prod01View = {
       } else if (cmd === 'tab-go') {
         return scrollToTab(param);
       // 이미지 썸네일 선택
-      } else if (cmd === 'gallery-row-select') {
+      } else if (cmd === 'gallery-rowSelect') {
         uiState.selectedImg = param;
         return;
       // 리뷰 정렬 필터 선택
@@ -127,14 +127,14 @@ window.Prod01View = {
         uiState.reviewFilter = param;
         return;
       // 포토 그리드 페이지 번호 선택
-      } else if (cmd === 'photoGrid-row-go') {
+      } else if (cmd === 'photoGrid-rowGo') {
         uiState.photoGridPage = param;
         return;
       // 포토 리뷰 선택 (그리드 → 디테일)
-      } else if (cmd === 'reviews-photo-grid-row-select') {
+      } else if (cmd === 'reviews-photo-grid-rowSelect') {
         return openPhotoFromGrid(param);
       // 포토 리뷰 선택 (목록 → 디테일)
-      } else if (cmd === 'reviews-photo-list-row-select') {
+      } else if (cmd === 'reviews-photo-list-rowSelect') {
         return openPhotoFromList(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -1094,7 +1094,7 @@ window.Prod01View = {
           <!-- ===== ■.■.■.■.■. 썸네일 가로 목록 (하단) ================================== -->
           <div style="display:flex;flex-direction:row;gap:8px;overflow-x:auto;scrollbar-width:none;">
             <div v-for="(img,i) in cfMockImages" :key="i"
-              @click="handleSelectAction('gallery-row-select', i)"
+              @click="handleSelectAction('gallery-rowSelect', i)"
               :title="img.optTip || img.label"
               :style="{
               width:'72px',height:'72px',borderRadius:'8px',overflow:'hidden',
@@ -1522,7 +1522,7 @@ window.Prod01View = {
       </div>
       <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
         <div v-for="r in cfReviewsWithPhoto" :key="r.id"
-              @click="handleSelectAction('reviews-photo-list-row-select', r)"
+              @click="handleSelectAction('reviews-photo-list-rowSelect', r)"
               style="width:80px;height:80px;flex-shrink:0;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
               @mouseenter="$event.currentTarget.style.opacity='.75'"
               @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -1567,7 +1567,7 @@ window.Prod01View = {
           </span>
         </div>
         <div v-if="r.hasPhoto" style="margin-bottom:10px;">
-          <div @click="handleSelectAction('reviews-photo-list-row-select', r)"
+          <div @click="handleSelectAction('reviews-photo-list-rowSelect', r)"
                 style="width:72px;height:72px;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);display:inline-block;">
             <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
           </div>
@@ -1692,7 +1692,7 @@ window.Prod01View = {
   </div>
   <!-- ===== ■.■.■. 하단 썸네일 ============================================== -->
   <div @click.stop style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:2;">
-    <div v-for="(img,i) in cfMockImages" :key="i" @click.stop="handleSelectAction('gallery-row-select', i)"
+    <div v-for="(img,i) in cfMockImages" :key="i" @click.stop="handleSelectAction('gallery-rowSelect', i)"
           :style="{ width:'56px', height:'56px', borderRadius:'8px', overflow:'hidden', cursor:'pointer',
           border: uiState.selectedImg===i ? '2px solid #fff' : '2px solid rgba(255,255,255,0.3)' }">
       <img :src="img.src" style="width:100%;height:100%;object-fit:cover;" />
@@ -1723,7 +1723,7 @@ window.Prod01View = {
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
       <div v-for="r in cfPhotoGridItems" :key="r.id"
-            @click="handleSelectAction('reviews-photo-grid-row-select', r)"
+            @click="handleSelectAction('reviews-photo-grid-rowSelect', r)"
             style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
             @mouseenter="$event.currentTarget.style.opacity='.75'"
             @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -1732,7 +1732,7 @@ window.Prod01View = {
     </div>
     <!-- ===== ■.■.■.■. 페이지네이션 ============================================ -->
     <div v-if="cfPhotoGridPageCount > 1" style="display:flex;justify-content:center;align-items:center;gap:6px;margin-top:20px;">
-      <button v-for="p in cfPhotoGridPageCount" :key="p" @click="handleSelectAction('photoGrid-row-go', p)"
+      <button v-for="p in cfPhotoGridPageCount" :key="p" @click="handleSelectAction('photoGrid-rowGo', p)"
             :style="{ width:'32px', height:'32px', borderRadius:'6px', border:'1px solid var(--border)', background: uiState.photoGridPage===p ? 'var(--text-primary)' : 'var(--bg-card)', color: uiState.photoGridPage===p ? '#fff' : 'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight: uiState.photoGridPage===p ? 700 : 400 }">
         {{ p }}
       </button>

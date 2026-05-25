@@ -60,13 +60,13 @@ window.SyMenuMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyMenuMng.js : handleSelectAction -> ', cmd, param);
       // 메뉴 그리드 셀 값 변경 감지
-      if (cmd === 'menus-row-cell-change') {
+      if (cmd === 'menus-rowCellChange') {
         return onCellChange(param);
       // 메뉴 그리드 행 삭제 마킹
-      } else if (cmd === 'menus-row-delete') {
+      } else if (cmd === 'menus-rowDelete') {
         return deleteRow(param);
       // 메뉴 그리드 행 변경 취소
-      } else if (cmd === 'menus-row-cancel') {
+      } else if (cmd === 'menus-rowCancel') {
         return cancelRow(param);
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'pathTree-select') {
@@ -349,12 +349,12 @@ window.SyMenuMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('menus-add')" @save="handleBtnAction('menus-save')"
         @delete-checked="handleBtnAction('menus-delete-checked')" @cancel-checked="handleBtnAction('menus-cancel-checked')"
-        @cell-change="row => handleSelectAction('menus-row-cell-change', row)"
+        @cell-change="row => handleSelectAction('menus-rowCellChange', row)"
         @export="handleBtnAction('menus-excel')">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row"
-            @cancel="handleSelectAction('menus-row-cancel', idx)"
-            @delete="handleSelectAction('menus-row-delete', idx)" />
+            @cancel="handleSelectAction('menus-rowCancel', idx)"
+            @delete="handleSelectAction('menus-rowDelete', idx)" />
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위메뉴 선택 모달 ========================================= -->

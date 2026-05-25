@@ -97,7 +97,7 @@ window.SyPostman = {
         uiState.activeTabId = param;
         return;
       // 열린 탭 닫기
-      } else if (cmd === 'openTabs-row-close') {
+      } else if (cmd === 'openTabs-rowClose') {
         return closeTab(param.tabId, param.evt);
       // 자동 실행 팝업 열기 (tab 기준)
       } else if (cmd === 'autoPopup-open') {
@@ -106,7 +106,7 @@ window.SyPostman = {
       } else if (cmd === 'autoPopup-select') {
         return selectAuto(param.tab, param.ms, param.label);
       // 기본 헤더 행 삭제
-      } else if (cmd === 'defHeaders-row-remove') {
+      } else if (cmd === 'defHeaders-rowRemove') {
         return removeRow(defHeaders, param);
       // 활성 탭 요청 탭 전환 (params/headers/body)
       } else if (cmd === 'request-tab-select') {
@@ -120,34 +120,34 @@ window.SyPostman = {
       } else if (cmd === 'reqParams-add') {
         return addRow(cfActiveTab.value.reqParams);
       // 활성 탭 요청 파라미터 행 삭제
-      } else if (cmd === 'reqParams-row-remove') {
+      } else if (cmd === 'reqParams-rowRemove') {
         return removeRow(cfActiveTab.value.reqParams, param);
       // 활성 탭 요청 헤더 행 추가
       } else if (cmd === 'reqHeaders-add') {
         return addRow(cfActiveTab.value.reqHeaders);
       // 활성 탭 요청 헤더 행 삭제
-      } else if (cmd === 'reqHeaders-row-remove') {
+      } else if (cmd === 'reqHeaders-rowRemove') {
         return removeRow(cfActiveTab.value.reqHeaders, param);
       // 이력 행 선택
-      } else if (cmd === 'history-row-select') {
+      } else if (cmd === 'history-rowSelect') {
         return selectHistory(param.h, param.i);
       // 이력 모달 탭 전환 (req/res)
       } else if (cmd === 'histModal-tab-select') {
         uiState.histModalTab = param;
         return;
       // 토스트 닫기
-      } else if (cmd === 'toasts-row-close') {
+      } else if (cmd === 'toasts-rowClose') {
         return closeToast(param);
       // 토스트 JSON 펼치기 토글
-      } else if (cmd === 'toasts-row-toggle-json') {
+      } else if (cmd === 'toasts-rowToggleJson') {
         param.jsonOpen = !param.jsonOpen;
         return;
       // 이력 모달 헤더 행 삭제
-      } else if (cmd === 'editReq-header-row-remove') {
+      } else if (cmd === 'editReq-header-rowRemove') {
         editReq.headers.splice(param, 1);
         return;
       // 이력 모달 파라미터 행 삭제
-      } else if (cmd === 'editReq-param-row-remove') {
+      } else if (cmd === 'editReq-param-rowRemove') {
         editReq.params.splice(param, 1);
         return;
       } else {
@@ -836,7 +836,7 @@ window.SyPostman = {
               :title="tab.autoMs ? '자동실행 중: '+tab.autoLabel : '자동실행 설정'">
               ⏱
             </button>
-            <button class="tab-btn" @click.stop="handleSelectAction('openTabs-row-close', { tabId: tab.tabId })"
+            <button class="tab-btn" @click.stop="handleSelectAction('openTabs-rowClose', { tabId: tab.tabId })"
               style="border:none;background:none;cursor:pointer;font-size:11px;color:#aaa;padding:1px 3px;border-radius:3px;opacity:0;transition:opacity .15s;line-height:1;"
               title="탭 닫기">
               ✕
@@ -970,7 +970,7 @@ window.SyPostman = {
           <div v-for="(h,i) in defHeaders" :key="i" style="display:flex;gap:3px;margin-bottom:3px;">
             <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
             <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-            <button @click="handleSelectAction('defHeaders-row-remove', i)" style="font-size:10px;padding:2px 5px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+            <button @click="handleSelectAction('defHeaders-rowRemove', i)" style="font-size:10px;padding:2px 5px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
               ✕
             </button>
           </div>
@@ -1068,7 +1068,7 @@ window.SyPostman = {
               <div v-for="(p,i) in cfActiveTab.reqParams" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="p.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="p.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="handleSelectAction('reqParams-row-remove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+                <button @click="handleSelectAction('reqParams-rowRemove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
                   ✕
                 </button>
               </div>
@@ -1080,7 +1080,7 @@ window.SyPostman = {
               <div v-for="(h,i) in cfActiveTab.reqHeaders" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="handleSelectAction('reqHeaders-row-remove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+                <button @click="handleSelectAction('reqHeaders-rowRemove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
                   ✕
                 </button>
               </div>
@@ -1213,7 +1213,7 @@ window.SyPostman = {
                 </td>
               </tr>
               <tr v-for="(h,i) in history" :key="h.id"
-              @click="handleSelectAction('history-row-select', { h: h, i: i })"
+              @click="handleSelectAction('history-rowSelect', { h: h, i: i })"
               style="cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
               :style="histSelIdx===i?'background:#e8f0fe;':''"
               @mouseenter="e=>{ if(histSelIdx!==i) e.currentTarget.style.background='#f5f5f5'; }"
@@ -1354,7 +1354,7 @@ window.SyPostman = {
           <div v-for="(h,i) in editReq.headers" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
             <input v-model="h.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
             <input v-model="h.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-            <button @click="handleSelectAction('editReq-header-row-remove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+            <button @click="handleSelectAction('editReq-header-rowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
               ✕
             </button>
           </div>
@@ -1380,7 +1380,7 @@ window.SyPostman = {
           <div v-for="(p,i) in editReq.params" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
             <input v-model="p.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
             <input v-model="p.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-            <button @click="handleSelectAction('editReq-param-row-remove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+            <button @click="handleSelectAction('editReq-param-rowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
               ✕
             </button>
           </div>
@@ -1478,7 +1478,7 @@ window.SyPostman = {
           :title="t.tabLabel">
         {{ t.tabLabel }}
       </span>
-      <button @click="handleSelectAction('toasts-row-close', t.id)"
+      <button @click="handleSelectAction('toasts-rowClose', t.id)"
           style="border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">
         ✕
       </button>
@@ -1503,7 +1503,7 @@ window.SyPostman = {
       </span>
     </div>
     <div style="background:#f9f9f9;">
-      <div @click="handleSelectAction('toasts-row-toggle-json', t)"
+      <div @click="handleSelectAction('toasts-rowToggleJson', t)"
           style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;color:#888;font-size:10px;">
         <span>
           응답 JSON

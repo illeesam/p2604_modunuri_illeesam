@@ -48,14 +48,14 @@ window.SyI18nMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyI18nMng.js : handleSelectAction -> ', cmd, param);
       // 다국어 키 그리드 행 클릭 → 번역 편집 패널 열기
-      if (cmd === 'i18n-row-open') {
+      if (cmd === 'i18n-rowOpen') {
         return openDetail(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'i18n-set-page') {
+      } else if (cmd === 'i18n-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData(); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'i18n-size-change') {
+      } else if (cmd === 'i18n-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData();
       } else {
@@ -242,9 +242,9 @@ window.SyI18nMng = {
     :columns="baseGridColumns" :rows="i18n" :pager="pager" row-key="i18nId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
-    @set-page="n => handleSelectAction('i18n-set-page', n)"
-    @size-change="handleSelectAction('i18n-size-change')"
-    @row-click="row => handleSelectAction('i18n-row-open', row)" />
+    @set-page="n => handleSelectAction('i18n-pager-setPage', n)"
+    @size-change="handleSelectAction('i18n-pager-sizeChange')"
+    @row-click="row => handleSelectAction('i18n-rowOpen', row)" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 번역 편집 패널 ================================================ -->
   <div class="card" v-if="cfSelectedKey">

@@ -118,13 +118,13 @@ window.XsSample06 = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Sample06.js : handleSelectAction -> ', cmd, param);
       // 행 셀 변경
-      if (cmd === 'coupons-row-cell-change') {
+      if (cmd === 'coupons-rowCellChange') {
         return onCellChange(param);
       // 행 취소
-      } else if (cmd === 'coupons-row-cancel') {
+      } else if (cmd === 'coupons-rowCancel') {
         return onRowCancel(param);
       // 행 삭제
-      } else if (cmd === 'coupons-row-delete') {
+      } else if (cmd === 'coupons-rowDelete') {
         return onRowDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -369,9 +369,9 @@ window.XsSample06 = {
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('coupons-add')" @save="handleBtnAction('coupons-save')"
     @delete-checked="handleBtnAction('coupons-delete-checked')" @cancel-checked="handleBtnAction('coupons-cancel-checked')"
-    @reorder="handleBtnAction('coupons-reorder')" @cell-change="handleSelectAction('coupons-row-cell-change', $event)">
+    @reorder="handleBtnAction('coupons-reorder')" @cell-change="handleSelectAction('coupons-rowCellChange', $event)">
     <template #row-actions="{ row }">
-      <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('coupons-row-cancel', row)" @delete="handleSelectAction('coupons-row-delete', row)" />
+      <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('coupons-rowCancel', row)" @delete="handleSelectAction('coupons-rowDelete', row)" />
     </template>
   </fo-grid-crud>
 </div>

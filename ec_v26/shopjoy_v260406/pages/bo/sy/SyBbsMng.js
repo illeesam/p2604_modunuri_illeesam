@@ -79,16 +79,16 @@ window.SyBbsMng = {
       if (cmd === 'bbsList-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'bbsList-set-page') {
+      } else if (cmd === 'bbsList-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'bbsList-size-change') {
+      } else if (cmd === 'bbsList-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'bbsList-row-edit') {
+      } else if (cmd === 'bbsList-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'bbsList-row-delete') {
+      } else if (cmd === 'bbsList-rowDelete') {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -333,9 +333,9 @@ window.SyBbsMng = {
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('bbsList-sort', key)"
-    @set-page="n => handleSelectAction('bbsList-set-page', n)"
-    @size-change="handleSelectAction('bbsList-size-change')"
-    @row-click="row => handleSelectAction('bbsList-row-edit', row.bbsId)">
+    @set-page="n => handleSelectAction('bbsList-pager-setPage', n)"
+    @size-change="handleSelectAction('bbsList-pager-sizeChange')"
+    @row-click="row => handleSelectAction('bbsList-rowEdit', row.bbsId)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('bbsList-excel')">
@@ -354,10 +354,10 @@ window.SyBbsMng = {
     <template #row-actions="{ row }">
       <td>
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('bbsList-row-edit', row.bbsId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('bbsList-rowEdit', row.bbsId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('bbsList-row-delete', row)">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('bbsList-rowDelete', row)">
             삭제
           </button>
         </div>

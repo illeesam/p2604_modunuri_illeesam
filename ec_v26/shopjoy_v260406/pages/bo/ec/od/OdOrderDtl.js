@@ -93,7 +93,7 @@ window.OdOrderDtl = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdOrderDtl.js : handleSelectAction -> ', cmd, param);
       // 주문항목 행 펼침 토글
-      if (cmd === 'orderItems-row-toggle-expand') {
+      if (cmd === 'orderItems-rowToggleExpand') {
         if (expandedItems.has(param)) { expandedItems.delete(param); }
         else { expandedItems.add(param); }
         return;
@@ -657,7 +657,7 @@ window.OdOrderDtl = {
         empty-text="주문 항목 정보가 없습니다.">
   <template #cell-prodNm="{ row, idx }">
     <td style="font-size:12px;">
-      <span v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" @click="handleSelectAction('orderItems-row-toggle-expand', idx)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+      <span v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" @click="handleSelectAction('orderItems-rowToggleExpand', idx)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
       {{ isExpanded(idx) ? '▼' : '▶' }}
     </span>
     <span style="font-size:18px;margin-right:6px;">

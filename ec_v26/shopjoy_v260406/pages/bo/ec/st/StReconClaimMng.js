@@ -44,11 +44,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconClaimMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 변경
-      if (cmd === 'reconClaims-set-page') {
+      if (cmd === 'reconClaims-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'reconClaims-size-change') {
+      } else if (cmd === 'reconClaims-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -243,7 +243,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="claimId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      @set-page="n => handleSelectAction('reconClaims-set-page', n)" @size-change="handleSelectAction('reconClaims-size-change')">
+      @set-page="n => handleSelectAction('reconClaims-pager-setPage', n)" @size-change="handleSelectAction('reconClaims-pager-sizeChange')">
     </bo-grid>
   </div>
 </div>

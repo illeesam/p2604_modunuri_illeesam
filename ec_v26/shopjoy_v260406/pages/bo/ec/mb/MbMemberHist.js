@@ -37,10 +37,10 @@ window.MbMemberHist = {
         uiState.tabMode2 = param;
         return;
       // 연관 주문 행 상세 이동
-      } else if (cmd === 'orders-row-view') {
+      } else if (cmd === 'orders-rowView') {
         return props.navigate('odOrderDtl', { id: param });
       // 연관 클레임 행 상세 이동
-      } else if (cmd === 'claims-row-view') {
+      } else if (cmd === 'claims-rowView') {
         return props.navigate('odClaimDtl', { id: param });
       // ref-link 클릭 (주문/클레임)
       } else if (cmd === 'row-ref') {
@@ -177,7 +177,7 @@ window.MbMemberHist = {
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-row-view', row.orderId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowView', row.orderId)">
             상세
           </button>
         </template>
@@ -195,7 +195,7 @@ window.MbMemberHist = {
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('claims-row-view', row.claimId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('claims-rowView', row.claimId)">
             상세
           </button>
         </template>

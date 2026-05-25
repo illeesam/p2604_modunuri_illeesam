@@ -54,15 +54,15 @@ window.PdRestockNotiMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdRestockNotiMng.js : handleSelectAction -> ', cmd, param);
       // 단일 행 체크 토글
-      if (cmd === 'restockNotis-row-toggle') {
+      if (cmd === 'restockNotis-rowToggle') {
         if (checkedIds.has(param)) { checkedIds.delete(param); } else { checkedIds.add(param); }
         return;
       // 페이지 번호 변경
-      } else if (cmd === 'restockNotis-set-page') {
+      } else if (cmd === 'restockNotis-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'restockNotis-size-change') {
+      } else if (cmd === 'restockNotis-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -211,8 +211,8 @@ window.PdRestockNotiMng = {
       :columns="baseGridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
-      @set-page="n => handleSelectAction('restockNotis-set-page', n)" @size-change="handleSelectAction('restockNotis-size-change')"
-      @toggle-check="id => handleSelectAction('restockNotis-row-toggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggle-all')">
+      @set-page="n => handleSelectAction('restockNotis-pager-setPage', n)" @size-change="handleSelectAction('restockNotis-pager-sizeChange')"
+      @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggle-all')">
     </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->

@@ -50,16 +50,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StSettleAdjMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'settleAdjs-row-approve') {
+      if (cmd === 'settleAdjs-rowApprove') {
         return doApprove(param);
-      } else if (cmd === 'settleAdjs-row-edit') {
+      } else if (cmd === 'settleAdjs-rowEdit') {
         return openEdit(param);
-      } else if (cmd === 'settleAdjs-row-delete') {
+      } else if (cmd === 'settleAdjs-rowDelete') {
         return handleDelete(param);
-      } else if (cmd === 'settleAdjs-set-page') {
+      } else if (cmd === 'settleAdjs-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
-      } else if (cmd === 'settleAdjs-size-change') {
+      } else if (cmd === 'settleAdjs-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else {
@@ -351,18 +351,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseGridColumns" :rows="adjList" :pager="pager" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
-      @set-page="n => handleSelectAction('settleAdjs-set-page', n)" @size-change="handleSelectAction('settleAdjs-size-change')">
+      @set-page="n => handleSelectAction('settleAdjs-pager-setPage', n)" @size-change="handleSelectAction('settleAdjs-pager-sizeChange')">
       <template #head-actions>
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.aprvStatusCd==='대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settleAdjs-row-approve', r)">
+        <button v-if="r.aprvStatusCd==='대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">
           승인
         </button>
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('settleAdjs-row-edit', r)">
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('settleAdjs-rowEdit', r)">
           수정
         </button>
-        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('settleAdjs-row-delete', r)">
+        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('settleAdjs-rowDelete', r)">
           삭제
         </button>
       </template>

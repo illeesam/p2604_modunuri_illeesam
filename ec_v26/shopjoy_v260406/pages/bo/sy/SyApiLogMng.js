@@ -91,13 +91,13 @@ window.SyApiLogMng = {
       if (cmd === 'tabs-select') {
         return onTabChange(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'apiLogs-set-page') {
+      } else if (cmd === 'apiLogs-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'apiLogs-size-change') {
+      } else if (cmd === 'apiLogs-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 상세정보 펼침 토글
-      } else if (cmd === 'apiLogs-row-toggle') {
+      } else if (cmd === 'apiLogs-rowToggle') {
         return toggleRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -411,9 +411,9 @@ window.SyApiLogMng = {
     :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="n => handleSelectAction('apiLogs-set-page', n)"
-    @size-change="handleSelectAction('apiLogs-size-change')"
-    @row-click="row => handleSelectAction('apiLogs-row-toggle', row.logId)">
+    @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
+    @size-change="handleSelectAction('apiLogs-pager-sizeChange')"
+    @row-click="row => handleSelectAction('apiLogs-rowToggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">
@@ -649,9 +649,9 @@ window.SyApiLogMng = {
     :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="n => handleSelectAction('apiLogs-set-page', n)"
-    @size-change="handleSelectAction('apiLogs-size-change')"
-    @row-click="row => handleSelectAction('apiLogs-row-toggle', row.logId)">
+    @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
+    @size-change="handleSelectAction('apiLogs-pager-sizeChange')"
+    @row-click="row => handleSelectAction('apiLogs-rowToggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">

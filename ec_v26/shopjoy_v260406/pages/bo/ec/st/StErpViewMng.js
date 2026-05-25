@@ -48,14 +48,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StErpViewMng.js : handleSelectAction -> ', cmd, param);
       // 전표 ERP 재전송
-      if (cmd === 'slips-row-resend') {
+      if (cmd === 'slips-rowResend') {
         return doResend(param);
       // 페이지 번호 변경
-      } else if (cmd === 'slips-set-page') {
+      } else if (cmd === 'slips-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'slips-size-change') {
+      } else if (cmd === 'slips-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -230,12 +230,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="slips" :pager="pager" row-key="slipId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      @set-page="n => handleSelectAction('slips-set-page', n)" @size-change="handleSelectAction('slips-size-change')">
+      @set-page="n => handleSelectAction('slips-pager-setPage', n)" @size-change="handleSelectAction('slips-pager-sizeChange')">
       <template #head-actions>
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="handleSelectAction('slips-row-resend', r)">
+        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="handleSelectAction('slips-rowResend', r)">
           재전송
         </button>
       </template>

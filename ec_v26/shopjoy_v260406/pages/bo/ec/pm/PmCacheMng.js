@@ -70,16 +70,16 @@ window.PmCacheMng = {
       if (cmd === 'caches-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'caches-set-page') {
+      } else if (cmd === 'caches-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'caches-size-change') {
+      } else if (cmd === 'caches-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
-      } else if (cmd === 'caches-row-edit') {
+      } else if (cmd === 'caches-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'caches-row-delete') {
+      } else if (cmd === 'caches-rowDelete') {
         return handleDelete(param);
       // 참조 모달 열기 (회원 등)
       } else if (cmd === 'caches-ref') {
@@ -316,16 +316,16 @@ window.PmCacheMng = {
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('caches-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('caches-ref', {type, id})"
-      @row-click="c => handleSelectAction('caches-row-edit', c.cacheId)">
+      @row-click="c => handleSelectAction('caches-rowEdit', c.cacheId)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: c }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('caches-row-edit', c.cacheId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('caches-rowEdit', c.cacheId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('caches-row-delete', c)">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('caches-rowDelete', c)">
             삭제
           </button>
         </div>
@@ -338,10 +338,10 @@ window.PmCacheMng = {
       </div>
       <div v-for="c in caches" :key="c?.cacheId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===c.cacheId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('caches-row-edit', c.cacheId)">
+        @click="handleSelectAction('caches-rowEdit', c.cacheId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">캐시 #{{ c.cacheId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('caches-row-edit', c.cacheId)" :style="detailPanel.selectedId===c.cacheId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('caches-rowEdit', c.cacheId)" :style="detailPanel.selectedId===c.cacheId?{color:'#e8587a'}:{}">
             {{ c.cacheDesc }}
             <span v-if="detailPanel.selectedId===c.cacheId" style="font-size:10px;margin-left:4px;">▼</span>
           </div>
@@ -355,10 +355,10 @@ window.PmCacheMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('caches-row-edit', c.cacheId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('caches-rowEdit', c.cacheId)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('caches-row-delete', c)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('caches-rowDelete', c)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">#{{ c.cacheId }}</span>
@@ -366,7 +366,7 @@ window.PmCacheMng = {
       </div>
     </div>
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('caches-set-page', n)" :on-size-change="() => handleSelectAction('caches-size-change')" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 영역 ================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->

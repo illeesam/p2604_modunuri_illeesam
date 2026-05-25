@@ -43,7 +43,7 @@ window.PdSetMng = {
       } else if (cmd === 'detailPanel-close') {
         return closeDtl();
       // 페이지 크기 변경
-      } else if (cmd === 'sets-size-change') {
+      } else if (cmd === 'sets-pager-sizeChange') {
         return onSizeChange();
       // 설명 토글
       } else if (cmd === 'desc-toggle') {
@@ -79,13 +79,13 @@ window.PdSetMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdSetMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 행 클릭 → Dtl 열기
-      if (cmd === 'sets-row-edit') {
+      if (cmd === 'sets-rowEdit') {
         return openDtl(param);
       // 그리드 행 삭제
-      } else if (cmd === 'sets-row-delete') {
+      } else if (cmd === 'sets-rowDelete') {
         return handleDelete(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'sets-set-page') {
+      } else if (cmd === 'sets-pager-setPage') {
         return setPage(param);
       // 카테고리 행 삭제
       } else if (cmd === 'detailPanel-category-remove') {
@@ -638,7 +638,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
                 세트
               </span>
               <div>
-                <span class="title-link" @click="handleSelectAction('sets-row-edit', row.setProdId)">
+                <span class="title-link" @click="handleSelectAction('sets-rowEdit', row.setProdId)">
                   {{ row.prodNm }}
                 </span>
                 <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
@@ -658,10 +658,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
           </td>
         </template>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('sets-row-edit', row.setProdId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('sets-rowEdit', row.setProdId)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('sets-row-delete', row.setProdId)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('sets-rowDelete', row.setProdId)">
             삭제
           </button>
         </template>
@@ -671,7 +671,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sets-set-page', n)" :on-size-change="() => handleBtnAction('sets-size-change')"
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

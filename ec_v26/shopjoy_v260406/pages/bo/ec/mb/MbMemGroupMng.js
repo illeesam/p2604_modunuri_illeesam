@@ -51,13 +51,13 @@ window.MbMemGroupMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MbMemGroupMng.js : handleSelectAction -> ', cmd, param);
       // 회원그룹 그리드 행 삭제 마킹
-      if (cmd === 'groups-row-delete') {
+      if (cmd === 'groups-rowDelete') {
         return deleteRow(param);
       // 회원그룹 그리드 행 변경 취소
-      } else if (cmd === 'groups-row-cancel') {
+      } else if (cmd === 'groups-rowCancel') {
         return cancelRow(param);
       // 회원그룹 그리드 셀 값 변경 감지
-      } else if (cmd === 'groups-row-cell-change') {
+      } else if (cmd === 'groups-rowCellChange') {
         return onCellChange(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -261,9 +261,9 @@ window.MbMemGroupMng = {
     v-model:checkAll="uiState.checkAll"
     @add="handleBtnAction('groups-add')" @save="handleBtnAction('groups-save')"
     @delete-checked="handleBtnAction('groups-delete-checked')" @cancel-checked="handleBtnAction('groups-cancel-checked')"
-    @cell-change="row => handleSelectAction('groups-row-cell-change', row)">
+    @cell-change="row => handleSelectAction('groups-rowCellChange', row)">
     <template #row-actions="{ row, idx }">
-      <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-row-cancel', idx)" @delete="handleSelectAction('groups-row-delete', idx)" />
+      <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-rowCancel', idx)" @delete="handleSelectAction('groups-rowDelete', idx)" />
     </template>
   </bo-grid-crud>
   <!-- ===== □. CRUD 그리드 ================================================ -->

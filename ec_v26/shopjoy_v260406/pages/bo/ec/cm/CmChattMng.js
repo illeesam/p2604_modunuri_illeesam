@@ -61,19 +61,19 @@ window.CmChattMng = {
       if (cmd === 'chatts-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'chatts-set-page') {
+      } else if (cmd === 'chatts-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'chatts-size-change') {
+      } else if (cmd === 'chatts-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
-      } else if (cmd === 'chatts-row-edit') {
+      } else if (cmd === 'chatts-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'chatts-row-delete') {
+      } else if (cmd === 'chatts-rowDelete') {
         return handleDelete(param);
       // ref-link 클릭 (회원 등)
-      } else if (cmd === 'chatts-row-ref') {
+      } else if (cmd === 'chatts-rowRef') {
         return showRefModal(param.type, param.id);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -293,10 +293,10 @@ window.CmChattMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="key => handleSelectAction('chatts-sort', key)"
-    @set-page="n => handleSelectAction('chatts-set-page', n)"
-    @size-change="handleSelectAction('chatts-size-change')"
-    @ref-click="ref => handleSelectAction('chatts-row-ref', ref)"
-    @row-click="row => handleSelectAction('chatts-row-edit', row.chattRoomId)" row-actions>
+    @set-page="n => handleSelectAction('chatts-pager-setPage', n)"
+    @size-change="handleSelectAction('chatts-pager-sizeChange')"
+    @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
+    @row-click="row => handleSelectAction('chatts-rowEdit', row.chattRoomId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
@@ -307,10 +307,10 @@ window.CmChattMng = {
     </template>
     <template #row-actions="{ row }">
       <div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleSelectAction('chatts-row-edit', row.chattRoomId)">
+        <button class="btn btn-blue btn-sm" @click="handleSelectAction('chatts-rowEdit', row.chattRoomId)">
           보기
         </button>
-        <button class="btn btn-danger btn-sm" @click="handleSelectAction('chatts-row-delete', row)">
+        <button class="btn btn-danger btn-sm" @click="handleSelectAction('chatts-rowDelete', row)">
           삭제
         </button>
       </div>

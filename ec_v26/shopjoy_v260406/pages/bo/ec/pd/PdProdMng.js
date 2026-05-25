@@ -83,19 +83,19 @@ window.PdProdMng = {
       if (cmd === 'prods-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'prods-set-page') {
+      } else if (cmd === 'prods-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'prods-size-change') {
+      } else if (cmd === 'prods-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
-      } else if (cmd === 'prods-row-edit') {
+      } else if (cmd === 'prods-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 미리보기 (새창)
-      } else if (cmd === 'prods-row-preview') {
+      } else if (cmd === 'prods-rowPreview') {
         return previewProduct(param);
       // 그리드 행 삭제
-      } else if (cmd === 'prods-row-delete') {
+      } else if (cmd === 'prods-rowDelete') {
         return handleDelete(param);
       // 카테고리 모달에서 카테고리 선택
       } else if (cmd === 'catModal-select') {
@@ -393,22 +393,22 @@ window.PdProdMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('prods-sort', key)"
-      @set-page="n => handleSelectAction('prods-set-page', n)"
-      @size-change="handleSelectAction('prods-size-change')"
-      @row-click="p => handleSelectAction('prods-row-edit', p.prodId)">
+      @set-page="n => handleSelectAction('prods-pager-setPage', n)"
+      @size-change="handleSelectAction('prods-pager-sizeChange')"
+      @row-click="p => handleSelectAction('prods-rowEdit', p.prodId)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: p }">
         <div class="actions">
           <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기"
-            @click="handleSelectAction('prods-row-preview', p.prodId)">
+            @click="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('prods-row-edit', p.prodId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('prods-rowEdit', p.prodId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('prods-row-delete', p)">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('prods-rowDelete', p)">
             삭제
           </button>
         </div>

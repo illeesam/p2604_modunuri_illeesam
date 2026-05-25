@@ -33,7 +33,7 @@ window.PdReviewMng = {
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 페이지 크기 변경
-      } else if (cmd === 'reviews-size-change') {
+      } else if (cmd === 'reviews-pager-sizeChange') {
         return onSizeChange();
       // 상세 패널 닫기
       } else if (cmd === 'detailPanel-close') {
@@ -43,7 +43,7 @@ window.PdReviewMng = {
       } else if (cmd === 'prodReviews-close') {
         return onProdIdClick(selectedProdId.value);
       // 상품별 리뷰 페이지 크기 변경
-      } else if (cmd === 'prodReviews-size-change') {
+      } else if (cmd === 'prodReviews-pager-sizeChange') {
         return onProdReviewSizeChange();
       // 상태변경 모달 닫기 (취소)
       } else if (cmd === 'statusModal-close') {
@@ -63,25 +63,25 @@ window.PdReviewMng = {
       if (cmd === 'reviews-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'reviews-set-page') {
+      } else if (cmd === 'reviews-pager-setPage') {
         return setPage(param);
       // 그리드 행 클릭 (상세 토글)
-      } else if (cmd === 'reviews-row-edit') {
+      } else if (cmd === 'reviews-rowEdit') {
         return openDetail(param);
       // 그리드 행 미리보기 (새창)
-      } else if (cmd === 'reviews-row-preview') {
+      } else if (cmd === 'reviews-rowPreview') {
         return previewProduct(param);
       // 상태변경 select intercept
-      } else if (cmd === 'reviews-row-status-change') {
+      } else if (cmd === 'reviews-rowStatusChange') {
         return onStatusSelectChange(param.row, param.evt);
       // 상품ID 클릭 → 하단 상품별 리뷰 목록 토글
-      } else if (cmd === 'reviews-row-prod-click') {
+      } else if (cmd === 'reviews-rowProdClick') {
         return onProdIdClick(param);
       // 상품별 리뷰 페이지 번호 클릭
-      } else if (cmd === 'prodReviews-set-page') {
+      } else if (cmd === 'prodReviews-pager-setPage') {
         return setProdReviewPage(param);
       // 상품별 리뷰 행 클릭 (상세 토글)
-      } else if (cmd === 'prodReviews-row-edit') {
+      } else if (cmd === 'prodReviews-rowEdit') {
         return openDetail(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -350,7 +350,7 @@ window.PdReviewMng = {
           activeStyle: 'color:#e8587a;font-weight:700;cursor:pointer;',
           baseStyle: 'color:#1e88e5;font-weight:500;cursor:pointer;',
           title: '해당 상품의 리뷰만 하단에 표시',
-          onClick: (row) => handleSelectAction('reviews-row-prod-click', row.prodId),
+          onClick: (row) => handleSelectAction('reviews-rowProdClick', row.prodId),
         } },
       { key: 'prodNm',          label: '상품명',   cellStyle: 'color:#444;',
         fmt: (v, row) => (getProdNm(row.prodId) || row.prodNm || '') },
@@ -364,7 +364,7 @@ window.PdReviewMng = {
       { key: 'reviewDate',      label: '작성일',   style: 'width:140px', sortKey: 'reg' },
       { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
         selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
-          onChange: (row, newVal, $event) => handleSelectAction('reviews-row-status-change', { row, evt: $event }) } },
+          onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
     ];
     /* fnGridRowClass — 유틸 */
     const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
@@ -382,7 +382,7 @@ window.PdReviewMng = {
       { key: 'reviewDate',     label: '작성일',   style: 'width:140px' },
       { key: '_statusChg',     label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
         selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
-          onChange: (row, newVal, $event) => handleSelectAction('reviews-row-status-change', { row, evt: $event }) } },
+          onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
     ];
     /* fnProdReviewRowClass — 유틸 */
     const fnProdReviewRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
@@ -417,9 +417,9 @@ window.PdReviewMng = {
     :sort-state="uiState" list-title="상품리뷰 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
-    @sort="key => handleSelectAction('reviews-sort', key)" @set-page="n => handleSelectAction('reviews-set-page', n)" @size-change="handleBtnAction('reviews-size-change')" @row-click="r => handleSelectAction('reviews-row-edit', r)">
+    @sort="key => handleSelectAction('reviews-sort', key)" @set-page="n => handleSelectAction('reviews-pager-setPage', n)" @size-change="handleBtnAction('reviews-pager-sizeChange')" @row-click="r => handleSelectAction('reviews-rowEdit', r)">
     <template #row-actions="{ row }">
-      <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-row-preview', row.prodId)">
+      <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-rowPreview', row.prodId)">
         👁
       </button>
     </template>
@@ -444,14 +444,14 @@ window.PdReviewMng = {
       <bo-grid bare :columns="prodReviewGridColumns" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
-        @set-page="n => handleSelectAction('prodReviews-set-page', n)" @size-change="handleBtnAction('prodReviews-size-change')" @row-click="r => handleSelectAction('prodReviews-row-edit', r)">
+        @set-page="n => handleSelectAction('prodReviews-pager-setPage', n)" @size-change="handleBtnAction('prodReviews-pager-sizeChange')" @row-click="r => handleSelectAction('prodReviews-rowEdit', r)">
       </bo-grid>
     </div>
     <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="prodReviewPager" :on-set-page="n => handleSelectAction('prodReviews-set-page', n)" :on-size-change="() => handleBtnAction('prodReviews-size-change')"
+      <bo-pager :pager="prodReviewPager" :on-set-page="n => handleSelectAction('prodReviews-pager-setPage', n)" :on-size-change="() => handleBtnAction('prodReviews-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
@@ -475,7 +475,7 @@ window.PdReviewMng = {
         </span>
         <select class="form-control" style="font-size:12px;padding:3px 6px;width:auto;height:28px;"
           :value="cfSelectedRow.reviewStatusCd"
-          @change="handleSelectAction('reviews-row-status-change', { row: cfSelectedRow, evt: $event })">
+          @change="handleSelectAction('reviews-rowStatusChange', { row: cfSelectedRow, evt: $event })">
           <option v-for="s in codes.review_status_list" :key="s.value" :value="s.value">
             {{ s.label }}
           </option>

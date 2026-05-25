@@ -50,16 +50,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StSettleEtcAdjMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'etcAdjs-row-approve') {
+      if (cmd === 'etcAdjs-rowApprove') {
         return doApprove(param);
-      } else if (cmd === 'etcAdjs-row-edit') {
+      } else if (cmd === 'etcAdjs-rowEdit') {
         return openEdit(param);
-      } else if (cmd === 'etcAdjs-row-delete') {
+      } else if (cmd === 'etcAdjs-rowDelete') {
         return handleDelete(param);
-      } else if (cmd === 'etcAdjs-set-page') {
+      } else if (cmd === 'etcAdjs-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
-      } else if (cmd === 'etcAdjs-size-change') {
+      } else if (cmd === 'etcAdjs-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else {
@@ -328,15 +328,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="baseGridColumns" :rows="etcAdjList" :pager="pager" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
-      @set-page="n => handleSelectAction('etcAdjs-set-page', n)" @size-change="handleSelectAction('etcAdjs-size-change')">
+      @set-page="n => handleSelectAction('etcAdjs-pager-setPage', n)" @size-change="handleSelectAction('etcAdjs-pager-sizeChange')">
       <template #head-actions>
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('etcAdjs-row-edit', r)">
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('etcAdjs-rowEdit', r)">
           수정
         </button>
-        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('etcAdjs-row-delete', r)">
+        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('etcAdjs-rowDelete', r)">
           삭제
         </button>
       </template>

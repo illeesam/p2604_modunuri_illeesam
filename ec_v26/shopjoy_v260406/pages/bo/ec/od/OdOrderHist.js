@@ -43,10 +43,10 @@ window.OdOrderHist = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdOrderHist.js : handleSelectAction -> ', cmd, param);
       // 클레임 그리드 행 참조 클릭
-      if (cmd === 'histList-row-ref-click') {
+      if (cmd === 'histList-rowRefClick') {
         return showRefModal(param.type, param.id);
       // 클레임 그리드 행 상세로 이동
-      } else if (cmd === 'histList-row-claim-edit') {
+      } else if (cmd === 'histList-rowClaimEdit') {
         return props.navigate('odClaimDtl', { id: param });
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -262,9 +262,9 @@ window.OdOrderHist = {
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
-        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-row-ref-click', {type, id})" row-actions>
+        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('histList-row-claim-edit', row.claimId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
             상세
           </button>
         </template>

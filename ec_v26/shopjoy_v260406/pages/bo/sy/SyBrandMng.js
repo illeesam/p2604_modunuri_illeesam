@@ -77,10 +77,10 @@ window.SyBrandMng = {
       } else if (cmd === 'brands-cell-change') {
         return onCellChange(param);
       // 그리드 행 취소
-      } else if (cmd === 'brands-row-cancel') {
+      } else if (cmd === 'brands-rowCancel') {
         return cancelRow(param);
       // 그리드 행 삭제 마킹
-      } else if (cmd === 'brands-row-delete') {
+      } else if (cmd === 'brands-rowDelete') {
         return deleteRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -347,7 +347,7 @@ window.SyBrandMng = {
         </td>
       </template>
       <template #row-actions="{ row, idx }">
-        <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('brands-row-cancel', idx)" @delete="handleSelectAction('brands-row-delete', idx)" />
+        <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('brands-rowCancel', idx)" @delete="handleSelectAction('brands-rowDelete', idx)" />
       </template>
     </bo-grid-crud>
   </div>

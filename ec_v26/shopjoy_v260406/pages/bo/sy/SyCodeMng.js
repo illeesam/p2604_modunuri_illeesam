@@ -96,13 +96,13 @@ window.SyCodeMng = {
       } else if (cmd === 'codeGroups-cell-change') {
         return onGrpChange(param);
       // 코드그룹 그리드 행 [코드관리] → 코드목록 진입
-      } else if (cmd === 'codeGroups-row-open') {
+      } else if (cmd === 'codeGroups-rowOpen') {
         return openGrpSetting(param.row, param.event);
       // 코드그룹 그리드 행 취소
-      } else if (cmd === 'codeGroups-row-cancel') {
+      } else if (cmd === 'codeGroups-rowCancel') {
         return cancelGrp(param);
       // 코드그룹 그리드 행 삭제 마킹
-      } else if (cmd === 'codeGroups-row-delete') {
+      } else if (cmd === 'codeGroups-rowDelete') {
         return handleDeleteGrp(param);
       // 코드 그리드 셀 값 변경 감지
       } else if (cmd === 'codes-cell-change') {
@@ -111,13 +111,13 @@ window.SyCodeMng = {
       } else if (cmd === 'codes-reorder') {
         return onDragEnd();
       // 코드 그리드 행 더블클릭 → 상세 패널 열기
-      } else if (cmd === 'codes-row-edit') {
+      } else if (cmd === 'codes-rowEdit') {
         return handleLoadDetail(param);
       // 코드 그리드 행 취소
-      } else if (cmd === 'codes-row-cancel') {
+      } else if (cmd === 'codes-rowCancel') {
         return cancelRow(param);
       // 코드 그리드 행 삭제 마킹
-      } else if (cmd === 'codes-row-delete') {
+      } else if (cmd === 'codes-rowDelete') {
         return deleteRow(param);
       // 코드 트리 노드 펼침/접힘 토글
       } else if (cmd === 'codeTree-toggle') {
@@ -693,12 +693,12 @@ window.SyCodeMng = {
         </td>
       </template>
       <template #row-actions="{ row: g, idx }">
-        <button v-if="g._row_status !== 'D'" class="btn btn-xs" @click.stop="handleSelectAction('codeGroups-row-open', { row: g, event: $event })"
+        <button v-if="g._row_status !== 'D'" class="btn btn-xs" @click.stop="handleSelectAction('codeGroups-rowOpen', { row: g, event: $event })"
           style="background:#f0f4ff;border:1px solid #c7d2fe;color:#4338ca;font-weight:600;"
           title="코드관리">
           코드관리
         </button>
-        <bo-row-cancel-delete :row="g" @cancel="handleSelectAction('codeGroups-row-cancel', idx)" @delete="handleSelectAction('codeGroups-row-delete', idx)" />
+        <bo-row-cancel-delete :row="g" @cancel="handleSelectAction('codeGroups-rowCancel', idx)" @delete="handleSelectAction('codeGroups-rowDelete', idx)" />
       </template>
     </bo-grid-crud>
   </div>
@@ -734,9 +734,9 @@ window.SyCodeMng = {
         @delete-checked="handleBtnAction('codes-delete-checked')" @cancel-checked="handleBtnAction('codes-cancel-checked')"
         @cell-change="row => handleSelectAction('codes-cell-change', row)" @export="handleBtnAction('codes-excel')"
         @reorder="handleSelectAction('codes-reorder')"
-        @row-dblclick="row => handleSelectAction('codes-row-edit', row.codeId)">
+        @row-dblclick="row => handleSelectAction('codes-rowEdit', row.codeId)">
         <template #row-actions="{ row, idx }">
-          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('codes-row-cancel', idx)" @delete="handleSelectAction('codes-row-delete', idx)" />
+          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('codes-rowCancel', idx)" @delete="handleSelectAction('codes-rowDelete', idx)" />
         </template>
       </bo-grid-crud>
     </div>
@@ -797,8 +797,8 @@ window.SyCodeMng = {
       </template>
       <template #row-actions="{ row }">
         <bo-row-cancel-delete :row="row"
-            @cancel="handleSelectAction('codes-row-cancel', uiState.gridRows.indexOf(row))"
-            @delete="handleSelectAction('codes-row-delete', uiState.gridRows.indexOf(row))" />
+            @cancel="handleSelectAction('codes-rowCancel', uiState.gridRows.indexOf(row))"
+            @delete="handleSelectAction('codes-rowDelete', uiState.gridRows.indexOf(row))" />
       </template>
     </bo-grid-crud>
   </div>

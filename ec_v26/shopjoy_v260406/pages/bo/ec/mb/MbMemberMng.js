@@ -60,13 +60,13 @@ window.MbMemberMng = {
       if (cmd === 'members-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'members-set-page') {
+      } else if (cmd === 'members-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'members-size-change') {
+      } else if (cmd === 'members-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
-      } else if (cmd === 'members-row-edit') {
+      } else if (cmd === 'members-rowEdit') {
         return openDetail(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -336,16 +336,16 @@ window.MbMemberMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="key => handleSelectAction('members-sort', key)"
-    @set-page="n => handleSelectAction('members-set-page', n)"
-    @size-change="handleSelectAction('members-size-change')"
-    @row-click="row => handleSelectAction('members-row-edit', row)" row-actions>
+    @set-page="n => handleSelectAction('members-pager-setPage', n)"
+    @size-change="handleSelectAction('members-pager-sizeChange')"
+    @row-click="row => handleSelectAction('members-rowEdit', row)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('members-add')">
         + 신규
       </button>
     </template>
     <template #row-actions="{ row }">
-      <button class="btn btn-blue btn-sm" @click="handleSelectAction('members-row-edit', row)">
+      <button class="btn btn-blue btn-sm" @click="handleSelectAction('members-rowEdit', row)">
         수정
       </button>
     </template>

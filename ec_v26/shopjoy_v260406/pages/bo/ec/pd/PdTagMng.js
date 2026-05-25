@@ -49,18 +49,18 @@ window.PdTagMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdTagMng.js : handleSelectAction -> ', cmd, param);
       // 태그 그리드 행 삭제
-      if (cmd === 'tags-row-delete') {
+      if (cmd === 'tags-rowDelete') {
         return handleDelete(param);
       // 태그 그리드 셀 변경
-      } else if (cmd === 'tags-row-cell-change') {
+      } else if (cmd === 'tags-rowCellChange') {
         if (param._row_status !== 'N') { param._row_status = 'U'; }
         return;
       // 페이지 번호 변경
-      } else if (cmd === 'tags-set-page') {
+      } else if (cmd === 'tags-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'tags-size-change') {
+      } else if (cmd === 'tags-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -202,8 +202,8 @@ window.PdTagMng = {
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-grid
     :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
-    list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-row-new' : (row._row_status==='U' ? 'table-row-mod' : '')"
-    @set-page="n => handleSelectAction('tags-set-page', n)" @size-change="handleSelectAction('tags-size-change')" @cell-change="row => handleSelectAction('tags-row-cell-change', row)">
+    list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
+    @set-page="n => handleSelectAction('tags-pager-setPage', n)" @size-change="handleSelectAction('tags-pager-sizeChange')" @cell-change="row => handleSelectAction('tags-rowCellChange', row)">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
         + 행추가
@@ -213,7 +213,7 @@ window.PdTagMng = {
       </button>
     </template>
     <template #row-actions="{ idx }">
-      <button class="btn btn-danger btn-xs" @click="handleSelectAction('tags-row-delete', idx)">
+      <button class="btn btn-danger btn-xs" @click="handleSelectAction('tags-rowDelete', idx)">
         삭제
       </button>
     </template>

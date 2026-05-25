@@ -55,16 +55,16 @@ window.DpDispWidgetLibMng = {
       if (cmd === 'widgetLibs-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'widgetLibs-set-page') {
+      } else if (cmd === 'widgetLibs-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'widgetLibs-size-change') {
+      } else if (cmd === 'widgetLibs-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 편집 패널 열기
-      } else if (cmd === 'widgetLibs-row-edit') {
+      } else if (cmd === 'widgetLibs-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'widgetLibs-row-delete') {
+      } else if (cmd === 'widgetLibs-rowDelete') {
         return handleDelete(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
@@ -336,9 +336,9 @@ window.DpDispWidgetLibMng = {
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable
         @sort="key => handleSelectAction('widgetLibs-sort', key)"
-        @set-page="n => handleSelectAction('widgetLibs-set-page', n)"
-        @size-change="handleSelectAction('widgetLibs-size-change')"
-        @row-click="(r) => handleSelectAction('widgetLibs-row-edit', r.widgetLibId)" row-actions>
+        @set-page="n => handleSelectAction('widgetLibs-pager-setPage', n)"
+        @size-change="handleSelectAction('widgetLibs-pager-sizeChange')"
+        @row-click="(r) => handleSelectAction('widgetLibs-rowEdit', r.widgetLibId)" row-actions>
           <template #toolbar-actions>
             <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
               #{{ uiState.selectedPath }}
@@ -363,10 +363,10 @@ window.DpDispWidgetLibMng = {
           </template>
           <template #row-actions="{ row }">
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('widgetLibs-row-edit', row.widgetLibId)">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('widgetLibs-row-delete', row)">
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('widgetLibs-rowDelete', row)">
                 삭제
               </button>
             </div>

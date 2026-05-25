@@ -46,7 +46,7 @@ window.Blog = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Blog.js : handleSelectAction -> ', cmd, param);
       // 블로그 포스트 클릭 (param: postId)
-      if (cmd === 'blogs-row-view') {
+      if (cmd === 'blogs-rowView') {
         return props.navigate('blogView', { dtlId: param });
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -204,7 +204,7 @@ window.Blog = {
         <h3 style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--border);">
           Latest Posts
         </h3>
-        <div v-for="p in cfLatestPosts" :key="p.id" @click="handleSelectAction('blogs-row-view', p.id)"
+        <div v-for="p in cfLatestPosts" :key="p.id" @click="handleSelectAction('blogs-rowView', p.id)"
           style="display:flex;gap:10px;margin-bottom:14px;cursor:pointer;padding:6px 0;"
           @mouseenter="$event.currentTarget.style.opacity='0.7'"
           @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -227,7 +227,7 @@ window.Blog = {
     <div>
       <div v-for="post in posts" :key="post.id"
         class="card" style="display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,24px);padding:0;margin-bottom:clamp(12px,2vw,24px);overflow:hidden;cursor:pointer;transition:box-shadow .2s;"
-        @click="handleSelectAction('blogs-row-view', post.id)"
+        @click="handleSelectAction('blogs-rowView', post.id)"
         @mouseenter="$event.currentTarget.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
         @mouseleave="$event.currentTarget.style.boxShadow=''">
         <!-- ===== ■.■.■.■. 썸네일 =============================================== -->

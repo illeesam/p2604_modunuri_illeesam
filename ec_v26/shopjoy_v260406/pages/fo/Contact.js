@@ -35,7 +35,7 @@ window.Contact = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Contact.js : handleSelectAction -> ', cmd, param);
       // FAQ 항목 토글 (param: 'c0' | 'c1' | 'c2')
-      if (cmd === 'faqs-row-toggle') {
+      if (cmd === 'faqs-rowToggle') {
         uiState.openFaq = (uiState.openFaq === param ? null : param);
         return;
       } else {
@@ -236,7 +236,7 @@ window.Contact = {
           ❓ 자주 묻는 질문
         </h3>
         <div v-for="(faq, idx) in config.faqs.slice(0,3)" :key="idx" class="faq-item">
-          <button class="faq-question" @click="handleSelectAction('faqs-row-toggle', 'c'+idx)">
+          <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', 'c'+idx)">
             <span>
               {{ faq.q }}
             </span>

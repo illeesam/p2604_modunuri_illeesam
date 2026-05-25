@@ -43,12 +43,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StSettlePayMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'settlePays-row-pay') {
+      if (cmd === 'settlePays-rowPay') {
         return doPay(param);
-      } else if (cmd === 'settlePays-set-page') {
+      } else if (cmd === 'settlePays-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
-      } else if (cmd === 'settlePays-size-change') {
+      } else if (cmd === 'settlePays-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -264,12 +264,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="payList" :pager="pager" row-key="payId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      @set-page="n => handleSelectAction('settlePays-set-page', n)" @size-change="handleSelectAction('settlePays-size-change')">
+      @set-page="n => handleSelectAction('settlePays-pager-setPage', n)" @size-change="handleSelectAction('settlePays-pager-sizeChange')">
       <template #head-actions>
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settlePays-row-pay', r)">
+        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settlePays-rowPay', r)">
           지급처리
         </button>
       </template>

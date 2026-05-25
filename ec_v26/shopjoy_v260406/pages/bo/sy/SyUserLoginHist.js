@@ -85,13 +85,13 @@ window.SyUserLoginHist = {
         allExpanded.value = false;
         return handleSearchList();
       // 페이지 번호 클릭
-      } else if (cmd === 'histList-set-page') {
+      } else if (cmd === 'histList-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'histList-size-change') {
+      } else if (cmd === 'histList-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 펼침 토글
-      } else if (cmd === 'histList-row-toggle') {
+      } else if (cmd === 'histList-rowToggle') {
         return toggleRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -366,9 +366,9 @@ window.SyUserLoginHist = {
     :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="n => handleSelectAction('histList-set-page', n)"
-    @size-change="handleSelectAction('histList-size-change')"
-    @row-click="row => handleSelectAction('histList-row-toggle', row.logId)">
+    @set-page="n => handleSelectAction('histList-pager-setPage', n)"
+    @size-change="handleSelectAction('histList-pager-sizeChange')"
+    @row-click="row => handleSelectAction('histList-rowToggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">
@@ -557,9 +557,9 @@ window.SyUserLoginHist = {
     :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="n => handleSelectAction('histList-set-page', n)"
-    @size-change="handleSelectAction('histList-size-change')"
-    @row-click="row => handleSelectAction('histList-row-toggle', row.logId)">
+    @set-page="n => handleSelectAction('histList-pager-setPage', n)"
+    @size-change="handleSelectAction('histList-pager-sizeChange')"
+    @row-click="row => handleSelectAction('histList-rowToggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">

@@ -42,7 +42,7 @@ window.PdProdHist = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdProdHist.js : handleSelectAction -> ', cmd, param);
       // 연관 주문 행 상세 보기
-      if (cmd === 'orders-row-detail') {
+      if (cmd === 'orders-rowDetail') {
         return props.navigate('odOrderDtl', { id: param.orderId });
       // 참조 모달 열기 (ref-click)
       } else if (cmd === 'orders-ref-click') {
@@ -373,7 +373,7 @@ window.PdProdHist = {
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-ref-click', { type, id })" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-row-detail', row)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowDetail', row)">
             상세
           </button>
         </template>

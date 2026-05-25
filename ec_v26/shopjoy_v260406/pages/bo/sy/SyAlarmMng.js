@@ -64,16 +64,16 @@ window.SyAlarmMng = {
       if (cmd === 'alarms-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'alarms-set-page') {
+      } else if (cmd === 'alarms-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'alarms-size-change') {
+      } else if (cmd === 'alarms-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'alarms-row-edit') {
+      } else if (cmd === 'alarms-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'alarms-row-delete') {
+      } else if (cmd === 'alarms-rowDelete') {
         return handleDelete(param);
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'pathTree-select') {
@@ -376,9 +376,9 @@ window.SyAlarmMng = {
         list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('alarms-sort', key)"
-        @set-page="n => handleSelectAction('alarms-set-page', n)"
-        @size-change="handleSelectAction('alarms-size-change')"
-        @row-click="row => handleSelectAction('alarms-row-edit', row.alarmId)">
+        @set-page="n => handleSelectAction('alarms-pager-setPage', n)"
+        @size-change="handleSelectAction('alarms-pager-sizeChange')"
+        @row-click="row => handleSelectAction('alarms-rowEdit', row.alarmId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('alarms-excel')">
@@ -397,10 +397,10 @@ window.SyAlarmMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('alarms-row-edit', row.alarmId)">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('alarms-rowEdit', row.alarmId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('alarms-row-delete', row)">
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('alarms-rowDelete', row)">
                 삭제
               </button>
             </div>

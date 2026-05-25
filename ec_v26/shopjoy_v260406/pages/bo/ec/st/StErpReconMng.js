@@ -48,14 +48,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StErpReconMng.js : handleSelectAction -> ', cmd, param);
       // 대사 차이 조정 처리
-      if (cmd === 'recons-row-fix') {
+      if (cmd === 'recons-rowFix') {
         return doFix(param);
       // 페이지 번호 변경
-      } else if (cmd === 'recons-set-page') {
+      } else if (cmd === 'recons-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'recons-size-change') {
+      } else if (cmd === 'recons-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -267,12 +267,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="baseGridColumns" :rows="reconList" :pager="pager" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      @set-page="n => handleSelectAction('recons-set-page', n)" @size-change="handleSelectAction('recons-size-change')">
+      @set-page="n => handleSelectAction('recons-pager-setPage', n)" @size-change="handleSelectAction('recons-pager-sizeChange')">
       <template #head-actions>
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="handleSelectAction('recons-row-fix', r)">
+        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="handleSelectAction('recons-rowFix', r)">
           조정
         </button>
       </template>

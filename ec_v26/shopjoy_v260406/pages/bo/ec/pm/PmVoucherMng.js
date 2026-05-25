@@ -68,16 +68,16 @@ window.PmVoucherMng = {
       if (cmd === 'vouchers-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'vouchers-set-page') {
+      } else if (cmd === 'vouchers-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'vouchers-size-change') {
+      } else if (cmd === 'vouchers-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 상세 편집
-      } else if (cmd === 'vouchers-row-edit') {
+      } else if (cmd === 'vouchers-rowEdit') {
         return handleLoadDetail(param);
       // 행 삭제
-      } else if (cmd === 'vouchers-row-delete') {
+      } else if (cmd === 'vouchers-rowDelete') {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -327,16 +327,16 @@ window.PmVoucherMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleSelectAction('vouchers-sort', key)" @row-click="v => handleSelectAction('vouchers-row-edit', v.voucherId)">
+      @sort="key => handleSelectAction('vouchers-sort', key)" @row-click="v => handleSelectAction('vouchers-rowEdit', v.voucherId)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: v }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('vouchers-row-edit', v.voucherId)">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('vouchers-row-delete', v)">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('vouchers-rowDelete', v)">
             삭제
           </button>
         </div>
@@ -350,12 +350,12 @@ window.PmVoucherMng = {
       </div>
       <div v-for="v in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===v.voucherId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('vouchers-row-edit', v.voucherId)">
+        @click="handleSelectAction('vouchers-rowEdit', v.voucherId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             상품권 #{{ v.voucherId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('vouchers-row-edit', v.voucherId)" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
             {{ v.voucherNm }}
             <span v-if="detailPanel.selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -379,10 +379,10 @@ window.PmVoucherMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('vouchers-row-edit', v.voucherId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('vouchers-row-delete', v)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click="handleSelectAction('vouchers-rowDelete', v)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">
@@ -391,7 +391,7 @@ window.PmVoucherMng = {
         </div>
       </div>
     </div>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('vouchers-set-page', n)" :on-size-change="() => handleSelectAction('vouchers-size-change')" />
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('vouchers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vouchers-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->

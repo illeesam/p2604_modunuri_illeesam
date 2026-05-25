@@ -69,17 +69,17 @@ window.PdDlivTmpltMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdDlivTmpltMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 행 클릭 → 상세 열기
-      if (cmd === 'dlivTmplts-row-open') {
+      if (cmd === 'dlivTmplts-rowOpen') {
         return openDetail(param);
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'dlivTmplts-sort') {
         return onSort(param);
       // 페이지 번호 변경
-      } else if (cmd === 'dlivTmplts-set-page') {
+      } else if (cmd === 'dlivTmplts-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'dlivTmplts-size-change') {
+      } else if (cmd === 'dlivTmplts-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
@@ -334,7 +334,7 @@ window.PdDlivTmpltMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
-      @sort="key => handleSelectAction('dlivTmplts-sort', key)" @row-click="row => handleSelectAction('dlivTmplts-row-open', row)" @set-page="n => handleSelectAction('dlivTmplts-set-page', n)" @size-change="handleSelectAction('dlivTmplts-size-change')">
+      @sort="key => handleSelectAction('dlivTmplts-sort', key)" @row-click="row => handleSelectAction('dlivTmplts-rowOpen', row)" @set-page="n => handleSelectAction('dlivTmplts-pager-setPage', n)" @size-change="handleSelectAction('dlivTmplts-pager-sizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->

@@ -35,9 +35,9 @@ window.StConfigMng = {
     /* handleSelectAction — 행 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StConfigMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'configs-row-edit') {
+      if (cmd === 'configs-rowEdit') {
         return openEdit(param);
-      } else if (cmd === 'configs-row-delete') {
+      } else if (cmd === 'configs-rowDelete') {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -280,10 +280,10 @@ window.StConfigMng = {
         액션
       </template>
       <template #row-actions="{ row: c }">
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('configs-row-edit', c)">
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('configs-rowEdit', c)">
           수정
         </button>
-        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('configs-row-delete', c)">
+        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">
           삭제
         </button>
       </template>

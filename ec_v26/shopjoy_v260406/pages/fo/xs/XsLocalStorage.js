@@ -36,16 +36,16 @@ window.XsLocalStorage = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ XsLocalStorage.js : handleSelectAction -> ', cmd, param);
       // 값 복사
-      if (cmd === 'lsItems-row-copy') {
+      if (cmd === 'lsItems-rowCopy') {
         return copyValue(param);
       // 편집 시작 ({ key, value })
-      } else if (cmd === 'lsItems-row-edit') {
+      } else if (cmd === 'lsItems-rowEdit') {
         return startEdit(param.key, param.value);
       // 편집 저장
-      } else if (cmd === 'lsItems-row-save') {
+      } else if (cmd === 'lsItems-rowSave') {
         return saveEdit(param);
       // 행 삭제
-      } else if (cmd === 'lsItems-row-delete') {
+      } else if (cmd === 'lsItems-rowDelete') {
         return handleDelete(param);
       // 리사이즈 시작
       } else if (cmd === 'lsItems-resize') {
@@ -278,7 +278,7 @@ window.XsLocalStorage = {
                   style="width: 100%; height: 80px; padding: 10px; border: 1.5px solid #ff6b9d; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 12px; resize: vertical; color: #333;">
                 </textarea>
                   <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <button @click="handleSelectAction('lsItems-row-save', item.key)" style="flex: 1; padding: 6px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
+                    <button @click="handleSelectAction('lsItems-rowSave', item.key)" style="flex: 1; padding: 6px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
                       저장
                     </button>
                     <button @click="handleBtnAction('lsItems-edit-cancel')" style="flex: 1; padding: 6px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
@@ -294,13 +294,13 @@ window.XsLocalStorage = {
               </td>
               <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
               <td style="padding: 12px 16px; text-align: center; white-space: nowrap;">
-                <button @click="handleSelectAction('lsItems-row-copy', item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
+                <button @click="handleSelectAction('lsItems-rowCopy', item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
                   복사
                 </button>
-                <button v-if="uiStateGlobal.editingKey !== item.key" @click="handleSelectAction('lsItems-row-edit', { key: item.key, value: item.value })" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
+                <button v-if="uiStateGlobal.editingKey !== item.key" @click="handleSelectAction('lsItems-rowEdit', { key: item.key, value: item.value })" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
                   수정
                 </button>
-                <button @click="handleSelectAction('lsItems-row-delete', item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+                <button @click="handleSelectAction('lsItems-rowDelete', item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
                   삭제
                 </button>
               </td>

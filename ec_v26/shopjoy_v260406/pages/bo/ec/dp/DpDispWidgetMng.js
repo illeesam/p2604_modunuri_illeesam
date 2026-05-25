@@ -56,16 +56,16 @@ window.DpDispWidgetMng = {
       if (cmd === 'widgets-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'widgets-set-page') {
+      } else if (cmd === 'widgets-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'widgets-size-change') {
+      } else if (cmd === 'widgets-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세/편집 패널 열기
-      } else if (cmd === 'widgets-row-edit') {
+      } else if (cmd === 'widgets-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'widgets-row-delete') {
+      } else if (cmd === 'widgets-rowDelete') {
         return handleDelete(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
@@ -385,9 +385,9 @@ window.DpDispWidgetMng = {
         :count-text="pager.pageTotalCount + '건'"
         empty-text="등록된 위젯이 없습니다."
         @sort="key => handleSelectAction('widgets-sort', key)"
-        @set-page="n => handleSelectAction('widgets-set-page', n)"
-        @size-change="handleSelectAction('widgets-size-change')"
-        @row-click="(r) => handleSelectAction('widgets-row-edit', r.widgetId)" row-actions>
+        @set-page="n => handleSelectAction('widgets-pager-setPage', n)"
+        @size-change="handleSelectAction('widgets-pager-sizeChange')"
+        @row-click="(r) => handleSelectAction('widgets-rowEdit', r.widgetId)" row-actions>
         <template #toolbar-actions>
           <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
             #{{ uiState.selectedPath }}
@@ -419,7 +419,7 @@ window.DpDispWidgetMng = {
               <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
                 {{ wTypeLabel(row.widgetTypeCd) }}
               </span>
-              <span class="title-link" @click="handleSelectAction('widgets-row-edit', row.widgetId)"
+              <span class="title-link" @click="handleSelectAction('widgets-rowEdit', row.widgetId)"
                 :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===row.widgetId?'color:#e8587a;':'color:#222;')">
                 {{ row.widgetNm }}
               </span>
@@ -487,10 +487,10 @@ window.DpDispWidgetMng = {
         </template>
         <template #row-actions="{ row }">
           <div class="actions" style="justify-content:flex-end;">
-            <button @click.stop="handleSelectAction('widgets-row-edit', row.widgetId)" class="btn btn-blue btn-sm">
+            <button @click.stop="handleSelectAction('widgets-rowEdit', row.widgetId)" class="btn btn-blue btn-sm">
               수정
             </button>
-            <button @click.stop="handleSelectAction('widgets-row-delete', row)" class="btn btn-danger btn-sm">
+            <button @click.stop="handleSelectAction('widgets-rowDelete', row)" class="btn btn-danger btn-sm">
               삭제
             </button>
           </div>

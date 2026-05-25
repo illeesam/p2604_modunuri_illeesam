@@ -70,19 +70,19 @@ window.PdCategoryProdMng = {
       if (cmd === 'categoryTree-select') {
         return selectNode(param);
       // 그리드 행 삭제
-      } else if (cmd === 'categoryProds-row-remove') {
+      } else if (cmd === 'categoryProds-rowRemove') {
         return removeRow(param);
       // 강조옵션 토글
-      } else if (cmd === 'categoryProds-row-emphasis-toggle') {
+      } else if (cmd === 'categoryProds-rowEmphasisToggle') {
         return toggleEmphasis(param.row, param.cd);
       // 그리드 행 드래그 시작
-      } else if (cmd === 'categoryProds-row-drag-start') {
+      } else if (cmd === 'categoryProds-rowDragStart') {
         return onDragStart(param);
       // 그리드 행 드래그 오버
-      } else if (cmd === 'categoryProds-row-drag-over') {
+      } else if (cmd === 'categoryProds-rowDragOver') {
         return onDragOver(param);
       // 그리드 행 드롭 (순서 변경)
-      } else if (cmd === 'categoryProds-row-drop') {
+      } else if (cmd === 'categoryProds-rowDrop') {
         return onDrop();
       // 피커 모달에서 상품 선택 (추가)
       } else if (cmd === 'prodPickModal-add') {
@@ -558,7 +558,7 @@ window.PdCategoryProdMng = {
           bare :columns="cfCatProdGridColumns" :rows="categoryProds" row-key="_id"
           draggable row-actions :row-style="fnCatProdRowStyle"
           :empty-text="searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.'"
-          @reorder="handleSelectAction('categoryProds-row-drop')">
+          @reorder="handleSelectAction('categoryProds-rowDrop')">
         <template #cell-_prodNm="{ row }">
           <td>
             <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
@@ -570,7 +570,7 @@ window.PdCategoryProdMng = {
               </span>
             </div>
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
-              <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-row-emphasis-toggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+              <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
               {{ opt.icon }} {{ opt.nm }}
             </button>
           </div>
@@ -591,7 +591,7 @@ window.PdCategoryProdMng = {
       </template>
       <template #row-actions="{ row }">
         <td style="text-align:center">
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('categoryProds-row-remove', row)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('categoryProds-rowRemove', row)">
             ✕
           </button>
         </td>
@@ -604,7 +604,7 @@ window.PdCategoryProdMng = {
           gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
           gap:'10px',
           }">
-      <div v-for="(row, idx) in categoryProds" :key="(row && row._id)" draggable="true" @dragstart="handleSelectAction('categoryProds-row-drag-start', idx)" @dragover.prevent="handleSelectAction('categoryProds-row-drag-over', idx)" @drop="handleSelectAction('categoryProds-row-drop')" style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff" :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe' : row._isNew ? 'border-color:#52c41a' : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
+      <div v-for="(row, idx) in categoryProds" :key="(row && row._id)" draggable="true" @dragstart="handleSelectAction('categoryProds-rowDragStart', idx)" @dragover.prevent="handleSelectAction('categoryProds-rowDragOver', idx)" @drop="handleSelectAction('categoryProds-rowDrop')" style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff" :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe' : row._isNew ? 'border-color:#52c41a' : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
       <!-- ===== ■.■.■.■.■.■. 카드 헤더 ========================================= -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:5px">
@@ -618,7 +618,7 @@ window.PdCategoryProdMng = {
             NEW
           </span>
         </div>
-        <button class="btn btn-danger btn-xs" @click="handleSelectAction('categoryProds-row-remove', row)">
+        <button class="btn btn-danger btn-xs" @click="handleSelectAction('categoryProds-rowRemove', row)">
           ✕
         </button>
       </div>
@@ -647,7 +647,7 @@ window.PdCategoryProdMng = {
       </div>
       <!-- ===== ■.■.■.■.■.■. 강조옵션 chips ==================================== -->
       <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
-        <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-row-emphasis-toggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+        <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
         {{ opt.icon }} {{ opt.nm }}
       </button>
     </div>

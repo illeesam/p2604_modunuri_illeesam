@@ -70,13 +70,13 @@ window.SyDeptMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyDeptMng.js : handleSelectAction -> ', cmd, param);
       // 부서 그리드 셀 값 변경 감지
-      if (cmd === 'depts-row-cell-change') {
+      if (cmd === 'depts-rowCellChange') {
         return onCellChange(param);
       // 부서 그리드 행 삭제 마킹
-      } else if (cmd === 'depts-row-delete') {
+      } else if (cmd === 'depts-rowDelete') {
         return deleteRow(param);
       // 부서 그리드 행 변경 취소
-      } else if (cmd === 'depts-row-cancel') {
+      } else if (cmd === 'depts-rowCancel') {
         return cancelRow(param);
       // 좌측 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'deptTree-select') {
@@ -430,12 +430,12 @@ window.SyDeptMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('depts-add')" @save="handleBtnAction('depts-save')"
         @delete-checked="handleBtnAction('depts-delete-checked')" @cancel-checked="handleBtnAction('depts-cancel-checked')"
-        @cell-change="row => handleSelectAction('depts-row-cell-change', row)"
+        @cell-change="row => handleSelectAction('depts-rowCellChange', row)"
         @export="handleBtnAction('depts-excel')">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row" :allow-delete-null="true"
-            @cancel="handleSelectAction('depts-row-cancel', idx)"
-            @delete="handleSelectAction('depts-row-delete', idx)" />
+            @cancel="handleSelectAction('depts-rowCancel', idx)"
+            @delete="handleSelectAction('depts-rowDelete', idx)" />
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위부서 선택 모달 ========================================= -->

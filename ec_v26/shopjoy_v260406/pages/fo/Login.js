@@ -102,7 +102,7 @@ window.Login = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Login.js : handleSelectAction -> ', cmd, param);
       // 회원 선택 (param: member 객체)
-      if (cmd === 'members-row-pick') {
+      if (cmd === 'members-rowPick') {
         return onPickMember(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -589,9 +589,9 @@ window.Login = {
             <fo-grid bare :columns="memberPickGridColumns" :rows="memberPick.rows" :pager="memberPick"
               row-key="memberId" row-actions
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
-              :row-click="(row) => handleSelectAction('members-row-pick', row)">
+              :row-click="(row) => handleSelectAction('members-rowPick', row)">
               <template #row-actions="{ row }">
-                <button @click.stop="handleSelectAction('members-row-pick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
+                <button @click.stop="handleSelectAction('members-rowPick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
                   선택
                 </button>
               </template>

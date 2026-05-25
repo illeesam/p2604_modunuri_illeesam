@@ -52,13 +52,13 @@ window.Cart = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Cart.js : handleSelectAction -> ', cmd, param);
       // 행 체크 토글
-      if (cmd === 'cart-row-toggle') {
+      if (cmd === 'cart-rowToggle') {
         return toggleCheck(param);
       // 행 수량 증감 ({ idx, delta })
-      } else if (cmd === 'cart-row-qty') {
+      } else if (cmd === 'cart-rowQty') {
         return updateCartQty(param.idx, param.delta);
       // 행 삭제
-      } else if (cmd === 'cart-row-remove') {
+      } else if (cmd === 'cart-rowRemove') {
         return removeItem(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -292,7 +292,7 @@ window.Cart = {
             background: isChecked(item._origIdx) ? 'var(--blue-dim)' : '' }">
             <!-- ===== ■.■.■.■.■.■. 체크박스 ========================================== -->
             <div style="padding-top:4px;flex-shrink:0;">
-              <input type="checkbox" :checked="isChecked(item._origIdx)" @change="handleSelectAction('cart-row-toggle', item._origIdx)"
+              <input type="checkbox" :checked="isChecked(item._origIdx)" @change="handleSelectAction('cart-rowToggle', item._origIdx)"
                 style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);" />
             </div>
             <!-- ===== ■.■.■.■.■.■. 상품 이미지 ======================================== -->
@@ -316,13 +316,13 @@ window.Cart = {
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <button class="qty-btn" @click="handleSelectAction('cart-row-qty', { idx: item._origIdx, delta: -1 })">
+                  <button class="qty-btn" @click="handleSelectAction('cart-rowQty', { idx: item._origIdx, delta: -1 })">
                     −
                   </button>
                   <span class="qty-val">
                     {{ item.qty }}
                   </span>
-                  <button class="qty-btn" @click="handleSelectAction('cart-row-qty', { idx: item._origIdx, delta: 1 })">
+                  <button class="qty-btn" @click="handleSelectAction('cart-rowQty', { idx: item._origIdx, delta: 1 })">
                     +
                   </button>
                 </div>
@@ -332,7 +332,7 @@ window.Cart = {
               </div>
             </div>
             <!-- ===== ■.■.■.■.■.■. 삭제 버튼 ========================================= -->
-            <button @click="handleSelectAction('cart-row-remove', item._origIdx)"
+            <button @click="handleSelectAction('cart-rowRemove', item._origIdx)"
               style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;padding:0;flex-shrink:0;transition:color 0.2s;"
               @mouseenter="$event.currentTarget.style.color='#e53e3e'"
               @mouseleave="$event.currentTarget.style.color='var(--text-muted)'"

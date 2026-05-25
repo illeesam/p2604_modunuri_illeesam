@@ -44,7 +44,7 @@ window.PdBundleMng = {
       } else if (cmd === 'detailPanel-close') {
         return closeDtl();
       // 페이지 크기 변경
-      } else if (cmd === 'bundles-size-change') {
+      } else if (cmd === 'bundles-pager-sizeChange') {
         return onSizeChange();
       // 설명 토글
       } else if (cmd === 'desc-toggle') {
@@ -77,13 +77,13 @@ window.PdBundleMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdBundleMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 행 클릭 → Dtl 열기
-      if (cmd === 'bundles-row-edit') {
+      if (cmd === 'bundles-rowEdit') {
         return openDtl(param);
       // 그리드 행 삭제
-      } else if (cmd === 'bundles-row-delete') {
+      } else if (cmd === 'bundles-rowDelete') {
         return handleDelete(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'bundles-set-page') {
+      } else if (cmd === 'bundles-pager-setPage') {
         return setPage(param);
       // 카테고리 행 삭제
       } else if (cmd === 'detailPanel-category-remove') {
@@ -633,7 +633,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
   <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList"
     :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
     empty-text="데이터가 없습니다." :row-actions="true"
-    @set-page="n => handleSelectAction('bundles-set-page', n)" @size-change="handleBtnAction('bundles-size-change')">
+    @set-page="n => handleSelectAction('bundles-pager-setPage', n)" @size-change="handleBtnAction('bundles-pager-sizeChange')">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('bundles-add')">
         + 신규등록
@@ -646,7 +646,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
             묶음
           </span>
           <div>
-            <span class="title-link" @click="handleSelectAction('bundles-row-edit', g.bundleProdId)">
+            <span class="title-link" @click="handleSelectAction('bundles-rowEdit', g.bundleProdId)">
               {{ g.prodNm }}
             </span>
             <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
@@ -665,10 +665,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     </td>
   </template>
   <template #row-actions="{ row: g }">
-    <button class="btn btn-blue btn-xs" @click="handleSelectAction('bundles-row-edit', g.bundleProdId)">
+    <button class="btn btn-blue btn-xs" @click="handleSelectAction('bundles-rowEdit', g.bundleProdId)">
       수정
     </button>
-    <button class="btn btn-danger btn-xs" @click="handleSelectAction('bundles-row-delete', g.bundleProdId)">
+    <button class="btn btn-danger btn-xs" @click="handleSelectAction('bundles-rowDelete', g.bundleProdId)">
       삭제
     </button>
   </template>

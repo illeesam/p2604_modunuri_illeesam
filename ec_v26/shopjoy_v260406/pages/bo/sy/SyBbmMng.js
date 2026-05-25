@@ -52,16 +52,16 @@ window.SyBbmMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbmMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭
-      if (cmd === 'bbms-set-page') {
+      if (cmd === 'bbms-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'bbms-size-change') {
+      } else if (cmd === 'bbms-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'bbms-row-edit') {
+      } else if (cmd === 'bbms-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'bbms-row-delete') {
+      } else if (cmd === 'bbms-rowDelete') {
         return handleDelete(param);
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'pathTree-select') {
@@ -308,9 +308,9 @@ window.SyBbmMng = {
         :columns="baseGridColumns" :rows="bbms" :pager="pager" row-key="bbmId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
-        @set-page="n => handleSelectAction('bbms-set-page', n)"
-        @size-change="handleSelectAction('bbms-size-change')"
-        @row-click="row => handleSelectAction('bbms-row-edit', row.bbmId)">
+        @set-page="n => handleSelectAction('bbms-pager-setPage', n)"
+        @size-change="handleSelectAction('bbms-pager-sizeChange')"
+        @row-click="row => handleSelectAction('bbms-rowEdit', row.bbmId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('bbms-excel')">
@@ -329,10 +329,10 @@ window.SyBbmMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('bbms-row-edit', row.bbmId)">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('bbms-rowEdit', row.bbmId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('bbms-row-delete', row)">
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('bbms-rowDelete', row)">
                 삭제
               </button>
             </div>

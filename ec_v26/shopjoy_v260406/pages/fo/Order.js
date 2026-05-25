@@ -80,10 +80,10 @@ window.Order = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Order.js : handleSelectAction -> ', cmd, param);
       // 상품 쿠폰 적용 (param: 쿠폰 객체 또는 null)
-      if (cmd === 'coupon-row-apply') {
+      if (cmd === 'coupon-rowApply') {
         return applyCoupon(param);
       // 배송비 쿠폰 적용 (param: 쿠폰 객체 또는 null)
-      } else if (cmd === 'shipCoupon-row-apply') {
+      } else if (cmd === 'shipCoupon-rowApply') {
         return applyShipCoupon(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -859,7 +859,7 @@ window.Order = {
     <!-- ===== ■.■.■. 리스트 ================================================= -->
     <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
       <!-- ===== ■.■.■.■. 쿠폰 없음 ============================================= -->
-      <div @click="handleSelectAction('coupon-row-apply', null)"
+      <div @click="handleSelectAction('coupon-rowApply', null)"
           style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
           :style="!selectedCoupons[couponPopup.targetIdx]?'border-color:#9ca3af;background:#f3f4f6;':''"
           @mouseenter="!selectedCoupons[couponPopup.targetIdx] || $event.currentTarget.style.setProperty('border-color','#d0d7de')"
@@ -875,7 +875,7 @@ window.Order = {
       </div>
       <template v-if="couponPopup.targetIdx!==null">
         <div v-for="c in productCoupons(cfOrderItems[couponPopup.targetIdx])" :key="c.couponId"
-            @click="handleSelectAction('coupon-row-apply', c)"
+            @click="handleSelectAction('coupon-rowApply', c)"
             :style="{
             padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
             display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',
@@ -933,7 +933,7 @@ window.Order = {
       </button>
     </div>
     <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
-      <div @click="handleSelectAction('shipCoupon-row-apply', null)"
+      <div @click="handleSelectAction('shipCoupon-rowApply', null)"
           style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
           :style="!uiState.selectedShipCoupon?'border-color:#9ca3af;background:#f3f4f6;':''">
         <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">
@@ -946,7 +946,7 @@ window.Order = {
         </div>
       </div>
       <div v-for="c in cfShippingCoupons" :key="c.couponId"
-          @click="handleSelectAction('shipCoupon-row-apply', c)"
+          @click="handleSelectAction('shipCoupon-rowApply', c)"
           :style="{
           padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
           display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',

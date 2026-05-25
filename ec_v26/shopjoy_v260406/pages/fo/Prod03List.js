@@ -68,7 +68,7 @@ window.Prod03List = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Prod03List.js : handleSelectAction -> ', cmd, param);
       // 카테고리 토글
-      if (cmd === 'categories-row-toggle') {
+      if (cmd === 'categories-rowToggle') {
         return toggleCat(param);
       // 색상 필터 토글
       } else if (cmd === 'filter-color-toggle') {
@@ -77,13 +77,13 @@ window.Prod03List = {
       } else if (cmd === 'filter-size-toggle') {
         return toggleSize(param);
       // 상품 카드 선택
-      } else if (cmd === 'prods-row-select') {
+      } else if (cmd === 'prods-rowSelect') {
         return selectProd(param);
       // 좋아요 토글
-      } else if (cmd === 'prods-row-like') {
+      } else if (cmd === 'prods-rowLike') {
         return toggleLike(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'pager-row-go') {
+      } else if (cmd === 'pager-rowGo') {
         pager.pageNo = param; fnBuildPagerNums();
         return;
       } else {
@@ -362,7 +362,7 @@ window.Prod03List = {
       전체
     </button>
     <button v-for="cat in cfAllCats" :key="cat.categoryId"
-      @click="handleSelectAction('categories-row-toggle', cat.categoryId)"
+      @click="handleSelectAction('categories-rowToggle', cat.categoryId)"
       style="padding:7px 18px;border-radius:24px;cursor:pointer;font-size:0.85rem;font-weight:700;transition:all 0.18s;"
       :style="selCats.has(cat.categoryId)
       ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
@@ -530,7 +530,7 @@ window.Prod03List = {
 <!-- ===== ■. 상품 그리드 ================================================== -->
 <div v-else class="grid-3">
   <div v-for="p in pager.pageList" :key="p.prodId"
-      class="prod-card" style="cursor:pointer;" @click="handleSelectAction('prods-row-select', p)">
+      class="prod-card" style="cursor:pointer;" @click="handleSelectAction('prods-rowSelect', p)">
     <!-- ===== ■.■.■. 썸네일 ================================================= -->
     <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
       <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"
@@ -551,7 +551,7 @@ window.Prod03List = {
         {{ Math.round((1-p.priceNum/p.originalPrice)*100) }}%
       </span>
       <!-- ===== ■.■.■.■. 좋아요 버튼 ============================================ -->
-      <button @click.stop="handleSelectAction('prods-row-like', p.prodId)"
+      <button @click.stop="handleSelectAction('prods-rowLike', p.prodId)"
           style="position:absolute;bottom:10px;right:10px;width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;"
           title="위시리스트">
         <svg width="16" height="16" viewBox="0 0 24 24"
@@ -608,7 +608,7 @@ window.Prod03List = {
           </span>
         </template>
       </div>
-      <button class="btn-outline" style="width:100%;padding:9px;" @click.stop="handleSelectAction('prods-row-select', p)">
+      <button class="btn-outline" style="width:100%;padding:9px;" @click.stop="handleSelectAction('prods-rowSelect', p)">
         상세보기
       </button>
     </div>
@@ -640,7 +640,7 @@ window.Prod03List = {
   <span v-if="n==='…'" style="padding:8px 4px;color:var(--text-muted);font-size:0.85rem;">
     …
   </span>
-  <button v-else @click="handleSelectAction('pager-row-go', n)"
+  <button v-else @click="handleSelectAction('pager-rowGo', n)"
         style="min-width:38px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s;"
         :style="pager.pageNo===n
         ? 'background:var(--blue);color:#fff;border:1px solid var(--blue);'

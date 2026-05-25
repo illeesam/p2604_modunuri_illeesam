@@ -120,7 +120,7 @@ window.PmPlanDtl = {
       if (cmd === 'prodPickModal-toggle') {
         return toggleProduct(param);
       // 상품 제거 (선택 목록에서)
-      } else if (cmd === 'items-row-delete') {
+      } else if (cmd === 'items-rowDelete') {
         return removeProduct(param);
       // 판매업체 선택
       } else if (cmd === 'vendorModal-select') {
@@ -548,7 +548,7 @@ window.PmPlanDtl = {
             <div style="color:#e8587a;font-weight:700;margin-bottom:6px;">
               {{ (p.price||0).toLocaleString() }}원
             </div>
-            <button style="width:100%;padding:4px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:10px;cursor:pointer;color:#666;" @click="handleSelectAction('items-row-delete', p.productId)">
+            <button style="width:100%;padding:4px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:10px;cursor:pointer;color:#666;" @click="handleSelectAction('items-rowDelete', p.productId)">
               제거
             </button>
           </div>

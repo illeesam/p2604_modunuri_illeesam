@@ -43,15 +43,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'statuses-export') {
         return exportTab();
       // 페이지 크기 변경 — 영역별
-      } else if (cmd === 'statuses-vendor-size-change') {
+      } else if (cmd === 'statuses-vendor-pager-sizeChange') {
         return onVendorSizeChange();
-      } else if (cmd === 'statuses-order-size-change') {
+      } else if (cmd === 'statuses-order-pager-sizeChange') {
         return onOrderSizeChange();
-      } else if (cmd === 'statuses-claim-size-change') {
+      } else if (cmd === 'statuses-claim-pager-sizeChange') {
         return onClaimSizeChange();
-      } else if (cmd === 'statuses-promo-size-change') {
+      } else if (cmd === 'statuses-promo-pager-sizeChange') {
         return onPromoSizeChange();
-      } else if (cmd === 'statuses-settle-size-change') {
+      } else if (cmd === 'statuses-settle-pager-sizeChange') {
         return onSettleSizeChange();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -62,15 +62,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StStatusMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭 — 영역별
-      if (cmd === 'statuses-vendor-set-page') {
+      if (cmd === 'statuses-vendor-pager-setPage') {
         return setVendorPage(param);
-      } else if (cmd === 'statuses-order-set-page') {
+      } else if (cmd === 'statuses-order-pager-setPage') {
         return setOrderPage(param);
-      } else if (cmd === 'statuses-claim-set-page') {
+      } else if (cmd === 'statuses-claim-pager-setPage') {
         return setClaimPage(param);
-      } else if (cmd === 'statuses-promo-set-page') {
+      } else if (cmd === 'statuses-promo-pager-setPage') {
         return setPromoPage(param);
-      } else if (cmd === 'statuses-settle-set-page') {
+      } else if (cmd === 'statuses-settle-pager-setPage') {
         return setSettlePage(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -614,8 +614,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="업체별현황"
       :count-text="'총 ' + cfVendorTotal + '개 업체'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-vendor-set-page', n)"
-      @size-change="handleBtnAction('statuses-vendor-size-change')">
+      @set-page="n => handleSelectAction('statuses-vendor-pager-setPage', n)"
+      @size-change="handleBtnAction('statuses-vendor-pager-sizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 테이블 =================================================== -->
@@ -671,8 +671,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfOrderTotal + '건'"
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-order-set-page', n)"
-      @size-change="handleBtnAction('statuses-order-size-change')">
+      @set-page="n => handleSelectAction('statuses-order-pager-setPage', n)"
+      @size-change="handleBtnAction('statuses-order-pager-sizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
@@ -730,8 +730,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="클레임별현황"
       :count-text="'총 ' + cfClaimTotal + '건'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-claim-set-page', n)"
-      @size-change="handleBtnAction('statuses-claim-size-change')">
+      @set-page="n => handleSelectAction('statuses-claim-pager-setPage', n)"
+      @size-change="handleBtnAction('statuses-claim-pager-sizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
@@ -778,8 +778,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="프로모션별현황"
       :count-text="'총 ' + cfPromoTotal + '개'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-promo-set-page', n)"
-      @size-change="handleBtnAction('statuses-promo-size-change')">
+      @set-page="n => handleSelectAction('statuses-promo-pager-setPage', n)"
+      @size-change="handleBtnAction('statuses-promo-pager-sizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
@@ -834,8 +834,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="정산별현황"
       :count-text="'총 ' + cfSettleTotal + '개월'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-settle-set-page', n)"
-      @size-change="handleBtnAction('statuses-settle-size-change')">
+      @set-page="n => handleSelectAction('statuses-settle-pager-setPage', n)"
+      @size-change="handleBtnAction('statuses-settle-pager-sizeChange')">
     </bo-grid>
   </div>
 </div>

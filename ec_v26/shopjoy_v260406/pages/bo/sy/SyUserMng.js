@@ -71,16 +71,16 @@ window.SyUserMng = {
       if (cmd === 'users-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'users-set-page') {
+      } else if (cmd === 'users-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'users-size-change') {
+      } else if (cmd === 'users-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 편집 패널 열기
-      } else if (cmd === 'users-row-edit') {
+      } else if (cmd === 'users-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
-      } else if (cmd === 'users-row-delete') {
+      } else if (cmd === 'users-rowDelete') {
         return handleDelete(param);
       // 부서 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'deptTree-select') {
@@ -380,9 +380,9 @@ window.SyUserMng = {
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('users-sort', key)"
-        @set-page="n => handleSelectAction('users-set-page', n)"
-        @size-change="handleSelectAction('users-size-change')"
-        @row-click="row => handleSelectAction('users-row-edit', row.userId)">
+        @set-page="n => handleSelectAction('users-pager-setPage', n)"
+        @size-change="handleSelectAction('users-pager-sizeChange')"
+        @row-click="row => handleSelectAction('users-rowEdit', row.userId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
@@ -401,10 +401,10 @@ window.SyUserMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('users-row-edit', row.userId)">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('users-rowEdit', row.userId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('users-row-delete', row)">
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('users-rowDelete', row)">
                 삭제
               </button>
             </div>

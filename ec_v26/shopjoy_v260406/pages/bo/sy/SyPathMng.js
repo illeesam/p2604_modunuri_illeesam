@@ -77,20 +77,20 @@ window.SyPathMng = {
       } else if (cmd === 'paths-cell-change') {
         return onCellChange(param);
       // 그리드 행 취소
-      } else if (cmd === 'paths-row-cancel') {
+      } else if (cmd === 'paths-rowCancel') {
         return cancelRow(param);
       // 그리드 행 삭제 (서버 호출)
-      } else if (cmd === 'paths-row-delete') {
+      } else if (cmd === 'paths-rowDelete') {
         return deleteRow(param);
       // 그리드 행 [부모경로] 컬럼 클릭 → 모달 열기
       } else if (cmd === 'parentModal-open') {
         return openParentModal(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'paths-set-page') {
+      } else if (cmd === 'paths-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleGridSearch(); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'paths-size-change') {
+      } else if (cmd === 'paths-pager-sizeChange') {
         pager.pageNo = 1;
         return handleGridSearch();
       // 부모경로 모달에서 노드 선택 → 행 parentPathId 갱신
@@ -370,8 +370,8 @@ window.SyPathMng = {
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass" :show-save="true" :row-actions="true"
       @save="handleBtnAction('paths-save')"
-      @set-page="n => handleSelectAction('paths-set-page', n)"
-      @size-change="handleSelectAction('paths-size-change')"
+      @set-page="n => handleSelectAction('paths-pager-setPage', n)"
+      @size-change="handleSelectAction('paths-pager-sizeChange')"
       @cell-change="row => handleSelectAction('paths-cell-change', row)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('paths-add')">
@@ -382,10 +382,10 @@ window.SyPathMng = {
         관리
       </template>
       <template #row-actions="{ row }">
-        <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('paths-row-cancel', row)">
+        <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('paths-rowCancel', row)">
           취소
         </button>
-        <button v-else class="btn btn-danger btn-xs" @click.stop="handleSelectAction('paths-row-delete', row)">
+        <button v-else class="btn btn-danger btn-xs" @click.stop="handleSelectAction('paths-rowDelete', row)">
           삭제
         </button>
       </template>

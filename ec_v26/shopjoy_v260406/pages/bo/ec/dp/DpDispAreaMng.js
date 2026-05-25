@@ -60,16 +60,16 @@ window.DpDispAreaMng = {
       if (cmd === 'areas-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'areas-set-page') {
+      } else if (cmd === 'areas-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'areas-size-change') {
+      } else if (cmd === 'areas-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기
-      } else if (cmd === 'areas-row-view') {
+      } else if (cmd === 'areas-rowView') {
         return loadView(param);
       // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'areas-row-edit') {
+      } else if (cmd === 'areas-rowEdit') {
         return handleLoadDetail(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
@@ -265,9 +265,9 @@ window.DpDispAreaMng = {
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="key => handleSelectAction('areas-sort', key)"
-      @set-page="n => handleSelectAction('areas-set-page', n)"
-      @size-change="handleSelectAction('areas-size-change')"
-      @row-click="(r) => handleSelectAction('areas-row-view', r.areaId)" row-actions>
+      @set-page="n => handleSelectAction('areas-pager-setPage', n)"
+      @size-change="handleSelectAction('areas-pager-sizeChange')"
+      @row-click="(r) => handleSelectAction('areas-rowView', r.areaId)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -277,10 +277,10 @@ window.DpDispAreaMng = {
         </button>
       </template>
       <template #row-actions="{ row }">
-        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('areas-row-view', row.areaId)">
+        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('areas-rowView', row.areaId)">
           상세
         </button>
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('areas-row-edit', row.areaId)">
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('areas-rowEdit', row.areaId)">
           수정
         </button>
       </template>

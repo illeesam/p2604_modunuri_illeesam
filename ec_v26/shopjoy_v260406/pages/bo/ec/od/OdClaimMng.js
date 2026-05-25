@@ -98,30 +98,30 @@ window.OdClaimMng = {
       if (cmd === 'claims-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'claims-set-page') {
+      } else if (cmd === 'claims-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'claims-size-change') {
+      } else if (cmd === 'claims-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 수정
-      } else if (cmd === 'claims-row-edit') {
+      } else if (cmd === 'claims-rowEdit') {
         detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
         return;
       // 그리드 행 삭제
-      } else if (cmd === 'claims-row-delete') {
+      } else if (cmd === 'claims-rowDelete') {
         return handleDelete(param);
       // 그리드 행 참조 모달 열기
-      } else if (cmd === 'claims-row-ref-click') {
+      } else if (cmd === 'claims-rowRefClick') {
         return showRefModal(param.type, param.id);
       // 그리드 행 체크 토글
-      } else if (cmd === 'claims-row-toggle-check') {
+      } else if (cmd === 'claims-rowToggleCheck') {
         if (checked.has(param)) { checked.delete(param); }
         else { checked.add(param); }
         return;
       // 그리드 전체 체크 토글
-      } else if (cmd === 'claims-row-toggle-check-all') {
+      } else if (cmd === 'claims-rowToggleCheckAll') {
         if (cfAllChecked.value) { claims.forEach(c => checked.delete(c.claimId)); }
         else { claims.forEach(c => checked.add(c.claimId)); }
         return;
@@ -609,15 +609,15 @@ window.OdClaimMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleSelectAction('claims-sort', key)"
-        @toggle-check="id => handleSelectAction('claims-row-toggle-check', id)"
-        @toggle-check-all="handleSelectAction('claims-row-toggle-check-all')"
-        @ref-click="({type,id}) => handleSelectAction('claims-row-ref-click', {type, id})" row-actions>
+        @toggle-check="id => handleSelectAction('claims-rowToggleCheck', id)"
+        @toggle-check-all="handleSelectAction('claims-rowToggleCheckAll')"
+        @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('claims-row-edit', row.claimId)">
+            <button class="btn btn-blue btn-sm" @click="handleSelectAction('claims-rowEdit', row.claimId)">
               수정
             </button>
-            <button class="btn btn-danger btn-sm" @click="handleSelectAction('claims-row-delete', row)">
+            <button class="btn btn-danger btn-sm" @click="handleSelectAction('claims-rowDelete', row)">
               삭제
             </button>
           </div>
@@ -628,8 +628,8 @@ window.OdClaimMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('claims-set-page', n)"
-        :on-size-change="() => handleSelectAction('claims-size-change')"
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('claims-pager-setPage', n)"
+        :on-size-change="() => handleSelectAction('claims-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

@@ -40,7 +40,7 @@ window.EventPage = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Event.js : handleSelectAction -> ', cmd, param);
       // 이벤트 카드 클릭 (param: eventId)
-      if (cmd === 'events-row-view') {
+      if (cmd === 'events-rowView') {
         return props.navigate('eventView', { eventId: param });
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -194,7 +194,7 @@ window.EventPage = {
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
     <div v-for="ev in events" :key="ev.id"
       style="background:var(--bg-card);border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;"
-      @click="handleSelectAction('events-row-view', ev.id)"
+      @click="handleSelectAction('events-rowView', ev.id)"
       @mouseenter="$event.currentTarget.style.transform='translateY(-3px)';$event.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'"
       @mouseleave="$event.currentTarget.style.transform='';$event.currentTarget.style.boxShadow=''">
       <!-- ===== ■.■.■. 이벤트 배너 썸네일 ========================================== -->

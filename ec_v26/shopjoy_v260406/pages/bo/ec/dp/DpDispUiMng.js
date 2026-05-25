@@ -62,16 +62,16 @@ window.DpDispUiMng = {
       if (cmd === 'uis-sort') {
         return onSort(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'uis-set-page') {
+      } else if (cmd === 'uis-pager-setPage') {
         return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'uis-size-change') {
+      } else if (cmd === 'uis-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기
-      } else if (cmd === 'uis-row-view') {
+      } else if (cmd === 'uis-rowView') {
         return loadView(param);
       // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'uis-row-edit') {
+      } else if (cmd === 'uis-rowEdit') {
         return handleLoadDetail(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
@@ -263,9 +263,9 @@ window.DpDispUiMng = {
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="key => handleSelectAction('uis-sort', key)"
-      @set-page="n => handleSelectAction('uis-set-page', n)"
-      @size-change="handleSelectAction('uis-size-change')"
-      @row-click="(r) => handleSelectAction('uis-row-view', r.uiId)" row-actions>
+      @set-page="n => handleSelectAction('uis-pager-setPage', n)"
+      @size-change="handleSelectAction('uis-pager-sizeChange')"
+      @row-click="(r) => handleSelectAction('uis-rowView', r.uiId)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -275,10 +275,10 @@ window.DpDispUiMng = {
         </button>
       </template>
       <template #row-actions="{ row }">
-        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('uis-row-view', row.uiId)">
+        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('uis-rowView', row.uiId)">
           상세
         </button>
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('uis-row-edit', row.uiId)">
+        <button class="btn btn-sm btn-primary" @click="handleSelectAction('uis-rowEdit', row.uiId)">
           수정
         </button>
       </template>
