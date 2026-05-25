@@ -247,6 +247,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'adjId',        label: '조정ID' },
       { key: 'adjDate',      label: '조정일자' },
@@ -262,6 +263,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기타조정 추가/수정 ============
+    // 기본 폼
     const baseFormColumns = [
       { key: 'vendorId', label: '업체', type: 'select', required: true, nullLabel: '선택',
         options: () => (cfVendors.value || []).map(v => ({ value: v.vendorId, label: v.vendorNm })) },

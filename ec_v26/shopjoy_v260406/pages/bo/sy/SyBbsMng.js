@@ -273,6 +273,7 @@ window.SyBbsMng = {
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -289,6 +290,7 @@ window.SyBbsMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'bbmId',        label: '게시판', badge: () => 'badge-gray', fmt: (v) => bbmNm(v) },
       { key: 'bbsTitle',     label: '제목', sortKey: 'nm', link: true,

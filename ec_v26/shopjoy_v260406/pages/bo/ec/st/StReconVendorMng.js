@@ -145,6 +145,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'diff', label: '대사결과', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',   label: '주문건수', fmt: (v) => v + '건' },

@@ -264,6 +264,7 @@ window.PmCouponMng = {
     ];
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },

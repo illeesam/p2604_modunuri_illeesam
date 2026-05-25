@@ -220,6 +220,7 @@ window.MbMemGradeMng = {
 
     const cfVisibleCount = computed(() => grades.filter(r => r._row_status !== 'D').length);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -231,6 +232,7 @@ window.MbMemGradeMng = {
       { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;',
         edit: 'select', options: () => codes.member_grades },

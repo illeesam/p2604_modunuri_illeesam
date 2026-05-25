@@ -317,6 +317,7 @@ window.XsSample06 = {
       { key: 'useYn',        type: 'select', label: '사용여부', options: () => codes.use_yn_opts,      nullLabel: '사용여부 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'couponNm',     label: '쿠폰명', edit: 'text' },
       { key: 'discountType', label: '할인유형', edit: 'select', width: '80px', align: 'center',

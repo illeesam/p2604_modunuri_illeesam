@@ -179,10 +179,12 @@ window.SyBbsDtl = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 사이트명 폼
     const siteFormColumns = [
       { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
     ];
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'bbsTitle',    label: '제목', type: 'text', required: true,
         placeholder: '게시글 제목', colSpan: 2 },
@@ -190,6 +192,7 @@ window.SyBbsDtl = {
       { key: 'bbsStatusCd', label: '상태', type: 'select', options: () => codes.bbs_post_statuses },
     ];
 
+    // 내용 입력 폼
     const contentFormColumns = [
       { key: '_noBbm', label: '내용', type: 'slot', name: 'contentNoBbm', colSpan: 4,
         visible: () => !uiState.selectedBbm },
@@ -202,6 +205,7 @@ window.SyBbsDtl = {
         visible: () => uiState.selectedBbm && cfContentType.value === 'htmleditor' },
     ];
 
+    // 게시판 상세보기 모달
     const bbmDetailColumns = [
       { key: 'bbmId',         label: '게시판ID',   type: 'readonly' },
       { key: 'bbmCode',       label: '게시판코드', type: 'readonly', mono: true },

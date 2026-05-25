@@ -226,6 +226,7 @@ window.PmCacheMng = {
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -242,6 +243,7 @@ window.PmCacheMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'cacheDate',   label: '일시', sortKey: 'reg' },

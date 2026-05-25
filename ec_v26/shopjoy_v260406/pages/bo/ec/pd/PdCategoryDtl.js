@@ -155,6 +155,7 @@ window.PdCategoryDtl = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'parentCategoryId', label: '상위카테고리', type: 'select', nullable: false,
         options: () => cfParentSelectOptions.value, onChange: () => onParentChange() },

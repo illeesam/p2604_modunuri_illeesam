@@ -140,11 +140,13 @@ window.PdQnaMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchValue', label: '키워드', type: 'text', placeholder: '제목 검색' },
       { key: 'status', label: '상태', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'siteNm',   label: '사이트', fmt: () => cfSiteNm.value },
       { key: 'prodId',   label: '상품명', fmt: (v) => getProdNm(v) },

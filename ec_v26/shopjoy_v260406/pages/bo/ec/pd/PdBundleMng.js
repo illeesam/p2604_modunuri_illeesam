@@ -532,6 +532,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     ];
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 번들 그리드
     const bundleGridColumns = [
       { key: 'prodNm',    label: '묶음상품' },
       { key: 'itemCount', label: '구성품수',   style: 'width:70px;text-align:center;', align: 'center', fmt: (v) => (v + '개') },
@@ -557,6 +558,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     const fnBundleStatusText = (g) =>
       g.prod ? (g.prod.prodStatusCd || g.prod.status || '-') : '-';
 
+    // 신규 번들 폼
     const newBundleFormColumns = [
       { key: 'prodNm',       label: '묶음상품명', type: 'text', required: true,
         placeholder: '묶음상품명 입력', colSpan: 2 },

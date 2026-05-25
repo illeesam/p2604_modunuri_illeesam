@@ -210,6 +210,7 @@ window.SyUserDtl = {
       { key: 'remark',       label: '비고', cellStyle: 'color:#666;' },
     ];
 
+    // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },
@@ -231,10 +232,12 @@ window.SyUserDtl = {
       { key: 'userStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
     ];
 
+    // 주소 폼
     const addrFormColumns = [
       { key: '_addr', label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
     ];
 
+    // 프로필 폼
     const profileFormColumns = [
       { key: 'profileAttachId', label: '프로필 이미지', type: 'slot', name: 'profile', colSpan: 2 },
     ];

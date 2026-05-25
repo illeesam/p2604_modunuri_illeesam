@@ -268,6 +268,7 @@ window.PmGiftDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // 정보 영역 폼
     const infoFormColumns = [
       { key: 'giftNm',       label: '사은품명', type: 'text', required: true,
         placeholder: '사은품명 입력', colSpan: 2 },

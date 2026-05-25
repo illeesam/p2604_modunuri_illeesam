@@ -235,6 +235,7 @@ window.CmChattDtl = {
       return [];
     });
 
+    // 회원 채팅 그리드
     const memberChatGridColumns = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
@@ -244,6 +245,7 @@ window.CmChattDtl = {
       { key: 'regDate', label: '일시' },
     ];
 
+    // 사용자 채팅 그리드
     const userChatGridColumns = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
@@ -253,6 +255,7 @@ window.CmChattDtl = {
       { key: 'regDate', label: '일시' },
     ];
 
+    // 신규 폼
     const newFormColumns = [
       { key: 'memberId',      label: '회원ID', type: 'slot', name: 'memberId', required: true },
       { key: 'memberNm',      label: '회원명', type: 'text', placeholder: '회원명' },

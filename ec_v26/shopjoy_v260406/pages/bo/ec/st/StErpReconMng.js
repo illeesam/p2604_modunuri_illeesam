@@ -177,6 +177,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'diff', label: '대사결과', type: 'select', options: () => codes.erp_recon_results, nullLabel: '결과 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'reconId',    label: '대사ID' },
       { key: 'reconDate',  label: '대사일자' },

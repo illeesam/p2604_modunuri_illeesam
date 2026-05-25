@@ -211,12 +211,14 @@ window.PdDlivTmpltMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchValue', label: '템플릿명', type: 'text', placeholder: '템플릿명 검색' },
       { key: 'method', label: '배송방법', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
       { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'dlivTmpltNm',   label: '템플릿명', sortKey: 'nm', link: true },
       { key: 'dlivMethodCd',  label: '배송방법',   style: 'width:90px;', badge: (row) => fnMethodBadge(row.dlivMethodCd) },
@@ -233,6 +235,7 @@ window.PdDlivTmpltMng = {
         badge: (row) => fnYnBadge(row.useYn) },
     ];
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true },
       { key: 'dlivMethodCd',     label: '배송방법', type: 'select', nullable: false,

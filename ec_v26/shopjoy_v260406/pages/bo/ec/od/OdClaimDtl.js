@@ -329,6 +329,7 @@ window.OdClaimDtl = {
         } },
     ];
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'claimId',      label: '클레임ID', type: 'text', required: true,
         placeholder: 'CLM-2026-XXX', readonly: !cfIsNew.value },

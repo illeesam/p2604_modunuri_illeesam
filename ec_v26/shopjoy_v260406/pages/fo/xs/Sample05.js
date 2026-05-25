@@ -328,6 +328,7 @@ window.XsSample05 = {
       { key: 'status',      type: 'select', label: '상태', options: () => codes.open_opts,     nullLabel: '상태 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'title',    label: '제목',   edit: 'text' },
       { key: 'author',   label: '작성자', edit: 'text', width: '100px' },

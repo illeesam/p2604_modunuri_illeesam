@@ -868,6 +868,7 @@ window.DpDispPanelDtl = {
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 패널코드/패널명/상태 ==========
+    // 기본 패널 폼
     const basePanelFormColumns = [
       { key: 'dispCode', label: '패널코드', type: 'text', required: true,
         placeholder: 'DP_YYMMDD_HHMMSS', mono: true },

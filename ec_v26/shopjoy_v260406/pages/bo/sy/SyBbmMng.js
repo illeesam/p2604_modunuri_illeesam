@@ -240,6 +240,7 @@ window.SyBbmMng = {
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -252,6 +253,7 @@ window.SyBbmMng = {
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'pathId',        label: '표시경로', pathPick: 'sy_bbm' },
       { key: 'bbmCode',       label: '게시판코드',

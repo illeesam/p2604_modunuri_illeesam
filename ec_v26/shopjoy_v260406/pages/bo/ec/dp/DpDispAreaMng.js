@@ -194,6 +194,7 @@ window.DpDispAreaMng = {
 
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -205,6 +206,7 @@ window.DpDispAreaMng = {
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 목록 그리드
     const listGridColumns = [
       { key: 'areaCd',     label: '영역코드', cellInnerStyle: 'font-size:11px;font-family:monospace;' },
       { key: 'areaNm',     label: '영역명',   sortKey: 'nm', link: true },

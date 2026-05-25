@@ -442,6 +442,7 @@ window.OdDlivMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -465,6 +466,7 @@ window.OdDlivMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 목록 그리드
     const listGridColumns = [
       { key: 'dlivId',           label: '배송ID', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -490,15 +492,18 @@ window.OdDlivMng = {
       (detailPanel.selectedId === d.dlivId ? 'background:#fff8f9;' : '')
       + (isChecked(d.dlivId) ? 'background:#eef6fd;' : '');
 
+    // 결재 문의 폼
     const apprContactFormColumns = [
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
     ];
+    // 결재 대상 폼
     const apprTargetFormColumns = [
       { key: 'reqTarget',   label: '요청대상', type: 'select', nullable: false,
         options: () => codes.req_targets, onChange: () => handleBtnAction('actionsModal-req-target-change') },
       { key: 'reqTargetNm', label: '요청대상명', type: 'text', placeholder: '수정 가능' },
     ];
+    // 결재 상세 폼
     const apprDetailFormColumns = [
       { key: 'reqAmount', label: '요청금액', type: 'number', colSpan: 2 },
       { type: 'rowBreak' },
@@ -513,6 +518,7 @@ window.OdDlivMng = {
       if (arr && arr.length) { return arr; }
       return COURIER_OPTIONS.map(v => ({ codeValue: v, codeLabel: v }));
     });
+    // 일괄 택배 폼
     const bulkCourierFormColumns = [
       { key: 'courier',    label: '택배사', type: 'select', nullLabel: '선택하세요',
         options: () => cfCourierOpts.value, colSpan: 2 },

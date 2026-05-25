@@ -1174,6 +1174,7 @@ window.PdProdDtl = {
     const fnNoCursor = () => '';
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 담당 MD 그리드
     const mdUserGridColumns = [
       { key: 'userNm', label: '이름',
         fmt: (v, row) => form.mdUserId === row.userId ? `✔ ${row.userNm || ''}` : (row.userNm || ''),
@@ -1183,6 +1184,7 @@ window.PdProdDtl = {
     ];
     /* fnMdRowStyle — 유틸 */
     const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
+    // 상품 선택 모달 그리드
     const prodPickerGridColumns = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
       { key: 'prodNm',    label: '상품명',   cellStyle: 'font-weight:600;' },
@@ -1193,6 +1195,7 @@ window.PdProdDtl = {
         fmt: (v, row) => (row.stock + '개') },
       { key: 'status',    label: '상태',     style: 'width:60px;', badge: row => row.status==='판매중' ? 'badge-green' : 'badge-gray', cellStyle: 'font-size:10px;' },
     ];
+    // 잔여 SKU 그리드
     const remainSkuGridColumns = [
       { key: '_nm1',     label: '1단 옵션', badge: () => 'badge-gray', fmt: (v, row) => (row._nm1 || '-') },
       { key: '_nm2',     label: '2단 옵션', badge: () => 'badge-blue', fmt: (v, row) => (row._nm2 || '-') },

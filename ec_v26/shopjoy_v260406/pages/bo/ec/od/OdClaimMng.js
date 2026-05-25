@@ -472,6 +472,7 @@ window.OdClaimMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -496,6 +497,7 @@ window.OdClaimMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 목록 그리드
     const listGridColumns = [
       { key: 'claimId',       label: '클레임ID', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -518,10 +520,12 @@ window.OdClaimMng = {
       (detailPanel.selectedId === c.claimId ? 'background:#fff8f9;' : '')
       + (isChecked(c.claimId) ? 'background:#eef6fd;' : '');
 
+    // 결재 문의 폼
     const apprContactFormColumns = [
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
     ];
+    // 결재 대상 폼
     const apprTargetFormColumns = [
       { key: 'reqTarget',   label: '요청대상', type: 'select', nullable: false,
         options: () => codes.req_targets, onChange: () => handleBtnAction('actionsModal-req-target-change') },

@@ -408,6 +408,7 @@ window.OdOrderDtl = {
       if (codes.pay_statuses && codes.pay_statuses.length) { return codes.pay_statuses; }
       return PAY_STATUS_FALLBACK.map(v => ({ codeValue: v, codeLabel: v }));
     });
+    // 기본 폼
     const baseFormColumns = [
       { key: 'orderId',      label: '주문ID', type: 'text', required: true,
         placeholder: 'ORD-2026-XXX', readonly: !cfIsNew.value },

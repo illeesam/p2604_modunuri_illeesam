@@ -229,6 +229,7 @@ window.CmChattMng = {
     /* fnGridRowClass — 그리드 행 클래스 */
     const fnGridRowClass = (row) => (detailPanel.selectedId === row.chattRoomId ? 'active' : '');
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -244,6 +245,7 @@ window.CmChattMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'subject',     label: '제목', link: true,

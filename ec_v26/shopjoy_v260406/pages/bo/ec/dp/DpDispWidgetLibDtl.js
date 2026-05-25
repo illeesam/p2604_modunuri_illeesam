@@ -627,6 +627,7 @@ window.DpDispWidgetLibDtl = {
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - Lib코드/라이브러리명/상태 =====
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 위젯 라이브러리 폼
     const baseLibFormColumns = [
       { key: 'libCode', label: 'Lib코드', type: 'text', required: true,
         placeholder: '비워두면 자동 생성 (예: DL_260508_191415)', mono: true },

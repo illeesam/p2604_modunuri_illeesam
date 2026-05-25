@@ -341,6 +341,7 @@ window.PmEventDtl = {
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (이벤트 제목/기간/상태) ==
+    // 정보 영역 폼
     const infoFormColumns = [
       { key: 'eventTitle',   label: '이벤트 제목', type: 'text', required: true,
         placeholder: '이벤트 제목을 입력하세요', colSpan: 2 },

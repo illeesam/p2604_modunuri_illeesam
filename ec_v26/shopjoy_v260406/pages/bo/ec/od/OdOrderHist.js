@@ -123,12 +123,14 @@ window.OdOrderHist = {
         align: 'right', cellStyle: 'font-weight:600', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'statusCd',   label: '상태',   style: 'width:90px;' },
     ];
+    // 배송 이력 그리드
     const dlivHistGridColumns = [
       { key: 'date',     label: '일시',  style: 'width:120px;' },
       { key: 'status',   label: '상태',  style: 'width:90px;', badge: () => 'badge-blue' },
       { key: 'location', label: '위치' },
       { key: 'memo',     label: '메모' },
     ];
+    // 클레임 그리드
     const claimGridColumns = [
       { key: 'claimId',       label: '클레임ID', style: 'width:120px;', refLink: 'claim' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId' },

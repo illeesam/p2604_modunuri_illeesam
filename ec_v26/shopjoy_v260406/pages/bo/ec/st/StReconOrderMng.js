@@ -157,6 +157,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'orderId',    label: '주문ID' },
       { key: 'orderDate',  label: '주문일' },

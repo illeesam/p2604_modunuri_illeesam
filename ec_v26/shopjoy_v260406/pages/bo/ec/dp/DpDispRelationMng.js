@@ -170,6 +170,7 @@ window.DpDispRelationMng = {
     // --- [컬럼 정의] ---
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'dateStart_range', type: 'dateRange', label: '등록기간', startKey: 'dateStart', endKey: 'dateEnd' },
     ];

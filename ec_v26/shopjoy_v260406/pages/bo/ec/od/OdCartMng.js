@@ -200,6 +200,7 @@ window.OdCartMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'siteId', type: 'select', label: '사이트',
         options: () => codes.sites.map(s => ({ value: s.siteId, label: s.siteNm })),

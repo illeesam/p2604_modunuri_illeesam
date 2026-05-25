@@ -329,6 +329,7 @@ window.XsSample02 = {
       { key: 'status',      type: 'select', label: '상태', options: () => codes.prod_status_opts, nullLabel: '상태 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'productNm', label: '상품명', edit: 'text' },
       { key: 'category',  label: '카테고리', edit: 'select', width: '100px', align: 'center',

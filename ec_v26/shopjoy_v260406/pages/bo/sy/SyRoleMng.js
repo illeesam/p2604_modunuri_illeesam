@@ -710,6 +710,7 @@ window.SyRoleMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'roleCode',     label: '역할코드', style: 'width:120px;',    edit: 'text', mono: true },
       { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;', edit: 'text',

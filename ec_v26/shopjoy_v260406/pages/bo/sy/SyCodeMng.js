@@ -549,6 +549,7 @@ window.SyCodeMng = {
       '공통코드목록.csv'
     );
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -599,6 +600,7 @@ window.SyCodeMng = {
       return cols;
     };
 
+    // 트리 그리드
     const treeGridColumns = [
       { key: 'codeLabel',       label: '코드라벨',          style: 'min-width:220px;' },
       { key: 'codeValue',       label: '코드값',            edit: 'text', mono: true },
@@ -618,6 +620,7 @@ window.SyCodeMng = {
     /* treeRowKeyFn — 트리 행 키 */
     const treeRowKeyFn    = (it) => it.node.value;
 
+    // 그룹 그리드
     const grpGridColumns = [
       { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', pathPick: 'sy_code_grp' },
       { key: 'codeGrp',     label: '코드그룹', sortKey: 'codeGrp', edit: 'text', mono: true },

@@ -64,6 +64,7 @@ window.MbMemberDtl = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'loginId',        label: '이메일',    type: 'text', required: true, placeholder: '이메일 주소' },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },

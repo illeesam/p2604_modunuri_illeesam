@@ -542,6 +542,7 @@ window.SyVendorUserMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchVendorId', type: 'pick', label: '업체',
         display: (p) => p.searchVendorId != null ? fnVendorSummary(p.searchVendorId) : '',
@@ -561,6 +562,7 @@ window.SyVendorUserMng = {
         nullLabel: '업체유형 전체' },
     ];
 
+    // 판매업체 그리드
     const vendorGridColumns = [
       { key: 'vendorTypeCd', label: '업체유형', align: 'center', badge: (row) => fnVendorTypeBadge(row.vendorTypeCd), fmt: (v) => fnVendorTypeLabel(v) },
       { key: 'vendorNm',     label: '업체명', cellStyle: 'font-weight:600' },
@@ -569,6 +571,7 @@ window.SyVendorUserMng = {
       { key: 'ceo',          label: '대표자' },
       { key: 'phone',        label: '전화', cellStyle: 'font-size:11.5px' },
     ];
+    // 사용자 그리드
     const userGridColumns = [
       { key: 'memberNm',           label: '이름', cellStyle: 'font-weight:600' },
       { key: 'positionCd',         label: '직위', cellStyle: 'color:#666' },
@@ -590,6 +593,7 @@ window.SyVendorUserMng = {
     /* fnUserRowStyle — 유틸 */
     const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
 
+    // 판매업체 사용자 폼
     const baseVendorUserFormColumns = [
       { key: 'vendorId',          label: '업체', type: 'readonly',
         fmt: (v) => fnVendorSummary(v) },

@@ -241,6 +241,7 @@ window.SyUserLoginHist = {
     /* fnRowClickStyle — 행 클릭 스타일 */
     const fnRowClickStyle = (r, idx) => 'cursor:pointer;' + (isExpanded(r.logId || idx) ? 'background:#fafbff;' : '');
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
         startKey: 'dateStart', endKey: 'dateEnd',
@@ -262,6 +263,7 @@ window.SyUserLoginHist = {
       { key: 'searchTraceId', type: 'text', label: 'Trace ID',  placeholder: 'Trace ID',         width: '200px' },
     ];
 
+    // 로그 그리드
     const logGridColumns = [
       { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
@@ -278,6 +280,7 @@ window.SyUserLoginHist = {
       { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
 
+    // 토큰 그리드
     const tokenGridColumns = [
       { key: '_exp',          label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },

@@ -131,6 +131,7 @@ window.OdClaimHist = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 처리 폼
     const processFormColumns = [
       { key: 'refundAmount',   label: '환불금액', type: 'number' },
       { key: 'refundMethodCd', label: '환불방법', type: 'select', options: () => codes.refund_methods },

@@ -300,6 +300,7 @@ window.SyPathMng = {
       return allPaths.find(r => r.pathId === pathId)?.pathLabel || String(pathId);
     };
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'bizCd', type: 'text', label: '업무코드', placeholder: 'biz_cd 검색', width: '180px' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
@@ -312,6 +313,7 @@ window.SyPathMng = {
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;', align: 'center',
         badge: (row) => 'badge-xs ' + (row._status === 'N' ? 'badge-green' : row._status === 'U' ? 'badge-orange' : 'badge-gray'),

@@ -303,6 +303,7 @@ window.OdDlivDtl = {
         } },
     ];
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'dlivId',       label: '배송ID', type: 'text', required: true,
         placeholder: 'DLIV-XXX', readonly: !cfIsNew.value },

@@ -283,6 +283,7 @@ window.PdProdMng = {
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
@@ -304,6 +305,7 @@ window.PdProdMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },

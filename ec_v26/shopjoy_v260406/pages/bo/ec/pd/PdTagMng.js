@@ -161,11 +161,13 @@ window.PdTagMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchValue', label: '태그명', type: 'text', placeholder: '태그명 검색' },
       { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'tagNm',    label: '태그명', edit: 'text', placeholder: '태그명' },
       { key: 'tagDesc',  label: '설명',   edit: 'text', placeholder: '설명',

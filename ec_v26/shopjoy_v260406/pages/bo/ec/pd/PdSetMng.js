@@ -499,6 +499,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
     ];
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 세트 그리드
     const setGridColumns = [
       { key: 'prodNm',    label: '세트상품' },
       { key: 'itemCount', label: '구성품수', style: 'width:70px;text-align:center', fmt: v => (v || 0) + '개' },
@@ -534,6 +535,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         fmt: (v, row) => ((row.salePrice || row.price || 0).toLocaleString() + '원') },
     ];
 
+    // 신규 세트 폼
     const newSetFormColumns = [
       { key: 'prodNm',       label: '세트상품명', type: 'text', required: true,
         placeholder: '세트상품명 입력', colSpan: 2 },

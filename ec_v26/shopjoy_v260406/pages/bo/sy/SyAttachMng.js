@@ -354,6 +354,7 @@ window.SyAttachMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 파일 그리드
     const fileGridColumns = [
       { key: 'attachGrpId', label: '그룹', cellStyle: 'color:#666;',
         fmt: (v, row) => {
@@ -371,6 +372,7 @@ window.SyAttachMng = {
         cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 
+    // 그룹 폼
     const grpFormColumns = [
       { key: 'attachGrpNm',   label: '그룹명',   type: 'text', required: true, placeholder: '그룹명', colSpan: 2 },
       { type: 'rowBreak' },
@@ -383,6 +385,7 @@ window.SyAttachMng = {
       { type: 'rowBreak' },
       { key: 'useYn',         label: '상태', type: 'select', options: () => codes.use_yns, colSpan: 2 },
     ];
+    // 파일 폼
     const fileFormColumns = [
       { key: 'attachGrpId',      label: '첨부그룹ID', type: 'text', required: true, placeholder: 'ATG...' },
       { key: 'fileNm',           label: '파일명', type: 'text', required: true, placeholder: '파일명.jpg', colSpan: 2 },

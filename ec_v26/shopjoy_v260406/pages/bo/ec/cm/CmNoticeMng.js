@@ -236,6 +236,7 @@ window.CmNoticeMng = {
     /* fnGridRowClass — 그리드 행 클래스 */
     const fnGridRowClass = (row) => (detailPanel.selectedId === row.noticeId ? 'active' : '');
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchValue', label: '제목', type: 'text', placeholder: '제목 검색' },
       { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
@@ -247,6 +248,7 @@ window.CmNoticeMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
         badge: (row) => fnTypeBadge(row.noticeTypeCd) },

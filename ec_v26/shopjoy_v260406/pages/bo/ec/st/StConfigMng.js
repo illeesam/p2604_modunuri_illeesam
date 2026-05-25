@@ -196,6 +196,7 @@ window.StConfigMng = {
     // --- [컬럼 정의] ---
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'siteNm',             label: '사이트' },
       { key: 'categoryNm',         label: '카테고리', cellStyle: 'font-weight:700',
@@ -213,6 +214,7 @@ window.StConfigMng = {
       { key: 'settleConfigRemark', label: '비고', cellStyle: 'color:#888' },
     ];
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'categoryNm',     label: '카테고리', type: 'text', placeholder: '카테고리명' },
       { key: 'commissionRate', label: '수수료율(%)', type: 'number', required: true, min: 0, max: 100 },

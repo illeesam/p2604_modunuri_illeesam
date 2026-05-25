@@ -266,6 +266,7 @@ window.SyBrandMng = {
     /* fnColTitle — 컬럼 타이틀 (local 모드만 표시) */
     const fnColTitle = (col) => cfIsLocalMode.value ? col.label : '';
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'bizCd', type: 'text', label: '업무코드', placeholder: 'biz_cd 검색', width: '160px' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
@@ -283,6 +284,7 @@ window.SyBrandMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'min-width:140px;', pathPick: 'sy_brand' },
       { key: 'brandCode',   label: '브랜드코드', style: 'min-width:110px;', edit: 'text', mono: true, placeholder: 'BRAND_CODE' },

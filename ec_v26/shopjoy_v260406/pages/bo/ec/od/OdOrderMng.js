@@ -432,6 +432,7 @@ window.OdOrderMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -457,6 +458,7 @@ window.OdOrderMng = {
 
     /* fnPayStatusText — 유틸 */
     const fnPayStatusText = (o) => (o.orderStatusCd === '취소' || o.orderStatusCd === '자동취소') ? '환불완료' : o.orderStatusCd === '입금대기' ? '미결제' : '결제완료';
+    // 목록 그리드
     const listGridColumns = [
       { key: 'orderId',       label: '주문ID', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -500,11 +502,13 @@ window.OdOrderMng = {
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
     ];
+    // 결재 대상 폼
     const apprTargetFormColumns = [
       { key: 'reqTarget',   label: '요청대상', type: 'select', nullable: false,
         options: () => codes.req_targets, onChange: () => handleBtnAction('actionsModal-req-target-change') },
       { key: 'reqTargetNm', label: '요청대상명', type: 'text', placeholder: '수정 가능' },
     ];
+    // 결재 상세 폼
     const apprDetailFormColumns = [
       { key: 'reqAmount', label: '요청금액', type: 'number', colSpan: 2 },
       { type: 'rowBreak' },

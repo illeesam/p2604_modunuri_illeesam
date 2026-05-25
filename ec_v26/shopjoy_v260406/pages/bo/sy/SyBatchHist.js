@@ -163,6 +163,7 @@ window.SyBatchHist = {
       batches.map(b => ({ batchId: b.batchId, label: b.batchNm }))
     );
 
+    // 이력 그리드
     const histGridColumns = [
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },

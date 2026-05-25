@@ -348,6 +348,7 @@ window.SyDeptMng = {
       return p ? p.deptNm : `ID:${parentDeptId}`;
     };
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -360,6 +361,7 @@ window.SyDeptMng = {
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'deptCode',     label: '부서코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;', edit: 'text',

@@ -151,6 +151,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'diff', label: '대사결과', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'orderId',    label: '주문ID' },
       { key: 'txDate',     label: '거래일' },

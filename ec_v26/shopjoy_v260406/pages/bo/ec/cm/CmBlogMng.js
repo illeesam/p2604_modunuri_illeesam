@@ -258,6 +258,7 @@ window.CmBlogMng = {
     /* fnGridRowClass — 그리드 행 클래스 (선택 행 강조) */
     const fnGridRowClass = (row) => (detailPanel.dtlId === row.blogId ? 'active' : '');
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -270,6 +271,7 @@ window.CmBlogMng = {
       { key: 'notice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
         fmt: (v, row) => {
@@ -284,6 +286,7 @@ window.CmBlogMng = {
       { key: 'regDate',    label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
     ];
 
+    // 블로그 폼
     const blogFormColumns = [
       { key: 'blogTitle',   label: '제목', type: 'text', required: true, colSpan: 2 },
       { key: 'blogAuthor',  label: '작성자', type: 'text' },

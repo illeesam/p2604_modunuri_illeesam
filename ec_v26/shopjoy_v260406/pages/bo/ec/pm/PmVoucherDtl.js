@@ -333,6 +333,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'status',      label: '상태',
         badge: row => row.status === '정상' ? 'badge-green' : row.status === '사용완료' ? 'badge-blue' : row.status === '만료됨' ? 'badge-gray' : 'badge-gray' },
     ];
+    // 사용 그리드
     const usageGridColumns = [
       { key: 'usageNo',    label: '사용번호' },
       { key: 'issueNo',    label: '발급번호' },

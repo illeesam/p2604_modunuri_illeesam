@@ -212,6 +212,7 @@ window.SyPropMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -226,6 +227,7 @@ window.SyPropMng = {
       { key: 'useFlt', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;', pathPick: 'sy_prop' },
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },

@@ -145,6 +145,7 @@ window.PdProdHist = {
     /* bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) */
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 문의 그리드
     const qnaGridColumns = [
       { key: 'qnaTitle',     label: '질문',   style: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         cellStyle: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
@@ -156,6 +157,7 @@ window.PdProdHist = {
       { key: 'answerYn',     label: '답변여부', badge: (row) => (row.answerYn === 'Y' ? 'badge-blue' : 'badge-orange'),
         fmt: (v, row) => (row.answerYn === 'Y' ? '답변완료' : '미답변') },
     ];
+    // 리뷰 그리드
     const reviewGridColumns = [
       { key: 'rating',           label: '평점',  style: 'white-space:nowrap;',
         cellInnerStyle: 'color:#faad14;font-weight:700;',
@@ -168,6 +170,7 @@ window.PdProdHist = {
       { key: 'reviewStatusCd',   label: '상태', badge: (row) => (row.reviewStatusCd === 'ACTIVE' ? 'badge-green' : 'badge-gray'),
         fmt: (v, row) => (row.reviewStatusCdNm || row.reviewStatusCd) },
     ];
+    // 주문 그리드
     const orderGridColumns = [
       { key: 'orderId',        label: '주문ID', refLink: 'order' },
       { key: 'memberNm',       label: '회원', refLink: 'member', refKey: 'memberId',
@@ -178,6 +181,7 @@ window.PdProdHist = {
       { key: 'orderStatusCd',  label: '상태', badge: () => 'badge-blue',
         fmt: (v, row) => (row.orderStatusCdNm || row.orderStatusCd) },
     ];
+    // 재고 그리드
     const stockGridColumns = [
       { key: 'histDate',     label: '일시',        fmt: (v) => fnFmtDate(v) },
       { key: 'stockTypeCd',  label: '유형', badge: (row) => fnStockBadge(row.stockTypeCd),
@@ -189,6 +193,7 @@ window.PdProdHist = {
       { key: 'regByNm',      label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
       { key: 'stockMemo',    label: '메모' },
     ];
+    // 가격 그리드
     const priceGridColumns = [
       { key: 'histDate',    label: '일시',          fmt: (v) => fnFmtDate(v) },
       { key: 'priceField',  label: '항목(변경사유)', cellInnerClass: 'tag' },
@@ -196,6 +201,7 @@ window.PdProdHist = {
       { key: 'priceAfter',  label: '변경 후', style: 'font-weight:600;color:#e8587a;' },
       { key: 'regByNm',     label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
     ];
+    // 상태 그리드
     const statusGridColumns = [
       { key: 'histDate',      label: '일시',     fmt: (v) => fnFmtDate(v) },
       { key: 'statusCdBefore', label: '변경 전', badge: () => 'badge-gray',
@@ -204,6 +210,7 @@ window.PdProdHist = {
         fmt: (v, row) => (row.statusCdAfterNm || row.statusCdAfter) },
       { key: 'regByNm',       label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
     ];
+    // 변경 그리드
     const changeGridColumns = [
       { key: 'histDate',     label: '일시',     fmt: (v) => fnFmtDate(v) },
       { key: 'changeField',  label: '항목', cellInnerClass: 'tag' },

@@ -91,6 +91,7 @@ window.MbMemberHist = {
       return sampleClaims[props.memberId] || [];
     });
 
+    // 주문 그리드
     const orderGridColumns = [
       { key: 'orderId', label: '주문ID', refLink: 'order' },
       { key: 'orderDate', label: '주문일' },
@@ -98,6 +99,7 @@ window.MbMemberHist = {
       { key: 'totalPrice', label: '금액', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'statusCd', label: '상태' },
     ];
+    // 클레임 그리드
     const claimGridColumns = [
       { key: 'claimId', label: '클레임ID', refLink: 'claim' },
       { key: 'orderId', label: '주문ID', refLink: 'order' },

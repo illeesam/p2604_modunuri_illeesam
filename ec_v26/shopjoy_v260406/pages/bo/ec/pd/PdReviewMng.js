@@ -341,6 +341,7 @@ window.PdReviewMng = {
     ];
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 목록 그리드
     const listGridColumns = [
       { key: 'reviewTitle',     label: '리뷰 제목', cellInnerClass: 'title-link' },
       { key: 'prodId',          label: '상품ID',   style: 'width:110px', cellStyle: 'font-size:12px;',

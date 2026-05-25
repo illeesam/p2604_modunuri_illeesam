@@ -326,6 +326,7 @@ window.PmPlanDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (기획전 단순 필드만) ===
+    // 정보 영역 폼
     const infoFormColumns = [
       { key: 'planNm',    label: '기획전명', type: 'text', required: true,
         placeholder: '기획전명을 입력하세요', colSpan: 2 },

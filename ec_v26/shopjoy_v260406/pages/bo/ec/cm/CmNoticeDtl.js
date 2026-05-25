@@ -128,6 +128,7 @@ window.CmNoticeDtl = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 폼
     const baseFormColumns = [
       { key: 'noticeTitle',    label: '제목', type: 'text', required: true, placeholder: '공지 제목', colSpan: 2 },
       { key: 'noticeTypeCd',   label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '선택' },

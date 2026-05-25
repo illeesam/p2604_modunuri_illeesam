@@ -142,6 +142,7 @@ window.SyBatchDtl = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },

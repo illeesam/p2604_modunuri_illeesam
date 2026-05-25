@@ -252,6 +252,7 @@ window.PmDiscntDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // 정보 영역 폼
     const infoFormColumns = [
       { key: 'discntNm',     label: '할인명', type: 'text', required: true,
         placeholder: '할인명 입력', colSpan: 2 },
@@ -264,10 +265,12 @@ window.PmDiscntDtl = {
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 할인적용/기간설정 ===
+    // 할인 적용 폼
     const discntApplyFormColumns = [
       { key: 'minOrderAmt',  label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
       { key: 'maxDiscntAmt', label: '최대할인금액 (원)', type: 'number', placeholder: '0 = 무제한' },
     ];
+    // 할인 기간 폼
     const discntPeriodFormColumns = [
       { key: 'startDate', label: '시작일', type: 'date' },
       { key: 'endDate',   label: '종료일', type: 'date' },

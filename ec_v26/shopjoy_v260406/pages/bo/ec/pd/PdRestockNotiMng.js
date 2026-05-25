@@ -154,11 +154,13 @@ window.PdRestockNotiMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
       { key: 'noti', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'prodId',   label: '상품명', fmt: (v, row) => getProdNm(row.prodId) },
       { key: 'skuId',    label: 'SKU',    style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },

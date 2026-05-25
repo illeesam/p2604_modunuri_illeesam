@@ -289,6 +289,7 @@ window.SyUserMng = {
     /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (u) => detailPanel.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -308,6 +309,7 @@ window.SyUserMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'loginId',      label: '로그인ID',
         cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:monospace;' },

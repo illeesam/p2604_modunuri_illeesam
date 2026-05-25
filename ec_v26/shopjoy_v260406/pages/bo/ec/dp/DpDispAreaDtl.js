@@ -500,6 +500,7 @@ window.DpDispAreaDtl = {
     const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 영역코드/영역명/영역유형 ======
+    // 기본 영역 폼
     const baseAreaFormColumns = [
       { key: 'codeValue',  label: '영역코드', type: 'text', required: true,
         placeholder: 'HOME_BANNER', mono: true,

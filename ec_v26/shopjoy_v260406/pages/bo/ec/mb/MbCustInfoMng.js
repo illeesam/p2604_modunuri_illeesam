@@ -340,6 +340,7 @@
       /* _ellipsis — 말줄임 스타일 */
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
 
+      // 주문 그리드
       const orderGridColumns = [
         { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
@@ -347,6 +348,7 @@
         { key: 'totalPrice', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;', fmt: (v) => fnFmtPrice(v) },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
+      // 클레임 그리드
       const claimGridColumns = [
         { key: 'claimId', label: '클레임번호', refLink: 'claim' },
         { key: 'type', label: '유형' },
@@ -354,6 +356,7 @@
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
         { key: 'requestDate', label: '신청일', style: 'white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
       ];
+      // 배송 그리드
       const dlivGridColumns = [
         { key: 'dlivId', label: '배송번호', cellStyle: 'font-weight:500;' },
         { key: 'orderId', label: '주문번호' },
@@ -361,6 +364,7 @@
         { key: 'trackingNo', label: '운송장번호', cellStyle: 'color:#888;', fmt: (v) => v || '-' },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
+      // 캐쉬 그리드
       const cacheGridColumns = [
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'type', label: '구분', badge: (row) => (row.type === '충전' ? 'badge-blue' : 'badge-orange') },
@@ -368,24 +372,28 @@
         { key: 'balance', label: '잔액', style: 'text-align:right;', align: 'right', cellStyle: 'color:#555;', fmt: (v) => fnFmtPrice(v) },
         { key: 'desc', label: '사유', cellStyle: _ellipsis(150, 'color:#666;'), cellTitle: true },
       ];
+      // 문의 그리드
       const contactGridColumns = [
         { key: 'date', label: '접수일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'category', label: '분류', cellStyle: 'white-space:nowrap;' },
         { key: 'title', label: '제목', cellStyle: _ellipsis(200), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
+      // 채팅 그리드
       const chatGridColumns = [
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'subject', label: '제목', cellStyle: _ellipsis(130), cellTitle: true },
         { key: 'lastMsg', label: '마지막 메시지', cellStyle: _ellipsis(180, 'color:#666;'), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
+      // 로그인 그리드
       const loginGridColumns = [
         { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'ip', label: 'IP', cellStyle: 'color:#666;font-family:monospace;' },
         { key: 'device', label: '기기/브라우저', cellStyle: 'color:#555;' },
         { key: 'result', label: '결과', badge: (row) => fnBadgeCls(row.result) },
       ];
+      // 쿠폰 그리드
       const couponGridColumns = [
         { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
@@ -393,12 +401,14 @@
         { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'discountAmt', label: '할인금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;color:#e91e63;', fmt: (v, row) => '-' + (row.discountAmt || 0).toLocaleString() + '원' },
       ];
+      // 발송 그리드
       const sendGridColumns = [
         { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'channelCd', label: '채널', badge: (row) => fnChannelCls(row.channelCd) },
         { key: 'title', label: '제목/내용', cellStyle: _ellipsis(220, 'color:#333;'), cellTitle: true },
         { key: 'statusCd', label: '결과', badge: (row) => fnBadgeCls(row.statusCd) },
       ];
+      // 회원 선택 모달 그리드
       const memberModalGridColumns = [
         { key: 'userId', label: 'ID', style: 'width:50px;text-align:center;', align: 'center', cellStyle: 'color:#aaa;' },
         { key: 'memberNm', label: '이름', style: 'width:90px;', cellStyle: 'font-weight:600;color:#1a1a2e;' },

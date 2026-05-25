@@ -199,6 +199,7 @@ window.StSettleCloseMng = {
       return true;
     }));
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'closeMon',  label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'sales',     label: '매출액', fmt: fmtW },

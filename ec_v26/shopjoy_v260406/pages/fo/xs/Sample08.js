@@ -325,6 +325,7 @@ window.XsSample08 = {
       { key: 'useYn',       type: 'select', label: '사용여부', options: () => codes.use_yn_opts, nullLabel: '사용여부 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'categoryNm', label: '카테고리명', edit: 'text' },
       { key: 'parentNm',   label: '상위카테고리', edit: 'text', width: '120px' },

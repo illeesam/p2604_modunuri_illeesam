@@ -281,6 +281,7 @@ window.SyApiLogMng = {
     /* fnDecode — 유틸 */
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
         startKey: 'dateStart', endKey: 'dateEnd',
@@ -306,6 +307,7 @@ window.SyApiLogMng = {
       { key: 'searchTraceId',   type: 'text',   label: 'Trace ID',  placeholder: 'Trace ID',         width: '200px' },
     ];
 
+    // 접근 로그 그리드
     const accessGridColumns = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
@@ -318,6 +320,7 @@ window.SyApiLogMng = {
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
+    // 오류 로그 그리드
     const errorGridColumns = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },

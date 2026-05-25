@@ -199,11 +199,13 @@ window.DpDispUiMng = {
 
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchValue', type: 'text', label: '키워드', placeholder: 'UI명 검색', width: '200px' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'uiNm',         label: 'UI명',     sortKey: 'nm', link: true },
       { key: 'deviceTypeCd', label: '유형' },

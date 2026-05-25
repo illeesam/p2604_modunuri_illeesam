@@ -212,11 +212,13 @@ window.MbMemGroupMng = {
 
     const cfVisibleCount = computed(() => groups.filter(r => r._row_status !== 'D').length);
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
       { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'groupNm',   label: '그룹명',   style: 'min-width:180px;',
         edit: 'text', placeholder: '그룹명' },

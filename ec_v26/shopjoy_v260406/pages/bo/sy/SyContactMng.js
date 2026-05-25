@@ -227,6 +227,7 @@ window.SyContactMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -243,6 +244,7 @@ window.SyContactMng = {
         onRangeChange: () => handleBtnAction('searchParam-date-range') },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'memberNm',        label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'categoryCd',      label: '카테고리', cellInnerClass: 'tag' },

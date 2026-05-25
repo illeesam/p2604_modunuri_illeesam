@@ -126,6 +126,7 @@ window.StErpGenMng = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 미리보기 그리드
     const previewGridColumns = [
       { key: 'debit',       label: '차변계정' },
       { key: 'credit',      label: '대변계정' },

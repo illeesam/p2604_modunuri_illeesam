@@ -182,6 +182,7 @@ window.SyI18nMng = {
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
     const fnRowStyle = (row) => uiState.selectedId === row.i18nId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -194,6 +195,7 @@ window.SyI18nMng = {
       { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'i18nKey',     label: '키 (i18n_key)',
         cellInnerStyle: 'font-size:12px;color:#7c3aed;font-family:monospace;' },

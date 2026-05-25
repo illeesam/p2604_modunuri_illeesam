@@ -330,6 +330,7 @@ window.XsSample01 = {
       { key: 'status',      type: 'select', label: '상태', options: () => codes.status_opts, nullLabel: '상태 전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'memberNm', label: '이름',   edit: 'text' },
       { key: 'email',    label: '이메일', edit: 'text' },

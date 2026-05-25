@@ -420,6 +420,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'comm',      label: '수수료(10%)', fmt: fmtW, cellStyle: 'color:#e67e22' },
       { key: 'settle',    label: '정산예정액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
     ];
+    // 주문 그리드
     const orderGridColumns = [
       { key: 'orderId',    label: '주문ID' },
       { key: 'orderDate',  label: '주문일시' },
@@ -434,6 +435,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         cellStyle: (v, row) => 'font-weight:700;' + (row.isCancelled ? 'color:#bbb' : 'color:#27ae60') },
       { key: 'status',     label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
+    // 클레임 그리드
     const claimGridColumns = [
       { key: 'claimId',      label: '클레임ID' },
       { key: 'requestDate',  label: '요청일시' },
@@ -447,6 +449,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         fmt: (v) => v < 0 ? '-' + fmtW(Math.abs(v)) : '-' },
       { key: 'status',       label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
+    // 프로모션 그리드
     const promoGridColumns = [
       { key: 'promoId',     label: 'ID' },
       { key: 'promoType',   label: '유형', badge: () => 'badge-blue' },
@@ -457,6 +460,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'period',      label: '기간', cellStyle: 'color:#888' },
       { key: 'status',      label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
+    // 정산 그리드
     const settleGridColumns = [
       { key: 'month',     label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',  label: '주문건수', fmt: (v) => v + '건' },
@@ -478,21 +482,26 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { type: 'label', label: '~' },
       { key: 'dateEnd',   type: 'date' },
     ];
+    // 판매업체 검색
     const vendorSearchColumns = [
       { key: 'vendorSearchValue', label: '업체', type: 'text', placeholder: '업체명 검색', width: '200px' },
     ];
+    // 주문 검색
     const orderSearchColumns = [
       { key: 'orderSearchValue',  label: '검색어', type: 'text',   placeholder: '주문ID / 고객명 / 상품명', width: '220px' },
       { key: 'orderSearchStatus', label: '상태', type: 'select', options: () => codes.st_order_statuses,  nullLabel: '상태 전체' },
     ];
+    // 클레임 검색
     const claimSearchColumns = [
       { key: 'claimSearchType',   label: '유형', type: 'select', options: () => codes.claim_types_kr,    nullLabel: '유형 전체' },
       { key: 'claimSearchStatus', label: '상태', type: 'select', options: () => codes.claim_statuses_kr, nullLabel: '상태 전체' },
     ];
+    // 프로모션 검색
     const promoSearchColumns = [
       { key: 'promoSearchType',  label: '유형', type: 'select', options: () => codes.promo_types_kr, nullLabel: '유형 전체' },
       { key: 'promoSearchValue', label: '검색어', type: 'text',   placeholder: '프로모션명 검색', width: '180px' },
     ];
+    // 정산 검색
     const settleSearchColumns = [
       { key: 'settleSearchMonth', label: '정산월', type: 'text', placeholder: '월 검색 (예: 2026-04)', width: '180px' },
     ];

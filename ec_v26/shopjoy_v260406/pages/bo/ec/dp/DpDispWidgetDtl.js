@@ -649,6 +649,7 @@ window.DpDispWidgetDtl = {
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 위젯 기본 설정 ================
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
+    // 기본 위젯 폼
     const baseWidgetFormColumns = [
       { key: 'libCode', label: '위젯코드', type: 'text', required: true,
         placeholder: '비워두면 자동 생성 (예: DW_260508_191415)', mono: true },

@@ -281,6 +281,7 @@ window.MbMemberMng = {
     /* fnGridRowClass — 그리드 행 클래스 */
     const fnGridRowClass = (row) => (detailPanel.dtlId === row.memberId ? 'active' : '');
 
+    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -293,6 +294,7 @@ window.MbMemberMng = {
       { key: 'status', type: 'select', label: '상태', options: () => codes.member_statuses, nullLabel: '전체' },
     ];
 
+    // 기본 그리드
     const baseGridColumns = [
       { key: 'memberNm',         label: '이름',     sortKey: 'nm',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },

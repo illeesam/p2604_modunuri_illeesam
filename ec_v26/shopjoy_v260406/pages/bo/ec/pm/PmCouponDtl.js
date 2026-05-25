@@ -348,6 +348,7 @@ window.PmCouponDtl = {
         badge: row => row.status === '사용' ? 'badge-blue' : 'badge-green',
         fmt: v => v || '미사용' },
     ];
+    // 사용 그리드
     const usedGridColumns = [
       { key: 'code',        label: '쿠폰코드', fmt: v => v || '-' },
       { key: 'userId',      label: '사용자', fmt: v => v || '-' },
@@ -362,6 +363,7 @@ window.PmCouponDtl = {
     const cfUsedTop   = computed(() => cfUsedList.value.slice(0, 10));
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
+    // 정보 영역 폼
     const infoFormColumns = [
       { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
         options: () => codes.coupon_types },
@@ -386,12 +388,14 @@ window.PmCouponDtl = {
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 일부 =================
+    // 발행 상세 폼
     const detailIssueFormColumns = [
       { key: 'issueMethods',   label: '지급 방법', type: 'select', nullable: false,
         options: () => codes.coupon_issue_type_opts },
       { key: 'issueCondition', label: '지급 조건', type: 'select', nullable: false,
         options: () => codes.coupon_target_opts },
     ];
+    // 사용 상세 폼
     const detailUseFormColumns = [
       { key: 'useScope',   label: '사용 범위', type: 'select', nullable: false, colSpan: 2,
         options: () => codes.coupon_apply_opts },
