@@ -10,7 +10,7 @@
 ## 1. 개요
 
 `_apps/EcAdminApi` — Spring Boot 3.2 기반 관리자 전용 REST API 서버.  
-관리자 프론트(`bo.html`)의 `window.adminApi`(axios 래퍼)가 이 서버를 호출한다.
+관리자 프론트(`bo.html`)의 `window.boApi`(`utils/boApiAxios.js` axios 래퍼) + `window.boApiSvc`/`window.coApiSvc`(`services/boApiSvc.js` · `services/coApiSvc.js` 도메인별 서비스 객체) 가 이 서버를 호출한다.
 
 | 항목 | 값 |
 |---|---|

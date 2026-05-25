@@ -28,6 +28,29 @@ window.MyDateFilter = {
   emits: ['search', 'reset'],
   setup(props, { emit }) {
     const { ref } = Vue;
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MyDateFilter : handleBtnAction -> ', cmd, param);
+      if (cmd === 'filter-search') {
+        return search();
+      } else if (cmd === 'filter-reset') {
+        return onReset();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MyDateFilter : handleSelectAction -> ', cmd, param);
+      if (cmd === 'filter-period-change') {
+        return onPeriodChange();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const today = new Date();
 
     /* fmt — 포맷 */
@@ -58,29 +81,6 @@ window.MyDateFilter = {
       emit('search', { startDate: startDate.value, endDate: endDate.value });
       emit('reset');
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ MyDateFilter : handleBtnAction -> ', cmd, param);
-      if (cmd === 'filter-search') {
-        return search();
-      } else if (cmd === 'filter-reset') {
-        return onReset();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ MyDateFilter : handleSelectAction -> ', cmd, param);
-      if (cmd === 'filter-period-change') {
-        return onPeriodChange();
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     return {
       period, startDate, endDate, PERIODS,     // 상태
       handleBtnAction, handleSelectAction,     // dispatch
@@ -193,26 +193,6 @@ window.foMyLayout = {
     const { computed } = Vue;
     const myStore = window.useFoMyStore();
 
-    const MY_TABS = [
-      { pageId: 'myOrder',   label: '주문',          icon: '📦' },
-      { pageId: 'myClaim',   label: '취소/반품/교환', icon: '↩️' },
-      { pageId: 'myCoupon',  label: '쿠폰',           icon: '🎟️' },
-      { pageId: 'myCache',   label: '캐쉬',           icon: '💰' },
-      { pageId: 'myContact', label: '문의',           icon: '📩' },
-      { pageId: 'myChatt',   label: '채팅',           icon: '💬' },
-    ];
-
-    const cfTabCounts = computed(() => myStore.getTabCounts(props.cartCount));
-
-    /* goTab — 이동 */
-    const goTab = (pageId) => {
-      if (pageId === 'myCart') {
-        props.navigate('cart');
-      } else {
-        props.navigate(pageId);
-      }
-    };
-
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ foMyLayout : handleBtnAction -> ', cmd, param);
@@ -233,6 +213,25 @@ window.foMyLayout = {
       }
     };
 
+    const MY_TABS = [
+      { pageId: 'myOrder',   label: '주문',          icon: '📦' },
+      { pageId: 'myClaim',   label: '취소/반품/교환', icon: '↩️' },
+      { pageId: 'myCoupon',  label: '쿠폰',           icon: '🎟️' },
+      { pageId: 'myCache',   label: '캐쉬',           icon: '💰' },
+      { pageId: 'myContact', label: '문의',           icon: '📩' },
+      { pageId: 'myChatt',   label: '채팅',           icon: '💬' },
+    ];
+
+    const cfTabCounts = computed(() => myStore.getTabCounts(props.cartCount));
+
+    /* goTab — 이동 */
+    const goTab = (pageId) => {
+      if (pageId === 'myCart') {
+        props.navigate('cart');
+      } else {
+        props.navigate(pageId);
+      }
+    };
     return {
       MY_TABS, cfTabCounts,                    // 상태 / computed
       handleBtnAction, handleSelectAction,     // dispatch

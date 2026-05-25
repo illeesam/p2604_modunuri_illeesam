@@ -113,25 +113,43 @@ const frontAuthStore = Pinia.defineStore('frontAuth', {
 const frontMyStore = Pinia.defineStore('frontMy', {
   state: () => ({ orders: [], claims: [], coupons: [], cache: 0 }),
   actions: {
-    async fetchOrders() { /* axiosApi 호출 */ },
+    async fetchOrders() { /* foApi 또는 foApiSvc 호출 */ },
   },
 });
 ```
 
 ---
 
-## 6. API 호출 (frontApi / axiosApi)
+## 6. API 호출 (foApi / foApiSvc / coApiSvc) ⭐
 
 ```js
-// utils/frontAxios.js — window.frontApi / window.axiosApi
-const axiosApi = axios.create({ baseURL: '' });  // api/ 상대경로 자동 변환
+// utils/foApiAxios.js — window.foApi
+// services/foApiSvc.js — window.foApiSvc (FO 전용 도메인 묶음)
+// services/coApiSvc.js — window.coApiSvc (BO·FO 공통)
 
-// 사용 예
-const res = await window.axiosApi.get('api/my/orders.json');
+// ✅ 권장 — services 등록된 GET
+const res = await foApiSvc.myOrder.getPage({ status: 'COMPLT' });
+
+// ✅ services 미등록 — foApi 직접 + URL 직접 입력
+const res = await foApi.get('api/my/orders.json');
 const data = res.data;
 ```
 
+### ⛔ 금지 패턴
+
+```js
+// ❌ 폐기 — axiosApi / adminApi (전부 폐기됨)
+const res = await window.axiosApi.get('...');
+const res = await window.adminApi.get('...');
+
+// ❌ 금지 — URL 변수 정의
+const API = 'api/base/sy/zz-sample1';
+await foApi.get(API);
+```
+
 목업 응답 위치: `api/my/*.json`, `api/base/*.json`, `api/xs/*.json`
+
+상세 → `_doc/정책서/base/base.코드스타일-admin-vue.md` §9.0 (API 클라이언트 선택)
 
 ---
 

@@ -45,12 +45,6 @@ window.BoPathTree = {
   setup(props, { emit }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    const _cache = (window._pathTreeCache = window._pathTreeCache || {});
-
-    const tree     = reactive({ pathId: null, pathLabel: '전체', children: [], count: 0 });
-    const expanded = reactive(new Set([null]));
-    const loading  = ref(false);
-
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ BoPathTree : handleBtnAction -> ', cmd, param);
@@ -75,6 +69,11 @@ window.BoPathTree = {
       }
     };
 
+    const _cache = (window._pathTreeCache = window._pathTreeCache || {});
+
+    const tree     = reactive({ pathId: null, pathLabel: '전체', children: [], count: 0 });
+    const expanded = reactive(new Set([null]));
+    const loading  = ref(false);
     /* buildTree */
     const buildTree = (list, rootBizCd) => {
       const filtered = list.filter(p => p.useYn !== 'N');
@@ -290,13 +289,6 @@ window.BoCategoryTree = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     // siteId별로 캐시 분리 (사이트 전환 시 즉시 정확한 트리 표시)
-    const _cacheStore = (window._categoryTreeCache = window._categoryTreeCache || { list: null, bySite: {} });
-    const cfSiteId = computed(() => props.siteId || (window.boCommonFilter && window.boCommonFilter.siteId) || null);
-
-    const categories = reactive([]);
-    const expandedSet = reactive(new Set());
-    const loading = ref(false);
-    const pickerSearch = ref('');
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -326,6 +318,13 @@ window.BoCategoryTree = {
       }
     };
 
+    const _cacheStore = (window._categoryTreeCache = window._categoryTreeCache || { list: null, bySite: {} });
+    const cfSiteId = computed(() => props.siteId || (window.boCommonFilter && window.boCommonFilter.siteId) || null);
+
+    const categories = reactive([]);
+    const expandedSet = reactive(new Set());
+    const loading = ref(false);
+    const pickerSearch = ref('');
     /* DEPTH_COLOR */
     const DEPTH_COLOR  = d => ({0:'#e8587a', 1:'#1677ff', 2:'#3ba87a'}[d] || '#999');
 
@@ -1009,18 +1008,6 @@ window.BoPathPickField = {
   setup(props, { emit }) {
     const show = Vue.ref(false);
     const cfLabel = Vue.computed(() => {
-      const id = props.row ? props.row[props.pathField] : null;
-      return (window.boUtil && window.boUtil.bofGetPathLabel(id)) || '';
-    });
-    const cfHasVal = Vue.computed(() =>
-      props.row != null && props.row[props.pathField] != null);
-    const onOpen  = () => { if (!props.disabled) show.value = true; };
-    const onClose = () => { show.value = false; };
-    const onPicked = (pathId) => {
-      if (props.row) props.row[props.pathField] = pathId;
-      show.value = false;
-      emit('change', pathId);
-    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -1049,6 +1036,18 @@ window.BoPathPickField = {
       }
     };
 
+      const id = props.row ? props.row[props.pathField] : null;
+      return (window.boUtil && window.boUtil.bofGetPathLabel(id)) || '';
+    });
+    const cfHasVal = Vue.computed(() =>
+      props.row != null && props.row[props.pathField] != null);
+    const onOpen  = () => { if (!props.disabled) show.value = true; };
+    const onClose = () => { show.value = false; };
+    const onPicked = (pathId) => {
+      if (props.row) props.row[props.pathField] = pathId;
+      show.value = false;
+      emit('change', pathId);
+    };
     return {
       show, cfLabel, cfHasVal,                // 상태 / computed
       handleBtnAction, handleSelectAction,    // dispatch

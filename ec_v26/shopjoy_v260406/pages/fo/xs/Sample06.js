@@ -10,11 +10,79 @@ window.XsSample06 = {
 
     const { ref, reactive, onMounted, watch } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false });
-    const codes = reactive({
+    const uiState = reactive({                     // UI 상태
+      loading: false, error: null, isPageCodeLoad: false,
+      dragSrc: null, focusedIdx: null, dragMoved: false, checkAll: false,
+    });
+    const codes = reactive({                       // 정적 옵션
       discnt_type_opts: [{ value: '정액', label: '정액' }, { value: '정률', label: '정률' }],
       use_yn_opts:      [{ value: 'Y', label: 'Y 사용' }, { value: 'N', label: 'N 미사용' }],
     });
+    const CD_GRP = 'S06_COUPON';                   // 쿠폰 코드 그룹
+    const EDIT_FIELDS = ['couponNm', 'discountType', 'discountVal', 'minAmount', 'useYn', 'expDate'];
+
+    /* ===== 검색조건 ===== */
+    const searchParam = reactive({ searchValue: '', discountType: '', useYn: '' });
+    const searchParamOrg = reactive({ searchValue: '', discountType: '', useYn: '' });
+
+    /* ===== 그리드 데이터 ===== */
+    const allData    = reactive([]);               // 원본 (서버 응답)
+    const gridRows   = reactive([]);               // 화면 표시용 (필터 + 편집)
+    let   _tempId    = -1;                         // 신규 행 임시 ID
+
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({
+      pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
+      pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {},
+    });
+
+    /* ===== 토스트 ===== */
+    const toast = reactive({ show: false, msg: '', type: 'success' });
+    let _tId = null;
+
+    /* showToast — 토스트 표시 */
+    const showToast = (msg, type = 'success') => {
+      toast.msg = msg; toast.type = type; toast.show = true;
+      clearTimeout(_tId);
+      _tId = setTimeout(() => { toast.show = false; }, 2500);
+    };
+
+    /* ===== 데이터 변환 헬퍼 ===== */
+    /* toRow — ZzSample1 → 화면 행 */
+    const toRow = d => ({
+      couponId: d.sample1Id, couponNm: d.cdNm || '', discountType: d.col01 || '정액',
+      discountVal: Number(d.col02) || 0, minAmount: Number(d.col03) || 0,
+      expDate: d.col04 || '', useYn: d.useYn || 'Y', regDate: d.regDt || '',
+    });
+
+    /* toPayload — 화면 행 → ZzSample1 페이로드 */
+    const toPayload = r => ({
+      cdGrp: CD_GRP, cdNm: r.couponNm, col01: r.discountType,
+      col02: String(r.discountVal), col03: String(r.minAmount),
+      col04: r.expDate, useYn: r.useYn,
+    });
+
+    /* makeRow — 편집 상태 포함 행 생성 */
+    const makeRow = d => ({
+      ...d, _row_status: 'N', _row_check: false,
+      _row_org: { couponNm: d.couponNm, discountType: d.discountType, discountVal: d.discountVal, minAmount: d.minAmount, useYn: d.useYn, expDate: d.expDate },
+    });
+
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = gridRows.filter(r => r._row_status !== 'D').length;
+      pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize));
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+      pager.pageList = gridRows.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize);
+    };
+
+    /* setPage — 페이지 번호 변경 */
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+
+    /* getRealIdx — 표시 인덱스 → 원본 인덱스 */
+    const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -74,46 +142,18 @@ window.XsSample06 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    const api = window.axiosApi || window.adminApi;
-    const API = 'api/base/sy/zz-sample1';
-    const CD_GRP = 'S06_COUPON';
-    const toast = reactive({ show: false, msg: '', type: 'success' });
-    let _tId = null;
-
-    /* showToast — 표시 */
-    const showToast = (msg, type = 'success') => { toast.msg = msg; toast.type = type; toast.show = true; clearTimeout(_tId); _tId = setTimeout(() => { toast.show = false; }, 2500); };
-    const searchParam = reactive({ searchValue: '', discountType: '', useYn: '' });
-    const searchParamOrg = reactive({ searchValue: '', category: '', status: '' });
-    const allData    = reactive([]);
-    const gridRows   = reactive([]);
-    let   _tempId    = -1;
-        const EDIT_FIELDS = ['couponNm', 'discountType', 'discountVal', 'minAmount', 'useYn', 'expDate'];
-
-    /* toRow — → 행 */
-    const toRow = d => ({ couponId: d.sample1Id, couponNm: d.cdNm || '', discountType: d.col01 || '정액', discountVal: Number(d.col02) || 0, minAmount: Number(d.col03) || 0, expDate: d.col04 || '', useYn: d.useYn || 'Y', regDate: d.regDt || '' });
-
-    /* toPayload — → 페이로드 */
-    const toPayload = r => ({ cdGrp: CD_GRP, cdNm: r.couponNm, col01: r.discountType, col02: String(r.discountVal), col03: String(r.minAmount), col04: r.expDate, useYn: r.useYn });
-
-    /* makeRow — 행 생성 */
-    const makeRow = d => ({ ...d, _row_status: 'N', _row_check: false, _row_org: { couponNm: d.couponNm, discountType: d.discountType, discountVal: d.discountVal, minAmount: d.minAmount, useYn: d.useYn, expDate: d.expDate } });
-    const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { pager.pageTotalCount=gridRows.filter(r=>r._row_status!=='D').length; pager.pageTotalPage=Math.max(1,Math.ceil(gridRows.length/pager.pageSize)); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); };
-
-    /* setPage — 설정 */
-    const setPage    = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
-
-    /* getRealIdx — 조회 */
-    const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList();
+    });
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await api.get(API, { cdGrp: CD_GRP });
+        const res = await foApi.get('api/base/sy/zz-sample1', { params: { cdGrp: CD_GRP } });
         const list = res?.data?.data ?? res?.data ?? [];
         allData.splice(0, allData.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
@@ -128,99 +168,154 @@ window.XsSample06 = {
       fnBuildPagerNums();
     };
 
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList();
-    });
-
     /* onSearch — 조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
-    const onReset  = async () => { Object.assign(searchParam, { searchValue: '', discountType: '', useYn: '' }); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
     /* setFocused — 포커스 설정 */
-    const setFocused   = idx => { uiState.focusedIdx = idx; };
+    const setFocused = idx => { uiState.focusedIdx = idx; };
 
     /* onCellChange — 셀 변경 */
-    const onCellChange = row => { if (row._row_status === 'I' || row._row_status === 'D') return; row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N'; };
+    const onCellChange = row => {
+      if (row._row_status === 'I' || row._row_status === 'D') { return; }
+      row._row_status = EDIT_FIELDS.some(f => String(row[f]) !== String(row._row_org[f])) ? 'U' : 'N';
+    };
 
     /* addRow — 행 추가 */
     const addRow = () => {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(at, 0, { couponId: _tempId--, couponNm: '', discountType: '정액', discountVal: 0, minAmount: 0, useYn: 'Y', expDate: '', _row_status: 'I', _row_check: false, _row_org: null });
-      uiState.focusedIdx = at; pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
+      uiState.focusedIdx = at;
+      pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
     };
 
     /* deleteRow — 행 삭제 */
-    const deleteRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else row._row_status = 'D'; };
+    const deleteRow = idx => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
+      } else { row._row_status = 'D'; }
+    };
 
     /* cancelRow — 행 취소 */
-    const cancelRow = idx => { const row = gridRows[idx]; if (row._row_status === 'I') { gridRows.splice(idx, 1); if (uiState.focusedIdx !== null) uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); } else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } };
+    const cancelRow = idx => {
+      const row = gridRows[idx];
+      if (row._row_status === 'I') {
+        gridRows.splice(idx, 1);
+        if (uiState.focusedIdx !== null) { uiState.focusedIdx = Math.max(0, uiState.focusedIdx - (uiState.focusedIdx >= idx ? 1 : 0)); }
+      } else {
+        if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
+        row._row_status = 'N';
+      }
+    };
 
     /* deleteRows — 선택 행 삭제 */
-    const deleteRows    = () => { for (let i = gridRows.length - 1; i >= 0; i--) { if (!gridRows[i]._row_check) continue; if (gridRows[i]._row_status === 'I') gridRows.splice(i, 1); else gridRows[i]._row_status = 'D'; } };
+    const deleteRows = () => {
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        if (!gridRows[i]._row_check) { continue; }
+        if (gridRows[i]._row_status === 'I') { gridRows.splice(i, 1); }
+        else { gridRows[i]._row_status = 'D'; }
+      }
+    };
 
     /* cancelChecked — 선택 행 취소 */
-    const cancelChecked = () => { const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.couponId)); if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; } for (let i = gridRows.length - 1; i >= 0; i--) { const row = gridRows[i]; if (!ids.has(row.couponId)) continue; if (row._row_status === 'N') continue; if (row._row_status === 'I') gridRows.splice(i, 1); else { if (row._row_org) EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); row._row_status = 'N'; } } };
+    const cancelChecked = () => {
+      const ids = new Set(gridRows.filter(r => r._row_check).map(r => r.couponId));
+      if (!ids.size) { showToast('취소할 행을 선택해주세요.', 'info'); return; }
+      for (let i = gridRows.length - 1; i >= 0; i--) {
+        const row = gridRows[i];
+        if (!ids.has(row.couponId)) { continue; }
+        if (row._row_status === 'N') { continue; }
+        if (row._row_status === 'I') { gridRows.splice(i, 1); }
+        else {
+          if (row._row_org) { EDIT_FIELDS.forEach(f => { row[f] = row._row_org[f]; }); }
+          row._row_status = 'N';
+        }
+      }
+    };
 
-    /* handleSave — 저장 */
+    /* handleSave — 일괄 저장 */
     const handleSave = async () => {
-      const iRows = gridRows.filter(r => r._row_status === 'I'), uRows = gridRows.filter(r => r._row_status === 'U'), dRows = gridRows.filter(r => r._row_status === 'D');
+      const iRows = gridRows.filter(r => r._row_status === 'I');
+      const uRows = gridRows.filter(r => r._row_status === 'U');
+      const dRows = gridRows.filter(r => r._row_status === 'D');
       if (!iRows.length && !uRows.length && !dRows.length) { showToast('변경된 데이터가 없습니다.', 'error'); return; }
-      for (const r of [...iRows, ...uRows]) { if (!r.couponNm) { showToast('쿠폰명은 필수 항목입니다.', 'error'); return; } }
-      const parts = []; if (iRows.length) parts.push(`등록 ${iRows.length}건`); if (uRows.length) parts.push(`수정 ${uRows.length}건`); if (dRows.length) parts.push(`삭제 ${dRows.length}건`);
+      for (const r of [...iRows, ...uRows]) {
+        if (!r.couponNm) { showToast('쿠폰명은 필수 항목입니다.', 'error'); return; }
+      }
+      const parts = [];
+      if (iRows.length) { parts.push(`등록 ${iRows.length}건`); }
+      if (uRows.length) { parts.push(`수정 ${uRows.length}건`); }
+      if (dRows.length) { parts.push(`삭제 ${dRows.length}건`); }
       if (!confirm(`${parts.join(', ')}을(를) 저장하시겠습니까?`)) { return; }
       try {
-        for (const r of dRows) { await api.delete(`${API}/${r.couponId}`); }
-        for (const r of uRows) { await api.put(`${API}/${r.couponId}`, toPayload(r)); }
-        for (const r of iRows) { await api.post(API, toPayload(r)); }
+        for (const r of dRows) { await foApi.delete(`api/base/sy/zz-sample1/${r.couponId}`); }
+        for (const r of uRows) { await foApi.put(`api/base/sy/zz-sample1/${r.couponId}`, toPayload(r)); }
+        for (const r of iRows) { await foApi.post('api/base/sy/zz-sample1', toPayload(r)); }
         showToast(`${parts.join(', ')} 저장되었습니다.`);
-        const res = await api.get(API, { cdGrp: CD_GRP });
-        const list = res?.data?.data ?? res?.data ?? [];
-        allData.splice(0, allData.length, ...list.map(toRow));
-        gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
-        allData.filter(d => {
-          const searchVal = searchParam.searchValue.toLowerCase();
-          if (searchVal && !String(d.couponNm || '').toLowerCase().includes(searchVal)) { return false; }
-          if (searchParam.discountType && d.discountType !== searchParam.discountType) { return false; }
-          if (searchParam.useYn        && d.useYn        !== searchParam.useYn) { return false; }
-          return true;
-        }).forEach(d => gridRows.push(makeRow(d)));
-        fnBuildPagerNums();
-      } catch (e) { showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error'); }
+        await handleSearchList();
+      } catch (e) {
+        showToast('저장 실패: ' + (e.response?.data?.message || e.message || e), 'error');
+      }
     };
 
     /* onDragStart — 드래그 시작 */
     const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
 
     /* onDragOver — 드래그 오버 */
-    const onDragOver  = (e, idx) => { e.preventDefault(); if (uiState.dragSrc === null || uiState.dragSrc === idx) return; const m = gridRows.splice(uiState.dragSrc, 1)[0]; gridRows.splice(idx, 0, m); uiState.dragSrc = idx; uiState.dragMoved = true; };
+    const onDragOver = (e, idx) => {
+      e.preventDefault();
+      if (uiState.dragSrc === null || uiState.dragSrc === idx) { return; }
+      const m = gridRows.splice(uiState.dragSrc, 1)[0];
+      gridRows.splice(idx, 0, m);
+      uiState.dragSrc = idx; uiState.dragMoved = true;
+    };
 
     /* onDragEnd — 드래그 종료 */
-    const onDragEnd   = () => { if (uiState.dragMoved) showToast('정렬이 변경되었습니다.'); uiState.dragSrc = null; uiState.dragMoved = false; };
+    const onDragEnd = () => {
+      if (uiState.dragMoved) { showToast('정렬이 변경되었습니다.'); }
+      uiState.dragSrc = null; uiState.dragMoved = false;
+    };
 
     /* toggleCheckAll — 전체 체크 토글 */
     const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => ({ N: 'background:#f0f0f0;color:#666;', I: 'background:#dbeafe;color:#1e40af;', U: 'background:#fef3c7;color:#92400e;', D: 'background:#fee2e2;color:#991b1b;' }[s] || '');
+    /* onReorder — 정렬 변경 알림 */
+    const onReorder = () => showToast('정렬이 변경되었습니다.');
 
-    /* rowBg — 행 배경 */
-    const rowBg       = s => ({ I: 'background:#f0fdf4;', U: 'background:#fffbeb;', D: 'background:#fff1f2;opacity:.45;' }[s] || '');
+    /* onRowCancel — 행 취소 이벤트 */
+    const onRowCancel = (row) => cancelRow(gridRows.indexOf(row));
+
+    /* onRowDelete — 행 삭제 이벤트 */
+    const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
 
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
+    /* fnStatusBadge — 상태 배지 스타일 */
+    const fnStatusBadge = s => ({
+      N: 'background:#f0f0f0;color:#666;',
+      I: 'background:#dbeafe;color:#1e40af;',
+      U: 'background:#fef3c7;color:#92400e;',
+      D: 'background:#fee2e2;color:#991b1b;',
+    }[s] || '');
+
+    /* rowBg — 행 배경 스타일 */
+    const rowBg = s => ({
+      I: 'background:#f0fdf4;',
+      U: 'background:#fffbeb;',
+      D: 'background:#fff1f2;opacity:.45;',
+    }[s] || '');
+
     /* FoSearchArea :columns 자동 렌더 정의 */
-    // --- [컬럼 정의] ---
     const baseSearchColumns = [
       { key: 'searchValue',  type: 'text',   label: '쿠폰명', placeholder: '쿠폰명 검색', width: '180px' },
       { key: 'discountType', type: 'select', label: '할인유형', options: () => codes.discnt_type_opts, nullLabel: '할인유형 전체' },
       { key: 'useYn',        type: 'select', label: '사용여부', options: () => codes.use_yn_opts,      nullLabel: '사용여부 전체' },
     ];
 
-    /* fo-grid-crud 컬럼 */
     const baseGridColumns = [
       { key: 'couponNm',     label: '쿠폰명', edit: 'text' },
       { key: 'discountType', label: '할인유형', edit: 'select', width: '80px', align: 'center',
@@ -229,23 +324,15 @@ window.XsSample06 = {
       { key: 'minAmount',    label: '최소금액', edit: 'number', width: '100px', align: 'right' },
       { key: 'useYn',        label: '사용',   edit: 'select', width: '80px', align: 'center',
         options: codes.use_yn_opts },
-      { key: 'expDate',      label: '만료일', edit: 'date', width: '130px', align: 'center' },
+      { key: 'expDate',      label: '만료일', width: '130px', align: 'center' },
     ];
-    /* onReorder — 이벤트 */
-    const onReorder = () => showToast('정렬이 변경되었습니다.');
-    /* onRowCancel — 이벤트 */
-    const onRowCancel = (row) => cancelRow(gridRows.indexOf(row));
-    /* onRowDelete — 이벤트 */
-    const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
+
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
-      // ===== search 영역 ======================================================
-      toast, searchParam, baseSearchColumns,
-      // ===== coupons 영역 =====================================================
-      gridRows, baseGridColumns, pager,
+      uiState, codes, toast, searchParam, gridRows, pager,    // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                     // 컬럼 정의
+      handleBtnAction, handleSelectAction,                    // dispatch
     };
   },
   template: /* html */`

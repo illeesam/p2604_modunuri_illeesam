@@ -669,7 +669,7 @@ props.showRefModal({ type: 'member', onSelect: (m) => { form.memberId = m.userId
 
 ## 관련 정책
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·ID 표시
-- `base.기술-admin.md` — 컴포넌트 등록 4단계·Props 표준·adminApiCall 패턴
+- `base.기술-admin.md` — 컴포넌트 등록 4단계·Props 표준·boApi 저장/삭제 패턴
 
 ---
 

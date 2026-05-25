@@ -27,8 +27,11 @@
 bo.html
 ├─ head: Vue, Yup, Quill, adminGlobalStyle0N.css
 ├─ pages/admin/AdminData.js        (window.adminData - 모든 목업)
-├─ utils/adminAxios.js             (window.adminApi)
-├─ utils/adminUtil.js              (window.adminUtil / window.adminApiCall)
+├─ utils/boApiAxios.js             (window.boApi — BO axios 래퍼)
+├─ utils/boUtil.js                 (window.boUtil)
+├─ utils/coUtil.js                 (window.coUtil — cofAnd / cofExportCsv / apiHdr)
+├─ services/coApiSvc.js            (window.coApiSvc — BO·FO 공통 API)
+├─ services/boApiSvc.js            (window.boApiSvc — BO 전용 API)
 ├─ components/modals/BaseModals.js
 ├─ components/comp/BaseComp.js
 ├─ pages/admin/ec/*.js             (EC 도메인 컴포넌트)
@@ -136,37 +139,70 @@ props: ['navigate', 'adminData', 'showRefModal', 'showToast', '{entityId}']
 
 ---
 
-## 6. 저장·삭제 표준 패턴 (adminApiCall)
+## 6. 저장·삭제 표준 패턴 (boApi + coUtil.apiHdr)
+
+⭐ `adminApiCall` 헬퍼는 **폐기됨** (2026-05-25). `boApi` 직접 호출 + `services/boApiSvc.js` 우선 + `coUtil.apiHdr(uiNm, cmdNm)` 필수.
+
+### 6.1 GET 조회 — services 등록 우선
 
 ```js
-await window.adminApiCall({
-  method: 'post' | 'put' | 'delete',
-  path: `resource/${form.id}`,     // delete 시 data 생략
-  data: { ...form },
-  confirmTitle: '저장',
-  confirmMsg: '저장하시겠습니까?',
-  showConfirm: props.showConfirm,
-  showToast: props.showToast,
-  setApiRes: props.setApiRes,
-  successMsg: '저장되었습니다.',   // 생략 시 기본 메시지
-  onLocal: () => {
-    // 낙관적 업데이트 (API 성공 후 adminData 동기화)
-    const src = props.adminData.items;
-    if (isNew.value) {
-      form.id = 'PREFIX' + String(Date.now()).slice(-6);
-      form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
-      src.unshift({ ...form });
-      selectedId.value = form.id;
-      isNew.value = false;
-    } else {
-      const si = src.findIndex(r => r.id === form.id);
-      if (si !== -1) Object.assign(src[si], form);
-    }
-  },
-  navigate: props.navigate,         // 저장 후 이동 시
-  navigateTo: 'pageId',             // 저장 후 이동 시 (삭제에는 사용 금지)
-});
+// ✅ services/boApiSvc.js 에 등록된 GET — uiNm/cmdNm 인자 + 헤더 자동
+const res = await boApiSvc.syCode.getPage({ codeGrp: 'USE_YN' }, '공통코드관리', '목록조회');
+const list = res.data?.data?.pageList || [];
 ```
+
+### 6.2 POST/PUT/DELETE 변경성 — boApi 직접 + coUtil.apiHdr
+
+```js
+const onSave = async () => {
+  const ok = await props.showConfirm('저장', '저장하시겠습니까?');
+  if (!ok) { return; }
+  try {
+    const res = isNew.value
+      ? await boApi.post('/bo/sy/code', { ...form }, coUtil.apiHdr('공통코드관리', '등록'))
+      : await boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }, coUtil.apiHdr('공통코드관리', '저장'));
+    props.setApiRes?.({ ok: true, status: res.status, data: res.data });
+    props.showToast('저장되었습니다.', 'success');
+    props.navigate('syCodeMng', { reload: true });
+  } catch (err) {
+    const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
+    props.setApiRes?.({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+    props.showToast(errMsg, 'error', 0);
+  }
+};
+
+const onDelete = async (row) => {
+  const ok = await props.showConfirm('삭제', `[${row.codeNm}] 항목을 삭제하시겠습니까?`);
+  if (!ok) { return; }
+  try {
+    await boApi.delete(`/bo/sy/code/${row.codeId}`, coUtil.apiHdr('공통코드관리', '삭제'));
+    props.showToast('삭제되었습니다.', 'success');
+    handleSearchList('RELOAD');
+  } catch (err) {
+    props.showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
+  }
+};
+```
+
+### 6.3 금지 패턴
+
+```js
+// ❌ 폐기 — adminApiCall 헬퍼
+await window.adminApiCall({ method: 'post', path: ..., ... });
+
+// ❌ 폐기 — adminApi/axiosApi
+const api = window.axiosApi || window.adminApi;
+await api.post('...', body);
+
+// ❌ 폐기 — URL 변수 정의
+const API = 'api/base/sy/zz-sample1';
+await boApi.get(API);
+
+// ❌ 폐기 — coUtil.apiHdr 없는 변경성 호출
+await boApi.post('/bo/sy/code', body);  // 인터셉터 차단 → 에러 토스트
+```
+
+상세 → `_doc/정책서/base/base.코드스타일-admin-vue.md` §9.0 (API 클라이언트 선택) + §9.1 (X-UI-Nm/X-Cmd-Nm).
 
 ---
 
@@ -242,12 +278,17 @@ API가 연결되면 이 데이터를 실제 API 응답으로 교체.
 
 | 객체 | 역할 |
 |---|---|
-| `window.adminApiCall` | 확인→낙관적업데이트→API→토스트 표준 플로우 |
-| `window.adminUtil.DATE_RANGE_OPTIONS` | 기간 선택 옵션 (1주/1달/3달/6달/1년) |
-| `window.adminUtil.getDateRange(opt)` | 옵션 → `{from, to}` 날짜 계산 |
-| `window.adminUtil.isInRange(date, from, to)` | 날짜 범위 체크 |
-| `window.adminUtil.exportCsv(rows, cols, filename)` | CSV 다운로드 |
-| `window.adminUtil.getSiteNm(siteId?)` | 사이트명 반환 |
+| `window.boApi` | BO axios 래퍼 (get/post/put/patch/delete). 변경성 호출 시 `coUtil.apiHdr` 필수 |
+| `window.boApiSvc` | BO 전용 services (`mbMember/pdProd/odOrder/...` 등 도메인별 GET 등록) |
+| `window.coApiSvc` | BO·FO 공통 services (`syCode/syPath/sySite/cmBoAppStore` 등) |
+| `window.coUtil.cofAnd(...args)` | `&&` 대체 함수 (속성값 내 `&&` 금지 우회) |
+| `window.coUtil.cofExportCsv(rows, cols, filename)` | CSV 다운로드 |
+| `window.coUtil.cofUseAppCodeReady(uiState, fnLoadCodes)` | 앱 코드 준비 대기 |
+| `window.coUtil.apiHdr(uiNm, cmdNm)` | API 요청에 X-UI-Nm/X-Cmd-Nm 헤더 자동 부여 |
+| `window.boUtil.bofGetSiteNm(siteId?)` | 사이트명 반환 |
+| `window.boUtil.bofGetDateRange(opt)` | 옵션 → `{from, to}` 날짜 계산 |
+| `window.boUtil.bofGetPathLabel(pathId)` | 경로(sy_path) 라벨 |
+| `window.boUtil.bofBuildRoleTree()` | 역할 트리 빌드 |
 | `window.visibilityUtil` | 공개대상 인코딩 (`^PUBLIC^MEMBER^VIP^`) |
 | `window.adminCommonFilter` | 사이트/업체/회원/주문 공통 필터 |
 

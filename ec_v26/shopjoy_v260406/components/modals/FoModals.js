@@ -35,14 +35,6 @@ window.OrderDetailModal = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* fnStatusColor — 상태별 색상 */
-    const fnStatusColor = (s) => ({
-      '주문완료': '#3b82f6', '결제완료': '#8b5cf6',
-      '배송준비중': '#f59e0b', '배송중': '#f97316',
-      '배송완료': '#22c55e', '완료': '#6b7280', '취소됨': '#9ca3af',
-    })[s] || '#9ca3af';
-
-    /* fnStatusLabel — 상태 라벨 */
-    const fnStatusLabel = (s) => s === '완료' ? '구매확정' : s;
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -60,6 +52,14 @@ window.OrderDetailModal = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
+    const fnStatusColor = (s) => ({
+      '주문완료': '#3b82f6', '결제완료': '#8b5cf6',
+      '배송준비중': '#f59e0b', '배송중': '#f97316',
+      '배송완료': '#22c55e', '완료': '#6b7280', '취소됨': '#9ca3af',
+    })[s] || '#9ca3af';
+
+    /* fnStatusLabel — 상태 라벨 */
+    const fnStatusLabel = (s) => s === '완료' ? '구매확정' : s;
     return {
       uiState, codes, cfSiteNm,                // 상태 / computed
       handleBtnAction, handleSelectAction,     // dispatch
@@ -211,6 +211,56 @@ window.ProductModal = {
     const selThumb  = ref(0);
     const toastMsg  = ref('');
     const toastShow = ref(false);
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ ProductModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        return emit('close');
+      } else if (cmd === 'modal-like') {
+        return handleLike();
+      } else if (cmd === 'modal-cart') {
+        return handleCart();
+      } else if (cmd === 'modal-cart-close') {
+        if (handleCart()) emit('close');
+        return;
+      } else if (cmd === 'modal-buy-now-close') {
+        if (handleBuyNow(props.navigate)) emit('close');
+        return;
+      } else if (cmd === 'modal-go-prod-view') {
+        if (props.navigate) props.navigate('prodView');
+        return emit('close');
+      } else if (cmd === 'modal-qty-dec') {
+        if (qty.value > 1) qty.value--;
+        return;
+      } else if (cmd === 'modal-qty-inc') {
+        qty.value++;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ ProductModal : handleSelectAction -> ', cmd, param);
+      if (cmd === 'modal-sel-thumb') {
+        selThumb.value = param;
+        return;
+      } else if (cmd === 'modal-sel-color') {
+        selColor.value = param;
+        errColor.value = false;
+        selThumb.value = 0;
+        return;
+      } else if (cmd === 'modal-sel-size') {
+        selSize.value = param;
+        errSize.value = false;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     let toastTimer  = null;
 
     /* 내부 토스트 */
@@ -312,56 +362,6 @@ window.ProductModal = {
       navigateFn && navigateFn('order', { instantOrder: { product: props.product, color: selColor.value, size: selSize.value, qty: qty.value } });
       return true;
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ ProductModal : handleBtnAction -> ', cmd, param);
-      if (cmd === 'modal-close') {
-        return emit('close');
-      } else if (cmd === 'modal-like') {
-        return handleLike();
-      } else if (cmd === 'modal-cart') {
-        return handleCart();
-      } else if (cmd === 'modal-cart-close') {
-        if (handleCart()) emit('close');
-        return;
-      } else if (cmd === 'modal-buy-now-close') {
-        if (handleBuyNow(props.navigate)) emit('close');
-        return;
-      } else if (cmd === 'modal-go-prod-view') {
-        if (props.navigate) props.navigate('prodView');
-        return emit('close');
-      } else if (cmd === 'modal-qty-dec') {
-        if (qty.value > 1) qty.value--;
-        return;
-      } else if (cmd === 'modal-qty-inc') {
-        qty.value++;
-        return;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ ProductModal : handleSelectAction -> ', cmd, param);
-      if (cmd === 'modal-sel-thumb') {
-        selThumb.value = param;
-        return;
-      } else if (cmd === 'modal-sel-color') {
-        selColor.value = param;
-        errColor.value = false;
-        selThumb.value = 0;
-        return;
-      } else if (cmd === 'modal-sel-size') {
-        selSize.value = param;
-        errSize.value = false;
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     return {
       uiState, codes, selColor, selSize, qty, inCart, selThumb,             // 상태
       cfThumbImgs, cfRating, cfStarStr,                                      // computed

@@ -22,10 +22,6 @@ window.CoBarcodeWidget = {
 
     const barcodeEl = ref(null);
     const qrcodeEl  = ref(null);
-    let qrInst = null;
-
-    const cfShowBarcode = computed(() => ['barcode', 'barcode_qrcode'].includes(props.widget.widgetType));
-    const showQr      = computed(() => ['qrcode',  'barcode_qrcode'].includes(props.widget.widgetType));
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -39,6 +35,10 @@ window.CoBarcodeWidget = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
+    let qrInst = null;
+
+    const cfShowBarcode = computed(() => ['barcode', 'barcode_qrcode'].includes(props.widget.widgetType));
+    const showQr      = computed(() => ['qrcode',  'barcode_qrcode'].includes(props.widget.widgetType));
     /* renderBarcode */
     const renderBarcode = () => {
       if (!barcodeEl.value || !window.JsBarcode) return;
