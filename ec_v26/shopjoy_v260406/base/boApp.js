@@ -566,9 +566,9 @@
         closeCtxMenu();
       };
 
-      /* ctxNewWindow */
+      /* ctxNewWindow — 새 창은 임베드 모드(상단 nav/탭바/사이드바 없이 화면만) */
       const ctxNewWindow = () => {
-        window.open(`${location.pathname}${location.search}#page=${ctxMenu.tabId}`, '_blank');
+        window.open(`${location.pathname}${location.search}#page=${ctxMenu.tabId}&embed=1`, '_blank');
         closeCtxMenu();
       };
 
@@ -585,9 +585,9 @@
         }
       };
 
-      /* ── 새창 열기 ── */
+      /* ── 새창 열기 — 임베드 모드(상단 nav/탭바/사이드바 없이 화면만) ── */
       const openNewWindow = (pgId) => {
-        window.open(`${location.pathname}${location.search}#page=${pgId}`, '_blank');
+        window.open(`${location.pathname}${location.search}#page=${pgId}&embed=1`, '_blank');
       };
 
       /* ── 열린 화면 목록 (가나다순) ── */
@@ -605,6 +605,10 @@
       const activeTop = ref('member');
       const leftMenuOpen = ref(true);
 
+      /* ── Embed 모드 (URL에 embed=1 이면 상단 nav, 탭바, 좌측 사이드바 숨김) ── */
+      const embed = ref(false);
+      const cfEmbed = computed(() => embed.value);
+
       /* setTopMenu */
       const setTopMenu = (topId) => {
         activeTop.value = topId;
@@ -617,6 +621,10 @@
       const readHash = (showNotification = false) => {
         const raw = String(window.location.hash || '').replace(/^#/, '');
         const p = new URLSearchParams(raw);
+        // embed 모드 플래그 동기화 (값이 '1' 또는 'true' 일 때만 활성)
+        const embedVal = p.get('embed');
+        const newEmbed = embedVal === '1' || embedVal === 'true';
+        if (embed.value !== newEmbed) embed.value = newEmbed;
         const pg = p.get('page');
         if (pg && ALL_PAGES.includes(pg)) {
           const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
@@ -654,6 +662,7 @@
         const p2 = new URLSearchParams();
         p2.set('page', pg);
         if (opts.id != null) p2.set('id', opts.id);
+        if (embed.value) p2.set('embed', '1');
         // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
         const newHash = p2.toString();
         const curHash = String(window.location.hash || '').replace(/^#/, '');
@@ -1904,6 +1913,7 @@
         cfOpenTabsWithGroup,
         activeTop,
         leftMenuOpen,
+        cfEmbed,
         setTopMenu,
         toasts,
         showToast,
@@ -2012,7 +2022,7 @@
     template: /* html */ `
 <div @click="onRootClick">
   <!-- ① TOP NAV -->
-  <nav class="bo-top-nav">
+  <nav class="bo-top-nav" v-if="!cfEmbed">
     <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" title="사이드바">☰</button>
     <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
       ShopJoy
@@ -2086,7 +2096,7 @@
   </nav>
 
   <!-- ② TAB BAR -->
-  <div class="bo-tab-bar-wrap">
+  <div class="bo-tab-bar-wrap" v-if="!cfEmbed">
     <button class="tab-scroll-btn" @click="scrollTabs(-1)" title="왼쪽">&#8249;</button>
     <div class="bo-tab-bar" ref="tabBarRef">
       <div v-for="tab in openTabs" :key="tab.id"
@@ -2105,10 +2115,10 @@
   </div>
 
   <!-- ③ BODY -->
-  <div class="bo-body">
+  <div class="bo-body" :style="cfEmbed ? 'min-height:100vh;' : ''">
 
     <!-- Left Sidebar -->
-    <nav class="bo-left-nav" :class="{closed: !leftMenuOpen}">
+    <nav class="bo-left-nav" v-if="!cfEmbed" :class="{closed: !leftMenuOpen}">
       <div class="left-nav-top">
         <div class="left-nav-group-title">{{ TOP_MENUS.find(t=>t.id===activeTop)?.label }}</div>
         <template v-for="item in (LEFT_MENUS[activeTop] || [])" :key="item?.group || item?.id">
