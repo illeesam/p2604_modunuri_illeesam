@@ -8,7 +8,7 @@ window.SyCodeDtl = {
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -32,8 +32,7 @@ window.SyCodeDtl = {
       codeValue: yup.string().required('코드값을 입력해주세요.'),
     });
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyCodeDtl.js : handleBtnAction -> ', cmd, param);
@@ -54,8 +53,7 @@ window.SyCodeDtl = {
       }
     };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -126,8 +124,7 @@ window.SyCodeDtl = {
       await handleLoadDetail();
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',   label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
@@ -143,8 +140,7 @@ window.SyCodeDtl = {
       { key: 'codeRemark', label: '비고', type: 'text' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, pageCodes, form, errors,                      // 상태 / 데이터
       baseFormColumns,                                       // 컬럼 정의

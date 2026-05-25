@@ -5,7 +5,7 @@ window.EventPage = {
     navigate: { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest'});;
@@ -15,8 +15,7 @@ window.EventPage = {
 
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Event.js : handleBtnAction -> ', cmd, param);
@@ -53,8 +52,7 @@ window.EventPage = {
     /* setPage — 설정 */
     const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
@@ -100,8 +98,7 @@ window.EventPage = {
       handleSearchList();
     });
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes,                                  // 상태
       handleBtnAction, handleSelectAction,             // dispatch

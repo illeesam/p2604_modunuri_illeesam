@@ -5,7 +5,7 @@ window.SyPostman = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup() {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const codes = reactive({ http_method_opts: ['GET','POST','PUT','PATCH','DELETE'] });
@@ -35,8 +35,7 @@ window.SyPostman = {
 
     /* findParentLabel — 찾기 상위 라벨 */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyPostman.js : handleBtnAction -> ', cmd, param);
@@ -203,8 +202,7 @@ window.SyPostman = {
     /* toPascal — → 파스칼 */
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
     let _acSeq = 0;
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* buildAutoCrudNodes — 빌드 */
     const buildAutoCrudNodes = () => makeNode({
       id: 'ac_root', appId: 'samples', label: 'adminAutoCrud-method', type: 'app', open: false,
@@ -628,8 +626,7 @@ window.SyPostman = {
       uiState.histResTs       = new Date().toTimeString().slice(0, 8);
     };
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* ===== Response Grid (active tab) ===== */
     const cfResGridColumns = computed(() => {
       const d = cfActiveTab.value?.resData;
@@ -696,8 +693,7 @@ window.SyPostman = {
 
     const autoPopupTabId = Vue.toRef(uiState, 'autoPopupTabId');
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, openTabs, hostUrl, token, defHeaders, lsItems, toasts, history, histSelIdx, histModal, editReq, autoPopupPos, countdown, // 상태 / 데이터
       cfFlatTree, cfActiveTab, cfResGridColumns, cfResGridRows,                                                                                // computed

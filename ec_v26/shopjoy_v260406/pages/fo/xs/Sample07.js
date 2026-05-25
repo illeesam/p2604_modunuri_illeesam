@@ -2,7 +2,7 @@
 window.XsSample07 = {
   name: 'XsSample07',
   setup() {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0, histResSending: false, settingsOpen: false, treeLoaded: false });
@@ -108,8 +108,7 @@ window.XsSample07 = {
     let _acSeq = 0;
     let _arSeq = 0;
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Sample07.js : handleBtnAction -> ', cmd, param);
@@ -159,8 +158,7 @@ window.XsSample07 = {
       }
     };
 
-    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
-
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -199,8 +197,7 @@ window.XsSample07 = {
     /* toPascal — → 파스칼 */
     const toPascal = name => name.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join('');
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* buildAutoCrudNodes — 빌드 */
     const buildAutoCrudNodes = () => makeNode({
       id: 'ac_root', appId: 'samples', label: 'boAutoCrud-method', type: 'app', open: false,

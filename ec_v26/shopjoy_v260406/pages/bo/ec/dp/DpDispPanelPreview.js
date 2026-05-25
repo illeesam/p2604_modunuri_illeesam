@@ -5,7 +5,7 @@ const _WP_DispPanelPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const codes = Vue.computed(() => window.sfGetBoCodeStore().svCodes);
@@ -20,8 +20,7 @@ const _WP_DispPanelPreview = {
     });
     const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispPanelPreview.js : handleBtnAction -> ', cmd, param);
@@ -86,8 +85,7 @@ const _WP_DispPanelPreview = {
       }
     };
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return { codes, cfChartBars };
   },
   template: /* html */`
@@ -282,7 +280,7 @@ window.DpDispPanelPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const codes = reactive({ disp_widget_types: [], active_statuses: [], disp_envs: [], visibility_opts: [
@@ -729,8 +727,7 @@ window.DpDispPanelPreview = {
       }
     };
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       codes, searchParam, applied, widgetLibs, uiState, gridState,                  // 상태 / 데이터
       tabSlots, dashCanvas, dashItems, openNodes, dragState,                        // 상태 / 데이터

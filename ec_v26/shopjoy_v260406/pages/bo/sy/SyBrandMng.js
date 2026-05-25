@@ -5,7 +5,7 @@ window.SyBrandMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -26,8 +26,7 @@ window.SyBrandMng = {
 
     /* _initSearchParam — 초기화 */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyBrandMng.js : handleBtnAction -> ', cmd, param);
@@ -97,8 +96,7 @@ window.SyBrandMng = {
     const gridRows    = reactive([]);              // CRUD 그리드 행
     let   _tempId     = -1;                        // 신규 행 임시 ID
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'brandRemark'];
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -261,8 +259,7 @@ window.SyBrandMng = {
       handleSearchList('DEFAULT');
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* fnColTitle — 컬럼 타이틀 (local 모드만 표시) */
     const fnColTitle = (col) => cfIsLocalMode.value ? col.label : '';
 
@@ -295,8 +292,7 @@ window.SyBrandMng = {
       { key: 'useYn',       label: '사용여부',  cls: 'col-use', edit: 'select', options: codes.use_yn },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       brands, uiState, codes, searchParam, gridRows,                  // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                             // 컬럼 정의

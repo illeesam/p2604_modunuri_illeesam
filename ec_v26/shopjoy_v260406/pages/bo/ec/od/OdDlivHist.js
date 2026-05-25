@@ -7,7 +7,7 @@ window.OdDlivHist = {
     orderId:      { type: String, default: null }, // 대상 ID
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
 
@@ -18,8 +18,7 @@ window.OdDlivHist = {
     const botTab = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OdDlivHist.js : handleBtnAction -> ', cmd, param);
@@ -52,8 +51,7 @@ window.OdDlivHist = {
       }
     };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -89,8 +87,7 @@ window.OdDlivHist = {
       handleSearchList();
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* BoGrid(bare) 컬럼 — 연관 클레임 */
     const claimGridColumns = [
       { key: 'claimId',     label: '클레임ID', style: 'width:120px;', refLink: 'claim' },
@@ -100,8 +97,7 @@ window.OdDlivHist = {
       { key: 'requestDate', label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, botTab, tabMode2,                                                                                          // 상태 / 데이터
       claimGridColumns,                                                                                                   // 컬럼 정의

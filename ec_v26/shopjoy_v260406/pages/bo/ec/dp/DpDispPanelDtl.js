@@ -8,7 +8,7 @@ window.DpDispPanelDtl = {
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -21,8 +21,7 @@ window.DpDispPanelDtl = {
     const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], disp_areas: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
     const events = reactive([]);
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispPanelDtl.js : handleBtnAction -> ', cmd, param);
@@ -132,8 +131,7 @@ window.DpDispPanelDtl = {
       }
     };
 
-    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
-
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -148,8 +146,7 @@ window.DpDispPanelDtl = {
     // 코드 주입
 
     // onMounted에서 API 로드
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -899,8 +896,7 @@ window.DpDispPanelDtl = {
         hint: '전시영역관리에서 편집' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, pathPickModal, form, rows, codes, preview, cardPreview,              // 상태 / 데이터
       basePanelFormColumns, pathAreaFormColumns, widgetRowFormColumns,                // 컬럼 정의

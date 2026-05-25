@@ -9,7 +9,7 @@ window.PmGiftDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -48,8 +48,7 @@ window.PmGiftDtl = {
     /* info 외 탭의 [저장] 버튼은 ID 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmGiftDtl.js : handleBtnAction -> ', cmd, param);
@@ -142,8 +141,7 @@ window.PmGiftDtl = {
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
     /* 사은품 fnLoadCodes */
-    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) =================================
-
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -211,8 +209,7 @@ window.PmGiftDtl = {
     };
 
     /* ── 탭별 저장: info=신규/전체저장, visibility=공개대상만 부분 PUT ── */
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSave — 저장 */
     const handleSave = async () => {
       const tabId = uiState.tab;
@@ -265,8 +262,7 @@ window.PmGiftDtl = {
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfIsView = computed(() => props.dtlMode === 'view');
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     // 정보 영역 폼
     const infoFormColumns = [
@@ -290,8 +286,7 @@ window.PmGiftDtl = {
       { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
       infoFormColumns,                                                                // 폼 컬럼 정의

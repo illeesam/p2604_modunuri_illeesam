@@ -5,7 +5,7 @@ window.SyBbsMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -40,8 +40,7 @@ window.SyBbsMng = {
       reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
     });
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbsMng.js : handleBtnAction -> ', cmd, param);
@@ -95,8 +94,7 @@ window.SyBbsMng = {
       }
     };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
@@ -235,8 +233,7 @@ window.SyBbsMng = {
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
-
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -254,8 +251,7 @@ window.SyBbsMng = {
       await handleSearchBbs('DEFAULT');
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 게시판 게시물 fnStatusBadge */
     const _BBS_POST_STATUS_FB = { '게시': 'badge-green', '임시': 'badge-gray', '삭제': 'badge-red', '비공개': 'badge-orange' };
     /* fnStatusBadge — 상태 배지 */
@@ -304,8 +300,7 @@ window.SyBbsMng = {
       { key: 'regDate',      label: '등록일', sortKey: 'reg', fmt: (v) => String(v || '').slice(0, 10) },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       bbsList, uiState, codes, searchParam, pager, detailModal,                          // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                // 컬럼 정의

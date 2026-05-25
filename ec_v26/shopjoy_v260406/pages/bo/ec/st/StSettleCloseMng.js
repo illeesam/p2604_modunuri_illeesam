@@ -5,7 +5,7 @@ window.StSettleCloseMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -18,8 +18,7 @@ window.StSettleCloseMng = {
 
     /* 정산 마감 fnLoadCodes */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StSettleCloseMng.js : handleBtnAction -> ', cmd, param);
@@ -47,8 +46,7 @@ window.StSettleCloseMng = {
       }
     };
 
-    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
-
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -94,8 +92,7 @@ window.StSettleCloseMng = {
     const applied = reactive({ searchType: '', searchValue: '', searchStatus: '' });
 
     /* 정산 마감 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onSearch — 조회 */
     const onSearch = async () => {
       applied.searchType   = searchParam.searchType;
@@ -113,8 +110,7 @@ window.StSettleCloseMng = {
     };
 
     /* 검색바 :columns 자동 렌더 정의 */
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
     const baseSearchColumns = [
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
@@ -213,8 +209,7 @@ window.StSettleCloseMng = {
       { key: 'regUserNm', label: '담당자' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, closes, searchParam, thisMonth,
       baseGridColumns, baseSearchColumns,

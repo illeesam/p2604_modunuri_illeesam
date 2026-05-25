@@ -5,7 +5,7 @@ window.OdDlivMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -21,8 +21,7 @@ window.OdDlivMng = {
 
     /* _initSearchParam — 초기화 */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OdDlivMng.js : handleBtnAction -> ', cmd, param);
@@ -162,8 +161,7 @@ window.OdDlivMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
@@ -440,8 +438,7 @@ window.OdDlivMng = {
 
     const bulkOpen = Vue.toRef(uiState, 'bulkOpen');
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
@@ -535,8 +532,7 @@ window.OdDlivMng = {
         placeholder: '(선택)', colSpan: 2 },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       dlivs, members, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,           // 상태 / 데이터
       baseSearchColumns, listGridColumns, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns,           // 컬럼 정의

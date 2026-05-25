@@ -6,7 +6,7 @@ window.Home03 = {
   },
   emits: [],
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
     const selectProd        = (p) => window.foApp.selectProd(p);
@@ -26,8 +26,7 @@ window.Home03 = {
 
     const siteConfig = window.SITE_CONFIG || {};
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Home03.js : handleBtnAction -> ', cmd, param);
@@ -77,8 +76,7 @@ window.Home03 = {
       }
     };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -113,8 +111,7 @@ window.Home03 = {
     });
     onBeforeUnmount(() => clearInterval(bannerTimer));
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     function fnCategoryLabel(p) {
       if (!p) { return ''; }
       const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
@@ -146,8 +143,7 @@ window.Home03 = {
       return all.slice(0, 8);
     });
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, banners, siteConfig,                                 // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                 // dispatch

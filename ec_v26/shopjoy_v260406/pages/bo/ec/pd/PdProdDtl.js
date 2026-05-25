@@ -10,7 +10,7 @@ window.PdProdDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -30,8 +30,7 @@ window.PdProdDtl = {
 
     /* 상품 fnLoadCodes */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 상위 레벨 버튼 액션 dispatch (탭 / 저장 / 취소 / 미리보기 등).
      * 자식 컴포넌트 콜백 / SKU / 카테고리 매핑 / Quill 등 세부 액션은 기존 함수 유지 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -64,8 +63,7 @@ window.PdProdDtl = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
-    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
-
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -105,8 +103,7 @@ window.PdProdDtl = {
     }));
 
     /* 상품 onTabPageChange */
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onTabPageChange — 이벤트 */
     const onTabPageChange = (tabKey, pageNo) => { tabPage[tabKey].pageNo = pageNo; };
 
@@ -1172,8 +1169,7 @@ window.PdProdDtl = {
     // -- bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) ----------------------------
     /* fnNoCursor — 유틸 */
     const fnNoCursor = () => '';
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 담당 MD 그리드
     const mdUserGridColumns = [
       { key: 'userNm', label: '이름',
@@ -1335,8 +1331,7 @@ window.PdProdDtl = {
         placeholder: '0', min: 0, width: '160px' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return { handleBtnAction, handleSelectAction,                                  // dispatch (상위 레벨 이벤트 / 액션 라우팅)
       cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,

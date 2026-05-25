@@ -5,7 +5,7 @@ const _WP_DispUiPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watchEffect, watch, onMounted } = Vue;
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
@@ -17,8 +17,7 @@ const _WP_DispUiPreview = {
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispUiPreview.js : handleBtnAction -> ', cmd, param);
@@ -83,8 +82,7 @@ const _WP_DispUiPreview = {
       }
     };
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return { cfChartBars };
   },
   template: /* html */`
@@ -279,7 +277,7 @@ window.DpDispUiPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watch, watchEffect, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
 
@@ -313,8 +311,7 @@ window.DpDispUiPreview = {
       searchValue: ''});
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', searchType: '', searchValue: '', visibility: '' });
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -718,8 +715,7 @@ window.DpDispUiPreview = {
       }
     };
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       codes, searchParam, applied, widgetLibs, uiState, gridState,                  // 상태 / 데이터
       tabSlots, dashCanvas, dashItems, openNodes,                                   // 상태 / 데이터

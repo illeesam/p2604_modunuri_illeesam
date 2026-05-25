@@ -7,7 +7,7 @@ window.SyBatchHist = {
     batchCode:    { type: String, default: null }, // 대상 코드
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
     const batches = reactive([]);                  // 배치 마스터 목록 (select 옵션용)
@@ -21,8 +21,7 @@ window.SyBatchHist = {
     /* ===== 페이지네이션 ===== */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyBatchHist.js : handleBtnAction -> ', cmd, param);
@@ -58,8 +57,7 @@ window.SyBatchHist = {
       }
     };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchData — 목록 조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -138,8 +136,7 @@ window.SyBatchHist = {
       handleSearchData().then(() => { onExpandAll(); });
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 배치 fnRunBadge — sy_code BATCH_RUN_STATUS code_opt1 우선, 없으면 FB */
     const _BATCH_RUN_STATUS_FB = { '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' };
     /* fnRunBadge — 실행 결과 배지 */
@@ -175,8 +172,7 @@ window.SyBatchHist = {
       { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatus === '실패' ? 'color:#dc2626' : 'color:#555') },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       batches, batchLogs, uiState, codes, pager,                        // 상태 / 데이터
       histGridColumns,                                                   // 컬럼 정의

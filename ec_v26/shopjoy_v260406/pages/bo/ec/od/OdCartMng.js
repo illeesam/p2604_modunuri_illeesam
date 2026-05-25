@@ -7,7 +7,7 @@ window.OdCartMng = {
     showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, onMounted, computed } = Vue;
     const showToast   = window.boApp?.showToast   || props.showToast;
     const showConfirm = window.boApp?.showConfirm || props.showConfirm;
@@ -20,8 +20,7 @@ window.OdCartMng = {
 
     /* _initSearchParam — 초기화 */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OdCartMng.js : handleBtnAction -> ', cmd, param);
@@ -97,8 +96,7 @@ window.OdCartMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });                              // 회원 선택 모달 상태
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnCheckedBadgeCls — 선택 여부 배지 클래스 */
     const fnCheckedBadgeCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
 
@@ -198,8 +196,7 @@ window.OdCartMng = {
 
     onMounted(() => { loadCodes(); handleSearchList(); });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
     const baseSearchColumns = [
       { key: 'siteId', type: 'select', label: '사이트',
@@ -248,8 +245,7 @@ window.OdCartMng = {
         fmt: (v) => fnDate(v), cellStyle: 'font-size:11px;color:#888;' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       carts, pager, searchParam, uiState, codes, memberPick,                   // 상태 / 데이터
       baseSearchColumns, listGridColumns,                                      // 컬럼 정의

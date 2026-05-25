@@ -9,7 +9,7 @@ window.SyUserLoginHist = {
     setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { reactive, computed, onMounted } = Vue;
 
     /* ===== 검색조건 + UI 상태 (uiState 가 검색 파라미터 역할까지 겸함) ===== */
@@ -38,8 +38,7 @@ window.SyUserLoginHist = {
     const expandedRows    = reactive(new Set());
     const allExpanded     = reactive({ value: false });
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyUserLoginHist.js : handleBtnAction -> ', cmd, param);
@@ -98,8 +97,7 @@ window.SyUserLoginHist = {
       }
     };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onDateRangeChange — 기간 옵션 변경 */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -213,8 +211,7 @@ window.SyUserLoginHist = {
       }
     };
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfCurrentList = computed(() => searchParam.activeTab==='log' ? logs : tokens);
 
     /* fnResultBadge — 로그인결과 배지 */
@@ -297,8 +294,7 @@ window.SyUserLoginHist = {
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       searchParam, codes, pager, tabCounts, cfCurrentList, allExpanded,                                // 상태 / 데이터
       baseSearchColumns, moreSearchColumns, logGridColumns, tokenGridColumns,                          // 컬럼 정의

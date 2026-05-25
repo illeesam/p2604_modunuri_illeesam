@@ -5,7 +5,7 @@ window.SyBbmMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -20,8 +20,7 @@ window.SyBbmMng = {
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbmMng.js : handleBtnAction -> ', cmd, param);
@@ -88,8 +87,7 @@ window.SyBbmMng = {
       dtlMode: 'view',     // 'view' | 'edit'
       reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
     });
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -210,8 +208,7 @@ window.SyBbmMng = {
       handleSearchList('DEFAULT');
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 게시판 마스터 fnTypeBadge */
     const _BBM_TYPE_FB = { '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' };
     /* fnTypeBadge — 유형 배지 */
@@ -273,8 +270,7 @@ window.SyBbmMng = {
       { key: 'regDate',       label: '등록일' },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       bbms, uiState, codes, searchParam, pager, detailModal,                       // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                           // 컬럼 정의

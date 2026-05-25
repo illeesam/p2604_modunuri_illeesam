@@ -7,7 +7,7 @@ window.OdOrderHist = {
     orderId:      { type: String, default: null }, // 대상 ID
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
 
@@ -19,8 +19,7 @@ window.OdOrderHist = {
     const botTab = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OdOrderHist.js : handleBtnAction -> ', cmd, param);
@@ -53,8 +52,7 @@ window.OdOrderHist = {
       }
     };
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -110,8 +108,7 @@ window.OdOrderHist = {
       ].filter(h => h.date !== '-');
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
     const itemGridColumns = [
       { key: 'no',         label: 'No',     style: 'width:40px;text-align:center;' },
@@ -140,8 +137,7 @@ window.OdOrderHist = {
       { key: 'requestDate',   label: '신청일', style: 'width:100px;', fmt: v => (v||'').slice(0,10) },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, orderItems, botTab, tabMode2,                                                              // 상태 / 데이터
       itemGridColumns, dlivHistGridColumns, claimGridColumns,                                             // 컬럼 정의

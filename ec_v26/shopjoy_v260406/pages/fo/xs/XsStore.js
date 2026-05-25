@@ -8,13 +8,12 @@ window.XsStore = {
     showToast: { type: Function, default: () => {} },      // 토스트 알림
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ==================================================
+    /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, computed, reactive, onMounted, watch } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, tabMode: 'col5'});
     const codes = reactive({});
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ XsStore.js : handleBtnAction -> ', cmd, param);
@@ -57,8 +56,7 @@ window.XsStore = {
       }
     };
 
-    // ===== [03] 초기 함수 (마운트 / 코드 로드 / watch) ==============================
-
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -87,8 +85,7 @@ window.XsStore = {
       return stores;
     });
 
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* selectStore — 선택 */
     const selectStore = (storeName) => {
       uiState.selectedStore = storeName;
@@ -214,8 +211,7 @@ window.XsStore = {
       selectStore(cfStoreList.value[0].name);
     });
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes,                                                       // 상태
       handleBtnAction, handleSelectAction,                                  // dispatch

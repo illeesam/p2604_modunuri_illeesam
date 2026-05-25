@@ -5,7 +5,7 @@ window.DashboardBoEc03 = {
       navigate:  { type: Function, required: true }, // 페이지 이동
     },
     setup() {
-      // ===== [01] 초기 변수 정의 ==================================================
+      /* ##### [01] 초기 변수 정의 ################################################## */
       const { ref, reactive, computed } = Vue;
       /* 숫자/날짜/SVG 헬퍼는 coUtil(cof*) 사용. setup·template 호환을 위한 alias */
       const fmt = coUtil.cofFmt;
@@ -40,8 +40,7 @@ window.DashboardBoEc03 = {
 
       /* toggle — 토글 */
 
-      // ===== [02] 액션 모음 (dispatch) ==============================================
-
+      /* ##### [02] 액션 모음 (dispatch) ############################################## */
       /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
       const handleBtnAction = (cmd, param = {}) => {
         console.log(' ■■ DashboardBoEc03.js : handleBtnAction -> ', cmd, param);
@@ -98,8 +97,7 @@ window.DashboardBoEc03 = {
 
       /* isSel — 여부 확인 */
       const isSel = (list, v) => list.includes(v);
-      // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
-
+      /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
       /* onSearch — 조회 */
       const onSearch = () => {
         console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
@@ -158,8 +156,7 @@ window.DashboardBoEc03 = {
         { key: '3col', icon: '▭▭▭', label: '3열' },
         { key: '4col', icon: '▭▭▭▭', label: '4열' },
       ];
-      // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+      /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
       const cfBaseGridColumns = computed(() => {
         if (uiState.tabMode === 'tab') { return '1fr'; }
         return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
@@ -318,8 +315,7 @@ window.DashboardBoEc03 = {
         }));
       });
 
-      // ===== [06] return (템플릿 노출) ==============================================
-
+      /* ##### [06] return (템플릿 노출) ############################################## */
       return {
         uiState, filters,                                                            // 상태 / 데이터
         handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)

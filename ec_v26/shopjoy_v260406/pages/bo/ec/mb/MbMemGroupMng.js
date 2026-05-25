@@ -5,7 +5,7 @@ window.MbMemGroupMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    // ===== [01] 초기 변수 정의 ====================================================
+    /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -18,8 +18,7 @@ window.MbMemGroupMng = {
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
 
-    // ===== [02] 액션 모음 (dispatch) ==============================================
-
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MbMemGroupMng.js : handleBtnAction -> ', cmd, param);
@@ -71,8 +70,7 @@ window.MbMemGroupMng = {
     const groups = reactive([]);                   // 회원그룹 목록 (CRUD 그리드 데이터)
     let _tempId = -1;                              // 신규 행 임시 ID (음수)
     const EDIT_FIELDS = ['groupNm', 'groupMemo', 'useYn'];
-    // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ============================
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* makeRow — 행 생성 */
     const makeRow = (b) => ({
       ...b,
@@ -205,8 +203,7 @@ window.MbMemGroupMng = {
       handleSearchList();
     });
 
-    // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
-
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* fnStatusClass — 상태 배지 클래스 */
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
@@ -230,8 +227,7 @@ window.MbMemGroupMng = {
         edit: 'select', options: () => codes.use_yn },
     ];
 
-    // ===== [06] return (템플릿 노출) ==============================================
-
+    /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, searchParam, groups,                                             // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
