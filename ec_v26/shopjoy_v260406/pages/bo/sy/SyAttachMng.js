@@ -13,8 +13,7 @@ window.SyAttachMng = {
     const attachGrps = reactive([]);
     const uiState = reactive({ fileEditMode: false, grpEditMode: false, loading: false, error: null, isPageCodeLoad: false, selectedGrpId: null, grpEditId: null, fileEditId: null });
     const codes = reactive({ attach_type: [], active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
-    const grpSearchType = ref('');
-    const grpSearchValue = ref('');
+    const grpSearchParam = reactive({ searchType: '', searchValue: '' });
 
     const pager = reactive({
       pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
@@ -141,10 +140,10 @@ window.SyAttachMng = {
     const handleLoadGrps = async () => {
       try {
         const p = { pageNo: grpPager.pageNo, pageSize: grpPager.pageSize };
-        const sv = grpSearchValue.value.trim();
+        const sv = (grpSearchParam.searchValue || '').trim();
         if (sv) {
           p.searchValue = sv;
-          p.searchType = grpSearchType.value || 'attachGrpNm,attachGrpCode';
+          p.searchType = grpSearchParam.searchType || 'attachGrpNm,attachGrpCode';
         }
         const grpRes = await boApiSvc.syAttachGrp.getPage(p, '첨부파일관리', '그룹조회');
         const data = grpRes.data?.data;
@@ -405,10 +404,38 @@ window.SyAttachMng = {
       { key: 'attachMemo',       label: '메모', type: 'text', colSpan: 3 },
     ];
 
+    /* grpSearchColumns — 첨부그룹 검색 영역 컬럼 */
+    const grpSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'attachGrpNm',   label: '그룹명' },
+          { value: 'attachGrpCode', label: '코드' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '100%' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
+    /* fileSearchColumns — 첨부파일 검색 영역 컬럼 */
+    const fileSearchColumns = [
+      { key: 'attachGrpId', type: 'text', placeholder: '첨부그룹ID', width: '130px' },
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'fileNm', label: '파일명' },
+          { value: 'refId',  label: 'RefID' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력', width: '150px' },
+      { key: 'dateRange', type: 'dateRange', label: '등록일',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        dateWidth: '140px',
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
+    ];
+
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      attaches, attachGrps, uiState, codes, searchParam, pager, grpPager, grpSearchType, grpSearchValue, grpForm, fileForm, // 상태 / 데이터
-      fileGridColumns, grpFormColumns, fileFormColumns,                                                                     // 컬럼 정의
+      attaches, attachGrps, uiState, codes, searchParam, pager, grpPager, grpSearchParam, grpForm, fileForm, // 상태 / 데이터
+      fileGridColumns, grpFormColumns, fileFormColumns, grpSearchColumns, fileSearchColumns,                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm,                                                                                                             // computed
       fnFmtSize, fnStatusBadge,                                                                                             // 헬퍼
@@ -437,21 +464,8 @@ window.SyAttachMng = {
           </button>
         </div>
         <div style="padding:0 0 10px 0;">
-          <bo-multi-check-select
-            v-model="grpSearchType"
-            :options="[
-            { value: 'attachGrpNm',   label: '그룹명' },
-            { value: 'attachGrpCode', label: '코드' },
-            ]"
-            placeholder="검색대상 전체"
-            all-label="전체 선택"
-            min-width="100%" />
-          <div style="display:flex;gap:4px;margin-top:4px;">
-            <input v-model="grpSearchValue" @keyup.enter="handleBtnAction('attachGrps-search')" placeholder="검색어 입력 후 Enter" style="flex:1;font-size:12px;padding:5px 8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" />
-            <button class="btn btn-primary btn-sm" style="font-size:12px;padding:4px 10px;flex-shrink:0;" @click="handleBtnAction('attachGrps-search')">
-              조회
-            </button>
-          </div>
+          <bo-search-area :columns="grpSearchColumns" :param="grpSearchParam" :show-reset="false"
+            @search="handleBtnAction('attachGrps-search')" />
         </div>
         <!-- ===== ■.■.■.■. 그룹 폼 (BoFormArea 자동 렌더) =========================== -->
         <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
@@ -513,7 +527,7 @@ window.SyAttachMng = {
             </div>
           </div>
           <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-            {{ grpSearchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}
+            {{ grpSearchParam.searchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}
           </div>
         </div>
         <!-- ===== ■.■.■.■. /그룹 목록 박스 ========================================= -->
@@ -530,43 +544,20 @@ window.SyAttachMng = {
     <div style="flex:1;">
       <div class="card" style="margin-bottom:0;">
         <!-- ===== ■.■.■.■. 검색바 =============================================== -->
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-          <b style="font-size:14px;white-space:nowrap;">
-            첨부파일관리
-            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">
-              — {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}
-            </span>
-            <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">
-              (전체)
-            </span>
-          </b>
-          <input v-model="searchParam.attachGrpId" placeholder="첨부그룹ID" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:130px;" @keyup.enter="handleBtnAction('searchParam-list')" />
-          <bo-multi-check-select
-            v-model="searchParam.searchType"
-            :options="[
-            { value: 'fileNm',    label: '파일명' },
-            { value: 'refId', label: 'RefID' },
-            ]"
-            placeholder="검색대상 전체"
-            all-label="전체 선택"
-            min-width="140px" />
-          <input v-model="searchParam.searchValue" placeholder="검색어 입력" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:150px;" @keyup.enter="handleBtnAction('searchParam-list')" />
-          <span style="font-size:12px;color:#666;white-space:nowrap;">
-            등록일
-          </span>
-          <input type="date" v-model="searchParam.dateStart" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" />
-          <span style="font-size:12px;color:#aaa;">
-            ~
-          </span>
-          <input type="date" v-model="searchParam.dateEnd" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" />
-          <select v-model="searchParam.dateRange" @change="handleBtnAction('searchParam-dateRange')" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
-            <option value="">
-              옵션선택
-            </option>
-            <option v-for="o in codes.date_range_opts" :key="o.codeValue" :value="o.codeValue">
-              {{ o.codeLabel }}
-            </option>
-          </select>
+        <div style="padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <b style="font-size:14px;white-space:nowrap;">
+              첨부파일관리
+              <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">
+                — {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}
+              </span>
+              <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">
+                (전체)
+              </span>
+            </b>
+          </div>
+          <bo-search-area :columns="fileSearchColumns" :param="searchParam"
+            @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
           <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')">
             조회
           </button>

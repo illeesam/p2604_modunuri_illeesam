@@ -97,9 +97,23 @@
         member_grades: [],
       });
 
-      /* ===== 검색조건 (기간 필터 통합) ===== */
+      /* ===== 검색조건 (기간 필터) ===== */
       const searchParam    = reactive({ period: '1y', customFrom: '', customTo: today() });
       const searchParamOrg = reactive({ period: '1y', customFrom: '', customTo: today() });
+
+      /* ===== 페이저 (탭별 + 모달) ===== */
+      const PAGE_SIZE = 10;
+      const _newPager = () => reactive({ pageNo: 1, pageSize: PAGE_SIZE, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 50, 100] });
+      const ordersPager   = _newPager();
+      const claimsPager   = _newPager();
+      const dlivPager     = _newPager();
+      const cachePager    = _newPager();
+      const contactsPager = _newPager();
+      const chatsPager    = _newPager();
+      const loginPager    = _newPager();
+      const couponPager   = _newPager();
+      const sendPager     = _newPager();
+      const modalPager    = _newPager();
 
       /* ===== 고객 검색 모달 ===== */
       const memberModal = reactive({ show: false, searchType: '', keyword: '', list: [] }); // 고객 검색 모달
@@ -334,6 +348,40 @@
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
 
+      /* fnBuildPage — pager 정보 빌드 (cfCustXxx 변경 시 자동 호출) */
+      const fnBuildPage = (rows, pager) => {
+        const total = rows.length;
+        pager.pageTotalCount = total;
+        pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.pageSize));
+        if (pager.pageNo > pager.pageTotalPage) pager.pageNo = pager.pageTotalPage;
+        const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+        pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+        return rows.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize);
+      };
+
+      /* cfPageXxx — 페이지 슬라이스 (각 탭별) */
+      const cfPageOrders   = computed(() => fnBuildPage(cfCustOrders.value,      ordersPager));
+      const cfPageClaims   = computed(() => fnBuildPage(cfCustClaims.value,      claimsPager));
+      const cfPageDliv     = computed(() => fnBuildPage(cfCustDeliveries.value,  dlivPager));
+      const cfPageCache    = computed(() => fnBuildPage(cfCustCache.value,       cachePager));
+      const cfPageContacts = computed(() => fnBuildPage(cfCustContacts.value,    contactsPager));
+      const cfPageChats    = computed(() => fnBuildPage(cfCustChats.value,       chatsPager));
+      const cfPageLogin    = computed(() => fnBuildPage(cfCustLoginHist.value,   loginPager));
+      const cfPageCoupon   = computed(() => fnBuildPage(cfCustCouponUsage.value, couponPager));
+      const cfPageSend     = computed(() => fnBuildPage(cfCustSendHist.value,    sendPager));
+      const cfPageModalList = computed(() => fnBuildPage(memberModal.list || [], modalPager));
+
+      /* fnPagerOf — cmd suffix로 pager 객체 찾기 */
+      const fnPagerOf = (which) => ({
+        orders: ordersPager, claims: claimsPager, dliv: dlivPager, cache: cachePager,
+        contacts: contactsPager, chats: chatsPager, login: loginPager,
+        coupon: couponPager, send: sendPager, modal: modalPager,
+      })[which];
+
+      /* onSetPage / onSizeChange — 그리드 페이저 콜백 */
+      const onSetPage    = (which, n) => { const p = fnPagerOf(which); if (p && n >= 1 && n <= p.pageTotalPage) p.pageNo = n; };
+      const onSizeChange = (which)    => { const p = fnPagerOf(which); if (p) p.pageNo = 1; };
+
       /* _ellipsis — 말줄임 스타일 */
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
 
@@ -415,12 +463,35 @@
         { key: 'status', label: '상태', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.status === '활성' ? 'badge-green' : 'badge-red') },
       ];
 
+      /* periodSearchColumns — 기간 필터 BoSearchArea 컬럼 */
+      const periodSearchColumns = [
+        { key: 'period',     type: 'slot', name: 'period', label: '조회기간' },
+        { key: 'customFrom', type: 'date', label: '시작일', visible: (p) => p.period === 'custom' },
+        { key: 'customTo',   type: 'date', label: '종료일', visible: (p) => p.period === 'custom' },
+      ];
+
+      /* memberModalSearchColumns — 고객 검색 모달 BoSearchArea 컬럼 */
+      const memberModalSearchColumns = [
+        { key: 'searchType', type: 'multiCheck',
+          options: [
+            { value: 'memberNm', label: '이름' },
+            { value: 'email',    label: '이메일' },
+            { value: 'phone',    label: '전화번호' },
+          ],
+          placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+        { key: 'keyword', type: 'text', placeholder: '검색어 입력' },
+      ];
+
       /* ##### [06] return (템플릿 노출) ############################################## */
       return {
         uiState, codes, searchParam, memberModal,                                                                                   // 상태 / 데이터
         SEARCH_MODES, PERIOD_OPTS,                                                                                                  // 정적 옵션
         orderGridColumns, claimGridColumns, dlivGridColumns, cacheGridColumns, contactGridColumns, chatGridColumns,                 // 컬럼 정의
         loginGridColumns, couponGridColumns, sendGridColumns, memberModalGridColumns,
+        periodSearchColumns, memberModalSearchColumns,                                                                              // BoSearchArea 컬럼
+        ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, modalPager, // 페이저
+        cfPageOrders, cfPageClaims, cfPageDliv, cfPageCache, cfPageContacts, cfPageChats, cfPageLogin, cfPageCoupon, cfPageSend, cfPageModalList,
+        onSetPage, onSizeChange,                                                                                                    // BoGrid pager 콜백
         handleBtnAction, handleSelectAction,                                                                                        // dispatch (모든 이벤트 / 액션 라우팅)
         cfDateFrom, cfDateTo, cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,                        // computed
         cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist,
@@ -483,30 +554,23 @@
     <!-- ===== □.■. 번호 입력 ================================================= -->
   </div>
   <!-- ===== □. 검색 바 ==================================================== -->
-  <!-- ===== ■. 기간 필터 바 ================================================= -->
-  <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:12px;color:#888;font-weight:500;white-space:nowrap;">
-      조회기간
-    </span>
-    <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
-      <button v-for="p in PERIOD_OPTS" :key="p?.id"
-        @click="handleBtnAction('searchParam-period', p.id)"
-        :style="searchParam.period===p.id
-        ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;'
-        : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;cursor:pointer;'">
-        {{ p.label }}
-      </button>
-    </div>
-    <template v-if="searchParam.period==='custom'">
-      <input type="date" v-model="searchParam.customFrom"
-        style="border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;outline:none;" />
-      <span style="font-size:12px;color:#aaa;">
-        ~
-      </span>
-      <input type="date" v-model="searchParam.customTo"
-        style="border:1px solid #ddd;border-radius:6px;padding:4px 10px;font-size:12px;outline:none;" />
-    </template>
-    <span v-else style="font-size:12px;color:#aaa;">
+  <!-- ===== ■. 기간 필터 바 (BoSearchArea) =================================== -->
+  <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+    <bo-search-area :columns="periodSearchColumns" :param="searchParam"
+      @search="handleBtnAction('searchParam-list')" :show-reset="false">
+      <template #period>
+        <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
+          <button v-for="p in PERIOD_OPTS" :key="p?.id"
+            @click="handleBtnAction('searchParam-period', p.id)"
+            :style="searchParam.period===p.id
+            ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;'
+            : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;cursor:pointer;'">
+            {{ p.label }}
+          </button>
+        </div>
+      </template>
+    </bo-search-area>
+    <span v-if="searchParam.period!=='custom'" style="font-size:12px;color:#aaa;display:block;margin-top:4px;">
       {{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}
     </span>
   </div>
@@ -696,8 +760,9 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="orderGridColumns" :rows="cfCustOrders" row-key="orderId" empty-text="주문 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)">
+          <bo-grid bare :columns="orderGridColumns" :rows="cfPageOrders" :pager="ordersPager" row-key="orderId" empty-text="주문 내역이 없습니다."
+            @ref-click="ref => handleSelectAction('row-ref', ref)"
+            @set-page="n => onSetPage('orders', n)" @size-change="() => onSizeChange('orders')">
           </bo-grid>
         </div>
       </div>
@@ -714,8 +779,9 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="claimGridColumns" :rows="cfCustClaims" row-key="claimId" empty-text="클레임 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)">
+          <bo-grid bare :columns="claimGridColumns" :rows="cfPageClaims" :pager="claimsPager" row-key="claimId" empty-text="클레임 내역이 없습니다."
+            @ref-click="ref => handleSelectAction('row-ref', ref)"
+            @set-page="n => onSetPage('claims', n)" @size-change="() => onSizeChange('claims')">
           </bo-grid>
         </div>
       </div>
@@ -732,7 +798,8 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="dlivGridColumns" :rows="cfCustDeliveries" row-key="dlivId" empty-text="배송 내역이 없습니다.">
+          <bo-grid bare :columns="dlivGridColumns" :rows="cfPageDliv" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다."
+            @set-page="n => onSetPage('dliv', n)" @size-change="() => onSizeChange('dliv')">
           </bo-grid>
         </div>
       </div>
@@ -752,7 +819,8 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="cacheGridColumns" :rows="cfCustCache" row-key="cacheId" empty-text="캐쉬 내역이 없습니다.">
+          <bo-grid bare :columns="cacheGridColumns" :rows="cfPageCache" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."
+            @set-page="n => onSetPage('cache', n)" @size-change="() => onSizeChange('cache')">
           </bo-grid>
         </div>
       </div>
@@ -769,7 +837,8 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="contactGridColumns" :rows="cfCustContacts" row-key="inquiryId" empty-text="문의 내역이 없습니다.">
+          <bo-grid bare :columns="contactGridColumns" :rows="cfPageContacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다."
+            @set-page="n => onSetPage('contacts', n)" @size-change="() => onSizeChange('contacts')">
           </bo-grid>
         </div>
       </div>
@@ -786,7 +855,8 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="chatGridColumns" :rows="cfCustChats" row-key="chatId" empty-text="채팅 내역이 없습니다.">
+          <bo-grid bare :columns="chatGridColumns" :rows="cfPageChats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다."
+            @set-page="n => onSetPage('chats', n)" @size-change="() => onSizeChange('chats')">
           </bo-grid>
         </div>
       </div>
@@ -803,7 +873,8 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="loginGridColumns" :rows="cfCustLoginHist" row-key="loginId" empty-text="로그인 내역이 없습니다.">
+          <bo-grid bare :columns="loginGridColumns" :rows="cfPageLogin" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다."
+            @set-page="n => onSetPage('login', n)" @size-change="() => onSizeChange('login')">
           </bo-grid>
         </div>
       </div>
@@ -820,8 +891,9 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="couponGridColumns" :rows="cfCustCouponUsage" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)">
+          <bo-grid bare :columns="couponGridColumns" :rows="cfPageCoupon" :pager="couponPager" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
+            @ref-click="ref => handleSelectAction('row-ref', ref)"
+            @set-page="n => onSetPage('coupon', n)" @size-change="() => onSizeChange('coupon')">
           </bo-grid>
         </div>
       </div>
@@ -838,7 +910,8 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="sendGridColumns" :rows="cfCustSendHist" row-key="sendId" empty-text="발송 내역이 없습니다.">
+          <bo-grid bare :columns="sendGridColumns" :rows="cfPageSend" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다."
+            @set-page="n => onSetPage('send', n)" @size-change="() => onSizeChange('send')">
           </bo-grid>
         </div>
       </div>
@@ -849,26 +922,13 @@
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
   <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
     max-height="85vh" @close="handleBtnAction('memberModal-close')">
-    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
-      <bo-multi-check-select
-        v-model="memberModal.searchType"
-        :options="[
-          { value: 'memberNm', label: '이름' },
-          { value: 'email',    label: '이메일' },
-          { value: 'phone',    label: '전화번호' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="160px" />
-      <input type="text" class="form-control" v-model="memberModal.keyword"
-        placeholder="검색어 입력" @keyup.enter="handleBtnAction('memberModal-search')"
-        style="flex:1;font-size:13px;" />
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('memberModal-search')" style="white-space:nowrap;">
-        🔍 검색
-      </button>
-    </div>
+    <bo-search-area :columns="memberModalSearchColumns" :param="memberModal" :show-reset="false"
+      @search="handleBtnAction('memberModal-search')" />
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="memberModalGridColumns" :rows="memberModal.list" row-key="userId" row-clickable empty-text="검색 결과가 없습니다." @row-click="row => handleSelectAction('memberModal-pick', row)" row-actions>
+    <bo-grid bare :columns="memberModalGridColumns" :rows="cfPageModalList" :pager="modalPager"
+      row-key="userId" row-clickable empty-text="검색 결과가 없습니다."
+      @row-click="row => handleSelectAction('memberModal-pick', row)"
+      @set-page="n => onSetPage('modal', n)" @size-change="() => onSizeChange('modal')" row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-primary btn-sm" @click.stop="handleSelectAction('memberModal-pick', row)">
           선택
