@@ -1839,7 +1839,9 @@ window.BoFormArea = {
 <div class="bo-form-area">
   <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="cols!==2&&cols!==3?('grid-template-columns:repeat('+cols+',1fr)'):''">
     <div v-for="col in row" :key="col.key" class="form-group" :style="((col.colSpan && col.colSpan>1) ? ('grid-column:span '+Math.min(col.colSpan,cols)+';flex:'+col.colSpan+';') : '') + (labelLeft ? ('display:grid;grid-template-columns:'+labelWidth+' 1fr;align-items:center;gap:8px;margin-bottom:6px;') : '')">
-    <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지) -->
+    <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지)
+         slot 타입은 기본적으로 라벨 미렌더 (슬롯 내부가 자체 렌더 책임).
+         단, labelLeft 모드 + slot + col.label 있고 hideLabel 아닐 때는 라벨 렌더 (grid 첫 칸 채우기) -->
     <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
     {{ col.label }}
     <span v-if="col.required && !readonly" class="req">
@@ -1848,6 +1850,12 @@ window.BoFormArea = {
 </label>
 <label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" :style="'visibility:hidden;'+(labelLeft?'margin-bottom:0;':'')">
 ·
+</label>
+<label v-else-if="col.type === 'slot' && labelLeft && col.label && !col.hideLabel" class="form-label" style="margin-bottom:0;white-space:nowrap;">
+{{ col.label }}
+<span v-if="col.required && !readonly" class="req">
+*
+</span>
 </label>
 <!-- readonly 표시 -->
 <div v-if="col.type === 'readonly' && col.html" class="readonly-field" v-html="dispVal(col)">

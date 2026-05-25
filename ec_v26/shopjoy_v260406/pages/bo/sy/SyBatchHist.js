@@ -172,10 +172,19 @@ window.SyBatchHist = {
       { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatus === '실패' ? 'color:#dc2626' : 'color:#555') },
     ];
 
+    /* histExpandColumns — 실행이력 행 펼침 BoFormArea 컬럼 (cols=5, labelLeft) */
+    const histExpandColumns = [
+      { key: '_batchNm',   label: '배치명',   type: 'readonly', fmt: (v, row) => row.batchNm || '-' },
+      { key: '_batchCode', label: '배치코드', type: 'readonly', mono: true, fmt: (v, row) => row.batchCode || '-' },
+      { key: '_runAt',     label: '실행일시', type: 'readonly', mono: true, fmt: (v, row) => row.runAt || '-' },
+      { key: '_duration',  label: '소요시간', type: 'readonly', fmt: (v, row) => fnFmtDuration(row.durationMs) },
+      { key: '_runStatus', label: '실행결과', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge badge-xs ${fnRunBadge(row.runStatus)}">${row.runStatus || '-'}</span>` },
+    ];
+
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       batches, batchLogs, uiState, codes, pager,                        // 상태 / 데이터
-      histGridColumns,                                                   // 컬럼 정의
+      histGridColumns, histExpandColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfBatchOptions,                                                    // computed
       fnRunBadge, fnFmtDuration, fnRowExpanded, fnHistRowStyle,          // 헬퍼
@@ -222,72 +231,29 @@ window.SyBatchHist = {
       </div>
     </template>
     <template #row-expand="{ row, colspan }">
-      <td :colspan="colspan" style="padding:0;"
-        :style="row.runStatus==='실패' ? 'background:#fff0f0;' : 'background:#f8faff;'">
-        <div style="padding:12px 16px 14px;border-top:1px dashed #e0e0e0;">
-          <div style="display:flex;gap:24px;margin-bottom:10px;flex-wrap:wrap;">
-            <div>
-              <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">
-                배치명
-              </span>
-              <span style="font-size:12px;font-weight:600;color:#333;">
-                {{ row.batchNm }}
-              </span>
-            </div>
-            <div>
-              <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">
-                배치코드
-              </span>
-              <code style="font-size:12px;color:#2563eb;">
-                {{ row.batchCode }}
-              </code>
-              </div>
-              <div>
-                <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">
-                  실행일시
-                </span>
-                <span style="font-size:12px;font-family:monospace;color:#555;">
-                  {{ row.runAt }}
-                </span>
-              </div>
-              <div>
-                <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">
-                  소요시간
-                </span>
-                <span style="font-size:12px;color:#555;">
-                  {{ fnFmtDuration(row.durationMs) }}
-                </span>
-              </div>
-              <div>
-                <span style="font-size:10px;color:#aaa;display:block;margin-bottom:2px;">
-                  실행결과
-                </span>
-                <span class="badge badge-xs" :class="fnRunBadge(row.runStatus)">
-                  {{ row.runStatus }}
-                </span>
-              </div>
-            </div>
-            <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:4px;">
-              메시지
-            </div>
-            <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
-            :style="row.runStatus==='실패'
+      <td :colspan="colspan"
+        :style="row.runStatus==='실패' ? 'background:#fff0f0;padding:12px 16px 14px;border-top:1px dashed #e0e0e0;' : 'background:#f8faff;padding:12px 16px 14px;border-top:1px dashed #e0e0e0;'">
+        <bo-form-area :columns="histExpandColumns" :form="row" :cols="5" readonly label-left :show-actions="false" />
+        <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">
+          메시지
+        </div>
+        <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
+          :style="row.runStatus==='실패'
             ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
             : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
-              {{ row.message }}
-            </div>
-            <template v-if="row.detail">
-              <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">
-                상세 내용
-              </div>
-              <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
-              :style="row.runStatus==='실패'
+          {{ row.message }}
+        </div>
+        <template v-if="row.detail">
+          <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">
+            상세 내용
+          </div>
+          <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
+            :style="row.runStatus==='실패'
               ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
               : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
-              </template>
-            </div>
-          </td>
         </template>
+      </td>
+    </template>
       </bo-grid>
       <!-- ===== □. 목록 영역 =================================================== -->
     </div>

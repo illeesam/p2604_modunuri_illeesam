@@ -347,9 +347,19 @@ window.OdClaimDtl = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+    /* itemExpandColumns — 클레임항목 행 펼침 BoFormArea 컬럼 (교환품 정보) */
+    const itemExpandColumns = [
+      { key: '_exchLabel', label: '교환품',  type: 'readonly', html: true, fmt: () => `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환</span>` },
+      { key: '_exchProd',  label: '상품명',  type: 'readonly', html: true, fmt: (v, row) => `<b style="color:#1e40af;">${getExchangedItem(row).prodNm || '-'}</b>` },
+      { key: '_exchColor', label: '색상',    type: 'readonly', html: true, fmt: (v, row) => `<b>${row.color || '-'}</b> → <b style="color:#1e40af;">${getExchangedItem(row).color || '-'}</b>` },
+      { key: '_exchSize',  label: '사이즈',  type: 'readonly', fmt: (v, row) => getExchangedItem(row).size || '-' },
+      { key: '_exchQty',   label: '수량',    type: 'readonly', fmt: (v, row) => getExchangedItem(row).qty || '-' },
+      { key: '_tracking',  label: '발송추적', type: 'slot', name: 'tracking', visible: (row) => !!getExchangedItem(row).courier },
+    ];
+
     return {
       form, errors, codes, claimItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
-      baseFormColumns, paymentGridColumns, editHistGridColumns, claimItemGridColumns,                     // 컬럼 정의
+      baseFormColumns, paymentGridColumns, editHistGridColumns, claimItemGridColumns, itemExpandColumns,  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, cfTabs, cfEditHistList,        // computed
       cfPaymentList, cfStatusHistList, cfAllExpanded,                                                     // computed
@@ -515,39 +525,13 @@ window.OdClaimDtl = {
   </template>
   <template #row-expand="{ row, colspan }">
     <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">
-          ↔ 교환품
-        </span>
-        <span style="font-size:13px;font-weight:700;color:#1e40af;">
-          {{ getExchangedItem(row).prodNm }}
-        </span>
-        <span style="font-size:12px;color:#555;">
-          색상:
-          <b>
-            {{ row.color }}
-          </b>
-          →
-          <b style="color:#1e40af;">
-            {{ getExchangedItem(row).color }}
-          </b>
-        </span>
-        <span style="font-size:12px;color:#555;">
-          사이즈:
-          <b>
-            {{ getExchangedItem(row).size }}
-          </b>
-        </span>
-        <span style="font-size:12px;color:#555;">
-          수량:
-          <b>
-            {{ getExchangedItem(row).qty }}
-          </b>
-        </span>
-        <span v-if="getExchangedItem(row).courier" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="cursor:pointer;margin-left:auto;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;">
-          발송 {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
-        </span>
-      </div>
+      <bo-form-area :columns="itemExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false">
+        <template #tracking>
+          <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="cursor:pointer;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
+            {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
+          </div>
+        </template>
+      </bo-form-area>
     </td>
   </template>
   <template #tfoot>
