@@ -2577,41 +2577,53 @@ window.CategorySelectModal = {
   },
   emits: ['close', 'apply'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, watch, watchEffect } = Vue;
+    const { reactive, computed, watch } = Vue;
 
     const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [10, 20, 50, 100] });
 
-    const cfAllCats = computed(() =>
-      ((window.dispDataset || {}).categories || [])
+    /* cfAllCats — 활성 카테고리 (parent-child 평탄화, _depth 부여) */
+    const cfAllCats = computed(() => {
+      const all = ((window.dispDataset || {}).categories || [])
         .filter(c => c.status === '활성')
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-    );
-
-    /* 루트/자식 */
-    const cfRoots = computed(() => {
-      const kwv = searchParam.searchValue.trim().toLowerCase();
-      let list = cfAllCats.value;
-      if (kwv) {
-        const matchIds = new Set(list.filter(c => c.categoryNm.toLowerCase().includes(kwv)).map(c => c.categoryId));
-        list = list.filter(c => matchIds.has(c.categoryId) || matchIds.has(c.parentId));
-      }
-      return list.filter(c => !c.parentId);
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      const roots = all.filter(c => !c.parentId);
+      const out = [];
+      roots.forEach(r => {
+        out.push({ ...r, _depth: 0 });
+        all.filter(c => c.parentId === r.categoryId).forEach(c => out.push({ ...c, _depth: 1 }));
+      });
+      return out;
     });
 
-    /* childrenOf */
-    const childrenOf = (parentId) => {
+    /* cfFiltered — 검색어 필터링 (자식이 매치하면 부모도 함께 노출) */
+    const cfFiltered = computed(() => {
       const kwv = searchParam.searchValue.trim().toLowerCase();
-      let list = cfAllCats.value.filter(c => c.parentId === parentId);
-      if (kwv) list = list.filter(c => c.categoryNm.toLowerCase().includes(kwv));
-      return list;
+      if (!kwv) return cfAllCats.value;
+      const matches = cfAllCats.value.filter(c => c.categoryNm.toLowerCase().includes(kwv));
+      const ids = new Set(matches.map(c => c.categoryId));
+      const parentIds = new Set(matches.map(c => c.parentId).filter(Boolean));
+      return cfAllCats.value.filter(c => ids.has(c.categoryId) || parentIds.has(c.categoryId));
+    });
+
+    /* fnBuildPagerNums + cfPageRows */
+    const fnBuildPagerNums = () => {
+      const total = cfFiltered.value.length;
+      pager.pageTotalCount = total;
+      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.pageSize));
+      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
+    const cfPageRows = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFiltered.value.slice(start, start + pager.pageSize);
+    });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
 
-    /* 펼침 상태 — 루트는 기본 펼침 */
-    const expanded = reactive(new Set());
-
-    /* toggleExpand */
-    const toggleExpand = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
-    watchEffect(() => { cfRoots.value.forEach(r => expanded.add(r.categoryId)); });
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
 
     /* 선택 상태 (로컬 복사) */
     const localSel = reactive(new Set());
@@ -2619,55 +2631,31 @@ window.CategorySelectModal = {
       if (v) { localSel.clear(); props.selectedIds.forEach(id => localSel.add(id)); }
     }, { immediate: true });
 
-    /* 전체 선택 */
-    const cfAllIds = computed(() => {
-      const ids = [];
-      cfRoots.value.forEach(r => { ids.push(r.categoryId); childrenOf(r.categoryId).forEach(c => ids.push(c.categoryId)); });
-      return ids;
-    });
-    const isAllOn  = computed(() => cfAllIds.value.length > 0 && cfAllIds.value.every(id => localSel.has(id)));
-    const cfIsSomeOn = computed(() => !isAllOn.value && cfAllIds.value.some(id => localSel.has(id)));
-
-    /* toggleAll */
-    const toggleAll = () => { if (isAllOn.value) cfAllIds.value.forEach(id => localSel.delete(id)); else cfAllIds.value.forEach(id => localSel.add(id)); };
-
-    /* 루트 선택 (자식 포함) */
-    const toggleRoot = (root) => {
-      const ch = childrenOf(root.categoryId);
-      const allOn = localSel.has(root.categoryId) && ch.every(c => localSel.has(c.categoryId));
-      if (allOn) { localSel.delete(root.categoryId); ch.forEach(c => localSel.delete(c.categoryId)); }
-      else       { localSel.add(root.categoryId);    ch.forEach(c => localSel.add(c.categoryId)); }
+    /* 전체 선택 (현재 필터된 전체 토글) */
+    const isAllOn = computed(() => cfFiltered.value.length > 0 && cfFiltered.value.every(c => localSel.has(c.categoryId)));
+    const cfIsSomeOn = computed(() => !isAllOn.value && cfFiltered.value.some(c => localSel.has(c.categoryId)));
+    const toggleAll = () => {
+      if (isAllOn.value) cfFiltered.value.forEach(c => localSel.delete(c.categoryId));
+      else cfFiltered.value.forEach(c => localSel.add(c.categoryId));
     };
 
-    /* isRootFull */
-    const isRootFull = (root) => localSel.has(root.categoryId) && childrenOf(root.categoryId).every(c => localSel.has(c.categoryId));
+    /* 행 토글 */
+    const toggleRow = (row) => { if (localSel.has(row.categoryId)) localSel.delete(row.categoryId); else localSel.add(row.categoryId); };
 
-    /* isRootPart */
-    const isRootPart = (root) => !isRootFull(root) && (localSel.has(root.categoryId) || childrenOf(root.categoryId).some(c => localSel.has(c.categoryId)));
-
-    /* 자식 선택 */
-    const toggleChild = (id) => { if (localSel.has(id)) localSel.delete(id); else localSel.add(id); };
-
-    /* onReset */
+    /* onReset / apply */
     const onReset = () => localSel.clear();
-
-    /* apply */
     const apply = () => { emit('apply', [...localSel]); emit('close'); };
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CategorySelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
-      // 초기화
       } else if (cmd === 'modal-reset') {
         return onReset();
-      // 적용 (선택 확정)
       } else if (cmd === 'modal-apply') {
         return apply();
-      // 전체 토글
-      } else if (cmd === 'categoryTree-toggle-all') {
+      } else if (cmd === 'category-toggle-all') {
         return toggleAll();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -2677,28 +2665,50 @@ window.CategorySelectModal = {
     /* handleSelectAction — 행/선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ CategorySelectModal : handleSelectAction -> ', cmd, param);
-      // 펼침/접힘 토글
-      if (cmd === 'categoryTree-expand') {
-        return toggleExpand(param);
-      // 루트 토글
-      } else if (cmd === 'categoryTree-toggle-root') {
-        return toggleRoot(param);
-      // 자식 토글
-      } else if (cmd === 'categoryTree-toggle-child') {
-        return toggleChild(param);
+      if (cmd === 'category-toggle-row') {
+        return toggleRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '카테고리명 검색' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 (체크박스 + 카테고리명 들여쓰기) */
+    const listGridColumns = [
+      { key: '_check', label: '', style: 'width:32px;text-align:center;', html: true, fmt: (v, row) => {
+        return localSel.has(row.categoryId)
+          ? `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#e8587a;color:#fff;font-size:9px;line-height:14px;font-weight:700;">✓</span>`
+          : `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;border:1.5px solid #d1d5db;background:#fff;"></span>`;
+      } },
+      { key: '_cat', label: '카테고리', html: true, fmt: (v, row) => {
+        const d = row._depth || 0;
+        const indent = d * 16;
+        const weight = d === 0 ? 700 : 400;
+        const color  = d === 0 ? '#222' : '#555';
+        const marker = d === 0 ? '●' : '◦';
+        const mc     = d === 0 ? '#e8587a' : '#2563eb';
+        return `<span style="display:inline-block;margin-left:${indent}px;margin-right:6px;color:${mc};font-weight:700;">${marker}</span>`
+             + `<span style="font-size:12px;font-weight:${weight};color:${color};">${row.categoryNm || '-'}</span>`;
+      } },
+    ];
+
+    /* fnRowStyle — 선택된 행 강조 */
+    const fnRowStyle = (row) => localSel.has(row.categoryId) ? 'background:#fff4f6;cursor:pointer;' : 'cursor:pointer;';
+
     return {
-      searchParam, cfRoots, childrenOf, expanded, localSel,                   // 데이터
-      isRootFull, isRootPart, isAllOn, cfIsSomeOn,                            // 헬퍼/computed
+      searchParam, pager, cfFiltered, cfPageRows, localSel,                   // 데이터
+      isAllOn, cfIsSomeOn,                                                    // computed
+      baseSearchColumns, listGridColumns, fnRowStyle,                         // 컬럼 정의
+      onSetPage, onSizeChange,                                                // BoGrid pager 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="show" width="340px" max-height="80vh" box-pad="0" body-pad="0" :z-index="500" @close="handleBtnAction('modal-close')">
+<bo-modal :show="show" width="460px" max-height="80vh" box-pad="0" body-pad="0" :z-index="500" @close="handleBtnAction('modal-close')">
   <div style="background:#fff;border-radius:10px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- 헤더 -->
     <div style="padding:11px 16px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
@@ -2710,96 +2720,35 @@ window.CategorySelectModal = {
       </button>
     </div>
     <!-- 검색 -->
-    <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <input v-model="searchParam.searchValue" type="text" placeholder="카테고리명 검색" style="width:100%;box-sizing:border-box;font-size:12px;padding:4px 9px;border:1px solid #ddd;border-radius:5px;outline:none;" />
+    <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+      <bo-search-area :columns="baseSearchColumns" :param="searchParam" :show-actions="false" />
     </div>
-    <!-- 트리 목록 -->
-    <div style="flex:1;overflow-y:auto;padding:4px 0;">
-      <div v-if="cfRoots.length===0" style="text-align:center;padding:30px;font-size:12px;color:#bbb;">
-        검색 결과 없음
-      </div>
-      <!-- ① 전체 노드 -->
-      <div @click="handleBtnAction('categoryTree-toggle-all')"
-        style="display:flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;user-select:none;"
-        :style="isAllOn?'background:#fff4f6;':''">
-        <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-          :style="isAllOn?'border-color:#e8587a;background:#e8587a;':cfIsSomeOn?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
-          <span v-if="isAllOn"  style="color:#fff;font-size:9px;line-height:1;">
-            ✓
-          </span>
-          <span v-else-if="cfIsSomeOn" style="color:#e8587a;font-size:11px;font-weight:900;line-height:1;margin-top:-1px;">
-            −
-          </span>
-        </div>
-        <span style="font-size:12px;font-weight:700;color:#333;">
-          전체
+    <!-- 전체선택 바 -->
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;cursor:pointer;"
+      @click="handleBtnAction('category-toggle-all')">
+      <div style="width:14px;height:14px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+        :style="isAllOn?'border-color:#e8587a;background:#e8587a;':cfIsSomeOn?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
+        <span v-if="isAllOn" style="color:#fff;font-size:9px;line-height:1;">
+          ✓
+        </span>
+        <span v-else-if="cfIsSomeOn" style="color:#e8587a;font-size:11px;font-weight:900;line-height:1;margin-top:-1px;">
+          −
         </span>
       </div>
-      <!-- ② 루트 + 자식 트리 -->
-      <div style="position:relative;padding-left:12px;">
-        <!-- 레벨1 세로선 (전체 → 루트들) -->
-        <div style="position:absolute;left:19px;top:0;bottom:14px;width:1px;background:#d0d0d0;">
-        </div>
-        <div v-for="root in cfRoots" :key="root.categoryId">
-          <!-- 루트 행 -->
-          <div style="display:flex;align-items:center;gap:4px;padding:5px 8px;cursor:pointer;user-select:none;"
-            :style="isRootFull(root)?'background:#fff4f6;':isRootPart(root)?'background:#fffbf4;':''">
-            <!-- 수평 연결선 -->
-            <div style="width:12px;height:1px;background:#d0d0d0;flex-shrink:0;">
-            </div>
-            <!-- [+]/[-] 펼침 버튼 -->
-            <span @click.stop="handleSelectAction('categoryTree-expand', root.categoryId)"
-              style="width:13px;height:13px;border:1px solid #bbb;border-radius:2px;background:#f5f5f5;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#666;cursor:pointer;flex-shrink:0;line-height:1;">
-              {{ expanded.has(root.categoryId) ? '−' : '+' }}
-            </span>
-            <!-- 체크박스 -->
-            <div @click.stop="handleSelectAction('categoryTree-toggle-root', root)"
-              style="width:13px;height:13px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-              :style="isRootFull(root)?'border-color:#e8587a;background:#e8587a;':isRootPart(root)?'border-color:#e8587a;background:#fce4ec;':'border-color:#aaa;background:#fff;'">
-              <span v-if="isRootFull(root)" style="color:#fff;font-size:8px;line-height:1;">
-                ✓
-              </span>
-              <span v-else-if="isRootPart(root)" style="color:#e8587a;font-size:10px;font-weight:900;line-height:1;margin-top:-1px;">
-                −
-              </span>
-            </div>
-            <!-- 라벨 -->
-            <span @click.stop="handleSelectAction('categoryTree-toggle-root', root)" style="font-size:12px;font-weight:700;color:#222;flex:1;">
-              {{ root.categoryNm }}
-            </span>
-          </div>
-          <!-- 자식 행들 -->
-          <template v-if="expanded.has(root.categoryId)">
-            <div style="position:relative;padding-left:26px;">
-              <!-- 레벨2 세로선 (루트 → 자식들) -->
-              <div style="position:absolute;left:33px;top:0;bottom:14px;width:1px;background:#d0d0d0;">
-              </div>
-              <div v-for="child in childrenOf(root.categoryId)" :key="child.categoryId"
-                @click="handleSelectAction('categoryTree-toggle-child', child.categoryId)"
-                style="display:flex;align-items:center;gap:4px;padding:4px 8px;cursor:pointer;user-select:none;"
-                :style="localSel.has(child.categoryId)?'background:#fff4f6;':''">
-                <!-- 수평 연결선 -->
-                <div style="width:12px;height:1px;background:#d0d0d0;flex-shrink:0;">
-                </div>
-                <!-- 리프 공간 (expand 버튼 자리) -->
-                <span style="width:13px;flex-shrink:0;">
-                </span>
-                <!-- 체크박스 -->
-                <div style="width:13px;height:13px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
-                  :style="localSel.has(child.categoryId)?'border-color:#e8587a;background:#e8587a;':'border-color:#aaa;background:#fff;'">
-                  <span v-if="localSel.has(child.categoryId)" style="color:#fff;font-size:8px;line-height:1;">
-                    ✓
-                  </span>
-                </div>
-                <!-- 라벨 -->
-                <span style="font-size:12px;color:#333;flex:1;">
-                  {{ child.categoryNm }}
-                </span>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div>
+      <span style="font-size:12px;font-weight:700;color:#333;">
+        전체선택
+      </span>
+      <span style="margin-left:auto;font-size:11px;color:#aaa;">
+        총 <b style="color:#374151;">{{ pager.pageTotalCount }}</b>건
+      </span>
+    </div>
+    <!-- 목록 + 페이저 (BoGrid 내장) -->
+    <div style="flex:1;overflow-y:auto;">
+      <bo-grid bare :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="categoryId"
+        row-clickable :row-style="fnRowStyle"
+        empty-text="검색 결과가 없습니다."
+        @row-click="row => handleSelectAction('category-toggle-row', row)"
+        @set-page="onSetPage" @size-change="onSizeChange" />
     </div>
     <!-- 하단 버튼 -->
     <div style="padding:9px 12px;border-top:1px solid #e0e0e0;display:flex;align-items:center;gap:8px;flex-shrink:0;">
@@ -4818,9 +4767,24 @@ window.BizPickModal = {
       { key: 'ceoNm',        label: '대표자', fmt: (v) => v || '-' },
     ];
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'bizNo', label: '사업자번호' },
+          { value: 'bizNm', label: '상호' },
+          { value: 'ceoNm', label: '대표자' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+      { key: 'type',        type: 'select',
+        options: () => VENDOR_TYPES.map(v => ({ value: v[0], label: v[1] })),
+        nullLabel: '업체유형 전체', width: '140px' },
+    ];
+
     return {
       searchParam, VENDOR_TYPES, vtLabel, vtBadge, cfFiltered,                // 데이터
-      bizGridColumns,                                                          // 컬럼 정의
+      bizGridColumns, baseSearchColumns,                                       // 컬럼 정의
       selectedPathId, expanded, cfTree,                                       // 트리
       toggleNode, selectNode,                                                 // 트리 헬퍼 (자식 컴포넌트 props 전달용)
       handleBtnAction, handleSelectAction,                                    // dispatch
@@ -4846,32 +4810,9 @@ window.BizPickModal = {
           ✕
         </span>
       </div>
-      <div style="display:flex;gap:6px;margin-top:12px;">
-        <bo-multi-check-select
-          v-model="searchParam.searchType"
-          :options="[
-          { value: 'bizNo', label: '사업자번호' },
-          { value: 'bizNm', label: '상호' },
-          { value: 'ceoNm', label: '대표자' },
-          ]"
-          placeholder="검색대상 전체"
-          all-label="전체 선택"
-          min-width="160px" />
-        <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="flex:1;height:32px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-search')" />
-        <select class="form-control" v-model="searchParam.type" style="width:140px;height:32px;font-size:12px;">
-          <option value="">
-            업체유형 전체
-          </option>
-          <option v-for="v in VENDOR_TYPES" :key="v[0]" :value="v[0]">
-            {{ v[1] }}
-          </option>
-        </select>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-search')">
-          조회
-        </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
-          초기화
-        </button>
+      <div style="margin-top:12px;">
+        <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+          @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
       </div>
     </div>
     <div style="background:#fafbfc;display:grid;grid-template-columns:200px 1fr;max-height:50vh;">
@@ -4982,9 +4923,21 @@ window.SimpleUserPickModal = {
       { key: 'dept',    label: '부서',     cellStyle: 'color:#666;font-size:11.5px;', fmt: (v) => v || '-' },
     ];
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'nm',      label: '이름' },
+          { value: 'loginId', label: '로그인ID' },
+          { value: 'email',   label: '이메일' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
     return {
       searchParam, cfFiltered,                                                // 데이터
-      userGridColumns,                                                        // 컬럼 정의
+      userGridColumns, baseSearchColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
@@ -5008,24 +4961,9 @@ window.SimpleUserPickModal = {
           ✕
         </span>
       </div>
-      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
-        <bo-multi-check-select
-          v-model="searchParam.searchType"
-          :options="[
-          { value: 'nm',      label: '이름' },
-          { value: 'loginId', label: '로그인ID' },
-          { value: 'email',   label: '이메일' },
-          ]"
-          placeholder="검색대상 전체"
-          all-label="전체 선택"
-          min-width="140px" />
-        <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="flex:1;min-width:200px;height:32px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-search')" />
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-search')">
-          조회
-        </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
-          초기화
-        </button>
+      <div style="margin-top:12px;">
+        <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+          @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
       </div>
     </div>
     <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
