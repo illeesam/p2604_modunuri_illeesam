@@ -1766,6 +1766,8 @@ window.BoFormArea = {
     errors:      { type: Object,  default: () => ({}) },
     readonly:    { type: Boolean, default: false },  // cfDtlMode (조회 모드)
     cols:        { type: Number,  default: 3 },      // 한 줄 필드 수
+    labelLeft:   { type: Boolean, default: false },  // true=라벨 좌측 / 값 우측 분리, false=라벨 위 / 값 아래
+    labelWidth:  { type: String,  default: '90px' }, // labelLeft 모드에서 라벨 컬럼 폭
     showActions: { type: Boolean, default: true },
     saveLabel:   { type: String,  default: '저장' },
     cancelLabel: { type: String,  default: '취소' },
@@ -1835,16 +1837,16 @@ window.BoFormArea = {
   },
   template: /* html */`
 <div class="bo-form-area">
-  <div v-for="(row, ri) in cfRows" :key="ri" class="form-row">
-    <div v-for="col in row" :key="col.key" class="form-group" :style="(col.colSpan && col.colSpan>1 ? ('flex:' + col.colSpan) : '')">
+  <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="cols!==2&&cols!==3?('grid-template-columns:repeat('+cols+',1fr)'):''">
+    <div v-for="col in row" :key="col.key" class="form-group" :style="((col.colSpan && col.colSpan>1) ? ('grid-column:span '+Math.min(col.colSpan,cols)+';flex:'+col.colSpan+';') : '') + (labelLeft ? ('display:grid;grid-template-columns:'+labelWidth+' 1fr;align-items:center;gap:8px;margin-bottom:6px;') : '')">
     <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지) -->
-    <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
+    <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
     {{ col.label }}
     <span v-if="col.required && !readonly" class="req">
     *
   </span>
 </label>
-<label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" style="visibility:hidden;">
+<label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" :style="'visibility:hidden;'+(labelLeft?'margin-bottom:0;':'')">
 ·
 </label>
 <!-- readonly 표시 -->
