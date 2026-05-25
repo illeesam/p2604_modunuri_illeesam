@@ -958,8 +958,30 @@ window.OrderSelectModal = {
 
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'orderId',  label: '주문ID' },
+          { value: 'memberNm', label: '회원명' },
+          { value: 'prodNm',   label: '상품명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 */
+    const listGridColumns = [
+      { key: 'orderId',  label: '주문ID', mono: true, cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
+      { key: '_member',  label: '회원', cellStyle: 'color:#888;font-size:11px;', fmt: (v, row) => row.memberNm || row.userNm || '-' },
+      { key: '_total',   label: '결제금액', align: 'right', cellStyle: 'color:#389e0d;font-weight:700;', fmt: (v, row) => (row.totalAmt || row.totalPrice || 0).toLocaleString() + '원' },
+    ];
+
     return {
       cfSiteNm, searchParam, list, loading, pager,                          // 데이터
+      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
+      onSetPage,                                                             // BoGrid pager 콜백
       handleBtnAction, handleSelectAction,                                  // dispatch
     };
   },
@@ -976,60 +998,19 @@ window.OrderSelectModal = {
       ✕
     </span>
   </div>
-  <bo-multi-check-select
-    v-model="searchParam.searchType"
-    :options="[
-    { value: 'orderId',  label: '주문ID' },
-    { value: 'memberNm', label: '회원명' },
-    { value: 'prodNm',   label: '상품명' },
-    ]"
-    placeholder="검색대상 전체"
-    all-label="전체 선택"
-    min-width="100%" />
-  <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 12px 0;" />
-  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
-    총 {{ pager.pageTotalCount }}건
-  </div>
-  <div class="sel-modal-list">
-    <div v-if="loading" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      로딩 중...
-    </div>
-    <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-      검색 결과가 없습니다.
-    </div>
-    <div v-for="o in list" :key="o.orderId" class="sel-modal-item">
-      <div class="sel-modal-item-name">
-        {{ o.orderId }}
-        <span style="font-size:11px;color:#888;">
-          {{ o.memberNm || o.userNm }}
-        </span>
-      </div>
-      <span class="sel-modal-item-id" style="background:#f0fff0;color:#389e0d;">
-        {{ (o.totalAmt || o.totalPrice || 0).toLocaleString() }}원
-      </span>
-      <button class="sel-modal-item-btn" @click="handleSelectAction('list-select', o)">
+  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+    @search="handleBtnAction('pager-set', 1)" />
+  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="orderId"
+    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => handleSelectAction('list-select', row)"
+    @set-page="onSetPage">
+    <template #row-actions="{ row }">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
-    </div>
-  </div>
-  <!-- 페이징 -->
-  <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', 1)">
-      «
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', pager.pageNo-1)">
-      ‹
-    </button>
-    <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="handleBtnAction('pager-set', n)">
-      {{ n }}
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageNo+1)">
-      ›
-    </button>
-    <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageTotalPage)">
-      »
-    </button>
-  </div>
+    </template>
+  </bo-grid>
 </bo-modal>
 `,
 };
@@ -1107,14 +1088,38 @@ window.BbmSelectModal = {
 
     /* fnScopeBadge */
     const fnScopeBadge = s => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[s] || 'badge-gray');
+
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'bbmNm',   label: '게시판명' },
+          { value: 'bbmCode', label: '코드' },
+          { value: 'bbmType', label: '유형' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 */
+    const listGridColumns = [
+      { key: 'bbmNm',     label: '게시판명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
+      { key: 'bbmType',   label: '유형',     badge: (row) => fnTypeBadge(row.bbmType), fmt: (v) => v || '-' },
+      { key: 'scopeType', label: '공개범위', badge: (row) => fnScopeBadge(row.scopeType), fmt: (v) => v || '-' },
+      { key: 'bbmCode',   label: '코드',     mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'bbmId',     label: 'ID',       cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
+    ];
+
     return {
       cfSiteNm, searchParam, list, loading, pager,                          // 데이터
+      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
+      onSetPage,                                                             // BoGrid pager 콜백
       fnTypeBadge, fnScopeBadge,                                            // 헬퍼
       handleBtnAction, handleSelectAction,                                  // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="560px" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="640px" @close="handleBtnAction('modal-close')">
   <div class="modal-header" style="margin:-20px -20px 14px -20px;">
     <span class="modal-title">
       게시판 선택
@@ -1126,67 +1131,20 @@ window.BbmSelectModal = {
       ✕
     </span>
   </div>
-  <bo-multi-check-select
-    v-model="searchParam.searchType"
-    :options="[
-    { value: 'bbmNm',   label: '게시판명' },
-    { value: 'bbmCode', label: '코드' },
-    { value: 'bbmType', label: '유형' },
-    ]"
-    placeholder="검색대상 전체"
-    all-label="전체 선택"
-    min-width="100%" />
-  <input class="form-control" v-model="searchParam.searchValue" placeholder="검색어 입력" style="margin:8px 0 10px 0;" />
-  <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
-    총 {{ pager.pageTotalCount }}건
-  </div>
-  <div class="sel-modal-list" style="min-height:200px;">
-    <div v-if="loading" style="text-align:center;color:#999;padding:30px;font-size:13px;">
-      로딩 중...
-    </div>
-    <div v-else-if="list.length===0" style="text-align:center;color:#999;padding:30px;font-size:13px;">
-      검색 결과가 없습니다.
-    </div>
-    <div v-for="b in list" :key="b.bbmId" class="sel-modal-item" style="gap:6px;">
-      <div class="sel-modal-item-name" style="flex:1;min-width:0;">
-        <span>
-          {{ b.bbmNm }}
-        </span>
-        <span class="badge" :class="fnTypeBadge(b.bbmType)" style="margin-left:5px;font-size:10px;">
-          {{ b.bbmType }}
-        </span>
-        <span class="badge" :class="fnScopeBadge(b.scopeType)" style="margin-left:3px;font-size:10px;">
-          {{ b.scopeType }}
-        </span>
-      </div>
-      <code style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 6px;border-radius:3px;flex-shrink:0;">{{ b.bbmCode }}</code>
-        <span class="sel-modal-item-id" style="background:#f0f0f0;color:#888;flex-shrink:0;">
-          ID: {{ b.bbmId }}
-        </span>
-        <button class="sel-modal-item-btn" @click="handleSelectAction('list-select', b)">
-          선택
-        </button>
-      </div>
-    </div>
-    <!-- 페이징 -->
-    <div style="display:flex;justify-content:center;align-items:center;gap:4px;margin-top:12px;padding-top:10px;border-top:1px solid #f0f0f0;">
-      <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', 1)">
-        «
+  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+    @search="handleBtnAction('pager-set', 1)" />
+  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="bbmId"
+    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => handleSelectAction('list-select', row)"
+    @set-page="onSetPage">
+    <template #row-actions="{ row }">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+        선택
       </button>
-      <button class="pager-btn" :disabled="pager.pageNo===1" @click="handleBtnAction('pager-set', pager.pageNo-1)">
-        ‹
-      </button>
-      <button v-for="n in pager.pageNums" :key="n" class="pager-btn" :class="{active:pager.pageNo===n}" @click="handleBtnAction('pager-set', n)">
-        {{ n }}
-      </button>
-      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageNo+1)">
-        ›
-      </button>
-      <button class="pager-btn" :disabled="pager.pageNo===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageTotalPage)">
-        »
-      </button>
-    </div>
-  </bo-modal>
+    </template>
+  </bo-grid>
+</bo-modal>
 `,
 };
 
@@ -1823,13 +1781,34 @@ window.RoleTreeModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '역할명 또는 역할코드 검색' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 코드) */
+    const _MARKERS = ['●', '◦', '·', '-'];
+    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
+    const listGridColumns = [
+      { key: '_role', label: '역할', html: true, fmt: (v, row) => {
+        const d = row._depth || 0;
+        const m = _MARKERS[Math.min(d, 3)];
+        const c = _MARKER_COLORS[Math.min(d, 3)];
+        const sz = d === 0 ? '7px' : '12px';
+        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
+             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.roleNm || '-'}</span>`
+             + `<code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">${row.roleCode || ''}</code>`;
+      } },
+    ];
+
     return {
       cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="440px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
@@ -1848,18 +1827,12 @@ window.RoleTreeModal = {
       </span>
     </div>
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <div style="position:relative;">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">
-          🔍
-        </span>
-        <input class="form-control" v-model="uiState.searchValue" placeholder="역할명 또는 역할코드 검색"
-          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
-      </div>
+      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
     </div>
     <div style="flex:1;overflow-y:auto;">
-      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="handleSelectAction('rolesTree-hover', '__none__')" @mouseleave="handleSelectAction('rolesTree-hover', null)" @click="handleSelectAction('rolesTree-select-none')">
+      <!-- 상위없음 옵션 (고정 행) -->
+      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
+        @click="handleSelectAction('rolesTree-select-none')">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
           ●
         </span>
@@ -1871,42 +1844,19 @@ window.RoleTreeModal = {
             최상위 권한으로 등록
           </span>
         </div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
-          ›
-        </span>
       </div>
-      <div v-for="r in cfFlatTree" :key="r.roleId"
-        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: uiState.hoverId===r.roleId ? '#fff5f7' : '' }"
-        @mouseenter="handleSelectAction('rolesTree-hover', r.roleId)" @mouseleave="handleSelectAction('rolesTree-hover', null)" @click="handleSelectAction('rolesTree-select', r)">
-        <span :style="{ marginLeft:(r._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-          fontSize: r._depth===0?'7px':'12px', flexShrink:0,
-          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(r._depth,3)] }">
-          {{ ['●','◦','·','-'][Math.min(r._depth,3)] }}
-        </span>
-        <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">
-            {{ r.roleNm }}
-          </span>
-          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">
-            {{ r.roleCode }}
-          </code>
-          </div>
-          <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: uiState.hoverId===r.roleId ? 1 : 0 }">
-            ›
-          </span>
-        </div>
-        <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-          {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.' }}
-        </div>
-      </div>
-      <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-        <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
-          취소
-        </button>
-      </div>
+      <!-- 트리 (BoGrid) -->
+      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="roleId" row-clickable
+        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.'"
+        @row-click="row => handleSelectAction('rolesTree-select', row)" />
     </div>
-  </bo-modal>
+    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+        취소
+      </button>
+    </div>
+  </div>
+</bo-modal>
 `,
 };
 
@@ -1996,13 +1946,34 @@ window.MenuTreeModal = {
       }
     };
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '메뉴명 또는 메뉴코드 검색' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 코드) */
+    const _MARKERS = ['●', '◦', '·', '-'];
+    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
+    const listGridColumns = [
+      { key: '_menu', label: '메뉴', html: true, fmt: (v, row) => {
+        const d = row._depth || 0;
+        const m = _MARKERS[Math.min(d, 3)];
+        const c = _MARKER_COLORS[Math.min(d, 3)];
+        const sz = d === 0 ? '7px' : '12px';
+        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
+             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.menuNm || '-'}</span>`
+             + `<code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">${row.menuCode || ''}</code>`;
+      } },
+    ];
+
     return {
       cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="440px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
@@ -2023,22 +1994,12 @@ window.MenuTreeModal = {
     </div>
     <!-- ── 검색 ── -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <div style="position:relative;">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">
-          🔍
-        </span>
-        <input class="form-control" v-model="uiState.searchValue"
-          placeholder="메뉴명 또는 메뉴코드 검색"
-          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
-      </div>
+      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
     </div>
     <!-- ── 트리 목록 ── -->
     <div style="flex:1;overflow-y:auto;">
-      <!-- 최상위 선택 -->
-      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;
-        border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="handleSelectAction('menuTree-hover', '__none__')" @mouseleave="handleSelectAction('menuTree-hover', null)"
+      <!-- 상위없음 옵션 (고정 행) -->
+      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
         @click="handleSelectAction('menuTree-select-none')">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
           ●
@@ -2051,53 +2012,20 @@ window.MenuTreeModal = {
             최상위 메뉴로 등록
           </span>
         </div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;"
-          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
-          ›
-        </span>
       </div>
-      <!-- 메뉴 트리 항목들 -->
-      <div v-for="m in cfFlatTree" :key="m.menuId"
-        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
-        border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: uiState.hoverId===m.menuId ? '#fff5f7' : '' }"
-        @mouseenter="handleSelectAction('menuTree-hover', m.menuId)" @mouseleave="handleSelectAction('menuTree-hover', null)"
-        @click="handleSelectAction('menuTree-select', m)">
-        <!-- 블릿 들여쓰기 -->
-        <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-          fontSize: m._depth===0?'7px':'12px', flexShrink:0,
-          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(m._depth,3)] }">
-          {{ ['●','◦','·','-'][Math.min(m._depth,3)] }}
-        </span>
-        <!-- 메뉴명 + 코드 -->
-        <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">
-            {{ m.menuNm }}
-          </span>
-          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">
-            {{ m.menuCode }}
-          </code>
-          </div>
-          <!-- hover 화살표 -->
-          <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
-          :style="{ opacity: uiState.hoverId===m.menuId ? 1 : 0 }">
-            ›
-          </span>
-        </div>
-        <!-- 빈 상태 -->
-        <div v-if="cfFlatTree.length===0"
-        style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-          {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.' }}
-        </div>
-      </div>
-      <!-- ── 푸터 ── -->
-      <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-        <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
-          취소
-        </button>
-      </div>
+      <!-- 트리 (BoGrid) -->
+      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="menuId" row-clickable
+        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.'"
+        @row-click="row => handleSelectAction('menuTree-select', row)" />
     </div>
-  </bo-modal>
+    <!-- ── 푸터 ── -->
+    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+        취소
+      </button>
+    </div>
+  </div>
+</bo-modal>
 `,
 };
 
@@ -2187,13 +2115,34 @@ window.DeptTreeModal = {
       }
     };
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '부서명 또는 부서코드 검색' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 코드) */
+    const _MARKERS = ['●', '◦', '·', '-'];
+    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
+    const listGridColumns = [
+      { key: '_dept', label: '부서', html: true, fmt: (v, row) => {
+        const d = row._depth || 0;
+        const m = _MARKERS[Math.min(d, 3)];
+        const c = _MARKER_COLORS[Math.min(d, 3)];
+        const sz = d === 0 ? '7px' : '12px';
+        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
+             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.deptNm || '-'}</span>`
+             + `<code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">${row.deptCode || ''}</code>`;
+      } },
+    ];
+
     return {
       cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="440px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
@@ -2219,24 +2168,13 @@ window.DeptTreeModal = {
     </div>
     <!-- ── 검색 ── -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <div style="position:relative;">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">
-          🔍
-        </span>
-        <input class="form-control" v-model="uiState.searchValue"
-          placeholder="부서명 또는 부서코드 검색"
-          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
-      </div>
+      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
     </div>
     <!-- ── 트리 목록 ── -->
     <div style="flex:1;overflow-y:auto;">
-      <!-- 최상위 선택 (고정 첫 항목) -->
-      <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;
-        border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="handleSelectAction('deptTree-hover', '__none__')" @mouseleave="handleSelectAction('deptTree-hover', null)"
+      <!-- 상위없음 옵션 (고정 행) -->
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
         @click="handleSelectAction('deptTree-select-none')">
-        <!-- accent bar -->
         <div style="width:4px;align-self:stretch;border-radius:3px;background:#e8587a;flex-shrink:0;opacity:0.7;">
         </div>
         <span style="font-size:20px;flex-shrink:0;line-height:1;">
@@ -2250,56 +2188,20 @@ window.DeptTreeModal = {
             최상위 부서로 등록
           </div>
         </div>
-        <span style="font-size:16px;color:#e8587a;font-weight:700;transition:opacity .12s;"
-          :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
-          ›
-        </span>
       </div>
-      <!-- 부서 트리 항목들 -->
-      <div v-for="d in cfFlatTree" :key="d.deptId"
-        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;
-        border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: uiState.hoverId===d.deptId ? '#fff5f7' : '' }"
-        @mouseenter="handleSelectAction('deptTree-hover', d.deptId)" @mouseleave="handleSelectAction('deptTree-hover', null)"
-        @click="handleSelectAction('deptTree-select', d)">
-        <!-- 블릿 들여쓰기 -->
-        <span :style="{ marginLeft:(d._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-          fontSize: d._depth===0?'7px':'12px', flexShrink:0,
-          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(d._depth,3)] }">
-          {{ ['●','◦','·','-'][Math.min(d._depth,3)] }}
-        </span>
-        <!-- 부서명 + 코드 -->
-        <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">
-            {{ d.deptNm }}
-          </span>
-          <code style="font-size:10px;color:#aaa;background:#f5f5f5;padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;">
-            {{ d.deptCode }}
-          </code>
-          </div>
-          <!-- hover 화살표 -->
-          <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;"
-          :style="{ opacity: uiState.hoverId===d.deptId ? 1 : 0 }">
-            ›
-          </span>
-        </div>
-        <!-- 빈 상태 -->
-        <div v-if="cfFlatTree.length===0"
-        style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-          <div style="font-size:32px;margin-bottom:8px;">
-            🔍
-          </div>
-          {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.' }}
-        </div>
-      </div>
-      <!-- ── 푸터 ── -->
-      <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-        <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
-          취소
-        </button>
-      </div>
+      <!-- 트리 (BoGrid) -->
+      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="deptId" row-clickable
+        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.'"
+        @row-click="row => handleSelectAction('deptTree-select', row)" />
     </div>
-  </bo-modal>
+    <!-- ── 푸터 ── -->
+    <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
+      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+        취소
+      </button>
+    </div>
+  </div>
+</bo-modal>
 `,
 };
 
@@ -2386,13 +2288,34 @@ window.CategoryTreeModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '카테고리명 검색' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 (트리 들여쓰기 + 단계) */
+    const _MARKERS = ['●', '◦', '·', '-'];
+    const _MARKER_COLORS = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b'];
+    const listGridColumns = [
+      { key: '_cat', label: '카테고리', html: true, fmt: (v, row) => {
+        const d = row._depth || 0;
+        const m = _MARKERS[Math.min(d, 3)];
+        const c = _MARKER_COLORS[Math.min(d, 3)];
+        const sz = d === 0 ? '7px' : '12px';
+        return `<span style="display:inline-block;margin-left:${d*14}px;margin-right:7px;font-weight:700;font-size:${sz};color:${c};">${m}</span>`
+             + `<span style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.categoryNm || '-'}</span>`
+             + `<span style="font-size:11px;color:#aaa;margin-left:6px;">${row.depth || ''}단계</span>`;
+      } },
+    ];
+
     return {
       cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="440px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
@@ -2411,19 +2334,12 @@ window.CategoryTreeModal = {
       </span>
     </div>
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <div style="position:relative;">
-        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:#bbb;">
-          🔍
-        </span>
-        <input class="form-control" v-model="uiState.searchValue" placeholder="카테고리명 검색"
-          style="padding-left:30px;font-size:13px;border-radius:20px;border-color:#e8e8e8;background:#fff;" />
-      </div>
+      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
     </div>
     <div style="flex:1;overflow-y:auto;">
-      <!-- 최상위 선택 -->
-      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;transition:background .12s;"
-        :style="{ background: uiState.hoverId==='__none__' ? '#fff5f7' : '#fafafa' }"
-        @mouseenter="handleSelectAction('categoryTree-hover', '__none__')" @mouseleave="handleSelectAction('categoryTree-hover', null)" @click="handleSelectAction('categoryTree-select-none')">
+      <!-- 상위없음 옵션 (고정 행) -->
+      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
+        @click="handleSelectAction('categoryTree-select-none')">
         <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
           ●
         </span>
@@ -2435,38 +2351,11 @@ window.CategoryTreeModal = {
             최상위 카테고리로 등록
           </span>
         </div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .12s;" :style="{ opacity: uiState.hoverId==='__none__' ? 1 : 0 }">
-          ›
-        </span>
       </div>
-      <!-- 카테고리 트리 -->
-      <div v-for="c in cfFlatTree" :key="c.categoryId"
-        style="display:flex;align-items:center;gap:0;padding:9px 16px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
-        :style="{ background: uiState.hoverId===c.categoryId ? '#fff5f7' : '' }"
-        @mouseenter="handleSelectAction('categoryTree-hover', c.categoryId)" @mouseleave="handleSelectAction('categoryTree-hover', null)" @click="handleSelectAction('categoryTree-select', c)">
-        <span :style="{ marginLeft:(c._depth*14)+'px', marginRight:'7px', fontWeight:'700',
-          fontSize: c._depth===0?'7px':'12px', flexShrink:0,
-          color:['#e8587a','#2563eb','#52c41a','#f59e0b'][Math.min(c._depth,3)] }">
-          {{ ['●','◦','·','-'][Math.min(c._depth,3)] }}
-        </span>
-        <div style="flex:1;min-width:0;overflow:hidden;">
-          <span style="font-size:13px;font-weight:600;color:#1a1a2e;">
-            {{ c.categoryNm }}
-          </span>
-          <span style="font-size:11px;color:#aaa;margin-left:6px;">
-            {{ c.depth }}단계
-          </span>
-        </div>
-        <span style="font-size:16px;font-weight:700;flex-shrink:0;color:#aaa;transition:opacity .1s;" :style="{ opacity: hoverId===c.categoryId ? 1 : 0 }">
-          ›
-        </span>
-      </div>
-      <div v-if="cfFlatTree.length===0" style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;">
-        <div style="font-size:32px;margin-bottom:8px;">
-          🔍
-        </div>
-        {{ uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.' }}
-      </div>
+      <!-- 트리 (BoGrid) -->
+      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="categoryId" row-clickable
+        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.'"
+        @row-click="row => handleSelectAction('categoryTree-select', row)" />
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
       <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
@@ -5361,8 +5250,19 @@ window.OdMemberPickModal = {
       { key: 'memberPhone',    label: '연락처', style: 'width:110px;', cellStyle: 'color:#6b7280;', fmt: (v) => v || '-' },
     ];
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'memberNm', label: '이름' },
+          { value: 'loginId',  label: '아이디' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
     return {
-      state, memberPickGridColumns,                                          // 데이터
+      state, memberPickGridColumns, baseSearchColumns,                       // 데이터 / 컬럼 정의
       handleBtnAction, handleSelectAction,                                   // dispatch
     };
   },
@@ -5383,25 +5283,9 @@ window.OdMemberPickModal = {
           ✕
         </button>
       </div>
-      <div style="display:flex;gap:8px;margin-top:12px;">
-        <div style="position:relative;flex:1;">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px;z-index:1;">
-            🔍
-          </span>
-          <bo-multi-check-select
-            v-model="state.searchType"
-            :options="[
-            { value: 'memberNm', label: '이름' },
-            { value: 'loginId',  label: '아이디' },
-            ]"
-            placeholder="검색대상 전체"
-            all-label="전체 선택"
-            min-width="140px" />
-          <input v-model="state.searchValue" @keyup.enter="handleBtnAction('searchParam-search')" class="form-control" placeholder="검색어 입력" style="padding-left:32px;border-radius:8px;" />
-        </div>
-        <button class="btn btn-primary" @click="handleBtnAction('searchParam-search')" style="border-radius:8px;">
-          검색
-        </button>
+      <div style="margin-top:12px;">
+        <bo-search-area :columns="baseSearchColumns" :param="state"
+          @search="handleBtnAction('searchParam-search')" />
       </div>
     </div>
     <div style="padding:8px 24px;background:#fafafa;border-bottom:1px solid #f0f0f0;font-size:12px;color:#6b7280;flex-shrink:0;">
@@ -5595,8 +5479,71 @@ window.BoRefModal = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
+    /* memberFormColumns — 회원 상세 (BoFormArea readonly, cols=2, labelLeft) */
+    const memberFormColumns = [
+      { key: 'userId',        label: '회원ID',     type: 'readonly' },
+      { key: 'memberNm',      label: '이름',       type: 'readonly' },
+      { key: 'email',         label: '이메일',     type: 'readonly' },
+      { key: 'phone',         label: '연락처',     type: 'readonly' },
+      { key: 'gradeCd',       label: '등급',       type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge badge-purple">${v}</span>` : '-' },
+      { key: 'statusCd',      label: '상태',       type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge ${badgeCls(v)}">${v}</span>` : '-' },
+      { key: 'joinDate',      label: '가입일',     type: 'readonly' },
+      { key: 'lastLogin',     label: '최근 로그인', type: 'readonly' },
+      { key: 'orderCount',    label: '주문수',     type: 'readonly', fmt: (v) => (v != null ? v + '건' : '-') },
+      { key: 'totalPurchase', label: '총 구매액',  type: 'readonly', fmt: (v) => (v != null ? v.toLocaleString() + '원' : '-') },
+    ];
+
+    /* productFormColumns — 상품 상세 */
+    const productFormColumns = [
+      { key: 'productId', label: '상품ID',   type: 'readonly' },
+      { key: 'prodNm',    label: '상품명',   type: 'readonly' },
+      { key: 'category',  label: '카테고리', type: 'readonly' },
+      { key: 'price',     label: '가격',     type: 'readonly', fmt: (v) => (v != null ? v.toLocaleString() + '원' : '-') },
+      { key: 'stock',     label: '재고',     type: 'readonly', fmt: (v) => (v != null ? v + '개' : '-') },
+      { key: 'brand',     label: '브랜드',   type: 'readonly' },
+      { key: 'statusCd',  label: '상태',     type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge ${badgeCls(v)}">${v}</span>` : '-' },
+      { key: 'regDate',   label: '등록일',   type: 'readonly' },
+    ];
+
+    /* orderFormColumns — 주문 상세 */
+    const orderFormColumns = [
+      { key: 'orderId',     label: '주문ID',   type: 'readonly' },
+      { key: '_member',     label: '회원',     type: 'readonly', fmt: (v, row) => `${row.userNm || '-'} (ID: ${row.userId || '-'})` },
+      { key: 'orderDate',   label: '주문일시', type: 'readonly' },
+      { key: 'prodNm',      label: '상품',     type: 'readonly' },
+      { key: 'totalPrice',  label: '결제금액', type: 'readonly', fmt: (v) => (v != null ? v.toLocaleString() + '원' : '-') },
+      { key: 'payMethodCd', label: '결제수단', type: 'readonly' },
+      { key: 'statusCd',    label: '상태',     type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge ${badgeCls(v)}">${v}</span>` : '-' },
+    ];
+
+    /* claimFormColumns — 클레임 상세 */
+    const claimFormColumns = [
+      { key: 'claimId',      label: '클레임ID', type: 'readonly' },
+      { key: 'userNm',       label: '회원',     type: 'readonly' },
+      { key: 'orderId',      label: '주문ID',   type: 'readonly' },
+      { key: 'type',         label: '유형',     type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge badge-orange">${v}</span>` : '-' },
+      { key: 'statusCd',     label: '상태',     type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge ${badgeCls(v)}">${v}</span>` : '-' },
+      { key: 'prodNm',       label: '상품명',   type: 'readonly' },
+      { key: 'reasonCd',     label: '사유',     type: 'readonly' },
+      { key: 'requestDate',  label: '신청일',   type: 'readonly' },
+      { key: 'refundAmount', label: '환불금액', type: 'readonly', visible: (row) => !!row.refundAmount, fmt: (v) => (v != null ? v.toLocaleString() + '원' : '-') },
+    ];
+
+    /* couponFormColumns — 쿠폰 상세 */
+    const couponFormColumns = [
+      { key: 'couponId',  label: '쿠폰ID',   type: 'readonly' },
+      { key: 'name',      label: '쿠폰명',   type: 'readonly' },
+      { key: 'code',      label: '코드',     type: 'readonly' },
+      { key: '_discount', label: '할인',     type: 'readonly', fmt: (v, row) => row.discountTypeCd === 'rate' ? (row.discountValue + '%') : row.discountTypeCd === 'shipping' ? '무료배송' : (row.discountValue != null ? row.discountValue.toLocaleString() + '원' : '-') },
+      { key: '_minOrder', label: '최소주문', type: 'readonly', fmt: (v, row) => row.minOrder ? row.minOrder.toLocaleString() + '원 이상' : '제한없음' },
+      { key: 'issueTo',   label: '발급대상', type: 'readonly' },
+      { key: 'expiry',    label: '만료일',   type: 'readonly' },
+      { key: 'statusCd',  label: '상태',     type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge ${badgeCls(v)}">${v}</span>` : '-' },
+    ];
+
     return {
       member, product, order, claim, coupon, badgeCls, s,                     // 데이터
+      memberFormColumns, productFormColumns, orderFormColumns, claimFormColumns, couponFormColumns,  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
@@ -5612,390 +5559,35 @@ window.BoRefModal = {
   </div>
   <!-- 회원 -->
   <template v-if="s.type==='member'">
-    <template v-if="member.userId">
-      <div class="detail-row">
-        <span class="detail-label">
-          회원ID
-        </span>
-        <span class="detail-value">
-          {{ member.userId }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          이름
-        </span>
-        <span class="detail-value">
-          {{ member.memberNm }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          이메일
-        </span>
-        <span class="detail-value">
-          {{ member.email }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          연락처
-        </span>
-        <span class="detail-value">
-          {{ member.phone }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          등급
-        </span>
-        <span class="detail-value">
-          <span class="badge badge-purple">
-            {{ member.gradeCd }}
-          </span>
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상태
-        </span>
-        <span class="detail-value">
-          <span class="badge" :class="badgeCls(member.statusCd)">
-            {{ member.statusCd }}
-          </span>
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          가입일
-        </span>
-        <span class="detail-value">
-          {{ member.joinDate }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          최근 로그인
-        </span>
-        <span class="detail-value">
-          {{ member.lastLogin }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          주문수
-        </span>
-        <span class="detail-value">
-          {{ member.orderCount }}건
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          총 구매액
-        </span>
-        <span class="detail-value">
-          {{ member.totalPurchase.toLocaleString() }}원
-        </span>
-      </div>
-    </template>
+    <bo-form-area v-if="member.userId" :columns="memberFormColumns" :form="member" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       회원 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 상품 -->
   <template v-else-if="s.type==='product'">
-    <template v-if="product.productId">
-      <div class="detail-row">
-        <span class="detail-label">
-          상품ID
-        </span>
-        <span class="detail-value">
-          {{ product.productId }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상품명
-        </span>
-        <span class="detail-value">
-          {{ product.prodNm }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          카테고리
-        </span>
-        <span class="detail-value">
-          {{ product.category }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          가격
-        </span>
-        <span class="detail-value">
-          {{ product.price.toLocaleString() }}원
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          재고
-        </span>
-        <span class="detail-value">
-          {{ product.stock }}개
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          브랜드
-        </span>
-        <span class="detail-value">
-          {{ product.brand }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상태
-        </span>
-        <span class="detail-value">
-          <span class="badge" :class="badgeCls(product.statusCd)">
-            {{ product.statusCd }}
-          </span>
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          등록일
-        </span>
-        <span class="detail-value">
-          {{ product.regDate }}
-        </span>
-      </div>
-    </template>
+    <bo-form-area v-if="product.productId" :columns="productFormColumns" :form="product" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       상품 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 주문 -->
   <template v-else-if="s.type==='order'">
-    <template v-if="order.orderId">
-      <div class="detail-row">
-        <span class="detail-label">
-          주문ID
-        </span>
-        <span class="detail-value">
-          {{ order.orderId }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          회원
-        </span>
-        <span class="detail-value">
-          {{ order.userNm }} (ID: {{ order.userId }})
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          주문일시
-        </span>
-        <span class="detail-value">
-          {{ order.orderDate }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상품
-        </span>
-        <span class="detail-value">
-          {{ order.prodNm }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          결제금액
-        </span>
-        <span class="detail-value">
-          {{ order.totalPrice.toLocaleString() }}원
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          결제수단
-        </span>
-        <span class="detail-value">
-          {{ order.payMethodCd }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상태
-        </span>
-        <span class="detail-value">
-          <span class="badge" :class="badgeCls(order.statusCd)">
-            {{ order.statusCd }}
-          </span>
-        </span>
-      </div>
-    </template>
+    <bo-form-area v-if="order.orderId" :columns="orderFormColumns" :form="order" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       주문 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 클레임 -->
   <template v-else-if="s.type==='claim'">
-    <template v-if="claim.claimId">
-      <div class="detail-row">
-        <span class="detail-label">
-          클레임ID
-        </span>
-        <span class="detail-value">
-          {{ claim.claimId }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          회원
-        </span>
-        <span class="detail-value">
-          {{ claim.userNm }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          주문ID
-        </span>
-        <span class="detail-value">
-          {{ claim.orderId }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          유형
-        </span>
-        <span class="detail-value">
-          <span class="badge badge-orange">
-            {{ claim.type }}
-          </span>
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상태
-        </span>
-        <span class="detail-value">
-          <span class="badge" :class="badgeCls(claim.statusCd)">
-            {{ claim.statusCd }}
-          </span>
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상품명
-        </span>
-        <span class="detail-value">
-          {{ claim.prodNm }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          사유
-        </span>
-        <span class="detail-value">
-          {{ claim.reasonCd }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          신청일
-        </span>
-        <span class="detail-value">
-          {{ claim.requestDate }}
-        </span>
-      </div>
-      <div class="detail-row" v-if="claim.refundAmount">
-        <span class="detail-label">
-          환불금액
-        </span>
-        <span class="detail-value">
-          {{ claim.refundAmount.toLocaleString() }}원
-        </span>
-      </div>
-    </template>
+    <bo-form-area v-if="claim.claimId" :columns="claimFormColumns" :form="claim" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       클레임 정보를 찾을 수 없습니다.
     </div>
   </template>
   <!-- 쿠폰 -->
   <template v-else-if="s.type==='coupon'">
-    <template v-if="coupon.couponId">
-      <div class="detail-row">
-        <span class="detail-label">
-          쿠폰ID
-        </span>
-        <span class="detail-value">
-          {{ coupon.couponId }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          쿠폰명
-        </span>
-        <span class="detail-value">
-          {{ coupon.name }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          코드
-        </span>
-        <span class="detail-value">
-          {{ coupon.code }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          할인
-        </span>
-        <span class="detail-value">
-          {{ coupon.discountTypeCd==='rate'?coupon.discountValue+'%':coupon.discountTypeCd==='shipping'?'무료배송':coupon.discountValue.toLocaleString()+'원' }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          최소주문
-        </span>
-        <span class="detail-value">
-          {{ coupon.minOrder ? coupon.minOrder.toLocaleString()+'원 이상' : '제한없음' }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          발급대상
-        </span>
-        <span class="detail-value">
-          {{ coupon.issueTo }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          만료일
-        </span>
-        <span class="detail-value">
-          {{ coupon.expiry }}
-        </span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          상태
-        </span>
-        <span class="detail-value">
-          <span class="badge" :class="badgeCls(coupon.statusCd)">
-            {{ coupon.statusCd }}
-          </span>
-        </span>
-      </div>
-    </template>
+    <bo-form-area v-if="coupon.couponId" :columns="couponFormColumns" :form="coupon" :cols="2" readonly label-left :show-actions="false" label-width="100px" />
     <div v-else style="color:#999;text-align:center;padding:20px;">
       쿠폰 정보를 찾을 수 없습니다.
     </div>
