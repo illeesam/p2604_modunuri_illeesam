@@ -214,7 +214,7 @@ window.SyUserDtl = {
     ];
 
     const baseFormColumns = [
-      { key: 'siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { key: '_siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'loginId',      label: '로그인ID', type: 'text', required: true,
         placeholder: '로그인 아이디',

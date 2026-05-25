@@ -166,7 +166,7 @@ window.SyBbmDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseFormColumns = [
-      { key: 'siteNm',        label: '사이트명',    type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
+      { key: '_siteNm',       label: '사이트명',    type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
       { type: 'rowBreak' },
       { key: 'bbmCode',       label: '게시판코드',  type: 'text', required: true, mono: true, placeholder: 'BOARD_CODE' },
       { key: 'bbmNm',         label: '게시판명',    type: 'text', required: true, placeholder: '게시판명' },

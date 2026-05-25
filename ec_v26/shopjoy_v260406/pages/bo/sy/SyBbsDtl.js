@@ -189,7 +189,7 @@ window.SyBbsDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const siteFormColumns = [
-      { key: 'siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
+      { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
     ];
 
     const baseFormColumns = [
@@ -199,11 +199,38 @@ window.SyBbsDtl = {
       { key: 'bbsStatusCd', label: '상태', type: 'select', options: () => codes.bbs_post_statuses },
     ];
 
+    const contentFormColumns = [
+      { key: '_noBbm', label: '내용', type: 'slot', name: 'contentNoBbm', colSpan: 4,
+        visible: () => !uiState.selectedBbm },
+      { key: '_notAllow', label: '내용', type: 'slot', name: 'contentNotAllow', colSpan: 4,
+        visible: () => uiState.selectedBbm && cfContentType.value === '불가' },
+      { key: 'contentHtml', label: '내용', type: 'textarea', placeholder: '게시글 내용을 입력하세요.',
+        colSpan: 4, rows: 8,
+        visible: () => uiState.selectedBbm && cfContentType.value === 'textarea' },
+      { key: '_htmlEditor', label: '내용', type: 'slot', name: 'contentHtmlEditor', colSpan: 4,
+        visible: () => uiState.selectedBbm && cfContentType.value === 'htmleditor' },
+    ];
+
+    const bbmDetailColumns = [
+      { key: 'bbmId',         label: '게시판ID',   type: 'readonly' },
+      { key: 'bbmCode',       label: '게시판코드', type: 'readonly', mono: true },
+      { key: 'bbmNm',         label: '게시판명',   type: 'readonly' },
+      { key: 'bbmType',       label: '유형',       type: 'readonly' },
+      { key: 'allowComment',  label: '댓글허용',   type: 'readonly' },
+      { key: 'allowAttach',   label: '첨부허용',   type: 'readonly' },
+      { key: 'contentTypeCd', label: '내용입력',   type: 'readonly' },
+      { key: 'scopeType',     label: '공개범위',   type: 'readonly' },
+      { key: 'allowLike',     label: '좋아요허용', type: 'readonly',
+        fmt: (v) => v === 'Y' ? '허용' : '불가' },
+      { key: 'useYn',         label: '사용여부',   type: 'readonly',
+        fmt: (v) => v === 'Y' ? '사용' : '미사용' },
+    ];
+
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
       uiState, codes, form, errors, showBbmModal, dtlId,                            // 상태 / 데이터
-      baseFormColumns, siteFormColumns,                                              // 컬럼 정의
+      baseFormColumns, siteFormColumns, bbmDetailColumns, contentFormColumns,        // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode, cfContentType, cfAllowAttach, cfAttachMaxCount,  // computed
       selectedBbm, showBbmDetail,                                                    // computed (ref)
@@ -277,37 +304,26 @@ window.SyBbsDtl = {
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="4" :show-actions="false" />
     <!-- ===== ■.■. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
-    <div v-if="!selectedBbm" class="form-group">
-      <label class="form-label">
-        내용
-      </label>
-      <div style="color:#bbb;font-size:13px;padding:12px 0;">
-        게시판을 먼저 선택하세요.
-      </div>
-    </div>
-    <div v-else-if="cfContentType==='불가'" class="form-group">
-      <label class="form-label">
-        내용
-      </label>
-      <div style="color:#bbb;font-size:13px;padding:12px 0;">
-        이 게시판은 내용 입력을 지원하지 않습니다.
-      </div>
-    </div>
-    <div v-else-if="cfContentType==='textarea'" class="form-group">
-      <label class="form-label">
-        내용
-      </label>
-      <textarea class="form-control" v-model="form.contentHtml" rows="8" placeholder="게시글 내용을 입력하세요." :readonly="cfDtlMode"></textarea>
-      </div>
-      <div v-else-if="cfContentType==='htmleditor'" class="form-group">
-        <label class="form-label">
-          내용
-        </label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'">
+    <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="4" :show-actions="false">
+      <template #contentNoBbm>
+        <div style="color:#bbb;font-size:13px;padding:12px 0;">
+          게시판을 먼저 선택하세요.
         </div>
+      </template>
+      <template #contentNotAllow>
+        <div style="color:#bbb;font-size:13px;padding:12px 0;">
+          이 게시판은 내용 입력을 지원하지 않습니다.
+        </div>
+      </template>
+      <template #contentHtmlEditor>
+        <div v-if="cfDtlMode" class="form-control"
+            style="min-height:300px;line-height:1.6;"
+            v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else v-model="form.contentHtml" height="320px" />
-      </div>
-      <!-- ===== □.□. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
+      </template>
+    </bo-form-area>
+    <!-- ===== □.□. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
       <!-- ===== ■.■. 첨부파일 ================================================== -->
       <div v-if="selectedBbm && cfAttachMaxCount > 0" class="form-group">
       <label class="form-label">
@@ -368,88 +384,8 @@ window.SyBbsDtl = {
 <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
 <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
     width="420px" @close="handleBtnAction('bbmDetail-close')">
-  <div class="detail-row">
-    <span class="detail-label">
-      게시판ID
-    </span>
-    <span class="detail-value">
-      {{ selectedBbm.bbmId }}
-    </span>
-  </div>
-  <div class="detail-row">
-    <span class="detail-label">
-      게시판코드
-    </span>
-    <span class="detail-value">
-      <code style="font-size:12px;">
-          {{ selectedBbm.bbmCode }}
-        </code>
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        게시판명
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.bbmNm }}
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        유형
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.bbmType }}
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        댓글허용
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.allowComment }}
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        첨부허용
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.allowAttach }}
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        내용입력
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.contentTypeCd }}
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        공개범위
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.scopeType }}
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        좋아요허용
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.allowLike==='Y'?'허용':'불가' }}
-      </span>
-    </div>
-    <div class="detail-row">
-      <span class="detail-label">
-        사용여부
-      </span>
-      <span class="detail-value">
-        {{ selectedBbm.useYn==='Y'?'사용':'미사용' }}
-      </span>
-    </div>
+    <bo-form-area v-if="selectedBbm" :columns="bbmDetailColumns" :form="selectedBbm" :errors="{}"
+      :cols="1" :show-actions="false" />
     <template #footer>
       <button class="btn btn-secondary" @click="handleBtnAction('bbmDetail-close')">
         닫기

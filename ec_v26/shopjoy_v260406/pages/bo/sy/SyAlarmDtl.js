@@ -136,7 +136,7 @@ window.SyAlarmDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseFormColumns = [
-      { key: 'siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
+      { key: '_siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
       { type: 'rowBreak' },
       { key: 'alarmTitle',    label: '제목', type: 'text', required: true, placeholder: '알림 제목', colSpan: 2 },
       { key: 'alarmTypeCd',   label: '유형', type: 'select', options: () => codes.alarm_types },

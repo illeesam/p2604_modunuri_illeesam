@@ -146,7 +146,7 @@ window.SyBatchDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseFormColumns = [
-      { key: 'siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { key: '_siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'batchNm',       label: '배치명', type: 'text', required: true, placeholder: '배치 이름' },
       { key: 'batchCode',     label: '배치코드', type: 'text', required: true,

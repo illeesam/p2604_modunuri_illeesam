@@ -219,7 +219,7 @@ window.SyContactDtl = {
 
     // 사이트명 영역
     const siteFormColumns = [
-      { key: 'siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
+      { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
     ];
     // content 탭 영역
     const contentFormColumns = [

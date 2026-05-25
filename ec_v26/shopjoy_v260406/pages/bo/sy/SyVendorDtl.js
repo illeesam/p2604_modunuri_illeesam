@@ -154,7 +154,7 @@ window.SyVendorDtl = {
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
     const baseFormColumns = [
-      { key: 'siteNm',         label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
+      { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'vendorType',     label: '업체유형', type: 'select', nullable: false, required: true,
         options: () => codes.vendor_type_kr },
