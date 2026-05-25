@@ -405,7 +405,9 @@ window.BoUserSelectModal = {
 
     const depts = reactive([]);
     const uiState = reactive({ loading: false, deptSearchValue: '', selectedDeptId: null });
-    const pager = reactive({ page: 1, size: 20, pageTotalCount: 0, pageTotalPage: 1, pageList: [], pageNums: [], userSearchValue: '' });
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [] });
+    const userList = reactive([]);
     const selectedIds = reactive(new Set());
     const selectedUsers = reactive([]);
 
@@ -430,27 +432,27 @@ window.BoUserSelectModal = {
 
     /* ── 사용자 페이지 조회 ── */
     const fnBuildPagerNums = () => {
-      const c = pager.page, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
     /* handleSearchUsers */
     const handleSearchUsers = async () => {
       uiState.loading = true;
-      pager.pageList = [];
+      userList.splice(0, userList.length);
       pager.pageTotalCount = 0;
       pager.pageTotalPage = 1;
       try {
-        const params = { pageNo: pager.page, pageSize: pager.size };
-        if (pager.userSearchValue.trim()) params.searchValue = pager.userSearchValue.trim();
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        if (searchParam.searchValue.trim()) params.searchValue = searchParam.searchValue.trim();
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const res = await boApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
         const d = res.data?.data;
-        pager.pageList = d?.pageList || d?.list || [];
+        userList.splice(0, userList.length, ...(d?.pageList || d?.list || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage = d?.pageTotalPage || 1;
         fnBuildPagerNums();
-      } catch (e) { pager.pageList = []; } finally { uiState.loading = false; }
+      } catch (e) { userList.splice(0, userList.length); } finally { uiState.loading = false; }
     };
 
     /* 목록조회 */
@@ -480,19 +482,19 @@ window.BoUserSelectModal = {
         selectedUsers.push(u);
       }
     };
-    const cfAllChecked = computed(() => pager.pageList.length > 0 && pager.pageList.every(u => selectedIds.has(u.userId || u.boUserId)));
+    const cfAllChecked = computed(() => userList.length > 0 && userList.every(u => selectedIds.has(u.userId || u.boUserId)));
 
     /* handleToggleAll */
     const handleToggleAll = () => {
       if (cfAllChecked.value) {
-        pager.pageList.forEach(u => {
+        userList.forEach(u => {
           const id = u.userId || u.boUserId;
           selectedIds.delete(id);
           const idx = selectedUsers.findIndex(x => (x.userId || x.boUserId) === id);
           if (idx !== -1) selectedUsers.splice(idx, 1);
         });
       } else {
-        pager.pageList.forEach(u => {
+        userList.forEach(u => {
           const id = u.userId || u.boUserId;
           if (!selectedIds.has(id)) { selectedIds.add(id); selectedUsers.push(u); }
         });
@@ -504,10 +506,13 @@ window.BoUserSelectModal = {
     const handleConfirm = () => { emit('select', [...selectedUsers]); };
 
     /* 목록조회 */
-    const onSearch = () => { pager.page = 1; handleSearchUsers(); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchUsers(); };
 
     /* setPage */
-    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.page = n; handleSearchUsers(); } };
+    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchUsers(); } };
+
+    /* onSizeChange */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchUsers(); };
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -546,9 +551,47 @@ window.BoUserSelectModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+    /* baseSearchColumns — 사용자 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '이름 / 로그인ID / 이메일 검색' },
+    ];
+
+    /* userGridColumns — BoGrid 컬럼 정의 */
+    const userGridColumns = [
+      { key: '_check', label: '', style: 'width:36px;text-align:center;', html: true, fmt: (v, row) => {
+        const id = row.userId || row.boUserId;
+        return selectedIds.has(id)
+          ? `<span style="display:inline-block;width:15px;height:15px;border-radius:3px;background:#e8587a;color:#fff;font-size:10px;line-height:15px;font-weight:700;">✓</span>`
+          : `<span style="display:inline-block;width:15px;height:15px;border-radius:3px;border:1.5px solid #d1d5db;background:#fff;"></span>`;
+      } },
+      { key: '_user', label: '사용자', html: true, fmt: (v, row) => {
+        const checked = selectedIds.has(row.userId || row.boUserId);
+        const ch = (row.userNm || row.name || '?').charAt(0);
+        const avatarBg = checked ? '#e8587a;color:#fff' : '#f3f4f6;color:#6b7280';
+        return `<div style="display:flex;align-items:center;gap:10px;">`
+             + `<div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800;background:${avatarBg};">${ch}</div>`
+             + `<div style="min-width:0;">`
+             + `<div style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.userNm || row.name || '-'}`
+             + `<span style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:5px;">${row.loginId || ''}</span></div>`
+             + `<div style="font-size:11px;color:#b0b7c3;margin-top:2px;">${row.deptNm || row.dept || '-'} · ${row.roleNm || row.role || ''}</div>`
+             + `</div></div>`;
+      } },
+      { key: 'useYn', label: '상태', style: 'width:60px;text-align:center;', html: true, fmt: (v, row) => {
+        const active = (row.useYn === 'Y') || (row.status === '활성');
+        const lbl = row.useYn === 'Y' ? '활성' : row.useYn === 'N' ? '비활성' : (row.status || '');
+        const sty = active ? 'background:#dcfce7;color:#16a34a;' : 'background:#f3f4f6;color:#9ca3af;';
+        return `<span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;${sty}">${lbl}</span>`;
+      } },
+    ];
+
+    /* fnRowStyle — 선택된 행 강조 */
+    const fnRowStyle = (row) => selectedIds.has(row.userId || row.boUserId) ? 'background:#fff5f7;' : '';
+
     return {
-      cfSiteNm, depts, uiState, pager, selectedIds, cfFlatDeptTree,        // 데이터
+      cfSiteNm, depts, uiState, searchParam, pager, userList, selectedIds, cfFlatDeptTree,  // 데이터
+      baseSearchColumns, userGridColumns, fnRowStyle,                      // 컬럼 정의
       fnIsChecked, cfAllChecked, cfSelectedCount,                          // 헬퍼/computed
+      setPage, onSizeChange,                                                // BoGrid pager 콜백
       handleBtnAction, handleSelectAction,                                 // dispatch
     };
   },
@@ -637,16 +680,8 @@ window.BoUserSelectModal = {
       <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
         <!-- 검색 -->
         <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-          <div style="position:relative;">
-            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#bbb;">
-              🔍
-            </span>
-            <input v-model="pager.userSearchValue" placeholder="이름 / 로그인ID / 이메일 검색" @keyup.enter="handleBtnAction('searchParam-search')"
-              style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:6px 10px 6px 28px;font-size:12px;outline:none;box-sizing:border-box;color:#374151;" />
-            <button @click="handleBtnAction('searchParam-search')" style="margin-top:4px;width:100%;padding:5px 0;border:1px solid #e8587a;border-radius:6px;background:#e8587a;color:#fff;font-size:12px;font-weight:600;cursor:pointer;">
-              조회
-            </button>
-          </div>
+          <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+            @search="handleBtnAction('searchParam-search')" :show-reset="false" />
         </div>
         <!-- 전체선택 바 -->
         <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
@@ -662,66 +697,14 @@ window.BoUserSelectModal = {
             명
           </span>
         </div>
-        <!-- 카드 목록 -->
+        <!-- 목록 + 페이저 (BoGrid 내장) -->
         <div style="flex:1;overflow-y:auto;">
-          <div v-if="uiState.loading" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
-            로딩 중...
-          </div>
-          <div v-else-if="pager.pageList.length===0" style="text-align:center;color:#bbb;padding:52px 0;font-size:13px;">
-            <div style="font-size:32px;margin-bottom:8px;">
-              🔍
-            </div>
-            검색 결과가 없습니다.
-          </div>
-          <div v-for="u in pager.pageList" :key="u.userId || u.boUserId"
-            style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
-            :style="fnIsChecked(u)?'background:#fff5f7;':'' "
-            @click="handleSelectAction('users-toggle', u)">
-            <input type="checkbox" :checked="fnIsChecked(u)" @click.stop="handleSelectAction('users-toggle', u)"
-              style="width:15px;height:15px;flex-shrink:0;accent-color:#e8587a;cursor:pointer;" />
-            <!-- 아바타 -->
-            <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
-              :style="fnIsChecked(u)?'background:#e8587a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
-              {{ (u.userNm || u.name || '?').charAt(0) }}
-            </div>
-            <!-- 텍스트 -->
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
-                {{ u.userNm || u.name }}
-                <span style="font-size:11px;color:#9ca3af;font-weight:400;">
-                  {{ u.loginId }}
-                </span>
-              </div>
-              <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">
-                {{ u.deptNm || u.dept || '-' }} · {{ u.roleNm || u.role || '' }}
-              </div>
-            </div>
-            <!-- 상태 뱃지 -->
-            <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
-              :style="(u.useYn||u.status)==='Y'||(u.status)==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;'">
-              {{ u.useYn === 'Y' ? '활성' : u.useYn === 'N' ? '비활성' : (u.status || '') }}
-            </span>
-          </div>
-          <!-- 페이지네이션 -->
-          <div v-if="pager.pageTotalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:3px;padding:8px 0;border-top:1px solid #f0f0f0;flex-shrink:0;">
-            <button :disabled="pager.page===1" @click="handleBtnAction('pager-set', 1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
-              «
-            </button>
-            <button :disabled="pager.page===1" @click="handleBtnAction('pager-set', pager.page-1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
-              ‹
-            </button>
-            <button v-for="n in pager.pageNums" :key="n" @click="handleBtnAction('pager-set', n)"
-              style="padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid;"
-              :style="pager.page===n?'background:#e8587a;color:#fff;border-color:#e8587a;font-weight:700;':'background:#fff;border-color:#e5e7eb;color:#374151;'">
-              {{ n }}
-            </button>
-            <button :disabled="pager.page===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.page+1)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
-              ›
-            </button>
-            <button :disabled="pager.page===pager.pageTotalPage" @click="handleBtnAction('pager-set', pager.pageTotalPage)" style="padding:3px 7px;border:1px solid #e5e7eb;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;">
-              »
-            </button>
-          </div>
+          <bo-grid bare :columns="userGridColumns" :rows="userList" :pager="pager" row-key="userId"
+            row-clickable :row-style="fnRowStyle"
+            :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
+            @row-click="row => handleSelectAction('users-toggle', row)"
+            @set-page="setPage"
+            @size-change="onSizeChange" />
         </div>
       </div>
     </div>
@@ -5145,29 +5128,34 @@ window.OdMemberPickModal = {
   emits: ['select', 'close'],
   setup(props, { emit }) {
     const { reactive, watch } = Vue;
-    const state = reactive({
-      searchType: '', searchValue: '',
-      rows: [], pageNo: 1, total: 0, totalPage: 1, loading: false,
-    });
+    const searchParam = reactive({ searchType: '', searchValue: '' });
+    const state = reactive({ loading: false });
+    const rows = reactive([]);
+    const pager = reactive({ pageNo: 1, pageSize: props.pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [] });
+
+    /* fnBuildPagerNums */
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* handleSearch */
     const handleSearch = async () => {
       state.loading = true;
       try {
-        const params = { pageNo: state.pageNo, pageSize: props.pageSize,
-          searchValue: state.searchValue || undefined,
-          searchType: state.searchType || undefined };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize,
+          searchValue: searchParam.searchValue || undefined,
+          searchType: searchParam.searchType || undefined };
         if (params.searchValue && !params.searchType) params.searchType = 'memberNm,loginId';
         const res = await boApiSvc.mbMember.getPage(params, props.uiNm, '회원검색');
         const d = res.data?.data || {};
-        state.rows = d.pageList || [];
-        state.total = d.pageTotalCount || 0;
-        state.totalPage = d.pageTotalPage || 1;
-      } catch (_) { state.rows = []; state.total = 0; state.totalPage = 1; }
+        rows.splice(0, rows.length, ...(d.pageList || []));
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage = d.pageTotalPage || 1;
+        fnBuildPagerNums();
+      } catch (_) { rows.splice(0, rows.length); pager.pageTotalCount = 0; pager.pageTotalPage = 1; }
       finally { state.loading = false; }
     };
-    const onPickSearch = () => { state.pageNo = 1; handleSearch(); };
-    const onPickPage   = (n) => { state.pageNo = n; handleSearch(); };
+    const onPickSearch = () => { pager.pageNo = 1; handleSearch(); };
+    const onPickPage   = (n) => { pager.pageNo = n; handleSearch(); };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearch(); };
     const onSelect     = (m) => { emit('select', m); emit('close'); };
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -5177,8 +5165,6 @@ window.OdMemberPickModal = {
         return emit('close');
       } else if (cmd === 'searchParam-search') {
         return onPickSearch();
-      } else if (cmd === 'pager-set') {
-        return onPickPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -5195,7 +5181,7 @@ window.OdMemberPickModal = {
     };
 
     /* show=true 또는 reloadTrigger 증가 시 초기화 + 재조회 */
-    const reset = () => { state.searchType=''; state.searchValue=''; state.rows=[]; state.pageNo=1; handleSearch(); };
+    const reset = () => { searchParam.searchType=''; searchParam.searchValue=''; rows.splice(0, rows.length); pager.pageNo=1; handleSearch(); };
     watch(() => props.show, v => { if (v) reset(); });
     watch(() => props.reloadTrigger, () => { if (props.show) handleSearch(); });
 
@@ -5224,7 +5210,9 @@ window.OdMemberPickModal = {
     ];
 
     return {
-      state, memberPickGridColumns, baseSearchColumns,                       // 데이터 / 컬럼 정의
+      state, searchParam, rows, pager,                                       // 데이터
+      memberPickGridColumns, baseSearchColumns,                              // 컬럼 정의
+      onPickPage, onSizeChange,                                              // BoGrid pager 콜백
       handleBtnAction, handleSelectAction,                                   // dispatch
     };
   },
@@ -5246,48 +5234,29 @@ window.OdMemberPickModal = {
         </button>
       </div>
       <div style="margin-top:12px;">
-        <bo-search-area :columns="baseSearchColumns" :param="state"
+        <bo-search-area :columns="baseSearchColumns" :param="searchParam"
           @search="handleBtnAction('searchParam-search')" />
       </div>
     </div>
     <div style="padding:8px 24px;background:#fafafa;border-bottom:1px solid #f0f0f0;font-size:12px;color:#6b7280;flex-shrink:0;">
       총
       <strong style="color:#e11d48;">
-        {{ state.total.toLocaleString() }}
+        {{ pager.pageTotalCount.toLocaleString() }}
       </strong>
       명
     </div>
     <div style="flex:1;overflow-y:auto;">
-      <div v-if="state.loading" style="text-align:center;padding:40px;color:#aaa;">
-        조회 중...
-      </div>
-      <bo-grid v-else bare row-clickable :columns="memberPickGridColumns" :rows="state.rows" row-key="memberId"
-        :row-style="() => 'cursor:pointer;'" empty-text="조회 결과가 없습니다."
-        @row-click="(row) => handleSelectAction('members-pick', row)" row-actions>
+      <bo-grid bare row-clickable :columns="memberPickGridColumns" :rows="rows" :pager="pager" row-key="memberId"
+        :row-style="() => 'cursor:pointer;'"
+        :empty-text="state.loading ? '조회 중...' : '조회 결과가 없습니다.'"
+        @row-click="(row) => handleSelectAction('members-pick', row)"
+        @set-page="onPickPage" @size-change="onSizeChange" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('members-pick', row)" style="border-radius:6px;font-size:11px;">
             선택
           </button>
         </template>
       </bo-grid>
-    </div>
-    <div style="padding:10px 24px;border-top:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;display:flex;justify-content:center;">
-      <div class="pager" v-if="state.totalPage > 1">
-        <button class="btn btn-secondary btn-sm" :disabled="state.pageNo <= 1" @click="handleBtnAction('pager-set', state.pageNo - 1)">
-          이전
-        </button>
-        <template v-for="n in state.totalPage" :key="n">
-          <button v-if="Math.abs(n - state.pageNo) <= 3" :class="['btn btn-sm', n === state.pageNo ? 'btn-primary' : 'btn-secondary']" @click="handleBtnAction('pager-set', n)">
-            {{ n }}
-          </button>
-        </template>
-        <button class="btn btn-secondary btn-sm" :disabled="state.pageNo >= state.totalPage" @click="handleBtnAction('pager-set', state.pageNo + 1)">
-          다음
-        </button>
-      </div>
-      <span v-else style="font-size:12px;color:#aaa;line-height:32px;">
-        총 {{ state.total }}명
-      </span>
     </div>
   </div>
 </bo-modal>
@@ -5589,11 +5558,13 @@ window.BoCodeGrpModal = {
   },
   emits: ['close', 'select'],
   setup(props, { emit }) {
-    const { ref, computed, watch } = Vue;
+    const { ref, reactive, computed, watch } = Vue;
     const codes = ref([]);
     const loading = ref(false);
     const error = ref('');
     const tab = ref('list'); // 'list' | 'tree'
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [10, 20, 50, 100] });
 
     /* 원본 row 키(codeVal/codeNm/codeSortOrd/codeLevel/parentCodeValue) → 화면용 정규화 */
     const fnNorm = (c) => ({
@@ -5667,6 +5638,39 @@ window.BoCodeGrpModal = {
 
     const cfHasTree = computed(() => codes.value.some(c => Number(c.codeLevel || 1) > 1 || c.parentCodeValue));
 
+    /* cfFilteredCodes — 검색어로 필터링된 코드 목록 */
+    const cfFilteredCodes = computed(() => {
+      const k = (searchParam.searchValue || '').trim().toLowerCase();
+      if (!k) return codes.value;
+      return codes.value.filter(c =>
+        (c.codeId || '').toLowerCase().includes(k) ||
+        (c.codeValue || '').toLowerCase().includes(k) ||
+        (c.codeLabel || '').toLowerCase().includes(k)
+      );
+    });
+
+    /* fnBuildPagerNums */
+    const fnBuildPagerNums = () => {
+      const total = cfFilteredCodes.value.length;
+      pager.pageTotalCount = total;
+      pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.pageSize));
+      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+
+    /* cfPageCodes — 페이지에 해당하는 코드 슬라이스 */
+    const cfPageCodes = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFilteredCodes.value.slice(start, start + pager.pageSize);
+    });
+
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
+
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
+
     /* onClose */
     const onClose  = () => emit('close');
 
@@ -5707,9 +5711,16 @@ window.BoCodeGrpModal = {
       { key: 'useYn',           label: '사용',       style: 'width:50px;', align: 'center', badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v || '-' },
     ];
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '코드ID / 코드값 / 코드명 검색' },
+    ];
+
     return {
       codes, loading, error, tab, cfTree, cfHasTree, onSelect,                 // 데이터
-      codeGridColumns,                                                          // 컬럼 정의
+      searchParam, pager, cfFilteredCodes, cfPageCodes,                        // 검색 / 페이저
+      onSetPage, onSizeChange,                                                 // BoGrid pager 콜백
+      codeGridColumns, baseSearchColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                     // dispatch
     };
   },
@@ -5754,6 +5765,10 @@ window.BoCodeGrpModal = {
       </div>
       <!-- 본문 -->
       <div style="padding:14px 20px;overflow-y:auto;flex:1;">
+        <!-- 검색 (list 탭에서만) -->
+        <div v-if="tab==='list' && codes.length" style="margin-bottom:10px;">
+          <bo-search-area :columns="baseSearchColumns" :param="searchParam" :show-actions="false" />
+        </div>
         <div v-if="loading" style="padding:32px;text-align:center;color:#999;font-size:13px;">
           불러오는 중...
         </div>
@@ -5765,32 +5780,33 @@ window.BoCodeGrpModal = {
         </div>
         <!-- ── 일반 코드목록 ── -->
         <bo-grid v-else-if="tab==='list'" bare
-          :columns="codeGridColumns" :rows="codes"
+          :columns="codeGridColumns" :rows="cfPageCodes" :pager="pager"
           row-key="codeId" row-clickable
-          empty-text="등록된 코드가 없습니다."
-          @row-click="row => handleSelectAction('codes-pick', row)" />
-            <!-- ── 트리목록 ── -->
-            <div v-else-if="tab==='tree'" style="font-size:12px;">
-              <div v-if="!cfTree.length" style="padding:32px;text-align:center;color:#aaa;">
-                표시할 트리가 없습니다.
-              </div>
-              <ul v-else style="list-style:none;padding-left:0;margin:0;">
-                <bo-code-grp-tree-node v-for="node in cfTree" :key="node.codeId || node.codeValue"
-            :node="node" :depth="0" @select="(row) => handleSelectAction('codes-pick', row)" />
-              </ul>
-            </div>
+          empty-text="검색 결과가 없습니다."
+          @row-click="row => handleSelectAction('codes-pick', row)"
+          @set-page="onSetPage" @size-change="onSizeChange" />
+        <!-- ── 트리목록 ── -->
+        <div v-else-if="tab==='tree'" style="font-size:12px;">
+          <div v-if="!cfTree.length" style="padding:32px;text-align:center;color:#aaa;">
+            표시할 트리가 없습니다.
           </div>
-          <!-- 푸터 -->
-          <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:11px;color:#888;">
-              총 {{ codes.length }}건 · 행 더블클릭 시 선택
-            </span>
-            <button class="btn btn-secondary btn-sm" @click="handleBtnAction('modal-close')">
-              닫기
-            </button>
-          </div>
+          <ul v-else style="list-style:none;padding-left:0;margin:0;">
+            <bo-code-grp-tree-node v-for="node in cfTree" :key="node.codeId || node.codeValue"
+              :node="node" :depth="0" @select="(row) => handleSelectAction('codes-pick', row)" />
+          </ul>
         </div>
-      </bo-modal>
+      </div>
+      <!-- 푸터 -->
+      <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:#888;">
+          총 {{ codes.length }}건 · 행 클릭 시 선택
+        </span>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('modal-close')">
+          닫기
+        </button>
+      </div>
+    </div>
+  </bo-modal>
 `
 };
 
@@ -5997,8 +6013,8 @@ window.AuthUserPickModal = {
     pageSize:  { type: Number, default: 20 },
   },
   emits: ['search', 'go-page', 'pick', 'close'],
-  setup(_, { emit }) {
-    const fnPageVisible = (p, cur, last) => Math.abs(p - cur) <= 2 || p === 1 || p === last;
+  setup(props, { emit }) {
+    const { computed } = Vue;
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -6023,6 +6039,19 @@ window.AuthUserPickModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+
+    /* cfPager — BoGrid 호환 pager 객체 (부모 props로부터 합성) */
+    const cfPager = computed(() => {
+      const c = props.modal.pageNo, l = props.totalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      return {
+        pageNo: props.modal.pageNo,
+        pageSize: props.pageSize,
+        pageTotalCount: props.total,
+        pageTotalPage: props.totalPage,
+        pageNums: Array.from({ length: e - s + 1 }, (_, i) => s + i),
+      };
+    });
+
     /* userGridColumns — BoGrid 컬럼 정의 */
     const userGridColumns = [
       { key: 'userNm',       label: '이름', cellStyle: 'font-weight:700;color:#1a1a2e;', fmt: (v, row) => v || row.label || '-' },
@@ -6036,8 +6065,13 @@ window.AuthUserPickModal = {
       { key: 'userEmail',    label: '이메일', cellStyle: 'color:#999;font-size:11px;', fmt: (v) => v || '-' },
     ];
 
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '이름 / 로그인ID / 이메일 검색...' },
+    ];
+
     return {
-      fnPageVisible, userGridColumns,                                          // 헬퍼 / 컬럼
+      cfPager, userGridColumns, baseSearchColumns,                             // 헬퍼 / 컬럼
       handleBtnAction, handleSelectAction,                                     // dispatch
     };
   },
@@ -6067,33 +6101,24 @@ window.AuthUserPickModal = {
     <!-- 본문 (스크롤 영역) -->
     <div style="padding:14px 18px;overflow-y:auto;flex:1;">
       <!-- 검색바 -->
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <div style="position:relative;flex:1;">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#ccc;font-size:13px;">
-            🔍
-          </span>
-          <input class="form-control" v-model="modal.searchValue" placeholder="이름 / 로그인ID / 이메일 검색..."
-            @keyup.enter="handleBtnAction('searchParam-search')" style="padding-left:32px;height:34px;" />
-        </div>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-search')" style="padding:0 16px;font-weight:700;">
-          조회
-        </button>
-      </div>
+      <bo-search-area :columns="baseSearchColumns" :param="modal" :show-reset="false"
+        @search="handleBtnAction('searchParam-search')" />
       <!-- 건수 -->
-      <div style="font-size:11px;color:#aaa;margin-bottom:8px;">
+      <div style="font-size:11px;color:#aaa;margin:8px 0;">
         총
         <b style="color:#e8587a;">
           {{ total }}
         </b>
         명
       </div>
-      <!-- 테이블 -->
+      <!-- 테이블 + 페이저 (BoGrid 내장) -->
       <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
-        <bo-grid bare :columns="userGridColumns" :rows="modal.loading ? [] : rows" row-key="loginId"
+        <bo-grid bare :columns="userGridColumns" :rows="modal.loading ? [] : rows" :pager="cfPager" row-key="loginId"
           :empty-text="modal.loading ? '⏳ 조회 중...' : '🔍 검색 결과가 없습니다.'"
           row-clickable :row-actions="true"
           :row-style="row => loginId===(row.loginId||row.userId) ? 'background:#fff0f4;' : ''"
-          @row-click="row => handleSelectAction('users-pick', row)">
+          @row-click="row => handleSelectAction('users-pick', row)"
+          @set-page="n => handleBtnAction('pager-set', n)">
           <template #row-actions="{ row }">
             <button @click.stop="handleSelectAction('users-pick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
               선택
@@ -6101,35 +6126,6 @@ window.AuthUserPickModal = {
           </template>
         </bo-grid>
       </div>
-    </div>
-    <!-- 페이지네이션 (스크롤 밖 고정) -->
-    <div v-if="totalPage > 1" style="display:flex;justify-content:center;align-items:center;gap:4px;padding:10px 18px;border-top:1px solid #f5eef2;flex-shrink:0;flex-wrap:wrap;">
-      <button @click="handleBtnAction('pager-set', 1)" :disabled="modal.pageNo===1"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">
-        «
-      </button>
-      <button @click="handleBtnAction('pager-set', modal.pageNo-1)" :disabled="modal.pageNo===1"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===1?'opacity:.35;cursor:default;':''">
-        ‹
-      </button>
-      <template v-for="p in totalPage" :key="p">
-        <button v-if="fnPageVisible(p, modal.pageNo, totalPage)"
-          @click="handleBtnAction('pager-set', p)"
-          :style="modal.pageNo===p
-          ? 'background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;font-weight:700;'
-          : 'background:#fff;color:#888;border:1px solid #eee;'"
-          style="min-width:28px;height:28px;border-radius:6px;font-size:11px;cursor:pointer;">
-          {{ p }}
-        </button>
-      </template>
-      <button @click="handleBtnAction('pager-set', modal.pageNo+1)" :disabled="modal.pageNo===totalPage"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">
-        ›
-      </button>
-      <button @click="handleBtnAction('pager-set', totalPage)" :disabled="modal.pageNo===totalPage"
-        style="border:1px solid #f0c0d0;background:#fff;color:#e8587a;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;" :style="modal.pageNo===totalPage?'opacity:.35;cursor:default;':''">
-        »
-      </button>
     </div>
   </div>
 </bo-modal>
