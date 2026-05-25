@@ -26,22 +26,22 @@ window.Cart = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Cart.js : handleBtnAction -> ', cmd, param);
       // 전체 선택/해제 토글
-      if (cmd === 'cart-toggle-all') {
+      if (cmd === 'cart-toggleAll') {
         return toggleAll();
       // 장바구니 전체 비우기
-      } else if (cmd === 'cart-clear-all') {
+      } else if (cmd === 'cart-clearAll') {
         return handleClearAll();
       // 정렬 (상품명/가격)
       } else if (cmd === 'cart-sort') {
         return onCartSort(param);
       // 주문하기 (체크된 항목 또는 전체)
-      } else if (cmd === 'summary-go-order') {
+      } else if (cmd === 'summary-goOrder') {
         return goOrder();
       // 홈으로 이동
-      } else if (cmd === 'page-go-home') {
+      } else if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 상품목록으로 이동
-      } else if (cmd === 'page-go-prod-list') {
+      } else if (cmd === 'page-goProdList') {
         return props.navigate('prodList');
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -219,7 +219,7 @@ window.Cart = {
         Cart
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>
@@ -240,7 +240,7 @@ window.Cart = {
     <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">
       장바구니가 비어 있어요
     </p>
-    <button class="btn-blue" @click="handleBtnAction('page-go-prod-list')" style="padding:12px 28px;">
+    <button class="btn-blue" @click="handleBtnAction('page-goProdList')" style="padding:12px 28px;">
       쇼핑하러 가기
     </button>
   </div>
@@ -255,7 +255,7 @@ window.Cart = {
           <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;">
               <input type="checkbox" :checked="cfAllChecked" :indeterminate.prop="cfSomeChecked"
-                @change="handleBtnAction('cart-toggle-all')"
+                @change="handleBtnAction('cart-toggleAll')"
                 style="width:17px;height:17px;cursor:pointer;accent-color:var(--blue);" />
               <span style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">
                 전체 선택
@@ -279,7 +279,7 @@ window.Cart = {
                 :style="uiState.sortKey==='price' ? 'background:var(--blue);color:#fff;border:none;border-radius:12px;padding:3px 10px;font-size:0.75rem;cursor:pointer;font-weight:700;' : 'background:var(--bg-base);color:var(--text-muted);border:1px solid var(--border);border-radius:12px;padding:3px 10px;font-size:0.75rem;cursor:pointer;'">
                 가격 {{ cartSortIcon('price') }}
               </button>
-              <button @click="handleBtnAction('cart-clear-all')"
+              <button @click="handleBtnAction('cart-clearAll')"
                 style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:0;margin-left:4px;">
                 전체 삭제
               </button>
@@ -341,7 +341,7 @@ window.Cart = {
             </button>
           </div>
         </div>
-        <button class="btn-outline" @click="handleBtnAction('page-go-prod-list')" style="padding:10px 20px;">
+        <button class="btn-outline" @click="handleBtnAction('page-goProdList')" style="padding:10px 20px;">
           ← 계속 쇼핑하기
         </button>
       </div>
@@ -391,7 +391,7 @@ window.Cart = {
               </span>
             </div>
           </div>
-          <button class="btn-blue" @click="handleBtnAction('summary-go-order')" style="width:100%;padding:14px;font-size:0.95rem;">
+          <button class="btn-blue" @click="handleBtnAction('summary-goOrder')" style="width:100%;padding:14px;font-size:0.95rem;">
             주문하기 ({{ cfOrderCount }}개)
           </button>
           <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:10px;">

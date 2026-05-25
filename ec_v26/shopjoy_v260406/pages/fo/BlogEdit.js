@@ -35,7 +35,7 @@ window.BlogEdit = {
       } else if (cmd === 'form-cancel') {
         return cancel();
       // 이미지 추가
-      } else if (cmd === 'form-add-image') {
+      } else if (cmd === 'form-addImage') {
         return addImage();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -167,7 +167,7 @@ window.BlogEdit = {
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">
         이미지 첨부
       </label>
-      <button @click="handleBtnAction('form-add-image')" class="btn-outline" style="padding:8px 16px;font-size:0.82rem;margin-bottom:10px;">
+      <button @click="handleBtnAction('form-addImage')" class="btn-outline" style="padding:8px 16px;font-size:0.82rem;margin-bottom:10px;">
         + 이미지 추가
       </button>
       <div v-for="img in images" :key="img.id"

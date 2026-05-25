@@ -17,10 +17,10 @@ window.Faq = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Faq.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 문의하기 페이지로 이동
-      } else if (cmd === 'page-go-contact') {
+      } else if (cmd === 'page-goContact') {
         return props.navigate('contact');
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -77,7 +77,7 @@ window.Faq = {
         FAQ
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>
@@ -112,7 +112,7 @@ window.Faq = {
     <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:16px;">
       원하시는 답변을 찾지 못하셨나요?
     </p>
-    <button class="btn-blue" @click="handleBtnAction('page-go-contact')">
+    <button class="btn-blue" @click="handleBtnAction('page-goContact')">
       1:1 문의하기
     </button>
   </div>

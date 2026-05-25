@@ -27,7 +27,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         Object.assign(searchParam, _initSearchParam());
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;

@@ -29,7 +29,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return onDateRangeChange();
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -43,15 +43,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'statuses-export') {
         return exportTab();
       // 페이지 크기 변경 — 영역별
-      } else if (cmd === 'statuses-vendor-pager-sizeChange') {
+      } else if (cmd === 'statuses-vendorPagerSizeChange') {
         return onVendorSizeChange();
-      } else if (cmd === 'statuses-order-pager-sizeChange') {
+      } else if (cmd === 'statuses-orderPagerSizeChange') {
         return onOrderSizeChange();
-      } else if (cmd === 'statuses-claim-pager-sizeChange') {
+      } else if (cmd === 'statuses-claimPagerSizeChange') {
         return onClaimSizeChange();
-      } else if (cmd === 'statuses-promo-pager-sizeChange') {
+      } else if (cmd === 'statuses-promoPagerSizeChange') {
         return onPromoSizeChange();
-      } else if (cmd === 'statuses-settle-pager-sizeChange') {
+      } else if (cmd === 'statuses-settlePagerSizeChange') {
         return onSettleSizeChange();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -62,15 +62,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StStatusMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭 — 영역별
-      if (cmd === 'statuses-vendor-pager-setPage') {
+      if (cmd === 'statuses-vendorPagerSetPage') {
         return setVendorPage(param);
-      } else if (cmd === 'statuses-order-pager-setPage') {
+      } else if (cmd === 'statuses-orderPagerSetPage') {
         return setOrderPage(param);
-      } else if (cmd === 'statuses-claim-pager-setPage') {
+      } else if (cmd === 'statuses-claimPagerSetPage') {
         return setClaimPage(param);
-      } else if (cmd === 'statuses-promo-pager-setPage') {
+      } else if (cmd === 'statuses-promoPagerSetPage') {
         return setPromoPage(param);
-      } else if (cmd === 'statuses-settle-pager-setPage') {
+      } else if (cmd === 'statuses-settlePagerSetPage') {
         return setSettlePage(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -121,11 +121,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
     /* -- 원본 데이터 -- */
-    const orderList = reactive([]);
-    const claimList = reactive([]);
-    const vendorList = reactive([]);
-    const couponList = reactive([]);
-    const cacheDataList = reactive([]);
+    const orders = reactive([]);
+    const claims = reactive([]);
+    const vendors = reactive([]);
+    const coupons = reactive([]);
+    const cacheDatas = reactive([]);
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -142,18 +142,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           boApiSvc.pmCoupon.getPage(PG, '정산상태관리', '목록조회'),
           boApiSvc.pmCache.getPage({ ...PG, ...dateP('reg_date') }, '정산상태관리', '목록조회'),
         ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
-        claimList.splice(0, claimList.length, ...(resC.data?.data?.pageList || resC.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
-        couponList.splice(0, couponList.length, ...(resCp.data?.data?.pageList || resCp.data?.data?.list || []));
-        cacheDataList.splice(0, cacheDataList.length, ...(resCa.data?.data?.pageList || resCa.data?.data?.list || []));
+        orders.splice(0, orders.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
+        claims.splice(0, claims.length, ...(resC.data?.data?.pageList || resC.data?.data?.list || []));
+        vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        coupons.splice(0, coupons.length, ...(resCp.data?.data?.pageList || resCp.data?.data?.list || []));
+        cacheDatas.splice(0, cacheDatas.length, ...(resCa.data?.data?.pageList || resCa.data?.data?.list || []));
       } catch (_) {}
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
-    const cfVendors  = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const cfVendors  = computed(() => vendors.filter(v => v.vendorType === '판매업체'));
 
     const COMM_RATE = 0.10; // 수수료율 10%
 
@@ -172,13 +172,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const vendorPager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfVendorRows = computed(() => {
-      const filteredOrders = window.safeArrayUtils.safeFilter(orderList, o => inRange(o.orderDate) && o.status !== '취소됨');
+      const filteredOrders = window.safeArrayUtils.safeFilter(orders, o => inRange(o.orderDate) && o.status !== '취소됨');
       return cfVendors.value.map(v => {
         const vOrders = window.safeArrayUtils.safeFilter(filteredOrders, o => o.vendorId === v.vendorId);
         const sales   = vOrders.reduce((s, o) => s + (o.totalPrice || 0), 0);
-        const refund  = claimList
+        const refund  = claims
           .filter(c => inRange(c.requestDate) && ['환불완료','취소완료'].includes(c.status))
-          .filter(c => { const o = orderList.find(x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
+          .filter(c => { const o = orders.find(x => x.orderId === c.orderId); return o && o.vendorId === v.vendorId; })
           .reduce((s, c) => s + (c.refundAmount || 0), 0);
         const netSales = sales - refund;
         const comm     = Math.round(netSales * COMM_RATE);
@@ -201,7 +201,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const cfOrderRows = computed(() => {
       const searchVal = applied.orderSearchValue.trim().toLowerCase();
-      return window.safeArrayUtils.safeFilter(orderList, o => {
+      return window.safeArrayUtils.safeFilter(orders, o => {
         if (!inRange(o.orderDate)) { return false; }
         if (applied.orderSearchStatus && o.status !== applied.orderSearchStatus) { return false; }
         if (searchVal && !o.orderId.toLowerCase().includes(searchVal) && !o.userNm.toLowerCase().includes(searchVal) && !o.prodNm.toLowerCase().includes(searchVal)) { return false; }
@@ -231,7 +231,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const claimPager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfClaimRows = computed(() => {
-      return window.safeArrayUtils.safeFilter(claimList, c => {
+      return window.safeArrayUtils.safeFilter(claims, c => {
         if (!inRange(c.requestDate)) { return false; }
         if (applied.claimSearchType   && c.type   !== applied.claimSearchType) { return false; }
         if (applied.claimSearchStatus && c.status !== applied.claimSearchStatus) { return false; }
@@ -263,7 +263,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const cfPromoRows = computed(() => {
       const searchVal = applied.promoSearchValue.trim().toLowerCase();
-      const couponRows = couponList.map(c => {
+      const couponRows = coupons.map(c => {
         const discountAmt = c.discountType === 'amount' ? c.discountValue * c.useCount
           : c.discountType === 'rate' ? Math.round(50000 * (c.discountValue / 100) * c.useCount) // 평균 주문금액 가정
           : 3000 * c.useCount;
@@ -276,7 +276,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         };
       });
       const cacheRows = [
-        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: cacheDataList.filter(x => x.type==='충전').length, useCnt: cacheDataList.filter(x => x.type==='사용').length, discountAmt: cacheDataList.filter(x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
+        { promoId: 'CCH-001', promoType: '캐쉬', promoNm: '캐쉬 사용 합산', issueCnt: cacheDatas.filter(x => x.type==='충전').length, useCnt: cacheDatas.filter(x => x.type==='사용').length, discountAmt: cacheDatas.filter(x => x.type==='사용').reduce((s,x) => s + Math.abs(x.amount), 0), status: '진행중', period: '상시' },
       ];
       const allRows = [...couponRows, ...cacheRows];
       return allRows.filter(r => {
@@ -301,13 +301,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const cfSettleRows = computed(() => {
       const monthMap = {};
-      window.safeArrayUtils.safeForEach(orderList, o => {
+      window.safeArrayUtils.safeForEach(orders, o => {
         const m = String(o.orderDate || '').slice(0, 7);
         if (!m) { return; }
         if (!monthMap[m]) { monthMap[m] = { month: m, orderCnt: 0, sales: 0, refund: 0, commAmt: 0, promoAmt: 0 }; }
         if (o.status !== '취소됨') { monthMap[m].orderCnt++; monthMap[m].sales += o.totalPrice || 0; }
       });
-      window.safeArrayUtils.safeForEach(claimList, c => {
+      window.safeArrayUtils.safeForEach(claims, c => {
         const m = String(c.requestDate || '').slice(0, 7);
         if (m && monthMap[m] && ['환불완료','취소완료'].includes(c.status)) { monthMap[m].refund += c.refundAmount || 0; }
       });
@@ -477,7 +477,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* 검색바 :columns 자동 렌더 정의 — 모두 uiState 공유 */
     const dateSearchColumns = [
       { key: 'dateRange', label: '기간', type: 'select', options: () => codes.date_range_opts,
-        nullLabel: '기간 선택', onChange: () => handleBtnAction('searchParam-date-range') },
+        nullLabel: '기간 선택', onChange: () => handleBtnAction('searchParam-dateRange') },
       { key: 'dateStart', type: 'date' },
       { type: 'label', label: '~' },
       { key: 'dateEnd',   type: 'date' },
@@ -614,8 +614,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="업체별현황"
       :count-text="'총 ' + cfVendorTotal + '개 업체'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-vendor-pager-setPage', n)"
-      @size-change="handleBtnAction('statuses-vendor-pager-sizeChange')">
+      @set-page="n => handleSelectAction('statuses-vendorPagerSetPage', n)"
+      @size-change="handleBtnAction('statuses-vendorPagerSizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 테이블 =================================================== -->
@@ -671,8 +671,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfOrderTotal + '건'"
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-order-pager-setPage', n)"
-      @size-change="handleBtnAction('statuses-order-pager-sizeChange')">
+      @set-page="n => handleSelectAction('statuses-orderPagerSetPage', n)"
+      @size-change="handleBtnAction('statuses-orderPagerSizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
@@ -730,8 +730,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="클레임별현황"
       :count-text="'총 ' + cfClaimTotal + '건'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-claim-pager-setPage', n)"
-      @size-change="handleBtnAction('statuses-claim-pager-sizeChange')">
+      @set-page="n => handleSelectAction('statuses-claimPagerSetPage', n)"
+      @size-change="handleBtnAction('statuses-claimPagerSizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
@@ -778,8 +778,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="프로모션별현황"
       :count-text="'총 ' + cfPromoTotal + '개'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-promo-pager-setPage', n)"
-      @size-change="handleBtnAction('statuses-promo-pager-sizeChange')">
+      @set-page="n => handleSelectAction('statuses-promoPagerSetPage', n)"
+      @size-change="handleBtnAction('statuses-promoPagerSizeChange')">
     </bo-grid>
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
@@ -834,8 +834,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="정산별현황"
       :count-text="'총 ' + cfSettleTotal + '개월'"
       empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-settle-pager-setPage', n)"
-      @size-change="handleBtnAction('statuses-settle-pager-sizeChange')">
+      @set-page="n => handleSelectAction('statuses-settlePagerSetPage', n)"
+      @size-change="handleBtnAction('statuses-settlePagerSizeChange')">
     </bo-grid>
   </div>
 </div>

@@ -28,12 +28,12 @@ window.StRawMng = {
         Object.assign(searchParam, _initSearchParam());
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
         return;
-      } else if (cmd === 'searchParam-more-toggle') {
+      } else if (cmd === 'searchParam-moreToggle') {
         uiState.searchMoreOpen = !uiState.searchMoreOpen;
         return;
       } else {
@@ -89,7 +89,7 @@ window.StRawMng = {
   const searchParam = reactive(_initSearchParam());
 
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const rawList = reactive([]);
+const raws = reactive([]);
 
     // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
@@ -107,8 +107,8 @@ const rawList = reactive([]);
         }
         const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
-        rawList.splice(0, rawList.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || rawList.length;
+        raws.splice(0, raws.length, ...(data?.pageList || data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || raws.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
@@ -132,13 +132,13 @@ const rawList = reactive([]);
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
-      totalAmt:   rawList.reduce((s, r) => s + (r.settleTargetAmt || 0), 0),
-      collectCnt: rawList.filter(r => r.rawStatusCd === 'COLLECTED').length,
-      settleAmt:  rawList.reduce((s, r) => s + (r.settleAmt || 0), 0),
-      feeAmt:     rawList.reduce((s, r) => s + (r.settleFeeAmt || 0), 0),
-      closeCnt:   rawList.filter(r => r.closeYn === 'Y').length,
-      erpCnt:     rawList.filter(r => r.erpSendYn === 'Y').length,
-      confirmCnt: rawList.filter(r => r.buyConfirmYn === 'Y').length,
+      totalAmt:   raws.reduce((s, r) => s + (r.settleTargetAmt || 0), 0),
+      collectCnt: raws.filter(r => r.rawStatusCd === 'COLLECTED').length,
+      settleAmt:  raws.reduce((s, r) => s + (r.settleAmt || 0), 0),
+      feeAmt:     raws.reduce((s, r) => s + (r.settleFeeAmt || 0), 0),
+      closeCnt:   raws.filter(r => r.closeYn === 'Y').length,
+      erpCnt:     raws.filter(r => r.erpSendYn === 'Y').length,
+      confirmCnt: raws.filter(r => r.buyConfirmYn === 'Y').length,
     }));
 
     /* setPage — 설정 */
@@ -239,7 +239,7 @@ const rawList = reactive([]);
   return {
       uiState, handleDateRangeChange,
       searchParam,
-      pager, rawList, cfSummary,
+      pager, raws, cfSummary,
       handleBtnAction, handleSelectAction,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
@@ -449,7 +449,7 @@ const rawList = reactive([]);
   <!-- ===== ■. 목록 카드 =================================================== -->
   <bo-grid
     :columns="rawGridColumns"
-    :rows="rawList"
+    :rows="raws"
     :pager="pager"
     row-key="settleRawId"
     list-title="정산수집원장"
@@ -459,10 +459,10 @@ const rawList = reactive([]);
     @size-change="handleSelectAction('rawData-pager-sizeChange')"
     @row-click="(r) => toggleRow(r.settleRawId)">
     <template #toolbar-actions>
-      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
+      <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
         ▼ 전체펼치기
       </button>
-      <button class="btn btn-secondary btn-sm" @click="() => { rawList.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
+      <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
         ▲ 전체접기
       </button>
       <button class="btn btn-blue btn-sm" @click="doCollect">

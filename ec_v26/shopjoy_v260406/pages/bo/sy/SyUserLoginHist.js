@@ -30,8 +30,8 @@ window.SyUserLoginHist = {
     const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes:[10,20,50,100], pageCond:{} });
 
     /* ===== 목록 데이터 ===== */
-    const logList   = reactive([]);                  // 로그인 로그
-    const tokenList = reactive([]);                  // 토큰 이력
+    const logs   = reactive([]);                  // 로그인 로그
+    const tokens = reactive([]);                  // 토큰 이력
     const tabCounts = reactive({ log:0, token:0 });  // 탭별 카운트
 
     /* ===== 행 펼치기 상태 ===== */
@@ -54,21 +54,21 @@ window.SyUserLoginHist = {
         pager.pageNo = 1;
         return handleSearchList();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return onDateRangeChange();
       // 펼침 검색조건 토글
-      } else if (cmd === 'searchParam-toggle-more') {
+      } else if (cmd === 'searchParam-toggleMore') {
         searchParam.srchOpen = !searchParam.srchOpen;
         return;
       // 페이지 설명 토글
-      } else if (cmd === 'searchParam-toggle-desc') {
+      } else if (cmd === 'searchParam-toggleDesc') {
         searchParam.descOpen = !searchParam.descOpen;
         return;
       // 행 펼침 전체 토글
-      } else if (cmd === 'histList-toggle-expand-all') {
+      } else if (cmd === 'histList-toggleExpandAll') {
         return toggleExpandAll();
       // 로그 비우기
-      } else if (cmd === 'histList-clear-log') {
+      } else if (cmd === 'histList-clearLog') {
         return handleClearLog();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -79,7 +79,7 @@ window.SyUserLoginHist = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyUserLoginHist.js : handleSelectAction -> ', cmd, param);
       // 탭 변경 (log / token)
-      if (cmd === 'searchParam-tab-change') {
+      if (cmd === 'searchParam-tabChange') {
         searchParam.activeTab = param;
         pager.pageNo = 1;
         allExpanded.value = false;
@@ -130,7 +130,7 @@ window.SyUserLoginHist = {
 
     /* toggleExpandAll — 전체 펼침 토글 */
     const toggleExpandAll = () => {
-      const list = searchParam.activeTab==='log' ? logList : tokenList;
+      const list = searchParam.activeTab==='log' ? logs : tokens;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
       else { list.forEach((r,i) => expandedRows.add(r.logId||i)); allExpanded.value = true; }
     };
@@ -159,7 +159,7 @@ window.SyUserLoginHist = {
       try {
         const res = await boApiSvc.syUserLoginLog.getPage(buildParams(), '사용자로그인이력', '로그인로그조회');
         const d = res.data?.data;
-        logList.splice(0, logList.length, ...(d?.pageList || []));
+        logs.splice(0, logs.length, ...(d?.pageList || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         tabCounts.log = pager.pageTotalCount;
         fnBuildPagerNums(); expandedRows.clear();
@@ -173,7 +173,7 @@ window.SyUserLoginHist = {
       try {
         const res = await boApiSvc.syUserTokenLog.getPage(buildParams(), '사용자로그인이력', '토큰이력조회');
         const d = res.data?.data;
-        tokenList.splice(0, tokenList.length, ...(d?.pageList || []));
+        tokens.splice(0, tokens.length, ...(d?.pageList || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         tabCounts.token = pager.pageTotalCount;
         fnBuildPagerNums(); expandedRows.clear();
@@ -205,8 +205,8 @@ window.SyUserLoginHist = {
         if (searchParam.activeTab==='log') { await window.boApi.delete('/bo/sy/user-login-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기')); }
         else { await window.boApi.delete('/bo/sy/user-token-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기')); }
         props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
-        if (searchParam.activeTab==='log') { logList.splice(0); tabCounts.log=0; }
-        else                           { tokenList.splice(0); tabCounts.token=0; }
+        if (searchParam.activeTab==='log') { logs.splice(0); tabCounts.log=0; }
+        else                           { tokens.splice(0); tabCounts.token=0; }
         pager.pageTotalCount=0; pager.pageTotalPage=1; expandedRows.clear(); allExpanded.value=false;
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
@@ -215,7 +215,7 @@ window.SyUserLoginHist = {
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================
 
-    const cfCurrentList = computed(() => searchParam.activeTab==='log' ? logList : tokenList);
+    const cfCurrentList = computed(() => searchParam.activeTab==='log' ? logs : tokens);
 
     /* fnResultBadge — 로그인결과 배지 */
     const fnResultBadge = cd => ({'SUCCESS':'badge-green','LOGOUT':'badge-blue','FAIL_PW':'badge-red','FAIL_LOCKED':'badge-orange','FAIL_NOT_FOUND':'badge-gray','FAIL_IP':'badge-purple'}[cd]||'badge-gray');
@@ -247,7 +247,7 @@ window.SyUserLoginHist = {
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
       { key: 'searchResultCd', type: 'select', label: '로그인결과',
         options: () => codes.login_results, nullLabel: '로그인결과 전체' },
       { key: 'searchIp', type: 'text', label: 'IP 주소', placeholder: 'IP 주소', width: '140px' },
@@ -318,7 +318,7 @@ window.SyUserLoginHist = {
     <span class="page-desc-summary">
       관리자 사용자의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다.
     </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('searchParam-toggle-desc')">
+    <button class="page-desc-toggle" @click="handleBtnAction('searchParam-toggleDesc')">
       {{ searchParam.descOpen?'▲ 접기':'▼ 더보기' }}
     </button>
     <div v-if="searchParam.descOpen" class="page-desc-detail">
@@ -331,7 +331,7 @@ window.SyUserLoginHist = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggle-more')" style="padding:0 8px;" :title="searchParam.srchOpen?'조건닫기':'조건더보기'">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggleMore')" style="padding:0 8px;" :title="searchParam.srchOpen?'조건닫기':'조건더보기'">
           {{ searchParam.srchOpen?'▲':'▼' }}
         </button>
       </template>
@@ -347,13 +347,13 @@ window.SyUserLoginHist = {
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 탭 ======================================================== -->
   <div class="tab-nav" style="margin-bottom:16px">
-    <button class="tab-btn" :class="{active:searchParam.activeTab==='log'}" @click="handleSelectAction('searchParam-tab-change', 'log')">
+    <button class="tab-btn" :class="{active:searchParam.activeTab==='log'}" @click="handleSelectAction('searchParam-tabChange', 'log')">
       로그인 로그
       <span class="tab-count">
         {{ tabCounts.log }}
       </span>
     </button>
-    <button class="tab-btn" :class="{active:searchParam.activeTab==='token'}" @click="handleSelectAction('searchParam-tab-change', 'token')">
+    <button class="tab-btn" :class="{active:searchParam.activeTab==='token'}" @click="handleSelectAction('searchParam-tabChange', 'token')">
       토큰 이력
       <span class="tab-count">
         {{ tabCounts.token }}
@@ -374,10 +374,10 @@ window.SyUserLoginHist = {
         <span style="font-size:11px;color:#aaa;">
           행 클릭 시 상세정보 펼침
         </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggle-expand-all')">
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggleExpandAll')">
           {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
         </button>
-        <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clear-log')">
+        <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clearLog')">
           로그비우기
         </button>
       </div>
@@ -565,10 +565,10 @@ window.SyUserLoginHist = {
         <span style="font-size:11px;color:#aaa;">
           행 클릭 시 상세정보 펼침
         </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggle-expand-all')">
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggleExpandAll')">
           {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
         </button>
-        <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clear-log')">
+        <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clearLog')">
           로그비우기
         </button>
       </div>

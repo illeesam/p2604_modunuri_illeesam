@@ -47,15 +47,15 @@ window.PmCacheDtl = {
         uiState.showVendorModal = false;
         return;
       // 판매업체 초기화
-      } else if (cmd === 'form-vendor-clear') {
+      } else if (cmd === 'form-vendorClear') {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
       // 회원ID 변경
-      } else if (cmd === 'form-member-change') {
+      } else if (cmd === 'form-memberChange') {
         return onUserIdChange();
       // 회원 참조 모달 열기
-      } else if (cmd === 'form-member-ref') {
+      } else if (cmd === 'form-memberRef') {
         return showRefModal('member', Number(form.memberId));
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -331,8 +331,8 @@ window.PmCacheDtl = {
         <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-member-change')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
-            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-member-ref')">
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-memberChange')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
               보기
             </span>
           </div>
@@ -348,7 +348,7 @@ window.PmCacheDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendor-clear')">
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
@@ -389,7 +389,7 @@ window.PmCacheDtl = {
       </div>
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="handleBtnAction('form-member-ref')">
+          <span class="ref-link" @click="handleBtnAction('form-memberRef')">
             {{ form.memberNm }}
           </span>
           현재 잔액

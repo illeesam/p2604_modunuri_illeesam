@@ -54,13 +54,13 @@ window.OdDlivDtl = {
       } else if (cmd === 'form-close') {
         return props.navigate('odDlivMng');
       // 주문 참조 모달 열기
-      } else if (cmd === 'form-order-ref') {
+      } else if (cmd === 'form-orderRef') {
         return showRefModal('order', form.orderId);
       // 회원 참조 모달 열기
-      } else if (cmd === 'form-member-ref') {
+      } else if (cmd === 'form-memberRef') {
         return showRefModal('member', form.memberId);
       // 결제정보 그리드 참조 클릭
-      } else if (cmd === 'payment-ref-click') {
+      } else if (cmd === 'payment-refClick') {
         return showRefModal(param.type, param.id);
       // 탭 전환
       } else if (cmd === 'tab-change') {
@@ -440,7 +440,7 @@ window.OdDlivDtl = {
   <template #orderId>
     <div style="display:flex;gap:8px;align-items:center;">
       <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
-      <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-order-ref')">
+      <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">
         보기
       </span>
     </div>
@@ -452,7 +452,7 @@ window.OdDlivDtl = {
   <template #memberNm>
     <div style="display:flex;gap:8px;align-items:center;">
       <input class="form-control" v-model="form.memberNm" :readonly="cfDtlMode" />
-      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-member-ref')">
+      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
         보기
       </span>
     </div>
@@ -533,7 +533,7 @@ window.OdDlivDtl = {
   </span>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-<bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => handleBtnAction('payment-ref-click', {type, id})">
+<bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => handleBtnAction('payment-refClick', {type, id})">
 </bo-grid>
 </div>
 <!-- ===== □.□. 결제정보 탭 ================================================ -->

@@ -63,10 +63,10 @@ window.OdOrderDtl = {
       } else if (cmd === 'form-close') {
         return props.navigate('odOrderMng');
       // 회원 참조 모달 열기
-      } else if (cmd === 'form-member-ref') {
+      } else if (cmd === 'form-memberRef') {
         return showRefModal('member', form.memberId);
       // 판매업체 참조 모달 열기
-      } else if (cmd === 'form-vendor-ref') {
+      } else if (cmd === 'form-vendorRef') {
         return showRefModal('vendor', param);
       // 탭 전환
       } else if (cmd === 'tab-change') {
@@ -77,7 +77,7 @@ window.OdOrderDtl = {
         uiState.tabMode2 = param;
         return;
       // 주문항목 전체 펼침 토글
-      } else if (cmd === 'orderItems-toggle-expand-all') {
+      } else if (cmd === 'orderItems-toggleExpandAll') {
         if (cfAllExpanded.value) { expandedItems.clear(); }
         else { orderItems.forEach((_, i) => expandedItems.add(i)); }
         return;
@@ -605,7 +605,7 @@ window.OdOrderDtl = {
   <template #memberId>
     <div style="display:flex;gap:8px;align-items:center;">
       <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
-      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-member-ref')">
+      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
         보기
       </span>
     </div>
@@ -622,7 +622,7 @@ window.OdOrderDtl = {
       <span style="font-size:11px;color:#888;">
         | {{ cfRelatedVendor.ceo }} | {{ cfRelatedVendor.phone }}
       </span>
-      <span class="ref-link" @click="handleBtnAction('form-vendor-ref', cfRelatedVendor.vendorId)">
+      <span class="ref-link" @click="handleBtnAction('form-vendorRef', cfRelatedVendor.vendorId)">
         보기
       </span>
     </div>
@@ -647,7 +647,7 @@ window.OdOrderDtl = {
   </span>
 </div>
 <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-<button class="btn btn-secondary btn-sm" @click="handleBtnAction('orderItems-toggle-expand-all')">
+<button class="btn btn-secondary btn-sm" @click="handleBtnAction('orderItems-toggleExpandAll')">
   {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
 </button>
 </div>

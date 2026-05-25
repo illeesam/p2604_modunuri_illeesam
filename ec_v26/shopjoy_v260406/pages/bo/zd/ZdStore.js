@@ -44,7 +44,7 @@ window.ZdStore = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ ZdStore.js : handleBtnAction -> ', cmd, param);
       // 전체 스토어 데이터 재로드
-      if (cmd === 'stores-reload-all') {
+      if (cmd === 'stores-reloadAll') {
         return loadAllStoreData();
       // 현재 선택 스토어 클립보드 복사
       } else if (cmd === 'selectedStore-copy') {
@@ -61,7 +61,7 @@ window.ZdStore = {
       } else if (cmd === 'selectedStore-refresh') {
         return refreshStoreData(param);
       // 스토어 탭 닫기 (param: storeName)
-      } else if (cmd === 'stores-close-tab') {
+      } else if (cmd === 'stores-closeTab') {
         return closeTab(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -244,7 +244,7 @@ window.ZdStore = {
     <div class="page-title" style="margin: 0;">
       Store 정보 관리
     </div>
-    <button @click="handleBtnAction('stores-reload-all')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
+    <button @click="handleBtnAction('stores-reloadAll')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
       🔄 재로드
     </button>
   </div>

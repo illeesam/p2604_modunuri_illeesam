@@ -56,11 +56,11 @@ window.SyVendorUserMng = {
       } else if (cmd === 'vendorUsers-close') {
         return closeForm();
       // 회원가입 메일 전송
-      } else if (cmd === 'vendorUsers-send-join-mail') {
+      } else if (cmd === 'vendorUsers-sendJoinMail') {
         if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
         return showToast(formData.vendorUserEmail + ' 로 회원가입 메일을 보냈습니다.', 'success');
       // 비밀번호 초기화 메일 전송
-      } else if (cmd === 'vendorUsers-send-pwreset-mail') {
+      } else if (cmd === 'vendorUsers-sendPwresetMail') {
         if (!formData.vendorUserEmail) { showToast('이메일을 입력해주세요.', 'warning'); return; }
         return showToast(formData.vendorUserEmail + ' 로 비밀번호 초기화 메일을 보냈습니다.', 'success');
       // 역할 추가 모달 열기
@@ -102,10 +102,10 @@ window.SyVendorUserMng = {
       } else if (cmd === 'userRoles-rowDelete') {
         return handleDeleteRole(param);
       // 역할 모달: 트리 노드 토글
-      } else if (cmd === 'roleModal-tree-toggle') {
+      } else if (cmd === 'roleModal-treeToggle') {
         return toggleRoleNode(param);
       // 역할 모달: 트리 노드 선택
-      } else if (cmd === 'roleModal-tree-pick') {
+      } else if (cmd === 'roleModal-treePick') {
         return pickRoleInModal(param);
       // 업체 picker 모달 (외부) 결과 선택
       } else if (cmd === 'vendorPick-select') {
@@ -689,10 +689,10 @@ window.SyVendorUserMng = {
         </span>
       </span>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-send-join-mail')">
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendJoinMail')">
           ✉ 회원가입메일
         </button>
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-send-pwreset-mail')">
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendPwresetMail')">
           🔑 비밀번호초기화
         </button>
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('vendorUsers-close')">
@@ -765,7 +765,7 @@ window.SyVendorUserMng = {
     <template v-for="root in cfFormRoleTree" :key="root.roleId">
       <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
         color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
-        @click="handleSelectAction('roleModal-tree-toggle', root.roleId)"
+        @click="handleSelectAction('roleModal-treeToggle', root.roleId)"
         @mouseover="onRoleRootHover(root, $event)"
         @mouseout="$event.currentTarget.style.background='transparent'">
         <span style="width:12px;font-size:10px;color:#9ca3af;">
@@ -777,7 +777,7 @@ window.SyVendorUserMng = {
       </div>
       <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:14px;margin-bottom:6px;">
         <div v-for="ch in root.children" :key="ch.roleId"
-          @click="handleSelectAction('roleModal-tree-pick', ch)"
+          @click="handleSelectAction('roleModal-treePick', ch)"
           :style="{padding:'7px 10px',fontSize:'12.5px',cursor:ch.allowed?'pointer':'not-allowed',
           color:ch.allowed?(uiState.roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
           background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',

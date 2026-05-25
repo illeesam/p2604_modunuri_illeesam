@@ -42,7 +42,7 @@ window.OdOrderMng = {
         pager.pageNo = 1;
         return handleSearchData();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 신규 주문 등록 (인라인 Dtl)
       } else if (cmd === 'orders-add') {
@@ -59,17 +59,17 @@ window.OdOrderMng = {
         uiState.bulkOpen = false;
         return;
       // 변경작업 모달 탭 전환
-      } else if (cmd === 'actionsModal-tab-change') {
+      } else if (cmd === 'actionsModal-tabChange') {
         uiState.bulkTab = param;
         return;
       // 변경작업 모달 저장
       } else if (cmd === 'actionsModal-apply') {
         return saveBulk();
       // 추가결재자 변경
-      } else if (cmd === 'actionsModal-appr-to-change') {
+      } else if (cmd === 'actionsModal-apprToChange') {
         return onApprToChange();
       // 요청대상 변경
-      } else if (cmd === 'actionsModal-req-target-change') {
+      } else if (cmd === 'actionsModal-reqTargetChange') {
         return onReqTargetChange();
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
@@ -453,7 +453,7 @@ window.OdOrderMng = {
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.order_date_types,
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     /* fnPayStatusText — 유틸 */
@@ -505,7 +505,7 @@ window.OdOrderMng = {
     // 결재 대상 폼
     const apprTargetFormColumns = [
       { key: 'reqTarget',   label: '요청대상', type: 'select', nullable: false,
-        options: () => codes.req_targets, onChange: () => handleBtnAction('actionsModal-req-target-change') },
+        options: () => codes.req_targets, onChange: () => handleBtnAction('actionsModal-reqTargetChange') },
       { key: 'reqTargetNm', label: '요청대상명', type: 'text', placeholder: '수정 가능' },
     ];
     // 결재 상세 폼
@@ -644,7 +644,7 @@ window.OdOrderMng = {
       </div>
       <div style="display:flex;gap:6px;padding:10px 14px 0;background:#fafafa;">
         <button v-for="t in [{id:'status',label:'주문상태'},{id:'payMethod',label:'결제수단'},{id:'approval',label:'결재처리'},{id:'approvalReq',label:'추가결재요청'}]" :key="t?.id"
-          @click="handleBtnAction('actionsModal-tab-change', t.id)"
+          @click="handleBtnAction('actionsModal-tabChange', t.id)"
           :style="{flex:1,padding:'8px 12px',border:'none',cursor:'pointer',fontSize:'12.5px',borderRadius:'8px 8px 0 0',fontWeight: uiState.bulkTab===t.id?800:600,background: uiState.bulkTab===t.id?'#fff':'transparent',color: uiState.bulkTab===t.id?'#e8587a':'#888',borderBottom: uiState.bulkTab===t.id?'2px solid #e8587a':'2px solid transparent'}">
           {{ t.label }}
         </button>
@@ -687,7 +687,7 @@ window.OdOrderMng = {
             <label class="form-label">
               추가결재자 (회원선택)
             </label>
-            <select class="form-control" v-model="bulkForm.apprToUserId" @change="handleBtnAction('actionsModal-appr-to-change')">
+            <select class="form-control" v-model="bulkForm.apprToUserId" @change="handleBtnAction('actionsModal-apprToChange')">
               <option value="">
                 선택하세요
               </option>

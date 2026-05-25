@@ -22,10 +22,10 @@ window.XsLocalStorage = {
       if (cmd === 'lsItems-reload') {
         return loadStorageData();
       // 전체 삭제
-      } else if (cmd === 'lsItems-clear-all') {
+      } else if (cmd === 'lsItems-clearAll') {
         return clearAllStorage();
       // 편집 취소
-      } else if (cmd === 'lsItems-edit-cancel') {
+      } else if (cmd === 'lsItems-editCancel') {
         return cancelEdit();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -234,7 +234,7 @@ window.XsLocalStorage = {
         <button @click="handleBtnAction('lsItems-reload')" style="padding: 10px 16px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
           🔄 새로고침
         </button>
-        <button @click="handleBtnAction('lsItems-clear-all')" style="padding: 10px 16px; font-size: 12px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
+        <button @click="handleBtnAction('lsItems-clearAll')" style="padding: 10px 16px; font-size: 12px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 6px; font-weight: 500; transition: all 0.2s;">
           🗑️ 전체 삭제
         </button>
       </div>
@@ -281,7 +281,7 @@ window.XsLocalStorage = {
                     <button @click="handleSelectAction('lsItems-rowSave', item.key)" style="flex: 1; padding: 6px 12px; font-size: 12px; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; font-weight: 600; transition: all 0.2s;">
                       저장
                     </button>
-                    <button @click="handleBtnAction('lsItems-edit-cancel')" style="flex: 1; padding: 6px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+                    <button @click="handleBtnAction('lsItems-editCancel')" style="flex: 1; padding: 6px 12px; font-size: 12px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
                       취소
                     </button>
                   </div>

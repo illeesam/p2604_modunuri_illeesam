@@ -18,10 +18,10 @@ window.Like = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Like.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 상품목록으로 이동
-      } else if (cmd === 'page-go-prod-list') {
+      } else if (cmd === 'page-goProdList') {
         return props.navigate('prodList');
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -84,7 +84,7 @@ window.Like = {
         위시리스트
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>
@@ -140,7 +140,7 @@ window.Like = {
     <div style="font-size:0.95rem;color:var(--text-muted);margin-bottom:20px;">
       좋아요한 상품이 없습니다
     </div>
-    <button class="btn-outline" @click="handleBtnAction('page-go-prod-list')" style="padding:10px 24px;">
+    <button class="btn-outline" @click="handleBtnAction('page-goProdList')" style="padding:10px 24px;">
       상품 둘러보기
     </button>
   </div>

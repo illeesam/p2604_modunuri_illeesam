@@ -25,7 +25,7 @@ window.ZdLocalStorage = {
       if (cmd === 'lsItems-reload') {
         return loadStorageData();
       // localStorage 전체 삭제
-      } else if (cmd === 'lsItems-clear-all') {
+      } else if (cmd === 'lsItems-clearAll') {
         return clearAllStorage();
       // 행 값 복사 (param: value)
       } else if (cmd === 'lsItems-rowCopy') {
@@ -51,7 +51,7 @@ window.ZdLocalStorage = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ ZdLocalStorage.js : handleSelectAction -> ', cmd, param);
       // 컬럼 너비 리사이즈 시작 (param: event)
-      if (cmd === 'lsItems-col-resize') {
+      if (cmd === 'lsItems-colResize') {
         return startResize(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -216,7 +216,7 @@ window.ZdLocalStorage = {
         <button @click="handleBtnAction('lsItems-reload')" class="btn btn-blue" style="padding: 8px 16px;">
           새로고침
         </button>
-        <button @click="handleBtnAction('lsItems-clear-all')" class="btn btn-danger" style="padding: 8px 16px;">
+        <button @click="handleBtnAction('lsItems-clearAll')" class="btn btn-danger" style="padding: 8px 16px;">
           전체 삭제
         </button>
       </div>
@@ -232,7 +232,7 @@ window.ZdLocalStorage = {
             <th :style="{ width: uiState.valueColWidth + '%', textAlign: 'left', position: 'relative' }">
               Value
               <div
-                @mousedown="handleSelectAction('lsItems-col-resize', $event)"
+                @mousedown="handleSelectAction('lsItems-colResize', $event)"
                 style="position: absolute; right: -5px; top: 0; width: 10px; height: 100%; cursor: col-resize; background: transparent; display: flex; align-items: center;">
                 <div style="width: 1px; height: 80%; background: #0066cc; opacity: 0; transition: opacity 0.2s;">
                 </div>

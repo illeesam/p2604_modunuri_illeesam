@@ -77,7 +77,7 @@ window.PmEventDtl = {
         uiState.activeContentTab = param;
         return;
       // 공개대상 토글
-      } else if (cmd === 'form-visibility-toggle') {
+      } else if (cmd === 'form-visibilityToggle') {
         return toggleVisibility(param);
       // 상품 선택 팝업 열기
       } else if (cmd === 'prodPickModal-open') {
@@ -96,12 +96,12 @@ window.PmEventDtl = {
         uiState.showVendorModal = false;
         return;
       // 판매업체 초기화
-      } else if (cmd === 'form-vendor-clear') {
+      } else if (cmd === 'form-vendorClear') {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
       // 미리보기 이벤트 확인 토스트
-      } else if (cmd === 'preview-event-confirm') {
+      } else if (cmd === 'preview-eventConfirm') {
         return onEventConfirm();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -482,7 +482,7 @@ window.PmEventDtl = {
             cursor: cfDtlMode?'default':'pointer',
             }">
             <input type="checkbox" :checked="hasVisibility(opt.codeValue)" :disabled="cfDtlMode"
-              @change="handleBtnAction('form-visibility-toggle', opt.codeValue)" style="accent-color:#1565c0;" />
+              @change="handleBtnAction('form-visibilityToggle', opt.codeValue)" style="accent-color:#1565c0;" />
             {{ opt.codeLabel }}
           </label>
         </div>
@@ -502,7 +502,7 @@ window.PmEventDtl = {
                   ▼
                 </span>
               </div>
-              <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendor-clear')">
+              <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
                 초기화
               </button>
             </div>
@@ -675,7 +675,7 @@ window.PmEventDtl = {
         </div>
       </div>
     </div>
-    <button class="btn btn-primary" @click="handleBtnAction('preview-event-confirm')" style="margin-top:16px;">
+    <button class="btn btn-primary" @click="handleBtnAction('preview-eventConfirm')" style="margin-top:16px;">
       이벤트 확인
     </button>
   </div>

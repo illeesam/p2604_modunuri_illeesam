@@ -18,10 +18,10 @@ window.Contact = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Contact.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // FAQ로 이동
-      } else if (cmd === 'page-go-faq') {
+      } else if (cmd === 'page-goFaq') {
         return props.navigate('faq');
       // 문의 접수
       } else if (cmd === 'form-submit') {
@@ -137,7 +137,7 @@ window.Contact = {
         고객센터
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>
@@ -248,7 +248,7 @@ window.Contact = {
             {{ faq.a }}
           </div>
         </div>
-        <button class="btn-outline btn-sm" @click="handleBtnAction('page-go-faq')" style="margin-top:12px;width:100%;">
+        <button class="btn-outline btn-sm" @click="handleBtnAction('page-goFaq')" style="margin-top:12px;width:100%;">
           전체 FAQ 보기
         </button>
       </div>

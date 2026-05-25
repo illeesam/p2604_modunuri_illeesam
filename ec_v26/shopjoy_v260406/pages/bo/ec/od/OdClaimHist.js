@@ -43,16 +43,16 @@ window.OdClaimHist = {
       } else if (cmd === 'processForm-save') {
         return handleSaveProcess();
       // 주문 참조 모달 열기
-      } else if (cmd === 'histList-order-ref') {
+      } else if (cmd === 'histList-orderRef') {
         return showRefModal('order', param);
       // 회원 참조 모달 열기
-      } else if (cmd === 'histList-member-ref') {
+      } else if (cmd === 'histList-memberRef') {
         return showRefModal('member', param);
       // 주문 상세로 이동
-      } else if (cmd === 'histList-order-edit') {
+      } else if (cmd === 'histList-orderEdit') {
         return props.navigate('odOrderDtl', { id: param });
       // 배송 상세로 이동
-      } else if (cmd === 'histList-dliv-edit') {
+      } else if (cmd === 'histList-dlivEdit') {
         return props.navigate('odDlivDtl', { id: param });
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -340,7 +340,7 @@ window.OdClaimHist = {
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <div>
               <div style="font-size:14px;font-weight:700;margin-bottom:6px;">
-                <span class="ref-link" @click="handleBtnAction('histList-order-ref', relatedOrder.orderId)">
+                <span class="ref-link" @click="handleBtnAction('histList-orderRef', relatedOrder.orderId)">
                   {{ relatedOrder.orderId }}
                 </span>
               </div>
@@ -348,7 +348,7 @@ window.OdClaimHist = {
                 <span style="color:#888;">
                   회원
                 </span>
-                <span class="ref-link" style="margin:0 6px;" @click="handleBtnAction('histList-member-ref', relatedOrder.userId)">
+                <span class="ref-link" style="margin:0 6px;" @click="handleBtnAction('histList-memberRef', relatedOrder.userId)">
                   {{ relatedOrder.userNm }}
                 </span>
                 <span style="color:#888;">
@@ -387,7 +387,7 @@ window.OdClaimHist = {
                 </span>
               </div>
             </div>
-            <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-order-edit', relatedOrder.orderId)">
+            <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-orderEdit', relatedOrder.orderId)">
               주문 수정
             </button>
           </div>
@@ -431,7 +431,7 @@ window.OdClaimHist = {
                 {{ relatedDliv.statusCd }}
               </span>
             </div>
-            <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="handleBtnAction('histList-dliv-edit', relatedDliv.dlivId)">
+            <button class="btn btn-secondary btn-sm" style="margin-top:8px;" @click="handleBtnAction('histList-dlivEdit', relatedDliv.dlivId)">
               배송 수정
             </button>
           </div>

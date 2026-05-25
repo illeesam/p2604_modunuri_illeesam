@@ -21,7 +21,7 @@ window.MyCoupon = {
       if (cmd === 'coupons-add') {
         return addCoupon();
       // 탭 변경 (미사용/사용)
-      } else if (cmd === 'coupons-tab-change') {
+      } else if (cmd === 'coupons-tabChange') {
         return onTabChange(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -126,7 +126,7 @@ window.MyCoupon = {
   <!-- ===== □. 쿠폰 등록 =================================================== -->
   <!-- ===== ■. 탭 ======================================================= -->
   <div style="display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;">
-    <button @click="handleBtnAction('coupons-tab-change', 'unused')"
+    <button @click="handleBtnAction('coupons-tabChange', 'unused')"
       :style="{
       padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
       fontSize:'0.88rem', fontWeight: uiState.activeTab==='unused' ? '700' : '500',
@@ -139,7 +139,7 @@ window.MyCoupon = {
         ({{ cfUnusedCount }})
       </span>
     </button>
-    <button @click="handleBtnAction('coupons-tab-change', 'used')"
+    <button @click="handleBtnAction('coupons-tabChange', 'used')"
       :style="{
       padding:'10px 24px', background:'none', border:'none', cursor:'pointer',
       fontSize:'0.88rem', fontWeight: uiState.activeTab==='used' ? '700' : '500',

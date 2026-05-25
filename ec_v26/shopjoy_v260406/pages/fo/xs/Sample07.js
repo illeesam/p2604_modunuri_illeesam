@@ -114,19 +114,19 @@ window.XsSample07 = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Sample07.js : handleBtnAction -> ', cmd, param);
       // 전체 탭 닫기
-      if (cmd === 'tabs-close-all') {
+      if (cmd === 'tabs-closeAll') {
         return closeAllTabs();
       // 요청 전송
       } else if (cmd === 'tab-send') {
         return doSend();
       // 이력 모달 닫기
-      } else if (cmd === 'hist-modal-close') {
+      } else if (cmd === 'hist-modalClose') {
         return closeHistModal();
       // 이력 재전송
       } else if (cmd === 'hist-resend') {
         return resendHist();
       // 자동 실행 팝업 닫기
-      } else if (cmd === 'auto-popup-close') {
+      } else if (cmd === 'auto-popupClose') {
         return closeAutoPopup();
       // localStorage 새로고침
       } else if (cmd === 'ls-refresh') {
@@ -143,7 +143,7 @@ window.XsSample07 = {
       if (cmd === 'tree-toggle') {
         return toggleNode(param);
       // API 노드 선택
-      } else if (cmd === 'tree-select-api') {
+      } else if (cmd === 'tree-selectApi') {
         return selectApiNode(param);
       // 탭 닫기
       } else if (cmd === 'tabs-close') {

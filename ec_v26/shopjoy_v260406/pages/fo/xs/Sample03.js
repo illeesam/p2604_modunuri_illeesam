@@ -13,7 +13,7 @@ window.XsSample03 = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ XsSample03.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props && props.navigate && props.navigate('home');
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);

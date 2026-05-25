@@ -25,7 +25,7 @@ window.XsSample06 = {
     const searchParamOrg = reactive({ searchValue: '', discountType: '', useYn: '' });
 
     /* ===== 그리드 데이터 ===== */
-    const allData    = reactive([]);               // 원본 (서버 응답)
+    const allDatas    = reactive([]);               // 원본 (서버 응답)
     const gridRows   = reactive([]);               // 화면 표시용 (필터 + 편집)
     let   _tempId    = -1;                         // 신규 행 임시 ID
 
@@ -101,10 +101,10 @@ window.XsSample06 = {
       } else if (cmd === 'coupons-save') {
         return handleSave();
       // 선택 행 삭제
-      } else if (cmd === 'coupons-delete-checked') {
+      } else if (cmd === 'coupons-deleteChecked') {
         return deleteRows();
       // 선택 행 취소
-      } else if (cmd === 'coupons-cancel-checked') {
+      } else if (cmd === 'coupons-cancelChecked') {
         return cancelChecked();
       // 정렬 변경 알림
       } else if (cmd === 'coupons-reorder') {
@@ -156,10 +156,10 @@ window.XsSample06 = {
       try {
         const res = await foApi.get('api/base/sy/zz-sample1', { params: { cdGrp: CD_GRP } });
         const list = res?.data?.data ?? res?.data ?? [];
-        allData.splice(0, allData.length, ...list.map(toRow));
+        allDatas.splice(0, allDatas.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
-      allData.filter(d => {
+      allDatas.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal && !String(d.couponNm || '').toLowerCase().includes(searchVal)) { return false; }
         if (searchParam.discountType && d.discountType !== searchParam.discountType) { return false; }
@@ -368,7 +368,7 @@ window.XsSample06 = {
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('coupons-add')" @save="handleBtnAction('coupons-save')"
-    @delete-checked="handleBtnAction('coupons-delete-checked')" @cancel-checked="handleBtnAction('coupons-cancel-checked')"
+    @delete-checked="handleBtnAction('coupons-deleteChecked')" @cancel-checked="handleBtnAction('coupons-cancelChecked')"
     @reorder="handleBtnAction('coupons-reorder')" @cell-change="handleSelectAction('coupons-rowCellChange', $event)">
     <template #row-actions="{ row }">
       <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('coupons-rowCancel', row)" @delete="handleSelectAction('coupons-rowDelete', row)" />

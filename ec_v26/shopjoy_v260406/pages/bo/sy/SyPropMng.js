@@ -44,10 +44,10 @@ window.SyPropMng = {
       } else if (cmd === 'props-save') {
         return handleSave();
       // 체크된 행 일괄 삭제 마킹
-      } else if (cmd === 'props-delete-checked') {
+      } else if (cmd === 'props-deleteChecked') {
         return deleteChecked();
       // 체크된 행 일괄 취소
-      } else if (cmd === 'props-cancel-checked') {
+      } else if (cmd === 'props-cancelChecked') {
         return cancelChecked();
       // CSV 내보내기
       } else if (cmd === 'props-export') {
@@ -65,7 +65,7 @@ window.SyPropMng = {
         uiState.selectedPath = param;
         return fetchData();
       // 그리드 셀 변경 감지
-      } else if (cmd === 'props-cell-change') {
+      } else if (cmd === 'props-cellChange') {
         return onCellChange(param);
       // 그리드 행 삭제 마킹
       } else if (cmd === 'props-rowDelete') {
@@ -269,8 +269,8 @@ window.SyPropMng = {
       :columns="baseGridColumns" :rows="propRows" row-key="propId"
       list-title="프로퍼티목록" :draggable="false"
       @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
-      @delete-checked="handleBtnAction('props-delete-checked')" @cancel-checked="handleBtnAction('props-cancel-checked')"
-      @cell-change="row => handleSelectAction('props-cell-change', row)">
+      @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
+      @cell-change="row => handleSelectAction('props-cellChange', row)">
       <template #row-actions="{ row }">
         <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="handleSelectAction('props-rowDelete', row)">
           삭제

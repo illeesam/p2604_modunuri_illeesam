@@ -19,12 +19,12 @@ window.MyClaim = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MyClaim.js : handleBtnAction -> ', cmd, param);
       // 클레임 유형 필터 변경 (전체/취소/반품/교환)
-      if (cmd === 'claims-set-filter') {
+      if (cmd === 'claims-setFilter') {
         claimFilter.value = param;
         claimStatusFilter.splice(0);
         pager.page = 1;
       // 상태 필터 초기화
-      } else if (cmd === 'claims-status-reset') {
+      } else if (cmd === 'claims-statusReset') {
         claimStatusFilter.splice(0);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -35,20 +35,20 @@ window.MyClaim = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MyClaim.js : handleSelectAction -> ', cmd, param);
       // 클레임 상태 토글
-      if (cmd === 'claims-status-toggle') {
+      if (cmd === 'claims-statusToggle') {
         toggleClaimStatus(param);
         pager.page = 1;
       // 클레임 신청 취소
       } else if (cmd === 'claims-cancel') {
         return cancelClaim(param);
       // 주문 모달 열기
-      } else if (cmd === 'claims-order-open') {
+      } else if (cmd === 'claims-orderOpen') {
         return openOrderModal(param);
       // 주문자 모달 열기
-      } else if (cmd === 'claims-customer-open') {
+      } else if (cmd === 'claims-customerOpen') {
         return openCustomerModal(param);
       // 상품 모달 열기
-      } else if (cmd === 'claims-prod-open') {
+      } else if (cmd === 'claims-prodOpen') {
         return openProdModal(param);
       // 배송 추적 (작은 버튼)
       } else if (cmd === 'claims-track') {
@@ -179,11 +179,11 @@ window.MyClaim = {
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
   <!-- ===== ■. 영역 ====================================================== -->
-  <MyDateFilter @search="onSearch" @reset="handleBtnAction('claims-status-reset')" />
+  <MyDateFilter @search="onSearch" @reset="handleBtnAction('claims-statusReset')" />
   <!-- ===== ■. 유형 필터 =================================================== -->
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
     <button v-for="f in ['전체','취소','반품','교환']" :key="f"
-      @click="handleBtnAction('claims-set-filter', f)"
+      @click="handleBtnAction('claims-setFilter', f)"
       style="padding:6px 16px;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.15s;"
       :style="claimFilter===f
       ? 'background:var(--blue);color:#fff;border:2px solid var(--blue);'
@@ -213,7 +213,7 @@ window.MyClaim = {
         </span>
         <!-- ===== ■.■.■.■. 흐름 단계 ============================================= -->
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[claimType]" :key="step">
-          <button @click="claims.filter(c=>c.type===claimType&&c.status===step).length>0 && handleSelectAction('claims-status-toggle', step)" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="claimStatusFilter.includes(step) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : claims.filter(c=>c.type===claimType&&c.status===step).length>0 ? 'background:var(--bg-base);border-color:var(--border);cursor:pointer;' : 'background:var(--bg-card);border-color:#e5e7eb;cursor:default;opacity:0.72;'">
+          <button @click="claims.filter(c=>c.type===claimType&&c.status===step).length>0 && handleSelectAction('claims-statusToggle', step)" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="claimStatusFilter.includes(step) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : claims.filter(c=>c.type===claimType&&c.status===step).length>0 ? 'background:var(--bg-base);border-color:var(--border);cursor:pointer;' : 'background:var(--bg-card);border-color:#e5e7eb;cursor:default;opacity:0.72;'">
           <span style="font-size:0.7rem;font-weight:600;" :style="claimStatusFilter.includes(step) ? 'color:#fff;' : claims.filter(c=>c.type===claimType&&c.status===step).length>0 ? 'color:var(--text-primary);' : 'color:#9ca3af;'">
           {{ step }}
         </span>
@@ -228,7 +228,7 @@ window.MyClaim = {
   </template>
   <!-- ===== ■.■.■.■. 필터해제 ============================================== -->
   <button v-if="claimStatusFilter.length"
-          @click="handleBtnAction('claims-status-reset')"
+          @click="handleBtnAction('claims-statusReset')"
           style="margin-left:4px;font-size:0.68rem;padding:2px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg-base);color:var(--text-secondary);cursor:pointer;flex-shrink:0;">
     ✕
   </button>
@@ -252,11 +252,11 @@ window.MyClaim = {
       <span style="font-weight:700;font-size:0.88rem;color:var(--text-primary);">
         {{ c.claimId }}
       </span>
-      <button @click="handleSelectAction('claims-order-open', c.orderId)"
+      <button @click="handleSelectAction('claims-orderOpen', c.orderId)"
           style="margin-left:8px;font-size:0.78rem;color:var(--blue);border:none;background:none;cursor:pointer;padding:0;font-weight:600;text-decoration:underline;text-underline-offset:2px;">
         주문: {{ c.orderId }}
       </button>
-      <button v-if="cfAuthUser" @click="handleSelectAction('claims-customer-open', orders.find(o=>o.orderId===c.orderId))"
+      <button v-if="cfAuthUser" @click="handleSelectAction('claims-customerOpen', orders.find(o=>o.orderId===c.orderId))"
           style="margin-left:8px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">
         {{ cfAuthUser.name }}
       </button>
@@ -329,7 +329,7 @@ window.MyClaim = {
       <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">
         {{ item.prodNm }}
       </span>
-      <button v-if="findProd(item.prodNm)" @click="handleSelectAction('claims-prod-open', item.prodNm)"
+      <button v-if="findProd(item.prodNm)" @click="handleSelectAction('claims-prodOpen', item.prodNm)"
             style="font-size:0.65rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);cursor:pointer;font-weight:600;line-height:1.7;white-space:nowrap;">
         #{{ findProd(item.prodNm).prodId }}
       </button>

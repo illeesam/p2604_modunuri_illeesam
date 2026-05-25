@@ -51,7 +51,7 @@ window.PdCategoryProdMng = {
         cfSelectedCatId.value = null;
         return;
       // 진열 유형 탭 전환
-      } else if (cmd === 'tab-type-select') {
+      } else if (cmd === 'tab-typeSelect') {
         uiState.activeTypeCd = param;
         return;
       // 뷰모드 변경
@@ -525,7 +525,7 @@ window.PdCategoryProdMng = {
         <!-- ===== ■.■.■.■. 탭바 + 뷰모드 버튼 ======================================= -->
         <div class="tab-bar-row" style="margin:12px 0 0">
           <div class="tab-nav" style="flex:1;flex-wrap:wrap">
-            <button v-for="tab in TYPE_TABS" :key="(tab && tab.cd)" class="tab-btn" :class="{ active: uiState.activeTypeCd===tab.cd }" @click="handleBtnAction('tab-type-select', tab.cd)">
+            <button v-for="tab in TYPE_TABS" :key="(tab && tab.cd)" class="tab-btn" :class="{ active: uiState.activeTypeCd===tab.cd }" @click="handleBtnAction('tab-typeSelect', tab.cd)">
             {{ tab.nm }}
             <span v-if="cfTypeCountMap[tab.cd]" class="tab-count">
               {{ cfTypeCountMap[tab.cd] }}

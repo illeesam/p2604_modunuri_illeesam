@@ -25,7 +25,7 @@ window.XsSample01 = {
     const searchParamOrg = reactive({ searchType: '', searchValue: '', grade: '', status: '' });
 
     /* ===== 그리드 데이터 ===== */
-    const allData    = reactive([]);               // 원본 (서버 응답)
+    const allDatas    = reactive([]);               // 원본 (서버 응답)
     const gridRows   = reactive([]);               // 화면 표시용 (필터 + 편집)
     let   _tempId    = -1;                         // 신규 행 임시 ID
 
@@ -100,10 +100,10 @@ window.XsSample01 = {
       } else if (cmd === 'members-save') {
         return handleSave();
       // 선택 행 삭제
-      } else if (cmd === 'members-delete-checked') {
+      } else if (cmd === 'members-deleteChecked') {
         return deleteRows();
       // 선택 행 취소
-      } else if (cmd === 'members-cancel-checked') {
+      } else if (cmd === 'members-cancelChecked') {
         return cancelChecked();
       // 정렬 변경 알림
       } else if (cmd === 'members-reorder') {
@@ -155,10 +155,10 @@ window.XsSample01 = {
       try {
         const res = await foApi.get('api/base/sy/zz-sample1', { params: { cdGrp: CD_GRP } });
         const list = res?.data?.data ?? res?.data ?? [];
-        allData.splice(0, allData.length, ...list.map(toRow));
+        allDatas.splice(0, allDatas.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
-      allData.filter(d => {
+      allDatas.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal) {
           const types = searchParam.searchType || 'memberNm,email,phone';
@@ -381,7 +381,7 @@ window.XsSample01 = {
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('members-add')" @save="handleBtnAction('members-save')"
-    @delete-checked="handleBtnAction('members-delete-checked')" @cancel-checked="handleBtnAction('members-cancel-checked')"
+    @delete-checked="handleBtnAction('members-deleteChecked')" @cancel-checked="handleBtnAction('members-cancelChecked')"
     @reorder="handleBtnAction('members-reorder')" @cell-change="handleSelectAction('members-rowCellChange', $event)">
     <template #row-actions="{ row }">
       <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('members-rowCancel', row)" @delete="handleSelectAction('members-rowDelete', row)" />

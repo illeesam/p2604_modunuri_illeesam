@@ -77,14 +77,14 @@ window.DpDispUiDtl = {
       } else if (cmd === 'form-cancel') {
         return props.navigate('dpDispUiMng');
       // 헤더 영역 펼치기/접기 토글
-      } else if (cmd === 'form-toggle-expand') {
+      } else if (cmd === 'form-toggleExpand') {
         uiState.expanded = !uiState.expanded;
         return;
       // UI 미리보기 새 창
-      } else if (cmd === 'preview-ui-open') {
+      } else if (cmd === 'preview-uiOpen') {
         return openUiPreview();
       // 영역 미리보기 새 창 (FO/BO)
-      } else if (cmd === 'preview-area-open') {
+      } else if (cmd === 'preview-areaOpen') {
         return openAreaPreview(param);
       // 영역 추가 픽 모달 열기
       } else if (cmd === 'pickModal-open') {
@@ -100,10 +100,10 @@ window.DpDispUiDtl = {
       } else if (cmd === 'pathModal-close') {
         return closePathPick();
       // 영역 편집 페이지로 이동
-      } else if (cmd === 'areas-edit-page') {
+      } else if (cmd === 'areas-editPage') {
         return props.navigate('dpDispAreaMng');
       // 활성 영역을 UI에서 제거
-      } else if (cmd === 'areas-remove-active') {
+      } else if (cmd === 'areas-removeActive') {
         if (cfActiveArea.value) { return removeArea(cfActiveArea.value); }
         return;
       } else {
@@ -489,16 +489,16 @@ window.DpDispUiDtl = {
           {{ cfRelatedAreas.length }}개
         </span>
       </span>
-      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="handleBtnAction('preview-ui-open')">
+      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="handleBtnAction('preview-uiOpen')">
         🖼 UI미리보기
       </button>
-      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="handleBtnAction('preview-area-open', 'fo')">
+      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="handleBtnAction('preview-areaOpen', 'fo')">
         👁 사용자 미리보기
       </button>
-      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="handleBtnAction('preview-area-open', 'bo')">
+      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="handleBtnAction('preview-areaOpen', 'bo')">
         👁 관리자 미리보기
       </button>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggle-expand')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggleExpand')">
         {{ expanded ? '📥 접기' : '📤 펼치기' }}
       </button>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
@@ -684,10 +684,10 @@ window.DpDispUiDtl = {
               </span>
             </div>
             <div style="display:flex;gap:6px;">
-              <button class="btn btn-blue btn-sm" @click="handleBtnAction('areas-edit-page')">
+              <button class="btn btn-blue btn-sm" @click="handleBtnAction('areas-editPage')">
                 영역 편집
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleBtnAction('areas-remove-active')">
+              <button class="btn btn-danger btn-sm" @click="handleBtnAction('areas-removeActive')">
                 UI에서 제거
               </button>
             </div>

@@ -21,7 +21,7 @@ window.EventView = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ EventView.js : handleBtnAction -> ', cmd, param);
       // 이벤트 목록으로 이동
-      if (cmd === 'page-go-event-list') {
+      if (cmd === 'page-goEventList') {
         return props.navigate('event');
       // 탭 변경 (param: 탭 인덱스)
       } else if (cmd === 'tab-change') {
@@ -161,7 +161,7 @@ window.EventView = {
   <!-- ===== ■. 영역 ====================================================== -->
   <div class="page-wrap" style="max-width:960px;">
     <!-- ===== ■.■. ② 뒤로 ================================================== -->
-    <button @click="handleBtnAction('page-go-event-list')"
+    <button @click="handleBtnAction('page-goEventList')"
       style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.82rem;margin-bottom:32px;padding:0;"
       @mouseenter="$event.currentTarget.style.color='var(--blue)'"
       @mouseleave="$event.currentTarget.style.color='var(--text-muted)'">
@@ -273,7 +273,7 @@ window.EventView = {
   <!-- ===== □.□. ⑥ 유의사항 ================================================ -->
   <!-- ===== ■.■. 목록으로 (하단) ============================================= -->
   <div style="text-align:center;padding-bottom:8px;">
-    <button @click="handleBtnAction('page-go-event-list')"
+    <button @click="handleBtnAction('page-goEventList')"
         style="padding:11px 32px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);font-size:0.85rem;cursor:pointer;font-weight:600;"
         @mouseenter="$event.currentTarget.style.borderColor='var(--blue)';$event.currentTarget.style.color='var(--blue)'"
         @mouseleave="$event.currentTarget.style.borderColor='var(--border)';$event.currentTarget.style.color='var(--text-secondary)'">

@@ -39,19 +39,19 @@ window.SyDeptMng = {
       } else if (cmd === 'depts-save') {
         return handleSave();
       // 체크된 부서 일괄 삭제
-      } else if (cmd === 'depts-delete-checked') {
+      } else if (cmd === 'depts-deleteChecked') {
         return deleteRows();
       // 체크된 부서 일괄 취소
-      } else if (cmd === 'depts-cancel-checked') {
+      } else if (cmd === 'depts-cancelChecked') {
         return cancelChecked();
       // 부서 목록 엑셀 내보내기
       } else if (cmd === 'depts-excel') {
         return exportExcel();
       // 부서 트리 전체 펼치기
-      } else if (cmd === 'deptTree-expand-all') {
+      } else if (cmd === 'deptTree-expandAll') {
         return expandAll();
       // 부서 트리 전체 접기
-      } else if (cmd === 'deptTree-collapse-all') {
+      } else if (cmd === 'deptTree-collapseAll') {
         return collapseAll();
       // 부서 트리 노드 펼치기/접기 토글
       } else if (cmd === 'deptTree-toggle') {
@@ -407,10 +407,10 @@ window.SyDeptMng = {
         </span>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expand-all')" style="flex:1;font-size:11px;">
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;">
           ▼ 전체펼치기
         </button>
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapse-all')" style="flex:1;font-size:11px;">
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;">
           ▶ 전체닫기
         </button>
       </div>
@@ -429,7 +429,7 @@ window.SyDeptMng = {
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('depts-add')" @save="handleBtnAction('depts-save')"
-        @delete-checked="handleBtnAction('depts-delete-checked')" @cancel-checked="handleBtnAction('depts-cancel-checked')"
+        @delete-checked="handleBtnAction('depts-deleteChecked')" @cancel-checked="handleBtnAction('depts-cancelChecked')"
         @cell-change="row => handleSelectAction('depts-rowCellChange', row)"
         @export="handleBtnAction('depts-excel')">
         <template #row-actions="{ row, idx }">

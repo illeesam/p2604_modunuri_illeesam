@@ -21,7 +21,7 @@ window.EventPage = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Event.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 탭 변경 (param: 'ongoing' | 'ended')
       } else if (cmd === 'tab-change') {
@@ -126,7 +126,7 @@ window.EventPage = {
         이벤트
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>

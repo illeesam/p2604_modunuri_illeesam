@@ -33,7 +33,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 안내 설명 토글
       } else if (cmd === 'desc-toggle') {
@@ -87,7 +87,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const reconList = reactive([]);
+    const recons = reactive([]);
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ diff: '', type: '' });
@@ -97,10 +97,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const cfSummary = computed(() => ({
-      match:     reconList.filter(r=>r.diffStatus==='일치').length,
-      diff:      reconList.filter(r=>r.diffStatus==='차이').length,
-      noReflect: reconList.filter(r=>r.diffStatus==='미반영').length,
-      diffAmt:   reconList.reduce((s,r)=>s+Math.abs(r.diff||0),0),
+      match:     recons.filter(r=>r.diffStatus==='일치').length,
+      diff:      recons.filter(r=>r.diffStatus==='차이').length,
+      noReflect: recons.filter(r=>r.diffStatus==='미반영').length,
+      diffAmt:   recons.reduce((s,r)=>s+Math.abs(r.diff||0),0),
     }));
 
     // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
@@ -114,7 +114,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         }, 'ERP전표대사', '목록조회');
         const data = res.data?.data;
-        reconList.splice(0, reconList.length, ...(data?.pageList || data?.list || []));
+        recons.splice(0, recons.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || 1;
         fnBuildPagerNums();
@@ -195,7 +195,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, pager, reconList, searchParam,                                  // 상태 / 데이터
+      uiState, codes, pager, recons, searchParam,                                  // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch
       cfSummary,                                                                       // computed
@@ -265,7 +265,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="reconList" :pager="pager" row-key="reconId"
+      :columns="baseGridColumns" :rows="recons" :pager="pager" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('recons-pager-setPage', n)" @size-change="handleSelectAction('recons-pager-sizeChange')">
       <template #head-actions>

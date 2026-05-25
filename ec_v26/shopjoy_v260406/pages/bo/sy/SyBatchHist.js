@@ -31,10 +31,10 @@ window.SyBatchHist = {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT').then(() => { onExpandAll(); });
       // 모든 행 펼치기
-      } else if (cmd === 'batchLogs-expand-all') {
+      } else if (cmd === 'batchLogs-expandAll') {
         return onExpandAll();
       // 모든 행 접기
-      } else if (cmd === 'batchLogs-collapse-all') {
+      } else if (cmd === 'batchLogs-collapseAll') {
         return onCollapseAll();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -198,10 +198,10 @@ window.SyBatchHist = {
     @row-click="row => handleSelectAction('batchLogs-rowToggle', row.batchLogId)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expand-all')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
           ▼ 전체펼치기
         </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-collapse-all')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
           ▲ 전체접기
         </button>
         <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">

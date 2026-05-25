@@ -45,7 +45,7 @@ window.PdProdHist = {
       if (cmd === 'orders-rowDetail') {
         return props.navigate('odOrderDtl', { id: param.orderId });
       // 참조 모달 열기 (ref-click)
-      } else if (cmd === 'orders-ref-click') {
+      } else if (cmd === 'orders-refClick') {
         return showRefModal(param.type, param.id);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -70,13 +70,13 @@ window.PdProdHist = {
     /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
-    const qnaList       = reactive([]);
-    const reviewList    = reactive([]);
+    const qnas       = reactive([]);
+    const reviews    = reactive([]);
     const relatedOrders = reactive([]);
-    const stockHistory  = reactive([]);
-    const priceHistory  = reactive([]);
-    const statusHistory = reactive([]);
-    const changeHistory = reactive([]);
+    const stockHistories  = reactive([]);
+    const priceHistories  = reactive([]);
+    const statusHistories = reactive([]);
+    const changeHistories = reactive([]);
 
     /* BASE — 기본 */
     const BASE = (tab) => `/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
@@ -99,25 +99,25 @@ window.PdProdHist = {
       try {
         if (tab === 'qna') {
           const res = await boApiSvc.pdQna.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', 'Q&A조회');
-          qnaList.splice(0, qnaList.length, ...fnPickPageList(res));
+          qnas.splice(0, qnas.length, ...fnPickPageList(res));
         } else if (tab === 'review') {
           const res = await boApiSvc.pdReview.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', '리뷰조회');
-          reviewList.splice(0, reviewList.length, ...fnPickPageList(res));
+          reviews.splice(0, reviews.length, ...fnPickPageList(res));
         } else if (tab === 'orders') {
           const res = await boApiSvc.odOrder.getPage({ prodId: props.prodId, pageNo: 1, pageSize: 200 }, '상품관리', '연관주문');
           relatedOrders.splice(0, relatedOrders.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
         } else if (tab === 'stock') {
           const res = await boApi.get(BASE('stock'), HDR('재고이력'));
-          stockHistory.splice(0, stockHistory.length, ...(res.data?.data || []));
+          stockHistories.splice(0, stockHistories.length, ...(res.data?.data || []));
         } else if (tab === 'price') {
           const res = await boApi.get(BASE('price'), HDR('가격변경이력'));
-          priceHistory.splice(0, priceHistory.length, ...(res.data?.data || []));
+          priceHistories.splice(0, priceHistories.length, ...(res.data?.data || []));
         } else if (tab === 'status') {
           const res = await boApi.get(BASE('status'), HDR('상태이력'));
-          statusHistory.splice(0, statusHistory.length, ...(res.data?.data || []));
+          statusHistories.splice(0, statusHistories.length, ...(res.data?.data || []));
         } else if (tab === 'changes') {
           const res = await boApi.get(BASE('changes'), HDR('정보변경이력'));
-          changeHistory.splice(0, changeHistory.length, ...(res.data?.data || []));
+          changeHistories.splice(0, changeHistories.length, ...(res.data?.data || []));
         }
         uiState.loadedTabs.add(tab);
       } catch (err) {
@@ -229,13 +229,13 @@ window.PdProdHist = {
 
     watch(() => props.prodId, () => {
       uiState.loadedTabs = new Set();
-      qnaList.splice(0);
-      reviewList.splice(0);
+      qnas.splice(0);
+      reviews.splice(0);
       relatedOrders.splice(0);
-      stockHistory.splice(0);
-      priceHistory.splice(0);
-      statusHistory.splice(0);
-      changeHistory.splice(0);
+      stockHistories.splice(0);
+      priceHistories.splice(0);
+      statusHistories.splice(0);
+      changeHistories.splice(0);
       handleLoadTab(uiState.botTab);
       if (uiState.tabMode2 !== 'tab') {
         ALL_TABS.forEach(t => t !== uiState.botTab && handleLoadTab(t));
@@ -250,7 +250,7 @@ window.PdProdHist = {
 
     return {
       uiState, botTab, tabMode2,                                                            // 상태
-      qnaList, reviewList, relatedOrders, stockHistory, priceHistory, statusHistory, changeHistory, // 데이터
+      qnas, reviews, relatedOrders, stockHistories, priceHistories, statusHistories, changeHistories, // 데이터
       qnaGridColumns, reviewGridColumns, orderGridColumns, stockGridColumns, priceGridColumns, statusGridColumns, changeGridColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch
       showTab, fnFmtDate, fnStockBadge, fnNoCursor,                                         // 헬퍼
@@ -275,13 +275,13 @@ window.PdProdHist = {
       <button class="tab-btn" :class="{active:botTab==='qna'}"     :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'qna')">
         💬 상품 Q&amp;A
         <span class="tab-count">
-          {{ qnaList.length }}
+          {{ qnas.length }}
         </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='review'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'review')">
         ⭐ 리뷰
         <span class="tab-count">
-          {{ reviewList.length }}
+          {{ reviews.length }}
         </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'orders')">
@@ -293,25 +293,25 @@ window.PdProdHist = {
       <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'stock')">
         📦 재고 이력
         <span class="tab-count">
-          {{ stockHistory.length }}
+          {{ stockHistories.length }}
         </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'price')">
         💰 가격변경이력
         <span class="tab-count">
-          {{ priceHistory.length }}
+          {{ priceHistories.length }}
         </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'status')">
         🏷 상품상태 이력
         <span class="tab-count">
-          {{ statusHistory.length }}
+          {{ statusHistories.length }}
         </span>
       </button>
       <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'changes')">
         📝 상품정보 변경이력
         <span class="tab-count">
-          {{ changeHistory.length }}
+          {{ changeHistories.length }}
         </span>
       </button>
     </div>
@@ -341,11 +341,11 @@ window.PdProdHist = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         💬 상품 Q&amp;A
         <span class="tab-count">
-          {{ qnaList.length }}
+          {{ qnas.length }}
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="qnaGridColumns" :rows="qnaList" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
+      <bo-grid bare :columns="qnaGridColumns" :rows="qnas" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
       </bo-grid>
     </div>
     <!-- ===== □.□. 상품 Q&A ================================================ -->
@@ -354,11 +354,11 @@ window.PdProdHist = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         ⭐ 리뷰
         <span class="tab-count">
-          {{ reviewList.length }}
+          {{ reviews.length }}
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="reviewGridColumns" :rows="reviewList" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
+      <bo-grid bare :columns="reviewGridColumns" :rows="reviews" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
       </bo-grid>
     </div>
     <!-- ===== □.□. 리뷰 ==================================================== -->
@@ -371,7 +371,7 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-ref-click', { type, id })" row-actions>
+      <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowDetail', row)">
             상세
@@ -385,11 +385,11 @@ window.PdProdHist = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📦 재고 이력
         <span class="tab-count">
-          {{ stockHistory.length }}
+          {{ stockHistories.length }}
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="stockGridColumns" :rows="stockHistory" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
+      <bo-grid bare :columns="stockGridColumns" :rows="stockHistories" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
       </bo-grid>
     </div>
     <!-- ===== □.□. 재고 이력 ================================================= -->
@@ -398,11 +398,11 @@ window.PdProdHist = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         💰 가격변경이력
         <span class="tab-count">
-          {{ priceHistory.length }}
+          {{ priceHistories.length }}
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="priceGridColumns" :rows="priceHistory" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
+      <bo-grid bare :columns="priceGridColumns" :rows="priceHistories" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
       </bo-grid>
     </div>
     <!-- ===== □.□. 가격변경이력 ================================================ -->
@@ -411,11 +411,11 @@ window.PdProdHist = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🏷 상품상태 이력
         <span class="tab-count">
-          {{ statusHistory.length }}
+          {{ statusHistories.length }}
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="statusGridColumns" :rows="statusHistory" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
+      <bo-grid bare :columns="statusGridColumns" :rows="statusHistories" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
       </bo-grid>
     </div>
     <!-- ===== □.□. 상품상태 이력 =============================================== -->
@@ -424,11 +424,11 @@ window.PdProdHist = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📝 상품정보 변경이력
         <span class="tab-count">
-          {{ changeHistory.length }}
+          {{ changeHistories.length }}
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="changeGridColumns" :rows="changeHistory" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
+      <bo-grid bare :columns="changeGridColumns" :rows="changeHistories" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
       </bo-grid>
     </div>
   </div>

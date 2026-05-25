@@ -38,7 +38,7 @@ window.SyUserMng = {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 사용자 신규 등록 (인라인 패널)
       } else if (cmd === 'users-add') {
@@ -47,10 +47,10 @@ window.SyUserMng = {
       } else if (cmd === 'users-excel') {
         return exportExcel();
       // 부서 트리 전체 펼치기
-      } else if (cmd === 'deptTree-expand-all') {
+      } else if (cmd === 'deptTree-expandAll') {
         return expandAll();
       // 부서 트리 전체 접기
-      } else if (cmd === 'deptTree-collapse-all') {
+      } else if (cmd === 'deptTree-collapseAll') {
         return collapseAll();
       // 부서 트리 노드 펼치기/접기 토글
       } else if (cmd === 'deptTree-toggle') {
@@ -306,7 +306,7 @@ window.SyUserMng = {
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.user_date_types,
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     // 기본 그리드
@@ -359,10 +359,10 @@ window.SyUserMng = {
         </span>
       </div>
       <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expand-all')" style="flex:1;font-size:11px;">
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;">
           ▼ 전체펼치기
         </button>
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapse-all')" style="flex:1;font-size:11px;">
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;">
           ▶ 전체닫기
         </button>
       </div>

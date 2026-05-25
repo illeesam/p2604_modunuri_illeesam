@@ -24,7 +24,7 @@ window.XsSample08 = {
     const searchParamOrg = reactive({ searchType: '', searchValue: '', useYn: '' });
 
     /* ===== 그리드 데이터 ===== */
-    const allData    = reactive([]);               // 원본 (서버 응답)
+    const allDatas    = reactive([]);               // 원본 (서버 응답)
     const gridRows   = reactive([]);               // 화면 표시용 (필터 + 편집)
     let   _tempId    = -1;                         // 신규 행 임시 ID
 
@@ -99,10 +99,10 @@ window.XsSample08 = {
       } else if (cmd === 'categories-save') {
         return handleSave();
       // 선택 행 삭제
-      } else if (cmd === 'categories-delete-checked') {
+      } else if (cmd === 'categories-deleteChecked') {
         return deleteRows();
       // 선택 행 취소
-      } else if (cmd === 'categories-cancel-checked') {
+      } else if (cmd === 'categories-cancelChecked') {
         return cancelChecked();
       // 정렬 변경 알림
       } else if (cmd === 'categories-reorder') {
@@ -154,10 +154,10 @@ window.XsSample08 = {
       try {
         const res = await foApi.get('api/base/sy/zz-sample1', { params: { cdGrp: CD_GRP } });
         const list = res?.data?.data ?? res?.data ?? [];
-        allData.splice(0, allData.length, ...list.map(toRow));
+        allDatas.splice(0, allDatas.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
       gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
-      allData.filter(d => {
+      allDatas.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal) {
           const types = searchParam.searchType || 'categoryNm,parentNm';
@@ -375,7 +375,7 @@ window.XsSample08 = {
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('categories-add')" @save="handleBtnAction('categories-save')"
-    @delete-checked="handleBtnAction('categories-delete-checked')" @cancel-checked="handleBtnAction('categories-cancel-checked')"
+    @delete-checked="handleBtnAction('categories-deleteChecked')" @cancel-checked="handleBtnAction('categories-cancelChecked')"
     @reorder="handleBtnAction('categories-reorder')" @cell-change="handleSelectAction('categories-rowCellChange', $event)">
     <template #row-actions="{ row }">
       <fo-row-cancel-delete :row="row" @cancel="handleSelectAction('categories-rowCancel', row)" @delete="handleSelectAction('categories-rowDelete', row)" />

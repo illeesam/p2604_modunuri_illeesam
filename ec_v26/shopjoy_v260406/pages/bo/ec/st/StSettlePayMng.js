@@ -30,7 +30,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         Object.assign(searchParam, _initSearchParam());
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -86,8 +86,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         }
         const res = await boApiSvc.stSettlePay.getPage(params, '정산지급관리', '목록조회');
         const data = res.data?.data;
-        payList.splice(0, payList.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || payList.length;
+        pays.splice(0, pays.length, ...(data?.pageList || data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || pays.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
@@ -110,7 +110,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const payList = reactive([]);
+    const pays = reactive([]);
 
   /* 정산 지급 _initSearchParam */
   const _initSearchParam = () => ({ searchType: '', searchValue: '', status: '' });
@@ -121,9 +121,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
-      total:   payList.reduce((s, r) => s + r.settleAmt, 0),
-      paid:    payList.filter(r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
-      pending: payList.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
+      total:   pays.reduce((s, r) => s + r.settleAmt, 0),
+      paid:    pays.filter(r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
+      pending: pays.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
     }));
 
     /* doPay — 실행 */
@@ -201,7 +201,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, pager, payList, searchParam,
+      uiState, codes, pager, pays, searchParam,
       baseSearchColumns, baseGridColumns,
       handleBtnAction, handleSelectAction,
       cfSummary, fnStatusBadge, fmtW,
@@ -262,7 +262,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="payList" :pager="pager" row-key="payId"
+      :columns="baseGridColumns" :rows="pays" :pager="pager" row-key="payId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('settlePays-pager-setPage', n)" @size-change="handleSelectAction('settlePays-pager-sizeChange')">
       <template #head-actions>

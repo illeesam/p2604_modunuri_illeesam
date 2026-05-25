@@ -16,7 +16,7 @@ window.Location = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Location.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -128,7 +128,7 @@ window.Location = {
         위치안내
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>

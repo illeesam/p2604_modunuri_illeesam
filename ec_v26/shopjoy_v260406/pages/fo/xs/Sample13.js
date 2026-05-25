@@ -49,19 +49,19 @@ window.XsSample13 = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ XsSample13.js : handleBtnAction -> ', cmd, param);
       // 전시일시 초기화
-      if (cmd === 'filter-reset-date') {
+      if (cmd === 'filter-resetDate') {
         return resetDate();
       // 영역 드롭다운 토글
-      } else if (cmd === 'filter-toggle-area-drop') {
+      } else if (cmd === 'filter-toggleAreaDrop') {
         uiState.showAreaDrop = !uiState.showAreaDrop;
       // 영역 드롭다운 닫기
-      } else if (cmd === 'filter-close-area-drop') {
+      } else if (cmd === 'filter-closeAreaDrop') {
         uiState.showAreaDrop = false;
       // 영역 전체선택
-      } else if (cmd === 'filter-select-all-areas') {
+      } else if (cmd === 'filter-selectAllAreas') {
         return selectAllAreas();
       // 영역 전체해제
-      } else if (cmd === 'filter-clear-all-areas') {
+      } else if (cmd === 'filter-clearAllAreas') {
         return clearAllAreas();
       // 카테고리 모달 열기
       } else if (cmd === 'categoryModal-open') {
@@ -70,10 +70,10 @@ window.XsSample13 = {
       } else if (cmd === 'categoryModal-close') {
         uiState.showCatModal = false;
       // 전체 소스 복사
-      } else if (cmd === 'source-copy-all') {
+      } else if (cmd === 'source-copyAll') {
         return copySource();
       // 패널 소스 복사
-      } else if (cmd === 'source-copy-panel') {
+      } else if (cmd === 'source-copyPanel') {
         return copyPanel(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -287,7 +287,7 @@ window.XsSample13 = {
         패널별 DispPanel 소스 코드
       </span>
     </div>
-    <button @click="handleBtnAction('source-copy-all')" style="margin-left:auto;font-size:12px;padding:4px 14px;border:1px solid #ddd;border-radius:6px;cursor:pointer;"
+    <button @click="handleBtnAction('source-copyAll')" style="margin-left:auto;font-size:12px;padding:4px 14px;border:1px solid #ddd;border-radius:6px;cursor:pointer;"
       :style="uiState.copied?'background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;font-weight:600;':'background:#fff;color:#555;'">
       {{ uiState.copied ? '✓ 전체 복사됨' : '📋 전체 소스 복사' }}
     </button>
@@ -302,7 +302,7 @@ window.XsSample13 = {
         </span>
         <input type="date" v-model="uiState.previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <input type="time" v-model="uiState.previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <button @click="handleBtnAction('filter-reset-date')" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
+        <button @click="handleBtnAction('filter-resetDate')" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
           현재
         </button>
       </div>
@@ -372,7 +372,7 @@ window.XsSample13 = {
       </button>
       <!-- ===== ■.■.■. 화면영역 멀티선택 =========================================== -->
       <div style="position:relative;">
-        <button @click="handleBtnAction('filter-toggle-area-drop')"
+        <button @click="handleBtnAction('filter-toggleAreaDrop')"
           style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;"
           :style="selectedAreas.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
           <span>
@@ -382,14 +382,14 @@ window.XsSample13 = {
             {{ uiState.showAreaDrop ? '▲' : '▼' }}
           </span>
         </button>
-        <div v-if="uiState.showAreaDrop" @click="handleBtnAction('filter-close-area-drop')" style="position:fixed;inset:0;z-index:99;">
+        <div v-if="uiState.showAreaDrop" @click="handleBtnAction('filter-closeAreaDrop')" style="position:fixed;inset:0;z-index:99;">
         </div>
         <div v-if="uiState.showAreaDrop" style="position:absolute;left:0;top:calc(100% + 4px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:220px;max-height:300px;overflow-y:auto;padding:8px 0;">
           <div style="display:flex;gap:6px;padding:6px 12px;border-bottom:1px solid #f0f0f0;">
-            <button @click.stop="handleBtnAction('filter-select-all-areas')" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            <button @click.stop="handleBtnAction('filter-selectAllAreas')" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
               전체선택
             </button>
-            <button @click.stop="handleBtnAction('filter-clear-all-areas')"  style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
+            <button @click.stop="handleBtnAction('filter-clearAllAreas')"  style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
               전체해제
             </button>
           </div>
@@ -408,7 +408,7 @@ window.XsSample13 = {
               </span>
             </div>
             <div style="border-top:1px solid #f0f0f0;padding:6px 12px;">
-              <button @click.stop="handleBtnAction('filter-close-area-drop')" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">
+              <button @click.stop="handleBtnAction('filter-closeAreaDrop')" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">
                 닫기
               </button>
             </div>
@@ -785,7 +785,7 @@ window.XsSample13 = {
         </div>
         <!-- ===== ■.■.■. 우: 소스 코드 ============================================ -->
         <div style="width:260px;flex-shrink:0;background:#161b22;position:relative;display:flex;flex-direction:column;">
-          <button @click="handleBtnAction('source-copy-panel', panel)"
+          <button @click="handleBtnAction('source-copyPanel', panel)"
           style="position:absolute;top:6px;right:8px;font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid;cursor:pointer;z-index:1;"
           :style="uiState.copiedPanel===panel.dispId?'background:rgba(46,125,50,.35);color:#81c784;border-color:rgba(129,199,132,.4);':'background:rgba(255,255,255,.06);color:#888;border-color:rgba(255,255,255,.12);'">
             {{ uiState.copiedPanel===panel.dispId ? '✓ 복사됨' : '📋' }}

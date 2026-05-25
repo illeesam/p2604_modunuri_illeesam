@@ -37,10 +37,10 @@ window.MbMemGroupMng = {
       } else if (cmd === 'groups-add') {
         return addRow();
       // 체크된 회원그룹 일괄 삭제
-      } else if (cmd === 'groups-delete-checked') {
+      } else if (cmd === 'groups-deleteChecked') {
         return deleteRows();
       // 체크된 회원그룹 일괄 취소
-      } else if (cmd === 'groups-cancel-checked') {
+      } else if (cmd === 'groups-cancelChecked') {
         return cancelChecked();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -260,7 +260,7 @@ window.MbMemGroupMng = {
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"
     @add="handleBtnAction('groups-add')" @save="handleBtnAction('groups-save')"
-    @delete-checked="handleBtnAction('groups-delete-checked')" @cancel-checked="handleBtnAction('groups-cancel-checked')"
+    @delete-checked="handleBtnAction('groups-deleteChecked')" @cancel-checked="handleBtnAction('groups-cancelChecked')"
     @cell-change="row => handleSelectAction('groups-rowCellChange', row)">
     <template #row-actions="{ row, idx }">
       <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-rowCancel', idx)" @delete="handleSelectAction('groups-rowDelete', idx)" />

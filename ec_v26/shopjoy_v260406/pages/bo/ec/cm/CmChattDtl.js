@@ -52,7 +52,7 @@ window.CmChattDtl = {
       } else if (cmd === 'form-cancel') {
         return props.navigate('cmChattMng');
       // 채팅 답변 전송
-      } else if (cmd === 'chat-send-reply') {
+      } else if (cmd === 'chat-sendReply') {
         return sendReply();
       // 채팅 종료
       } else if (cmd === 'chat-close') {
@@ -80,7 +80,7 @@ window.CmChattDtl = {
         uiState.tabMode2 = param;
         return;
       // 채팅 내 메시지 참조 클릭 (상품/주문/클레임)
-      } else if (cmd === 'chat-msg-ref') {
+      } else if (cmd === 'chat-msgRef') {
         return openMsgRef(param);
       // 회원 참조 모달 (외부 showRefModal)
       } else if (cmd === 'chat-ref') {
@@ -351,7 +351,7 @@ window.CmChattDtl = {
           <div v-for="(msg, idx) in (uiState.chat.messages||[])" :key="idx" class="chat-msg" :class="msg.from">
             <div class="chat-bubble">
               {{ msg.text }}
-              <span v-if="hasRef(msg)" class="ref-link" style="display:block;margin-top:4px;" @click="handleSelectAction('chat-msg-ref', msg)">
+              <span v-if="hasRef(msg)" class="ref-link" style="display:block;margin-top:4px;" @click="handleSelectAction('chat-msgRef', msg)">
                 {{ refLabel(msg) }}
               </span>
             </div>
@@ -366,8 +366,8 @@ window.CmChattDtl = {
         <!-- ===== ■.■.■.■.■. 답변 입력 =========================================== -->
         <div v-if="uiState.chat.chattStatusCd==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
           <textarea class="form-control" v-model="uiState.replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
-              @keydown.enter.exact.prevent="handleBtnAction('chat-send-reply')"></textarea>
-            <button class="btn btn-primary" @click="handleBtnAction('chat-send-reply')" style="white-space:nowrap;">
+              @keydown.enter.exact.prevent="handleBtnAction('chat-sendReply')"></textarea>
+            <button class="btn btn-primary" @click="handleBtnAction('chat-sendReply')" style="white-space:nowrap;">
               전송
             </button>
           </div>

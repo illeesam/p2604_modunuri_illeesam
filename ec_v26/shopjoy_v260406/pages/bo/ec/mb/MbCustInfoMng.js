@@ -86,12 +86,12 @@
       const orders      = reactive([]);              // 주문 데이터
       const claims      = reactive([]);              // 클레임 데이터
       const deliveries  = reactive([]);              // 배송 데이터
-      const cacheList   = reactive([]);              // 캐쉬 데이터
+      const caches   = reactive([]);              // 캐쉬 데이터
       const contacts    = reactive([]);              // 문의 데이터
       const chats       = reactive([]);              // 채팅 데이터
-      const loginHistory = reactive([]);             // 로그인 이력
-      const couponUsage  = reactive([]);             // 쿠폰 사용 이력
-      const sendHistory  = reactive([]);             // 발송 이력
+      const loginHistories = reactive([]);             // 로그인 이력
+      const couponUsages  = reactive([]);             // 쿠폰 사용 이력
+      const sendHistories  = reactive([]);             // 발송 이력
       const codes = reactive({                       // 공통코드
         member_statuses: [],
         member_grades: [],
@@ -113,7 +113,7 @@
         if (cmd === 'searchParam-list') {
           return onSearch();
         // 선택된 고객 초기화
-        } else if (cmd === 'searchParam-clear-customer') {
+        } else if (cmd === 'searchParam-clearCustomer') {
           return clearCustomer();
         // 검색 모드 변경 (고객/주문/클레임)
         } else if (cmd === 'searchParam-mode') {
@@ -186,14 +186,14 @@
             boApiSvc.cmChatt.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '채팅조회'),
           ]);
           custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
-          loginHistory.splice(0, loginHistory.length, ...(resLogin.data?.data?.pageList || []));
-          couponUsage.splice(0, couponUsage.length, ...(resCoupon.data?.data?.pageList || []));
-          sendHistory.splice(0, sendHistory.length, ...(resSend.data?.data?.pageList || []));
+          loginHistories.splice(0, loginHistories.length, ...(resLogin.data?.data?.pageList || []));
+          couponUsages.splice(0, couponUsages.length, ...(resCoupon.data?.data?.pageList || []));
+          sendHistories.splice(0, sendHistories.length, ...(resSend.data?.data?.pageList || []));
           members.splice(0, members.length, ...(resMember.data?.data?.pageList || resMember.data?.data?.list || []));
           orders.splice(0, orders.length, ...(resOrder.data?.data?.pageList || resOrder.data?.data?.list || []));
           claims.splice(0, claims.length, ...(resClaim.data?.data?.pageList || resClaim.data?.data?.list || []));
           deliveries.splice(0, deliveries.length, ...(resDliv.data?.data?.pageList || resDliv.data?.data?.list || []));
-          cacheList.splice(0, cacheList.length, ...(resCache.data?.data?.pageList || resCache.data?.data?.list || []));
+          caches.splice(0, caches.length, ...(resCache.data?.data?.pageList || resCache.data?.data?.list || []));
           contacts.splice(0, contacts.length, ...(resContact.data?.data?.pageList || resContact.data?.data?.list || []));
           chats.splice(0, chats.length, ...(resChatt.data?.data?.pageList || resChatt.data?.data?.list || []));
           uiState.error = null;
@@ -306,7 +306,7 @@
       );
       const cfCustCache = computed(() =>
         !uiState.customer ? [] : filteredLocal(
-          cacheList.filter(c => c.userId === uiState.customer.userId), 'date')
+          caches.filter(c => c.userId === uiState.customer.userId), 'date')
       );
       const cfCustContacts = computed(() =>
         !uiState.customer ? [] : filtered(
@@ -318,21 +318,21 @@
       );
       const cfCustLoginHist = computed(() =>
         !uiState.customer ? [] : filtered(
-          (loginHistory || []).filter(l => l.userId === uiState.customer.userId), 'loginDate')
+          (loginHistories || []).filter(l => l.userId === uiState.customer.userId), 'loginDate')
       );
       const cfCustCouponUsage = computed(() =>
         !uiState.customer ? [] : filtered(
-          (couponUsage || []).filter(u => u.userId === uiState.customer.userId), 'usedDate')
+          (couponUsages || []).filter(u => u.userId === uiState.customer.userId), 'usedDate')
       );
       const cfCustSendHist = computed(() =>
         !uiState.customer ? [] : filtered(
-          (sendHistory || []).filter(s => s.userId === uiState.customer.userId), 'sendDate')
+          (sendHistories || []).filter(s => s.userId === uiState.customer.userId), 'sendDate')
       );
 
       /* cfCustCacheBalance — 캐쉬 잔액 (전체 마지막 레코드) */
       const cfCustCacheBalance = computed(() => {
         if (!uiState.customer) { return 0; }
-        const all = cacheList.filter(c => c.userId === uiState.customer.userId);
+        const all = caches.filter(c => c.userId === uiState.customer.userId);
         if (!all.length) { return 0; }
         return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
@@ -480,7 +480,7 @@
     </template>
     <span style="flex:1;">
     </span>
-    <button v-if="uiState.customer" @click="handleBtnAction('searchParam-clear-customer')"
+    <button v-if="uiState.customer" @click="handleBtnAction('searchParam-clearCustomer')"
       style="background:#f5f5f5;border:1px solid #ddd;color:#666;border-radius:8px;padding:7px 16px;font-size:12px;cursor:pointer;">
       ✕ 초기화
     </button>

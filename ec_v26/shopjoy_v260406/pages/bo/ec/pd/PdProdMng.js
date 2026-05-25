@@ -42,7 +42,7 @@ window.PdProdMng = {
         pager.pageNo = 1;
         return handleSearchList();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 카테고리 모달 열기
       } else if (cmd === 'catModal-open') {
@@ -52,7 +52,7 @@ window.PdProdMng = {
         catModal.show = false;
         return;
       // 카테고리 선택 비우기
-      } else if (cmd === 'searchParam-cate-clear') {
+      } else if (cmd === 'searchParam-cateClear') {
         searchParam.cate = '';
         return;
       // 상품 신규 등록 (인라인 패널)
@@ -296,13 +296,13 @@ window.PdProdMng = {
       { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력' },
       { key: 'cate', label: '카테고리', type: 'pick',
         display: (p) => p.cate, placeholder: '카테고리 선택', width: '120px',
-        openLabel: '선택', onOpen: () => handleBtnAction('catModal-open'), onClear: () => handleBtnAction('searchParam-cate-clear') },
+        openLabel: '선택', onOpen: () => handleBtnAction('catModal-open'), onClear: () => handleBtnAction('searchParam-cateClear') },
       { key: 'status', label: '상태', type: 'select', options: () => codes.product_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', label: '등록일', type: 'dateRange',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.prod_date_types,
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     // 기본 그리드

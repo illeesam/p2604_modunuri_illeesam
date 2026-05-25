@@ -30,7 +30,7 @@ window.SyDashboardMng = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyDashboardMng.js : handleBtnAction -> ', cmd, param);
       // 통계 카드 클릭 → 관련 화면 이동 (현재 disabled — 카드 자체 click 핸들러 없음)
-      if (cmd === 'stats-card-click') {
+      if (cmd === 'stats-cardClick') {
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);

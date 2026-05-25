@@ -33,7 +33,7 @@ window.DpDispRelationMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispRelationMng.js : handleSelectAction -> ', cmd, param);
       // 트리 노드 토글
-      if (cmd === 'relations-toggle-node') {
+      if (cmd === 'relations-toggleNode') {
         return toggleNode(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -206,7 +206,7 @@ window.DpDispRelationMng = {
     </div>
     <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
       <!-- ===== ■.■.■. UI 행 ================================================ -->
-      <div @click="handleSelectAction('relations-toggle-node', 'ui_'+ui.id)"
+      <div @click="handleSelectAction('relations-toggleNode', 'ui_'+ui.id)"
         style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">
         <span style="font-size:12px;color:#999;width:20px;text-align:center;">
           {{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}
@@ -232,7 +232,7 @@ window.DpDispRelationMng = {
       <!-- ===== ■.■.■. 영역들 ================================================= -->
       <div v-if="isNodeExpanded('ui_'+ui.id)" style="background:#fafafa;">
         <div v-for="area in ui.children" :key="area?.id" style="border-top:1px solid #f0f0f0;">
-          <div @click="handleSelectAction('relations-toggle-node', 'area_'+area.id)"
+          <div @click="handleSelectAction('relations-toggleNode', 'area_'+area.id)"
             style="display:flex;align-items:center;gap:8px;padding:8px 12px 8px 40px;cursor:pointer;user-select:none;background:#fff;">
             <span style="font-size:12px;color:#999;width:20px;text-align:center;">
               {{ isNodeExpanded('area_'+area.id) ? '▼' : '▶' }}

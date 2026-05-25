@@ -32,23 +32,23 @@ window.Home03 = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Home03.js : handleBtnAction -> ', cmd, param);
       // 페이지 이동: 홈
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 페이지 이동: 상품목록
-      } else if (cmd === 'page-go-prod-list') {
+      } else if (cmd === 'page-goProdList') {
         return props.navigate('prodList');
       // 페이지 이동: 블로그
-      } else if (cmd === 'page-go-blog') {
+      } else if (cmd === 'page-goBlog') {
         return props.navigate('blog');
       // 히어로 배너 인디케이터 클릭
       } else if (cmd === 'hero-set') {
         return setBanner(param);
       // 빠른보기 모달: 장바구니 모드 열기
-      } else if (cmd === 'quickViewModal-open-cart') {
+      } else if (cmd === 'quickViewModal-openCart') {
         uiState.quickViewProduct = param; uiState.cartModalMode = true;
         return;
       // 빠른보기 모달: 미리보기 모드 열기
-      } else if (cmd === 'quickViewModal-open-view') {
+      } else if (cmd === 'quickViewModal-openView') {
         uiState.quickViewProduct = param; uiState.cartModalMode = false;
         return;
       // 빠른보기 모달: 닫기
@@ -185,7 +185,7 @@ window.Home03 = {
       <p style="font-size:0.85rem;color:#888;line-height:1.8;margin-bottom:28px;max-width:360px;">
         {{ banners[uiState.bannerIdx].desc }}
       </p>
-      <button @click="handleBtnAction('page-go-prod-list')"
+      <button @click="handleBtnAction('page-goProdList')"
         style="padding:12px 28px;font-size:0.82rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border:1.5px solid #1a1a1a;background:transparent;color:#1a1a1a;cursor:pointer;transition:all .25s;"
         @mouseenter="$event.target.style.background='#1a1a1a';$event.target.style.color='#fff'"
         @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#1a1a1a'">
@@ -273,7 +273,7 @@ window.Home03 = {
           </button>
           <!-- ===== ■.■.■.■.■. 장바구니 + 빠른보기 (hover 시에만) ========================= -->
           <div class="prod-hover" style="opacity:0;transition:opacity .25s;position:absolute;right:12px;top:48px;display:flex;flex-direction:column;gap:6px;">
-            <button @click.stop="handleBtnAction('quickViewModal-open-cart', p)" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
+            <button @click.stop="handleBtnAction('quickViewModal-openCart', p)" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="장바구니">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
                 <circle cx="9" cy="21" r="1">
                 </circle>
@@ -283,7 +283,7 @@ window.Home03 = {
                 </path>
               </svg>
             </button>
-            <button @click.stop="handleBtnAction('quickViewModal-open-view', p)" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
+            <button @click.stop="handleBtnAction('quickViewModal-openView', p)" style="width:32px;height:32px;border-radius:50%;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="빠른보기">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2">
                 <circle cx="11" cy="11" r="8">
                 </circle>
@@ -310,7 +310,7 @@ window.Home03 = {
     </div>
   </div>
   <div style="text-align:center;margin-top:32px;">
-    <button @click="handleBtnAction('page-go-prod-list')"
+    <button @click="handleBtnAction('page-goProdList')"
         style="padding:12px 40px;font-size:0.82rem;font-weight:600;letter-spacing:0.5px;border:1.5px solid #ddd;background:transparent;color:#666;cursor:pointer;transition:all .2s;"
         @mouseenter="$event.target.style.borderColor='#1a1a1a';$event.target.style.color='#1a1a1a'"
         @mouseleave="$event.target.style.borderColor='#ddd';$event.target.style.color='#666'">
@@ -340,7 +340,7 @@ window.Home03 = {
           <br>
           특별한 컬렉션을 만나보세요.
         </p>
-        <button @click="handleBtnAction('page-go-prod-list')"
+        <button @click="handleBtnAction('page-goProdList')"
             style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
             @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
             @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
@@ -366,7 +366,7 @@ window.Home03 = {
           <br>
           새로운 아이템이 도착했습니다.
         </p>
-        <button @click="handleBtnAction('page-go-prod-list')"
+        <button @click="handleBtnAction('page-goProdList')"
             style="padding:10px 24px;font-size:0.8rem;font-weight:600;border:1.5px solid #fff;background:transparent;color:#fff;cursor:pointer;transition:all .2s;"
             @mouseenter="$event.target.style.background='#fff';$event.target.style.color='#1a1a1a'"
             @mouseleave="$event.target.style.background='transparent';$event.target.style.color='#fff'">
@@ -436,7 +436,7 @@ window.Home03 = {
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"
-        @click="handleBtnAction('page-go-blog')">
+        @click="handleBtnAction('page-goBlog')">
       <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;margin-bottom:14px;">
         <img :src="'assets/cdn/prod/img/blog/blog-' + i + '.jpg'" :alt="'블로그 ' + i"
             style="width:100%;height:100%;object-fit:cover;transition:transform .3s;"

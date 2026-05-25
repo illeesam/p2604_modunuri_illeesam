@@ -55,10 +55,10 @@ window.OdClaimDtl = {
       } else if (cmd === 'form-close') {
         return props.navigate('odClaimMng');
       // 주문 참조 모달 열기
-      } else if (cmd === 'form-order-ref') {
+      } else if (cmd === 'form-orderRef') {
         return showRefModal('order', form.orderId);
       // 회원 참조 모달 열기
-      } else if (cmd === 'form-member-ref') {
+      } else if (cmd === 'form-memberRef') {
         return showRefModal('member', form.memberId);
       // 탭 전환
       } else if (cmd === 'tab-change') {
@@ -69,7 +69,7 @@ window.OdClaimDtl = {
         uiState.tabMode2 = param;
         return;
       // 클레임항목 전체 펼침 토글
-      } else if (cmd === 'claimItems-toggle-expand-all') {
+      } else if (cmd === 'claimItems-toggleExpandAll') {
         if (cfAllExpanded.value) { expandedItems.clear(); }
         else { expandedItems.clear(); claimItems.forEach((_, i) => expandedItems.add(i)); }
         return;
@@ -474,7 +474,7 @@ window.OdClaimDtl = {
   <template #orderId>
     <div style="display:flex;gap:8px;align-items:center;">
       <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
-      <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-order-ref')">
+      <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">
         보기
       </span>
     </div>
@@ -486,7 +486,7 @@ window.OdClaimDtl = {
   <template #memberId>
     <div style="display:flex;gap:8px;align-items:center;">
       <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" />
-      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-member-ref')">
+      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
         보기
       </span>
     </div>
@@ -502,7 +502,7 @@ window.OdClaimDtl = {
   </span>
 </div>
 <div v-if="form.claimTypeCd==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('claimItems-toggle-expand-all')">
+  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('claimItems-toggleExpandAll')">
     {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
   </button>
 </div>

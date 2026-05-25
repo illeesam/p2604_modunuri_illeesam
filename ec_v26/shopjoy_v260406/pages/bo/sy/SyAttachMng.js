@@ -53,7 +53,7 @@ window.SyAttachMng = {
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return onDateRangeChange();
       // 첨부그룹 검색조건으로 그룹 조회
       } else if (cmd === 'attachGrps-search') {
@@ -65,7 +65,7 @@ window.SyAttachMng = {
       } else if (cmd === 'attachGrps-save') {
         return handleSaveGrp();
       // 첨부그룹 폼 닫기
-      } else if (cmd === 'attachGrps-form-close') {
+      } else if (cmd === 'attachGrps-formClose') {
         uiState.grpEditMode = false;
         return;
       // 첨부파일 신규 등록 폼 열기
@@ -75,7 +75,7 @@ window.SyAttachMng = {
       } else if (cmd === 'attaches-save') {
         return handleSaveFile();
       // 첨부파일 폼 닫기
-      } else if (cmd === 'attaches-form-close') {
+      } else if (cmd === 'attaches-formClose') {
         uiState.fileEditMode = false;
         return;
       } else {
@@ -472,7 +472,7 @@ window.SyAttachMng = {
             <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
               저장
             </button>
-            <button class="btn btn-secondary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-form-close')">
+            <button class="btn btn-secondary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-formClose')">
               취소
             </button>
           </div>
@@ -563,7 +563,7 @@ window.SyAttachMng = {
             ~
           </span>
           <input type="date" v-model="searchParam.dateEnd" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;" />
-          <select v-model="searchParam.dateRange" @change="handleBtnAction('searchParam-date-range')" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
+          <select v-model="searchParam.dateRange" @change="handleBtnAction('searchParam-dateRange')" style="font-size:12px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;">
             <option value="">
               옵션선택
             </option>
@@ -610,7 +610,7 @@ window.SyAttachMng = {
             <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-save')">
               저장
             </button>
-            <button class="btn btn-secondary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-form-close')">
+            <button class="btn btn-secondary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-formClose')">
               취소
             </button>
           </div>

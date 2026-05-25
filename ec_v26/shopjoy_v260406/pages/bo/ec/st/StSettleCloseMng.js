@@ -27,7 +27,7 @@ window.StSettleCloseMng = {
         return onSearch();
       } else if (cmd === 'searchParam-reset') {
         return onReset();
-      } else if (cmd === 'settleCloses-do-close') {
+      } else if (cmd === 'settleCloses-doClose') {
         return doClose();
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -63,7 +63,7 @@ window.StSettleCloseMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     const orders  = reactive([]);
     const claims  = reactive([]);
-    const vendorList = reactive([]);
+    const vendors = reactive([]);
 
     /* handleSearchData — 처리 */
     const handleSearchData = async () => {
@@ -78,15 +78,15 @@ window.StSettleCloseMng = {
         ]);
         orders.splice(0, orders.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
         claims.splice(0, claims.length, ...(resC.data?.data?.pageList || resC.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
-        closeList.splice(0, closeList.length, ...(resCL.data?.data?.pageList || resCL.data?.data?.list || []));
+        vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        closes.splice(0, closes.length, ...(resCL.data?.data?.pageList || resCL.data?.data?.list || []));
       } catch (_) { console.error('[catch-info]', _); }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
-    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const cfVendors = computed(() => vendors.filter(v => v.vendorType === '판매업체'));
 
     const searchParam = reactive({ searchType: '', searchValue: '', searchStatus: '' });
 
@@ -127,7 +127,7 @@ window.StSettleCloseMng = {
       { key: 'searchStatus', label: '상태', type: 'select', options: () => codes.settle_close_statuses, nullLabel: '상태 전체' },
     ];
 
-    const closeList = reactive([]);
+    const closes = reactive([]);
 
     // 이번달 집계
     const thisMonth = new Date().toISOString().slice(0, 7);
@@ -139,14 +139,14 @@ window.StSettleCloseMng = {
     const cfThisMonthPromo  = computed(() => Math.round(cfThisMonthNet.value * 0.03));
     const cfThisMonthSettle = computed(() => cfThisMonthNet.value - cfThisMonthComm.value - cfThisMonthPromo.value);
 
-    const cfAlreadyClosed = computed(() => window.safeArrayUtils.safeSome(closeList, c => c.closeMon === thisMonth));
+    const cfAlreadyClosed = computed(() => window.safeArrayUtils.safeSome(closes, c => c.closeMon === thisMonth));
 
     /* doClose — 실행 */
     const doClose = async () => {
       if (cfAlreadyClosed.value) { showToast('이미 마감된 월입니다.', 'error'); return; }
       const ok = await showConfirm('정산마감', `${thisMonth} 정산을 마감하시겠습니까?\n마감 후에는 수정이 제한됩니다.`);
       if (!ok) { return; }
-      closeList.unshift({
+      closes.unshift({
         closeId: 'CLS-' + thisMonth, closeMon: thisMonth,
         sales: cfThisMonthSales.value, refund: cfThisMonthRefund.value, net: cfThisMonthNet.value,
         comm: cfThisMonthComm.value, promo: cfThisMonthPromo.value, settle: cfThisMonthSettle.value,
@@ -187,7 +187,7 @@ window.StSettleCloseMng = {
     /* fmtW — 포맷 W */
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
-    const cfFilteredClose = computed(() => closeList.filter(r => {
+    const cfFilteredClose = computed(() => closes.filter(r => {
       if (applied.searchValue) {
         const types = applied.searchType || 'closeMon,regUserNm';
         const hits = [];
@@ -216,7 +216,7 @@ window.StSettleCloseMng = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, closeList, searchParam, thisMonth,
+      uiState, codes, closes, searchParam, thisMonth,
       baseGridColumns, baseSearchColumns,
       handleBtnAction, handleSelectAction,
       cfFilteredClose, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed,
@@ -298,7 +298,7 @@ window.StSettleCloseMng = {
       </div>
     </div>
     <div style="text-align:right">
-      <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-do-close')">
+      <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-doClose')">
         📋 {{ thisMonth }} 정산마감 실행
       </button>
       <span v-else class="badge badge-green" style="font-size:13px;padding:8px 16px">

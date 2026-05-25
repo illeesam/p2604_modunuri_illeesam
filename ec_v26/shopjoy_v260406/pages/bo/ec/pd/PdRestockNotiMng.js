@@ -41,7 +41,7 @@ window.PdRestockNotiMng = {
       } else if (cmd === 'restockNotis-send') {
         return handleSend();
       // 선택된 항목 전체 토글
-      } else if (cmd === 'restockNotis-toggle-all') {
+      } else if (cmd === 'restockNotis-toggleAll') {
         if (allChecked.value) { restockNotis.forEach(r => checkedIds.delete(r.restockNotiId)); }
         else { restockNotis.forEach(r => checkedIds.add(r.restockNotiId)); }
         return;
@@ -212,7 +212,7 @@ window.PdRestockNotiMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
       @set-page="n => handleSelectAction('restockNotis-pager-setPage', n)" @size-change="handleSelectAction('restockNotis-pager-sizeChange')"
-      @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggle-all')">
+      @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggleAll')">
     </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->

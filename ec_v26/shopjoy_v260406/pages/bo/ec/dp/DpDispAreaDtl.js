@@ -32,14 +32,14 @@ window.DpDispAreaDtl = {
       } else if (cmd === 'form-cancel') {
         return props.navigate('dpDispAreaMng');
       // 우측 미리보기 영역 펼치기/접기 토글
-      } else if (cmd === 'form-toggle-expand') {
+      } else if (cmd === 'form-toggleExpand') {
         expanded.value = !expanded.value;
         return;
       // 패널 미리보기 새 창
-      } else if (cmd === 'preview-panel-open') {
+      } else if (cmd === 'preview-panelOpen') {
         return openPanelPreview();
       // 위젯 미리보기 새 창 (FO/BO)
-      } else if (cmd === 'preview-widget-open') {
+      } else if (cmd === 'preview-widgetOpen') {
         return openWidgetPreview(param);
       // 패널 추가 픽 모달 열기
       } else if (cmd === 'pickModal-open') {
@@ -49,7 +49,7 @@ window.DpDispAreaDtl = {
       } else if (cmd === 'pickModal-close') {
         return closePick();
       // 신규 패널 추가 (지름길)
-      } else if (cmd === 'pickModal-new-panel') {
+      } else if (cmd === 'pickModal-newPanel') {
         if (cfIsNew.value) { return; }
         return addPanelShortcut();
       // 표시경로 선택 모달 열기
@@ -59,10 +59,10 @@ window.DpDispAreaDtl = {
       } else if (cmd === 'pathModal-close') {
         return closePathPick();
       // 패널 편집 페이지로 이동
-      } else if (cmd === 'areaPanels-edit-page') {
+      } else if (cmd === 'areaPanels-editPage') {
         return props.navigate('dpDispPanelDtl', { id: cfActivePanel.value?.dispId });
       // 활성 패널을 영역에서 제거
-      } else if (cmd === 'areaPanels-remove-active') {
+      } else if (cmd === 'areaPanels-removeActive') {
         if (cfActivePanel.value) { return removePanel(cfActivePanel.value); }
         return;
       } else {
@@ -557,16 +557,16 @@ window.DpDispAreaDtl = {
           {{ cfRelatedPanels.length }}개
         </span>
       </span>
-      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="handleBtnAction('preview-panel-open')">
+      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="handleBtnAction('preview-panelOpen')">
         🖼 패널미리보기
       </button>
-      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="handleBtnAction('preview-widget-open', 'fo')">
+      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="handleBtnAction('preview-widgetOpen', 'fo')">
         👁 사용자 미리보기
       </button>
-      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="handleBtnAction('preview-widget-open', 'bo')">
+      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="handleBtnAction('preview-widgetOpen', 'bo')">
         👁 관리자 미리보기
       </button>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggle-expand')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggleExpand')">
         {{ expanded ? '📥 접기' : '📤 펼치기' }}
       </button>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
@@ -659,7 +659,7 @@ window.DpDispAreaDtl = {
           :style="cfIsNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
           ✚ 기존 패널 추가
         </button>
-        <button @click="handleBtnAction('pickModal-new-panel')" :disabled="cfIsNew"
+        <button @click="handleBtnAction('pickModal-newPanel')" :disabled="cfIsNew"
           :title="cfIsNew ? '저장 후 신규 패널을 추가할 수 있습니다.' : ''"
           :style="cfIsNew ? 'padding:7px;border:1px dashed #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;cursor:not-allowed;' : 'padding:7px;border:1px dashed #ccc;background:#fff;color:#888;border-radius:8px;font-size:11px;cursor:pointer;'">
           + 신규 패널
@@ -842,10 +842,10 @@ window.DpDispAreaDtl = {
             </span>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-blue btn-sm" @click="handleBtnAction('areaPanels-edit-page')">
+            <button class="btn btn-blue btn-sm" @click="handleBtnAction('areaPanels-editPage')">
               패널 편집
             </button>
-            <button class="btn btn-danger btn-sm" @click="handleBtnAction('areaPanels-remove-active')">
+            <button class="btn btn-danger btn-sm" @click="handleBtnAction('areaPanels-removeActive')">
               영역에서 제거
             </button>
           </div>

@@ -51,7 +51,7 @@ window.OdCartMng = {
         searchParam.memberId = ''; searchParam.memberNm = '';
         return;
       // 일괄 삭제
-      } else if (cmd === 'carts-bulk-delete') {
+      } else if (cmd === 'carts-bulkDelete') {
         return handleBulkDelete();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -285,7 +285,7 @@ window.OdCartMng = {
         총 {{ pager.pageTotalCount.toLocaleString() }}건
       </span>
       <div style="margin-left:auto;">
-        <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBtnAction('carts-bulk-delete')">
+        <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBtnAction('carts-bulkDelete')">
           🗑 선택삭제 ({{ uiState.selectedIds.length }})
         </button>
       </div>

@@ -32,20 +32,20 @@ const _WP_DispPanelPreview = {
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 좌측 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
+      } else if (cmd === 'pathTree-expandAll') {
         return expandAll();
       // 좌측 트리 전체 접기
-      } else if (cmd === 'pathTree-collapse-all') {
+      } else if (cmd === 'pathTree-collapseAll') {
         return collapseAll();
       // 현재 그리드 초기화
       } else if (cmd === 'preview-reset') {
         return onResetCurrent();
       // 실제컨텐츠 토글
-      } else if (cmd === 'preview-toggle-real') {
+      } else if (cmd === 'preview-toggleReal') {
         gridState.showRealContent = !gridState.showRealContent;
         return;
       // 스팬 팝업 닫기
-      } else if (cmd === 'preview-close-span') {
+      } else if (cmd === 'preview-closeSpan') {
         return closeSpanPopup();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -70,16 +70,16 @@ const _WP_DispPanelPreview = {
         gridState.viewportMode = param;
         return;
       // 슬롯 위치 스팬 팝업 토글
-      } else if (cmd === 'preview-span-popup') {
+      } else if (cmd === 'preview-spanPopup') {
         return toggleSpanPopup(param.e, param.idx);
       // 슬롯 스팬 변경
-      } else if (cmd === 'preview-span-set') {
+      } else if (cmd === 'preview-spanSet') {
         return setSpan(param.idx, param.axis, param.delta);
       // 슬롯 제거
-      } else if (cmd === 'preview-slot-remove') {
+      } else if (cmd === 'preview-slotRemove') {
         return removeSlot(param);
       // 대시보드 아이템 제거
-      } else if (cmd === 'preview-dash-remove') {
+      } else if (cmd === 'preview-dashRemove') {
         return removeDashItem(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -864,11 +864,11 @@ window.DpDispPanelPreview = {
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
       <div style="padding:6px 12px;display:flex;gap:4px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;">
-        <button @click="handleBtnAction('pathTree-expand-all')"
+        <button @click="handleBtnAction('pathTree-expandAll')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▼ 전체펼치기
         </button>
-        <button @click="handleBtnAction('pathTree-collapse-all')"
+        <button @click="handleBtnAction('pathTree-collapseAll')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▶ 전체닫기
         </button>
@@ -976,7 +976,7 @@ window.DpDispPanelPreview = {
         </div>
         <!-- ===== ■.■.■.■. 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ===================== -->
         <div v-if="gridState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="handleBtnAction('preview-toggle-real')"
+          <button @click="handleBtnAction('preview-toggleReal')"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="gridState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
             {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
@@ -1002,7 +1002,7 @@ window.DpDispPanelPreview = {
         </div>
       </div>
       <!-- ===== ■.■.■. 그리드 캔버스 (grid1~4) =================================== -->
-      <div v-if="gridState.previewGrid!=='dashboard'" @click="handleBtnAction('preview-close-span')" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
+      <div v-if="gridState.previewGrid!=='dashboard'" @click="handleBtnAction('preview-closeSpan')" style="flex:1;overflow-y:auto;overflow-x:auto;padding:16px;">
         <!-- ===== ■.■.■.■. 뷰포트 래퍼 ============================================ -->
         <div :style="{
           width: VIEWPORT[gridState.viewportMode].width || '100%',
@@ -1056,13 +1056,13 @@ window.DpDispPanelPreview = {
                   {{ slot.name }}
                 </span>
                 <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. span 설정 아이콘 ========================= -->
-                <button @click="handleSelectAction('preview-span-popup', { e: $event, idx })"
+                <button @click="handleSelectAction('preview-spanPopup', { e: $event, idx })"
                         :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                         style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                         :style="gridState.spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">
                   ⚙
                 </button>
-                <button @click="handleSelectAction('preview-slot-remove', idx)"
+                <button @click="handleSelectAction('preview-slotRemove', idx)"
                         style="flex-shrink:0;width:17px;height:17px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
                   ✕
                 </button>
@@ -1075,7 +1075,7 @@ window.DpDispPanelPreview = {
                   <span style="font-size:11px;font-weight:700;color:#374151;">
                     그리드 스팬 설정
                   </span>
-                  <button @click="handleBtnAction('preview-close-span')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
+                  <button @click="handleBtnAction('preview-closeSpan')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
                     ✕
                   </button>
                 </div>
@@ -1084,7 +1084,7 @@ window.DpDispPanelPreview = {
                   <span style="font-size:11px;color:#6b7280;width:36px;">
                     열 span
                   </span>
-                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
+                  <button @click="handleSelectAction('preview-spanSet', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">
                     −
@@ -1092,7 +1092,7 @@ window.DpDispPanelPreview = {
                   <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                     {{ slot.colSpan||1 }}
                   </span>
-                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
+                  <button @click="handleSelectAction('preview-spanSet', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">
                     +
@@ -1106,7 +1106,7 @@ window.DpDispPanelPreview = {
                   <span style="font-size:11px;color:#6b7280;width:36px;">
                     행 span
                   </span>
-                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
+                  <button @click="handleSelectAction('preview-spanSet', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">
                     −
@@ -1114,7 +1114,7 @@ window.DpDispPanelPreview = {
                   <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                     {{ slot.rowSpan||1 }}
                   </span>
-                  <button @click="handleSelectAction('preview-span-set', { idx, axis: 'row', delta: +1 })" :disabled="(slot.rowSpan||1)>=4"
+                  <button @click="handleSelectAction('preview-spanSet', { idx, axis: 'row', delta: +1 })" :disabled="(slot.rowSpan||1)>=4"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">
                     +
@@ -1126,7 +1126,7 @@ window.DpDispPanelPreview = {
               </div>
               <!-- ===== ■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×버튼만 ======================== -->
               <div v-else style="position:relative;">
-                <button @click="handleSelectAction('preview-slot-remove', idx)"
+                <button @click="handleSelectAction('preview-slotRemove', idx)"
                         style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
                   ✕
                 </button>
@@ -1202,7 +1202,7 @@ window.DpDispPanelPreview = {
     <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">
       {{ item.lib.name }}
     </span>
-    <button @mousedown.stop @click="handleSelectAction('preview-dash-remove', item.id)"
+    <button @mousedown.stop @click="handleSelectAction('preview-dashRemove', item.id)"
                 style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
       ✕
     </button>

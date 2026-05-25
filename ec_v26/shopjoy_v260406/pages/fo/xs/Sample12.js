@@ -52,19 +52,19 @@ window.XsSample12 = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ XsSample12.js : handleBtnAction -> ', cmd, param);
       // 전시일시 초기화
-      if (cmd === 'filter-reset-date') {
+      if (cmd === 'filter-resetDate') {
         return resetDate();
       // 영역 드롭다운 토글
-      } else if (cmd === 'filter-toggle-area-drop') {
+      } else if (cmd === 'filter-toggleAreaDrop') {
         uiState.showAreaDrop = !uiState.showAreaDrop;
       // 영역 드롭다운 닫기
-      } else if (cmd === 'filter-close-area-drop') {
+      } else if (cmd === 'filter-closeAreaDrop') {
         uiState.showAreaDrop = false;
       // 영역 전체선택
-      } else if (cmd === 'filter-select-all-areas') {
+      } else if (cmd === 'filter-selectAllAreas') {
         return selectAllAreas();
       // 영역 전체해제
-      } else if (cmd === 'filter-clear-all-areas') {
+      } else if (cmd === 'filter-clearAllAreas') {
         return clearAllAreas();
       // 카테고리 모달 열기
       } else if (cmd === 'categoryModal-open') {
@@ -73,13 +73,13 @@ window.XsSample12 = {
       } else if (cmd === 'categoryModal-close') {
         uiState.showCatModal = false;
       // 트리 전체 선택
-      } else if (cmd === 'tree-check-all') {
+      } else if (cmd === 'tree-checkAll') {
         return checkAll();
       // 트리 전체 해제
-      } else if (cmd === 'tree-clear-all') {
+      } else if (cmd === 'tree-clearAll') {
         return clearAll();
       // 트리 전체 펼치기
-      } else if (cmd === 'tree-init-expand') {
+      } else if (cmd === 'tree-initExpand') {
         return initExpand();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -93,16 +93,16 @@ window.XsSample12 = {
       if (cmd === 'areas-toggle') {
         return toggleArea(param);
       // 영역 펼치기 토글
-      } else if (cmd === 'tree-area-toggle-expand') {
+      } else if (cmd === 'tree-areaToggleExpand') {
         return toggleAreaExpand(param);
       // 영역 전체 체크 토글
-      } else if (cmd === 'tree-area-check-all') {
+      } else if (cmd === 'tree-areaCheckAll') {
         return checkAreaAll(param);
       // 패널 토글
-      } else if (cmd === 'tree-panel-toggle') {
+      } else if (cmd === 'tree-panelToggle') {
         return togglePanel(param);
       // 위젯 토글 ({ dispId, wi, e })
-      } else if (cmd === 'tree-widget-toggle') {
+      } else if (cmd === 'tree-widgetToggle') {
         return toggleWidget(param.dispId, param.wi, param.e);
       // 카테고리 적용
       } else if (cmd === 'categoryModal-apply') {
@@ -325,7 +325,7 @@ window.XsSample12 = {
         </span>
         <input type="date" v-model="uiState.previewDate" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
         <input type="time" v-model="uiState.previewTime" style="font-size:12px;padding:3px 6px;border:1px solid #ddd;border-radius:4px;" />
-        <button @click="handleBtnAction('filter-reset-date')" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
+        <button @click="handleBtnAction('filter-resetDate')" style="font-size:11px;padding:3px 8px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;color:#555;">
           현재
         </button>
       </div>
@@ -395,7 +395,7 @@ window.XsSample12 = {
       </button>
       <!-- ===== ■.■.■. 화면영역 멀티선택 =========================================== -->
       <div style="margin-left:auto;position:relative;">
-        <button @click="handleBtnAction('filter-toggle-area-drop')"
+        <button @click="handleBtnAction('filter-toggleAreaDrop')"
           style="font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;"
           :style="selectedAreas.size>0?'border-color:#e8587a;color:#e8587a;font-weight:600;':''">
           <span>
@@ -405,14 +405,14 @@ window.XsSample12 = {
             {{ uiState.showAreaDrop ? '▲' : '▼' }}
           </span>
         </button>
-        <div v-if="uiState.showAreaDrop" @click="handleBtnAction('filter-close-area-drop')" style="position:fixed;inset:0;z-index:99;">
+        <div v-if="uiState.showAreaDrop" @click="handleBtnAction('filter-closeAreaDrop')" style="position:fixed;inset:0;z-index:99;">
         </div>
         <div v-if="uiState.showAreaDrop" style="position:absolute;right:0;top:calc(100% + 4px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:220px;max-height:300px;overflow-y:auto;padding:8px 0;">
           <div style="display:flex;gap:6px;padding:6px 12px;border-bottom:1px solid #f0f0f0;">
-            <button @click.stop="handleBtnAction('filter-select-all-areas')" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            <button @click.stop="handleBtnAction('filter-selectAllAreas')" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
               전체선택
             </button>
-            <button @click.stop="handleBtnAction('filter-clear-all-areas')" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
+            <button @click.stop="handleBtnAction('filter-clearAllAreas')" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
               전체해제
             </button>
           </div>
@@ -431,7 +431,7 @@ window.XsSample12 = {
               </span>
             </div>
             <div style="border-top:1px solid #f0f0f0;padding:6px 12px;">
-              <button @click.stop="handleBtnAction('filter-close-area-drop')" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">
+              <button @click.stop="handleBtnAction('filter-closeAreaDrop')" style="font-size:11px;width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;background:#f8f8f8;color:#666;cursor:pointer;">
                 닫기
               </button>
             </div>
@@ -474,10 +474,10 @@ window.XsSample12 = {
         <span style="font-size:12px;font-weight:600;color:#555;">
           패널
         </span>
-        <button @click="handleBtnAction('tree-check-all')" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+        <button @click="handleBtnAction('tree-checkAll')" style="font-size:11px;padding:2px 8px;border:1px solid #1565c0;border-radius:6px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
           전체선택
         </button>
-        <button @click="handleBtnAction('tree-clear-all')" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
+        <button @click="handleBtnAction('tree-clearAll')" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#888;cursor:pointer;">
           전체해제
         </button>
         <span style="font-size:11px;color:#aaa;">
@@ -491,7 +491,7 @@ window.XsSample12 = {
         <span style="font-size:11px;color:#aaa;">
           {{ checkedWidgets.size }}개 선택됨
         </span>
-        <button @click="handleBtnAction('tree-init-expand')" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;margin-left:auto;">
+        <button @click="handleBtnAction('tree-initExpand')" style="font-size:11px;padding:2px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#666;cursor:pointer;margin-left:auto;">
           전체 펼치기
         </button>
       </div>
@@ -502,8 +502,8 @@ window.XsSample12 = {
       <div v-for="area in cfStructAreaList" :key="area.codeValue" style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:8px;overflow:hidden;">
         <!-- ===== ■.■.■.■. 영역 헤더 ============================================= -->
         <div style="display:flex;align-items:center;gap:8px;padding:9px 14px;background:linear-gradient(90deg,#2d2d2d,#444);color:#fff;cursor:pointer;"
-          @click="handleSelectAction('tree-area-toggle-expand', area.codeValue)">
-          <div @click.stop="handleSelectAction('tree-area-check-all', area)" style="width:15px;height:15px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+          @click="handleSelectAction('tree-areaToggleExpand', area.codeValue)">
+          <div @click.stop="handleSelectAction('tree-areaCheckAll', area)" style="width:15px;height:15px;border-radius:3px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
             :style="isAreaAllChecked(area)?'border-color:#f6ad55;background:#f6ad55;':'border-color:rgba(255,255,255,.4);background:transparent;'">
             <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:9px;">
               ✓
@@ -528,7 +528,7 @@ window.XsSample12 = {
             <div v-if="area.panels.length===0" style="padding:12px 18px;font-size:12px;color:#bbb;">
               해당 날짜 활성 패널 없음
             </div>
-            <div v-for="(p, pi) in area.panels" :key="p.dispId" @click="handleSelectAction('tree-panel-toggle', p)"
+            <div v-for="(p, pi) in area.panels" :key="p.dispId" @click="handleSelectAction('tree-panelToggle', p)"
             style="display:flex;align-items:flex-start;gap:8px;padding:8px 14px;cursor:pointer;border-top:1px solid #f0f0f0;transition:background .1s;"
             :style="checkedPanels.has(p.dispId)?'background:#fff8e1;':''">
               <!-- ===== ■.■.■.■.■.■. 패널 체크박스 ======================================= -->
@@ -562,7 +562,7 @@ window.XsSample12 = {
                     <span v-if="!p.rows || p.rows.length===0" style="font-size:11px;color:#ccc;">
                       (위젯 없음)
                     </span>
-                    <div v-for="(w, wi) in (p.rows||[])" :key="wi" @click.stop="handleSelectAction('tree-widget-toggle', { dispId: p.dispId, wi, e: $event })"
+                    <div v-for="(w, wi) in (p.rows||[])" :key="wi" @click.stop="handleSelectAction('tree-widgetToggle', { dispId: p.dispId, wi, e: $event })"
                   style="display:flex;align-items:center;gap:5px;padding:2px 5px;border-radius:4px;cursor:pointer;transition:background .1s;"
                   :style="checkedWidgets.has(p.dispId + '_' + wi)?'background:#fff3e0;':'background:transparent;'">
                       <div style="width:12px;height:12px;border-radius:3px;border:1.5px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"

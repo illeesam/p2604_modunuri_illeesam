@@ -25,10 +25,10 @@ window.Login = {
       } else if (cmd === 'form-login') {
         return doLogin();
       // 소셜 로그인 (param: 'google' | 'kakao' | 'naver')
-      } else if (cmd === 'form-social-login') {
+      } else if (cmd === 'form-socialLogin') {
         return doSocial(param);
       // SNS 회원가입 시작 (param: provider)
-      } else if (cmd === 'form-start-sns-signup') {
+      } else if (cmd === 'form-startSnsSignup') {
         return startSnsSignup(param);
       // 회원선택 모달 열기
       } else if (cmd === 'memberPickModal-open') {
@@ -49,49 +49,49 @@ window.Login = {
         uiState.step = param;
         return;
       // 약관 step → signup/sns-signup
-      } else if (cmd === 'tab-next-from-terms') {
+      } else if (cmd === 'tab-nextFromTerms') {
         return goNextFromTerms();
       // 회원가입 step → terms 되돌리기
-      } else if (cmd === 'tab-back-to-terms') {
+      } else if (cmd === 'tab-backToTerms') {
         uiState.step = 'terms';
         return;
       // 이메일 인증코드 발송
-      } else if (cmd === 'form-send-email-code') {
+      } else if (cmd === 'form-sendEmailCode') {
         return sendEmailCode();
       // 이메일 인증
-      } else if (cmd === 'form-verify-email') {
+      } else if (cmd === 'form-verifyEmail') {
         return verifyEmail();
       // 휴대폰 인증코드 발송
-      } else if (cmd === 'form-send-phone-code') {
+      } else if (cmd === 'form-sendPhoneCode') {
         return sendPhoneCode();
       // 휴대폰 인증
-      } else if (cmd === 'form-verify-phone') {
+      } else if (cmd === 'form-verifyPhone') {
         return verifyPhone();
       // 이메일 회원가입 제출
       } else if (cmd === 'form-signup') {
         return doSignup();
       // 카카오 주소 검색 열기 (이메일 가입)
-      } else if (cmd === 'form-open-addr') {
+      } else if (cmd === 'form-openAddr') {
         return openKakaoAddr();
       // 카카오 주소 검색 열기 (SNS 가입)
-      } else if (cmd === 'form-open-addr-sns') {
+      } else if (cmd === 'form-openAddrSns') {
         return openKakaoAddrSns();
       // SNS 휴대폰 인증코드 발송
-      } else if (cmd === 'form-send-sns-phone-code') {
+      } else if (cmd === 'form-sendSnsPhoneCode') {
         return sendSnsPhoneCode();
       // SNS 휴대폰 인증
-      } else if (cmd === 'form-verify-sns-phone') {
+      } else if (cmd === 'form-verifySnsPhone') {
         return verifySnsPhone();
       // SNS 회원가입 제출
-      } else if (cmd === 'form-sns-signup') {
+      } else if (cmd === 'form-snsSignup') {
         return doSnsSignup();
       // 성별 선택 (param: { type:'email'|'sns', value:'M'|'F'|'' })
-      } else if (cmd === 'form-select-gender') {
+      } else if (cmd === 'form-selectGender') {
         if (param.type === 'sns') { snsSf.gender = param.value; }
         else { sf.gender = param.value; }
         return;
       // 전체 약관 토글
-      } else if (cmd === 'form-toggle-all-terms') {
+      } else if (cmd === 'form-toggleAllTerms') {
         return toggleAll();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -468,14 +468,14 @@ window.Login = {
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:9px;">
-        <button @click="handleBtnAction('form-social-login', 'google')"
+        <button @click="handleBtnAction('form-socialLogin', 'google')"
           style="width:100%;padding:11px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:var(--text-primary);font-weight:600;">
           <span style="font-size:1.1rem;">
             🌐
           </span>
           Google로 로그인
         </button>
-        <button @click="handleBtnAction('form-social-login', 'kakao')"
+        <button @click="handleBtnAction('form-socialLogin', 'kakao')"
           style="width:100%;padding:11px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#3C1E1E;font-weight:700;">
           <span style="font-size:1.1rem;">
             💬
@@ -483,7 +483,7 @@ window.Login = {
           카카오로 로그인
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
-        <button @click="handleBtnAction('form-social-login', 'naver')"
+        <button @click="handleBtnAction('form-socialLogin', 'naver')"
           style="width:100%;padding:11px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.88rem;color:#fff;font-weight:700;">
           <span style="font-size:1.1rem;font-weight:900;">
             N
@@ -501,15 +501,15 @@ window.Login = {
           📧 이메일로 회원가입
         </button>
         <div style="display:flex;gap:8px;">
-          <button @click="handleBtnAction('form-start-sns-signup', 'google')"
+          <button @click="handleBtnAction('form-startSnsSignup', 'google')"
             style="flex:1;padding:9px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-secondary);">
             🌐 Google
           </button>
-          <button @click="handleBtnAction('form-start-sns-signup', 'kakao')"
+          <button @click="handleBtnAction('form-startSnsSignup', 'kakao')"
             style="flex:1;padding:9px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;font-size:0.8rem;font-weight:700;color:#3C1E1E;">
             💬 카카오
           </button>
-          <button @click="handleBtnAction('form-start-sns-signup', 'naver')"
+          <button @click="handleBtnAction('form-startSnsSignup', 'naver')"
             style="flex:1;padding:9px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;font-size:0.8rem;font-weight:700;color:#fff;">
             N 네이버
           </button>
@@ -646,7 +646,7 @@ window.Login = {
       </div>
       <div style="display:flex;flex-direction:column;gap:0;">
         <label style="display:flex;align-items:center;gap:10px;padding:14px;background:var(--blue-dim);border-radius:8px;cursor:pointer;margin-bottom:10px;">
-          <input type="checkbox" v-model="terms.all" @change="handleBtnAction('form-toggle-all-terms')" style="width:16px;height:16px;accent-color:var(--blue);">
+          <input type="checkbox" v-model="terms.all" @change="handleBtnAction('form-toggleAllTerms')" style="width:16px;height:16px;accent-color:var(--blue);">
           <span style="font-weight:700;color:var(--text-primary);">
             전체 동의
           </span>
@@ -673,7 +673,7 @@ window.Login = {
         <button @click="handleBtnAction('tab-step', 'login')" class="btn-outline" style="flex:1;padding:12px;">
           이전
         </button>
-        <button @click="handleBtnAction('tab-next-from-terms')" :disabled="!(terms.t1&&terms.t2&&terms.t3)" class="btn-blue" style="flex:2;padding:12px;" :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">
+        <button @click="handleBtnAction('tab-nextFromTerms')" :disabled="!(terms.t1&&terms.t2&&terms.t3)" class="btn-blue" style="flex:2;padding:12px;" :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">
         다음
       </button>
     </div>
@@ -700,7 +700,7 @@ window.Login = {
         <div style="display:flex;gap:8px;">
           <input v-model="sf.email" type="email" placeholder="이메일 *" :disabled="sf.emailVerified"
               style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-          <button @click="handleBtnAction('form-send-email-code')" :disabled="sf.emailVerified"
+          <button @click="handleBtnAction('form-sendEmailCode')" :disabled="sf.emailVerified"
               style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
               :style="sf.emailVerified?'opacity:0.4;cursor:not-allowed;':''">
             {{ sf.emailVerified ? '✓ 인증됨' : '코드 발송' }}
@@ -709,7 +709,7 @@ window.Login = {
         <div v-if="sf.emailSent && !sf.emailVerified" style="display:flex;gap:8px;margin-top:8px;">
         <input v-model="sf.emailCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-        <button @click="handleBtnAction('form-verify-email')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+        <button @click="handleBtnAction('form-verifyEmail')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
           확인
         </button>
       </div>
@@ -722,7 +722,7 @@ window.Login = {
       <div style="display:flex;gap:8px;">
         <input v-model="sf.phone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="sf.phoneVerified"
               style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-        <button @click="handleBtnAction('form-send-phone-code')" :disabled="sf.phoneVerified"
+        <button @click="handleBtnAction('form-sendPhoneCode')" :disabled="sf.phoneVerified"
               style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
               :style="sf.phoneVerified?'opacity:0.4;cursor:not-allowed;':''">
           {{ sf.phoneVerified ? '✓ 인증됨' : '코드 발송' }}
@@ -731,7 +731,7 @@ window.Login = {
       <div v-if="sf.phoneSent && !sf.phoneVerified" style="display:flex;gap:8px;margin-top:8px;">
       <input v-model="sf.phoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-      <button @click="handleBtnAction('form-verify-phone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+      <button @click="handleBtnAction('form-verifyPhone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
         확인
       </button>
     </div>
@@ -752,7 +752,7 @@ window.Login = {
     <div style="display:flex;gap:8px;margin-bottom:6px;">
       <input v-model="sf.postcode" placeholder="우편번호" readonly
               style="width:100px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;">
-      <button @click="handleBtnAction('form-open-addr')" type="button"
+      <button @click="handleBtnAction('form-openAddr')" type="button"
               style="padding:0 14px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
         📮 주소 검색
       </button>
@@ -776,7 +776,7 @@ window.Login = {
       </div>
       <div style="display:flex;gap:6px;">
         <button v-for="g in [{v:'M',l:'남성'},{v:'F',l:'여성'},{v:'',l:'선택안함'}]" :key="g.v"
-                @click="handleBtnAction('form-select-gender', { type:'email', value: g.v })" type="button"
+                @click="handleBtnAction('form-selectGender', { type:'email', value: g.v })" type="button"
                 style="flex:1;padding:9px 4px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;"
                 :style="sf.gender===g.v ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);'">
           {{ g.l }}
@@ -789,7 +789,7 @@ window.Login = {
   {{ uiState.signupErr }}
 </div>
 <div style="display:flex;gap:10px;">
-  <button @click="handleBtnAction('tab-back-to-terms')" class="btn-outline" style="flex:1;padding:12px;">
+  <button @click="handleBtnAction('tab-backToTerms')" class="btn-outline" style="flex:1;padding:12px;">
     이전
   </button>
   <button @click="handleBtnAction('form-signup')" class="btn-blue" style="flex:2;padding:12px;">
@@ -823,7 +823,7 @@ window.Login = {
       <div style="display:flex;gap:8px;">
         <input v-model="snsPhone" type="tel" placeholder="휴대폰 번호 (010-0000-0000) *" :disabled="uiState.snsPhoneVerified"
               style="flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-        <button @click="handleBtnAction('form-send-sns-phone-code')" :disabled="uiState.snsPhoneVerified"
+        <button @click="handleBtnAction('form-sendSnsPhoneCode')" :disabled="uiState.snsPhoneVerified"
               style="padding:11px 14px;border:1.5px solid var(--blue);border-radius:8px;background:transparent;color:var(--blue);cursor:pointer;font-size:0.82rem;font-weight:600;white-space:nowrap;"
               :style="uiState.snsPhoneVerified?'opacity:0.4;cursor:not-allowed;':''">
           {{ uiState.snsPhoneVerified ? '✓ 인증됨' : '코드 발송' }}
@@ -832,7 +832,7 @@ window.Login = {
       <div v-if="uiState.snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
       <input v-model="uiState.snsPhoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
-      <button @click="handleBtnAction('form-verify-sns-phone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
+      <button @click="handleBtnAction('form-verifySnsPhone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
         확인
       </button>
     </div>
@@ -851,7 +851,7 @@ window.Login = {
     <div style="display:flex;gap:8px;margin-bottom:6px;">
       <input v-model="snsSf.postcode" placeholder="우편번호" readonly
               style="width:100px;flex-shrink:0;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.88rem;cursor:default;outline:none;">
-      <button @click="handleBtnAction('form-open-addr-sns')" type="button"
+      <button @click="handleBtnAction('form-openAddrSns')" type="button"
               style="padding:0 14px;border:1.5px solid var(--blue);border-radius:8px;background:var(--blue-dim);color:var(--blue);font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">
         📮 주소 검색
       </button>
@@ -875,7 +875,7 @@ window.Login = {
       </div>
       <div style="display:flex;gap:6px;">
         <button v-for="g in [{v:'M',l:'남성'},{v:'F',l:'여성'},{v:'',l:'선택안함'}]" :key="g.v"
-                @click="handleBtnAction('form-select-gender', { type:'sns', value: g.v })" type="button"
+                @click="handleBtnAction('form-selectGender', { type:'sns', value: g.v })" type="button"
                 style="flex:1;padding:9px 4px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;"
                 :style="snsSf.gender===g.v ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-card);color:var(--text-secondary);border:1.5px solid var(--border);'">
           {{ g.l }}
@@ -888,10 +888,10 @@ window.Login = {
   {{ uiState.snsErr }}
 </div>
 <div style="display:flex;gap:10px;">
-  <button @click="handleBtnAction('tab-back-to-terms')" class="btn-outline" style="flex:1;padding:12px;">
+  <button @click="handleBtnAction('tab-backToTerms')" class="btn-outline" style="flex:1;padding:12px;">
     이전
   </button>
-  <button @click="handleBtnAction('form-sns-signup')" class="btn-blue" style="flex:2;padding:12px;">
+  <button @click="handleBtnAction('form-snsSignup')" class="btn-blue" style="flex:2;padding:12px;">
     가입 완료
   </button>
 </div>

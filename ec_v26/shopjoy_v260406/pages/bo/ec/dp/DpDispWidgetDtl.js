@@ -46,11 +46,11 @@ window.DpDispWidgetDtl = {
       } else if (cmd === 'pathModal-close') {
         return closePathPick();
       // 표시경로 초기화
-      } else if (cmd === 'form-path-clear') {
+      } else if (cmd === 'form-pathClear') {
         form.pathId = null;
         return;
       // 참조 해제
-      } else if (cmd === 'form-ref-clear') {
+      } else if (cmd === 'form-refClear') {
         form.refLibId = null; form.refLibCode = ''; form.refLibName = '';
         return;
       // 파일목록 - 항목 추가
@@ -732,7 +732,7 @@ window.DpDispWidgetDtl = {
           <span style="font-size:12px;font-weight:700;color:#6a1b9a;">
             🔗 전시위젯Lib 참조 중
           </span>
-          <button @click="handleBtnAction('form-ref-clear')"
+          <button @click="handleBtnAction('form-refClear')"
             style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">
             참조 해제
           </button>
@@ -825,7 +825,7 @@ window.DpDispWidgetDtl = {
             @mouseout="$event.currentTarget.style.background='#fff'">
                 🔍
               </button>
-              <button v-if="form.pathId != null" type="button" @click="handleBtnAction('form-path-clear')"
+              <button v-if="form.pathId != null" type="button" @click="handleBtnAction('form-pathClear')"
             style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:11px;">
                 ✕
               </button>

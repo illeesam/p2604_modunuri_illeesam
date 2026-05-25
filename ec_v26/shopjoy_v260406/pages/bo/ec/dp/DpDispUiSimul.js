@@ -33,7 +33,7 @@ window.DpDispUiSimul = {
       if (cmd === 'searchParam-reset') {
         return onReset();
       // 검색 일시 현재 시각 복귀
-      } else if (cmd === 'searchParam-reset-date') {
+      } else if (cmd === 'searchParam-resetDate') {
         return resetDate();
       // 영역 선택 전체
       } else if (cmd === 'selectedAreas-all') {
@@ -42,74 +42,74 @@ window.DpDispUiSimul = {
       } else if (cmd === 'selectedAreas-clear') {
         return clearAllAreas();
       // 영역 체크 일괄
-      } else if (cmd === 'simul-check-all-panels') {
+      } else if (cmd === 'simul-checkAllPanels') {
         return checkAllPanels();
       // 패널 체크 비우기
-      } else if (cmd === 'simul-clear-checked-panels') {
+      } else if (cmd === 'simul-clearCheckedPanels') {
         return clearCheckedPanels();
       // 위젯 체크 일괄
-      } else if (cmd === 'simul-check-all-widgets') {
+      } else if (cmd === 'simul-checkAllWidgets') {
         return checkAllWidgets();
       // 위젯 체크 비우기
-      } else if (cmd === 'simul-clear-checked-widgets') {
+      } else if (cmd === 'simul-clearCheckedWidgets') {
         return clearCheckedWidgets();
       // 구조 그리드 초기화
-      } else if (cmd === 'simul-reset-struct-grid') {
+      } else if (cmd === 'simul-resetStructGrid') {
         if (uiState.structLayoutType === 'dashboard') { structDashItems.splice(0); }
         else { resetStructGrid(); }
         return;
       // 스팬 팝업 닫기
-      } else if (cmd === 'simul-close-span-popup') {
+      } else if (cmd === 'simul-closeSpanPopup') {
         return closeStructSpanPopup();
       // 소스 복사
-      } else if (cmd === 'simul-copy-source') {
+      } else if (cmd === 'simul-copySource') {
         return copySource();
       // UI 미리보기 레이어 열기
-      } else if (cmd === 'simul-open-disp-ui-layer') {
+      } else if (cmd === 'simul-openDispUiLayer') {
         return openDispUiLayer();
       // UI 미리보기 레이어 닫기
-      } else if (cmd === 'simul-close-disp-ui-layer') {
+      } else if (cmd === 'simul-closeDispUiLayer') {
         uiState.dispUiLayerOpen = false;
         return;
       // UI 미리보기 폼 초기화
-      } else if (cmd === 'simul-reset-disp-ui-form') {
+      } else if (cmd === 'simul-resetDispUiForm') {
         return resetDispUiForm();
       // UI 미리보기 모달 열기
-      } else if (cmd === 'simul-open-disp-ui-modal') {
+      } else if (cmd === 'simul-openDispUiModal') {
         return openDispUiModal();
       // UI 미리보기 새 창 열기 (FO/BO)
-      } else if (cmd === 'simul-open-disp-ui-popup') {
+      } else if (cmd === 'simul-openDispUiPopup') {
         return openDispUiPopup(param);
       // UI 미리보기 기타 메뉴 열기
-      } else if (cmd === 'simul-open-disp-ui-other') {
+      } else if (cmd === 'simul-openDispUiOther') {
         return openDispUiOther();
       // 기타 메뉴 닫기
-      } else if (cmd === 'simul-close-other-menu') {
+      } else if (cmd === 'simul-closeOtherMenu') {
         return closeOtherMenu();
       // 사이트 모달 열기
-      } else if (cmd === 'simul-open-site-modal') {
+      } else if (cmd === 'simul-openSiteModal') {
         uiState.dispUiSiteModalOpen = true;
         uiState.dispUiSiteSearch = '';
         return;
       // 사이트 모달 닫기
-      } else if (cmd === 'simul-close-site-modal') {
+      } else if (cmd === 'simul-closeSiteModal') {
         uiState.dispUiSiteModalOpen = false;
         return;
       // 사이트 비우기
-      } else if (cmd === 'simul-clear-site') {
+      } else if (cmd === 'simul-clearSite') {
         dispUiForm.siteId = ''; dispUiForm.siteNm = '';
         return;
       // 회원 모달 열기
-      } else if (cmd === 'simul-open-member-modal') {
+      } else if (cmd === 'simul-openMemberModal') {
         uiState.dispUiMemberModalOpen = true;
         uiState.dispUiMemberSearch = '';
         return;
       // 회원 모달 닫기
-      } else if (cmd === 'simul-close-member-modal') {
+      } else if (cmd === 'simul-closeMemberModal') {
         uiState.dispUiMemberModalOpen = false;
         return;
       // 회원 비우기
-      } else if (cmd === 'simul-clear-member') {
+      } else if (cmd === 'simul-clearMember') {
         dispUiForm.memberId = ''; dispUiForm.memberNm = '';
         uiState.dispUiMemberModalOpen = false;
         return;
@@ -125,88 +125,88 @@ window.DpDispUiSimul = {
       if (cmd === 'tab-select') {
         return switchTab(param);
       // 뷰모드 변경
-      } else if (cmd === 'simul-tabmode-set') {
+      } else if (cmd === 'simul-tabmodeSet') {
         uiState.tabMode = param;
         return;
       // 표시영역 토글
       } else if (cmd === 'selectedAreas-toggle') {
         return toggleArea(param);
       // 영역 확장 토글
-      } else if (cmd === 'simul-expand-area') {
+      } else if (cmd === 'simul-expandArea') {
         return toggleAreaExpand(param);
       // 패널 체크 토글
-      } else if (cmd === 'simul-toggle-panel-check') {
+      } else if (cmd === 'simul-togglePanelCheck') {
         return togglePanelCheck(param);
       // 영역 패널 일괄 체크
-      } else if (cmd === 'simul-check-area-panels') {
+      } else if (cmd === 'simul-checkAreaPanels') {
         return checkAreaPanels(param);
       // 위젯 체크 토글
-      } else if (cmd === 'simul-toggle-widget-check') {
+      } else if (cmd === 'simul-toggleWidgetCheck') {
         return toggleWidgetCheck(param.dispId, param.wi, param.event);
       // 구조 레이아웃 변경
-      } else if (cmd === 'simul-set-struct-layout') {
+      } else if (cmd === 'simul-setStructLayout') {
         uiState.structLayoutType = param;
         return;
       // 구조 열 개수 변경
-      } else if (cmd === 'simul-set-struct-cols') {
+      } else if (cmd === 'simul-setStructCols') {
         uiState.structColCount = param;
         return resetStructGrid();
       // 구조 뷰포트 변경
-      } else if (cmd === 'simul-set-struct-viewport') {
+      } else if (cmd === 'simul-setStructViewport') {
         uiState.structViewport = param;
         return;
       // 구조 실제컨텐츠 토글
-      } else if (cmd === 'simul-toggle-struct-real') {
+      } else if (cmd === 'simul-toggleStructReal') {
         uiState.structShowReal = !uiState.structShowReal;
         return;
       // 구조 스팬 토글
-      } else if (cmd === 'simul-toggle-struct-span-popup') {
+      } else if (cmd === 'simul-toggleStructSpanPopup') {
         return toggleStructSpanPopup(param.e, param.idx);
       // 구조 스팬 변경
-      } else if (cmd === 'simul-set-struct-span') {
+      } else if (cmd === 'simul-setStructSpan') {
         return setStructSpan(param.idx, param.axis, param.delta);
       // 구조 슬롯 제거
-      } else if (cmd === 'simul-remove-struct-slot') {
+      } else if (cmd === 'simul-removeStructSlot') {
         return removeStructSlot(param);
       // 구조 대시 아이템 제거
-      } else if (cmd === 'simul-remove-struct-dash') {
+      } else if (cmd === 'simul-removeStructDash') {
         return removeStructDashItem(param);
       // 사이트 선택
-      } else if (cmd === 'simul-select-site') {
+      } else if (cmd === 'simul-selectSite') {
         return selectDispUiSite(param);
       // 회원 선택
-      } else if (cmd === 'simul-select-member') {
+      } else if (cmd === 'simul-selectMember') {
         return selectDispUiMember(param);
       // UI 미리보기 영역 토글
-      } else if (cmd === 'simul-disp-ui-toggle-area') {
+      } else if (cmd === 'simul-dispUiToggleArea') {
         return dispUiToggleArea(param);
       // UI 미리보기 영역 전체 선택
-      } else if (cmd === 'simul-disp-ui-select-all-areas') {
+      } else if (cmd === 'simul-dispUiSelectAllAreas') {
         return dispUiSelectAllAreas();
       // UI 미리보기 영역 전체 해제
-      } else if (cmd === 'simul-disp-ui-clear-all-areas') {
+      } else if (cmd === 'simul-dispUiClearAllAreas') {
         return dispUiClearAllAreas();
       // 기타 페이지 선택
-      } else if (cmd === 'simul-pick-other-page') {
+      } else if (cmd === 'simul-pickOtherPage') {
         return pickOtherPage(param);
       // showDesc 토글
-      } else if (cmd === 'simul-toggle-show-desc') {
+      } else if (cmd === 'simul-toggleShowDesc') {
         uiState.showDesc = !uiState.showDesc;
         return;
       // showAreaDrop 토글
-      } else if (cmd === 'simul-toggle-area-drop') {
+      } else if (cmd === 'simul-toggleAreaDrop') {
         uiState.showAreaDrop = !uiState.showAreaDrop;
         return;
       // showAreaDrop 닫기
-      } else if (cmd === 'simul-close-area-drop') {
+      } else if (cmd === 'simul-closeAreaDrop') {
         uiState.showAreaDrop = false;
         return;
       // dispUiAreaDrop 토글
-      } else if (cmd === 'simul-toggle-disp-ui-area-drop') {
+      } else if (cmd === 'simul-toggleDispUiAreaDrop') {
         uiState.dispUiAreaDrop = !uiState.dispUiAreaDrop;
         return;
       // dispUiAreaDrop 닫기
-      } else if (cmd === 'simul-close-disp-ui-area-drop') {
+      } else if (cmd === 'simul-closeDispUiAreaDrop') {
         uiState.dispUiAreaDrop = false;
         return;
       } else {
@@ -1183,19 +1183,19 @@ window.DpDispUiSimul = {
           보기
         </span>
         <div style="display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
-          <button @click="handleSelectAction('simul-tabmode-set', 'list')" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'list')" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
             :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ☰ 패널리스트목록형식
           </button>
-          <button @click="handleSelectAction('simul-tabmode-set', 'card')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'card')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             🖼 패널목록카드형식
           </button>
-          <button @click="handleSelectAction('simul-tabmode-set', 'expand')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'expand')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='expand' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊞ 패널-위젯 상세보기
           </button>
-          <button @click="handleSelectAction('simul-tabmode-set', 'area_detail')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'area_detail')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
             :style="tabMode==='area_detail' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊟ 영역-위젯 상세보기
           </button>
@@ -1204,14 +1204,14 @@ window.DpDispUiSimul = {
       <div style="width:1px;height:28px;background:#e0e0e0;" :style="uiState.mainTab!=='preview' ? 'opacity:.4;' : ''">
       </div>
       <!-- ===== ■.■.■. 설명보기 (Tab1에서만) ====================================== -->
-      <button v-if="uiState.mainTab==='preview'" @click="handleSelectAction('simul-toggle-show-desc')"
+      <button v-if="uiState.mainTab==='preview'" @click="handleSelectAction('simul-toggleShowDesc')"
         style="font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid #ddd;cursor:pointer;transition:all .15s;"
         :style="showDesc ? 'background:#e3f2fd;border-color:#90caf9;color:#1565c0;' : 'background:#fff;color:#999;'">
         {{ showDesc ? '📋 설명 숨기기' : '📋 설명 보기' }}
       </button>
       <!-- ===== ■.■.■. 화면 영역 멀티선택 (오른쪽) ==================================== -->
       <div style="margin-left:auto;position:relative;">
-        <button @click="handleSelectAction('simul-toggle-area-drop')"
+        <button @click="handleSelectAction('simul-toggleAreaDrop')"
           style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
           :style="selectedAreas.size>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
           <span>
@@ -1221,7 +1221,7 @@ window.DpDispUiSimul = {
             {{ showAreaDrop ? '▲' : '▼' }}
           </span>
         </button>
-        <div v-if="showAreaDrop" @click="handleSelectAction('simul-close-area-drop')" style="position:fixed;inset:0;z-index:99;">
+        <div v-if="showAreaDrop" @click="handleSelectAction('simul-closeAreaDrop')" style="position:fixed;inset:0;z-index:99;">
         </div>
         <div v-if="showAreaDrop" style="position:absolute;right:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:320px;overflow-y:auto;padding:10px 0;">
           <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
@@ -1286,7 +1286,7 @@ window.DpDispUiSimul = {
           공개: {{ window.safeArrayUtils.safeFind(codes.visibility_opts, o => o.value === searchVisibility)?.label }}
         </span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
-          <button @click="handleBtnAction('simul-open-disp-ui-layer')"
+          <button @click="handleBtnAction('simul-openDispUiLayer')"
           style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
           :style="uiState.dispUiLayerOpen?'background:#ede7f6;color:#4a148c;':'background:#f3e5f5;color:#6a1b9a;'">
             🖥 DispUi미리보기
@@ -1302,7 +1302,7 @@ window.DpDispUiSimul = {
       style="margin-top:8px;background:#faf8ff;border:1px solid #b39ddb;border-radius:10px;padding:14px 18px;">
         <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
           🖥 DispUi미리보기 조회조건
-          <button @click="handleBtnAction('simul-reset-disp-ui-form')"
+          <button @click="handleBtnAction('simul-resetDispUiForm')"
           style="font-size:11px;padding:2px 10px;border-radius:6px;border:1px solid #ce93d8;background:#f3e5f5;color:#7b1fa2;cursor:pointer;font-weight:500;margin-left:4px;">
             초기화
           </button>
@@ -1317,7 +1317,7 @@ window.DpDispUiSimul = {
           </span>
           <!-- ===== ■.■.■.■. 드롭다운 버튼 =========================================== -->
           <div style="position:relative;">
-            <button @click="handleSelectAction('simul-toggle-disp-ui-area-drop')"
+            <button @click="handleSelectAction('simul-toggleDispUiAreaDrop')"
             style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
             :style="dispUiForm.areas.length>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
               <span>
@@ -1327,21 +1327,21 @@ window.DpDispUiSimul = {
                 {{ dispUiAreaDrop ? '▲' : '▼' }}
               </span>
             </button>
-            <div v-if="dispUiAreaDrop" @click="handleSelectAction('simul-close-disp-ui-area-drop')" style="position:fixed;inset:0;z-index:99;">
+            <div v-if="dispUiAreaDrop" @click="handleSelectAction('simul-closeDispUiAreaDrop')" style="position:fixed;inset:0;z-index:99;">
             </div>
             <div v-if="dispUiAreaDrop" style="position:absolute;left:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:280px;overflow-y:auto;padding:10px 0;">
               <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
-                <button @click.stop="handleSelectAction('simul-disp-ui-select-all-areas')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+                <button @click.stop="handleSelectAction('simul-dispUiSelectAllAreas')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
                   전체선택
                 </button>
-                <button @click.stop="handleSelectAction('simul-disp-ui-clear-all-areas')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+                <button @click.stop="handleSelectAction('simul-dispUiClearAllAreas')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
                   전체해제
                 </button>
                 <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">
                   {{ dispUiForm.areas.length }}/{{ cfAllAreaListRaw.length }}
                 </span>
               </div>
-              <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="handleSelectAction('simul-disp-ui-toggle-area', area.codeValue)"
+              <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="handleSelectAction('simul-dispUiToggleArea', area.codeValue)"
               style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
               :style="dispUiForm.areas.includes(area.codeValue) ? 'background:#fff8f8;' : ''">
                 <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -1366,7 +1366,7 @@ window.DpDispUiSimul = {
             <span v-for="code in dispUiForm.areas" :key="code"
           style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
               {{ code }}
-              <span @click="handleSelectAction('simul-disp-ui-toggle-area', code)" style="cursor:pointer;font-weight:700;">
+              <span @click="handleSelectAction('simul-dispUiToggleArea', code)" style="cursor:pointer;font-weight:700;">
                 ×
               </span>
             </span>
@@ -1421,11 +1421,11 @@ window.DpDispUiSimul = {
               <span v-else style="font-size:11px;color:#bbb;">
                 미선택
               </span>
-              <button @click="handleBtnAction('simul-open-site-modal')"
+              <button @click="handleBtnAction('simul-openSiteModal')"
             style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
                 📋 선택
               </button>
-              <button v-if="dispUiForm.siteId" @click="handleBtnAction('simul-clear-site')"
+              <button v-if="dispUiForm.siteId" @click="handleBtnAction('simul-clearSite')"
             style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">
                 ×
               </button>
@@ -1444,11 +1444,11 @@ window.DpDispUiSimul = {
               <span v-else style="font-size:11px;color:#bbb;">
                 미선택 (비로그인)
               </span>
-              <button @click="handleBtnAction('simul-open-member-modal')"
+              <button @click="handleBtnAction('simul-openMemberModal')"
             style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
                 👤 선택
               </button>
-              <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clear-member')"
+              <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clearMember')"
             style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">
                 ×
               </button>
@@ -1482,24 +1482,24 @@ window.DpDispUiSimul = {
           </div>
           <!-- ===== ■.■.■. 실행 버튼 =============================================== -->
           <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid #e8e0f8;">
-            <button @click="handleBtnAction('simul-close-disp-ui-layer')"
+            <button @click="handleBtnAction('simul-closeDispUiLayer')"
           style="font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">
               닫기
             </button>
-            <button @click="handleBtnAction('simul-open-disp-ui-modal')"
+            <button @click="handleBtnAction('simul-openDispUiModal')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
               🗔 모달오픈
             </button>
-            <button @click="handleBtnAction('simul-open-disp-ui-popup', 'fo')"
+            <button @click="handleBtnAction('simul-openDispUiPopup', 'fo')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #bae6fd;background:#e0f2fe;color:#0369a1;cursor:pointer;font-weight:600;">
               🔗 사용자 팝업
             </button>
-            <button @click="handleBtnAction('simul-open-disp-ui-popup', 'bo')"
+            <button @click="handleBtnAction('simul-openDispUiPopup', 'bo')"
           style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #f5e8de;background:#fef3eb;color:#c2410c;cursor:pointer;font-weight:600;">
               🔗 관리자 팝업
             </button>
             <div style="position:relative;">
-              <button @click="handleBtnAction('simul-open-disp-ui-other')"
+              <button @click="handleBtnAction('simul-openDispUiOther')"
             style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
                 🌐 기타오픈
                 <span style="font-size:10px;margin-left:2px;">
@@ -1507,7 +1507,7 @@ window.DpDispUiSimul = {
                 </span>
               </button>
               <!-- ===== ■.■.■.■.■. 드롭다운 layer ====================================== -->
-              <div v-if="uiState.otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="handleBtnAction('simul-close-other-menu')">
+              <div v-if="uiState.otherMenuOpen" style="position:fixed;inset:0;z-index:4999;" @click="handleBtnAction('simul-closeOtherMenu')">
               </div>
               <div v-if="uiState.otherMenuOpen" @click.stop
             style="position:absolute;top:calc(100% + 4px);right:0;z-index:5000;background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,0.15);min-width:320px;padding:6px;max-height:400px;overflow-y:auto;">
@@ -1515,7 +1515,7 @@ window.DpDispUiSimul = {
                   오픈할 페이지를 선택하세요
                 </div>
                 <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="Math.random()"
-              @click="handleSelectAction('simul-pick-other-page', u)"
+              @click="handleSelectAction('simul-pickOtherPage', u)"
               style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:11px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-family:monospace;color:#333;"
               @mouseenter="$event.currentTarget.style.background='#e3f2fd'"
               @mouseleave="$event.currentTarget.style.background='transparent'">
@@ -1550,7 +1550,7 @@ window.DpDispUiSimul = {
             <span style="font-size:14px;font-weight:700;color:#1565c0;">
               🌐 사이트 선택
             </span>
-            <button @click="handleBtnAction('simul-close-site-modal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
+            <button @click="handleBtnAction('simul-closeSiteModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
               ×
             </button>
           </div>
@@ -1565,7 +1565,7 @@ window.DpDispUiSimul = {
               검색 결과 없음
             </div>
             <div v-for="site in cfDispUiSiteList" :key="site?.siteId"
-          @click="handleSelectAction('simul-select-site', site)"
+          @click="handleSelectAction('simul-selectSite', site)"
           style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
               <div style="flex:1;min-width:0;">
@@ -1586,7 +1586,7 @@ window.DpDispUiSimul = {
           </div>
           <!-- ===== ■.■.■. 푸터 ================================================== -->
           <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;">
-            <button @click="handleBtnAction('simul-close-site-modal')" class="btn btn-secondary btn-sm">
+            <button @click="handleBtnAction('simul-closeSiteModal')" class="btn btn-secondary btn-sm">
               닫기
             </button>
           </div>
@@ -1603,7 +1603,7 @@ window.DpDispUiSimul = {
             <span style="font-size:14px;font-weight:700;color:#1565c0;">
               👤 회원 선택
             </span>
-            <button @click="handleBtnAction('simul-close-member-modal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
+            <button @click="handleBtnAction('simul-closeMemberModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
               ×
             </button>
           </div>
@@ -1618,7 +1618,7 @@ window.DpDispUiSimul = {
               검색 결과 없음
             </div>
             <div v-for="m in cfDispUiMemberList" :key="m?.userId"
-          @click="handleSelectAction('simul-select-member', m)"
+          @click="handleSelectAction('simul-selectMember', m)"
           style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
               <div style="flex:1;min-width:0;">
@@ -1639,13 +1639,13 @@ window.DpDispUiSimul = {
           </div>
           <!-- ===== ■.■.■. 푸터 ================================================== -->
           <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
-            <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clear-member')"
+            <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clearMember')"
           style="font-size:11px;padding:4px 12px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;cursor:pointer;">
               비로그인으로 초기화
             </button>
             <span v-else>
             </span>
-            <button @click="handleBtnAction('simul-close-member-modal')" class="btn btn-secondary btn-sm">
+            <button @click="handleBtnAction('simul-closeMemberModal')" class="btn btn-secondary btn-sm">
               닫기
             </button>
           </div>
@@ -1706,10 +1706,10 @@ window.DpDispUiSimul = {
               <span style="font-size:12px;font-weight:600;color:#555;">
                 패널 선택
               </span>
-              <button @click="handleBtnAction('simul-check-all-panels')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+              <button @click="handleBtnAction('simul-checkAllPanels')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
                 전체선택
               </button>
-              <button @click="handleBtnAction('simul-clear-checked-panels')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+              <button @click="handleBtnAction('simul-clearCheckedPanels')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
                 전체해제
               </button>
               <span style="font-size:11px;color:#aaa;">
@@ -1720,10 +1720,10 @@ window.DpDispUiSimul = {
               <span style="font-size:12px;font-weight:600;color:#555;">
                 위젯 선택
               </span>
-              <button @click="handleBtnAction('simul-check-all-widgets')" style="font-size:11px;padding:3px 10px;border:1px solid #e65100;border-radius:8px;background:#fff3e0;color:#e65100;cursor:pointer;">
+              <button @click="handleBtnAction('simul-checkAllWidgets')" style="font-size:11px;padding:3px 10px;border:1px solid #e65100;border-radius:8px;background:#fff3e0;color:#e65100;cursor:pointer;">
                 전체선택
               </button>
-              <button @click="handleBtnAction('simul-clear-checked-widgets')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+              <button @click="handleBtnAction('simul-clearCheckedWidgets')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
                 전체해제
               </button>
               <span style="font-size:11px;color:#aaa;">
@@ -1740,9 +1740,9 @@ window.DpDispUiSimul = {
             draggable="true"
             @dragstart="onAreaDragStart($event, area)"
             @dragend="onAreaDragEnd"
-            @click="handleSelectAction('simul-expand-area', area.codeValue)">
+            @click="handleSelectAction('simul-expandArea', area.codeValue)">
                 <!-- ===== ■.■.■.■.■.■. 영역 전체 체크 ====================================== -->
-                <div @click.stop="handleSelectAction('simul-check-area-panels', area)" style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+                <div @click.stop="handleSelectAction('simul-checkAreaPanels', area)" style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
               :style="isAreaAllChecked(area) ? 'border-color:#f6ad55;background:#f6ad55;' : 'border-color:rgba(255,255,255,.5);background:transparent;'">
                   <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:11px;line-height:1;">
                     ✓
@@ -1782,7 +1782,7 @@ window.DpDispUiSimul = {
               draggable="true"
               @dragstart="onPanelDragStart($event, p, area.codeLabel)"
               @dragend="onAreaDragEnd"
-              @click="handleSelectAction('simul-toggle-panel-check', p)"
+              @click="handleSelectAction('simul-togglePanelCheck', p)"
               style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;cursor:grab;user-select:none;border-top:1px solid #f0f0f0;transition:background .1s;"
               :style="checkedPanelIds.has(p.dispId) ? 'background:#fff8e1;' : ''">
                     <!-- ===== ■.■.■.■.■.■.■. 체크박스 (full=패널+위젯 모두, partial=패널만) =========== -->
@@ -1817,7 +1817,7 @@ window.DpDispUiSimul = {
                         <!-- ===== ■.■.■.■.■.■.■.■. 위젯 목록 ===================================== -->
                         <div style="display:flex;flex-direction:column;gap:2px;padding-left:2px;">
                           <div v-for="(w, wi) in (p.rows || [])" :key="wi"
-                    @click.stop="handleSelectAction('simul-toggle-widget-check', { dispId: p.dispId, wi, event: $event })"
+                    @click.stop="handleSelectAction('simul-toggleWidgetCheck', { dispId: p.dispId, wi, event: $event })"
                     style="display:flex;align-items:center;gap:5px;padding:2px 5px;border-radius:4px;cursor:pointer;transition:background .1s;"
                     :style="checkedWidgetKeys.has(p.dispId + '_' + wi) ? 'background:#fff3e0;' : 'background:transparent;'">
                             <div style="width:13px;height:13px;border-radius:3px;border:1.5px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
@@ -1854,12 +1854,12 @@ window.DpDispUiSimul = {
                 <div style="display:flex;align-items:center;gap:6px;background:#f8f9fa;border:1px solid #e8e8e8;border-radius:8px 8px 0 0;flex-shrink:0;padding:6px 10px;flex-wrap:wrap;">
                   <!-- ===== ■.■.■.■.■. 표시방식 토글 ========================================= -->
                   <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-                    <button @click="handleSelectAction('simul-set-struct-layout', 'grid')"
+                    <button @click="handleSelectAction('simul-setStructLayout', 'grid')"
               style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;transition:all .15s;"
               :style="uiState.structLayoutType==='grid' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
                       🔲 그리드
                     </button>
-                    <button @click="handleSelectAction('simul-set-struct-layout', 'dashboard')"
+                    <button @click="handleSelectAction('simul-setStructLayout', 'dashboard')"
               style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
               :style="uiState.structLayoutType==='dashboard' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
                       🧩 대시보드
@@ -1873,7 +1873,7 @@ window.DpDispUiSimul = {
                       열수
                     </span>
                     <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-                      <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="handleSelectAction('simul-set-struct-cols', n)"
+                      <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="handleSelectAction('simul-setStructCols', n)"
                 style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                 :style="[n===1?'border-left:none;':'', uiState.structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
                         {{ n }}
@@ -1885,7 +1885,7 @@ window.DpDispUiSimul = {
                     <div style="width:1px;height:20px;background:#e5e7eb;">
                     </div>
                     <!-- ===== ■.■.■.■.■.■. 실제컨텐츠 ========================================= -->
-                    <button @click="handleSelectAction('simul-toggle-struct-real')"
+                    <button @click="handleSelectAction('simul-toggleStructReal')"
               style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="uiState.structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
                       {{ uiState.structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
@@ -1893,7 +1893,7 @@ window.DpDispUiSimul = {
                     <div style="width:1px;height:20px;background:#e5e7eb;">
                     </div>
                     <!-- ===== ■.■.■.■.■.■. 뷰포트 =========================================== -->
-                    <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="handleSelectAction('simul-set-struct-viewport', key)"
+                    <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="handleSelectAction('simul-setStructViewport', key)"
               style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="uiState.structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
                       {{ vp.label }}
@@ -1904,14 +1904,14 @@ window.DpDispUiSimul = {
                     <span style="font-size:12px;color:#555;font-weight:600;">
                       {{ uiState.structLayoutType==='dashboard' ? structDashItems.length : cfStructPlacedCount }}개
                     </span>
-                    <button @click="handleBtnAction('simul-reset-struct-grid')"
+                    <button @click="handleBtnAction('simul-resetStructGrid')"
               style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">
                       초기화
                     </button>
                   </div>
                 </div>
                 <!-- ===== ■.■.■.■. 그리드 캔버스 =========================================== -->
-                <div @click="handleBtnAction('simul-close-span-popup')" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
+                <div @click="handleBtnAction('simul-closeSpanPopup')" style="flex:1;overflow-y:auto;padding:12px;background:#f0f2f5;border:1px solid #e8e8e8;border-top:none;border-radius:0 0 8px 8px;">
                   <!-- ===== ■.■.■.■.■. dashboard 캔버스 =================================== -->
                   <template v-if="uiState.structLayoutType==='dashboard'">
                     <div
@@ -1947,7 +1947,7 @@ window.DpDispUiSimul = {
                       <span style="font-size:10px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                         {{ item.slot.widgetNm }}
                       </span>
-                      <button @click="handleSelectAction('simul-remove-struct-dash', item.id)"
+                      <button @click="handleSelectAction('simul-removeStructDash', item.id)"
                     style="flex-shrink:0;width:15px;height:15px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0;">
                         ✕
                       </button>
@@ -1990,7 +1990,7 @@ window.DpDispUiSimul = {
                     <template v-else-if="slot">
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×만 ====================== -->
                       <div v-if="structShowReal" style="position:relative;">
-                        <button @click="handleSelectAction('simul-remove-struct-slot', idx)"
+                        <button @click="handleSelectAction('simul-removeStructSlot', idx)"
                             style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
                           ✕
                         </button>
@@ -2007,13 +2007,13 @@ window.DpDispUiSimul = {
                           {{ slot.widgetNm }}
                         </span>
                         <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. ⚙ 설정 아이콘 ======================== -->
-                        <button @click="handleSelectAction('simul-toggle-struct-span-popup', { e: $event, idx })"
+                        <button @click="handleSelectAction('simul-toggleStructSpanPopup', { e: $event, idx })"
                             :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                             style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                             :style="structSpanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">
                           ⚙
                         </button>
-                        <button @click="handleSelectAction('simul-remove-struct-slot', idx)"
+                        <button @click="handleSelectAction('simul-removeStructSlot', idx)"
                             style="flex-shrink:0;width:16px;height:16px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
                           ✕
                         </button>
@@ -2024,7 +2024,7 @@ window.DpDispUiSimul = {
                         <span style="font-size:11px;font-weight:700;color:#374151;">
                           그리드 스팬 설정
                         </span>
-                        <button @click="handleBtnAction('simul-close-span-popup')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
+                        <button @click="handleBtnAction('simul-closeSpanPopup')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
                           ✕
                         </button>
                       </div>
@@ -2032,7 +2032,7 @@ window.DpDispUiSimul = {
                         <span style="font-size:11px;color:#6b7280;width:36px;">
                           열 span
                         </span>
-                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
+                        <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">
                           −
@@ -2040,7 +2040,7 @@ window.DpDispUiSimul = {
                         <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                           {{ slot.colSpan||1 }}
                         </span>
-                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)"
+                        <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)?'opacity:.3;cursor:default;':''">
                           +
@@ -2053,7 +2053,7 @@ window.DpDispUiSimul = {
                         <span style="font-size:11px;color:#6b7280;width:36px;">
                           행 span
                         </span>
-                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
+                        <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">
                           −
@@ -2061,7 +2061,7 @@ window.DpDispUiSimul = {
                         <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                           {{ slot.rowSpan||1 }}
                         </span>
-                        <button @click="handleSelectAction('simul-set-struct-span', { idx, axis: 'row', delta: +1 })" :disabled="(slot.rowSpan||1)>=4"
+                        <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'row', delta: +1 })" :disabled="(slot.rowSpan||1)>=4"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">
                           +
@@ -2209,7 +2209,7 @@ window.DpDispUiSimul = {
           DispX01Ui → DispX02Area → DispX03Panel → DispX04Widget
         </span>
       </div>
-      <button @click="handleBtnAction('simul-copy-source')"
+      <button @click="handleBtnAction('simul-copySource')"
           style="font-size:11px;padding:4px 12px;border-radius:8px;cursor:pointer;transition:all .15s;"
           :style="uiState.sourceCopied ? 'background:#276749;color:#9ae6b4;border:1px solid #276749;' : 'background:#2d2d4e;color:#a0aec0;border:1px solid #3a3a5c;'">
         {{ uiState.sourceCopied ? '✓ 복사됨' : '📋 전체 복사' }}

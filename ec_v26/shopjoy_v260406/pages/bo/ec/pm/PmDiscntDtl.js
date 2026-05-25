@@ -66,7 +66,7 @@ window.PmDiscntDtl = {
         uiState.tabMode2 = param;
         return;
       // 공개대상 토글
-      } else if (cmd === 'form-visibility-toggle') {
+      } else if (cmd === 'form-visibilityToggle') {
         return toggleVisibility(param);
       // 판매업체 모달 열기
       } else if (cmd === 'vendorModal-open') {
@@ -77,7 +77,7 @@ window.PmDiscntDtl = {
         uiState.showVendorModal = false;
         return;
       // 판매업체 초기화
-      } else if (cmd === 'form-vendor-clear') {
+      } else if (cmd === 'form-vendorClear') {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
@@ -358,7 +358,7 @@ window.PmDiscntDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendor-clear')">
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
@@ -393,7 +393,7 @@ window.PmDiscntDtl = {
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
           <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
             :style="{display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 10px',borderRadius:'14px',border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',color:hasVisibility(opt.codeValue)?'#1565c0':'#666',fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,cursor:'pointer'}">
-            <input type="checkbox" :checked="hasVisibility(opt.codeValue)" @change="handleBtnAction('form-visibility-toggle', opt.codeValue)" style="accent-color:#1565c0;" />
+            <input type="checkbox" :checked="hasVisibility(opt.codeValue)" @change="handleBtnAction('form-visibilityToggle', opt.codeValue)" style="accent-color:#1565c0;" />
             {{ opt.codeLabel }}
           </label>
         </div>

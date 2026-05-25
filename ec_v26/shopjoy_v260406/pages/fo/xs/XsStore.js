@@ -19,10 +19,10 @@ window.XsStore = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ XsStore.js : handleBtnAction -> ', cmd, param);
       // 전체 스토어 재로드
-      if (cmd === 'stores-reload-all') {
+      if (cmd === 'stores-reloadAll') {
         return loadAllStoreData();
       // 뷰모드 변경 (param: 'tab' | 'col1' | 'col2' | 'col3' | 'col4' | 'col5')
-      } else if (cmd === 'tab-mode-change') {
+      } else if (cmd === 'tab-modeChange') {
         uiState.tabMode = param;
         return;
       // 스토어 조회 (param: storeName)
@@ -235,7 +235,7 @@ window.XsStore = {
         Pinia 스토어 상태 조회 및 편집
       </p>
     </div>
-    <button @click="handleBtnAction('stores-reload-all')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
+    <button @click="handleBtnAction('stores-reloadAll')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
       🔄 재로드
     </button>
   </div>
@@ -264,7 +264,7 @@ window.XsStore = {
       <!-- ===== ■.■.■. 뷰모드 버튼 (탭바 우측) ====================================== -->
       <div style="display: flex; gap: 4px; padding-left: 16px; flex-shrink: 0;">
         <button
-          @click="handleBtnAction('tab-mode-change', 'tab')"
+          @click="handleBtnAction('tab-modeChange', 'tab')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -280,7 +280,7 @@ window.XsStore = {
           📑
         </button>
         <button
-          @click="handleBtnAction('tab-mode-change', 'col1')"
+          @click="handleBtnAction('tab-modeChange', 'col1')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -297,7 +297,7 @@ window.XsStore = {
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
-          @click="handleBtnAction('tab-mode-change', 'col2')"
+          @click="handleBtnAction('tab-modeChange', 'col2')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -314,7 +314,7 @@ window.XsStore = {
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
-          @click="handleBtnAction('tab-mode-change', 'col3')"
+          @click="handleBtnAction('tab-modeChange', 'col3')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -330,7 +330,7 @@ window.XsStore = {
           3
         </button>
         <button
-          @click="handleBtnAction('tab-mode-change', 'col4')"
+          @click="handleBtnAction('tab-modeChange', 'col4')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',
@@ -347,7 +347,7 @@ window.XsStore = {
         </button>
         <!-- ===== ■.■.■.■. 버튼 영역 ============================================= -->
         <button
-          @click="handleBtnAction('tab-mode-change', 'col5')"
+          @click="handleBtnAction('tab-modeChange', 'col5')"
           :style="{
           padding: '6px 10px',
           fontSize: '13px',

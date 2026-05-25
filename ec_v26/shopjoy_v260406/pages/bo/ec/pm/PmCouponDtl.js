@@ -97,7 +97,7 @@ window.PmCouponDtl = {
         uiState.showVendorModal = false;
         return;
       // 판매업체 초기화
-      } else if (cmd === 'form-vendor-clear') {
+      } else if (cmd === 'form-vendorClear') {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
@@ -492,7 +492,7 @@ window.PmCouponDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendor-clear')">
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>

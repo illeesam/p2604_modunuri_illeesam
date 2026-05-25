@@ -36,7 +36,7 @@ window.DpDispPanelDtl = {
       } else if (cmd === 'form-close') {
         return props.navigate('dpDispPanelMng');
       // 전체 펼치기/탭 보기 토글
-      } else if (cmd === 'form-toggle-view-all') {
+      } else if (cmd === 'form-toggleViewAll') {
         viewAll.value = !viewAll.value;
         return;
       // 전시항목 복사 모달 열기
@@ -56,7 +56,7 @@ window.DpDispPanelDtl = {
         if (cfIsNew.value) { return; }
         return openLibPick(param);
       // 참조 해제
-      } else if (cmd === 'libPick-ref-clear') {
+      } else if (cmd === 'libPick-refClear') {
         if (cfActiveRow.value) {
           cfActiveRow.value.refLibId = null;
           cfActiveRow.value.refLibCode = '';
@@ -938,7 +938,7 @@ window.DpDispPanelDtl = {
       </span>
     </span>
     <div style="display:flex;align-items:center;gap:6px;">
-      <button @click="handleBtnAction('form-toggle-view-all')"
+      <button @click="handleBtnAction('form-toggleViewAll')"
         style="font-size:11px;padding:4px 12px;border:1px solid #d0d0d0;border-radius:14px;background:#fff;cursor:pointer;color:#666;display:flex;align-items:center;gap:5px;transition:all .15s;"
         :style="viewAll ? 'background:#f5f0ff;border-color:#b39ddb;color:#6a1b9a;' : ''"
         title="탭 보기 / 전체 펼치기 전환">
@@ -1240,7 +1240,7 @@ window.DpDispPanelDtl = {
                   <span style="font-size:12px;font-weight:700;color:#6a1b9a;">
                     🔗 전시위젯Lib 참조 중
                   </span>
-                  <button v-if="!cfDtlMode" @click="handleBtnAction('libPick-ref-clear')"
+                  <button v-if="!cfDtlMode" @click="handleBtnAction('libPick-refClear')"
                       style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;cursor:pointer;">
                     참조 해제
                   </button>

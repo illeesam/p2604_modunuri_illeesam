@@ -85,7 +85,7 @@ window.PmPlanDtl = {
         uiState.activeContentTab = param;
         return;
       // 공개대상 토글
-      } else if (cmd === 'form-visibility-toggle') {
+      } else if (cmd === 'form-visibilityToggle') {
         return toggleVisibility(param);
       // 상품 선택 팝업 열기
       } else if (cmd === 'prodPickModal-open') {
@@ -104,7 +104,7 @@ window.PmPlanDtl = {
         uiState.showVendorModal = false;
         return;
       // 판매업체 초기화
-      } else if (cmd === 'form-vendor-clear') {
+      } else if (cmd === 'form-vendorClear') {
         form.vendorId = '';
         form.chargeStaff = '';
         return;
@@ -448,7 +448,7 @@ window.PmPlanDtl = {
         <template #visibility>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px 0;">
             <label v-for="opt in VISIBILITY_OPTIONS" :key="opt?.value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
-              <input type="checkbox" :checked="hasVisibility(opt.value)" @change="handleBtnAction('form-visibility-toggle', opt.value)" />
+              <input type="checkbox" :checked="hasVisibility(opt.value)" @change="handleBtnAction('form-visibilityToggle', opt.value)" />
               <span>
                 {{ opt.label }}
               </span>
@@ -471,7 +471,7 @@ window.PmPlanDtl = {
                   ▼
                 </span>
               </div>
-              <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendor-clear')">
+              <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
                 초기화
               </button>
             </div>

@@ -37,10 +37,10 @@ window.MbMemGradeMng = {
       } else if (cmd === 'grades-add') {
         return addRow();
       // 체크된 회원등급 일괄 삭제
-      } else if (cmd === 'grades-delete-checked') {
+      } else if (cmd === 'grades-deleteChecked') {
         return deleteRows();
       // 체크된 회원등급 일괄 취소
-      } else if (cmd === 'grades-cancel-checked') {
+      } else if (cmd === 'grades-cancelChecked') {
         return cancelChecked();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -278,7 +278,7 @@ window.MbMemGradeMng = {
     v-model:focusedIdx="uiState.focusedIdx"
     v-model:checkAll="uiState.checkAll"
     @add="handleBtnAction('grades-add')" @save="handleBtnAction('grades-save')"
-    @delete-checked="handleBtnAction('grades-delete-checked')" @cancel-checked="handleBtnAction('grades-cancel-checked')"
+    @delete-checked="handleBtnAction('grades-deleteChecked')" @cancel-checked="handleBtnAction('grades-cancelChecked')"
     @cell-change="row => handleSelectAction('grades-rowCellChange', row)">
     <template #row-actions="{ row, idx }">
       <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('grades-rowCancel', idx)" @delete="handleSelectAction('grades-rowDelete', idx)" />

@@ -30,13 +30,13 @@ const _WidgetPreview = {
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
+      } else if (cmd === 'pathTree-expandAll') {
         return expandAll();
       // 트리 전체 닫기
-      } else if (cmd === 'pathTree-collapse-all') {
+      } else if (cmd === 'pathTree-collapseAll') {
         return collapseAll();
       // 실제컨텐츠 토글
-      } else if (cmd === 'preview-toggle-real') {
+      } else if (cmd === 'preview-toggleReal') {
         uiState.showRealContent = !uiState.showRealContent;
         return;
       // 현재 그리드 / 대시보드 초기화
@@ -63,7 +63,7 @@ const _WidgetPreview = {
       if (cmd === 'pathTree-toggle') {
         return toggleNode(param);
       // 트리 노드 전체 자식 토글 (param: { e, node })
-      } else if (cmd === 'pathTree-toggle-children') {
+      } else if (cmd === 'pathTree-toggleChildren') {
         return toggleAllChildren(param.e, param.node);
       // 트리에서 위젯 선택 (param: lib)
       } else if (cmd === 'pathTree-select') {
@@ -77,10 +77,10 @@ const _WidgetPreview = {
         uiState.viewportMode = param;
         return;
       // span 설정 (param: { idx, axis, delta })
-      } else if (cmd === 'slot-span-set') {
+      } else if (cmd === 'slot-spanSet') {
         return setSpan(param.idx, param.axis, param.delta);
       // span 팝업 토글 (param: { e, idx })
-      } else if (cmd === 'slot-span-popup') {
+      } else if (cmd === 'slot-spanPopup') {
         return toggleSpanPopup(param.e, param.idx);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -843,11 +843,11 @@ window.DpDispWidgetLibPreview = {
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
       <div style="padding:6px 12px;display:flex;gap:4px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;">
-        <button @click="handleBtnAction('pathTree-expand-all')"
+        <button @click="handleBtnAction('pathTree-expandAll')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▼ 전체펼치기
         </button>
-        <button @click="handleBtnAction('pathTree-collapse-all')"
+        <button @click="handleBtnAction('pathTree-collapseAll')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▶ 전체닫기
         </button>
@@ -886,7 +886,7 @@ window.DpDispWidgetLibPreview = {
               <span style="margin-left:auto;font-size:10px;background:#e5e7eb;color:#6b7280;border-radius:8px;padding:0 6px;">
                 {{ node.children.reduce((acc,c)=>acc+c.libs.length,0) }}
               </span>
-              <span v-if="isOpen(node.label)" @click="handleSelectAction('pathTree-toggle-children', { e: $event, node })"
+              <span v-if="isOpen(node.label)" @click="handleSelectAction('pathTree-toggleChildren', { e: $event, node })"
                 :title="allChildrenOpen(node) ? '하위 모두 닫기' : '하위 모두 열기'"
                 style="font-size:10px;color:#9ca3af;padding:1px 4px;border-radius:3px;cursor:pointer;flex-shrink:0;"
                 :style="allChildrenOpen(node) ? 'color:#1d4ed8;' : ''"
@@ -968,7 +968,7 @@ window.DpDispWidgetLibPreview = {
         </div>
         <!-- ===== ■.■.■.■. 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ===================== -->
         <div v-if="uiState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="handleBtnAction('preview-toggle-real')"
+          <button @click="handleBtnAction('preview-toggleReal')"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="uiState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
             {{ uiState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
@@ -1048,7 +1048,7 @@ window.DpDispWidgetLibPreview = {
                   {{ slot.name }}
                 </span>
                 <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. span 설정 아이콘 ========================= -->
-                <button @click="handleSelectAction('slot-span-popup', { e: $event, idx })"
+                <button @click="handleSelectAction('slot-spanPopup', { e: $event, idx })"
                         :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                         style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                         :style="uiState.spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">
@@ -1076,7 +1076,7 @@ window.DpDispWidgetLibPreview = {
                   <span style="font-size:11px;color:#6b7280;width:36px;">
                     열 span
                   </span>
-                  <button @click="handleSelectAction('slot-span-set', { idx, axis:'col', delta:-1 })" :disabled="(slot.colSpan||1)<=1"
+                  <button @click="handleSelectAction('slot-spanSet', { idx, axis:'col', delta:-1 })" :disabled="(slot.colSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">
                     −
@@ -1084,7 +1084,7 @@ window.DpDispWidgetLibPreview = {
                   <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                     {{ slot.colSpan||1 }}
                   </span>
-                  <button @click="handleSelectAction('slot-span-set', { idx, axis:'col', delta:+1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)"
+                  <button @click="handleSelectAction('slot-spanSet', { idx, axis:'col', delta:+1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.colSpan||1)>=(GRID_COLS[uiState.previewGrid]||1)?'opacity:.3;cursor:default;':''">
                     +
@@ -1098,7 +1098,7 @@ window.DpDispWidgetLibPreview = {
                   <span style="font-size:11px;color:#6b7280;width:36px;">
                     행 span
                   </span>
-                  <button @click="handleSelectAction('slot-span-set', { idx, axis:'row', delta:-1 })" :disabled="(slot.rowSpan||1)<=1"
+                  <button @click="handleSelectAction('slot-spanSet', { idx, axis:'row', delta:-1 })" :disabled="(slot.rowSpan||1)<=1"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">
                     −
@@ -1106,7 +1106,7 @@ window.DpDispWidgetLibPreview = {
                   <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                     {{ slot.rowSpan||1 }}
                   </span>
-                  <button @click="handleSelectAction('slot-span-set', { idx, axis:'row', delta:+1 })" :disabled="(slot.rowSpan||1)>=4"
+                  <button @click="handleSelectAction('slot-spanSet', { idx, axis:'row', delta:+1 })" :disabled="(slot.rowSpan||1)>=4"
                           style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                           :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">
                     +

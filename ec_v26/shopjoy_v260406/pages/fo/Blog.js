@@ -31,7 +31,7 @@ window.Blog = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Blog.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 카테고리 선택 (param: 카테고리 ID)
       } else if (cmd === 'category-select') {
@@ -154,7 +154,7 @@ window.Blog = {
         News & Blog
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>

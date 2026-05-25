@@ -26,25 +26,25 @@ window.Order = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Order.js : handleBtnAction -> ', cmd, param);
       // 홈으로 이동
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 상품목록으로 이동
-      } else if (cmd === 'page-go-prod-list') {
+      } else if (cmd === 'page-goProdList') {
         return props.navigate('prodList');
       // 마이페이지 주문 내역 이동
-      } else if (cmd === 'page-go-my-order') {
+      } else if (cmd === 'page-goMyOrder') {
         return props.navigate('myOrder');
       // 문의하기 이동
-      } else if (cmd === 'page-go-contact') {
+      } else if (cmd === 'page-goContact') {
         return props.navigate('contact');
       // 카카오 주소 검색 열기
-      } else if (cmd === 'form-open-addr') {
+      } else if (cmd === 'form-openAddr') {
         return openKakaoAddr();
       // 주문 제출
       } else if (cmd === 'form-submit') {
         return handleSubmit();
       // 캐쉬 전액 사용
-      } else if (cmd === 'cash-use-all') {
+      } else if (cmd === 'cash-useAll') {
         uiState.cashInput = uiState.cashBalance;
         return;
       // 캐쉬 초기화
@@ -439,13 +439,13 @@ window.Order = {
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;">
-      <button @click="handleBtnAction('page-go-my-order')"
+      <button @click="handleBtnAction('page-goMyOrder')"
           style="padding:14px;font-size:1rem;font-weight:700;border:none;border-radius:10px;background:linear-gradient(135deg,#1a1a1a,#404040);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all .15s;"
           @mouseenter="$event.currentTarget.style.transform='translateY(-1px)'"
           @mouseleave="$event.currentTarget.style.transform=''">
         📋 마이페이지에서 주문 확인
       </button>
-      <button @click="handleBtnAction('page-go-home')"
+      <button @click="handleBtnAction('page-goHome')"
           style="padding:14px;border:1.5px solid #e4e7ec;border-radius:10px;background:#fff;color:#555;font-weight:600;cursor:pointer;transition:all .15s;"
           @mouseenter="$event.currentTarget.style.background='#f8f9fb'"
           @mouseleave="$event.currentTarget.style.background='#fff'">
@@ -471,7 +471,7 @@ window.Order = {
         주문 · 결제
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>
@@ -490,7 +490,7 @@ window.Order = {
     <p style="color:var(--text-muted);font-size:1rem;margin-bottom:24px;">
       주문할 상품이 없어요.
     </p>
-    <button class="btn-blue" @click="handleBtnAction('page-go-prod-list')" style="padding:12px 28px;">
+    <button class="btn-blue" @click="handleBtnAction('page-goProdList')" style="padding:12px 28px;">
       상품 보러가기
     </button>
   </div>
@@ -591,7 +591,7 @@ window.Order = {
         <div style="display:flex;gap:8px;align-items:center;">
           <input v-model="uiState.cashInput" type="number" min="0" :max="uiState.cashBalance" placeholder="사용할 캐쉬 금액"
               style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.88rem;outline:none;">
-          <button @click="handleBtnAction('cash-use-all')"
+          <button @click="handleBtnAction('cash-useAll')"
               style="padding:8px 16px;border:1px solid #ffcc80;border-radius:8px;background:#fff3e0;color:#e65100;font-size:0.82rem;cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s;"
               @mouseenter="$event.currentTarget.style.background='#ffe0b2'"
               @mouseleave="$event.currentTarget.style.background='#fff3e0'">
@@ -670,7 +670,7 @@ window.Order = {
             <div style="display:flex;gap:8px;margin-bottom:8px;">
               <input v-model="form.postcode" class="form-input" placeholder="우편번호" readonly
                   style="width:110px;flex-shrink:0;background:var(--bg-base);cursor:default;" />
-              <button @click="handleBtnAction('form-open-addr')" type="button"
+              <button @click="handleBtnAction('form-openAddr')" type="button"
                   style="padding:8px 16px;border:1px solid #a5d6a7;border-radius:8px;background:#e8f5e9;color:#2e7d32;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;"
                   @mouseenter="$event.currentTarget.style.background='#c8e6c9'"
                   @mouseleave="$event.currentTarget.style.background='#e8f5e9'">
@@ -826,7 +826,7 @@ window.Order = {
         </div>
       </div>
       <div style="margin-top:16px;">
-        <button @click="handleBtnAction('page-go-contact')"
+        <button @click="handleBtnAction('page-goContact')"
               style="width:100%;padding:10px;border:1.5px solid #e4e7ec;border-radius:10px;background:#fff;color:#555;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all .15s;"
               @mouseenter="$event.currentTarget.style.background='#f8f9fb';$event.currentTarget.style.borderColor='#d0d7de'"
               @mouseleave="$event.currentTarget.style.background='#fff';$event.currentTarget.style.borderColor='#e4e7ec'">

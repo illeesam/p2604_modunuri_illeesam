@@ -57,7 +57,7 @@ window.SyPostman = {
       } else if (cmd === 'autoPopup-close') {
         return closeAutoPopup();
       // 모든 열린 탭 닫기
-      } else if (cmd === 'openTabs-close-all') {
+      } else if (cmd === 'openTabs-closeAll') {
         return closeAllTabs();
       // 이력 전체 삭제
       } else if (cmd === 'history-clear') {
@@ -70,11 +70,11 @@ window.SyPostman = {
       } else if (cmd === 'histModal-resend') {
         return resendHist();
       // 이력 상세 모달 헤더 행 추가
-      } else if (cmd === 'editReq-header-add') {
+      } else if (cmd === 'editReq-headerAdd') {
         editReq.headers.push({k:'',v:''});
         return;
       // 이력 상세 모달 파라미터 행 추가
-      } else if (cmd === 'editReq-param-add') {
+      } else if (cmd === 'editReq-paramAdd') {
         editReq.params.push({k:'',v:''});
         return;
       } else {
@@ -86,11 +86,11 @@ window.SyPostman = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyPostman.js : handleSelectAction -> ', cmd, param);
       // 좌측 트리 노드 클릭 (req 면 탭 열기, 그 외는 폴더 토글)
-      if (cmd === 'tree-node-click') {
+      if (cmd === 'tree-nodeClick') {
         if (param.type === 'req') { return selectApiNode(param); }
         return toggleNode(param);
       // 트리 항목 바로 실행 버튼
-      } else if (cmd === 'tree-quick-run') {
+      } else if (cmd === 'tree-quickRun') {
         return quickRun(param.node, param.evt);
       // 열린 탭 활성화
       } else if (cmd === 'openTabs-select') {
@@ -109,11 +109,11 @@ window.SyPostman = {
       } else if (cmd === 'defHeaders-rowRemove') {
         return removeRow(defHeaders, param);
       // 활성 탭 요청 탭 전환 (params/headers/body)
-      } else if (cmd === 'request-tab-select') {
+      } else if (cmd === 'request-tabSelect') {
         cfActiveTab.value.reqTab = param;
         return;
       // 활성 탭 응답 탭 전환 (json/grid)
-      } else if (cmd === 'response-tab-select') {
+      } else if (cmd === 'response-tabSelect') {
         cfActiveTab.value.resTab = param;
         return;
       // 활성 탭 요청 파라미터 행 추가
@@ -132,7 +132,7 @@ window.SyPostman = {
       } else if (cmd === 'history-rowSelect') {
         return selectHistory(param.h, param.i);
       // 이력 모달 탭 전환 (req/res)
-      } else if (cmd === 'histModal-tab-select') {
+      } else if (cmd === 'histModal-tabSelect') {
         uiState.histModalTab = param;
         return;
       // 토스트 닫기
@@ -143,11 +143,11 @@ window.SyPostman = {
         param.jsonOpen = !param.jsonOpen;
         return;
       // 이력 모달 헤더 행 삭제
-      } else if (cmd === 'editReq-header-rowRemove') {
+      } else if (cmd === 'editReq-headerRowRemove') {
         editReq.headers.splice(param, 1);
         return;
       // 이력 모달 파라미터 행 삭제
-      } else if (cmd === 'editReq-param-rowRemove') {
+      } else if (cmd === 'editReq-paramRowRemove') {
         editReq.params.splice(param, 1);
         return;
       } else {
@@ -748,7 +748,7 @@ window.SyPostman = {
         로딩 중…
       </div>
       <div v-for="item in cfFlatTree" :key="item.n.id"
-        @click="handleSelectAction('tree-node-click', item.n)"
+        @click="handleSelectAction('tree-nodeClick', item.n)"
         style="display:flex;align-items:center;gap:3px;padding:3px 6px;cursor:pointer;white-space:nowrap;overflow:hidden;transition:background .1s;user-select:none;"
         :style="'padding-left:'+(6+item.depth*11)+'px;'+(openTabs.some(t=>t.nodeId===item.n.id)?'color:#e8587a;':'')"
         @mouseenter="e=>{ e.currentTarget.style.background='#eef2ff'; const b=e.currentTarget.querySelector('.tree-run-btn'); if(b) b.style.opacity='1'; }"
@@ -781,7 +781,7 @@ window.SyPostman = {
           <span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;flex:1;" :title="item.n.url">
             {{ item.n.label }}
           </span>
-          <button @click.stop="handleSelectAction('tree-quick-run', { node: item.n, evt: $event })" title="바로 실행"
+          <button @click.stop="handleSelectAction('tree-quickRun', { node: item.n, evt: $event })" title="바로 실행"
             style="flex-shrink:0;border:none;background:none;cursor:pointer;font-size:10px;color:#bbb;padding:1px 3px;border-radius:3px;line-height:1;opacity:0;transition:opacity .1s;"
             class="tree-run-btn">
             ▶
@@ -801,7 +801,7 @@ window.SyPostman = {
           {{ openTabs.length }}
         </span>
       </span>
-      <button v-if="openTabs.length" @click="handleBtnAction('openTabs-close-all')" title="전체 닫기"
+      <button v-if="openTabs.length" @click="handleBtnAction('openTabs-closeAll')" title="전체 닫기"
         style="border:none;background:none;cursor:pointer;font-size:10px;color:#aaa;padding:0;">
         ✕ 전체
       </button>
@@ -1057,7 +1057,7 @@ window.SyPostman = {
         <div style="width:42%;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;overflow:hidden;">
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;">
             <button v-for="t in [{id:'params',nm:'Params'},{id:'headers',nm:'Headers'},{id:'body',nm:'Body'}]" :key="t.id"
-              @click="handleSelectAction('request-tab-select', t.id)"
+              @click="handleSelectAction('request-tabSelect', t.id)"
               style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
               :style="cfActiveTab.reqTab===t.id?'background:#fff;border-bottom-color:#e8587a;color:#e8587a;':'background:transparent;color:#999;'">
               {{ t.nm }}
@@ -1098,7 +1098,7 @@ window.SyPostman = {
           <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;">
             <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;align-items:center;">
               <button v-for="t in [{id:'json',nm:'응답 JSON'},{id:'grid',nm:'Grid'}]" :key="t.id"
-              @click="handleSelectAction('response-tab-select', t.id)"
+              @click="handleSelectAction('response-tabSelect', t.id)"
               style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
               :style="cfActiveTab.resTab===t.id?'background:#fff;border-bottom-color:#1a73e8;color:#1a73e8;':'background:transparent;color:#999;'">
                 {{ t.nm }}
@@ -1342,7 +1342,7 @@ window.SyPostman = {
               ({{ editReq.headers.length }}개)
             </span>
           </span>
-          <button @click="handleBtnAction('editReq-header-add')"
+          <button @click="handleBtnAction('editReq-headerAdd')"
                   style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
             + 추가
           </button>
@@ -1354,7 +1354,7 @@ window.SyPostman = {
           <div v-for="(h,i) in editReq.headers" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
             <input v-model="h.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
             <input v-model="h.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-            <button @click="handleSelectAction('editReq-header-rowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+            <button @click="handleSelectAction('editReq-headerRowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
               ✕
             </button>
           </div>
@@ -1368,7 +1368,7 @@ window.SyPostman = {
               ({{ editReq.params.length }}개)
             </span>
           </span>
-          <button @click="handleBtnAction('editReq-param-add')"
+          <button @click="handleBtnAction('editReq-paramAdd')"
                   style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
             + 추가
           </button>
@@ -1380,7 +1380,7 @@ window.SyPostman = {
           <div v-for="(p,i) in editReq.params" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
             <input v-model="p.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
             <input v-model="p.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-            <button @click="handleSelectAction('editReq-param-rowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+            <button @click="handleSelectAction('editReq-paramRowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
               ✕
             </button>
           </div>

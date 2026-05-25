@@ -41,7 +41,7 @@ window.PmVoucherMng = {
         pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 상품권 신규 등록
       } else if (cmd === 'vouchers-add') {
@@ -243,7 +243,7 @@ window.PmVoucherMng = {
       { key: 'dateRange', type: 'dateRange', label: '판매기간',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     // 기본 그리드

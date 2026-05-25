@@ -31,7 +31,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         Object.assign(searchParam, _initSearchParam());
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       } else if (cmd === 'settleAdjs-add') {
         return openNew();
@@ -90,8 +90,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
     (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
 
-    const vendorList = reactive([]);
-    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const vendors = reactive([]);
+    const cfVendors = computed(() => vendors.filter(v => v.vendorType === '판매업체'));
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -110,10 +110,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
             return boApiSvc.stSettleAdj.getPage(params, '정산조정관리', '목록조회');
           })()
         ]);
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
         const data = resA.data?.data;
-        adjList.splice(0, adjList.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || adjList.length;
+        adjs.splice(0, adjs.length, ...(data?.pageList || data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || adjs.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
@@ -128,7 +128,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       handleSearchData('DEFAULT');
     });
 
-    const adjList = reactive([]);
+    const adjs = reactive([]);
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -176,8 +176,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (v) { form.vendorNm = v.vendorNm; }
       const ok = await showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) { return; }
-      if (uiState.isNew) { form.adjId = 'ADJ-' + Date.now(); adjList.unshift({ ...form }); }
-      else { const idx = adjList.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjList[idx], { ...form }); }
+      if (uiState.isNew) { form.adjId = 'ADJ-' + Date.now(); adjs.unshift({ ...form }); }
+      else { const idx = adjs.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjs[idx], { ...form }); }
       closeForm();
       try {
         const res = await (uiState.isNew ? boApiSvc.stSettleAdj.create({ ...form }, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.adjId, { ...form }, '정산조정관리', '저장'));
@@ -195,7 +195,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleDelete = async (r) => {
       const ok = await showConfirm('삭제', `[${r.adjId}] 정산조정을 삭제하시겠습니까?`);
       if (!ok) { return; }
-      const idx = adjList.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjList.splice(idx, 1); if (uiState.selectedId === r.adjId) closeForm();
+      const idx = adjs.findIndex(x => x.adjId === r.adjId); if (idx !== -1) adjs.splice(idx, 1); if (uiState.selectedId === r.adjId) closeForm();
       try {
         const res = await boApiSvc.stSettleAdj.remove(r.adjId, '정산조정관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -302,7 +302,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, pager, adjList, searchParam, form, errors,
+      uiState, codes, pager, adjs, searchParam, form, errors,
       baseSearchColumns, baseGridColumns, baseFormColumns,
       handleBtnAction, handleSelectAction,
       cfVendors,
@@ -348,7 +348,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="adjList" :pager="pager" row-key="adjId"
+      :columns="baseGridColumns" :rows="adjs" :pager="pager" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
       @set-page="n => handleSelectAction('settleAdjs-pager-setPage', n)" @size-change="handleSelectAction('settleAdjs-pager-sizeChange')">

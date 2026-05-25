@@ -126,19 +126,19 @@ window.XsSample04 = {
       } else if (cmd === 'modal-confirm') {
         return doConfirm();
       // 로딩 데모
-      } else if (cmd === 'modal-loading-demo') {
+      } else if (cmd === 'modal-loadingDemo') {
         return loadingDemo();
       // 폼 제출
-      } else if (cmd === 'modal-form-submit') {
+      } else if (cmd === 'modal-formSubmit') {
         return submitForm();
       // 중첩 2단 모달 열기
-      } else if (cmd === 'modal-nested2-open') {
+      } else if (cmd === 'modal-nested2Open') {
         uiState.nested2 = true;
       // 중첩 2단 모달 닫기
-      } else if (cmd === 'modal-nested2-close') {
+      } else if (cmd === 'modal-nested2Close') {
         uiState.nested2 = false;
       // 중첩 backdrop 클릭 (2단 우선)
-      } else if (cmd === 'modal-nested-backdrop') {
+      } else if (cmd === 'modal-nestedBackdrop') {
         if (uiState.nested2) { uiState.nested2 = false; }
         else { closeModal(); }
       // BaseModal 닫기
@@ -153,10 +153,10 @@ window.XsSample04 = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Sample04.js : handleSelectAction -> ', cmd, param);
       // 회원 상세 모달 열기
-      if (cmd === 'member-detail-open') {
+      if (cmd === 'member-detailOpen') {
         return openModal('detail', { data: param });
       // 회원 수정 확인 모달
-      } else if (cmd === 'member-edit-confirm') {
+      } else if (cmd === 'member-editConfirm') {
         return openEditConfirm(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);

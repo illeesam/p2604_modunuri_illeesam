@@ -39,7 +39,7 @@ window.SyContactDtl = {
       if (cmd === 'form-save') {
         return handleSave();
       // 답변 탭 별도 저장 액션
-      } else if (cmd === 'form-save-answer') {
+      } else if (cmd === 'form-saveAnswer') {
         return saveAnswer();
       // 폼 편집 취소 → 목록으로 이동
       } else if (cmd === 'form-cancel') {
@@ -70,7 +70,7 @@ window.SyContactDtl = {
         uiState.tabMode2 = param;
         return;
       // 회원ID 입력 변경 → 회원명 자동 채움
-      } else if (cmd === 'form-memberId-change') {
+      } else if (cmd === 'form-memberIdChange') {
         return onUserIdChange();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -299,7 +299,7 @@ window.SyContactDtl = {
         <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberId-change')" :readonly="cfDtlMode" />
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberIdChange')" :readonly="cfDtlMode" />
             <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('member-ref')">
               보기
             </span>
@@ -371,7 +371,7 @@ window.SyContactDtl = {
           </button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save-answer')">
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
             답변 저장
           </button>
           <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">

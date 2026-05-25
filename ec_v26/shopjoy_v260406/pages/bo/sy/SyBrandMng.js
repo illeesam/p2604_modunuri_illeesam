@@ -39,7 +39,7 @@ window.SyBrandMng = {
         Object.assign(searchParam, _initSearchParam());
         return handleSearchList();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         if (searchParam.dateRange) {
           const r = boUtil.bofGetDateRange(searchParam.dateRange);
           searchParam.dateStart = r ? r.from : '';
@@ -53,10 +53,10 @@ window.SyBrandMng = {
       } else if (cmd === 'brands-save') {
         return handleSave();
       // 체크된 행 일괄 삭제 마킹
-      } else if (cmd === 'brands-delete-checked') {
+      } else if (cmd === 'brands-deleteChecked') {
         return deleteRows();
       // 체크된 행 일괄 취소
-      } else if (cmd === 'brands-cancel-checked') {
+      } else if (cmd === 'brands-cancelChecked') {
         return cancelChecked();
       // 엑셀 내보내기
       } else if (cmd === 'brands-excel') {
@@ -74,7 +74,7 @@ window.SyBrandMng = {
         uiState.selectedPath = param;
         return handleSearchList();
       // 그리드 셀 변경 감지
-      } else if (cmd === 'brands-cell-change') {
+      } else if (cmd === 'brands-cellChange') {
         return onCellChange(param);
       // 그리드 행 취소
       } else if (cmd === 'brands-rowCancel') {
@@ -281,7 +281,7 @@ window.SyBrandMng = {
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     // 기본 그리드
@@ -330,13 +330,13 @@ window.SyBrandMng = {
       v-model:checkAll="uiState.checkAll"
       :cell-title="fnColTitle"
       @add="handleBtnAction('brands-add')" @save="handleBtnAction('brands-save')"
-      @delete-checked="handleBtnAction('brands-delete-checked')" @cancel-checked="handleBtnAction('brands-cancel-checked')"
-      @cell-change="row => handleSelectAction('brands-cell-change', row)" @export="handleBtnAction('brands-excel')">
+      @delete-checked="handleBtnAction('brands-deleteChecked')" @cancel-checked="handleBtnAction('brands-cancelChecked')"
+      @cell-change="row => handleSelectAction('brands-cellChange', row)" @export="handleBtnAction('brands-excel')">
       <template #cell-logoUrl="{ row }">
         <td>
           <div style="display:flex;align-items:center;gap:4px;">
             <input class="grid-input grid-mono" v-model="row.logoUrl"
-              :disabled="row._row_status==='D'" @input="handleSelectAction('brands-cell-change', row)"
+              :disabled="row._row_status==='D'" @input="handleSelectAction('brands-cellChange', row)"
               placeholder="/images/brand/logo.png" style="flex:1;" :title="fnColTitle({label:'로고 URL'})" />
             <img v-if="row.logoUrl"
               :src="row.logoUrl"

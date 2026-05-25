@@ -16,35 +16,35 @@ window.Prod01View = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Prod01View.js : handleBtnAction -> ', cmd, param);
       // 페이지 이동: 홈
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 페이지 이동: 상품목록
-      } else if (cmd === 'page-go-prod-list') {
+      } else if (cmd === 'page-goProdList') {
         return props.navigate('prodList');
       // 페이지 이동: 문의
-      } else if (cmd === 'page-go-contact') {
+      } else if (cmd === 'page-goContact') {
         return props.navigate('contact');
       // 장바구니 담기
       } else if (cmd === 'cart-add') {
         return handleAddToCart();
       // 바로구매
-      } else if (cmd === 'order-buy-now') {
+      } else if (cmd === 'order-buyNow') {
         return execBuyNow();
       // 드로어에서 장바구니 담기
-      } else if (cmd === 'cart-add-from-drawer') {
+      } else if (cmd === 'cart-addFromDrawer') {
         return execCartFromDrawer();
       // 드로어 열기: 바로구매 모드
-      } else if (cmd === 'quickBuy-open-buy') {
+      } else if (cmd === 'quickBuy-openBuy') {
         return openQuickBuy();
       // 드로어 열기: 장바구니 모드
-      } else if (cmd === 'quickBuy-open-cart') {
+      } else if (cmd === 'quickBuy-openCart') {
         return openCartDrawer();
       // 드로어 닫기
       } else if (cmd === 'quickBuy-close') {
         uiState.quickBuyOpen = false;
         return;
       // 찜 토글
-      } else if (cmd === 'prod-toggle-like') {
+      } else if (cmd === 'prod-toggleLike') {
         return toggleLike(param);
       // 수량 +
       } else if (cmd === 'qty-inc') {
@@ -110,10 +110,10 @@ window.Prod01View = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Prod01View.js : handleSelectAction -> ', cmd, param);
       // 색상(옵션1) 선택
-      if (cmd === 'options-color-select') {
+      if (cmd === 'options-colorSelect') {
         return selectColor(param);
       // 사이즈(옵션2) 선택
-      } else if (cmd === 'options-size-select') {
+      } else if (cmd === 'options-sizeSelect') {
         return selectSize(param);
       // 탭 선택
       } else if (cmd === 'tab-go') {
@@ -123,7 +123,7 @@ window.Prod01View = {
         uiState.selectedImg = param;
         return;
       // 리뷰 정렬 필터 선택
-      } else if (cmd === 'reviews-filter-select') {
+      } else if (cmd === 'reviews-filterSelect') {
         uiState.reviewFilter = param;
         return;
       // 포토 그리드 페이지 번호 선택
@@ -131,10 +131,10 @@ window.Prod01View = {
         uiState.photoGridPage = param;
         return;
       // 포토 리뷰 선택 (그리드 → 디테일)
-      } else if (cmd === 'reviews-photo-grid-rowSelect') {
+      } else if (cmd === 'reviews-photoGridRowSelect') {
         return openPhotoFromGrid(param);
       // 포토 리뷰 선택 (목록 → 디테일)
-      } else if (cmd === 'reviews-photo-list-rowSelect') {
+      } else if (cmd === 'reviews-photoListRowSelect') {
         return openPhotoFromList(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -246,7 +246,7 @@ window.Prod01View = {
     const svReviews       = reactive([]);  // 리뷰 목록 (DB)
     const svReviewSummary = reactive({});  // 리뷰 평점 요약 (DB)
     const svReviewImages  = reactive([]);  // 리뷰 포토 이미지 (DB)
-    const svQna           = reactive([]);  // Q&A
+    const svQnas           = reactive([]);  // Q&A
     const svPromotions    = reactive({});  // 프로모션 (쿠폰/할인/사은품/이벤트)
 
     /* fnGetProdIdFromHash — 유틸 */
@@ -319,7 +319,7 @@ window.Prod01View = {
       }
       if (tier2[4].status === 'fulfilled') {
         const qd = fnPickData(tier2[4].value) || {};
-        svQna.splice(0, svQna.length, ...(qd.qnaPage?.pageList || qd.pageList || (Array.isArray(qd) ? qd : [])));
+        svQnas.splice(0, svQnas.length, ...(qd.qnaPage?.pageList || qd.pageList || (Array.isArray(qd) ? qd : [])));
       }
 
       /* Tier 3: 사용자별 프로모션 (통합) */
@@ -969,7 +969,7 @@ window.Prod01View = {
 
     return {
       uiState, codes, prod: svProduct,                                                                          // 상태 / 데이터
-      svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQna, svPromotions,                      // 데이터 (lazy)
+      svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQnas, svPromotions,                      // 데이터 (lazy)
       handleBtnAction, handleSelectAction,                                                                      // dispatch
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,            // computed - 리뷰/갤러리
       cfQuickBuyTotal, cfDisplayPrice, cfVisibleSizes, cfPhotoNavIdx, cfPhotoGridPageCount, cfPhotoGridItems,   // computed - 가격/사이즈/포토
@@ -995,13 +995,13 @@ window.Prod01View = {
         상품 상세
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>
           /
         </span>
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-prod-list')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goProdList')">
           상품목록
         </span>
         <span>
@@ -1154,7 +1154,7 @@ window.Prod01View = {
               <div style="display:flex;flex-wrap:wrap;gap:10px;">
                 <div v-for="c in prod.opt1s" :key="c.name"
                   style="position:relative;display:flex;flex-direction:column;align-items:center;">
-                  <button @click="handleSelectAction('options-color-select', c)" :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')" :style="{ width:'34px',height:'34px',borderRadius:'50%',position:'relative', cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed', background:c.hex || '#e5e7eb', border: uiState.selectedColor&&uiState.selectedColor.name===c.name ? '3px solid #fff' : '1px solid rgba(0,0,0,0.18)', boxShadow: uiState.selectedColor&&uiState.selectedColor.name===c.name ? '0 0 0 2px var(--blue), 0 2px 8px rgba(22,119,255,0.35)' : '0 1px 2px rgba(0,0,0,0.08)', boxSizing:'border-box',transition:'all .15s', opacity: colorStatus(c)!=='ok' ? '0.4' : '1', }">
+                  <button @click="handleSelectAction('options-colorSelect', c)" :title="c.name + (colorStatus(c)==='soldout' ? ' (품절)' : colorStatus(c)==='stop' ? ' (판매중지)' : '')" :style="{ width:'34px',height:'34px',borderRadius:'50%',position:'relative', cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed', background:c.hex || '#e5e7eb', border: uiState.selectedColor&&uiState.selectedColor.name===c.name ? '3px solid #fff' : '1px solid rgba(0,0,0,0.18)', boxShadow: uiState.selectedColor&&uiState.selectedColor.name===c.name ? '0 0 0 2px var(--blue), 0 2px 8px rgba(22,119,255,0.35)' : '0 1px 2px rgba(0,0,0,0.08)', boxSizing:'border-box',transition:'all .15s', opacity: colorStatus(c)!=='ok' ? '0.4' : '1', }">
                   <!-- ===== ■.■.■.■.■.■.■.■.■.■. 선택 체크 아이콘 — 어두운 색상은 흰색, 밝은 색상은 검정 자동 판단 ===== -->
                   <svg v-if="uiState.selectedColor && uiState.selectedColor.name===c.name" width="16" height="16" viewBox="0 0 24 24" fill="none" :stroke="(c.hex && /^#(f|e|d)/i.test(c.hex)) ? '#222' : '#fff'" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;">
                   <polyline points="20 6 9 17 4 12">
@@ -1196,7 +1196,7 @@ window.Prod01View = {
           </button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <button v-for="s in cfVisibleSizes" :key="s" @click="handleSelectAction('options-size-select', s)"
+          <button v-for="s in cfVisibleSizes" :key="s" @click="handleSelectAction('options-sizeSelect', s)"
                   :style="{
                   padding:'7px 14px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
                   cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
@@ -1269,16 +1269,16 @@ window.Prod01View = {
           <button class="btn-blue" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleBtnAction('cart-add')">
             🛒 장바구니 담기
           </button>
-          <button @click="handleBtnAction('prod-toggle-like', prod.prodId)" :title="isLiked && isLiked(prod.prodId) ? '찜 해제' : '찜하기'" :style="{ width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px', background: isLiked && isLiked(prod.prodId) ? '#fee2e2' : 'var(--bg-card)', cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center', transition:'all .15s', }">
+          <button @click="handleBtnAction('prod-toggleLike', prod.prodId)" :title="isLiked && isLiked(prod.prodId) ? '찜 해제' : '찜하기'" :style="{ width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px', background: isLiked && isLiked(prod.prodId) ? '#fee2e2' : 'var(--bg-card)', cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center', transition:'all .15s', }">
           <span :style="{ color: isLiked && isLiked(prod.prodId) ? '#ef4444' : '#9ca3af' }">
           {{ isLiked && isLiked(prod.prodId) ? '♥' : '♡' }}
         </span>
       </button>
     </div>
-    <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleBtnAction('order-buy-now')">
+    <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleBtnAction('order-buyNow')">
       ⚡ 바로구매
     </button>
-    <button @click="handleBtnAction('page-go-contact')"
+    <button @click="handleBtnAction('page-goContact')"
                 style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;text-decoration:underline;padding:4px 0;text-align:center;">
       상품 문의하기
     </button>
@@ -1363,8 +1363,8 @@ window.Prod01View = {
       <span v-if="tab.id==='review' && (svReviewSummary.total || cfMockReviews.length)" :style="{ display:'inline-flex',alignItems:'center',justifyContent:'center', minWidth:'18px',height:'18px',borderRadius:'9px', background:uiState.activeTab==='review'?'var(--blue)':'var(--text-muted)', color:'#fff',fontSize:'0.68rem',fontWeight:'700', marginLeft:'4px',padding:'0 4px',verticalAlign:'middle', }">
       {{ svReviewSummary.total || cfMockReviews.length }}
     </span>
-    <span v-if="tab.id==='qna' && svQna.length" :style="{ display:'inline-flex',alignItems:'center',justifyContent:'center', minWidth:'18px',height:'18px',borderRadius:'9px', background:uiState.activeTab==='qna'?'var(--blue)':'var(--text-muted)', color:'#fff',fontSize:'0.68rem',fontWeight:'700', marginLeft:'4px',padding:'0 4px',verticalAlign:'middle', }">
-    {{ svQna.length }}
+    <span v-if="tab.id==='qna' && svQnas.length" :style="{ display:'inline-flex',alignItems:'center',justifyContent:'center', minWidth:'18px',height:'18px',borderRadius:'9px', background:uiState.activeTab==='qna'?'var(--blue)':'var(--text-muted)', color:'#fff',fontSize:'0.68rem',fontWeight:'700', marginLeft:'4px',padding:'0 4px',verticalAlign:'middle', }">
+    {{ svQnas.length }}
   </span>
 </button>
 </div>
@@ -1522,7 +1522,7 @@ window.Prod01View = {
       </div>
       <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;">
         <div v-for="r in cfReviewsWithPhoto" :key="r.id"
-              @click="handleSelectAction('reviews-photo-list-rowSelect', r)"
+              @click="handleSelectAction('reviews-photoListRowSelect', r)"
               style="width:80px;height:80px;flex-shrink:0;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
               @mouseenter="$event.currentTarget.style.opacity='.75'"
               @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -1533,7 +1533,7 @@ window.Prod01View = {
     <!-- ===== ■.■.■.■. 정렬 ================================================ -->
     <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
       <button v-for="f in ['최신순','별점높은순','별점낮은순','도움순']" :key="f"
-            @click="handleSelectAction('reviews-filter-select', f)"
+            @click="handleSelectAction('reviews-filterSelect', f)"
             :style="{
             padding:'5px 14px',border:uiState.reviewFilter===f?'1.5px solid var(--blue)':'1.5px solid var(--border)',
             borderRadius:'20px',cursor:'pointer',fontSize:'0.8rem',
@@ -1567,7 +1567,7 @@ window.Prod01View = {
           </span>
         </div>
         <div v-if="r.hasPhoto" style="margin-bottom:10px;">
-          <div @click="handleSelectAction('reviews-photo-list-rowSelect', r)"
+          <div @click="handleSelectAction('reviews-photoListRowSelect', r)"
                 style="width:72px;height:72px;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);display:inline-block;">
             <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
           </div>
@@ -1589,14 +1589,14 @@ window.Prod01View = {
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
       Q&A
       <span style="font-size:0.85rem;font-weight:400;color:var(--text-muted);margin-left:8px;">
-        ({{ svQna.length }})
+        ({{ svQnas.length }})
       </span>
     </div>
-    <div v-if="!svQna.length" class="card" style="padding:40px;text-align:center;color:var(--text-muted);">
+    <div v-if="!svQnas.length" class="card" style="padding:40px;text-align:center;color:var(--text-muted);">
       등록된 Q&A가 없습니다.
     </div>
     <div v-else style="display:flex;flex-direction:column;gap:12px;">
-      <div v-for="q in svQna" :key="q.qnaId"
+      <div v-for="q in svQnas" :key="q.qnaId"
             class="card" style="padding:20px;">
         <div style="display:flex;align-items:flex-start;gap:12px;">
           <div style="min-width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0;">
@@ -1723,7 +1723,7 @@ window.Prod01View = {
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
       <div v-for="r in cfPhotoGridItems" :key="r.id"
-            @click="handleSelectAction('reviews-photo-grid-rowSelect', r)"
+            @click="handleSelectAction('reviews-photoGridRowSelect', r)"
             style="aspect-ratio:1;border-radius:8px;cursor:pointer;overflow:hidden;border:1px solid var(--border);transition:opacity .15s;"
             @mouseenter="$event.currentTarget.style.opacity='.75'"
             @mouseleave="$event.currentTarget.style.opacity='1'">
@@ -1842,10 +1842,10 @@ window.Prod01View = {
     </div>
   </div>
   <div style="display:flex;gap:4px;flex-shrink:0;">
-    <button class="btn-outline" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-open-cart')">
+    <button class="btn-outline" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-openCart')">
       담기
     </button>
-    <button class="btn-blue"    style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-open-buy')">
+    <button class="btn-blue"    style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-openBuy')">
       구매하기
     </button>
   </div>
@@ -1886,7 +1886,7 @@ window.Prod01View = {
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:8px;">
         <div v-for="c in prod.opt1s" :key="c.name" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;">
-          <button @click="handleSelectAction('options-color-select', c)" :title="c.name" :style="{ width:'30px',height:'30px',borderRadius:'50%', cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed', background:c.hex, border:uiState.selectedColor&&uiState.selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)', outline:uiState.selectedColor&&uiState.selectedColor.name===c.name?'2px solid white':'none', outlineOffset:'-4px',boxSizing:'border-box', opacity: colorStatus(c)!=='ok' ? '0.4' : '1', }">
+          <button @click="handleSelectAction('options-colorSelect', c)" :title="c.name" :style="{ width:'30px',height:'30px',borderRadius:'50%', cursor: colorStatus(c)==='ok' ? 'pointer' : 'not-allowed', background:c.hex, border:uiState.selectedColor&&uiState.selectedColor.name===c.name?'3px solid var(--blue)':'2px solid rgba(0,0,0,0.12)', outline:uiState.selectedColor&&uiState.selectedColor.name===c.name?'2px solid white':'none', outlineOffset:'-4px',boxSizing:'border-box', opacity: colorStatus(c)!=='ok' ? '0.4' : '1', }">
         </button>
         <svg v-if="colorStatus(c)!=='ok'" style="position:absolute;top:0;left:0;width:30px;height:30px;pointer-events:none;" viewBox="0 0 30 30">
           <line x1="4" y1="4" x2="26" y2="26" stroke="#ef4444" stroke-width="2" />
@@ -1924,7 +1924,7 @@ window.Prod01View = {
             border: uiState.sizeError ? '1px solid #ef4444' : '1px solid transparent',
             borderRadius:'6px', transition:'border-color .2s',
             }">
-    <button v-for="s in cfVisibleSizes" :key="s" @click="handleSelectAction('options-size-select', s)"
+    <button v-for="s in cfVisibleSizes" :key="s" @click="handleSelectAction('options-sizeSelect', s)"
               :style="{
               padding:'7px 16px',borderRadius:'6px',fontSize:'0.82rem',position:'relative',
               cursor: sizeStatus(s)==='ok' ? 'pointer' : 'not-allowed',
@@ -1998,10 +1998,10 @@ window.Prod01View = {
       {{ cfQuickBuyTotal }}
     </span>
   </div>
-  <button v-if="uiState.drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('cart-add-from-drawer')">
+  <button v-if="uiState.drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('cart-addFromDrawer')">
     🛒 장바구니 담기
   </button>
-  <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('order-buy-now')">
+  <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('order-buyNow')">
     ⚡ 바로구매
   </button>
 </div>

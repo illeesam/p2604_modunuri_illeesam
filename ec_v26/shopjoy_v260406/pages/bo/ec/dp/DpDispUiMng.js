@@ -37,7 +37,7 @@ window.DpDispUiMng = {
         pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // UI 신규 등록 (인라인 패널)
       } else if (cmd === 'uis-add') {

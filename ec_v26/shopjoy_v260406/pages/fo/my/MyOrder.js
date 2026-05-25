@@ -21,28 +21,28 @@ window.MyOrder = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MyOrder.js : handleBtnAction -> ', cmd, param);
       // 도움말 모달 열기
-      if (cmd === 'orders-help-open') {
+      if (cmd === 'orders-helpOpen') {
         uiState.flowHelpOpen = true;
       // 도움말 모달 닫기
-      } else if (cmd === 'orders-help-close') {
+      } else if (cmd === 'orders-helpClose') {
         uiState.flowHelpOpen = false;
       // 도움말 탭 변경
-      } else if (cmd === 'orders-help-tab') {
+      } else if (cmd === 'orders-helpTab') {
         uiState.helpTab = param;
       // 흐름 필터 초기화
-      } else if (cmd === 'orders-flow-reset') {
+      } else if (cmd === 'orders-flowReset') {
         flowStatusFilter.splice(0);
       // 리뷰 모달 닫기
-      } else if (cmd === 'review-modal-close') {
+      } else if (cmd === 'review-modalClose') {
         reviewModal.show = false;
       // 리뷰 제출
       } else if (cmd === 'review-submit') {
         return submitReview();
       // 리뷰 별점 설정
-      } else if (cmd === 'review-set-rating') {
+      } else if (cmd === 'review-setRating') {
         reviewModal.rating = param;
       // 클레임 모달 닫기
-      } else if (cmd === 'claim-modal-close') {
+      } else if (cmd === 'claim-modalClose') {
         claimModal.show = false;
       // 클레임 제출
       } else if (cmd === 'claim-submit') {
@@ -56,14 +56,14 @@ window.MyOrder = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MyOrder.js : handleSelectAction -> ', cmd, param);
       // 주문 흐름 상태 토글
-      if (cmd === 'orders-flow-toggle') {
+      if (cmd === 'orders-flowToggle') {
         toggleFlowStatus(param);
         pager.page = 1;
       // 주문 취소
       } else if (cmd === 'orders-cancel') {
         return cancelOrder(param);
       // 구매 확정
-      } else if (cmd === 'orders-confirm-purchase') {
+      } else if (cmd === 'orders-confirmPurchase') {
         return confirmPurchase(param);
       // 배송 추적 열기
       } else if (cmd === 'orders-track') {
@@ -72,34 +72,34 @@ window.MyOrder = {
       } else if (cmd === 'orders-track2') {
         return openTracking2(param.courier, param.trackingNo);
       // 클레임 모달 열기 (교환/반품)
-      } else if (cmd === 'orders-claim-open') {
+      } else if (cmd === 'orders-claimOpen') {
         return openClaimModal(param.orderId, param.type);
       // 클레임 사유 선택
-      } else if (cmd === 'claim-set-reason') {
+      } else if (cmd === 'claim-setReason') {
         claimModal.reason = param;
         claimModal.selectedCouponId = null;
       // 클레임 교환 상품 선택
-      } else if (cmd === 'claim-set-exchange-item') {
+      } else if (cmd === 'claim-setExchangeItem') {
         claimModal.exchangeItemIdx = param;
         claimModal.exchangeSize = '';
         claimModal.exchangeColor = '';
       // 클레임 교환 사이즈 토글
-      } else if (cmd === 'claim-toggle-size') {
+      } else if (cmd === 'claim-toggleSize') {
         claimModal.exchangeSize = claimModal.exchangeSize === param ? '' : param;
       // 클레임 교환 색상 토글
-      } else if (cmd === 'claim-toggle-color') {
+      } else if (cmd === 'claim-toggleColor') {
         claimModal.exchangeColor = claimModal.exchangeColor === param ? '' : param;
       // 리뷰 모달 열기
-      } else if (cmd === 'orders-review-open') {
+      } else if (cmd === 'orders-reviewOpen') {
         return openReviewModal(param.orderId, param.itemIdx, param.item);
       // 상품 모달 열기
-      } else if (cmd === 'orders-prod-open') {
+      } else if (cmd === 'orders-prodOpen') {
         return openProdModal(param);
       // 주문자 정보 모달 열기
-      } else if (cmd === 'orders-customer-open') {
+      } else if (cmd === 'orders-customerOpen') {
         return openCustomerModal(param);
       // 리뷰 파일 제거
-      } else if (cmd === 'review-file-remove') {
+      } else if (cmd === 'review-fileRemove') {
         return removeReviewFile(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -353,7 +353,7 @@ window.MyOrder = {
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
   <!-- ===== ■. 영역 ====================================================== -->
-  <MyDateFilter @search="onSearch" @reset="handleBtnAction('orders-flow-reset')" />
+  <MyDateFilter @search="onSearch" @reset="handleBtnAction('orders-flowReset')" />
   <!-- ===== ■. 주문 처리 흐름 (토글 필터) ======================================== -->
   <div style="background:#f4f5f7;border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;margin-bottom:14px;">
     <div style="display:flex;align-items:center;gap:6px;overflow-x:auto;flex-wrap:nowrap;">
@@ -364,7 +364,7 @@ window.MyOrder = {
         ›
       </span>
       <template v-for="(step, si) in myStore.ORDER_FLOW" :key="step.status">
-        <button @click="orders.filter(o=>o.status===step.status).length>0 && handleSelectAction('orders-flow-toggle', step.status)" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="flowStatusFilter.includes(step.status) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : orders.filter(o=>o.status===step.status).length>0 ? 'background:var(--bg-card);border-color:var(--border);cursor:pointer;' : 'background:transparent;border-color:transparent;opacity:0.35;cursor:default;'">
+        <button @click="orders.filter(o=>o.status===step.status).length>0 && handleSelectAction('orders-flowToggle', step.status)" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="flowStatusFilter.includes(step.status) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : orders.filter(o=>o.status===step.status).length>0 ? 'background:var(--bg-card);border-color:var(--border);cursor:pointer;' : 'background:transparent;border-color:transparent;opacity:0.35;cursor:default;'">
         <span style="font-size:0.7rem;font-weight:700;"
             :style="flowStatusFilter.includes(step.status) ? 'color:#fff;' : orders.filter(o=>o.status===step.status).length>0 ? 'color:var(--text-primary);' : 'color:var(--text-muted);'">
           {{ step.label || step.status }}
@@ -379,11 +379,11 @@ window.MyOrder = {
         ›
       </span>
     </template>
-    <button v-if="flowStatusFilter.length" @click="handleBtnAction('orders-flow-reset')"
+    <button v-if="flowStatusFilter.length" @click="handleBtnAction('orders-flowReset')"
         style="margin-left:4px;font-size:0.68rem;padding:2px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg-base);color:var(--text-secondary);cursor:pointer;flex-shrink:0;">
       ✕
     </button>
-    <button type="button" @click="handleBtnAction('orders-help-open')" aria-label="도움말"
+    <button type="button" @click="handleBtnAction('orders-helpOpen')" aria-label="도움말"
         style="margin-left:auto;flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg-base);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue);">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
         <circle cx="12" cy="12" r="10"/>
@@ -413,7 +413,7 @@ window.MyOrder = {
       <span style="margin-left:10px;font-size:0.78rem;color:var(--text-muted);">
         주문일: {{ o.orderDate }}
       </span>
-      <button v-if="cfAuthUser" @click="handleSelectAction('orders-customer-open', o)"
+      <button v-if="cfAuthUser" @click="handleSelectAction('orders-customerOpen', o)"
           style="margin-left:8px;font-size:0.78rem;font-weight:600;color:var(--text-secondary);border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;">
         <span style="font-weight:400;color:var(--text-muted);text-decoration:none;">
           주문자:
@@ -426,15 +426,15 @@ window.MyOrder = {
       주문취소
     </button>
     <template v-if="o.status==='배송완료' && !(claimsByOrderId[o.orderId] && !myStore.CLAIM_DONE.includes(claimsByOrderId[o.orderId].status))">
-    <button @click="handleSelectAction('orders-claim-open', { orderId: o.orderId, type: 'exchange' })"
+    <button @click="handleSelectAction('orders-claimOpen', { orderId: o.orderId, type: 'exchange' })"
             style="padding:5px 12px;border:1.5px solid #f59e0b;border-radius:6px;background:transparent;color:#f59e0b;cursor:pointer;font-size:0.78rem;font-weight:600;white-space:nowrap;">
       교환신청
     </button>
-    <button @click="handleSelectAction('orders-claim-open', { orderId: o.orderId, type: 'return' })"
+    <button @click="handleSelectAction('orders-claimOpen', { orderId: o.orderId, type: 'return' })"
             style="padding:5px 12px;border:1.5px solid #f97316;border-radius:6px;background:transparent;color:#f97316;cursor:pointer;font-size:0.78rem;font-weight:600;white-space:nowrap;">
       반품신청
     </button>
-    <button @click="handleSelectAction('orders-confirm-purchase', o.orderId)"
+    <button @click="handleSelectAction('orders-confirmPurchase', o.orderId)"
             style="padding:5px 12px;border:1.5px solid #22c55e;border-radius:6px;background:#22c55e;color:#fff;cursor:pointer;font-size:0.78rem;font-weight:700;white-space:nowrap;">
       구매확정
     </button>
@@ -619,7 +619,7 @@ window.MyOrder = {
         <span style="font-size:0.88rem;font-weight:600;color:var(--text-primary);">
           {{ item.prodNm }}
         </span>
-        <button v-if="findProd(item.prodNm)" @click="handleSelectAction('orders-prod-open', item.prodNm)"
+        <button v-if="findProd(item.prodNm)" @click="handleSelectAction('orders-prodOpen', item.prodNm)"
               style="font-size:0.65rem;padding:0 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg-base);color:var(--text-muted);cursor:pointer;font-weight:600;line-height:1.7;white-space:nowrap;">
           #{{ findProd(item.prodNm).prodId }}
         </button>
@@ -641,7 +641,7 @@ window.MyOrder = {
         {{ item.price.toLocaleString() }}원
       </div>
       <button v-if="o.status==='배송완료' || o.status==='구매확정'"
-            @click="handleSelectAction('orders-review-open', { orderId: o.orderId, itemIdx: iix, item })"
+            @click="handleSelectAction('orders-reviewOpen', { orderId: o.orderId, itemIdx: iix, item })"
             style="font-size:0.7rem;padding:3px 9px;border-radius:6px;border:1.5px solid;cursor:pointer;font-weight:700;white-space:nowrap;"
             :style="getReview(o.orderId,iix)
             ? 'border-color:#6366f1;background:#eef2ff;color:#6366f1;'
@@ -766,7 +766,7 @@ window.MyOrder = {
 <!-- ===== ■. Teleport 모달들 ============================================ -->
 <Teleport to="body">
   <!-- ===== ■.■. 리뷰 작성/수정 모달 =========================================== -->
-  <div v-if="reviewModal.show" @click.self="handleBtnAction('review-modal-close')"
+  <div v-if="reviewModal.show" @click.self="handleBtnAction('review-modalClose')"
       style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;">
     <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);" @click.stop>
       <!-- ===== ■.■.■.■. 헤더 ================================================ -->
@@ -791,7 +791,7 @@ window.MyOrder = {
             </span>
           </div>
         </div>
-        <button @click="handleBtnAction('review-modal-close')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);">
+        <button @click="handleBtnAction('review-modalClose')" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--text-muted);">
           ✕
         </button>
       </div>
@@ -801,7 +801,7 @@ window.MyOrder = {
           별점
         </div>
         <div style="display:flex;gap:6px;margin-bottom:16px;">
-          <button v-for="s in [1,2,3,4,5]" :key="s" @click="handleBtnAction('review-set-rating', s)"
+          <button v-for="s in [1,2,3,4,5]" :key="s" @click="handleBtnAction('review-setRating', s)"
               style="background:none;border:none;cursor:pointer;font-size:1.8rem;padding:0;line-height:1;transition:transform 0.1s;"
               :style="s<=reviewModal.rating ? 'color:#f59e0b;' : 'color:#d1d5db;'">
             ★
@@ -837,7 +837,7 @@ window.MyOrder = {
                 <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                   {{ f.name }}
                 </span>
-                <button @click="handleSelectAction('review-file-remove', fi)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.85rem;padding:0;line-height:1;margin-left:2px;">
+                <button @click="handleSelectAction('review-fileRemove', fi)" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.85rem;padding:0;line-height:1;margin-left:2px;">
                   ×
                 </button>
               </div>
@@ -846,7 +846,7 @@ window.MyOrder = {
         </div>
         <!-- ===== ■.■.■.■. 푸터 ================================================ -->
         <div style="padding:14px 20px 18px;display:flex;gap:8px;justify-content:flex-end;">
-          <button @click="handleBtnAction('review-modal-close')"
+          <button @click="handleBtnAction('review-modalClose')"
             style="padding:8px 18px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-secondary);cursor:pointer;font-size:0.85rem;font-weight:600;">
             취소
           </button>
@@ -859,7 +859,7 @@ window.MyOrder = {
     </div>
     <!-- ===== □.□. 리뷰 작성/수정 모달 =========================================== -->
     <!-- ===== ■.■. 도움말 모달 ================================================ -->
-    <div v-if="uiState.flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('orders-help-close')">
+    <div v-if="uiState.flowHelpOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('orders-helpClose')">
       <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
         <div style="padding:18px 20px 0;flex-shrink:0;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -871,13 +871,13 @@ window.MyOrder = {
                 주문 · 클레임 도움말
               </span>
             </div>
-            <button @click="handleBtnAction('orders-help-close')" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
+            <button @click="handleBtnAction('orders-helpClose')" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
               ✕
             </button>
           </div>
           <div style="display:flex;border-bottom:2px solid var(--border);">
             <button v-for="t in [{id:'order',label:'주문',icon:'📦'},{id:'cancel',label:'취소',icon:'🚫'},{id:'return',label:'반품',icon:'↩️'},{id:'exchange',label:'교환',icon:'🔄'}]"
-              :key="t.id" @click="handleBtnAction('orders-help-tab', t.id)"
+              :key="t.id" @click="handleBtnAction('orders-helpTab', t.id)"
               style="padding:8px 14px;border:none;cursor:pointer;font-size:0.82rem;font-weight:700;background:none;position:relative;white-space:nowrap;"
               :style="uiState.helpTab===t.id ? 'color:var(--blue);' : 'color:var(--text-muted);'">
               {{ t.icon }} {{ t.label }}
@@ -995,7 +995,7 @@ window.MyOrder = {
           </div>
         </div>
         <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-          <button @click="handleBtnAction('orders-help-close')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
+          <button @click="handleBtnAction('orders-helpClose')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
             확인
           </button>
         </div>
@@ -1003,7 +1003,7 @@ window.MyOrder = {
     </div>
     <!-- ===== □.□. 도움말 모달 ================================================ -->
     <!-- ===== ■.■. 교환·반품 신청 모달 =========================================== -->
-    <div v-if="claimModal.show" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('claim-modal-close')">
+    <div v-if="claimModal.show" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;" @click.self="handleBtnAction('claim-modalClose')">
       <div style="background:var(--bg-card);border-radius:var(--radius);width:100%;max-width:480px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.25);border:1px solid var(--border);overflow:hidden;" @click.stop>
         <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
           <div>
@@ -1014,7 +1014,7 @@ window.MyOrder = {
               {{ claimModal.orderId }}
             </span>
           </div>
-          <button @click="handleBtnAction('claim-modal-close')" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
+          <button @click="handleBtnAction('claim-modalClose')" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--text-muted);">
             ✕
           </button>
         </div>
@@ -1028,7 +1028,7 @@ window.MyOrder = {
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;">
               <button v-for="r in (claimModal.type==='exchange' ? EXCHANGE_REASONS : RETURN_REASONS)" :key="r"
-                @click="handleSelectAction('claim-set-reason', r)"
+                @click="handleSelectAction('claim-setReason', r)"
                 style="padding:6px 14px;border-radius:20px;cursor:pointer;font-size:0.78rem;font-weight:600;"
                 :style="claimModal.reason===r ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
                 {{ r }}
@@ -1054,7 +1054,7 @@ window.MyOrder = {
               </span>
             </div>
             <div style="display:flex;flex-direction:column;gap:6px;">
-              <button v-for="(item, idx) in claimModal.order.orderItems" :key="idx" @click="handleSelectAction('claim-set-exchange-item', idx)"
+              <button v-for="(item, idx) in claimModal.order.orderItems" :key="idx" @click="handleSelectAction('claim-setExchangeItem', idx)"
                 style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;text-align:left;width:100%;"
                 :style="claimModal.exchangeItemIdx===idx ? 'background:var(--blue-dim);border:1.5px solid var(--blue);' : 'background:var(--bg-base);border:1.5px solid var(--border);'">
                 <span style="font-size:1.2rem;">
@@ -1086,7 +1086,7 @@ window.MyOrder = {
               사이즈
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:5px;">
-              <button v-for="sz in cfClaimModalProduct.opt2s" :key="sz" @click="handleSelectAction('claim-toggle-size', sz)"
+              <button v-for="sz in cfClaimModalProduct.opt2s" :key="sz" @click="handleSelectAction('claim-toggleSize', sz)"
                   style="padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;"
                   :style="claimModal.exchangeSize===sz ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
                 {{ sz }}
@@ -1098,7 +1098,7 @@ window.MyOrder = {
             색상
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <button v-for="col in cfClaimModalProduct.opt1s" :key="col.name" @click="handleSelectAction('claim-toggle-color', col.name)"
+            <button v-for="col in cfClaimModalProduct.opt1s" :key="col.name" @click="handleSelectAction('claim-toggleColor', col.name)"
                   style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;"
                   :style="claimModal.exchangeColor===col.name ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);' : 'background:var(--bg-base);color:var(--text-secondary);border:1.5px solid var(--border);'">
               <span style="width:10px;height:10px;border-radius:50%;border:1px solid rgba(0,0,0,0.15);" :style="'background:'+col.hex">
@@ -1197,7 +1197,7 @@ window.MyOrder = {
     </div>
     <!-- ===== ■.■.■.■. 영역 ================================================ -->
     <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;">
-      <button @click="handleBtnAction('claim-modal-close')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:700;">
+      <button @click="handleBtnAction('claim-modalClose')" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:0.88rem;font-weight:700;">
         취소
       </button>
       <button @click="handleBtnAction('claim-submit')" style="flex:2;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;color:#fff;"

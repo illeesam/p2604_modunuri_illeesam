@@ -63,10 +63,10 @@ window.SyApiLogMng = {
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return onDateRangeChange();
       // 펼침/접기 토글 (more search)
-      } else if (cmd === 'searchParam-toggle-more') {
+      } else if (cmd === 'searchParam-toggleMore') {
         uiState.srchOpen = !uiState.srchOpen;
         return;
       // 페이지 설명 토글
@@ -74,7 +74,7 @@ window.SyApiLogMng = {
         uiState.descOpen = !uiState.descOpen;
         return;
       // 활성 탭(요청로그/오류로그) 전체 행 펼침 토글
-      } else if (cmd === 'apiLogs-toggle-expand-all') {
+      } else if (cmd === 'apiLogs-toggleExpandAll') {
         return toggleExpandAll();
       // 활성 탭 로그 전체 삭제
       } else if (cmd === 'apiLogs-clear') {
@@ -287,7 +287,7 @@ window.SyApiLogMng = {
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
       { key: 'searchMethod', type: 'select', label: '메서드',
         options: () => codes.http_methods, nullLabel: '메서드 전체' },
       { key: 'searchPath', type: 'text', label: 'API 경로',
@@ -376,7 +376,7 @@ window.SyApiLogMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggle-more')" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggleMore')" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
           {{ uiState.srchOpen?'▲':'▼' }}
         </button>
       </template>
@@ -419,7 +419,7 @@ window.SyApiLogMng = {
         <span style="font-size:11px;color:#aaa;">
           행 클릭 시 상세정보 펼침
         </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggle-expand-all')">
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggleExpandAll')">
           {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
         </button>
         <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">
@@ -657,7 +657,7 @@ window.SyApiLogMng = {
         <span style="font-size:11px;color:#aaa;">
           행 클릭 시 상세정보 펼침
         </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggle-expand-all')">
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggleExpandAll')">
           {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
         </button>
         <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">

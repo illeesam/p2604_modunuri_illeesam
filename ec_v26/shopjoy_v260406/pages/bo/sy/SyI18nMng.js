@@ -11,7 +11,7 @@ window.SyI18nMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
-    const i18n     = reactive([]);             // 다국어 키 그리드 데이터
+    const i18ns     = reactive([]);             // 다국어 키 그리드 데이터
     const i18nMsgs = reactive([]);             // 다국어 메시지 (i18nId 별 langCd 매핑)
     const uiState  = reactive({ isPageCodeLoad: false, selectedId: null }); // UI 상태
     const codes    = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
@@ -48,14 +48,14 @@ window.SyI18nMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyI18nMng.js : handleSelectAction -> ', cmd, param);
       // 다국어 키 그리드 행 클릭 → 번역 편집 패널 열기
-      if (cmd === 'i18n-rowOpen') {
+      if (cmd === 'i18ns-rowOpen') {
         return openDetail(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'i18n-pager-setPage') {
+      } else if (cmd === 'i18ns-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData(); }
         return;
       // 페이지 크기 변경
-      } else if (cmd === 'i18n-pager-sizeChange') {
+      } else if (cmd === 'i18ns-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData();
       } else {
@@ -74,7 +74,7 @@ window.SyI18nMng = {
 
     const msgForm = reactive({});              // 번역 입력 폼
 
-    const cfSelectedKey = computed(() => (i18n||[]).find(k => k.i18nId === uiState.selectedId) || null);
+    const cfSelectedKey = computed(() => (i18ns||[]).find(k => k.i18nId === uiState.selectedId) || null);
     const cfSelectedMsgs = computed(() => {
       if (!cfSelectedKey.value) { return {}; }
       const msgs = {};
@@ -107,13 +107,13 @@ window.SyI18nMng = {
         }
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const d = res.data?.data;
-        i18n.splice(0, i18n.length, ...(d?.pageList || []));
+        i18ns.splice(0, i18ns.length, ...(d?.pageList || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
         fnBuildPagerNums();
       } catch (err) {
         console.error('[handleSearchData]', err);
-        i18n.splice(0, i18n.length);
+        i18ns.splice(0, i18ns.length);
       }
     };
 
@@ -218,7 +218,7 @@ window.SyI18nMng = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, searchParam, pager, i18n, msgForm,                         // 상태 / 데이터
+      uiState, codes, searchParam, pager, i18ns, msgForm,                         // 상태 / 데이터
       baseSearchColumns, baseGridColumns, msgFormColumns,                        // 컬럼 정의
       handleBtnAction, handleSelectAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedKey,                                                             // computed
@@ -239,12 +239,12 @@ window.SyI18nMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="i18n" :pager="pager" row-key="i18nId"
+    :columns="baseGridColumns" :rows="i18ns" :pager="pager" row-key="i18nId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
-    @set-page="n => handleSelectAction('i18n-pager-setPage', n)"
-    @size-change="handleSelectAction('i18n-pager-sizeChange')"
-    @row-click="row => handleSelectAction('i18n-rowOpen', row)" />
+    @set-page="n => handleSelectAction('i18ns-pager-setPage', n)"
+    @size-change="handleSelectAction('i18ns-pager-sizeChange')"
+    @row-click="row => handleSelectAction('i18ns-rowOpen', row)" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 번역 편집 패널 ================================================ -->
   <div class="card" v-if="cfSelectedKey">

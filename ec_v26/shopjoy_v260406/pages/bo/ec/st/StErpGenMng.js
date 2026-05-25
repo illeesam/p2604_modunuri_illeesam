@@ -53,9 +53,9 @@ window.StErpGenMng = {
     const targetMon = ref(new Date().toISOString().slice(0, 7));
     const slipType  = ref('정산');
 
-    const orderList = reactive([]);
-    const vendorList = reactive([]);
-    const cfVendors = computed(() => vendorList.filter(v => v.vendorType === '판매업체'));
+    const orders = reactive([]);
+    const vendors = reactive([]);
+    const cfVendors = computed(() => vendors.filter(v => v.vendorType === '판매업체'));
 
     // ===== [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ====================
 
@@ -67,9 +67,9 @@ window.StErpGenMng = {
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, 'ERP전표생성', '목록조회'),
           boApiSvc.stErp.getGenPage({ targetMon: targetMon.value, pageNo: 1, pageSize: 100 }, 'ERP전표생성', '이력조회'),
         ]);
-        orderList.splice(0, orderList.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
-        vendorList.splice(0, vendorList.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
-        genHistory.splice(0, genHistory.length, ...(resH.data?.data?.pageList || resH.data?.data?.list || []));
+        orders.splice(0, orders.length, ...(resO.data?.data?.pageList || resO.data?.data?.list || []));
+        vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
+        genHistories.splice(0, genHistories.length, ...(resH.data?.data?.pageList || resH.data?.data?.list || []));
       } catch (_) { console.error('[catch-info]', _); }
     };
 
@@ -79,7 +79,7 @@ window.StErpGenMng = {
 
     const cfPreviewRows = computed(() => {
       return cfVendors.value.map(v => {
-        const vOrders = orderList.filter(o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
+        const vOrders = orders.filter(o => o.vendorId === v.vendorId && o.status !== '취소됨' && o.orderDate.startsWith(targetMon.value));
         const sales   = vOrders.reduce((s, o) => s + o.totalPrice, 0);
         const comm    = Math.round(sales * 0.10);
         const settle  = sales - comm;
@@ -88,14 +88,14 @@ window.StErpGenMng = {
       }).filter(r => r.debitAmt > 0);
     });
 
-    const genHistory = reactive([]);
+    const genHistories = reactive([]);
 
     /* doGenerate — 실행 */
     const doGenerate = async () => {
       if (!cfPreviewRows.value.length) { showToast('생성할 전표 데이터가 없습니다.', 'error'); return; }
       const ok = await showConfirm('ERP 전표생성', `${targetMon.value} ${slipType.value} 전표를 생성하시겠습니까?`);
       if (!ok) { return; }
-      genHistory.unshift({
+      genHistories.unshift({
         genId: 'GEN-' + targetMon.value, genMon: targetMon.value, slipType: slipType.value,
         slipCnt: cfPreviewRows.value.length,
         totalAmt: cfPreviewRows.value.reduce((s, r) => s + r.debitAmt, 0),
@@ -158,7 +158,7 @@ window.StErpGenMng = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, targetMon, slipType, genHistory, settingForm,                  // 상태 / 데이터
+      uiState, codes, targetMon, slipType, genHistories, settingForm,                  // 상태 / 데이터
       previewGridColumns, histGridColumns, baseFormColumns,                           // 컬럼 정의
       handleBtnAction,                                                                // dispatch
       cfPreviewRows,                                                                  // computed
@@ -224,8 +224,8 @@ window.StErpGenMng = {
   <div class="card" style="margin-top:12px">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="histGridColumns" :rows="genHistory" row-key="genId"
-      list-title="전표생성 이력" :count-text="genHistory.length + '건'">
+      :columns="histGridColumns" :rows="genHistories" row-key="genId"
+      list-title="전표생성 이력" :count-text="genHistories.length + '건'">
     </bo-grid>
   </div>
 </div>

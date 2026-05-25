@@ -29,10 +29,10 @@ window.OdOrderHist = {
         if (uiState.tabMode2 === 'tab') { uiState.botTab = param; }
         return;
       // 주문 참조 모달 열기
-      } else if (cmd === 'histList-order-ref') {
+      } else if (cmd === 'histList-orderRef') {
         return showRefModal('order', props.orderId);
       // 배송 상세로 이동
-      } else if (cmd === 'histList-dliv-edit') {
+      } else if (cmd === 'histList-dlivEdit') {
         return props.navigate('odDlivDtl', { id: param });
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -199,7 +199,7 @@ window.OdOrderHist = {
       <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
         empty-text="구성 상품 정보가 없습니다." row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('histList-order-ref')">
+          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('histList-orderRef')">
             보기
           </button>
         </template>
@@ -238,7 +238,7 @@ window.OdOrderHist = {
               {{ cfRelatedDliv.outboundTrackingNo || '-' }}
             </b>
           </div>
-          <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-dliv-edit', cfRelatedDliv.dlivId)">
+          <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-dlivEdit', cfRelatedDliv.dlivId)">
             배송 수정
           </button>
         </div>

@@ -31,7 +31,7 @@ window.Prod03List = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Prod03List.js : handleBtnAction -> ', cmd, param);
       // 페이지 이동: 홈
-      if (cmd === 'page-go-home') {
+      if (cmd === 'page-goHome') {
         return props.navigate('home');
       // 조회
       } else if (cmd === 'search-do') {
@@ -44,7 +44,7 @@ window.Prod03List = {
       } else if (cmd === 'filter-clear') {
         return clearFilters();
       // 가격 구간 프리셋 선택
-      } else if (cmd === 'filter-price-range') {
+      } else if (cmd === 'filter-priceRange') {
         uiState.priceMin = param.min || ''; uiState.priceMax = param.max || '';
         return;
       // 카테고리 전체(선택 해제)
@@ -71,10 +71,10 @@ window.Prod03List = {
       if (cmd === 'categories-rowToggle') {
         return toggleCat(param);
       // 색상 필터 토글
-      } else if (cmd === 'filter-color-toggle') {
+      } else if (cmd === 'filter-colorToggle') {
         return toggleColor(param);
       // 사이즈 필터 토글
-      } else if (cmd === 'filter-size-toggle') {
+      } else if (cmd === 'filter-sizeToggle') {
         return toggleSize(param);
       // 상품 카드 선택
       } else if (cmd === 'prods-rowSelect') {
@@ -338,7 +338,7 @@ window.Prod03List = {
         상품 목록
       </h1>
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-go-home')">
+        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
           홈
         </span>
         <span>
@@ -429,7 +429,7 @@ window.Prod03List = {
         </span>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button v-for="r in [{label:'~3만',max:30000},{label:'3~5만',min:30000,max:50000},{label:'5~10만',min:50000,max:100000},{label:'10만~',min:100000}]" :key="r.label" @click="handleBtnAction('filter-price-range', r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg-base);cursor:pointer;font-size:0.75rem;font-weight:600;color:var(--text-secondary);transition:all 0.15s;" :style="uiState.priceMin==(r.min||'')&&uiState.priceMax==(r.max||'')?'background:var(--blue);color:#fff;border-color:var(--blue);':''">
+        <button v-for="r in [{label:'~3만',max:30000},{label:'3~5만',min:30000,max:50000},{label:'5~10만',min:50000,max:100000},{label:'10만~',min:100000}]" :key="r.label" @click="handleBtnAction('filter-priceRange', r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg-base);cursor:pointer;font-size:0.75rem;font-weight:600;color:var(--text-secondary);transition:all 0.15s;" :style="uiState.priceMin==(r.min||'')&&uiState.priceMax==(r.max||'')?'background:var(--blue);color:#fff;border-color:var(--blue);':''">
         {{ r.label }}
       </button>
     </div>
@@ -446,7 +446,7 @@ window.Prod03List = {
   </div>
   <div style="display:flex;flex-wrap:wrap;gap:8px;">
     <button v-for="c in cfAllColors" :key="c.name"
-          @click="handleSelectAction('filter-color-toggle', c.name)"
+          @click="handleSelectAction('filter-colorToggle', c.name)"
           :title="c.name"
           style="display:flex;align-items:center;gap:5px;padding:4px 10px 4px 6px;border-radius:20px;cursor:pointer;font-size:0.75rem;font-weight:600;transition:all 0.15s;"
           :style="selColors.has(c.name)
@@ -471,7 +471,7 @@ window.Prod03List = {
   </div>
   <div style="display:flex;flex-wrap:wrap;gap:6px;">
     <button v-for="sz in cfAllSizes" :key="sz"
-          @click="handleSelectAction('filter-size-toggle', sz)"
+          @click="handleSelectAction('filter-sizeToggle', sz)"
           style="padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.15s;"
           :style="selSizes.has(sz)
           ? 'background:var(--blue);color:#fff;border:1.5px solid var(--blue);'

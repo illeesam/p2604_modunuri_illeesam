@@ -86,11 +86,11 @@
         } else if (cmd === 'stats-excel') {
           return doExcelDownload();
         // 상세필터 펼침 토글
-        } else if (cmd === 'filters-toggle-expand') {
+        } else if (cmd === 'filters-toggleExpand') {
           uiState.filterExpand = !uiState.filterExpand;
           return;
         // 그룹 전체 선택/해제 (param: { key, all })
-        } else if (cmd === 'filters-toggle-all') {
+        } else if (cmd === 'filters-toggleAll') {
           return toggleAll(param.key, param.all);
         // 그룹 단일 토글 (param: { key, v })
         } else if (cmd === 'filters-toggle') {
@@ -396,7 +396,7 @@
         ~
       </span>
       <input type="date" v-model="filters.endDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
-      <button @click="handleBtnAction('filters-toggle-expand')"
+      <button @click="handleBtnAction('filters-toggleExpand')"
         style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;cursor:pointer;">
         {{ uiState.filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
@@ -423,7 +423,7 @@
         <span style="font-size:11px;font-weight:700;color:#666;width:74px;">
           {{ grp.label }}
         </span>
-        <button @click="handleBtnAction('filters-toggle-all', { key: grp.key, all: grp.all })"
+        <button @click="handleBtnAction('filters-toggleAll', { key: grp.key, all: grp.all })"
           :style="{fontSize:'11px',padding:'3px 10px',borderRadius:'12px',border:'1px solid',cursor:'pointer',
           background: filters[grp.key].length===grp.all.length ? '#1a1a2e' : '#fff',
           color:       filters[grp.key].length===grp.all.length ? '#fff'    : '#555',

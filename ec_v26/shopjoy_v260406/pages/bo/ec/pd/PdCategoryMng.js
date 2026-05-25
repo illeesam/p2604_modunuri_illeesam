@@ -39,10 +39,10 @@ window.PdCategoryMng = {
       } else if (cmd === 'categories-save') {
         return handleSave();
       // 체크된 행 일괄 삭제
-      } else if (cmd === 'categories-delete-checked') {
+      } else if (cmd === 'categories-deleteChecked') {
         return deleteRows();
       // 체크된 행 일괄 취소
-      } else if (cmd === 'categories-cancel-checked') {
+      } else if (cmd === 'categories-cancelChecked') {
         return cancelChecked();
       // 좌측 트리 전체 보기 (선택 해제)
       } else if (cmd === 'categoryTree-clear') {
@@ -107,7 +107,7 @@ window.PdCategoryMng = {
       } else if (cmd === 'parentModal-select') {
         return onParentSelect(param);
       // 사이트 변경
-      } else if (cmd === 'searchParam-site-change') {
+      } else if (cmd === 'searchParam-siteChange') {
         return onSiteChange();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -474,7 +474,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     const baseSearchColumns = [
       { key: 'siteId', label: '사이트 *', type: 'select', nullable: false,
         options: () => sites.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
-        onChange: () => handleSelectAction('searchParam-site-change') },
+        onChange: () => handleSelectAction('searchParam-siteChange') },
       { key: 'searchValue', label: '카테고리명', type: 'text', placeholder: '카테고리명 검색' },
       { key: 'categoryDepth', label: '단계', type: 'select', options: () => codes.category_depths, nullLabel: '전체' },
       { key: 'categoryStatusCd', label: '상태', type: 'select', options: () => codes.category_statuses, nullLabel: '전체' },
@@ -559,10 +559,10 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           <button class="btn btn-green btn-sm" @click="handleBtnAction('categories-add')">
             + 행추가
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleBtnAction('categories-delete-checked')">
+          <button class="btn btn-danger btn-sm" @click="handleBtnAction('categories-deleteChecked')">
             행삭제
           </button>
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('categories-cancel-checked')">
+          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('categories-cancelChecked')">
             취소
           </button>
           <button class="btn btn-primary btn-sm" @click="handleBtnAction('categories-save')">

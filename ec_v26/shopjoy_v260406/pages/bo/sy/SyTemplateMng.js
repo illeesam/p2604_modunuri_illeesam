@@ -36,7 +36,7 @@ window.SyTemplateMng = {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return onDateRangeChange();
       // 템플릿 신규 등록 (인라인 패널)
       } else if (cmd === 'templates-add') {
@@ -306,7 +306,7 @@ window.SyTemplateMng = {
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     // 기본 그리드

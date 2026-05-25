@@ -28,10 +28,10 @@ window.OdDlivHist = {
         if (uiState.tabMode2 === 'tab') { uiState.botTab = param; }
         return;
       // 회원 참조 모달 열기
-      } else if (cmd === 'histList-member-ref') {
+      } else if (cmd === 'histList-memberRef') {
         return showRefModal('member', param);
       // 주문 상세로 이동
-      } else if (cmd === 'histList-order-edit') {
+      } else if (cmd === 'histList-orderEdit') {
         return props.navigate('odOrderDtl', { id: param });
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -163,7 +163,7 @@ window.OdDlivHist = {
             회원
           </span>
           <span class="detail-value">
-            <span class="ref-link" @click="handleBtnAction('histList-member-ref', cfRelatedOrder.userId)">
+            <span class="ref-link" @click="handleBtnAction('histList-memberRef', cfRelatedOrder.userId)">
               {{ cfRelatedOrder.userNm }}
             </span>
           </span>
@@ -193,7 +193,7 @@ window.OdDlivHist = {
           </span>
         </div>
         <div style="margin-top:14px;">
-          <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-order-edit', cfRelatedOrder.orderId)">
+          <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-orderEdit', cfRelatedOrder.orderId)">
             주문 상세 수정
           </button>
         </div>

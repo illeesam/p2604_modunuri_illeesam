@@ -20,7 +20,7 @@ window.BlogView = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ BlogView.js : handleBtnAction -> ', cmd, param);
       // 블로그 목록으로 이동
-      if (cmd === 'page-go-blog-list') {
+      if (cmd === 'page-goBlogList') {
         return props.navigate('blog');
       // 댓글 등록
       } else if (cmd === 'comments-add') {
@@ -163,7 +163,7 @@ window.BlogView = {
     <!-- ===== ■.■. 좌: 본문 영역 ============================================== -->
     <div>
       <!-- ===== ■.■.■. 뒤로 ================================================== -->
-      <button @click="handleBtnAction('page-go-blog-list')"
+      <button @click="handleBtnAction('page-goBlogList')"
         style="display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.8rem;margin-bottom:20px;padding:0;">
         ← 블로그 목록으로
       </button>

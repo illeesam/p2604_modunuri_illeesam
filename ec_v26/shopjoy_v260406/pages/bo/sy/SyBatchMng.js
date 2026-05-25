@@ -34,7 +34,7 @@ window.SyBatchMng = {
         Object.assign(searchParam, _initSearchParam());
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 배치 그리드 저장
       } else if (cmd === 'batches-save') {
@@ -43,10 +43,10 @@ window.SyBatchMng = {
       } else if (cmd === 'batches-add') {
         return addRow();
       // 체크된 배치 일괄 삭제
-      } else if (cmd === 'batches-delete-checked') {
+      } else if (cmd === 'batches-deleteChecked') {
         return deleteRows();
       // 체크된 배치 일괄 취소
-      } else if (cmd === 'batches-cancel-checked') {
+      } else if (cmd === 'batches-cancelChecked') {
         return cancelChecked();
       // 배치 목록 엑셀 내보내기
       } else if (cmd === 'batches-excel') {
@@ -342,7 +342,7 @@ window.SyBatchMng = {
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-date-range') },
+        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
     // 기본 그리드
@@ -397,7 +397,7 @@ window.SyBatchMng = {
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('batches-add')" @save="handleBtnAction('batches-save')"
-        @delete-checked="handleBtnAction('batches-delete-checked')" @cancel-checked="handleBtnAction('batches-cancel-checked')"
+        @delete-checked="handleBtnAction('batches-deleteChecked')" @cancel-checked="handleBtnAction('batches-cancelChecked')"
         @cell-change="row => handleSelectAction('batches-rowCellChange', row)" @export="handleBtnAction('batches-excel')">
         <template #cell-cronExpr="{ row, idx }">
           <td>

@@ -21,7 +21,7 @@ window.MyContact = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MyContact.js : handleBtnAction -> ', cmd, param);
       // 날짜 필터 조회
-      if (cmd === 'searchParam-date-search') {
+      if (cmd === 'searchParam-dateSearch') {
         return onSearch(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -101,7 +101,7 @@ window.MyContact = {
   },
   template: /* html */ `
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
-  <MyDateFilter @search="handleBtnAction('searchParam-date-search', $event)" />
+  <MyDateFilter @search="handleBtnAction('searchParam-dateSearch', $event)" />
   <!-- ===== ■. 영역 ====================================================== -->
   <PagerHeader :total="cfDateFilteredInquiries.length" :pager="inquiryPager" />
   <!-- ===== ■. 조건부 영역 ================================================== -->

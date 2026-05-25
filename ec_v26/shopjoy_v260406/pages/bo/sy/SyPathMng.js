@@ -38,14 +38,14 @@ window.SyPathMng = {
       } else if (cmd === 'paths-save') {
         return handleSave();
       // 좌측 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
+      } else if (cmd === 'pathTree-expandAll') {
         expanded.clear(); expanded.add(null);
         /* walk — 모든 노드 펼치기 */
         const walk = (n) => { expanded.add(n.pathId); n.children.forEach(walk); };
         cfTree.value.children.forEach(walk);
         return;
       // 좌측 트리 전체 접기
-      } else if (cmd === 'pathTree-collapse-all') {
+      } else if (cmd === 'pathTree-collapseAll') {
         expanded.clear();
         expanded.add(null);
         return;
@@ -74,7 +74,7 @@ window.SyPathMng = {
         pager.pageNo = 1;
         return handleGridSearch();
       // 그리드 셀 변경 감지
-      } else if (cmd === 'paths-cell-change') {
+      } else if (cmd === 'paths-cellChange') {
         return onCellChange(param);
       // 그리드 행 취소
       } else if (cmd === 'paths-rowCancel') {
@@ -362,7 +362,7 @@ window.SyPathMng = {
     <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
       :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
       :on-toggle="id => handleBtnAction('pathTree-toggle', id)"
-      @select="id => handleSelectAction('pathTree-select', id)" @expand-all="handleBtnAction('pathTree-expand-all')" @collapse-all="handleBtnAction('pathTree-collapse-all')" />
+      @select="id => handleSelectAction('pathTree-select', id)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')" />
     <!-- ===== □.□. 트리 ==================================================== -->
     <!-- ===== ■.■. 그리드 =================================================== -->
     <bo-grid
@@ -372,7 +372,7 @@ window.SyPathMng = {
       @save="handleBtnAction('paths-save')"
       @set-page="n => handleSelectAction('paths-pager-setPage', n)"
       @size-change="handleSelectAction('paths-pager-sizeChange')"
-      @cell-change="row => handleSelectAction('paths-cell-change', row)">
+      @cell-change="row => handleSelectAction('paths-cellChange', row)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('paths-add')">
           + 행추가

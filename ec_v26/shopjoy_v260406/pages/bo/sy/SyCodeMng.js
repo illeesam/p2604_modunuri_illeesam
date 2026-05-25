@@ -57,19 +57,19 @@ window.SyCodeMng = {
       } else if (cmd === 'codes-save') {
         return handleSave();
       // 코드 그리드 체크된 행 일괄 삭제 마킹
-      } else if (cmd === 'codes-delete-checked') {
+      } else if (cmd === 'codes-deleteChecked') {
         return deleteRows();
       // 코드 그리드 체크된 행 일괄 취소
-      } else if (cmd === 'codes-cancel-checked') {
+      } else if (cmd === 'codes-cancelChecked') {
         return cancelChecked();
       // 코드 그리드 엑셀 내보내기
       } else if (cmd === 'codes-excel') {
         return exportExcel();
       // 코드 트리 전체 펼치기
-      } else if (cmd === 'codeTree-expand-all') {
+      } else if (cmd === 'codeTree-expandAll') {
         return codeExpandAll();
       // 코드 트리 전체 접기
-      } else if (cmd === 'codeTree-collapse-all') {
+      } else if (cmd === 'codeTree-collapseAll') {
         return codeCollapseAll();
       // 일반/트리 탭 변경
       } else if (cmd === 'tab-change') {
@@ -93,7 +93,7 @@ window.SyCodeMng = {
       } else if (cmd === 'codeGroups-sort') {
         return onGrpSort(param);
       // 코드그룹 그리드 셀 값 변경 감지
-      } else if (cmd === 'codeGroups-cell-change') {
+      } else if (cmd === 'codeGroups-cellChange') {
         return onGrpChange(param);
       // 코드그룹 그리드 행 [코드관리] → 코드목록 진입
       } else if (cmd === 'codeGroups-rowOpen') {
@@ -105,7 +105,7 @@ window.SyCodeMng = {
       } else if (cmd === 'codeGroups-rowDelete') {
         return handleDeleteGrp(param);
       // 코드 그리드 셀 값 변경 감지
-      } else if (cmd === 'codes-cell-change') {
+      } else if (cmd === 'codes-cellChange') {
         return onCellChange(param);
       // 코드 그리드 드래그앤드롭 정렬 종료
       } else if (cmd === 'codes-reorder') {
@@ -670,7 +670,7 @@ window.SyCodeMng = {
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
       @sort="key => handleSelectAction('codeGroups-sort', key)"
-      @cell-change="row => handleSelectAction('codeGroups-cell-change', row)">
+      @cell-change="row => handleSelectAction('codeGroups-cellChange', row)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('codeGroups-add')">
           + 행추가
@@ -685,7 +685,7 @@ window.SyCodeMng = {
       <template #cell-grpNm="{ row: g }">
         <td>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="handleSelectAction('codeGroups-cell-change', g)" style="flex:1;" />
+            <input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="handleSelectAction('codeGroups-cellChange', g)" style="flex:1;" />
             <span v-if="g._row_status !== 'D'" style="font-size:11px;color:#666;font-weight:500;white-space:nowrap;padding:4px 8px;background:#f3f4f6;border-radius:4px;">
               {{ g.codeCount != null ? g.codeCount : '-' }}개
             </span>
@@ -731,8 +731,8 @@ window.SyCodeMng = {
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('codes-add')" @save="handleBtnAction('codes-save')"
-        @delete-checked="handleBtnAction('codes-delete-checked')" @cancel-checked="handleBtnAction('codes-cancel-checked')"
-        @cell-change="row => handleSelectAction('codes-cell-change', row)" @export="handleBtnAction('codes-excel')"
+        @delete-checked="handleBtnAction('codes-deleteChecked')" @cancel-checked="handleBtnAction('codes-cancelChecked')"
+        @cell-change="row => handleSelectAction('codes-cellChange', row)" @export="handleBtnAction('codes-excel')"
         @reorder="handleSelectAction('codes-reorder')"
         @row-dblclick="row => handleSelectAction('codes-rowEdit', row.codeId)">
         <template #row-actions="{ row, idx }">
@@ -750,17 +750,17 @@ window.SyCodeMng = {
         :flat-rows="flatTree" :row-accessor="treeRowAccessor" :tree-row-key="treeRowKeyFn"
         list-title="트리 형식 편집" max-height="400px"
         @add="handleBtnAction('codes-add')" @save="handleBtnAction('codes-save')"
-        @delete-checked="handleBtnAction('codes-delete-checked')" @cancel-checked="handleBtnAction('codes-cancel-checked')"
+        @delete-checked="handleBtnAction('codes-deleteChecked')" @cancel-checked="handleBtnAction('codes-cancelChecked')"
         v-model:checkAll="uiState.checkAll" v-model:focusedIdx="uiState.focusedIdx"
-        @cell-change="row => handleSelectAction('codes-cell-change', row)">
+        @cell-change="row => handleSelectAction('codes-cellChange', row)">
       <template #toolbar-actions>
         <div style="display:inline-flex;border:1px solid #d1d5db;border-radius:4px;overflow:hidden;align-self:center;">
-          <button type="button" @click="handleBtnAction('codeTree-expand-all')"
+          <button type="button" @click="handleBtnAction('codeTree-expandAll')"
               style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;border-right:1px solid #d1d5db;"
               title="모든 노드 펼치기">
             ▼ 전체펼치기
           </button>
-          <button type="button" @click="handleBtnAction('codeTree-collapse-all')"
+          <button type="button" @click="handleBtnAction('codeTree-collapseAll')"
               style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;"
               title="모든 노드 접기">
             ▶ 전체접기
@@ -787,7 +787,7 @@ window.SyCodeMng = {
                 :title="'레벨 ' + (node.depth+1)">
               L{{ node.depth+1 }}
             </span>
-            <input class="grid-input" style="flex:1;" v-model="row.codeLabel" :disabled="row._row_status==='D'" @input="handleSelectAction('codes-cell-change', row)" />
+            <input class="grid-input" style="flex:1;" v-model="row.codeLabel" :disabled="row._row_status==='D'" @input="handleSelectAction('codes-cellChange', row)" />
             <span v-if="node.node.children.length > 0" style="flex-shrink:0;font-size:10px;color:#6b7280;background:#f3f4f6;padding:1px 5px;border-radius:3px;"
                 :title="'직속 자식 ' + node.node.children.length + '개'">
               ↳ {{ node.node.children.length }}

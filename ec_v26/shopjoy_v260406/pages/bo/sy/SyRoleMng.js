@@ -46,10 +46,10 @@ window.SyRoleMng = {
       } else if (cmd === 'roles-add') {
         return addRow();
       // 체크된 역할 일괄 삭제
-      } else if (cmd === 'roles-delete-checked') {
+      } else if (cmd === 'roles-deleteChecked') {
         return deleteRows();
       // 체크된 역할 일괄 취소
-      } else if (cmd === 'roles-cancel-checked') {
+      } else if (cmd === 'roles-cancelChecked') {
         return cancelChecked();
       // 역할 목록 엑셀 내보내기
       } else if (cmd === 'roles-excel') {
@@ -61,34 +61,34 @@ window.SyRoleMng = {
       } else if (cmd === 'config-save') {
         return handleSaveRoleConfig();
       // 좌측 경로 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
+      } else if (cmd === 'pathTree-expandAll') {
         const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); };
         walk(cfTree.value);
         return;
       // 좌측 경로 트리 전체 접기
-      } else if (cmd === 'pathTree-collapse-all') {
+      } else if (cmd === 'pathTree-collapseAll') {
         expanded.clear();
         expanded.add('');
         return;
       // 좌측 경로 트리 카테고리 필터 변경
-      } else if (cmd === 'pathTree-cat-change') {
+      } else if (cmd === 'pathTree-catChange') {
         return handleSearchList();
       // 좌측 경로 트리 노드 펼치기/접기 토글
       } else if (cmd === 'pathTree-toggle') {
         if (expanded.has(param)) { expanded.delete(param); } else { expanded.add(param); }
         return;
       // 메뉴 권한 전체 토글 (checked → 읽기, unchecked → 없음)
-      } else if (cmd === 'roleMenus-toggle-all') {
+      } else if (cmd === 'roleMenus-toggleAll') {
         return setAllMenuPerm(param ? '읽기' : '없음');
       // 메뉴 권한 일괄 설정 (특정 권한 레벨로 모두 변경)
-      } else if (cmd === 'roleMenus-set-all') {
+      } else if (cmd === 'roleMenus-setAll') {
         return setAllMenuPerm(param);
       // 사용자 선택 모달 열기
-      } else if (cmd === 'roleUsers-open-select') {
+      } else if (cmd === 'roleUsers-openSelect') {
         uiState.userSelectOpen = true;
         return;
       // 사용자 선택 모달 닫기
-      } else if (cmd === 'roleUsers-close-select') {
+      } else if (cmd === 'roleUsers-closeSelect') {
         uiState.userSelectOpen = false;
         return;
       // 상위역할 선택 모달 닫기
@@ -767,9 +767,9 @@ window.SyRoleMng = {
     <bo-local-tree-card title="역할"
       :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
       :on-toggle="path => handleBtnAction('pathTree-toggle', path)"
-      @select="path => handleSelectAction('pathTree-select', path)" @expand-all="handleBtnAction('pathTree-expand-all')" @collapse-all="handleBtnAction('pathTree-collapse-all')">
+      @select="path => handleSelectAction('pathTree-select', path)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')">
       <template #filter>
-        <select v-model="searchParam.treeCatFilter" @change="handleBtnAction('pathTree-cat-change')" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
+        <select v-model="searchParam.treeCatFilter" @change="handleBtnAction('pathTree-catChange')" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
           <option value="">
             역할구분 전체
           </option>
@@ -787,7 +787,7 @@ window.SyRoleMng = {
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('roles-add')" @save="handleBtnAction('roles-save')"
-        @delete-checked="handleBtnAction('roles-delete-checked')" @cancel-checked="handleBtnAction('roles-cancel-checked')"
+        @delete-checked="handleBtnAction('roles-deleteChecked')" @cancel-checked="handleBtnAction('roles-cancelChecked')"
         @cell-change="row => handleSelectAction('roles-rowCellChange', row)" @export="handleBtnAction('roles-excel')">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-rowCancel', idx)" @delete="handleSelectAction('roles-rowDelete', idx)">
@@ -821,13 +821,13 @@ window.SyRoleMng = {
               </div>
               <div v-if="uiState.selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
                 <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
-                  <input type="checkbox" :checked="cfMenuAllChecked" @change="e => handleBtnAction('roleMenus-toggle-all', e.target.checked)" />
+                  <input type="checkbox" :checked="cfMenuAllChecked" @change="e => handleBtnAction('roleMenus-toggleAll', e.target.checked)" />
                   전체선택
                 </label>
                 <button v-for="p in codes.perm_levels" :key="p"
                   class="btn btn-xs"
                   :style="{ background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
-                  @click="handleBtnAction('roleMenus-set-all', p)">
+                  @click="handleBtnAction('roleMenus-setAll', p)">
                   {{ p }}
                 </button>
                 <button class="btn btn-primary btn-sm" style="margin-left:8px;" @click="handleBtnAction('config-save')">
@@ -894,7 +894,7 @@ window.SyRoleMng = {
                   </span>
                 </div>
                 <button v-if="uiState.selectedRoleId" class="btn btn-primary btn-sm"
-                @click="handleBtnAction('roleUsers-open-select')">
+                @click="handleBtnAction('roleUsers-openSelect')">
                   + 사용자 추가
                 </button>
               </div>
@@ -943,7 +943,7 @@ window.SyRoleMng = {
         </div>
         <!-- ===== ■.■.■. 사용자 선택 모달 =========================================== -->
         <bo-user-select-modal v-if="uiState.userSelectOpen" @select="users => handleSelectAction('roleUsers-select', users)"
-        @close="handleBtnAction('roleUsers-close-select')" />
+        @close="handleBtnAction('roleUsers-closeSelect')" />
         <!-- ===== ■.■.■. 상위역할 선택 모달 ========================================== -->
         <role-tree-modal v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null" @select="role => handleSelectAction('parentModal-select', role)" @close="handleBtnAction('parentModal-close')" />
       </div>

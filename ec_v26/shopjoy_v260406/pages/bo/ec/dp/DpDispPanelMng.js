@@ -27,7 +27,7 @@ window.DpDispPanelMng = {
       } else if (cmd === 'searchParam-reset') {
         return onReset();
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 신규 패널 등록
       } else if (cmd === 'panels-add') {
@@ -42,10 +42,10 @@ window.DpDispPanelMng = {
       } else if (cmd === 'pathTree-all') {
         return selectPathNode(null);
       // 좌측 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
+      } else if (cmd === 'pathTree-expandAll') {
         return expandAll();
       // 좌측 트리 전체 접기
-      } else if (cmd === 'pathTree-collapse-all') {
+      } else if (cmd === 'pathTree-collapseAll') {
         return collapseAll();
       // 카드 미리보기 닫기
       } else if (cmd === 'cardPreview-close') {
@@ -77,10 +77,10 @@ window.DpDispPanelMng = {
       } else if (cmd === 'panels-rowDelete') {
         return handleDelete(param);
       // 그리드 행 펼치기/접기 토글
-      } else if (cmd === 'panels-toggle-expand') {
+      } else if (cmd === 'panels-toggleExpand') {
         return toggleExpand(param);
       // 카드 미리보기 열기 (내용 미리보기로 새 창)
-      } else if (cmd === 'cardPreview-preview-disp') {
+      } else if (cmd === 'cardPreview-previewDisp') {
         previewDisp(param); closeCardPreview();
         return;
       // 좌측 표시경로 트리 노드 선택
@@ -90,7 +90,7 @@ window.DpDispPanelMng = {
       } else if (cmd === 'pathTree-toggle') {
         return toggleTree(param);
       // 좌측 트리 노드 선택
-      } else if (cmd === 'pathTree-key-select') {
+      } else if (cmd === 'pathTree-keySelect') {
         return selectTree(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -718,7 +718,7 @@ window.DpDispPanelMng = {
                   ⠿
                 </td>
                 <td style="text-align:center;padding:0;">
-                  <button @click="handleSelectAction('panels-toggle-expand', d.dispId)"
+                  <button @click="handleSelectAction('panels-toggleExpand', d.dispId)"
                     style="background:none;border:none;cursor:pointer;font-size:11px;color:#999;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
                     {{ isExpanded(d.dispId) ? '▼' : '▶' }}
                   </button>
@@ -1048,7 +1048,7 @@ window.DpDispPanelMng = {
     ID: {{ uiState.cardPreviewItem.dispId }} · 등록일: {{ uiState.cardPreviewItem.regDate }}
   </span>
   <div style="display:flex;gap:8px;">
-    <button @click="handleSelectAction('cardPreview-preview-disp', uiState.cardPreviewItem)" class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;">
+    <button @click="handleSelectAction('cardPreview-previewDisp', uiState.cardPreviewItem)" class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;">
       👁 내용미리보기
     </button>
     <button @click="handleBtnAction('cardPreview-close')" class="btn btn-secondary btn-sm">

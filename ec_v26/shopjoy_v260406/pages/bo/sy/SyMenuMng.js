@@ -39,10 +39,10 @@ window.SyMenuMng = {
       } else if (cmd === 'menus-save') {
         return handleSave();
       // 체크된 메뉴 일괄 삭제
-      } else if (cmd === 'menus-delete-checked') {
+      } else if (cmd === 'menus-deleteChecked') {
         return deleteRows();
       // 체크된 메뉴 일괄 취소
-      } else if (cmd === 'menus-cancel-checked') {
+      } else if (cmd === 'menus-cancelChecked') {
         return cancelChecked();
       // 메뉴 목록 엑셀 내보내기
       } else if (cmd === 'menus-excel') {
@@ -348,7 +348,7 @@ window.SyMenuMng = {
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('menus-add')" @save="handleBtnAction('menus-save')"
-        @delete-checked="handleBtnAction('menus-delete-checked')" @cancel-checked="handleBtnAction('menus-cancel-checked')"
+        @delete-checked="handleBtnAction('menus-deleteChecked')" @cancel-checked="handleBtnAction('menus-cancelChecked')"
         @cell-change="row => handleSelectAction('menus-rowCellChange', row)"
         @export="handleBtnAction('menus-excel')">
         <template #row-actions="{ row, idx }">

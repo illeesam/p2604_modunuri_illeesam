@@ -21,7 +21,7 @@ window.MyCache = {
       if (cmd === 'caches-add') {
         return addCash();
       // 빠른 금액 설정
-      } else if (cmd === 'caches-set-amount') {
+      } else if (cmd === 'caches-setAmount') {
         chargeAmount.value = param;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -32,7 +32,7 @@ window.MyCache = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MyCache.js : handleSelectAction -> ', cmd, param);
       // 주문 모달 열기
-      if (cmd === 'caches-order-open') {
+      if (cmd === 'caches-orderOpen') {
         return openOrderModal(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -141,7 +141,7 @@ window.MyCache = {
   <!-- ===== □. 충전 입력 =================================================== -->
   <!-- ===== ■. 빠른 금액 버튼 ================================================ -->
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
-    <button v-for="amt in [5000,10000,30000,50000]" :key="amt" @click="handleBtnAction('caches-set-amount', amt)"
+    <button v-for="amt in [5000,10000,30000,50000]" :key="amt" @click="handleBtnAction('caches-setAmount', amt)"
       style="padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg-card);cursor:pointer;font-size:0.82rem;font-weight:600;color:var(--text-secondary);">
       +{{ amt.toLocaleString() }}원
     </button>
@@ -164,7 +164,7 @@ window.MyCache = {
     <div style="min-width:160px;flex:0 0 auto;">
       <div style="font-weight:600;font-size:0.88rem;color:var(--text-primary);">
         <template v-if="myStore.extractOrderId(h.desc)">
-          <button @click="handleSelectAction('caches-order-open', myStore.extractOrderId(h.desc))"
+          <button @click="handleSelectAction('caches-orderOpen', myStore.extractOrderId(h.desc))"
             style="background:none;border:none;padding:0;cursor:pointer;font-size:0.88rem;font-weight:700;color:var(--blue);text-decoration:underline;text-underline-offset:2px;">
             {{ myStore.extractOrderId(h.desc) }}
           </button>

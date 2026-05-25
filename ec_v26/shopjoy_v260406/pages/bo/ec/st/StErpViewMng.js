@@ -33,7 +33,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
+      } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 안내 설명 토글
       } else if (cmd === 'desc-toggle') {
