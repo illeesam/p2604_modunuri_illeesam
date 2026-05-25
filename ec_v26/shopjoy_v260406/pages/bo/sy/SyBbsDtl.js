@@ -4,9 +4,7 @@ window.SyBbsDtl = {
   props: {
     navigate:      { type: Function, required: true },        // 페이지 이동
     dtlId:         { type: String, default: null },           // 수정 대상 ID
-    tabMode:       { type: String, default: 'tab' },          // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
-    onListReload:  { type: Function, default: () => {} },     // 상위 Mng 재조회 콜백
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -14,7 +12,6 @@ window.SyBbsDtl = {
     const { reactive, computed, onMounted, ref, watch } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const uiState = reactive({                     // UI 상태
@@ -58,12 +55,6 @@ window.SyBbsDtl = {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
       } else if (cmd === 'form-cancel') {
-        return props.navigate('syBbsMng');
-      // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
-        return props.navigate('__switchToEdit__');
-      // 폼 닫기 → 목록으로 이동
-      } else if (cmd === 'form-close') {
         return props.navigate('syBbsMng');
       // 게시판 선택 모달 열기
       } else if (cmd === 'bbmModal-open') {
@@ -215,11 +206,11 @@ window.SyBbsDtl = {
       { key: 'bbmId',         label: '게시판ID',   type: 'readonly' },
       { key: 'bbmCode',       label: '게시판코드', type: 'readonly', mono: true },
       { key: 'bbmNm',         label: '게시판명',   type: 'readonly' },
-      { key: 'bbmType',       label: '유형',       type: 'readonly' },
+      { key: 'bbmTypeCd',     label: '유형',       type: 'readonly' },
       { key: 'allowComment',  label: '댓글허용',   type: 'readonly' },
       { key: 'allowAttach',   label: '첨부허용',   type: 'readonly' },
       { key: 'contentTypeCd', label: '내용입력',   type: 'readonly' },
-      { key: 'scopeType',     label: '공개범위',   type: 'readonly' },
+      { key: 'scopeTypeCd',   label: '공개범위',   type: 'readonly' },
       { key: 'allowLike',     label: '좋아요허용', type: 'readonly',
         fmt: (v) => v === 'Y' ? '허용' : '불가' },
       { key: 'useYn',         label: '사용여부',   type: 'readonly',
@@ -356,22 +347,12 @@ window.SyBbsDtl = {
   <!-- ===== □.□. 첨부파일 ================================================== -->
   <!-- ===== ■.■. 폼 액션 ================================================== -->
   <div class="form-actions" v-if="!cfDtlMode">
-    <template v-if="cfDtlMode">
-      <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
-        수정
-      </button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-        닫기
-      </button>
-    </template>
-    <template v-else>
-      <button class="btn btn-primary" @click="handleBtnAction('form-save')">
-        저장
-      </button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-        취소
-      </button>
-    </template>
+    <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+      저장
+    </button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+      취소
+    </button>
   </div>
 </div>
 <!-- ===== □. 카드 영역 =================================================== -->
