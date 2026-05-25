@@ -195,6 +195,16 @@ window.StSettleCloseMng = {
       return true;
     }));
 
+    /* thisMonthFormColumns — 이번달 마감 대상 6 카드 (BoFormArea readonly, cols=6, labelLeft) */
+    const thisMonthFormColumns = [
+      { key: '_sales',  label: '매출액',     type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${fmtW(cfThisMonthSales.value)}</b>` },
+      { key: '_refund', label: '환불액',     type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:15px;">${fmtW(cfThisMonthRefund.value)}</b>` },
+      { key: '_net',    label: '순매출',     type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfThisMonthNet.value)}</b>` },
+      { key: '_comm',   label: '수수료(10%)', type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${fmtW(cfThisMonthComm.value)}</b>` },
+      { key: '_promo',  label: '프로모션(3%)',type: 'readonly', html: true, fmt: () => `<b style="color:#9b59b6;font-size:15px;">${fmtW(cfThisMonthPromo.value)}</b>` },
+      { key: '_settle', label: '정산예정액', type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${fmtW(cfThisMonthSettle.value)}</b>` },
+    ];
+
     // 기본 그리드
     const baseGridColumns = [
       { key: 'closeMon',  label: '정산월', cellStyle: 'font-weight:700' },
@@ -212,7 +222,7 @@ window.StSettleCloseMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, closes, searchParam, thisMonth,
-      baseGridColumns, baseSearchColumns,
+      baseGridColumns, baseSearchColumns, thisMonthFormColumns,
       handleBtnAction, handleSelectAction,
       cfFilteredClose, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed,
       fnStatusBadge, fmtW,
@@ -242,56 +252,7 @@ window.StSettleCloseMng = {
     <div style="font-weight:700;font-size:15px;margin-bottom:12px">
       {{ thisMonth }} 정산마감 대상
     </div>
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:10px;background:#f0f4ff">
-        <div style="font-size:11px;color:#888">
-          매출액
-        </div>
-        <div style="font-size:16px;font-weight:700;color:#3498db">
-          {{ fmtW(cfThisMonthSales) }}
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
-        <div style="font-size:11px;color:#888">
-          환불액
-        </div>
-        <div style="font-size:16px;font-weight:700;color:#e74c3c">
-          {{ fmtW(cfThisMonthRefund) }}
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888">
-          순매출
-        </div>
-        <div style="font-size:16px;font-weight:700;color:#333">
-          {{ fmtW(cfThisMonthNet) }}
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
-        <div style="font-size:11px;color:#888">
-          수수료(10%)
-        </div>
-        <div style="font-size:16px;font-weight:700;color:#e67e22">
-          {{ fmtW(cfThisMonthComm) }}
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#fdf5ff">
-        <div style="font-size:11px;color:#888">
-          프로모션(3%)
-        </div>
-        <div style="font-size:16px;font-weight:700;color:#9b59b6">
-          {{ fmtW(cfThisMonthPromo) }}
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">
-          정산예정액
-        </div>
-        <div style="font-size:16px;font-weight:700;color:#27ae60">
-          {{ fmtW(cfThisMonthSettle) }}
-        </div>
-      </div>
-    </div>
+    <bo-form-area :columns="thisMonthFormColumns" :form="{}" :cols="6" readonly label-left :show-actions="false" label-width="100px" />
     <div style="text-align:right">
       <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-doClose')">
         📋 {{ thisMonth }} 정산마감 실행

@@ -188,10 +188,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         cellStyle: 'font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
     ];
 
+    /* summaryFormColumns — 집계 카드 (BoFormArea, cols=4, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_match',     label: '일치',          type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
+      { key: '_diff',      label: '금액 차이',     type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.diff}건</b>` },
+      { key: '_noReflect', label: '미반영',        type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.noReflect}건</b>` },
+      { key: '_diffAmt',   label: '차이금액 합계', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSummary.value.diffAmt)}</b>` },
+    ];
+
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, pager, recons, searchParam,                                  // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
+      baseSearchColumns, baseGridColumns, summaryFormColumns,                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch
       cfSummary,                                                                       // computed
       fnDiffBadge, fnTypeBadge, fmtW,                                                  // 헬퍼
@@ -224,40 +232,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">
-          일치
-        </div>
-        <div style="font-size:20px;font-weight:700;color:#27ae60">
-          {{ cfSummary.match }}건
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
-        <div style="font-size:11px;color:#888">
-          금액 차이
-        </div>
-        <div style="font-size:20px;font-weight:700;color:#e67e22">
-          {{ cfSummary.diff }}건
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
-        <div style="font-size:11px;color:#888">
-          미반영
-        </div>
-        <div style="font-size:20px;font-weight:700;color:#e74c3c">
-          {{ cfSummary.noReflect }}건
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888">
-          차이금액 합계
-        </div>
-        <div style="font-size:20px;font-weight:700;color:#333">
-          {{ fmtW(cfSummary.diffAmt) }}
-        </div>
-      </div>
-    </div>
+    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="4" readonly label-left :show-actions="false" label-width="100px" />
+    <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="recons" :pager="pager" row-key="reconId"

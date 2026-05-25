@@ -172,10 +172,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
     ];
 
+    /* summaryFormColumns — 집계 카드 (BoFormArea, cols=3, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_match', label: '일치',     type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
+      { key: '_over',  label: '조정과다', type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.over}건</b>` },
+      { key: '_under', label: '조정부족', type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.under}건</b>` },
+    ];
+
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, pager, rows, searchParam,                                       // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
+      baseSearchColumns, baseGridColumns, summaryFormColumns,                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch
       cfSummary,                                                                       // computed
       fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW,                                   // 헬퍼
@@ -208,32 +215,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:10px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">
-          일치
-        </div>
-        <div style="font-size:20px;font-weight:700;color:#27ae60">
-          {{ cfSummary.match }}건
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#fff8f8">
-        <div style="font-size:11px;color:#888">
-          조정과다
-        </div>
-        <div style="font-size:20px;font-weight:700;color:#e74c3c">
-          {{ cfSummary.over }}건
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:10px;background:#fffbf0">
-        <div style="font-size:11px;color:#888">
-          조정부족
-        </div>
-        <div style="font-size:20px;font-weight:700;color:#e67e22">
-          {{ cfSummary.under }}건
-        </div>
-      </div>
-    </div>
+    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="3" readonly label-left :show-actions="false" label-width="100px" />
+    <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="claimId"

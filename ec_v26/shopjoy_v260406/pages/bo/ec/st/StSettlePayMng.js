@@ -194,10 +194,17 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'regUserNm',  label: '담당자' },
     ];
 
+    /* summaryFormColumns — 집계 카드 (BoFormArea, cols=3, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_total',   label: '총 정산액', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSummary.value.total)}</b>` },
+      { key: '_paid',    label: '지급완료',  type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${fmtW(cfSummary.value.paid)}</b>` },
+      { key: '_pending', label: '지급대기',  type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${fmtW(cfSummary.value.pending)}</b>` },
+    ];
+
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, pager, pays, searchParam,
-      baseSearchColumns, baseGridColumns,
+      baseSearchColumns, baseGridColumns, summaryFormColumns,
       handleBtnAction, handleSelectAction,
       cfSummary, fnStatusBadge, fmtW,
     };
@@ -229,32 +236,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:12px;background:#f8f9fa">
-        <div style="font-size:11px;color:#888">
-          총 정산액
-        </div>
-        <div style="font-size:18px;font-weight:700;color:#333">
-          {{ fmtW(cfSummary.total) }}
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:12px;background:#f0fff4">
-        <div style="font-size:11px;color:#888">
-          지급완료
-        </div>
-        <div style="font-size:18px;font-weight:700;color:#27ae60">
-          {{ fmtW(cfSummary.paid) }}
-        </div>
-      </div>
-      <div class="card" style="text-align:center;padding:12px;background:#f0f4ff">
-        <div style="font-size:11px;color:#888">
-          지급대기
-        </div>
-        <div style="font-size:18px;font-weight:700;color:#3498db">
-          {{ fmtW(cfSummary.pending) }}
-        </div>
-      </div>
-    </div>
+    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="3" readonly label-left :show-actions="false" label-width="100px" />
+    <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="baseGridColumns" :rows="pays" :pager="pager" row-key="payId"

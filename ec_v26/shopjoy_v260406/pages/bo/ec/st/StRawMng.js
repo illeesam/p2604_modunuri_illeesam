@@ -231,6 +231,17 @@ const raws = reactive([]);
       }
     };
 
+    /* summaryFormColumns — 집계 카드 (BoFormArea readonly, cols=7, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_totalCnt',  label: '수집건수',    type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${pager.pageTotalCount.toLocaleString()}건</b>` },
+      { key: '_collectCnt',label: '정산대상',    type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${cfSummary.value.collectCnt.toLocaleString()}건</b>` },
+      { key: '_confirmCnt',label: '구매확정',    type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${cfSummary.value.confirmCnt.toLocaleString()}건</b>` },
+      { key: '_closeCnt',  label: '마감완료',    type: 'readonly', html: true, fmt: () => `<b style="color:#8e44ad;font-size:15px;">${cfSummary.value.closeCnt.toLocaleString()}건</b>` },
+      { key: '_totalAmt',  label: '수집금액 합계',type: 'readonly', html: true, fmt: () => `<b style="color:${cfSummary.value.totalAmt>=0?'#333':'#e74c3c'};font-size:14px;">${fmtW(cfSummary.value.totalAmt)}</b>` },
+      { key: '_feeAmt',    label: '수수료 합계',  type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:14px;">${fmtW(cfSummary.value.feeAmt)}</b>` },
+      { key: '_settleAmt', label: '정산금액 합계',type: 'readonly', html: true, fmt: () => `<b style="color:#2980b9;font-size:14px;">${fmtW(cfSummary.value.settleAmt)}</b>` },
+    ];
+
     /* baseSearchColumns — 검색 영역 컬럼 (1+2행 평면화) */
     const baseSearchColumns = [
       { key: 'dateRange', type: 'dateRange', label: '기간',
@@ -316,7 +327,7 @@ const raws = reactive([]);
       handleBtnAction, handleSelectAction,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
-      fmtW, fmtPct, doCollect, codes, rawGridColumns, rawExpandColumns, baseSearchColumns, moreSearchColumns,
+      fmtW, fmtPct, doCollect, codes, rawGridColumns, rawExpandColumns, baseSearchColumns, moreSearchColumns, summaryFormColumns,
     };
   },
   template: /* html */`
@@ -358,63 +369,8 @@ const raws = reactive([]);
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 카드 =================================================== -->
   <!-- ===== ■. 집계 카드 =================================================== -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr) repeat(3,1fr);gap:8px;margin-bottom:12px">
-    <div class="card" style="text-align:center;padding:10px;background:#f0f4ff;margin-bottom:0">
-      <div style="font-size:11px;color:#888">
-        수집건수
-      </div>
-      <div style="font-size:18px;font-weight:700;color:#3498db">
-        {{ pager.pageTotalCount.toLocaleString() }}건
-      </div>
-    </div>
-    <div class="card" style="text-align:center;padding:10px;background:#f0fff4;margin-bottom:0">
-      <div style="font-size:11px;color:#888">
-        정산대상
-      </div>
-      <div style="font-size:18px;font-weight:700;color:#27ae60">
-        {{ cfSummary.collectCnt.toLocaleString() }}건
-      </div>
-    </div>
-    <div class="card" style="text-align:center;padding:10px;background:#fff8f0;margin-bottom:0">
-      <div style="font-size:11px;color:#888">
-        구매확정
-      </div>
-      <div style="font-size:18px;font-weight:700;color:#e67e22">
-        {{ cfSummary.confirmCnt.toLocaleString() }}건
-      </div>
-    </div>
-    <div class="card" style="text-align:center;padding:10px;background:#f5f0ff;margin-bottom:0">
-      <div style="font-size:11px;color:#888">
-        마감완료
-      </div>
-      <div style="font-size:18px;font-weight:700;color:#8e44ad">
-        {{ cfSummary.closeCnt.toLocaleString() }}건
-      </div>
-    </div>
-    <div class="card" style="text-align:center;padding:10px;background:#f8f9fa;margin-bottom:0">
-      <div style="font-size:11px;color:#888">
-        수집금액 합계
-      </div>
-      <div style="font-size:15px;font-weight:700" :style="cfSummary.totalAmt>=0?'color:#333':'color:#e74c3c'">
-        {{ fmtW(cfSummary.totalAmt) }}
-      </div>
-    </div>
-    <div class="card" style="text-align:center;padding:10px;background:#fff0f0;margin-bottom:0">
-      <div style="font-size:11px;color:#888">
-        수수료 합계
-      </div>
-      <div style="font-size:15px;font-weight:700;color:#e74c3c">
-        {{ fmtW(cfSummary.feeAmt) }}
-      </div>
-    </div>
-    <div class="card" style="text-align:center;padding:10px;background:#f0f8ff;margin-bottom:0">
-      <div style="font-size:11px;color:#888">
-        정산금액 합계
-      </div>
-      <div style="font-size:15px;font-weight:700;color:#2980b9">
-        {{ fmtW(cfSummary.settleAmt) }}
-      </div>
-    </div>
+  <div class="card" style="margin-bottom:12px;">
+    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="7" readonly label-left :show-actions="false" label-width="100px" />
   </div>
   <!-- ===== □. 집계 카드 =================================================== -->
   <!-- ===== ■. 목록 카드 =================================================== -->
