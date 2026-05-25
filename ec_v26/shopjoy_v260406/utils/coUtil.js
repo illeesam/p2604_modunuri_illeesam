@@ -498,6 +498,47 @@
     return set;
   }
 
+  /* ── 숫자/날짜 포맷 헬퍼 ── */
+
+  /* cofFmt — 숫자에 천단위 콤마 (ko-KR) */
+  function cofFmt(n) { return Number(n || 0).toLocaleString('ko-KR'); }
+
+  /* cofPad — 1자리 숫자 → '0N' */
+  function cofPad(n) { return String(n).padStart(2, '0'); }
+
+  /* cofToYmd — Date → 'YYYY-MM-DD' */
+  function cofToYmd(d) { return `${d.getFullYear()}-${cofPad(d.getMonth() + 1)}-${cofPad(d.getDate())}`; }
+
+  /* cofToYm — Date → 'YYYY-MM' */
+  function cofToYm(d) { return `${d.getFullYear()}-${cofPad(d.getMonth() + 1)}`; }
+
+  /* cofAddMonths — d 에 n 개월 더한 새 Date */
+  function cofAddMonths(d, n) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
+
+  /* cofEndOfMonth — 해당 월의 마지막 날 Date */
+  function cofEndOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
+
+  /* ── SVG 차트 헬퍼 ── */
+
+  /* cofMaxOf — 배열 최대값 (최소 1) */
+  function cofMaxOf(arr) { return Math.max(1, ...arr); }
+
+  /* cofLinePoints — 값 배열을 SVG polyline points 문자열로 변환 */
+  function cofLinePoints(vals, w, h, pad = 10) {
+    const max = cofMaxOf(vals);
+    const step = (w - pad * 2) / Math.max(vals.length - 1, 1);
+    return vals.map((v, i) => `${pad + i * step},${h - pad - (v / max) * (h - pad * 2)}`).join(' ');
+  }
+
+  /* cofAreaPath — 값 배열을 SVG path (영역 채우기용) 문자열로 변환 */
+  function cofAreaPath(vals, w, h, pad = 10) {
+    const pts = cofLinePoints(vals, w, h, pad);
+    if (!pts) { return ''; }
+    const first = pts.split(' ')[0].split(',');
+    const last = pts.split(' ').slice(-1)[0].split(',');
+    return `M${first[0]},${h - pad} L${pts.replace(/ /g, ' L')} L${last[0]},${h - pad} Z`;
+  }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
@@ -522,4 +563,15 @@
   global.coUtil.cofBuildGenericTree = global.coUtil.cofBuildGenericTree || cofBuildGenericTree;
   global.coUtil.cofCollectDescendantIds = global.coUtil.cofCollectDescendantIds || cofCollectDescendantIds;
   global.coUtil.cofCollectExpandedToDepth = global.coUtil.cofCollectExpandedToDepth || cofCollectExpandedToDepth;
+  // 숫자/날짜 포맷 헬퍼
+  global.coUtil.cofFmt = global.coUtil.cofFmt || cofFmt;
+  global.coUtil.cofPad = global.coUtil.cofPad || cofPad;
+  global.coUtil.cofToYmd = global.coUtil.cofToYmd || cofToYmd;
+  global.coUtil.cofToYm = global.coUtil.cofToYm || cofToYm;
+  global.coUtil.cofAddMonths = global.coUtil.cofAddMonths || cofAddMonths;
+  global.coUtil.cofEndOfMonth = global.coUtil.cofEndOfMonth || cofEndOfMonth;
+  // SVG 차트 헬퍼
+  global.coUtil.cofMaxOf = global.coUtil.cofMaxOf || cofMaxOf;
+  global.coUtil.cofLinePoints = global.coUtil.cofLinePoints || cofLinePoints;
+  global.coUtil.cofAreaPath = global.coUtil.cofAreaPath || cofAreaPath;
 })(typeof window !== 'undefined' ? window : this);

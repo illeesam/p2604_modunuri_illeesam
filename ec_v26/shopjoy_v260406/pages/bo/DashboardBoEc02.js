@@ -1,45 +1,5 @@
 /* ShopJoy Admin - EC 종합 대시보드 (월별 14개월 현황) */
-(function () {
-  const { ref, reactive, computed } = Vue;
-
-  /* fmt */
-  const fmt = n => Number(n || 0).toLocaleString('ko-KR');
-
-  /* -- 날짜 유틸 -- */
-  const pad = n => String(n).padStart(2, '0');
-
-  /* toYmd */
-  const toYmd  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-
-  /* toYm */
-  const toYm   = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
-
-  /* addMonths */
-  const addMonths = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth()+n); return x; };
-
-  /* endOfMonth */
-  const endOfMonth = d => new Date(d.getFullYear(), d.getMonth()+1, 0);
-
-  /* -- SVG 헬퍼 -- */
-  const maxOf = arr => Math.max(1, ...arr);
-
-  /* linePoints */
-  const linePoints = (vals, w, h, pad = 10) => {
-    const max = maxOf(vals);
-    const step = (w - pad * 2) / Math.max(vals.length - 1, 1);
-    return vals.map((v, i) => `${pad + i * step},${h - pad - (v / max) * (h - pad * 2)}`).join(' ');
-  };
-
-  /* areaPath */
-  const areaPath = (vals, w, h, pad = 10) => {
-    const pts = linePoints(vals, w, h, pad);
-    if (!pts) { return ''; }
-    const first = pts.split(' ')[0].split(',');
-    const last  = pts.split(' ').slice(-1)[0].split(',');
-    return `M${first[0]},${h - pad} L${pts.replace(/ /g, ' L')} L${last[0]},${h - pad} Z`;
-  };
-
-  window.DashboardBoEc02 = {
+window.DashboardBoEc02 = {
     name: 'DashboardBoEc02',
     props: {
       navigate:  { type: Function, required: true }, // 페이지 이동
@@ -47,6 +7,15 @@
     setup() {
       // ===== [01] 초기 변수 정의 ==================================================
       const { ref, reactive, computed } = Vue;
+      /* 숫자/날짜/SVG 헬퍼는 coUtil(cof*) 사용. setup·template 호환을 위한 alias */
+      const fmt = coUtil.cofFmt;
+      const toYmd = coUtil.cofToYmd;
+      const toYm = coUtil.cofToYm;
+      const addMonths = coUtil.cofAddMonths;
+      const endOfMonth = coUtil.cofEndOfMonth;
+      const maxOf = coUtil.cofMaxOf;
+      const linePoints = coUtil.cofLinePoints;
+      const areaPath = coUtil.cofAreaPath;
 
       /* -- 필터 상태 -- */
       const today   = new Date();
@@ -870,5 +839,4 @@
 <!-- ===== ■. /탭 그리드 ================================================== -->
 </div>
 `,
-  };
-})();
+};
