@@ -668,7 +668,7 @@ window.OdClaimMng = {
           {{ t.label }}
         </button>
       </div>
-      <div style="padding:20px 18px;">
+      <div style="padding:20px 18px;flex:1;overflow-y:auto;min-height:280px;">
         <div v-if="uiState.bulkTab==='status'">
           <div v-for="t in codes.claim_types.map(c=>c.codeValue)" :key="Math.random()" class="form-group" :style="{opacity: (cfCheckedByType[t]||[]).length ? 1 : 0.4}">
             <label class="form-label">
@@ -744,24 +744,26 @@ window.OdClaimMng = {
             </bo-form-area>
           </div>
         </div>
-        <div style="padding:10px 18px 14px;border-top:1px solid #eee;background:#fafafa;">
-          <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">
-            📋 작업내용
-          </div>
-          <textarea readonly :value="cfBulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
-          style="width:100%;min-height:120px;max-height:200px;font-family:monospace;font-size:11.5px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fff;resize:vertical;"></textarea>
-          </div>
-          <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:6px;background:#fff;">
-            <button class="btn btn-secondary btn-sm" @click="handleBtnAction('actionsModal-close')">
-              취소
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('actionsModal-apply')">
-              저장
-            </button>
-          </div>
-        </div>
       </div>
-      <!-- ===== □. 변경작업 모달 ================================================= -->
+      <!-- 탭 본문 끝 (위 div는 padding:20px 18px;flex:1;overflow-y:auto;) -->
+      <div style="padding:10px 18px 14px;border-top:1px solid #eee;background:#fafafa;flex-shrink:0;">
+        <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">
+          📋 작업내용
+        </div>
+        <textarea readonly :value="cfBulkPreview || '탭에서 변경값을 선택하면 작업내용이 자동으로 표시됩니다.'"
+          style="width:100%;min-height:120px;max-height:200px;font-family:monospace;font-size:11.5px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fff;resize:vertical;"></textarea>
+      </div>
+      <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:6px;background:#fff;flex-shrink:0;">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('actionsModal-close')">
+          취소
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('actionsModal-apply')">
+          저장
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ===== □. 변경작업 모달 ================================================= -->
       <!-- ===== ■. 회원 선택 팝업 ================================================ -->
       <!-- ===== ■. 영역 ====================================================== -->
       <od-member-pick-modal :show="memberPick.open" ui-nm="클레임관리"
