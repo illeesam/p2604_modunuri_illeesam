@@ -9,8 +9,6 @@ window.Prod01View = {
     const { ref, reactive, computed, onMounted, onBeforeUnmount, watch } = Vue;
     const prod              = window.foApp.selectedProd;  // 선택된 상품
     const addToCart            = window.foApp.addToCart;  // 장바구니 추가
-    const showToast            = window.foApp.showToast;  // 토스트 알림
-    const showAlert            = window.foApp.showAlert;  // 알림 모달
 
     // ===== [02] 액션 모음 (dispatch) ==============================================
 

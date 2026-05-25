@@ -13,9 +13,6 @@ window.StStatusMng = {
       claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: '',
     });
     const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });

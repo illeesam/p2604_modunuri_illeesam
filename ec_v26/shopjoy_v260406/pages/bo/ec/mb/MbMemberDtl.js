@@ -2,21 +2,18 @@
 window.MbMemberDtl = {
   name: 'MbMemberDtl',
   props: {
+    navigate:      { type: Function, required: true },        // 페이지 이동
+    dtlId:         { type: String, default: null },           // 수정 대상 ID
     detailModal:   { type: Object, default: () => ({}) },     // 부모 Mng 의 detailPanel 객체
     handleSave:    { type: Function, default: () => {} },     // 저장 콜백
     handleDelete:  { type: Function, default: () => {} },     // 삭제 콜백
     closeDetail:   { type: Function, default: () => {} },     // 닫기 콜백
     dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
-    onListReload:  { type: Function, default: () => {} },     // 상위 Mng 재조회 콜백
-    reloadTrigger: { type: Number, default: 0 },              // 상위 reload signal
+    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
     // ===== [01] 초기 변수 정의 ====================================================
     const { watch, ref, reactive, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;   // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const currentId = ref(props.detailModal.dtlId); // 현재 선택된 회원 ID (이력 컴포넌트 key용)
     const codes = reactive({ member_grades: [], member_statuses: [] }); // 공통코드
 

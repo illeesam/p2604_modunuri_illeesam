@@ -10,8 +10,6 @@ window.SyDeptMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const depts = reactive([]);                    // 부서 트리 데이터
     const uiState = reactive({                     // UI 상태
       checkAll: false, loading: false, error: null, isPageCodeLoad: false,

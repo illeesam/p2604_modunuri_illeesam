@@ -7,7 +7,6 @@ window.MyChatt = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ==================================================
     const { reactive, computed, onMounted, watch } = Vue;
-    const showToast            = window.foApp.showToast;  // 토스트 알림
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});

@@ -7,10 +7,6 @@ window.DpDispAreaMng = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;   // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const areas = reactive([]);                    // 영역 목록
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ layout_types: [], use_yn: [], date_range_opts: [] });

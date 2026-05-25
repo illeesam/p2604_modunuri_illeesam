@@ -8,7 +8,6 @@ window.Order = {
     // ===== [01] 초기 변수 정의 ==================================================
     const { reactive, computed, ref, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
-    const showAlert            = window.foApp.showAlert;  // 알림 모달
     const clearCart            = window.foApp.clearCart;  // 장바구니 비우기
     const cart                 = window.foApp.cart;  // 장바구니 목록
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, view: 'order', resultData: null, selectedShipCoupon: null, cashBalance: 0, cashInput: 0 });

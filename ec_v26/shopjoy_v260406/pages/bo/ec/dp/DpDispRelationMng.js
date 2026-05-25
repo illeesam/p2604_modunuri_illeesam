@@ -7,10 +7,6 @@ window.DpDispRelationMng = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ==================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({
       disp_relation_types: [],

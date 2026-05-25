@@ -47,10 +47,6 @@
     setup() {
       // ===== [01] 초기 변수 정의 ==================================================
       const { ref, reactive, computed } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
       /* -- 필터 상태 -- */
       const today   = new Date();

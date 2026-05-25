@@ -9,8 +9,6 @@ window.SyCodeMng = {
     const { reactive, watch, onMounted, nextTick } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     // --- 화면 상태 / 코드 / 데이터 ---
     const pageCodes = reactive({ use_yn: [], date_range_opts: [] });

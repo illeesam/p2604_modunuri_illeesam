@@ -9,8 +9,6 @@ window.SyBrandMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const brands  = reactive([]);                  // 브랜드 목록 (원본)
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null, dragSrc: null });

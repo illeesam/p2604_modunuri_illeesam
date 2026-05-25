@@ -9,10 +9,6 @@ window.SyBatchHist = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const batches = reactive([]);                  // 배치 마스터 목록 (select 옵션용)
     const batchLogs = reactive([]);                // 배치 실행이력 (메인 그리드 데이터)

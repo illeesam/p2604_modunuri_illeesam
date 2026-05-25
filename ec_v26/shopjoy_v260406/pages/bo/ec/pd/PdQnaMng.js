@@ -7,10 +7,6 @@ window.PdQnaMng = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);                // 상품 목록 (이름 변환용)
     const members = reactive([]);                 // 회원 목록 (이름 변환용)
     const qnas = reactive([]);                    // Q&A 목록 (메인 그리드 데이터)

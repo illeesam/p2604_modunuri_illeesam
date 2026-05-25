@@ -9,10 +9,7 @@ window.OdDlivHist = {
   setup(props) {
     // ===== [01] 초기 변수 정의 ====================================================
     const { ref, computed, reactive, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const deliveries = reactive([]);                                            // 배송 목록
     const claims = reactive([]);                                                // 클레임 목록 (보조 데이터)

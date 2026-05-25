@@ -9,7 +9,6 @@ window.Contact = {
     // ===== [01] 초기 변수 정의 ==================================================
     const { reactive, ref, computed, watch, onMounted } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
-    const showAlert            = window.foApp.showAlert;  // 알림 모달
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 

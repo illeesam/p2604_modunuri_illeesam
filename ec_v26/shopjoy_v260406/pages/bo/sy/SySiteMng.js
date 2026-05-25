@@ -9,7 +9,6 @@ window.SySiteMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const sites = reactive([]);                    // 사이트 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태

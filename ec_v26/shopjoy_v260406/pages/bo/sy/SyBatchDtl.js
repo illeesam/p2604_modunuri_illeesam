@@ -4,9 +4,7 @@ window.SyBatchDtl = {
   props: {
     navigate:      { type: Function, required: true },        // 페이지 이동
     dtlId:         { type: String, default: null },           // 수정 대상 ID
-    tabMode:       { type: String, default: 'tab' },          // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
-    onListReload:  { type: Function, default: () => {} },     // 상위 Mng 재조회 콜백
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -14,7 +12,6 @@ window.SyBatchDtl = {
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const showRefModal = window.boApp.showRefModal; // 참조 모달
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태

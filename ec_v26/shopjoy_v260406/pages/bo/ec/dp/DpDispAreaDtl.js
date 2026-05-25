@@ -5,7 +5,6 @@ window.DpDispAreaDtl = {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null }, // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    onListReload:  { type: Function, default: () => {} }, // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {

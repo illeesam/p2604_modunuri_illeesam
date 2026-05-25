@@ -12,8 +12,6 @@ window.ZdLocalStorage = {
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const lsItems = reactive([]);
     const uiState = reactive({ isResizing: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});

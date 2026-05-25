@@ -5,9 +5,7 @@ window.CmChattDtl = {
   props: {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null },    // 수정 대상 ID
-    tabMode:       { type: String, default: 'tab' },   // 뷰모드 (tab/1col/2col/3col/4col)
     dtlMode:       { type: String, default: 'view' },  // 상세 모드 (new/view/edit)
-    onListReload:  { type: Function, default: () => {} }, // 상위 Mng 재조회 콜백
     reloadTrigger: { type: Number, default: 0 },       // 상위 reload signal
   },
   setup(props) {
