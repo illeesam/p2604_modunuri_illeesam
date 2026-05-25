@@ -6527,7 +6527,19 @@ window.AuthProfileModal = {
       console.log(' ■■ AuthProfileModal : handleSelectAction -> ', cmd, param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
+
+    /* BoFormArea 컬럼 정의 */
+    const baseFormColumns = [
+      { key: 'name',  label: '이름',   type: 'text', required: true, placeholder: '이름' },
+      { key: 'phone', label: '연락처', type: 'text', placeholder: '010-0000-0000' },
+      { type: 'rowBreak' },
+      { key: 'email', label: '이메일', type: 'readonly', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'dept',  label: '부서',   type: 'text', placeholder: '부서명', colSpan: 2 },
+    ];
+
     return {
+      baseFormColumns,                                                        // 컬럼 정의
       fnInitial,                                                              // 헬퍼
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
@@ -6570,37 +6582,7 @@ window.AuthProfileModal = {
       </div>
     </div>
   </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label class="form-label">
-        이름
-        <span class="req">
-          *
-        </span>
-      </label>
-      <input class="form-control" v-model="form.name" placeholder="이름" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">
-        연락처
-      </label>
-      <input class="form-control" v-model="form.phone" placeholder="010-0000-0000" />
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">
-      이메일
-    </label>
-    <div class="readonly-field">
-      {{ form.email }}
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">
-      부서
-    </label>
-    <input class="form-control" v-model="form.dept" placeholder="부서명" />
-  </div>
+  <bo-form-area :columns="baseFormColumns" :form="form" :cols="2" :show-actions="false" />
   <template #footer>
     <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
       취소
@@ -6958,7 +6940,23 @@ window.AuthLoginModal = {
       console.log(' ■■ AuthLoginModal : handleSelectAction -> ', cmd, param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
+
+    /* BoFormArea 컬럼 정의 — 회원가입 폼 */
+    const baseRegFormColumns = [
+      { key: 'name',      label: '이름',     type: 'text',     required: true, placeholder: '이름' },
+      { key: 'phone',     label: '연락처',   type: 'text',     placeholder: '010-0000-0000' },
+      { type: 'rowBreak' },
+      { key: 'email',     label: '이메일',   type: 'text',     required: true, placeholder: '이메일 입력', colSpan: 2 },
+      { type: 'rowBreak' },
+      { key: 'password',  label: '비밀번호', type: 'password', required: true, placeholder: '비밀번호' },
+      { key: 'confirmPw', label: '비밀번호 확인', type: 'password', required: true, placeholder: '재입력' },
+      { type: 'rowBreak' },
+      { key: 'role',      label: '역할',     type: 'select',   colSpan: 2,
+        options: () => (props.userRoles || []).map(c => ({ value: c.codeValue, label: c.codeLabel })) },
+    ];
+
     return {
+      baseRegFormColumns,                                                     // 컬럼 정의
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
@@ -7026,62 +7024,7 @@ window.AuthLoginModal = {
     </div>
     <!-- 회원가입 폼 -->
     <div v-if="modal.tab==='register'">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">
-            이름
-            <span class="req">
-              *
-            </span>
-          </label>
-          <input class="form-control" v-model="regForm.name" placeholder="이름" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">
-            연락처
-          </label>
-          <input class="form-control" v-model="regForm.phone" placeholder="010-0000-0000" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          이메일
-          <span class="req">
-            *
-          </span>
-        </label>
-        <input class="form-control" v-model="regForm.email" placeholder="이메일 입력" autocomplete="email" />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">
-            비밀번호
-            <span class="req">
-              *
-            </span>
-          </label>
-          <input class="form-control" type="password" v-model="regForm.password" placeholder="비밀번호" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">
-            비밀번호 확인
-            <span class="req">
-              *
-            </span>
-          </label>
-          <input class="form-control" type="password" v-model="regForm.confirmPw" placeholder="재입력" @keyup.enter="handleBtnAction('modal-register')" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">
-          역할
-        </label>
-        <select class="form-control" v-model="regForm.role">
-          <option v-for="c in userRoles" :key="c.codeValue" :value="c.codeValue">
-            {{ c.codeLabel }}
-          </option>
-        </select>
-      </div>
+      <bo-form-area :columns="baseRegFormColumns" :form="regForm" :cols="2" :show-actions="false" />
       <div v-if="error" class="login-error">
         {{ error }}
       </div>
