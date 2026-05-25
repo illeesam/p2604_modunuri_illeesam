@@ -13,17 +13,6 @@ window.Prod03View = {
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const showAlert            = window.foApp.showAlert;  // 알림 모달
 
-    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
-    /* toggleLike — 토글 */
-    const toggleLike           = (id) => window.foApp.toggleLike(id);
-
-    /* isLiked — 여부 확인 */
-    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
-
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false, prodApiLoaded: false });
-    const codes = reactive({});
-
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Prod03View.js : handleBtnAction -> ', cmd, param);
@@ -153,6 +142,16 @@ window.Prod03View = {
       }
     };
 
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+    /* toggleLike — 토글 */
+    const toggleLike           = (id) => window.foApp.toggleLike(id);
+
+    /* isLiked — 여부 확인 */
+    const isLiked              = (id) => window.foApp.isLiked?.(id) ?? false;
+
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedImg: 0, selectedColor: null, selectedSize: null, qty: 1, colorError: '', sizeError: '', activeTab: 'detail', reviewFilter: '최신순', selectedReview: null, photoGridPage: 1, tabFixed: false, tabFixedTop: 0, tabFixedLeft: 0, tabFixedW: 0, tabPlaceholderH: 0, drawerMode: 'buy', photoFromGrid: false, showSizeGuide: false, photoPopupOpen: false, zoomOpen: false, showBottomBar: false, quickBuyOpen: false, prodApiLoaded: false });
+    const codes = reactive({});
     const svProduct = reactive({});
 
     /* fnApplySvProduct — 유틸 */

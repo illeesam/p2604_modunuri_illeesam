@@ -16,6 +16,95 @@ window.MyOrder = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, helpTab: 'order', flowHelpOpen: false });
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MyOrder.js : handleBtnAction -> ', cmd, param);
+      // 도움말 모달 열기
+      if (cmd === 'orders-help-open') {
+        uiState.flowHelpOpen = true;
+      // 도움말 모달 닫기
+      } else if (cmd === 'orders-help-close') {
+        uiState.flowHelpOpen = false;
+      // 도움말 탭 변경
+      } else if (cmd === 'orders-help-tab') {
+        uiState.helpTab = param;
+      // 흐름 필터 초기화
+      } else if (cmd === 'orders-flow-reset') {
+        flowStatusFilter.splice(0);
+      // 리뷰 모달 닫기
+      } else if (cmd === 'review-modal-close') {
+        reviewModal.show = false;
+      // 리뷰 제출
+      } else if (cmd === 'review-submit') {
+        return submitReview();
+      // 리뷰 별점 설정
+      } else if (cmd === 'review-set-rating') {
+        reviewModal.rating = param;
+      // 클레임 모달 닫기
+      } else if (cmd === 'claim-modal-close') {
+        claimModal.show = false;
+      // 클레임 제출
+      } else if (cmd === 'claim-submit') {
+        return submitClaimModal();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MyOrder.js : handleSelectAction -> ', cmd, param);
+      // 주문 흐름 상태 토글
+      if (cmd === 'orders-flow-toggle') {
+        toggleFlowStatus(param);
+        pager.page = 1;
+      // 주문 취소
+      } else if (cmd === 'orders-cancel') {
+        return cancelOrder(param);
+      // 구매 확정
+      } else if (cmd === 'orders-confirm-purchase') {
+        return confirmPurchase(param);
+      // 배송 추적 열기
+      } else if (cmd === 'orders-track') {
+        return openTracking(param.courier, param.trackingNo);
+      // 배송 추적 (작은 버튼)
+      } else if (cmd === 'orders-track2') {
+        return openTracking2(param.courier, param.trackingNo);
+      // 클레임 모달 열기 (교환/반품)
+      } else if (cmd === 'orders-claim-open') {
+        return openClaimModal(param.orderId, param.type);
+      // 클레임 사유 선택
+      } else if (cmd === 'claim-set-reason') {
+        claimModal.reason = param;
+        claimModal.selectedCouponId = null;
+      // 클레임 교환 상품 선택
+      } else if (cmd === 'claim-set-exchange-item') {
+        claimModal.exchangeItemIdx = param;
+        claimModal.exchangeSize = '';
+        claimModal.exchangeColor = '';
+      // 클레임 교환 사이즈 토글
+      } else if (cmd === 'claim-toggle-size') {
+        claimModal.exchangeSize = claimModal.exchangeSize === param ? '' : param;
+      // 클레임 교환 색상 토글
+      } else if (cmd === 'claim-toggle-color') {
+        claimModal.exchangeColor = claimModal.exchangeColor === param ? '' : param;
+      // 리뷰 모달 열기
+      } else if (cmd === 'orders-review-open') {
+        return openReviewModal(param.orderId, param.itemIdx, param.item);
+      // 상품 모달 열기
+      } else if (cmd === 'orders-prod-open') {
+        return openProdModal(param);
+      // 주문자 정보 모달 열기
+      } else if (cmd === 'orders-customer-open') {
+        return openCustomerModal(param);
+      // 리뷰 파일 제거
+      } else if (cmd === 'review-file-remove') {
+        return removeReviewFile(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -234,96 +323,6 @@ window.MyOrder = {
       if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ MyOrder.js : handleBtnAction -> ', cmd, param);
-      // 도움말 모달 열기
-      if (cmd === 'orders-help-open') {
-        uiState.flowHelpOpen = true;
-      // 도움말 모달 닫기
-      } else if (cmd === 'orders-help-close') {
-        uiState.flowHelpOpen = false;
-      // 도움말 탭 변경
-      } else if (cmd === 'orders-help-tab') {
-        uiState.helpTab = param;
-      // 흐름 필터 초기화
-      } else if (cmd === 'orders-flow-reset') {
-        flowStatusFilter.splice(0);
-      // 리뷰 모달 닫기
-      } else if (cmd === 'review-modal-close') {
-        reviewModal.show = false;
-      // 리뷰 제출
-      } else if (cmd === 'review-submit') {
-        return submitReview();
-      // 리뷰 별점 설정
-      } else if (cmd === 'review-set-rating') {
-        reviewModal.rating = param;
-      // 클레임 모달 닫기
-      } else if (cmd === 'claim-modal-close') {
-        claimModal.show = false;
-      // 클레임 제출
-      } else if (cmd === 'claim-submit') {
-        return submitClaimModal();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ MyOrder.js : handleSelectAction -> ', cmd, param);
-      // 주문 흐름 상태 토글
-      if (cmd === 'orders-flow-toggle') {
-        toggleFlowStatus(param);
-        pager.page = 1;
-      // 주문 취소
-      } else if (cmd === 'orders-cancel') {
-        return cancelOrder(param);
-      // 구매 확정
-      } else if (cmd === 'orders-confirm-purchase') {
-        return confirmPurchase(param);
-      // 배송 추적 열기
-      } else if (cmd === 'orders-track') {
-        return openTracking(param.courier, param.trackingNo);
-      // 배송 추적 (작은 버튼)
-      } else if (cmd === 'orders-track2') {
-        return openTracking2(param.courier, param.trackingNo);
-      // 클레임 모달 열기 (교환/반품)
-      } else if (cmd === 'orders-claim-open') {
-        return openClaimModal(param.orderId, param.type);
-      // 클레임 사유 선택
-      } else if (cmd === 'claim-set-reason') {
-        claimModal.reason = param;
-        claimModal.selectedCouponId = null;
-      // 클레임 교환 상품 선택
-      } else if (cmd === 'claim-set-exchange-item') {
-        claimModal.exchangeItemIdx = param;
-        claimModal.exchangeSize = '';
-        claimModal.exchangeColor = '';
-      // 클레임 교환 사이즈 토글
-      } else if (cmd === 'claim-toggle-size') {
-        claimModal.exchangeSize = claimModal.exchangeSize === param ? '' : param;
-      // 클레임 교환 색상 토글
-      } else if (cmd === 'claim-toggle-color') {
-        claimModal.exchangeColor = claimModal.exchangeColor === param ? '' : param;
-      // 리뷰 모달 열기
-      } else if (cmd === 'orders-review-open') {
-        return openReviewModal(param.orderId, param.itemIdx, param.item);
-      // 상품 모달 열기
-      } else if (cmd === 'orders-prod-open') {
-        return openProdModal(param);
-      // 주문자 정보 모달 열기
-      } else if (cmd === 'orders-customer-open') {
-        return openCustomerModal(param);
-      // 리뷰 파일 제거
-      } else if (cmd === 'review-file-remove') {
-        return removeReviewFile(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

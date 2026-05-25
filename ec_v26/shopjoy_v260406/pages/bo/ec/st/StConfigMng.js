@@ -15,6 +15,35 @@ window.StConfigMng = {
     const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
     const configs = reactive([]);
 
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StConfigMng.js : handleBtnAction -> ', cmd, param);
+      if (cmd === 'configs-add') {
+        return openNew();
+      } else if (cmd === 'form-save') {
+        return handleSave();
+      } else if (cmd === 'form-cancel') {
+        return closeForm();
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StConfigMng.js : handleSelectAction -> ', cmd, param);
+      if (cmd === 'configs-row-edit') {
+        return openEdit(param);
+      } else if (cmd === 'configs-row-delete') {
+        return handleDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleLoadList — 목록 조회 */
@@ -164,36 +193,6 @@ window.StConfigMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ StConfigMng.js : handleBtnAction -> ', cmd, param);
-      if (cmd === 'configs-add') {
-        return openNew();
-      } else if (cmd === 'form-save') {
-        return handleSave();
-      } else if (cmd === 'form-cancel') {
-        return closeForm();
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행 선택 액션 dispatch */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ StConfigMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'configs-row-edit') {
-        return openEdit(param);
-      } else if (cmd === 'configs-row-delete') {
-        return handleDelete(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // --- [컬럼 정의] ---
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 

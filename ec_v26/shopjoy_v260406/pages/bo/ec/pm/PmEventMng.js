@@ -25,11 +25,6 @@ window.PmEventMng = {
     const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -88,6 +83,11 @@ window.PmEventMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
     /* 이벤트 fnLoadCodes */
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 

@@ -19,20 +19,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     });
 
     /* 정산 지급 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.settle_pay_statuses = codeStore.sgGetGrpCodes('SETTLE_PAY_STATUS_KR');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -70,6 +56,20 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.settle_pay_statuses = codeStore.sgGetGrpCodes('SETTLE_PAY_STATUS_KR');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     /* 정산 지급 목록조회 */
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 

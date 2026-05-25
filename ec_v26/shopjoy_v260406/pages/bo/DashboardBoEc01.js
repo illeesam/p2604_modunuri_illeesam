@@ -75,60 +75,6 @@
       });
 
       /* toggle — 토글 */
-      const toggle = (list, v) => {
-        const i = list.indexOf(v);
-        if (i >= 0) list.splice(i, 1); else list.push(v);
-      };
-
-      /* toggleAll — 전체 토글 */
-      const toggleAll = (key, all) => {
-        if (filters[key].length === all.length) { filters[key] = []; }
-        else { filters[key] = [...all]; }
-      };
-
-      /* isSel — 여부 확인 */
-      const isSel = (list, v) => list.includes(v);
-
-      // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
-
-      /* onSearch — 조회 */
-      const onSearch = () => {
-        console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
-      };
-
-      /* doExcelDownload — 엑셀 다운로드 */
-      const doExcelDownload = () => {
-        const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
-        cfMonthLabels.value.forEach((m, i) => {
-          rows.push([m, cfMonthlySales.value[i], cfMonthlyJoin.value[i], cfMonthlyLeave.value[i], cfMonthlyClicks.value[i], cfMonthlyOrders.value[i]]);
-        });
-        const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-        const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'dashboard_'+filters.startDt+'_'+filters.endDt+'.csv';
-        a.click();
-        URL.revokeObjectURL(url);
-      };
-
-      /* onReset — 초기화 */
-      const onReset = () => {
-        filters.startDt = startDef;
-        filters.endDt   = endDef;
-        filters.channels    = [...CHANNELS];
-        filters.ages        = [...AGES];
-        filters.genders     = [...GENDERS];
-        filters.memberTypes = [...MEMBER_TYPES];
-        filters.categories  = [...CATEGORIES];
-      };
-
-      /* -- UI 상태 -- */
-      const uiState = reactive({
-        filterExpand: false,
-        activeTab: 'sales',
-        tabMode: '4col' // tab | 1col | 2col | 3col | 4col
-      });
 
       /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
       const handleBtnAction = (cmd, param = {}) => {
@@ -172,6 +118,60 @@
           console.warn('[handleSelectAction] unknown cmd:', cmd);
         }
       };
+
+      const toggle = (list, v) => {
+        const i = list.indexOf(v);
+        if (i >= 0) list.splice(i, 1); else list.push(v);
+      };
+
+      /* toggleAll — 전체 토글 */
+      const toggleAll = (key, all) => {
+        if (filters[key].length === all.length) { filters[key] = []; }
+        else { filters[key] = [...all]; }
+      };
+
+      /* isSel — 여부 확인 */
+      const isSel = (list, v) => list.includes(v);
+      // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
+      /* onSearch — 조회 */
+      const onSearch = () => {
+        console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
+      };
+
+      /* doExcelDownload — 엑셀 다운로드 */
+      const doExcelDownload = () => {
+        const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
+        cfMonthLabels.value.forEach((m, i) => {
+          rows.push([m, cfMonthlySales.value[i], cfMonthlyJoin.value[i], cfMonthlyLeave.value[i], cfMonthlyClicks.value[i], cfMonthlyOrders.value[i]]);
+        });
+        const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+        const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'dashboard_'+filters.startDt+'_'+filters.endDt+'.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      /* onReset — 초기화 */
+      const onReset = () => {
+        filters.startDt = startDef;
+        filters.endDt   = endDef;
+        filters.channels    = [...CHANNELS];
+        filters.ages        = [...AGES];
+        filters.genders     = [...GENDERS];
+        filters.memberTypes = [...MEMBER_TYPES];
+        filters.categories  = [...CATEGORIES];
+      };
+
+      /* -- UI 상태 -- */
+      const uiState = reactive({
+        filterExpand: false,
+        activeTab: 'sales',
+        tabMode: '4col' // tab | 1col | 2col | 3col | 4col
+      });
       const TABS = [
         { key: 'sales',    label: '월별 매출',        icon: '💰' },
         { key: 'member',   label: '가입/탈퇴',        icon: '👥' },
@@ -381,9 +381,13 @@
   <!-- ===== ■. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
-    <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
-    <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
-    <span style="flex:1;"></span>
+    <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;">
+    </div>
+    <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">
+      온라인 쇼핑몰 매출 및 판매현황
+    </span>
+    <span style="flex:1;">
+    </span>
     <span style="font-size:11px;color:#aaa;">
       14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}
     </span>
@@ -393,20 +397,29 @@
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <span style="font-size:11px;font-weight:700;color:#666;width:74px;">조회기간</span>
+      <span style="font-size:11px;font-weight:700;color:#666;width:74px;">
+        조회기간
+      </span>
       <input type="date" v-model="filters.startDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
-      <span style="color:#999;">~</span>
+      <span style="color:#999;">
+        ~
+      </span>
       <input type="date" v-model="filters.endDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
       <button @click="handleBtnAction('filters-toggle-expand')"
         style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;cursor:pointer;">
         {{ uiState.filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
-      <span style="flex:1;"></span>
-      <button class="btn btn-sm btn-primary" @click="handleBtnAction('filters-search')" style="font-size:11px;">🔍 검색</button>
+      <span style="flex:1;">
+      </span>
+      <button class="btn btn-sm btn-primary" @click="handleBtnAction('filters-search')" style="font-size:11px;">
+        🔍 검색
+      </button>
       <button class="btn btn-sm" @click="handleBtnAction('stats-excel')" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">
         📥 엑셀다운로드
       </button>
-      <button class="btn btn-sm" @click="handleBtnAction('filters-reset')" style="font-size:11px;">🔄 초기화</button>
+      <button class="btn btn-sm" @click="handleBtnAction('filters-reset')" style="font-size:11px;">
+        🔄 초기화
+      </button>
     </div>
     <div v-if="uiState.filterExpand" style="display:flex;flex-direction:column;gap:8px;border-top:1px dashed #eee;padding-top:10px;">
       <div v-for="grp in [
@@ -416,7 +429,9 @@
         {key:'memberTypes', label:'회원유형',  all:MEMBER_TYPES},
         {key:'categories',  label:'카테고리',  all:CATEGORIES},
         ]" :key="grp.key" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span style="font-size:11px;font-weight:700;color:#666;width:74px;">{{ grp.label }}</span>
+        <span style="font-size:11px;font-weight:700;color:#666;width:74px;">
+          {{ grp.label }}
+        </span>
         <button @click="handleBtnAction('filters-toggle-all', { key: grp.key, all: grp.all })"
           :style="{fontSize:'11px',padding:'3px 10px',borderRadius:'12px',border:'1px solid',cursor:'pointer',
           background: filters[grp.key].length===grp.all.length ? '#1a1a2e' : '#fff',
@@ -440,337 +455,428 @@
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
-      <button v-for="t in TABS" :key="t.key" class="tab-btn"
-        :class="{active: uiState.activeTab===t.key && uiState.tabMode==='tab'}"
-        :disabled="uiState.tabMode!=='tab'"
-        @click="handleSelectAction('tabs-select', t.key)"
-        :style="uiState.tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
-        <span style="margin-right:4px;">{{ t.icon }}</span>
-        {{ t.label }}
-      </button>
-    </div>
-    <div style="display:flex;gap:4px;background:#fff;padding:4px;border:1px solid #eef0f3;border-radius:8px;flex-shrink:0;">
-      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="handleSelectAction('tabMode-set', vm.key)"
+      <button v-for="t in TABS" :key="t.key" class="tab-btn" :class="{active: uiState.activeTab===t.key && uiState.tabMode==='tab'}" :disabled="uiState.tabMode!=='tab'" @click="handleSelectAction('tabs-select', t.key)" :style="uiState.tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
+      <span style="margin-right:4px;">
+        {{ t.icon }}
+      </span>
+      {{ t.label }}
+    </button>
+  </div>
+  <div style="display:flex;gap:4px;background:#fff;padding:4px;border:1px solid #eef0f3;border-radius:8px;flex-shrink:0;">
+    <button v-for="vm in VIEW_MODES" :key="vm.key" @click="handleSelectAction('tabMode-set', vm.key)"
         :title="vm.label+'로 보기'"
         :style="{fontSize:'11px',padding:'4px 8px',borderRadius:'5px',border:'none',cursor:'pointer',minWidth:'34px',
         background: uiState.tabMode===vm.key ? '#fff0f4' : 'transparent',
         color:       uiState.tabMode===vm.key ? '#e8587a' : '#888',
         fontWeight:  uiState.tabMode===vm.key ? 700 : 400}">
-        {{ vm.icon }}
-      </button>
-    </div>
+      {{ vm.icon }}
+    </button>
   </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 탭 컨텐츠: 뷰모드에 따라 grid ===================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">
-    <!-- ===== ■.■. 1) 월별 매출현황 ============================================ -->
-    <div v-show="showPanel('sales')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-        💰
-        <span>월별 매출현황 (14개월)</span>
-        <span style="flex:1;"></span>
-        <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(cfMonthlySales.reduce((a,b)=>a+b,0)) }}원</span>
-      </div>
-      <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
-        <defs>
-          <linearGradient id="gradSales" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#e8587a"/>
-            <stop offset="100%" stop-color="#ff8aa5"/>
-          </lineargradient>
-        </defs>
-        <g v-for="(v,i) in cfMonthlySales" :key="i">
-          <rect :x="20 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf(cfMonthlySales))*210"
+</div>
+<!-- ===== □. 본문 영역 =================================================== -->
+<!-- ===== ■. 탭 컨텐츠: 뷰모드에 따라 grid ===================================== -->
+<!-- ===== ■. 영역 ====================================================== -->
+<div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">
+  <!-- ===== ■.■. 1) 월별 매출현황 ============================================ -->
+  <div v-show="showPanel('sales')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      💰
+      <span>
+        월별 매출현황 (14개월)
+      </span>
+      <span style="flex:1;">
+      </span>
+      <span style="font-size:11px;color:#888;font-weight:500;">
+        총 {{ fmt(cfMonthlySales.reduce((a,b)=>a+b,0)) }}원
+      </span>
+    </div>
+    <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
+      <defs>
+        <linearGradient id="gradSales" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#e8587a"/>
+          <stop offset="100%" stop-color="#ff8aa5"/>
+        </lineargradient>
+      </defs>
+      <g v-for="(v,i) in cfMonthlySales" :key="i">
+        <rect :x="20 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf(cfMonthlySales))*210"
             :width="760/cfMonthLabels.length - 6" :height="(v/maxOf(cfMonthlySales))*210"
             fill="url(#gradSales)" rx="2" />
-        </g>
-      </svg>
-      <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-        <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
-      </div>
+      </g>
+    </svg>
+    <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">
+        {{ m.slice(2) }}
+      </span>
     </div>
-    <!-- ===== □.□. 1) 월별 매출현황 ============================================ -->
-    <!-- ===== ■.■. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
-    <div v-show="showPanel('member')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-        👥
-        <!-- ===== ■.■.■.■. 영역 ================================================ -->
-        <span>월별 고객 가입/탈퇴자 현황 (14개월)</span>
-        <span style="flex:1;"></span>
-        <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;">
-          <span style="width:10px;height:10px;background:#3b82f6;border-radius:2px;"></span>
-          가입 {{ fmt(cfMonthlyJoin.reduce((a,b)=>a+b,0)) }}
+  </div>
+  <!-- ===== □.□. 1) 월별 매출현황 ============================================ -->
+  <!-- ===== ■.■. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
+  <div v-show="showPanel('member')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      👥
+      <!-- ===== ■.■.■.■. 영역 ================================================ -->
+      <span>
+        월별 고객 가입/탈퇴자 현황 (14개월)
+      </span>
+      <span style="flex:1;">
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;">
+        <span style="width:10px;height:10px;background:#3b82f6;border-radius:2px;">
         </span>
-        <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;margin-left:10px;">
-          <span style="width:10px;height:10px;background:#ef4444;border-radius:2px;"></span>
-          탈퇴 {{ fmt(cfMonthlyLeave.reduce((a,b)=>a+b,0)) }}
+        가입 {{ fmt(cfMonthlyJoin.reduce((a,b)=>a+b,0)) }}
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666;margin-left:10px;">
+        <span style="width:10px;height:10px;background:#ef4444;border-radius:2px;">
         </span>
-      </div>
-      <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
-        <g v-for="(v,i) in cfMonthlyJoin" :key="i">
-          <rect :x="22 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
+        탈퇴 {{ fmt(cfMonthlyLeave.reduce((a,b)=>a+b,0)) }}
+      </span>
+    </div>
+    <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
+      <g v-for="(v,i) in cfMonthlyJoin" :key="i">
+        <rect :x="22 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
             :width="(760/cfMonthLabels.length - 8)/2" :height="(v/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
             fill="#3b82f6" rx="2" />
-          <rect :x="22 + i*(760/cfMonthLabels.length) + (760/cfMonthLabels.length - 8)/2 + 2" :y="230 - (cfMonthlyLeave[i]/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
+        <rect :x="22 + i*(760/cfMonthLabels.length) + (760/cfMonthLabels.length - 8)/2 + 2" :y="230 - (cfMonthlyLeave[i]/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
             :width="(760/cfMonthLabels.length - 8)/2" :height="(cfMonthlyLeave[i]/maxOf([...cfMonthlyJoin,...cfMonthlyLeave]))*210"
             fill="#ef4444" rx="2" />
-        </g>
-      </svg>
-      <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-        <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
-      </div>
+      </g>
+    </svg>
+    <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">
+        {{ m.slice(2) }}
+      </span>
     </div>
-    <!-- ===== □.□. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
-    <!-- ===== ■.■. 3) 월별 상품상세 클릭 현황 ====================================== -->
-    <!-- ===== ■.■. 조건부 카드 ================================================ -->
-    <div v-show="showPanel('click')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-        🖱
-        <span>월별 상품상세 클릭 현황 (14개월)</span>
-        <span style="flex:1;"></span>
-        <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(cfMonthlyClicks.reduce((a,b)=>a+b,0)) }}회</span>
-      </div>
-      <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
-        <defs>
-          <linearGradient id="gradClicks" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/>
-            <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"/>
-          </lineargradient>
-        </defs>
-        <path :d="areaPath(cfMonthlyClicks, 800, 240, 20)" fill="url(#gradClicks)" />
-        <polyline :points="linePoints(cfMonthlyClicks, 800, 240, 20)" fill="none" stroke="#10b981" stroke-width="2.5" />
-        <template v-for="(v,i) in cfMonthlyClicks" :key="i">
-          <circle :cx="20 + (i/(cfMonthlyClicks.length-1))*760" :cy="240-20-(v/maxOf(cfMonthlyClicks))*(240-40)" r="3.5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
-        </template>
-      </svg>
-      <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-        <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
-      </div>
+  </div>
+  <!-- ===== □.□. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
+  <!-- ===== ■.■. 3) 월별 상품상세 클릭 현황 ====================================== -->
+  <!-- ===== ■.■. 조건부 카드 ================================================ -->
+  <div v-show="showPanel('click')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      🖱
+      <span>
+        월별 상품상세 클릭 현황 (14개월)
+      </span>
+      <span style="flex:1;">
+      </span>
+      <span style="font-size:11px;color:#888;font-weight:500;">
+        총 {{ fmt(cfMonthlyClicks.reduce((a,b)=>a+b,0)) }}회
+      </span>
     </div>
-    <!-- ===== □.□. 조건부 카드 ================================================ -->
-    <!-- ===== ■.■. 4) 월별 주문완료 현황 ========================================= -->
-    <div v-show="showPanel('order')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-        📋
-        <span>월별 주문완료 현황 (14개월)</span>
-        <!-- ===== ■.■.■.■. 영역 ================================================ -->
-        <span style="flex:1;"></span>
-        <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(cfMonthlyOrders.reduce((a,b)=>a+b,0)) }}건</span>
-      </div>
-      <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
-        <defs>
-          <linearGradient id="gradOrder" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stop-color="#7b1fa2"/>
-            <stop offset="100%" stop-color="#a855f7"/>
-          </lineargradient>
-        </defs>
-        <g v-for="(v,i) in cfMonthlyOrders" :key="i">
-          <rect :x="20 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf(cfMonthlyOrders))*210"
+    <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
+      <defs>
+        <linearGradient id="gradClicks" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"/>
+        </lineargradient>
+      </defs>
+      <path :d="areaPath(cfMonthlyClicks, 800, 240, 20)" fill="url(#gradClicks)" />
+      <polyline :points="linePoints(cfMonthlyClicks, 800, 240, 20)" fill="none" stroke="#10b981" stroke-width="2.5" />
+      <template v-for="(v,i) in cfMonthlyClicks" :key="i">
+        <circle :cx="20 + (i/(cfMonthlyClicks.length-1))*760" :cy="240-20-(v/maxOf(cfMonthlyClicks))*(240-40)" r="3.5" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+      </template>
+    </svg>
+    <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">
+        {{ m.slice(2) }}
+      </span>
+    </div>
+  </div>
+  <!-- ===== □.□. 조건부 카드 ================================================ -->
+  <!-- ===== ■.■. 4) 월별 주문완료 현황 ========================================= -->
+  <div v-show="showPanel('order')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      📋
+      <span>
+        월별 주문완료 현황 (14개월)
+      </span>
+      <!-- ===== ■.■.■.■. 영역 ================================================ -->
+      <span style="flex:1;">
+      </span>
+      <span style="font-size:11px;color:#888;font-weight:500;">
+        총 {{ fmt(cfMonthlyOrders.reduce((a,b)=>a+b,0)) }}건
+      </span>
+    </div>
+    <svg viewBox="0 0 800 240" style="width:100%;height:240px;">
+      <defs>
+        <linearGradient id="gradOrder" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#7b1fa2"/>
+          <stop offset="100%" stop-color="#a855f7"/>
+        </lineargradient>
+      </defs>
+      <g v-for="(v,i) in cfMonthlyOrders" :key="i">
+        <rect :x="20 + i*(760/cfMonthLabels.length)" :y="230 - (v/maxOf(cfMonthlyOrders))*210"
             :width="760/cfMonthLabels.length - 6" :height="(v/maxOf(cfMonthlyOrders))*210"
             fill="url(#gradOrder)" rx="2" />
-        </g>
-      </svg>
-      <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
-        <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
-      </div>
+      </g>
+    </svg>
+    <div style="display:flex;font-size:10px;color:#888;margin-top:4px;">
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">
+        {{ m.slice(2) }}
+      </span>
     </div>
-    <!-- ===== □.□. 4) 월별 주문완료 현황 ========================================= -->
-    <!-- ===== ■.■. 5) 월별 판매채널별 매출 ======================================== -->
-    <!-- ===== ■.■. 조건부 카드 ================================================ -->
-    <div v-show="showPanel('channel')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-        📺
-        <span>월별 판매채널별 매출현황 (14개월)</span>
-        <span style="flex:1;"></span>
-        <span style="font-size:11px;color:#888;font-weight:500;">{{ cfChannelMonthly.length }}개 채널</span>
-      </div>
-      <svg viewBox="0 0 800 260" style="width:100%;height:260px;">
-        <template v-for="(ch, ci) in cfChannelMonthly" :key="ch.name">
-          <polyline :points="linePoints(ch.values, 800, 260, 20)" fill="none" :stroke="ch.color" stroke-width="2" opacity="0.85" />
-        </template>
-      </svg>
-      <div style="display:flex;font-size:10px;color:#888;margin:4px 0 10px;">
-        <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">{{ m.slice(2) }}</span>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;">
-        <span v-for="ch in cfChannelMonthly" :key="ch.name" style="display:inline-flex;align-items:center;gap:5px;">
-          <span :style="{width:'12px',height:'3px',background:ch.color,borderRadius:'2px'}"></span>
-          <span style="color:#555;">{{ ch.name }}</span>
+  </div>
+  <!-- ===== □.□. 4) 월별 주문완료 현황 ========================================= -->
+  <!-- ===== ■.■. 5) 월별 판매채널별 매출 ======================================== -->
+  <!-- ===== ■.■. 조건부 카드 ================================================ -->
+  <div v-show="showPanel('channel')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+      📺
+      <span>
+        월별 판매채널별 매출현황 (14개월)
+      </span>
+      <span style="flex:1;">
+      </span>
+      <span style="font-size:11px;color:#888;font-weight:500;">
+        {{ cfChannelMonthly.length }}개 채널
+      </span>
+    </div>
+    <svg viewBox="0 0 800 260" style="width:100%;height:260px;">
+      <template v-for="(ch, ci) in cfChannelMonthly" :key="ch.name">
+        <polyline :points="linePoints(ch.values, 800, 260, 20)" fill="none" :stroke="ch.color" stroke-width="2" opacity="0.85" />
+      </template>
+    </svg>
+    <div style="display:flex;font-size:10px;color:#888;margin:4px 0 10px;">
+      <span v-for="m in cfMonthLabels" :key="m" style="flex:1;text-align:center;">
+        {{ m.slice(2) }}
+      </span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;">
+      <span v-for="ch in cfChannelMonthly" :key="ch.name" style="display:inline-flex;align-items:center;gap:5px;">
+        <span :style="{width:'12px',height:'3px',background:ch.color,borderRadius:'2px'}">
         </span>
-      </div>
+        <span style="color:#555;">
+          {{ ch.name }}
+        </span>
+      </span>
     </div>
-    <!-- ===== □.□. 조건부 카드 ================================================ -->
-    <!-- ===== ■.■. 6) 핵심지표 KPI =========================================== -->
-    <div v-show="showPanel('kpi')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🎯 핵심지표</div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-        <div v-for="kpi in [
+  </div>
+  <!-- ===== □.□. 조건부 카드 ================================================ -->
+  <!-- ===== ■.■. 6) 핵심지표 KPI =========================================== -->
+  <div v-show="showPanel('kpi')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      🎯 핵심지표
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+      <div v-for="kpi in [
           {label:'전체 매출현황', value:fmt(cfTotalSales), unit:'원', color:'#e8587a', icon:'💰', bg:'#fff0f4'},
           {label:'전체 구매수량', value:fmt(cfTotalQtyComp), unit:'건', color:'#3b82f6', icon:'🛒', bg:'#eff6ff'},
           {label:'평균 마진율',   value:pct(marginRate), unit:'',   color:'#10b981', icon:'📈', bg:'#f0fdf4'},
           {label:'평균 결제금액', value:fmt(cfAvgOrderValue), unit:'원', color:'#f59e0b', icon:'💳', bg:'#fffbeb'},
           ]" :key="kpi.label"
           :style="{background:kpi.bg,border:'1px solid #eef0f3',borderRadius:'8px',padding:'12px',display:'flex',alignItems:'center',gap:'10px'}">
-          <div :style="{fontSize:'22px',width:'36px',height:'36px',borderRadius:'8px',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}">
-            {{ kpi.icon }}
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:10.5px;color:#666;font-weight:600;">{{ kpi.label }}</div>
-            <div :style="{fontSize:'15px',fontWeight:800,color:kpi.color,marginTop:'2px'}">
-              {{ kpi.value }}
-              <span style="font-size:10px;margin-left:2px;color:#999;">{{ kpi.unit }}</span>
-            </div>
-          </div>
+        <div :style="{fontSize:'22px',width:'36px',height:'36px',borderRadius:'8px',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}">
+          {{ kpi.icon }}
         </div>
-      </div>
-    </div>
-    <!-- ===== □.□. 6) 핵심지표 KPI =========================================== -->
-    <!-- ===== ■.■. 7) 상품 TOP 7 =========================================== -->
-    <!-- ===== ■.■. 조건부 카드 ================================================ -->
-    <div v-show="showPanel('topProducts')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">📦 상품별 매출 TOP 7</div>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <div v-for="(p,i) in topProducts" :key="p.name" style="display:flex;align-items:center;gap:8px;font-size:11.5px;">
-          <span style="width:140px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ i+1 }}. {{ p.name }}</span>
-          <div style="flex:1;height:12px;background:#f3f4f6;border-radius:3px;overflow:hidden;">
-            <div :style="{width:((p.value/topProducts.reduce((m,x)=>Math.max(m,x.value),0))*100)+'%',height:'100%',background:'linear-gradient(90deg,#7b1fa2,#e8587a)'}"></div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:10.5px;color:#666;font-weight:600;">
+            {{ kpi.label }}
           </div>
-          <span style="color:#666;font-weight:600;min-width:80px;text-align:right;">{{ fmt(p.value) }}원</span>
-        </div>
-      </div>
-    </div>
-    <!-- ===== □.□. 조건부 카드 ================================================ -->
-    <!-- ===== ■.■. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
-    <div v-for="d in [
-      {key:'channelMix', title:'📱 판매 채널별',  data:salesByChannel},
-      {key:'deviceMix',  title:'💻 디바이스별',   data:salesByDevice},
-      {key:'timeMix',    title:'⏰ 시간대별',     data:salesByTime},
-      ]" :key="d.key" v-show="showPanel(d.key)" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">{{ d.title }}</div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <svg viewBox="0 0 100 100" style="width:100px;height:100px;flex-shrink:0;">
-          <circle cx="50" cy="50" r="38" fill="none" stroke="#f3f4f6" stroke-width="14"/>
-          <template v-for="(s,si) in d.data" :key="si">
-            <circle cx="50" cy="50" r="38" fill="none" :stroke="s.color" stroke-width="14"
-              :stroke-dasharray="(s.value/100*238.76)+' 238.76'"
-              :stroke-dashoffset="-(d.data.slice(0,si).reduce((a,b)=>a+b.value,0)/100*238.76)"
-              transform="rotate(-90 50 50)" />
-          </template>
-        </svg>
-        <!-- ===== ■.■.■.■. 영역 ================================================ -->
-        <div style="flex:1;display:flex;flex-direction:column;gap:3px;font-size:11px;">
-          <div v-for="s in d.data" :key="s.label" style="display:flex;align-items:center;gap:6px;">
-            <span :style="{width:'10px',height:'10px',borderRadius:'2px',background:s.color}"></span>
-            <span style="flex:1;color:#555;">{{ s.label }}</span>
-            <span style="font-weight:700;color:#333;">{{ s.value }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- ===== □.□. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
-    <!-- ===== ■.■. 11) 지역별 =============================================== -->
-    <div v-show="showPanel('region')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🗺 지역별 매출현황</div>
-      <div style="display:flex;flex-direction:column;gap:5px;">
-        <div v-for="r in regionSales" :key="r.name" style="display:flex;align-items:center;gap:6px;font-size:11px;">
-          <span style="width:34px;color:#555;">{{ r.name }}</span>
-          <div style="flex:1;height:14px;background:#f3f4f6;border-radius:3px;overflow:hidden;">
-            <div :style="{width:((r.value/regionSales[0].value)*100)+'%',height:'100%',background:'#3b82f6'}"></div>
-          </div>
-          <span style="color:#666;min-width:70px;text-align:right;">{{ fmt(r.value) }}</span>
-        </div>
-      </div>
-    </div>
-    <!-- ===== □.□. 11) 지역별 =============================================== -->
-    <!-- ===== ■.■. 12) 시간대 추이 ============================================ -->
-    <!-- ===== ■.■. 조건부 카드 ================================================ -->
-    <div v-show="showPanel('hourly')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">⏱ 시간대별 주문 추이 (24H)</div>
-      <svg viewBox="0 0 420 140" style="width:100%;height:140px;">
-        <polyline :points="linePoints(hourlyTrend, 420, 140, 10)" fill="none" stroke="#10b981" stroke-width="2" />
-        <template v-for="(v,i) in hourlyTrend" :key="i">
-          <circle :cx="10+(i/(hourlyTrend.length-1))*400" :cy="140-10-(v/Math.max(...hourlyTrend))*120" r="2.5" fill="#10b981" />
-        </template>
-      </svg>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:4px;">
-        <span>00</span>
-        <span>06</span>
-        <span>12</span>
-        <span>18</span>
-        <span>23</span>
-      </div>
-    </div>
-    <!-- ===== □.□. 조건부 카드 ================================================ -->
-    <!-- ===== ■.■. 13) 영업지표 레이더 ========================================== -->
-    <div v-show="showPanel('radar')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">⚡ 영업 지표 비교</div>
-      <svg viewBox="0 0 200 200" style="width:100%;height:200px;">
-        <polygon points="100,30 160,70 140,150 60,150 40,70" fill="none" stroke="#e5e7eb" stroke-width="1"/>
-        <polygon points="100,50 145,80 128,140 72,140 55,80" fill="none" stroke="#e5e7eb" stroke-width="1"/>
-        <polygon points="100,70 130,90 117,130 83,130 70,90" fill="none" stroke="#e5e7eb" stroke-width="1"/>
-        <line v-for="(a,ai) in cfRadarAxes" :key="ai" x1="100" y1="100" :x2="a.x2" :y2="a.y2" stroke="#e5e7eb" stroke-width="1"/>
-        <polygon :points="cfRadarPath" fill="rgba(232,88,122,0.25)" stroke="#e8587a" stroke-width="2"/>
-        <text v-for="(a,ai) in cfRadarAxes" :key="'l'+ai" :x="a.lx" :y="a.ly" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#555">
-          {{ a.label }}
-        </text>
-      </svg>
-    </div>
-    <!-- ===== □.□. 13) 영업지표 레이더 ========================================== -->
-    <!-- ===== ■.■. 14) 경제 수준별 ============================================ -->
-    <!-- ===== ■.■. 조건부 카드 ================================================ -->
-    <div v-show="showPanel('economy')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">💼 경제 수준별 매출현황</div>
-      <svg viewBox="0 0 480 160" style="width:100%;height:160px;">
-        <path :d="areaPath(economySales.high,   480, 160, 10)" fill="rgba(123,31,162,0.35)" stroke="#7b1fa2" stroke-width="1.5"/>
-        <path :d="areaPath(economySales.middle, 480, 160, 10)" fill="rgba(59,130,246,0.25)" stroke="#3b82f6" stroke-width="1.5"/>
-        <path :d="areaPath(economySales.low,    480, 160, 10)" fill="rgba(16,185,129,0.18)" stroke="#10b981" stroke-width="1.5"/>
-      </svg>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:4px;padding:0 10px;">
-        <span v-for="m in economySales.labels" :key="m">{{ m }}</span>
-      </div>
-      <div style="display:flex;gap:12px;margin-top:8px;font-size:10.5px;flex-wrap:wrap;">
-        <span style="display:inline-flex;align-items:center;gap:4px;">
-          <span style="width:10px;height:10px;background:#7b1fa2;border-radius:2px;"></span>
-          상위
-        </span>
-        <span style="display:inline-flex;align-items:center;gap:4px;">
-          <span style="width:10px;height:10px;background:#3b82f6;border-radius:2px;"></span>
-          중위
-        </span>
-        <span style="display:inline-flex;align-items:center;gap:4px;">
-          <span style="width:10px;height:10px;background:#10b981;border-radius:2px;"></span>
-          하위
-        </span>
-      </div>
-    </div>
-    <!-- ===== □.□. 조건부 카드 ================================================ -->
-    <!-- ===== ■.■. 15) 배송 조건별 ============================================ -->
-    <!-- ===== ■.■. 조건부 카드 ================================================ -->
-    <div v-show="showPanel('shipping')" class="card" style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🚚 배송 조건별 매출현황</div>
-      <div style="display:flex;gap:14px;align-items:center;padding:8px 0;">
-        <svg viewBox="0 0 100 100" style="width:100px;height:100px;flex-shrink:0;">
-          <circle cx="50" cy="50" r="38" fill="none" stroke="#f3f4f6" stroke-width="14"/>
-          <template v-for="(s,si) in shippingTypes" :key="si">
-            <circle cx="50" cy="50" r="38" fill="none" :stroke="s.color" stroke-width="14"
-              :stroke-dasharray="(s.value/100*238.76)+' 238.76'"
-              :stroke-dashoffset="-(shippingTypes.slice(0,si).reduce((a,b)=>a+b.value,0)/100*238.76)"
-              transform="rotate(-90 50 50)" />
-          </template>
-        </svg>
-        <div style="flex:1;display:flex;flex-direction:column;gap:6px;font-size:12px;">
-          <div v-for="s in shippingTypes" :key="s.label" style="display:flex;align-items:center;gap:6px;">
-            <span :style="{width:'12px',height:'12px',borderRadius:'2px',background:s.color}"></span>
-            <span style="flex:1;color:#555;">{{ s.label }}배송</span>
-            <span style="font-weight:800;color:#333;">{{ s.value }}%</span>
+          <div :style="{fontSize:'15px',fontWeight:800,color:kpi.color,marginTop:'2px'}">
+            {{ kpi.value }}
+            <span style="font-size:10px;margin-left:2px;color:#999;">
+              {{ kpi.unit }}
+            </span>
           </div>
         </div>
       </div>
     </div>
   </div>
-    <!-- ===== □.□. 조건부 카드 ================================================ -->
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. /탭 그리드 ================================================== -->
+  <!-- ===== □.□. 6) 핵심지표 KPI =========================================== -->
+  <!-- ===== ■.■. 7) 상품 TOP 7 =========================================== -->
+  <!-- ===== ■.■. 조건부 카드 ================================================ -->
+  <div v-show="showPanel('topProducts')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      📦 상품별 매출 TOP 7
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div v-for="(p,i) in topProducts" :key="p.name" style="display:flex;align-items:center;gap:8px;font-size:11.5px;">
+        <span style="width:140px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          {{ i+1 }}. {{ p.name }}
+        </span>
+        <div style="flex:1;height:12px;background:#f3f4f6;border-radius:3px;overflow:hidden;">
+          <div :style="{width:((p.value/topProducts.reduce((m,x)=>Math.max(m,x.value),0))*100)+'%',height:'100%',background:'linear-gradient(90deg,#7b1fa2,#e8587a)'}">
+          </div>
+        </div>
+        <span style="color:#666;font-weight:600;min-width:80px;text-align:right;">
+          {{ fmt(p.value) }}원
+        </span>
+      </div>
+    </div>
+  </div>
+  <!-- ===== □.□. 조건부 카드 ================================================ -->
+  <!-- ===== ■.■. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
+  <div v-for="d in [
+      {key:'channelMix', title:'📱 판매 채널별',  data:salesByChannel},
+      {key:'deviceMix',  title:'💻 디바이스별',   data:salesByDevice},
+      {key:'timeMix',    title:'⏰ 시간대별',     data:salesByTime},
+      ]" :key="d.key" v-show="showPanel(d.key)" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      {{ d.title }}
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <svg viewBox="0 0 100 100" style="width:100px;height:100px;flex-shrink:0;">
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#f3f4f6" stroke-width="14"/>
+        <template v-for="(s,si) in d.data" :key="si">
+          <circle cx="50" cy="50" r="38" fill="none" :stroke="s.color" stroke-width="14"
+              :stroke-dasharray="(s.value/100*238.76)+' 238.76'"
+              :stroke-dashoffset="-(d.data.slice(0,si).reduce((a,b)=>a+b.value,0)/100*238.76)"
+              transform="rotate(-90 50 50)" />
+        </template>
+      </svg>
+      <!-- ===== ■.■.■.■. 영역 ================================================ -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:3px;font-size:11px;">
+        <div v-for="s in d.data" :key="s.label" style="display:flex;align-items:center;gap:6px;">
+          <span :style="{width:'10px',height:'10px',borderRadius:'2px',background:s.color}">
+          </span>
+          <span style="flex:1;color:#555;">
+            {{ s.label }}
+          </span>
+          <span style="font-weight:700;color:#333;">
+            {{ s.value }}%
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ===== □.□. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
+  <!-- ===== ■.■. 11) 지역별 =============================================== -->
+  <div v-show="showPanel('region')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      🗺 지역별 매출현황
+    </div>
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <div v-for="r in regionSales" :key="r.name" style="display:flex;align-items:center;gap:6px;font-size:11px;">
+        <span style="width:34px;color:#555;">
+          {{ r.name }}
+        </span>
+        <div style="flex:1;height:14px;background:#f3f4f6;border-radius:3px;overflow:hidden;">
+          <div :style="{width:((r.value/regionSales[0].value)*100)+'%',height:'100%',background:'#3b82f6'}">
+          </div>
+        </div>
+        <span style="color:#666;min-width:70px;text-align:right;">
+          {{ fmt(r.value) }}
+        </span>
+      </div>
+    </div>
+  </div>
+  <!-- ===== □.□. 11) 지역별 =============================================== -->
+  <!-- ===== ■.■. 12) 시간대 추이 ============================================ -->
+  <!-- ===== ■.■. 조건부 카드 ================================================ -->
+  <div v-show="showPanel('hourly')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      ⏱ 시간대별 주문 추이 (24H)
+    </div>
+    <svg viewBox="0 0 420 140" style="width:100%;height:140px;">
+      <polyline :points="linePoints(hourlyTrend, 420, 140, 10)" fill="none" stroke="#10b981" stroke-width="2" />
+      <template v-for="(v,i) in hourlyTrend" :key="i">
+        <circle :cx="10+(i/(hourlyTrend.length-1))*400" :cy="140-10-(v/Math.max(...hourlyTrend))*120" r="2.5" fill="#10b981" />
+      </template>
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:4px;">
+      <span>
+        00
+      </span>
+      <span>
+        06
+      </span>
+      <span>
+        12
+      </span>
+      <span>
+        18
+      </span>
+      <span>
+        23
+      </span>
+    </div>
+  </div>
+  <!-- ===== □.□. 조건부 카드 ================================================ -->
+  <!-- ===== ■.■. 13) 영업지표 레이더 ========================================== -->
+  <div v-show="showPanel('radar')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      ⚡ 영업 지표 비교
+    </div>
+    <svg viewBox="0 0 200 200" style="width:100%;height:200px;">
+      <polygon points="100,30 160,70 140,150 60,150 40,70" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+      <polygon points="100,50 145,80 128,140 72,140 55,80" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+      <polygon points="100,70 130,90 117,130 83,130 70,90" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+      <line v-for="(a,ai) in cfRadarAxes" :key="ai" x1="100" y1="100" :x2="a.x2" :y2="a.y2" stroke="#e5e7eb" stroke-width="1"/>
+      <polygon :points="cfRadarPath" fill="rgba(232,88,122,0.25)" stroke="#e8587a" stroke-width="2"/>
+      <text v-for="(a,ai) in cfRadarAxes" :key="'l'+ai" :x="a.lx" :y="a.ly" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="#555">
+        {{ a.label }}
+      </text>
+    </svg>
+  </div>
+  <!-- ===== □.□. 13) 영업지표 레이더 ========================================== -->
+  <!-- ===== ■.■. 14) 경제 수준별 ============================================ -->
+  <!-- ===== ■.■. 조건부 카드 ================================================ -->
+  <div v-show="showPanel('economy')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      💼 경제 수준별 매출현황
+    </div>
+    <svg viewBox="0 0 480 160" style="width:100%;height:160px;">
+      <path :d="areaPath(economySales.high,   480, 160, 10)" fill="rgba(123,31,162,0.35)" stroke="#7b1fa2" stroke-width="1.5"/>
+      <path :d="areaPath(economySales.middle, 480, 160, 10)" fill="rgba(59,130,246,0.25)" stroke="#3b82f6" stroke-width="1.5"/>
+      <path :d="areaPath(economySales.low,    480, 160, 10)" fill="rgba(16,185,129,0.18)" stroke="#10b981" stroke-width="1.5"/>
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#aaa;margin-top:4px;padding:0 10px;">
+      <span v-for="m in economySales.labels" :key="m">
+        {{ m }}
+      </span>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:8px;font-size:10.5px;flex-wrap:wrap;">
+      <span style="display:inline-flex;align-items:center;gap:4px;">
+        <span style="width:10px;height:10px;background:#7b1fa2;border-radius:2px;">
+        </span>
+        상위
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px;">
+        <span style="width:10px;height:10px;background:#3b82f6;border-radius:2px;">
+        </span>
+        중위
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px;">
+        <span style="width:10px;height:10px;background:#10b981;border-radius:2px;">
+        </span>
+        하위
+      </span>
+    </div>
+  </div>
+  <!-- ===== □.□. 조건부 카드 ================================================ -->
+  <!-- ===== ■.■. 15) 배송 조건별 ============================================ -->
+  <!-- ===== ■.■. 조건부 카드 ================================================ -->
+  <div v-show="showPanel('shipping')" class="card" style="padding:14px;">
+    <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
+      🚚 배송 조건별 매출현황
+    </div>
+    <div style="display:flex;gap:14px;align-items:center;padding:8px 0;">
+      <svg viewBox="0 0 100 100" style="width:100px;height:100px;flex-shrink:0;">
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#f3f4f6" stroke-width="14"/>
+        <template v-for="(s,si) in shippingTypes" :key="si">
+          <circle cx="50" cy="50" r="38" fill="none" :stroke="s.color" stroke-width="14"
+              :stroke-dasharray="(s.value/100*238.76)+' 238.76'"
+              :stroke-dashoffset="-(shippingTypes.slice(0,si).reduce((a,b)=>a+b.value,0)/100*238.76)"
+              transform="rotate(-90 50 50)" />
+        </template>
+      </svg>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;font-size:12px;">
+        <div v-for="s in shippingTypes" :key="s.label" style="display:flex;align-items:center;gap:6px;">
+          <span :style="{width:'12px',height:'12px',borderRadius:'2px',background:s.color}">
+          </span>
+          <span style="flex:1;color:#555;">
+            {{ s.label }}배송
+          </span>
+          <span style="font-weight:800;color:#333;">
+            {{ s.value }}%
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ===== □.□. 조건부 카드 ================================================ -->
+<!-- ===== □. 영역 ====================================================== -->
+<!-- ===== ■. /탭 그리드 ================================================== -->
 </div>
 `,
   };

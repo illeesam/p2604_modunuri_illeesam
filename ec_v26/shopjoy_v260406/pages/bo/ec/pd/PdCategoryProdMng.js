@@ -23,6 +23,75 @@ window.PdCategoryProdMng = {
     });
 
     /* 카테고리-상품 매핑 fnLoadCodes */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdCategoryProdMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 카테고리-상품 매핑 저장
+      } else if (cmd === 'categoryProds-save') {
+        return onSave();
+      // 상품추가 피커 모달 열기
+      } else if (cmd === 'prodPickModal-open') {
+        return openPicker();
+      // 상품추가 피커 모달 닫기
+      } else if (cmd === 'prodPickModal-close') {
+        pickerOpen.value = false;
+        return;
+      // 피커 내 상품 검색
+      } else if (cmd === 'prodPickModal-search') {
+        return onPickerSearch();
+      // 좌측 트리 전체 보기 (선택 해제)
+      } else if (cmd === 'categoryTree-clear') {
+        cfSelectedCatId.value = null;
+        return;
+      // 진열 유형 탭 전환
+      } else if (cmd === 'tab-type-select') {
+        uiState.activeTypeCd = param;
+        return;
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode = param;
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdCategoryProdMng.js : handleSelectAction -> ', cmd, param);
+      // 좌측 트리 노드 선택
+      if (cmd === 'categoryTree-select') {
+        return selectNode(param);
+      // 그리드 행 삭제
+      } else if (cmd === 'categoryProds-row-remove') {
+        return removeRow(param);
+      // 강조옵션 토글
+      } else if (cmd === 'categoryProds-row-emphasis-toggle') {
+        return toggleEmphasis(param.row, param.cd);
+      // 그리드 행 드래그 시작
+      } else if (cmd === 'categoryProds-row-drag-start') {
+        return onDragStart(param);
+      // 그리드 행 드래그 오버
+      } else if (cmd === 'categoryProds-row-drag-over') {
+        return onDragOver(param);
+      // 그리드 행 드롭 (순서 변경)
+      } else if (cmd === 'categoryProds-row-drop') {
+        return onDrop();
+      // 피커 모달에서 상품 선택 (추가)
+      } else if (cmd === 'prodPickModal-add') {
+        return addProd(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -332,75 +401,6 @@ window.PdCategoryProdMng = {
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PdCategoryProdMng.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 조회
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화 + 재조회
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 카테고리-상품 매핑 저장
-      } else if (cmd === 'categoryProds-save') {
-        return onSave();
-      // 상품추가 피커 모달 열기
-      } else if (cmd === 'prodPickModal-open') {
-        return openPicker();
-      // 상품추가 피커 모달 닫기
-      } else if (cmd === 'prodPickModal-close') {
-        pickerOpen.value = false;
-        return;
-      // 피커 내 상품 검색
-      } else if (cmd === 'prodPickModal-search') {
-        return onPickerSearch();
-      // 좌측 트리 전체 보기 (선택 해제)
-      } else if (cmd === 'categoryTree-clear') {
-        cfSelectedCatId.value = null;
-        return;
-      // 진열 유형 탭 전환
-      } else if (cmd === 'tab-type-select') {
-        uiState.activeTypeCd = param;
-        return;
-      // 뷰모드 변경
-      } else if (cmd === 'tab-mode') {
-        uiState.tabMode = param;
-        return;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PdCategoryProdMng.js : handleSelectAction -> ', cmd, param);
-      // 좌측 트리 노드 선택
-      if (cmd === 'categoryTree-select') {
-        return selectNode(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'categoryProds-row-remove') {
-        return removeRow(param);
-      // 강조옵션 토글
-      } else if (cmd === 'categoryProds-row-emphasis-toggle') {
-        return toggleEmphasis(param.row, param.cd);
-      // 그리드 행 드래그 시작
-      } else if (cmd === 'categoryProds-row-drag-start') {
-        return onDragStart(param);
-      // 그리드 행 드래그 오버
-      } else if (cmd === 'categoryProds-row-drag-over') {
-        return onDragOver(param);
-      // 그리드 행 드롭 (순서 변경)
-      } else if (cmd === 'categoryProds-row-drop') {
-        return onDrop();
-      // 피커 모달에서 상품 선택 (추가)
-      } else if (cmd === 'prodPickModal-add') {
-        return addProd(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
         // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 

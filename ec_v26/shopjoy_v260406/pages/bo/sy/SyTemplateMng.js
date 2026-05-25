@@ -20,29 +20,6 @@ window.SyTemplateMng = {
     const SORT_MAP = { nm: { asc: 'templateNm asc', desc: 'templateNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
-    };
-    const searchParam = reactive(_initSearchParam()); // 검색조건
-
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* -- 표시경로 선택 모달 (sy_path) -- */
-    const pathPickModal = reactive({ show: false, row: null }); // 표시경로 선택 모달 상태
-
-    /* -- 상세 인라인 패널 -- */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 상세 인라인 패널 상태
-
-    /* -- 미리보기 / 발송 모달 -- */
-    const previewModal = reactive({ show: false, template: null }); // 미리보기 모달
-    const sendModal    = reactive({ show: false, template: null }); // 발송하기 모달
-
-    const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId  = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode    = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey     = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -128,6 +105,29 @@ window.SyTemplateMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam()); // 검색조건
+
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* -- 표시경로 선택 모달 (sy_path) -- */
+    const pathPickModal = reactive({ show: false, row: null }); // 표시경로 선택 모달 상태
+
+    /* -- 상세 인라인 패널 -- */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 상세 인라인 패널 상태
+
+    /* -- 미리보기 / 발송 모달 -- */
+    const previewModal = reactive({ show: false, template: null }); // 미리보기 모달
+    const sendModal    = reactive({ show: false, template: null }); // 발송하기 모달
+
+    const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
+    const cfDetailEditId  = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfIsViewMode    = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+    const cfDetailKey     = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* getSortParam — 정렬 파라미터 */

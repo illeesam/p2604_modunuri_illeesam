@@ -14,6 +14,39 @@ window.XsSample04 = {
       ],
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample04.js : handleBtnAction -> ', cmd, param);
+      // 모달 닫기
+      if (cmd === 'modal-close') {
+        return closeModal();
+      // 확인 처리
+      } else if (cmd === 'modal-confirm') {
+        return doConfirm();
+      // 로딩 데모
+      } else if (cmd === 'modal-loading-demo') {
+        return loadingDemo();
+      // 폼 제출
+      } else if (cmd === 'modal-form-submit') {
+        return submitForm();
+      // 중첩 2단 모달 열기
+      } else if (cmd === 'modal-nested2-open') {
+        uiState.nested2 = true;
+      // 중첩 2단 모달 닫기
+      } else if (cmd === 'modal-nested2-close') {
+        uiState.nested2 = false;
+      // 중첩 backdrop 클릭 (2단 우선)
+      } else if (cmd === 'modal-nested-backdrop') {
+        if (uiState.nested2) { uiState.nested2 = false; }
+        else { closeModal(); }
+      // BaseModal 닫기
+      } else if (cmd === 'bmodal-close') {
+        return closeBModal();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -231,40 +264,6 @@ window.XsSample04 = {
       { id: 'categoryTree',    icon: '📁', name: '카테고리 트리',     desc: 'CategoryTreeModal — 계층 선택',        color: '#15803d' },
       { id: 'dispPreview',     icon: '👁',  name: '전시 미리보기',     desc: 'DispPreviewModal — 위젯 미리보기',     color: '#b91c1c' },
     ];
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ Sample04.js : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
-      if (cmd === 'modal-close') {
-        return closeModal();
-      // 확인 처리
-      } else if (cmd === 'modal-confirm') {
-        return doConfirm();
-      // 로딩 데모
-      } else if (cmd === 'modal-loading-demo') {
-        return loadingDemo();
-      // 폼 제출
-      } else if (cmd === 'modal-form-submit') {
-        return submitForm();
-      // 중첩 2단 모달 열기
-      } else if (cmd === 'modal-nested2-open') {
-        uiState.nested2 = true;
-      // 중첩 2단 모달 닫기
-      } else if (cmd === 'modal-nested2-close') {
-        uiState.nested2 = false;
-      // 중첩 backdrop 클릭 (2단 우선)
-      } else if (cmd === 'modal-nested-backdrop') {
-        if (uiState.nested2) { uiState.nested2 = false; }
-        else { closeModal(); }
-      // BaseModal 닫기
-      } else if (cmd === 'bmodal-close') {
-        return closeBModal();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
     // ===== return (템플릿 노출) ===============================================
 
     return {

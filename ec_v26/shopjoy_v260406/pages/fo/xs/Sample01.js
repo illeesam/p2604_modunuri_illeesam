@@ -16,6 +16,52 @@ window.XsSample01 = {
       status_opts: [{ value: '활성', label: '활성' }, { value: '비활성', label: '비활성' }],
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample01.js : handleBtnAction -> ', cmd, param);
+      // 조회 (검색)
+      if (cmd === 'search-search') {
+        return onSearch();
+      // 검색 초기화
+      } else if (cmd === 'search-reset') {
+        return onReset();
+      // 행 추가
+      } else if (cmd === 'members-add') {
+        return addRow();
+      // 일괄 저장
+      } else if (cmd === 'members-save') {
+        return handleSave();
+      // 선택 행 삭제
+      } else if (cmd === 'members-delete-checked') {
+        return deleteRows();
+      // 선택 행 취소
+      } else if (cmd === 'members-cancel-checked') {
+        return cancelChecked();
+      // 정렬 변경 알림
+      } else if (cmd === 'members-reorder') {
+        return onReorder();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample01.js : handleSelectAction -> ', cmd, param);
+      // 행 셀 변경
+      if (cmd === 'members-row-cell-change') {
+        return onCellChange(param);
+      // 행 취소
+      } else if (cmd === 'members-row-cancel') {
+        return onRowCancel(param);
+      // 행 삭제
+      } else if (cmd === 'members-row-delete') {
+        return onRowDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -264,53 +310,6 @@ window.XsSample01 = {
     const onRowCancel = (row) => cancelRow(gridRows.indexOf(row));
     /* onRowDelete — 이벤트 */
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ Sample01.js : handleBtnAction -> ', cmd, param);
-      // 조회 (검색)
-      if (cmd === 'search-search') {
-        return onSearch();
-      // 검색 초기화
-      } else if (cmd === 'search-reset') {
-        return onReset();
-      // 행 추가
-      } else if (cmd === 'members-add') {
-        return addRow();
-      // 일괄 저장
-      } else if (cmd === 'members-save') {
-        return handleSave();
-      // 선택 행 삭제
-      } else if (cmd === 'members-delete-checked') {
-        return deleteRows();
-      // 선택 행 취소
-      } else if (cmd === 'members-cancel-checked') {
-        return cancelChecked();
-      // 정렬 변경 알림
-      } else if (cmd === 'members-reorder') {
-        return onReorder();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ Sample01.js : handleSelectAction -> ', cmd, param);
-      // 행 셀 변경
-      if (cmd === 'members-row-cell-change') {
-        return onCellChange(param);
-      // 행 취소
-      } else if (cmd === 'members-row-cancel') {
-        return onRowCancel(param);
-      // 행 삭제
-      } else if (cmd === 'members-row-delete') {
-        return onRowDelete(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ===== return (템플릿 노출) ===============================================
 
     return {

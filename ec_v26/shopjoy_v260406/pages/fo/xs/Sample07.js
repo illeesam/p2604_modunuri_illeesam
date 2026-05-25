@@ -9,6 +9,55 @@ window.XsSample07 = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, treeSearch: '', hostUrl: window.location.origin, token: '', activeTabId: null, autoPopupTabId: null, histSelIdx: null, histModal: null, histModalTab: 'req', histResJson: '', histResStatus: null, histResTime: null, histResTs: '', histResProgress: 0 });
     const codes = reactive({ http_method_opts: ['GET','POST','PUT','PATCH','DELETE'] });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample07.js : handleBtnAction -> ', cmd, param);
+      // 전체 탭 닫기
+      if (cmd === 'tabs-close-all') {
+        return closeAllTabs();
+      // 요청 전송
+      } else if (cmd === 'tab-send') {
+        return doSend();
+      // 이력 모달 닫기
+      } else if (cmd === 'hist-modal-close') {
+        return closeHistModal();
+      // 이력 재전송
+      } else if (cmd === 'hist-resend') {
+        return resendHist();
+      // 자동 실행 팝업 닫기
+      } else if (cmd === 'auto-popup-close') {
+        return closeAutoPopup();
+      // localStorage 새로고침
+      } else if (cmd === 'ls-refresh') {
+        return refreshLs();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample07.js : handleSelectAction -> ', cmd, param);
+      // 트리 노드 토글
+      if (cmd === 'tree-toggle') {
+        return toggleNode(param);
+      // API 노드 선택
+      } else if (cmd === 'tree-select-api') {
+        return selectApiNode(param);
+      // 탭 닫기
+      } else if (cmd === 'tabs-close') {
+        return closeTab(param.tabId, param.event);
+      // 토스트 닫기
+      } else if (cmd === 'toast-close') {
+        return closeToast(param);
+      // 이력 선택
+      } else if (cmd === 'hist-select') {
+        return selectHistory(param.h, param.idx);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -604,56 +653,6 @@ window.XsSample07 = {
       treeRoot.push(buildAutoCrudNodes());
       treeRoot.push(buildAutoCrudRestNodes());
     });
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ Sample07.js : handleBtnAction -> ', cmd, param);
-      // 전체 탭 닫기
-      if (cmd === 'tabs-close-all') {
-        return closeAllTabs();
-      // 요청 전송
-      } else if (cmd === 'tab-send') {
-        return doSend();
-      // 이력 모달 닫기
-      } else if (cmd === 'hist-modal-close') {
-        return closeHistModal();
-      // 이력 재전송
-      } else if (cmd === 'hist-resend') {
-        return resendHist();
-      // 자동 실행 팝업 닫기
-      } else if (cmd === 'auto-popup-close') {
-        return closeAutoPopup();
-      // localStorage 새로고침
-      } else if (cmd === 'ls-refresh') {
-        return refreshLs();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ Sample07.js : handleSelectAction -> ', cmd, param);
-      // 트리 노드 토글
-      if (cmd === 'tree-toggle') {
-        return toggleNode(param);
-      // API 노드 선택
-      } else if (cmd === 'tree-select-api') {
-        return selectApiNode(param);
-      // 탭 닫기
-      } else if (cmd === 'tabs-close') {
-        return closeTab(param.tabId, param.event);
-      // 토스트 닫기
-      } else if (cmd === 'toast-close') {
-        return closeToast(param);
-      // 이력 선택
-      } else if (cmd === 'hist-select') {
-        return selectHistory(param.h, param.idx);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     return {
       uiState, codes,                                                        // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                   // dispatch

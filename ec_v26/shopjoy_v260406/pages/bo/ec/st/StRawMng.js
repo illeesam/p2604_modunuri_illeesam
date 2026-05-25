@@ -18,28 +18,6 @@ window.StRawMng = {
       date_range_opts: [],
     });
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.raw_types = codeStore.sgGetGrpCodes('RAW_TYPE_KR');
-        codes.raw_collect_statuses = codeStore.sgGetGrpCodes('RAW_COLLECT_STATUS');
-        codes.raw_vendor_divs = codeStore.sgGetGrpCodes('RAW_VENDOR_DIV');
-        codes.pay_methods = codeStore.sgGetGrpCodes('PAY_METHOD_KR');
-        codes.order_statuses_kr = codeStore.sgGetGrpCodes('ORDER_STATUS_KR');
-        codes.confirm_yn_opts = codeStore.sgGetGrpCodes('CONFIRM_YN');
-        codes.close_yn_opts = codeStore.sgGetGrpCodes('CLOSE_YN');
-        codes.send_yn_opts = codeStore.sgGetGrpCodes('SEND_YN');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StRawMng.js : handleBtnAction -> ', cmd, param);
@@ -77,6 +55,27 @@ window.StRawMng = {
       }
     };
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.raw_types = codeStore.sgGetGrpCodes('RAW_TYPE_KR');
+        codes.raw_collect_statuses = codeStore.sgGetGrpCodes('RAW_COLLECT_STATUS');
+        codes.raw_vendor_divs = codeStore.sgGetGrpCodes('RAW_VENDOR_DIV');
+        codes.pay_methods = codeStore.sgGetGrpCodes('PAY_METHOD_KR');
+        codes.order_statuses_kr = codeStore.sgGetGrpCodes('ORDER_STATUS_KR');
+        codes.confirm_yn_opts = codeStore.sgGetGrpCodes('CONFIRM_YN');
+        codes.close_yn_opts = codeStore.sgGetGrpCodes('CLOSE_YN');
+        codes.send_yn_opts = codeStore.sgGetGrpCodes('SEND_YN');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */

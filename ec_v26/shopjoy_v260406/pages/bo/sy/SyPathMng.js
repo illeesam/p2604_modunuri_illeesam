@@ -17,52 +17,6 @@ window.SyPathMng = {
     const uiStateCode  = reactive({ isPageCodeLoad: false }); // 코드 로드 플래그
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', bizCd: '', useYn: 'Y' };
-    };
-    const searchParam = reactive(_initSearchParam()); // 검색조건
-
-    const allPaths  = reactive([]);                   // 트리용 전체 경로 (path_id + parent_path_id)
-    const expanded  = reactive(new Set([null]));      // 트리 펼친 노드 Set
-    const uiState   = reactive({ selectedPathId: null }); // UI 상태
-
-    const gridRows  = reactive([]);                   // 그리드 행
-    const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100], pageCond: {} });
-    let _newId      = -1;                             // 신규 행 임시 ID
-
-    /* -- 부모경로 선택 모달 -- */
-    const parentModal = reactive({ show: false, targetRow: null, expanded: new Set([null]) }); // 부모경로 선택 모달 상태
-
-    const cfTree = computed(() => {
-      const map = {};
-      allPaths.forEach(r => { map[r.pathId] = { ...r, children: [] }; });
-      const roots = [];
-      allPaths.forEach(r => {
-        if (r.parentPathId != null && map[r.parentPathId]) { map[r.parentPathId].children.push(map[r.pathId]); }
-        else { roots.push(map[r.pathId]); }
-      });
-      /* sort — 정렬 */
-      const sort = (arr) => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      /* sortDeep — 깊이별 정렬 */
-      const sortDeep = (nodes) => { sort(nodes).forEach(n => sortDeep(n.children)); return nodes; };
-      sortDeep(roots);
-      return { pathId: null, pathLabel: '전체', children: roots, count: allPaths.length };
-    });
-
-    const cfParentTree = computed(() => {
-      const exclude = parentModal.targetRow?.pathId;
-      const map = {};
-      allPaths.forEach(r => { if (r.pathId !== exclude) map[r.pathId] = { ...r, children: [] }; });
-      const roots = [];
-      allPaths.forEach(r => {
-        if (r.pathId === exclude) { return; }
-        if (r.parentPathId != null && map[r.parentPathId]) { map[r.parentPathId].children.push(map[r.pathId]); }
-        else { roots.push(map[r.pathId]); }
-      });
-      return { pathId: null, pathLabel: '전체', children: roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)) };
-    });
-
-    const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U'));
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -147,6 +101,52 @@ window.SyPathMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      return { searchType: '', searchValue: '', bizCd: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam()); // 검색조건
+
+    const allPaths  = reactive([]);                   // 트리용 전체 경로 (path_id + parent_path_id)
+    const expanded  = reactive(new Set([null]));      // 트리 펼친 노드 Set
+    const uiState   = reactive({ selectedPathId: null }); // UI 상태
+
+    const gridRows  = reactive([]);                   // 그리드 행
+    const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100], pageCond: {} });
+    let _newId      = -1;                             // 신규 행 임시 ID
+
+    /* -- 부모경로 선택 모달 -- */
+    const parentModal = reactive({ show: false, targetRow: null, expanded: new Set([null]) }); // 부모경로 선택 모달 상태
+
+    const cfTree = computed(() => {
+      const map = {};
+      allPaths.forEach(r => { map[r.pathId] = { ...r, children: [] }; });
+      const roots = [];
+      allPaths.forEach(r => {
+        if (r.parentPathId != null && map[r.parentPathId]) { map[r.parentPathId].children.push(map[r.pathId]); }
+        else { roots.push(map[r.pathId]); }
+      });
+      /* sort — 정렬 */
+      const sort = (arr) => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
+      /* sortDeep — 깊이별 정렬 */
+      const sortDeep = (nodes) => { sort(nodes).forEach(n => sortDeep(n.children)); return nodes; };
+      sortDeep(roots);
+      return { pathId: null, pathLabel: '전체', children: roots, count: allPaths.length };
+    });
+
+    const cfParentTree = computed(() => {
+      const exclude = parentModal.targetRow?.pathId;
+      const map = {};
+      allPaths.forEach(r => { if (r.pathId !== exclude) map[r.pathId] = { ...r, children: [] }; });
+      const roots = [];
+      allPaths.forEach(r => {
+        if (r.pathId === exclude) { return; }
+        if (r.parentPathId != null && map[r.parentPathId]) { map[r.parentPathId].children.push(map[r.pathId]); }
+        else { roots.push(map[r.pathId]); }
+      });
+      return { pathId: null, pathLabel: '전체', children: roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)) };
+    });
+
+    const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U'));
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */

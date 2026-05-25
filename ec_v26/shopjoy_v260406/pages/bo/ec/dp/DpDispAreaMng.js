@@ -23,11 +23,6 @@ window.DpDispAreaMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -87,6 +82,11 @@ window.DpDispAreaMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */

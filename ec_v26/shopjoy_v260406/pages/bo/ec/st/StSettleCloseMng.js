@@ -19,20 +19,6 @@ window.StSettleCloseMng = {
     });
 
     /* 정산 마감 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.settle_statuses = codeStore.sgGetGrpCodes('SETTLE_STATUS');
-        codes.settle_close_statuses = codeStore.sgGetGrpCodes('SETTLE_CLOSE_STATUS_KR');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -61,6 +47,20 @@ window.StSettleCloseMng = {
       }
     };
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.settle_statuses = codeStore.sgGetGrpCodes('SETTLE_STATUS');
+        codes.settle_close_statuses = codeStore.sgGetGrpCodes('SETTLE_CLOSE_STATUS_KR');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     const orders  = reactive([]);
     const claims  = reactive([]);
     const vendorList = reactive([]);

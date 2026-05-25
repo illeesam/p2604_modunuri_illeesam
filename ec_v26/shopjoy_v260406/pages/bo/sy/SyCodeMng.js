@@ -27,36 +27,6 @@ window.SyCodeMng = {
     });
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return {
-        searchType: '', searchValue: '',
-        grp: '', useYn: 'Y', dateRange: '',
-        dateStart: `${thisYear - 3}-01-01`,
-        dateEnd:   `${thisYear}-12-31`,
-      };
-    };
-
-    const searchParam    = reactive(_initSearchParam()); // 검색조건
-    const searchParamOrg = reactive(_initSearchParam()); // 검색조건 초기값 보관
-
-    const treeExpanded = reactive(new Set()); // 트리 펼친 노드 Set
-    const parentOpts   = reactive([]);        // 상위코드 옵션
-    const flatTree     = reactive([]);        // 트리 평면화 결과
-
-    const siteNm = boUtil.bofGetSiteNm();     // 사이트명 캐시
-
-    let _tempId     = -1; // 코드 임시 ID
-    let _grpTempId  = -1; // 그룹 임시 ID
-    let _grpLoadSeq = 0;  // 그룹 로드 시퀀스 (race condition 방어)
-
-    const EDIT_FIELDS  = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'codeOpt1', 'codeRemark', 'parentCodeValue'];
-    const GRP_FIELDS   = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
-    const GRP_SORT_MAP = {
-      codeGrp: { asc: 'codeGrp asc', desc: 'codeGrp desc' },
-      grpNm:   { asc: 'grpNm asc',   desc: 'grpNm desc'   },
-    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -158,6 +128,36 @@ window.SyCodeMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return {
+        searchType: '', searchValue: '',
+        grp: '', useYn: 'Y', dateRange: '',
+        dateStart: `${thisYear - 3}-01-01`,
+        dateEnd:   `${thisYear}-12-31`,
+      };
+    };
+
+    const searchParam    = reactive(_initSearchParam()); // 검색조건
+    const searchParamOrg = reactive(_initSearchParam()); // 검색조건 초기값 보관
+
+    const treeExpanded = reactive(new Set()); // 트리 펼친 노드 Set
+    const parentOpts   = reactive([]);        // 상위코드 옵션
+    const flatTree     = reactive([]);        // 트리 평면화 결과
+
+    const siteNm = boUtil.bofGetSiteNm();     // 사이트명 캐시
+
+    let _tempId     = -1; // 코드 임시 ID
+    let _grpTempId  = -1; // 그룹 임시 ID
+    let _grpLoadSeq = 0;  // 그룹 로드 시퀀스 (race condition 방어)
+
+    const EDIT_FIELDS  = ['codeGrp', 'codeLabel', 'codeValue', 'sortOrd', 'useYn', 'codeOpt1', 'codeRemark', 'parentCodeValue'];
+    const GRP_FIELDS   = ['codeGrp', 'grpNm', 'pathId', 'description', 'type', 'useYn'];
+    const GRP_SORT_MAP = {
+      codeGrp: { asc: 'codeGrp asc', desc: 'codeGrp desc' },
+      grpNm:   { asc: 'grpNm asc',   desc: 'grpNm desc'   },
+    };
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */

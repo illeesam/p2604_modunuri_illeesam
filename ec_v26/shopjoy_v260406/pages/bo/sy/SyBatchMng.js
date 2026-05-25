@@ -23,24 +23,6 @@ window.SyBatchMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', status: '', runStatus: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== CRUD 그리드 ===== */
-    const gridRows = reactive([]);                 // 편집 상태 포함 그리드 행
-    let _tempId = -1;                              // 신규 행 임시 ID (음수)
-    const EDIT_FIELDS = ['batchNm', 'batchCode', 'cronExpr', 'batchStatusCd', 'batchDesc'];
-    const dragSrc = ref(null);                     // 드래그 소스 인덱스
-
-    /* ===== 표시경로 선택 모달 (sy_path) ===== */
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* ===== Cron 편집 모달 ===== */
-    const cronModal = reactive({ show: false, rowIdx: null, value: '0 0 * * *' });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -118,6 +100,24 @@ window.SyBatchMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', status: '', runStatus: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== CRUD 그리드 ===== */
+    const gridRows = reactive([]);                 // 편집 상태 포함 그리드 행
+    let _tempId = -1;                              // 신규 행 임시 ID (음수)
+    const EDIT_FIELDS = ['batchNm', 'batchCode', 'cronExpr', 'batchStatusCd', 'batchDesc'];
+    const dragSrc = ref(null);                     // 드래그 소스 인덱스
+
+    /* ===== 표시경로 선택 모달 (sy_path) ===== */
+    const pathPickModal = reactive({ show: false, row: null });
+
+    /* ===== Cron 편집 모달 ===== */
+    const cronModal = reactive({ show: false, rowIdx: null, value: '0 0 * * *' });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchList — 목록 조회 */

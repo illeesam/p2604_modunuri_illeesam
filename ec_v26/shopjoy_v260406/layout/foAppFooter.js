@@ -169,41 +169,61 @@ window.foAppFooter = {
         <circle cx="46" cy="36" r="1.5" fill="rgba(255,255,255,0.4)"/>
         <circle cx="42" cy="42" r="1.5" fill="rgba(255,255,255,0.4)"/>
       </svg>
-      <span style="font-weight:700;color:var(--text-secondary);font-size:0.85rem;">{{ config.name }}</span>
-      <span style="color:var(--text-muted);font-size:0.75rem;">|</span>
-      <span style="color:var(--text-muted);font-size:0.8rem;">{{ config.address }}</span>
+      <span style="font-weight:700;color:var(--text-secondary);font-size:0.85rem;">
+        {{ config.name }}
+      </span>
+      <span style="color:var(--text-muted);font-size:0.75rem;">
+        |
+      </span>
+      <span style="color:var(--text-muted);font-size:0.8rem;">
+        {{ config.address }}
+      </span>
     </div>
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;">
       <!-- ===== ■.■.■. 버튼 영역 =============================================== -->
       <button type="button" @click="handleBtnAction('linksModal-toggle')"
         style="font-size:0.75rem;padding:5px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
         🌐 메뉴 바로가기
-        <span :style="{fontWeight:800,color: currentFoSiteNo==='03' ? '#7b1fa2' : currentFoSiteNo==='02' ? '#2e7d6b' : currentFoSiteNo==='9999' ? '#888' : '#9f2946'}">{{ currentFoSiteNo || '-' }}</span>
-        <span :style="{fontWeight:800,color: currentBoSiteNo==='03' ? '#7b1fa2' : currentBoSiteNo==='02' ? '#2e7d6b' : currentBoSiteNo==='9999' ? '#888' : '#9f2946'}">{{ currentBoSiteNo || '-' }}</span>
-        <span style="font-size:9px;">▾</span>
+        <span :style="{fontWeight:800,color: currentFoSiteNo==='03' ? '#7b1fa2' : currentFoSiteNo==='02' ? '#2e7d6b' : currentFoSiteNo==='9999' ? '#888' : '#9f2946'}">
+          {{ currentFoSiteNo || '-' }}
+        </span>
+        <span :style="{fontWeight:800,color: currentBoSiteNo==='03' ? '#7b1fa2' : currentBoSiteNo==='02' ? '#2e7d6b' : currentBoSiteNo==='9999' ? '#888' : '#9f2946'}">
+          {{ currentBoSiteNo || '-' }}
+        </span>
+        <span style="font-size:9px;">
+          ▾
+        </span>
       </button>
-
       <!-- ===== ■.■.■. 메뉴 레이어 ============================================== -->
       <div v-if="uiState.menuOpen"
         style="position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9998;backdrop-filter:blur(2px);"
-        @click="handleBtnAction('linksModal-close')"></div>
+        @click="handleBtnAction('linksModal-close')">
+      </div>
       <div v-if="uiState.menuOpen"
         style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9999;background:#fff;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.28);width:920px;max-width:95vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #ffe4ec;"
         @click.stop>
         <!-- ===== ■.■.■.■. 헤더 ================================================ -->
         <div style="padding:14px 18px;border-bottom:1px solid #ffc9d6;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);display:flex;align-items:center;justify-content:space-between;">
-          <div style="font-size:15px;font-weight:800;color:#9f2946;"><span style="color:#e8587a;font-size:9px;margin-right:8px;">●</span>🌐 메뉴 바로가기</div>
+          <div style="font-size:15px;font-weight:800;color:#9f2946;">
+            <span style="color:#e8587a;font-size:9px;margin-right:8px;">
+              ●
+            </span>
+            🌐 메뉴 바로가기
+          </div>
           <button type="button" @click="handleBtnAction('linksModal-close')"
             style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.6);border:none;color:#9f2946;font-size:13px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;"
             onmouseover="this.style.background='#e8587a';this.style.color='#fff';this.style.transform='rotate(90deg)';"
-            onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';this.style.transform='';">✕</button>
+            onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';this.style.transform='';">
+            ✕
+          </button>
         </div>
-
         <!-- ===== ■.■.■.■. 3열 본문 ============================================= -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;padding:18px;overflow:auto;">
           <!-- ===== ■.■.■.■.■. foOffice ======================================== -->
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-            <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">🛍 foOffice</div>
+            <div style="font-size:13px;font-weight:800;color:#1565c0;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e8f5;">
+              🛍 foOffice
+            </div>
             <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in FO_MENU" :key="m.id" type="button"
@@ -211,39 +231,54 @@ window.foAppFooter = {
                 style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
                 onmouseover="this.style.background='#fff5f8';this.style.color='#e8587a';"
                 onmouseout="this.style.background='transparent';this.style.color='#333';">
-                <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
-                <span>{{ m.label }}</span>
+                <span style="font-size:14px;width:18px;text-align:center;">
+                  {{ m.icon }}
+                </span>
+                <span>
+                  {{ m.label }}
+                </span>
               </button>
             </div>
           </div>
-
           <!-- ===== ■.■.■.■.■. boOffice ======================================== -->
           <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">🔧 boOffice</div>
+            <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #efe0f5;">
+              🔧 boOffice
+            </div>
             <div style="display:flex;flex-direction:column;gap:2px;">
               <button v-for="m in BO_MENU" :key="m.id" type="button"
                 @click="handleSelectAction('linksModal-go-item', { root: 'boOffice', target: m.id })"
                 style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:transparent;border:none;border-radius:6px;cursor:pointer;font-size:12.5px;color:#333;text-align:left;transition:all .12s;"
                 onmouseover="this.style.background='#f7f0fa';this.style.color='#7b1fa2';"
                 onmouseout="this.style.background='transparent';this.style.color='#333';">
-                <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
-                <span>{{ m.label }}</span>
+                <span style="font-size:14px;width:18px;text-align:center;">
+                  {{ m.icon }}
+                </span>
+                <span>
+                  {{ m.label }}
+                </span>
               </button>
             </div>
           </div>
-
           <!-- ===== ■.■.■.■.■. 나머지: FO 사이트번호 + dispUi ========================== -->
           <div style="display:flex;flex-direction:column;gap:14px;">
             <!-- ===== ■.■.■.■.■.■. _SITE_NO (FO / BO 분리 링크) ====================== -->
             <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">🌈 _SITE_NO <span style="font-size:11px;color:#888;font-weight:600;">(FO: {{ currentFoSiteNo }}, BO: {{ currentBoSiteNo }})</span></div>
+              <div style="font-size:13px;font-weight:800;color:#2e7d6b;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #def0e8;">
+                🌈 _SITE_NO
+                <span style="font-size:11px;color:#888;font-weight:600;">
+                  (FO: {{ currentFoSiteNo }}, BO: {{ currentBoSiteNo }})
+                </span>
+              </div>
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <div v-for="p in SITE_PAIR_MENU" :key="p.fo+'_'+p.bo"
                   style="display:flex;gap:6px;align-items:center;">
                   <!-- ===== ■.■.■.■.■.■.■.■.■. site_id 표시 ============================== -->
                   <span :style="{flexShrink:0,minWidth:'112px',fontSize:'11px',fontFamily:'monospace',fontWeight:700,color: (currentFoSiteNo===p.fo||currentBoSiteNo===p.bo)?'#2e7d6b':'#999'}"
-                    :title="'적용 site_id: '+p.siteId">site_id={{ p.siteId }}</span>
+                    :title="'적용 site_id: '+p.siteId">
+                    site_id={{ p.siteId }}
+                  </span>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. FO 링크 =================================== -->
                   <button type="button" @click="handleSelectAction('linksModal-go-item', { root: 'foOnly', target: p.fo })"
                     :style="{flex:1,display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 10px',background: currentFoSiteNo===p.fo?'#e0f2ec':'transparent',border:'1px solid '+(currentFoSiteNo===p.fo?'#a3d4be':'#e5eaea'),borderRadius:'6px',cursor:'pointer',fontSize:'12px',fontFamily:'monospace',color: currentFoSiteNo===p.fo?'#2e7d6b':'#444',fontWeight: currentFoSiteNo===p.fo?700:500,transition:'all .12s'}"
@@ -251,8 +286,12 @@ window.foAppFooter = {
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
                     :data-active="currentFoSiteNo===p.fo?'1':'0'"
                     title="index.html로 이동 (같은 창)">
-                    <span>{{ currentFoSiteNo===p.fo?'●':'○' }}</span>
-                    <span>FO={{ p.fo }}</span>
+                    <span>
+                      {{ currentFoSiteNo===p.fo?'●':'○' }}
+                    </span>
+                    <span>
+                      FO={{ p.fo }}
+                    </span>
                   </button>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. BO 링크 (bo.html 새창) ====================== -->
                   <button type="button" @click="handleSelectAction('linksModal-go-item', { root: 'boOnly', target: p.bo })"
@@ -261,9 +300,15 @@ window.foAppFooter = {
                     onmouseout="if(this.dataset.active!=='1'){this.style.background='transparent';this.style.color='#444';}"
                     :data-active="currentBoSiteNo===p.bo?'1':'0'"
                     title="bo.html 새창 오픈">
-                    <span>{{ currentBoSiteNo===p.bo?'●':'○' }}</span>
-                    <span>BO={{ p.bo }}</span>
-                    <span style="margin-left:auto;font-size:10px;color:#aaa;">↗</span>
+                    <span>
+                      {{ currentBoSiteNo===p.bo?'●':'○' }}
+                    </span>
+                    <span>
+                      BO={{ p.bo }}
+                    </span>
+                    <span style="margin-left:auto;font-size:10px;color:#aaa;">
+                      ↗
+                    </span>
                   </button>
                 </div>
               </div>
@@ -271,31 +316,46 @@ window.foAppFooter = {
             <!-- ===== ■.■.■.■.■.■. dispUi ======================================== -->
             <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
             <div style="background:#fafbfc;border:1px solid #eef0f3;border-radius:10px;padding:12px;">
-              <div style="font-size:13px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">🖥 dispUi (샘플)</div>
+              <div style="font-size:13px;font-weight:800;color:#c2410c;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f5e8de;">
+                🖥 dispUi (샘플)
+              </div>
               <div style="display:flex;flex-direction:column;gap:2px;">
                 <div v-for="m in DISP_MENU" :key="m.id"
                   style="display:flex;align-items:center;gap:6px;padding:4px 6px;">
-                  <span style="font-size:14px;width:18px;text-align:center;">{{ m.icon }}</span>
-                  <span style="flex:1;font-size:12.5px;color:#333;">{{ m.label }}</span>
+                  <span style="font-size:14px;width:18px;text-align:center;">
+                    {{ m.icon }}
+                  </span>
+                  <span style="flex:1;font-size:12.5px;color:#333;">
+                    {{ m.label }}
+                  </span>
                   <button type="button" @click="handleSelectAction('linksModal-go-item', { root: 'dispFoUi', target: m.id })"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:5px;cursor:pointer;"
-                    title="사용자 미리보기">사용자 ↗</button>
+                    title="사용자 미리보기">
+                    사용자 ↗
+                  </button>
                   <button type="button" @click="handleSelectAction('linksModal-go-item', { root: 'dispBoUi', target: m.id })"
                     style="padding:3px 9px;font-size:11px;font-weight:600;background:#fef3eb;color:#c2410c;border:1px solid #f5e8de;border-radius:5px;cursor:pointer;"
-                    title="관리자 미리보기">관리자 ↗</button>
+                    title="관리자 미리보기">
+                    관리자 ↗
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <span style="color:var(--text-muted);font-size:0.75rem;">{{ config.tel }}</span>
-      <span style="color:var(--text-muted);font-size:0.75rem;">{{ config.email }}</span>
-      <span style="color:var(--text-muted);font-size:0.75rem;">© 2026 {{ config.name }}</span>
+      <span style="color:var(--text-muted);font-size:0.75rem;">
+        {{ config.tel }}
+      </span>
+      <span style="color:var(--text-muted);font-size:0.75rem;">
+        {{ config.email }}
+      </span>
+      <span style="color:var(--text-muted);font-size:0.75rem;">
+        © 2026 {{ config.name }}
+      </span>
     </div>
   </div>
 </footer>
-
-  <!-- ===== □. 본문 영역 =================================================== -->`,
+<!-- ===== □. 본문 영역 =================================================== -->
+`,
 };

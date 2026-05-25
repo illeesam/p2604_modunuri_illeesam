@@ -13,6 +13,20 @@ window.MyCoupon = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MyCoupon.js : handleBtnAction -> ', cmd, param);
+      // 쿠폰 등록
+      if (cmd === 'coupons-add') {
+        return addCoupon();
+      // 탭 변경 (미사용/사용)
+      } else if (cmd === 'coupons-tab-change') {
+        return onTabChange(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -78,21 +92,6 @@ window.MyCoupon = {
       if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ MyCoupon.js : handleBtnAction -> ', cmd, param);
-      // 쿠폰 등록
-      if (cmd === 'coupons-add') {
-        return addCoupon();
-      // 탭 변경 (미사용/사용)
-      } else if (cmd === 'coupons-tab-change') {
-        return onTabChange(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

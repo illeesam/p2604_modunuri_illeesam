@@ -24,29 +24,6 @@ window.SyBbsMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* ===== 표시경로 선택 모달 (sy_path) ===== */
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* ===== 좌측 표시경로 트리 ===== */
-    const expanded = reactive(new Set(['']));
-
-    /* ===== 상세 인라인 패널 ===== */
-    const detailModal = reactive({
-      show: false,
-      dtlId: null,
-      dtlMode: 'view',     // 'view' | 'edit'
-      reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
-    });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -124,6 +101,29 @@ window.SyBbsMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* ===== 표시경로 선택 모달 (sy_path) ===== */
+    const pathPickModal = reactive({ show: false, row: null });
+
+    /* ===== 좌측 표시경로 트리 ===== */
+    const expanded = reactive(new Set(['']));
+
+    /* ===== 상세 인라인 패널 ===== */
+    const detailModal = reactive({
+      show: false,
+      dtlId: null,
+      dtlMode: 'view',     // 'view' | 'edit'
+      reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
+    });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* getSortParam — 정렬 파라미터 */

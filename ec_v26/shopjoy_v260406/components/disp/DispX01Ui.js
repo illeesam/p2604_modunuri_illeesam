@@ -28,24 +28,6 @@ window.DispX01Ui = {
       { key: 'source',  label: '</> 소스보기' },
     ];
     const cfActiveTabs = computed(() => {
-      const opts = (props.params.viewOpts || '').split(',').filter(Boolean);
-      return opts.length ? ALL_TABS.filter(t => opts.includes(t.key)) : [];
-    });
-    const activeTab = ref('');
-
-    Vue.watchEffect(() => {
-      const first = cfActiveTabs.value[0]?.key || 'content';
-      if (!cfActiveTabs.value.find(t => t.key === activeTab.value)) {
-        activeTab.value = first;
-      }
-    });
-
-    /* 내용보기 구조 표시 토글 (기본 OFF = 순수 위젯만) */
-    const showContentStruct = ref(false);
-
-    /* ── 구조보기 트리 접기/펼치기 ── */
-    const structAreaOpen  = reactive(new Set());
-    const structPanelOpen = reactive(new Set());
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -89,6 +71,24 @@ window.DispX01Ui = {
       }
     };
 
+      const opts = (props.params.viewOpts || '').split(',').filter(Boolean);
+      return opts.length ? ALL_TABS.filter(t => opts.includes(t.key)) : [];
+    });
+    const activeTab = ref('');
+
+    Vue.watchEffect(() => {
+      const first = cfActiveTabs.value[0]?.key || 'content';
+      if (!cfActiveTabs.value.find(t => t.key === activeTab.value)) {
+        activeTab.value = first;
+      }
+    });
+
+    /* 내용보기 구조 표시 토글 (기본 OFF = 순수 위젯만) */
+    const showContentStruct = ref(false);
+
+    /* ── 구조보기 트리 접기/펼치기 ── */
+    const structAreaOpen  = reactive(new Set());
+    const structPanelOpen = reactive(new Set());
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* ── 공통 상수 ── */

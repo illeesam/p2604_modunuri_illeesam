@@ -191,77 +191,102 @@ window.BoSearchArea = {
 <div class="search-bar" :style="barStyle" @keyup.enter="handleBtnAction('search-emit')">
   <!-- ▼ search 영역 -->
   <template v-if="columns && param">
-    <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
-      <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
-      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" class="search-label">
-        {{ col.label }}
-      </label>
-      <!-- 라벨 텍스트 -->
-      <label v-if="col.type==='label'" class="search-label">{{ col.label }}</label>
-      <!-- 슬롯 탈출구 -->
-      <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'"></slot>
-      <!-- 회원/항목 picker 박스 (input readonly + 검색 버튼 + 클리어) — col.type==='pick' -->
-      <template v-else-if="col.type==='pick'">
-        <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
+  <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
+    <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
+    <label v-if="col.label && col.type!=='label' && col.type!=='slot'" class="search-label">
+    {{ col.label }}
+  </label>
+  <!-- 라벨 텍스트 -->
+  <label v-if="col.type==='label'" class="search-label">
+    {{ col.label }}
+  </label>
+  <!-- 슬롯 탈출구 -->
+  <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'">
+  </slot>
+  <!-- 회원/항목 picker 박스 (input readonly + 검색 버튼 + 클리어) — col.type==='pick' -->
+  <template v-else-if="col.type==='pick'">
+    <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
           readonly :placeholder="col.placeholder || '선택'"
           class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
           @click="handleSelectAction('field-pick-open', { col, target: po(col) })" />
-        <button class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pick-open', { col, target: po(col) })">{{ col.openLabel || '검색' }}</button>
-        <button v-if="po(col)[col.key]" class="btn btn-sm"
+    <button class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pick-open', { col, target: po(col) })">
+      {{ col.openLabel || '검색' }}
+    </button>
+    <button v-if="po(col)[col.key]" class="btn btn-sm"
           style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;"
           @click="handleSelectAction('field-pick-clear', { col, target: po(col) })">
-          ✕
-        </button>
-      </template>
-      <!-- 다중선택 (검색대상) -->
-      <bo-multi-check-select v-else-if="col.type==='multiCheck'"
+      ✕
+    </button>
+  </template>
+  <!-- 다중선택 (검색대상) -->
+  <bo-multi-check-select v-else-if="col.type==='multiCheck'"
         v-model="po(col)[col.key]" :options="col.options"
         :placeholder="col.placeholder || '전체'" :all-label="col.allLabel || '전체 선택'"
         :min-width="col.minWidth || '160px'" />
-      <!-- 텍스트 입력 -->
-      <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
+  <!-- 텍스트 입력 -->
+  <input v-else-if="col.type==='text'" v-model="po(col)[col.key]"
         :placeholder="col.placeholder" :style="col.width ? ('width:' + col.width) : ''"
         @keyup.enter="handleBtnAction('search-emit')" />
-      <!-- select (col.onChange: fn 지원) -->
-      <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
+  <!-- select (col.onChange: fn 지원) -->
+  <select v-else-if="col.type==='select'" v-model="po(col)[col.key]"
         @change="handleSelectAction('field-select-change', { col, event: $event })">
-        <option v-if="col.nullable !== false" value="">{{ col.nullLabel || '전체' }}</option>
-        <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
-      </select>
-      <!-- 단일 날짜 -->
-      <input v-else-if="col.type==='date'" type="date" v-model="po(col)[col.key]" class="date-range-input" />
-      <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
-      <template v-else-if="col.type==='dateRange'">
-        <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
-          <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">{{ c.label }}</option>
-        </select>
-        <!-- rangeFirst: true → rangeOptions select 를 date 앞에 표시 (옵션선택 placeholder는 col.rangeFirstLabel) -->
-        <select v-if="col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]"
-          @change="handleSelectAction('field-range-change', { col, event: $event })"
-          :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
-          <option value="">{{ col.rangeFirstLabel || '기간 선택' }}</option>
-          <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
-        </select>
-        <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
+    <option v-if="col.nullable !== false" value="">
+      {{ col.nullLabel || '전체' }}
+    </option>
+    <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">
+      {{ o.label }}
+    </option>
+  </select>
+  <!-- 단일 날짜 -->
+  <input v-else-if="col.type==='date'" type="date" v-model="po(col)[col.key]" class="date-range-input" />
+  <!-- 날짜 범위 + (옵션) 기간유형 + (옵션) 옵션선택 select -->
+  <template v-else-if="col.type==='dateRange'">
+    <select v-if="col.typeKey" v-model="po(col)[col.typeKey]">
+      <option v-for="c in normOpts(col.typeOptions)" :key="c.value" :value="c.value">
+        {{ c.label }}
+      </option>
+    </select>
+    <!-- rangeFirst: true → rangeOptions select 를 date 앞에 표시 (옵션선택 placeholder는 col.rangeFirstLabel) -->
+    <select v-if="col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })" :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
+    <option value="">
+      {{ col.rangeFirstLabel || '기간 선택' }}
+    </option>
+    <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">
+      {{ o.label }}
+    </option>
+  </select>
+  <input type="date" v-model="po(col)[col.startKey || 'dateStart']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
-        <span :class="col.sepClass || 'date-range-sep'" :style="col.sepStyle || ''">~</span>
-        <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
+  <span :class="col.sepClass || 'date-range-sep'" :style="col.sepStyle || ''">
+    ~
+  </span>
+  <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
-        <select v-if="!col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]"
-          @change="handleSelectAction('field-range-change', { col, event: $event })">
-          <option value="">옵션선택</option>
-          <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">{{ o.label }}</option>
-        </select>
-      </template>
-    </template>
-  </template>
-  <slot></slot>
-  <div v-if="showActions" class="search-actions">
-    <slot name="actions-before"></slot>
-    <button class="btn btn-primary" :disabled="loading" @click="handleBtnAction('search-emit')">{{ searchLabel }}</button>
-    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('search-reset')">{{ resetLabel }}</button>
-    <slot name="actions-after"></slot>
-  </div>
+  <select v-if="!col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })">
+  <option value="">
+    옵션선택
+  </option>
+  <option v-for="o in normOpts(col.rangeOptions)" :key="o.value" :value="o.value">
+    {{ o.label }}
+  </option>
+</select>
+</template>
+</template>
+</template>
+<slot>
+</slot>
+<div v-if="showActions" class="search-actions">
+  <slot name="actions-before">
+  </slot>
+  <button class="btn btn-primary" :disabled="loading" @click="handleBtnAction('search-emit')">
+    {{ searchLabel }}
+  </button>
+  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('search-reset')">
+    {{ resetLabel }}
+  </button>
+  <slot name="actions-after">
+  </slot>
+</div>
 </div>
 `,
 };
@@ -482,175 +507,210 @@ window.BoGrid = {
   <div v-if="!bare" class="toolbar">
     <span class="list-title">
       {{ listTitle }}
-      <span class="list-count">{{ countText != null ? countText : ('총 ' + cfTotal + '건') }}</span>
+      <span class="list-count">
+        {{ countText != null ? countText : ('총 ' + cfTotal + '건') }}
+      </span>
     </span>
     <div style="margin-left:auto;display:flex;gap:6px;">
-      <slot name="toolbar-actions"></slot>
-      <button v-if="showSave" class="btn btn-primary btn-sm" @click="handleBtnAction('toolbar-save')">{{ saveLabel }}</button>
+      <slot name="toolbar-actions">
+      </slot>
+      <button v-if="showSave" class="btn btn-primary btn-sm" @click="handleBtnAction('toolbar-save')">
+        {{ saveLabel }}
+      </button>
     </div>
   </div>
   <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정 -->
   <!-- 380px: 상단nav/탭바/페이지타이틀(~165) + 검색바카드(~80) + toolbar(~40) + 페이저(~50) + 여백(~45) -->
   <div :style="bare ? '' : 'max-height:calc(100vh - 380px);min-height:200px;overflow:auto;'">
-  <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
-    <thead>
-      <tr>
-        <th v-if="selectable" style="width:36px;text-align:center;">
-          <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
-        </th>
-        <th v-if="draggable" style="width:28px"></th>
-        <th style="width:36px;text-align:center;">번호</th>
-        <slot name="head">
-          <th v-for="col in columns" :key="col.key" :class="col.cls"
+    <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
+      <thead>
+        <tr>
+          <th v-if="selectable" style="width:36px;text-align:center;">
+            <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
+          </th>
+          <th v-if="draggable" style="width:28px">
+          </th>
+          <th style="width:36px;text-align:center;">
+            번호
+          </th>
+          <slot name="head">
+            <th v-for="col in columns" :key="col.key" :class="col.cls"
             :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
             @click="handleSelectAction('sort-toggle', { col })">
-            {{ col.noHead ? '' : col.label }}
-            <span v-if="col.sortKey"
+              {{ col.noHead ? '' : col.label }}
+              <span v-if="col.sortKey"
               :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
-              {{ sortIcon(col) }}
-            </span>
+                {{ sortIcon(col) }}
+              </span>
+            </th>
+          </slot>
+          <th v-if="rowActions" style="width:40px;text-align:center;">
+            <slot name="head-actions">
+              관리
+            </slot>
           </th>
-        </slot>
-        <th v-if="rowActions" style="width:40px;text-align:center;">
-          <slot name="head-actions">관리</slot>
-        </th>
-        <slot v-else name="head-actions"></slot>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- ▼ grid-row 영역 -->
-      <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
-        <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
+          <slot v-else name="head-actions">
+          </slot>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- ▼ grid-row 영역 -->
+        <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
+          <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
           :draggable="draggable"
           @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
           @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
           @dragend="handleSelectAction('grid-row-drag-end')"
           @click="rowClickable ? handleSelectAction('grid-row-click', { row }) : null">
-          <td v-if="selectable" style="text-align:center;" @click.stop>
-            <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
-          </td>
-          <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">≡</td>
-          <td style="text-align:center;font-size:11px;color:#999;">{{ rowNo(idx) }}</td>
-          <template v-for="col in columns" :key="col.key">
-            <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-              <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
-                <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
-                <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
+            <td v-if="selectable" style="text-align:center;" @click.stop>
+              <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
+            </td>
+            <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">
+              ≡
+            </td>
+            <td style="text-align:center;font-size:11px;color:#999;">
+              {{ rowNo(idx) }}
+            </td>
+            <template v-for="col in columns" :key="col.key">
+              <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
+                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
+                  <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
+                  <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
                   :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
                   @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
-                <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
+                  <input v-else-if="col.edit==='number'" type="number" class="form-control" v-model.number="row[col.key]"
                   style="padding:2px 6px;font-size:12px;width:80px;text-align:right;"
                   @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
-                <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
+                  <input v-else-if="col.edit==='date'" type="date" class="form-control" v-model="row[col.key]"
                   style="padding:2px 4px;font-size:11px;width:130px;text-align:center;"
                   @click.stop @input="handleSelectAction('grid-row-cell-change', { row, col })" />
-                <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
+                  <select v-else-if="col.edit==='select'" class="form-control" v-model="row[col.key]"
                   style="padding:2px 4px;font-size:12px;"
                   @click.stop @change="handleSelectAction('grid-row-cell-change', { row, col })">
-                  <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
-                  <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
-                </select>
-                <!-- 표시경로 picker (bo-path-pick-field 자동 임베드) -->
-                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row, col })" />
-                <!-- 모달 인터셉트 select (col.selectIntercept: { valueKey | value:fn(row), options, onChange:fn(row,newVal,$event), nullable, nullLabel, disabled:fn(row) }) — v-model 미사용 -->
-                <select v-else-if="col.selectIntercept" class="form-control grid-select" style="font-size:11px;padding:2px 4px;"
+                    <option v-if="col.nullable" :value="null">
+                      {{ col.nullLabel || '-- 선택 --' }}
+                    </option>
+                    <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">
+                      {{ o.label }}
+                    </option>
+                  </select>
+                  <!-- 표시경로 picker (bo-path-pick-field 자동 임베드) -->
+                  <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row, col })" />
+                  <!-- 모달 인터셉트 select (col.selectIntercept: { valueKey | value:fn(row), options, onChange:fn(row,newVal,$event), nullable, nullLabel, disabled:fn(row) }) — v-model 미사용 -->
+                  <select v-else-if="col.selectIntercept" class="form-control grid-select" style="font-size:11px;padding:2px 4px;"
                   :value="typeof col.selectIntercept.value==='function' ? col.selectIntercept.value(row) : row[col.selectIntercept.valueKey]"
                   :disabled="typeof col.selectIntercept.disabled==='function' ? col.selectIntercept.disabled(row) : false"
                   @click.stop @change="col.selectIntercept.onChange(row, $event.target.value, $event)">
-                  <option v-if="col.selectIntercept.nullable" value="">{{ col.selectIntercept.nullLabel || '-' }}</option>
-                  <option v-for="o in U.normOptions(col.selectIntercept.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
-                </select>
-                <!-- 외부 setter 인터셉트 input (col.editIntercept: { type:'text'|'number'|'date', placeholder, onInput:fn(row,newVal,idx,$event) }) — v-model 미사용 -->
-                <input v-else-if="col.editIntercept" class="form-control" :type="col.editIntercept.type || 'text'"
+                    <option v-if="col.selectIntercept.nullable" value="">
+                      {{ col.selectIntercept.nullLabel || '-' }}
+                    </option>
+                    <option v-for="o in U.normOptions(col.selectIntercept.options)" :key="o.value" :value="o.value">
+                      {{ o.label }}
+                    </option>
+                  </select>
+                  <!-- 외부 setter 인터셉트 input (col.editIntercept: { type:'text'|'number'|'date', placeholder, onInput:fn(row,newVal,idx,$event) }) — v-model 미사용 -->
+                  <input v-else-if="col.editIntercept" class="form-control" :type="col.editIntercept.type || 'text'"
                   :value="row[col.key]" :placeholder="col.editIntercept.placeholder" style="margin:0;padding:2px 6px;font-size:12px;"
                   @click.stop @input="col.editIntercept.onInput(row, $event.target.value, idx, $event)" />
-                <!-- 풀폭 버튼 picker (col.linkButton: { label:fn(row)=>string, onClick:fn(row), suffix:string, btnClass:string }) -->
-                <button v-else-if="col.linkButton" type="button"
+                  <!-- 풀폭 버튼 picker (col.linkButton: { label:fn(row)=>string, onClick:fn(row), suffix:string, btnClass:string }) -->
+                  <button v-else-if="col.linkButton" type="button"
                   :class="col.linkButton.btnClass || 'btn btn-secondary btn-xs'"
                   style="font-size:11px;width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
                   @click.stop="col.linkButton.onClick(row)">
-                  {{ col.linkButton.label(row) }}{{ col.linkButton.suffix != null ? ' ' + col.linkButton.suffix : ' ▼' }}
-                </button>
-                <!-- 셀별 토글 링크 (col.linkToggle: { active:fn(row)=>bool, activeStyle, baseStyle, title, onClick:fn(row) }) -->
-                <span v-else-if="col.linkToggle" class="title-link" @click.stop="col.linkToggle.onClick(row)"
+                    {{ col.linkButton.label(row) }}{{ col.linkButton.suffix != null ? ' ' + col.linkButton.suffix : ' ▼' }}
+                  </button>
+                  <!-- 셀별 토글 링크 (col.linkToggle: { active:fn(row)=>bool, activeStyle, baseStyle, title, onClick:fn(row) }) -->
+                  <span v-else-if="col.linkToggle" class="title-link" @click.stop="col.linkToggle.onClick(row)"
                   :title="col.linkToggle.title || null"
                   :style="col.linkToggle.active(row) ? (col.linkToggle.activeStyle || 'color:#e8587a;font-weight:700;') : (col.linkToggle.baseStyle || 'color:#1e88e5;font-weight:500;')">
-                  {{ U.cellText(col, row) }}
-                </span>
-                <!-- 택배 추적 박스 그룹 (col.trackBoxes: { items:fn(row)=>[{label,courier,trackingNo,colorVariant}], onTrack:fn(courier,trackingNo) }) -->
-                <template v-else-if="col.trackBoxes">
-                  <div v-if="col.trackBoxes.items(row).length" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
-                    <span v-for="(it, ix) in col.trackBoxes.items(row)" :key="ix" @click.stop="col.trackBoxes.onTrack(it.courier, it.trackingNo)"
+                    {{ U.cellText(col, row) }}
+                  </span>
+                  <!-- 택배 추적 박스 그룹 (col.trackBoxes: { items:fn(row)=>[{label,courier,trackingNo,colorVariant}], onTrack:fn(courier,trackingNo) }) -->
+                  <template v-else-if="col.trackBoxes">
+                    <div v-if="col.trackBoxes.items(row).length" style="display:flex;flex-direction:column;gap:2px;font-size:10.5px;">
+                      <span v-for="(it, ix) in col.trackBoxes.items(row)" :key="ix" @click.stop="col.trackBoxes.onTrack(it.courier, it.trackingNo)"
                       :style="'cursor:pointer;padding:1px 6px;border-radius:4px;font-weight:700;'
                       +(it.colorVariant==='orange'?'border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;':'border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;')">
-                      {{ it.label ? it.label + ' ' : '' }}{{ it.courier }} · {{ it.trackingNo || '-' }} 🔍
+                        {{ it.label ? it.label + ' ' : '' }}{{ it.courier }} · {{ it.trackingNo || '-' }} 🔍
+                      </span>
+                    </div>
+                    <span v-else style="color:#ccc;">
+                      -
                     </span>
-                  </div>
-                  <span v-else style="color:#ccc;">-</span>
-                </template>
-                <!-- 일시 picker (bo-date-time-picker 자동 임베드) — col.dateTimePick: { dateKey, timeKey, dateWidth, timeWidth, onChange? } -->
-                <bo-date-time-picker v-else-if="col.dateTimePick"
+                  </template>
+                  <!-- 일시 picker (bo-date-time-picker 자동 임베드) — col.dateTimePick: { dateKey, timeKey, dateWidth, timeWidth, onChange? } -->
+                  <bo-date-time-picker v-else-if="col.dateTimePick"
                   :date="row[col.dateTimePick.dateKey]" :time="row[col.dateTimePick.timeKey]"
                   @update:date="v => { row[col.dateTimePick.dateKey] = v; handleSelectAction('grid-row-cell-change', { row, col }); }"
                   @update:time="v => { row[col.dateTimePick.timeKey] = v; handleSelectAction('grid-row-cell-change', { row, col }); }"
                   :show-now="col.dateTimePick.showNow !== false" :show-clear="col.dateTimePick.showClear !== false"
                   :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'" />
-                <!-- 인라인 path-button (라벨 + 🔍 버튼 + onOpen 콜백) -->
-                <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
-                  <span style="flex:1;">
-                    {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
+                  <!-- 인라인 path-button (라벨 + 🔍 버튼 + onOpen 콜백) -->
+                  <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+                    <span style="flex:1;">
+                      {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
+                    </span>
+                    <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+                      🔍
+                    </button>
+                  </div>
+                  <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) -->
+                  <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-row-click', { row })"
+                  :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
+                    {{ U.cellText(col, row) }}
                   </span>
-                  <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
-                    🔍
-                  </button>
-                </div>
-                <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) -->
-                <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-row-click', { row })"
+                  <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="handleSelectAction('grid-row-ref-click', { row, col })">
+                    {{ U.cellText(col, row) }}
+                  </a>
+                  <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">
+                    {{ U.cellText(col, row) }}
+                  </span>
+                  <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
                   :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
-                  {{ U.cellText(col, row) }}
-                </span>
-                <a v-else-if="col.refLink" href="#" class="ref-link" @click.stop.prevent="handleSelectAction('grid-row-ref-click', { row, col })">
-                  {{ U.cellText(col, row) }}
-                </a>
-                <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, row)">{{ U.cellText(col, row) }}</span>
-                <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
-                  :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
-                  {{ U.cellText(col, row) }}
-                </span>
-                <template v-else>{{ U.cellText(col, row) }}</template>
+                    {{ U.cellText(col, row) }}
+                  </span>
+                  <template v-else>
+                    {{ U.cellText(col, row) }}
+                  </template>
+                </td>
+              </slot>
+            </template>
+            <td v-if="rowActions" style="text-align:center">
+              <slot name="row-actions" :row="row" :idx="idx">
+                <button class="btn btn-danger btn-xs" @click="handleSelectAction('grid-row-remove', { row })">
+                  ✕
+                </button>
+              </slot>
+            </td>
+            <slot v-else name="row-actions" :row="row" :idx="idx">
+            </slot>
+          </tr>
+          <tr v-if="fnIsExpanded(row, idx)" class="bo-grid-expand-row">
+            <slot name="row-expand" :row="row" :idx="idx" :colspan="cfColspan">
+              <td :colspan="cfColspan">
               </td>
             </slot>
-          </template>
-          <td v-if="rowActions" style="text-align:center">
-            <slot name="row-actions" :row="row" :idx="idx">
-              <button class="btn btn-danger btn-xs" @click="handleSelectAction('grid-row-remove', { row })">✕</button>
-            </slot>
-          </td>
-          <slot v-else name="row-actions" :row="row" :idx="idx"></slot>
-        </tr>
-        <tr v-if="fnIsExpanded(row, idx)" class="bo-grid-expand-row">
-          <slot name="row-expand" :row="row" :idx="idx" :colspan="cfColspan">
-            <td :colspan="cfColspan"></td>
-          </slot>
-        </tr>
-      </template>
-      <tr v-if="!rows.length">
-        <td :colspan="cfColspan"
+          </tr>
+        </template>
+        <tr v-if="!rows.length">
+          <td :colspan="cfColspan"
           style="text-align:center;padding:30px;color:#aaa">
-          {{ emptyText }}
-        </td>
-      </tr>
-    </tbody>
-    <tfoot v-if="cfShowTfoot">
-      <slot name="tfoot" :rows="rows" :colspan="cfColspan"></slot>
-    </tfoot>
-  </table>
-  </div><!-- /그리드 본문 스크롤 컨테이너 -->
+            {{ emptyText }}
+          </td>
+        </tr>
+      </tbody>
+      <tfoot v-if="cfShowTfoot">
+        <slot name="tfoot" :rows="rows" :colspan="cfColspan">
+        </slot>
+      </tfoot>
+    </table>
+  </div>
+  <!-- /그리드 본문 스크롤 컨테이너 -->
   <!-- ▼ pager 영역: 한 줄 표시 + 카드 하단 깔끔 마감 -->
   <div v-if="pager && !bare" style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('pager-set', { n })" :on-size-change="() => handleBtnAction('pager-size-change')"
+  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('pager-set', { n })" :on-size-change="() => handleBtnAction('pager-size-change')"
       style="margin-top:0;min-height:34px;" />
-  </div>
+</div>
 </div>
 `,
 };
@@ -807,24 +867,47 @@ window.BoGridCrud = {
   template: /* html */`
 <div class="card">
   <div class="toolbar">
-    <span class="list-title">{{ listTitle }} <span class="list-count">{{ cfVisibleCount }}건</span></span>
+    <span class="list-title">
+      {{ listTitle }}
+      <span class="list-count">
+        {{ cfVisibleCount }}건
+      </span>
+    </span>
     <div style="display:flex;gap:6px;margin-left:auto;">
-      <slot name="toolbar-actions"></slot>
-      <button v-if="showExport" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-export')">📥 엑셀</button>
-      <button v-if="showAdd" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-add')">+ 행추가</button>
-      <button v-if="showRowCheck" class="btn btn-danger btn-sm" @click="handleBtnAction('toolbar-delete-checked')">행삭제</button>
-      <button v-if="showRowCheck" class="btn btn-secondary btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">취소</button>
-      <button v-if="showSave" class="btn btn-primary btn-sm" @click="handleBtnAction('toolbar-save')">저장</button>
+      <slot name="toolbar-actions">
+      </slot>
+      <button v-if="showExport" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-export')">
+        📥 엑셀
+      </button>
+      <button v-if="showAdd" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-add')">
+        + 행추가
+      </button>
+      <button v-if="showRowCheck" class="btn btn-danger btn-sm" @click="handleBtnAction('toolbar-delete-checked')">
+        행삭제
+      </button>
+      <button v-if="showRowCheck" class="btn btn-secondary btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">
+        취소
+      </button>
+      <button v-if="showSave" class="btn btn-primary btn-sm" @click="handleBtnAction('toolbar-save')">
+        저장
+      </button>
     </div>
   </div>
   <div :style="'max-height:' + maxHeight + ';overflow-y:auto;'">
     <table class="bo-table crud-grid">
       <thead>
         <tr>
-          <th v-if="cfShowDrag" class="col-drag"></th>
-          <th v-if="cfShowNo" style="width:36px;text-align:center;">번호</th>
-          <th v-if="cfShowId" class="col-id">ID</th>
-          <th v-if="showRowStatus" class="col-status">상태</th>
+          <th v-if="cfShowDrag" class="col-drag">
+          </th>
+          <th v-if="cfShowNo" style="width:36px;text-align:center;">
+            번호
+          </th>
+          <th v-if="cfShowId" class="col-id">
+            ID
+          </th>
+          <th v-if="showRowStatus" class="col-status">
+            상태
+          </th>
           <th v-if="showRowCheck" class="col-check">
             <input type="checkbox" :checked="allChecked" @change="handleBtnAction('grid-toggle-check-all')" />
           </th>
@@ -839,99 +922,114 @@ window.BoGridCrud = {
               </span>
             </th>
           </slot>
-          <th class="col-act"></th>
+          <th class="col-act">
+          </th>
         </tr>
       </thead>
       <tbody>
         <!-- ▼ grid-row 영역 -->
         <tr v-if="!cfDispRows.length">
-          <td :colspan="cfEmptyColspan" style="text-align:center;color:#999;padding:30px;">{{ emptyText }}</td>
+          <td :colspan="cfEmptyColspan" style="text-align:center;color:#999;padding:30px;">
+            {{ emptyText }}
+          </td>
         </tr>
-        <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)"
-          class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]"
-          :draggable="cfShowDrag"
-          @click="handleSelectAction('grid-row-focus', { idx })"
-          @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })"
-          @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
-          @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
-          @dragend="handleSelectAction('grid-row-drag-end')">
-          <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">⠿</td>
-          <td v-if="cfShowNo" style="text-align:center;font-size:11px;color:#999;">{{ idx + 1 }}</td>
-          <td v-if="cfShowId" class="col-id-val">{{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}</td>
-          <td v-if="showRowStatus" class="col-status-val">
-            <span class="badge badge-xs" :class="fnStatusClass(fnRow(item)._row_status)">{{ fnRow(item)._row_status }}</span>
-          </td>
-          <td v-if="showRowCheck" class="col-check-val">
-            <input type="checkbox" v-model="fnRow(item)._row_check" />
-          </td>
-          <template v-for="col in columns" :key="col.key">
-            <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">
-              <td :style="U.tdStyle(col, fnRow(item))" :class="U.cellClass(col, fnRow(item))" :title="U.cellTitle(col, fnRow(item))">
-                <div v-if="col.edit==='text' && col.treeDepth" style="display:flex;align-items:center;">
-                  <span :style="{ marginLeft:(fnRow(item)._depth*14)+'px', marginRight:'6px', fontWeight:'700',
+        <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
+        <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">
+          ⠿
+        </td>
+        <td v-if="cfShowNo" style="text-align:center;font-size:11px;color:#999;">
+          {{ idx + 1 }}
+        </td>
+        <td v-if="cfShowId" class="col-id-val">
+          {{ fnRow(item)[rowKey] > 0 ? fnRow(item)[rowKey] : 'NEW' }}
+        </td>
+        <td v-if="showRowStatus" class="col-status-val">
+          <span class="badge badge-xs" :class="fnStatusClass(fnRow(item)._row_status)">
+            {{ fnRow(item)._row_status }}
+          </span>
+        </td>
+        <td v-if="showRowCheck" class="col-check-val">
+          <input type="checkbox" v-model="fnRow(item)._row_check" />
+        </td>
+        <template v-for="col in columns" :key="col.key">
+          <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">
+            <td :style="U.tdStyle(col, fnRow(item))" :class="U.cellClass(col, fnRow(item))" :title="U.cellTitle(col, fnRow(item))">
+              <div v-if="col.edit==='text' && col.treeDepth" style="display:flex;align-items:center;">
+              <span :style="{ marginLeft:(fnRow(item)._depth*14)+'px', marginRight:'6px', fontWeight:'700',
                     fontSize: fnRow(item)._depth===0 ? '7px' : '12px', flexShrink:0,
                     color: (typeof col.treeColor==='function' ? col.treeColor(fnRow(item)._depth) : '#888') }">
-                    {{ typeof col.treeBullet==='function' ? col.treeBullet(fnRow(item)._depth) : '●' }}
-                  </span>
-                  <input class="grid-input" :class="{ 'grid-mono': col.mono }"
+                {{ typeof col.treeBullet==='function' ? col.treeBullet(fnRow(item)._depth) : '●' }}
+              </span>
+              <input class="grid-input" :class="{ 'grid-mono': col.mono }"
                     v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                     :placeholder="col.placeholder" @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" style="flex:1;" />
-                </div>
-                <input v-else-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
+            </div>
+            <input v-else-if="col.edit==='text'" class="grid-input" :class="{ 'grid-mono': col.mono }"
                   v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                   :placeholder="col.placeholder" @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
-                <input v-else-if="col.edit==='number'" type="number" class="grid-input grid-num"
+            <input v-else-if="col.edit==='number'" type="number" class="grid-input grid-num"
                   v-model.number="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                   @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
-                <input v-else-if="col.edit==='date'" type="date" class="grid-input"
+            <input v-else-if="col.edit==='date'" type="date" class="grid-input"
                   v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                   @input="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
-                <select v-else-if="col.edit==='select'" class="grid-select"
+            <select v-else-if="col.edit==='select'" class="grid-select"
                   v-model="fnRow(item)[col.key]" :disabled="fnRow(item)._row_status==='D'"
                   @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })">
-                  <option v-if="col.nullable" :value="null">{{ col.nullLabel || '-- 선택 --' }}</option>
-                  <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
-                </select>
-                <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
-                <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
-                  <span style="flex:1;">
-                    {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
-                  </span>
-                  <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
-                    🔍
-                  </button>
-                </div>
-                <div v-else-if="col.parentPick" style="display:flex;align-items:center;gap:5px;">
-                  <span v-if="fnRow(item)[col.key]"
+              <option v-if="col.nullable" :value="null">
+                {{ col.nullLabel || '-- 선택 --' }}
+              </option>
+              <option v-for="o in U.normOptions(col.options)" :key="o.value" :value="o.value">
+                {{ o.label }}
+              </option>
+            </select>
+            <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
+            <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+              <span style="flex:1;">
+                {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
+              </span>
+              <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+                🔍
+              </button>
+            </div>
+            <div v-else-if="col.parentPick" style="display:flex;align-items:center;gap:5px;">
+              <span v-if="fnRow(item)[col.key]"
                     style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
                     :title="col.parentPick.label(fnRow(item)[col.key])">
-                    {{ col.parentPick.label(fnRow(item)[col.key]) }}
-                  </span>
-                  <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">{{ col.parentPick.placeholder || '최상위' }}</span>
-                  <button v-if="fnRow(item)._row_status!=='D'" class="btn btn-secondary btn-xs"
+                {{ col.parentPick.label(fnRow(item)[col.key]) }}
+              </span>
+              <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">
+                {{ col.parentPick.placeholder || '최상위' }}
+              </span>
+              <button v-if="fnRow(item)._row_status!=='D'" class="btn btn-secondary btn-xs"
                     style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" :title="col.parentPick.title || '상위 선택'"
                     @click.stop="col.parentPick.open(fnRow(item))">
-                    🔍
-                  </button>
-                </div>
-                <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, fnRow(item))">{{ U.cellText(col, fnRow(item)) }}</span>
-                <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
-                  :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">
-                  {{ U.cellText(col, fnRow(item)) }}
-                </span>
-                <template v-else>{{ U.cellText(col, fnRow(item)) }}</template>
-              </td>
-            </slot>
-          </template>
-          <td class="col-act-val">
-            <div class="col-act-box">
-              <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item"></slot>
+                🔍
+              </button>
             </div>
+            <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, fnRow(item))">
+              {{ U.cellText(col, fnRow(item)) }}
+            </span>
+            <span v-else-if="col.cellInnerStyle != null || col.cellInnerClass != null"
+                  :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">
+              {{ U.cellText(col, fnRow(item)) }}
+            </span>
+            <template v-else>
+              {{ U.cellText(col, fnRow(item)) }}
+            </template>
           </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        </slot>
+      </template>
+      <td class="col-act-val">
+        <div class="col-act-box">
+          <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item">
+          </slot>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </div>
 `,
 };
@@ -992,9 +1090,13 @@ window.BoPathTreeCard = {
   <div class="toolbar" style="margin-bottom:6px;">
     <span class="list-title" style="font-size:13px;">
       📂 {{ title }}
-      <span v-if="showBizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#{{ bizCd }}</span>
+      <span v-if="showBizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+        #{{ bizCd }}
+      </span>
     </span>
-    <span v-if="cfHasSel" @click="handleBtnAction('tree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">{{ allLabel }}</span>
+    <span v-if="cfHasSel" @click="handleBtnAction('tree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
+      {{ allLabel }}
+    </span>
   </div>
   <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
     <bo-path-tree :biz-cd="bizCd" :show-biz-cd="showBizCd" :selected="selected" @select="id => handleSelectAction('node-select', { id })" />
@@ -1078,14 +1180,23 @@ window.BoLocalTreeCard = {
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
     <span style="font-size:13px;font-weight:600;color:#555">
       📂 {{ title }}
-      <span v-if="bizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#{{ bizCd }}</span>
+      <span v-if="bizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+        #{{ bizCd }}
+      </span>
     </span>
-    <div v-if="cfHasSel" style="font-size:11px;color:#1677ff;cursor:pointer" @click="handleBtnAction('tree-all')">{{ allLabel }}</div>
+    <div v-if="cfHasSel" style="font-size:11px;color:#1677ff;cursor:pointer" @click="handleBtnAction('tree-all')">
+      {{ allLabel }}
+    </div>
   </div>
-  <slot name="filter"></slot>
+  <slot name="filter">
+  </slot>
   <div v-if="expandable" style="display:flex;gap:4px;margin-bottom:8px">
-    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">▼ 전체펼치기</button>
-    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">▶ 전체닫기</button>
+    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">
+      ▼ 전체펼치기
+    </button>
+    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">
+      ▶ 전체닫기
+    </button>
   </div>
   <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
     <bo-path-tree-node :node="node" :expanded="expanded" :selected="selected"
@@ -1200,21 +1311,28 @@ window.BoModal = {
   <div v-if="show" class="modal-overlay" :style="cfOverlayStyle" @click.self="handleBtnAction('modal-backdrop')">
     <div class="modal-box" :style="cfBoxStyle">
       <div v-if="title" class="modal-header" style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-        <span style="font-weight:800;font-size:15px;color:#9f2946;letter-spacing:-0.2px;">{{ title }}</span>
+        <span style="font-weight:800;font-size:15px;color:#9f2946;letter-spacing:-0.2px;">
+          {{ title }}
+        </span>
         <span style="display:flex;align-items:center;gap:8px;">
-          <slot name="header-extra"></slot>
-          <button type="button" class="modal-close" @click="handleBtnAction('modal-close')">✕</button>
+          <slot name="header-extra">
+          </slot>
+          <button type="button" class="modal-close" @click="handleBtnAction('modal-close')">
+            ✕
+          </button>
         </span>
       </div>
       <div :style="cfBodyOuterStyle">
         <div :style="cfBodyInnerStyle">
           <slot name="body">
-            <slot></slot>
+            <slot>
+            </slot>
           </slot>
         </div>
       </div>
       <div v-if="$slots.footer" class="modal-footer" style="flex-shrink:0;display:flex;justify-content:flex-end;gap:8px;padding:12px 0 0;border-top:1px solid #f0f0f0;margin-top:14px;">
-        <slot name="footer" :confirm="onConfirm" :close="onClose"></slot>
+        <slot name="footer" :confirm="onConfirm" :close="onClose">
+        </slot>
       </div>
     </div>
   </div>
@@ -1351,7 +1469,9 @@ window.BoCronModal = {
 <bo-modal :show="show" title="🕐 Cron 표현식 설정" width="500px" @close="handleBtnAction('cron-close')">
   <!-- ▼ preset 영역 -->
   <div style="margin-bottom:18px;">
-    <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">⚡ 프리셋</div>
+    <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">
+      ⚡ 프리셋
+    </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;">
       <button v-for="p in PRESETS" :key="p.value"
         class="btn btn-sm"
@@ -1360,35 +1480,51 @@ window.BoCronModal = {
         : 'border:1px solid #d9d9d9;color:#555;background:#fff;'"
         style="font-size:11px;padding:5px 10px;text-align:left;line-height:1.5;"
         @click="handleSelectAction('preset-apply', { value: p.value })">
-        <div>{{ p.label }}</div>
+        <div>
+          {{ p.label }}
+        </div>
         <code style="font-size:10px;opacity:.65;letter-spacing:.5px;">{{ p.value }}</code>
-      </button>
+        </button>
+      </div>
     </div>
-  </div>
-  <!-- ▼ fields 영역 -->
-  <div style="margin-bottom:18px;">
-    <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">🔧 수동 설정</div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
-      <div v-for="f in FIELDS" :key="f.key" style="text-align:center;">
-        <div style="font-size:10px;color:#888;margin-bottom:4px;font-weight:600;">{{ f.label }}</div>
-        <input class="form-control"
+    <!-- ▼ fields 영역 -->
+    <div style="margin-bottom:18px;">
+      <div style="font-size:12px;font-weight:700;color:#444;margin-bottom:8px;">
+        🔧 수동 설정
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
+        <div v-for="f in FIELDS" :key="f.key" style="text-align:center;">
+          <div style="font-size:10px;color:#888;margin-bottom:4px;font-weight:600;">
+            {{ f.label }}
+          </div>
+          <input class="form-control"
           style="text-align:center;font-family:monospace;font-size:13px;padding:5px 4px;"
           :placeholder="f.placeholder" :title="f.hint"
           v-model="st[f.key]" @input="handleBtnAction('cron-update-preview')" />
-        <div style="font-size:9px;color:#bbb;margin-top:3px;">{{ f.hint }}</div>
+          <div style="font-size:9px;color:#bbb;margin-top:3px;">
+            {{ f.hint }}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  <div style="background:#f0f8ff;border:1px solid #dbeafe;border-radius:6px;padding:10px 16px;display:flex;align-items:center;gap:12px;">
-    <span style="font-size:11px;color:#888;flex-shrink:0;">결과</span>
-    <code style="font-size:16px;color:#2563eb;font-weight:700;letter-spacing:2px;">{{ st.preview }}</code>
-    <span v-if="cfDesc" style="font-size:11px;color:#e8587a;margin-left:auto;font-weight:600;">{{ cfDesc }}</span>
-  </div>
-  <template #footer>
-    <button class="btn btn-secondary" @click="handleBtnAction('cron-close')">취소</button>
-    <button class="btn btn-primary" @click="handleBtnAction('cron-apply')">적용</button>
-  </template>
-</bo-modal>
+    <div style="background:#f0f8ff;border:1px solid #dbeafe;border-radius:6px;padding:10px 16px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:11px;color:#888;flex-shrink:0;">
+        결과
+      </span>
+      <code style="font-size:16px;color:#2563eb;font-weight:700;letter-spacing:2px;">{{ st.preview }}</code>
+        <span v-if="cfDesc" style="font-size:11px;color:#e8587a;margin-left:auto;font-weight:600;">
+          {{ cfDesc }}
+        </span>
+      </div>
+      <template #footer>
+        <button class="btn btn-secondary" @click="handleBtnAction('cron-close')">
+          취소
+        </button>
+        <button class="btn btn-primary" @click="handleBtnAction('cron-apply')">
+          적용
+        </button>
+      </template>
+    </bo-modal>
 `,
 };
 
@@ -1509,22 +1645,30 @@ window.BoRoleSelectModal = {
   template: /* html */`
 <bo-modal :show="show" :title="title" width="1000px" height="720px" body-pad="0" @close="handleBtnAction('roleModal-close')">
   <template #header-extra>
-    <slot name="header-extra"></slot>
+    <slot name="header-extra">
+    </slot>
   </template>
   <div style="display:grid;grid-template-columns:300px 1fr;flex:1;overflow:hidden;height:100%;">
     <div style="border-right:1px solid #eee;overflow-y:auto;padding:12px;">
-      <slot name="tree"></slot>
+      <slot name="tree">
+      </slot>
     </div>
     <div style="overflow-y:auto;padding:12px;">
-      <slot name="perm"></slot>
+      <slot name="perm">
+      </slot>
     </div>
   </div>
   <template #footer>
     <span style="margin-right:auto;">
-      <slot name="footer-extra"></slot>
+      <slot name="footer-extra">
+      </slot>
     </span>
-    <button class="btn btn-secondary" @click="handleBtnAction('roleModal-close')">취소</button>
-    <button class="btn btn-primary" :disabled="confirmDisabled" @click="handleBtnAction('roleModal-confirm')">✔ {{ confirmLabel }}</button>
+    <button class="btn btn-secondary" @click="handleBtnAction('roleModal-close')">
+      취소
+    </button>
+    <button class="btn btn-primary" :disabled="confirmDisabled" @click="handleBtnAction('roleModal-confirm')">
+      ✔ {{ confirmLabel }}
+    </button>
   </template>
 </bo-modal>
 `,
@@ -1584,8 +1728,12 @@ window.BoRowCancelDelete = {
   },
   template: /* html */`
 <span>
-  <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="handleBtnAction('row-cancel')">{{ cancelLabel }}</button>
-  <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="handleBtnAction('row-delete')">{{ deleteLabel }}</button>
+  <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="handleBtnAction('row-cancel')">
+    {{ cancelLabel }}
+  </button>
+  <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="handleBtnAction('row-delete')">
+    {{ deleteLabel }}
+  </button>
 </span>
 `,
 };
@@ -1686,96 +1834,115 @@ window.BoFormArea = {
   template: /* html */`
 <div class="bo-form-area">
   <div v-for="(row, ri) in cfRows" :key="ri" class="form-row">
-    <div v-for="col in row" :key="col.key"
-      class="form-group"
-      :style="(col.colSpan && col.colSpan>1 ? ('flex:' + col.colSpan) : '')">
-      <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지) -->
-      <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
-        {{ col.label }}
-        <span v-if="col.required && !readonly" class="req">
-          *
-        </span>
-      </label>
-      <label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" style="visibility:hidden;">
-        ·
-      </label>
-      <!-- readonly 표시 -->
-      <div v-if="col.type === 'readonly'" class="readonly-field">{{ dispVal(col) }}</div>
-      <!-- text / password -->
-      <input v-else-if="col.type === 'text' || col.type === 'password'"
+    <div v-for="col in row" :key="col.key" class="form-group" :style="(col.colSpan && col.colSpan>1 ? ('flex:' + col.colSpan) : '')">
+    <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지) -->
+    <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
+    {{ col.label }}
+    <span v-if="col.required && !readonly" class="req">
+    *
+  </span>
+</label>
+<label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" style="visibility:hidden;">
+·
+</label>
+<!-- readonly 표시 -->
+<div v-if="col.type === 'readonly'" class="readonly-field">
+  {{ dispVal(col) }}
+</div>
+<!-- text / password -->
+<input v-else-if="col.type === 'text' || col.type === 'password'"
         class="form-control" :type="col.type === 'password' ? 'password' : 'text'"
         v-model="form[col.key]" :placeholder="col.placeholder"
         :readonly="readonly || col.readonly"
         :style="(col.mono ? 'font-family:monospace;' : '') + (col.width ? ('width:' + col.width + ';') : '') + (col.readonly ? 'background:#f5f5f5;' : '')"
         :class="errors[col.key] ? 'is-invalid' : ''"
         @input="handleSelectAction('field-change', { col, event: $event })" />
-      <!-- number -->
-      <input v-else-if="col.type === 'number'" class="form-control" type="number"
+<!-- number -->
+<input v-else-if="col.type === 'number'" class="form-control" type="number"
         v-model.number="form[col.key]" :placeholder="col.placeholder"
         :readonly="readonly || col.readonly" :min="col.min" :max="col.max"
         :style="col.readonly ? 'background:#f5f5f5;' : ''"
         :class="errors[col.key] ? 'is-invalid' : ''"
         @input="handleSelectAction('field-change', { col, event: $event })" />
-      <!-- date -->
-      <input v-else-if="col.type === 'date'" class="form-control" type="date"
+<!-- date -->
+<input v-else-if="col.type === 'date'" class="form-control" type="date"
         v-model="form[col.key]" :readonly="readonly"
         :class="errors[col.key] ? 'is-invalid' : ''" @change="handleSelectAction('field-change', { col, event: $event })" />
-      <!-- checkbox (Y/N 토글) -->
-      <label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;">
-        <input type="checkbox"
+<!-- checkbox (Y/N 토글) -->
+<label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;">
+  <input type="checkbox"
           :checked="form[col.key] === (col.checkedValue || 'Y')"
           :disabled="readonly"
           @change="handleSelectAction('field-checkbox-change', { col, event: $event })" />
-        <span>{{ col.checkboxLabel || col.label }}</span>
-      </label>
-      <!-- textarea -->
-      <textarea v-else-if="col.type === 'textarea'" class="form-control"
+  <span>
+    {{ col.checkboxLabel || col.label }}
+  </span>
+</label>
+<!-- textarea -->
+<textarea v-else-if="col.type === 'textarea'" class="form-control"
         v-model="form[col.key]" :placeholder="col.placeholder"
         :readonly="readonly" :rows="col.rows || 3"
         :class="errors[col.key] ? 'is-invalid' : ''"
         @input="handleSelectAction('field-change', { col, event: $event })"></textarea>
-      <!-- select -->
-      <select v-else-if="col.type === 'select'" class="form-control"
+  <!-- select -->
+  <select v-else-if="col.type === 'select'" class="form-control"
         v-model="form[col.key]" :disabled="readonly"
         :class="errors[col.key] ? 'is-invalid' : ''"
         @change="handleSelectAction('field-change', { col, event: $event })">
-        <option v-if="col.nullable !== false && col.nullLabel" value="">
-          {{ col.nullLabel }}
-        </option>
-        <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">{{ o.label }}</option>
-      </select>
-      <!-- pathPick (표시경로 선택 박스) -->
-      <div v-else-if="col.type === 'pathPick'" style="display:flex;align-items:center;gap:8px;">
-        <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
-          {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}
-        </div>
-        <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pathPick-open', { col })">
-          🔍 선택
-        </button>
-        <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="handleBtnAction('form-pathPick-clear', { col })" style="color:#999;">
-          ✕
-        </button>
-      </div>
-      <!-- slot 탈출구 -->
-      <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col" :readonly="readonly"></slot>
-      <!-- 에러 메시지 / 힌트 -->
-      <span v-if="errors[col.key]" class="field-error">{{ errors[col.key] }}</span>
-      <span v-else-if="col.hint" class="form-hint" style="font-size:11px;color:#888;">{{ col.hint }}</span>
-    </div>
+    <option v-if="col.nullable !== false && col.nullLabel" value="">
+    {{ col.nullLabel }}
+  </option>
+  <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">
+    {{ o.label }}
+  </option>
+</select>
+<!-- pathPick (표시경로 선택 박스) -->
+<div v-else-if="col.type === 'pathPick'" style="display:flex;align-items:center;gap:8px;">
+  <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
+    {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}
   </div>
-  <!-- ▼ form-actions 영역 -->
-  <div v-if="showActions" class="form-actions">
-    <slot name="actions-before"></slot>
-    <template v-if="readonly">
-      <button class="btn btn-primary" @click="handleBtnAction('form-edit')">{{ editLabel }}</button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">{{ closeLabel }}</button>
-    </template>
-    <template v-else>
-      <button class="btn btn-primary" @click="handleBtnAction('form-save')">{{ saveLabel }}</button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">{{ cancelLabel }}</button>
-    </template>
-    <slot name="actions-after"></slot>
-  </div>
+  <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pathPick-open', { col })">
+    🔍 선택
+  </button>
+  <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="handleBtnAction('form-pathPick-clear', { col })" style="color:#999;">
+  ✕
+</button>
+</div>
+<!-- slot 탈출구 -->
+<slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col" :readonly="readonly">
+</slot>
+<!-- 에러 메시지 / 힌트 -->
+<span v-if="errors[col.key]" class="field-error">
+  {{ errors[col.key] }}
+</span>
+<span v-else-if="col.hint" class="form-hint" style="font-size:11px;color:#888;">
+  {{ col.hint }}
+</span>
+</div>
+</div>
+<!-- ▼ form-actions 영역 -->
+<div v-if="showActions" class="form-actions">
+  <slot name="actions-before">
+  </slot>
+  <template v-if="readonly">
+    <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+      {{ editLabel }}
+    </button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+      {{ closeLabel }}
+    </button>
+  </template>
+  <template v-else>
+    <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+      {{ saveLabel }}
+    </button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+      {{ cancelLabel }}
+    </button>
+  </template>
+  <slot name="actions-after">
+  </slot>
+</div>
 </div>
 `,
 };

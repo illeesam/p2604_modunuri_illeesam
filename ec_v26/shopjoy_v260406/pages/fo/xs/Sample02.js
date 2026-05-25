@@ -16,6 +16,52 @@ window.XsSample02 = {
       category_opts: ['상의', '하의', '아우터', '원피스', '신발', '가방'],
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample02.js : handleBtnAction -> ', cmd, param);
+      // 조회 (검색)
+      if (cmd === 'search-search') {
+        return onSearch();
+      // 검색 초기화
+      } else if (cmd === 'search-reset') {
+        return onReset();
+      // 행 추가
+      } else if (cmd === 'products-add') {
+        return addRow();
+      // 일괄 저장
+      } else if (cmd === 'products-save') {
+        return handleSave();
+      // 선택 행 삭제
+      } else if (cmd === 'products-delete-checked') {
+        return deleteRows();
+      // 선택 행 취소
+      } else if (cmd === 'products-cancel-checked') {
+        return cancelChecked();
+      // 정렬 변경 알림
+      } else if (cmd === 'products-reorder') {
+        return onReorder();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ Sample02.js : handleSelectAction -> ', cmd, param);
+      // 행 셀 변경
+      if (cmd === 'products-row-cell-change') {
+        return onCellChange(param);
+      // 행 취소
+      } else if (cmd === 'products-row-cancel') {
+        return onRowCancel(param);
+      // 행 삭제
+      } else if (cmd === 'products-row-delete') {
+        return onRowDelete(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -269,53 +315,6 @@ window.XsSample02 = {
     const onRowCancel = (row) => cancelRow(gridRows.indexOf(row));
     /* onRowDelete — 이벤트 */
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ Sample02.js : handleBtnAction -> ', cmd, param);
-      // 조회 (검색)
-      if (cmd === 'search-search') {
-        return onSearch();
-      // 검색 초기화
-      } else if (cmd === 'search-reset') {
-        return onReset();
-      // 행 추가
-      } else if (cmd === 'products-add') {
-        return addRow();
-      // 일괄 저장
-      } else if (cmd === 'products-save') {
-        return handleSave();
-      // 선택 행 삭제
-      } else if (cmd === 'products-delete-checked') {
-        return deleteRows();
-      // 선택 행 취소
-      } else if (cmd === 'products-cancel-checked') {
-        return cancelChecked();
-      // 정렬 변경 알림
-      } else if (cmd === 'products-reorder') {
-        return onReorder();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ Sample02.js : handleSelectAction -> ', cmd, param);
-      // 행 셀 변경
-      if (cmd === 'products-row-cell-change') {
-        return onCellChange(param);
-      // 행 취소
-      } else if (cmd === 'products-row-cancel') {
-        return onRowCancel(param);
-      // 행 삭제
-      } else if (cmd === 'products-row-delete') {
-        return onRowDelete(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ===== return (템플릿 노출) ===============================================
 
     return {

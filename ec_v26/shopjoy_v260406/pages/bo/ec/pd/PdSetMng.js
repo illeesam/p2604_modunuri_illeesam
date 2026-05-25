@@ -24,6 +24,97 @@ window.PdSetMng = {
       use_yn: [],
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdSetMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 세트상품 신규 등록 (인라인 Dtl 열기)
+      } else if (cmd === 'sets-add') {
+        return openNew();
+      // 세트상품 Dtl 저장
+      } else if (cmd === 'detailPanel-save') {
+        return handleSave();
+      // 세트상품 Dtl 닫기
+      } else if (cmd === 'detailPanel-close') {
+        return closeDtl();
+      // 페이지 크기 변경
+      } else if (cmd === 'sets-size-change') {
+        return onSizeChange();
+      // 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      // 카테고리 피커 모달 열기
+      } else if (cmd === 'categoryModal-open') {
+        uiState.catPickerOpen = true;
+        return;
+      // 카테고리 피커 모달 닫기
+      } else if (cmd === 'categoryModal-close') {
+        uiState.catPickerOpen = false;
+        return;
+      // 상품 피커 모달 열기
+      } else if (cmd === 'prodPickModal-open') {
+        return openPicker();
+      // 상품 피커 모달 닫기
+      } else if (cmd === 'prodPickModal-close') {
+        uiState.pickerOpen = false;
+        return;
+      // 상품 피커 검색
+      } else if (cmd === 'prodPickModal-search') {
+        return onPickerSearch();
+      // 비상품 구성품 추가
+      } else if (cmd === 'detailPanel-item-add-blank') {
+        return addItemBlank();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdSetMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 행 클릭 → Dtl 열기
+      if (cmd === 'sets-row-edit') {
+        return openDtl(param);
+      // 그리드 행 삭제
+      } else if (cmd === 'sets-row-delete') {
+        return handleDelete(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'sets-set-page') {
+        return setPage(param);
+      // 카테고리 행 삭제
+      } else if (cmd === 'detailPanel-category-remove') {
+        return removeCategory(param);
+      // 카테고리 행 드래그
+      } else if (cmd === 'detailPanel-category-drag-start') {
+        return onCatDragStart(param);
+      } else if (cmd === 'detailPanel-category-drag-over') {
+        return onCatDragOver(param);
+      } else if (cmd === 'detailPanel-category-drop') {
+        return onCatDrop();
+      // 구성품 행 삭제
+      } else if (cmd === 'detailPanel-item-remove') {
+        return removeItem(param);
+      // 구성품 행 연결해제
+      } else if (cmd === 'detailPanel-item-unlink') {
+        param.itemProdId = null;
+        return;
+      // 카테고리 모달에서 선택
+      } else if (cmd === 'categoryModal-select') {
+        return addCategory(param);
+      // 구성품 피커 모달에서 선택
+      } else if (cmd === 'prodPickModal-add') {
+        return addItemFromProd(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -400,98 +491,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotal
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PdSetMng.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 조회
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화 + 재조회
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 세트상품 신규 등록 (인라인 Dtl 열기)
-      } else if (cmd === 'sets-add') {
-        return openNew();
-      // 세트상품 Dtl 저장
-      } else if (cmd === 'detailPanel-save') {
-        return handleSave();
-      // 세트상품 Dtl 닫기
-      } else if (cmd === 'detailPanel-close') {
-        return closeDtl();
-      // 페이지 크기 변경
-      } else if (cmd === 'sets-size-change') {
-        return onSizeChange();
-      // 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
-      // 카테고리 피커 모달 열기
-      } else if (cmd === 'categoryModal-open') {
-        uiState.catPickerOpen = true;
-        return;
-      // 카테고리 피커 모달 닫기
-      } else if (cmd === 'categoryModal-close') {
-        uiState.catPickerOpen = false;
-        return;
-      // 상품 피커 모달 열기
-      } else if (cmd === 'prodPickModal-open') {
-        return openPicker();
-      // 상품 피커 모달 닫기
-      } else if (cmd === 'prodPickModal-close') {
-        uiState.pickerOpen = false;
-        return;
-      // 상품 피커 검색
-      } else if (cmd === 'prodPickModal-search') {
-        return onPickerSearch();
-      // 비상품 구성품 추가
-      } else if (cmd === 'detailPanel-item-add-blank') {
-        return addItemBlank();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PdSetMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 행 클릭 → Dtl 열기
-      if (cmd === 'sets-row-edit') {
-        return openDtl(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'sets-row-delete') {
-        return handleDelete(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'sets-set-page') {
-        return setPage(param);
-      // 카테고리 행 삭제
-      } else if (cmd === 'detailPanel-category-remove') {
-        return removeCategory(param);
-      // 카테고리 행 드래그
-      } else if (cmd === 'detailPanel-category-drag-start') {
-        return onCatDragStart(param);
-      } else if (cmd === 'detailPanel-category-drag-over') {
-        return onCatDragOver(param);
-      } else if (cmd === 'detailPanel-category-drop') {
-        return onCatDrop();
-      // 구성품 행 삭제
-      } else if (cmd === 'detailPanel-item-remove') {
-        return removeItem(param);
-      // 구성품 행 연결해제
-      } else if (cmd === 'detailPanel-item-unlink') {
-        param.itemProdId = null;
-        return;
-      // 카테고리 모달에서 선택
-      } else if (cmd === 'categoryModal-select') {
-        return addCategory(param);
-      // 구성품 피커 모달에서 선택
-      } else if (cmd === 'prodPickModal-add') {
-        return addItemFromProd(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
         // --- [컬럼 정의] ---

@@ -165,10 +165,16 @@ window.BoPathTree = {
   template: /* html */`
 <div>
   <div style="display:flex;gap:4px;margin-bottom:8px;">
-    <button class="btn btn-sm" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">▼ 전체펼치기</button>
-    <button class="btn btn-sm" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">▶ 전체닫기</button>
+    <button class="btn btn-sm" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">
+      ▼ 전체펼치기
+    </button>
+    <button class="btn btn-sm" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">
+      ▶ 전체닫기
+    </button>
   </div>
-  <div v-if="loading" style="font-size:11px;color:#aaa;padding:8px;text-align:center;">로딩중...</div>
+  <div v-if="loading" style="font-size:11px;color:#aaa;padding:8px;text-align:center;">
+    로딩중...
+  </div>
   <bo-path-tree-node v-else
     :node="tree" :expanded="expanded" :selected="selected"
     :on-toggle="toggleNode" :on-select="selectNode"
@@ -236,20 +242,23 @@ window.BoPathTreeNode = {
       @click.stop="handleBtnAction('node-toggle', node.pathId)">
       {{ expanded.has(node.pathId) ? '▼' : '▶' }}
     </span>
-    <span v-else style="width:14px;flex-shrink:0"></span>
-    <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ node.pathLabel || '(이름없음)' }}</span>
+    <span v-else style="width:14px;flex-shrink:0">
+    </span>
+    <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+      {{ node.pathLabel || '(이름없음)' }}
+    </span>
     <span v-if="showBizCd && node.bizCd" style="font-size:9px;color:#aaa;font-family:monospace;flex-shrink:0;margin-left:2px;">
-      #{{ node.bizCd }}
-    </span>
-    <span v-if="node.count != null" style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:8px;flex-shrink:0;">
-      {{ node.count }}
-    </span>
-  </div>
-  <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
-    <bo-path-tree-node v-for="ch in node.children" :key="ch.pathId"
+    #{{ node.bizCd }}
+  </span>
+  <span v-if="node.count != null" style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:8px;flex-shrink:0;">
+    {{ node.count }}
+  </span>
+</div>
+<div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
+<bo-path-tree-node v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" :show-biz-cd="showBizCd" />
-  </div>
+</div>
 </div>
 `,
 };
@@ -416,11 +425,17 @@ window.BoCategoryTree = {
   },
   template: /* html */`
 <template v-if="mode==='tree'">
-  <div v-if="loading" style="font-size:11px;color:#aaa;padding:12px;text-align:center;">로딩중...</div>
+  <div v-if="loading" style="font-size:11px;color:#aaa;padding:12px;text-align:center;">
+    로딩중...
+  </div>
   <template v-else>
     <div style="display:flex;gap:4px;margin-bottom:8px">
-      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">▼ 전체</button>
-      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">▶ 닫기</button>
+      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">
+        ▼ 전체
+      </button>
+      <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">
+        ▶ 닫기
+      </button>
     </div>
     <!-- 전체 루트 항목 -->
     <div style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;margin-bottom:2px"
@@ -429,9 +444,14 @@ window.BoCategoryTree = {
       fontWeight: selected===null ? 700 : 500,
       borderLeft: selected===null ? '3px solid #e8587a' : '3px solid transparent' }"
       @click="handleSelectAction('tree-node-select', null)">
-      <span style="width:14px;flex-shrink:0"></span>
-      <span style="font-size:11px;font-weight:700;color:#e8587a;margin-right:4px">★</span>
-      <span style="font-size:12px">전체</span>
+      <span style="width:14px;flex-shrink:0">
+      </span>
+      <span style="font-size:11px;font-weight:700;color:#e8587a;margin-right:4px">
+        ★
+      </span>
+      <span style="font-size:12px">
+        전체
+      </span>
     </div>
     <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
       style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
@@ -446,26 +466,36 @@ window.BoCategoryTree = {
         @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
         {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
       </span>
-      <span v-else style="width:14px;flex-shrink:0"></span>
+      <span v-else style="width:14px;flex-shrink:0">
+      </span>
       <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">
         {{ DEPTH_BULLET(cat._depth) }}
       </span>
-      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
-      <span v-if="showCount && showCount(cat.categoryId) > 0"
-        style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
-        {{ showCount(cat.categoryId) }}
+      <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        {{ cat.categoryNm }}
       </span>
-      <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
-    </div>
-    <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
-  </template>
+      <span v-if="showCount && showCount(cat.categoryId) > 0" style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
+      {{ showCount(cat.categoryId) }}
+    </span>
+    <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">
+      (비활성)
+    </span>
+  </div>
+  <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">
+    카테고리 없음
+  </div>
+</template>
 </template>
 <teleport v-else-if="mode==='picker'" to="body">
   <div v-if="show" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center;" @click.self="handleBtnAction('picker-close')">
     <div style="background:#fff;border-radius:12px;width:420px;max-height:520px;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
       <div style="padding:16px 20px 12px;border-bottom:1px solid #f0f0f0;background:linear-gradient(135deg,#fff0f4,#ffe4ec);border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-weight:700;font-size:15px;">카테고리 선택</span>
-        <button type="button" @click="handleBtnAction('picker-close')" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888;">✕</button>
+        <span style="font-weight:700;font-size:15px;">
+          카테고리 선택
+        </span>
+        <button type="button" @click="handleBtnAction('picker-close')" style="border:none;background:none;font-size:18px;cursor:pointer;color:#888;">
+          ✕
+        </button>
       </div>
       <div style="padding:8px 12px;">
         <input class="form-control" v-model="pickerSearch" placeholder="카테고리 검색..." style="font-size:13px;" />
@@ -473,55 +503,61 @@ window.BoCategoryTree = {
       <div style="overflow-y:auto;flex:1;padding:4px 8px 12px;">
         <!-- 검색어 없음: 트리 뷰 -->
         <template v-if="!pickerSearch.trim()">
-          <div v-if="loading" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">로딩중...</div>
+          <div v-if="loading" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">
+            로딩중...
+          </div>
           <template v-else>
             <div style="display:flex;gap:4px;margin:0 4px 6px">
-              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">▼ 전체</button>
-              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">▶ 닫기</button>
+              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">
+                ▼ 전체
+              </button>
+              <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">
+                ▶ 닫기
+              </button>
             </div>
-            <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
-              style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
-              :style="{ paddingLeft:(cat._depth*14+6)+'px',
-              opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
-              pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
-              @mouseover="$event.currentTarget.style.background='#fce4ec'"
-              @mouseout="$event.currentTarget.style.background=''"
-              @click="handleSelectAction('picker-select', cat)">
-              <span v-if="cat._hasChildren"
+            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }" @mouseover="$event.currentTarget.style.background='#fce4ec'" @mouseout="$event.currentTarget.style.background=''" @click="handleSelectAction('picker-select', cat)">
+            <span v-if="cat._hasChildren"
                 style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
                 @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
-                {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
-              </span>
-              <span v-else style="width:14px;flex-shrink:0"></span>
-              <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">
-                {{ DEPTH_BULLET(cat._depth) }}
-              </span>
-              <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ cat.categoryNm }}</span>
-              <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">(비활성)</span>
-            </div>
-            <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">카테고리 없음</div>
-          </template>
-        </template>
-        <!-- 검색어 있음: flat 필터 목록 -->
-        <template v-else>
-          <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">검색 결과 없음</div>
-          <div v-for="cat in cfPickerList" :key="cat.categoryId"
-            @click="handleSelectAction('picker-select', cat)"
-            style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;"
-            :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1,
-            pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }"
-            @mouseover="$event.currentTarget.style.background='#fce4ec'"
-            @mouseout="$event.currentTarget.style.background=''">
-            <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">
-              {{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}
+              {{ expandedSet.has(cat.categoryId) ? '▼' : '▶' }}
             </span>
-            <span style="font-size:12px">{{ cat.categoryNm }}</span>
-            <span style="font-size:10px;color:#bbb;margin-left:auto">{{ ['','대','중','소'][cat.categoryDepth||1]||'' }}</span>
+            <span v-else style="width:14px;flex-shrink:0">
+            </span>
+            <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR(cat._depth), marginRight:'4px' }">
+              {{ DEPTH_BULLET(cat._depth) }}
+            </span>
+            <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              {{ cat.categoryNm }}
+            </span>
+            <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">
+              (비활성)
+            </span>
+          </div>
+          <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">
+            카테고리 없음
           </div>
         </template>
+      </template>
+      <!-- 검색어 있음: flat 필터 목록 -->
+      <template v-else>
+        <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">
+          검색 결과 없음
+        </div>
+        <div v-for="cat in cfPickerList" :key="cat.categoryId" @click="handleSelectAction('picker-select', cat)" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;" :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }" @mouseover="$event.currentTarget.style.background='#fce4ec'" @mouseout="$event.currentTarget.style.background=''">
+        <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">
+          {{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}
+        </span>
+        <span style="font-size:12px">
+          {{ cat.categoryNm }}
+        </span>
+        <span style="font-size:10px;color:#bbb;margin-left:auto">
+          {{ ['','대','중','소'][cat.categoryDepth||1]||'' }}
+        </span>
       </div>
-    </div>
+    </template>
   </div>
+</div>
+</div>
 </teleport>
 `,
 };
@@ -543,17 +579,30 @@ window.BoPager = {
   },
   template: /* html */`
 <div v-if="pager" class="pagination">
-  <div></div>
+  <div>
+  </div>
   <div class="pager">
-    <button :disabled="pager.pageNo===1" @click="onSetPage(1)">«</button>
-    <button :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">‹</button>
-    <button v-for="n in (pager.pageNums||[])" :key="n" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">{{ n }}</button>
-    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">›</button>
-    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">»</button>
+    <button :disabled="pager.pageNo===1" @click="onSetPage(1)">
+      «
+    </button>
+    <button :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">
+      ‹
+    </button>
+    <button v-for="n in (pager.pageNums||[])" :key="n" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">
+      {{ n }}
+    </button>
+    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">
+      ›
+    </button>
+    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">
+      »
+    </button>
   </div>
   <div class="pager-right">
     <select class="size-select" v-model.number="pager.pageSize" @change="onSizeChange">
-      <option v-for="s in (pager.pageSizes||[])" :key="s" :value="s">{{ s }}개</option>
+      <option v-for="s in (pager.pageSizes||[])" :key="s" :value="s">
+        {{ s }}개
+      </option>
     </select>
   </div>
 </div>
@@ -575,13 +624,16 @@ window.BoPathParentSelector = {
       @click.stop="onToggle(node.pathId)">
       {{ expanded.has(node.pathId) ? '▼' : '▶' }}
     </span>
-    <span v-else style="width:16px"></span>
-    <span style="flex:1;font-size:13px;">{{ node.pathLabel || '(이름없음)' }}</span>
+    <span v-else style="width:16px">
+    </span>
+    <span style="flex:1;font-size:13px;">
+      {{ node.pathLabel || '(이름없음)' }}
+    </span>
   </div>
   <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
-    <bo-path-parent-selector v-for="ch in node.children" :key="ch.pathId"
+  <bo-path-parent-selector v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
-  </div>
+</div>
 </div>
 `,
 };
@@ -746,20 +798,26 @@ window.BoMultiCheckSelect = {
   <div @click="handleBtnAction('select-toggle')"
     :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
     {{ cfDisplay }}
-    <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">▼</span>
+    <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">
+      ▼
+    </span>
   </div>
   <div v-if="open"
     style="position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:280px;max-height:280px;overflow-y:auto;background:#fff;border:1px solid #d4d4d8;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:1000;padding:4px 0;">
     <label v-if="showAll" style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-weight:600;white-space:nowrap;">
       <input type="checkbox" :checked="cfIsAll" @change="handleBtnAction('select-click-all')" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
-      <span style="white-space:nowrap;">{{ allLabel }}</span>
+      <span style="white-space:nowrap;">
+        {{ allLabel }}
+      </span>
     </label>
     <label v-for="o in cfNorm" :key="o.value"
       style="display:flex;align-items:center;gap:7px;padding:5px 12px;font-size:13px;cursor:pointer;white-space:nowrap;"
       @mouseenter="$event.currentTarget.style.background='#f9fafb'"
       @mouseleave="$event.currentTarget.style.background='transparent'">
       <input type="checkbox" :checked="cfSelected.has(o.value)" @change="handleSelectAction('select-click-option', o.value)" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
-      <span style="white-space:nowrap;">{{ o.label }}</span>
+      <span style="white-space:nowrap;">
+        {{ o.label }}
+      </span>
     </label>
   </div>
 </div>
@@ -902,18 +960,15 @@ window.BoDateTimePicker = {
   <input type="time" :class="inputClass" :value="cfParts.time"
     :disabled="readonly" @change="handleSelectAction('picker-time-change', $event)"
     :style="cfBaseStyle+'width:'+timeWidth+';margin:0;flex-shrink:0;'" />
-  <span v-if="placeholderDate && !cfParts.date && !cfParts.time"
-    style="font-size:11px;color:#aaa;white-space:nowrap;">
-    {{ placeholderDate }}
-  </span>
-  <button v-if="showNow && !readonly" type="button" @click="handleBtnAction('picker-now')"
-    style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
-    🕐 현재
-  </button>
-  <button v-if="showClear && !readonly && (cfParts.date || cfParts.time)" type="button" @click="handleBtnAction('picker-clear')"
-    style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
-    ✕ 지움
-  </button>
+  <span v-if="placeholderDate && !cfParts.date && !cfParts.time" style="font-size:11px;color:#aaa;white-space:nowrap;">
+  {{ placeholderDate }}
+</span>
+<button v-if="showNow && !readonly" type="button" @click="handleBtnAction('picker-now')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
+🕐 현재
+</button>
+<button v-if="showClear && !readonly && (cfParts.date || cfParts.time)" type="button" @click="handleBtnAction('picker-clear')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
+✕ 지움
+</button>
 </div>
 `,
 };
@@ -1006,7 +1061,9 @@ window.BoPathPickField = {
     color: cfHasVal ? '#374151' : '#9ca3af',
     fontWeight: cfHasVal ? 600 : 400,
     display:'flex',alignItems:'center',gap:'6px'}">
-    <span style="flex:1;">{{ cfLabel || placeholder }}</span>
+    <span style="flex:1;">
+      {{ cfLabel || placeholder }}
+    </span>
     <button type="button" :disabled="disabled"
       @click.stop="handleBtnAction('pathPick-open')" @dblclick.stop="handleBtnAction('pathPick-open')"
       :title="modalTitle"
@@ -1076,28 +1133,32 @@ window.BoPropTreeNode = {
     fontWeight: selected===node.path ? 700 : 400}"
     @mouseover="handleSelectAction('node-hover', $event)"
     @mouseout="handleSelectAction('node-leave', $event)">
-    <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;"
-      @click.stop="handleBtnAction('node-toggle', node.path)">
-      {{ expanded.has(node.path) ? '▼' : '▶' }}
-    </span>
-    <span v-else style="width:14px;"></span>
-    <span style="font-size:13px;flex:1;" @click="handleSelectAction('node-select', node.path)">{{ node.name || '전체' }}</span>
-    <span v-if="node._badge"
+    <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;" @click.stop="handleBtnAction('node-toggle', node.path)">
+    {{ expanded.has(node.path) ? '▼' : '▶' }}
+  </span>
+  <span v-else style="width:14px;">
+  </span>
+  <span style="font-size:13px;flex:1;" @click="handleSelectAction('node-select', node.path)">
+    {{ node.name || '전체' }}
+  </span>
+  <span v-if="node._badge"
       :style="{fontSize:'9px',padding:'1px 5px',borderRadius:'7px',color:'#fff',fontWeight:700,background:node._badge[1]}">
-      {{ node._badge[0] }}
-    </span>
-    <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">{{ node.count }}</span>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="expanded.has(node.path) && node.children.length>0">
-    <bo-prop-tree-node v-for="ch in node.children" :key="ch.path"
+    {{ node._badge[0] }}
+  </span>
+  <span style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 6px;border-radius:8px;">
+    {{ node.count }}
+  </span>
+</div>
+<!-- ===== □. 영역 ====================================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<div v-if="expanded.has(node.path) && node.children.length>0">
+<bo-prop-tree-node v-for="ch in node.children" :key="ch.path"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
-  </div>
 </div>
-
-  <!-- ===== □. 조건부 영역 ================================================== -->`,
+</div>
+<!-- ===== □. 조건부 영역 ================================================== -->
+`,
 };
 
 /* -- BoDeptTreeNode — 부서관리(SyDeptMng) 트리 노드 재귀 컴포넌트 -- */
@@ -1146,22 +1207,23 @@ window.BoDeptTreeNode = {
     fontWeight: selected === node.deptId ? '600' : 'normal',
     color: selected === node.deptId ? '#e8587a' : '#333' }"
     @click.stop="handleSelectAction('node-select', node.deptId)">
-    <span v-if="node.children && node.children.length"
-      @click.stop="handleBtnAction('node-toggle', node.deptId)"
-      style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
-      {{ expanded.has(node.deptId) ? '▼' : '▶' }}
-    </span>
-    <span v-else style="margin-right:4px;width:14px;flex-shrink:0;"></span>
-    <span style="font-size:13px;">{{ node.deptNm }}</span>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <template v-if="node.children && node.children.length && expanded.has(node.deptId)">
-    <bo-dept-tree-node v-for="child in node.children" :key="child.deptId"
+    <span v-if="node.children && node.children.length" @click.stop="handleBtnAction('node-toggle', node.deptId)" style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
+    {{ expanded.has(node.deptId) ? '▼' : '▶' }}
+  </span>
+  <span v-else style="margin-right:4px;width:14px;flex-shrink:0;">
+  </span>
+  <span style="font-size:13px;">
+    {{ node.deptNm }}
+  </span>
+</div>
+<!-- ===== □. 영역 ====================================================== -->
+<!-- ===== ■. 조건부 영역 ================================================== -->
+<template v-if="node.children && node.children.length && expanded.has(node.deptId)">
+<bo-dept-tree-node v-for="child in node.children" :key="child.deptId"
       :node="child" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" />
-  </template>
+</template>
 </div>
-
-  <!-- ===== □. 조건부 영역 ================================================== -->`
+<!-- ===== □. 조건부 영역 ================================================== -->
+`
 };

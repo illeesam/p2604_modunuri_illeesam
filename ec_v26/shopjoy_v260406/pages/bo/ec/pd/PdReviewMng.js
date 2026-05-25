@@ -23,6 +23,72 @@ window.PdReviewMng = {
     });
 
     /* 상품 리뷰 fnLoadCodes */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdReviewMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 페이지 크기 변경
+      } else if (cmd === 'reviews-size-change') {
+        return onSizeChange();
+      // 상세 패널 닫기
+      } else if (cmd === 'detailPanel-close') {
+        selectedId.value = null;
+        return;
+      // 상품별 리뷰 목록 닫기 (선택 해제)
+      } else if (cmd === 'prodReviews-close') {
+        return onProdIdClick(selectedProdId.value);
+      // 상품별 리뷰 페이지 크기 변경
+      } else if (cmd === 'prodReviews-size-change') {
+        return onProdReviewSizeChange();
+      // 상태변경 모달 닫기 (취소)
+      } else if (cmd === 'statusModal-close') {
+        return closeStatusModal();
+      // 상태변경 모달 저장
+      } else if (cmd === 'statusModal-confirm') {
+        return confirmStatusChange();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdReviewMng.js : handleSelectAction -> ', cmd, param);
+      // 그리드 정렬 헤더 클릭
+      if (cmd === 'reviews-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'reviews-set-page') {
+        return setPage(param);
+      // 그리드 행 클릭 (상세 토글)
+      } else if (cmd === 'reviews-row-edit') {
+        return openDetail(param);
+      // 그리드 행 미리보기 (새창)
+      } else if (cmd === 'reviews-row-preview') {
+        return previewProduct(param);
+      // 상태변경 select intercept
+      } else if (cmd === 'reviews-row-status-change') {
+        return onStatusSelectChange(param.row, param.evt);
+      // 상품ID 클릭 → 하단 상품별 리뷰 목록 토글
+      } else if (cmd === 'reviews-row-prod-click') {
+        return onProdIdClick(param);
+      // 상품별 리뷰 페이지 번호 클릭
+      } else if (cmd === 'prodReviews-set-page') {
+        return setProdReviewPage(param);
+      // 상품별 리뷰 행 클릭 (상세 토글)
+      } else if (cmd === 'prodReviews-row-edit') {
+        return openDetail(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -267,72 +333,6 @@ window.PdReviewMng = {
 
     /* starStr — 별점 문자열 */
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PdReviewMng.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 조회
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화 + 재조회
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 페이지 크기 변경
-      } else if (cmd === 'reviews-size-change') {
-        return onSizeChange();
-      // 상세 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
-        selectedId.value = null;
-        return;
-      // 상품별 리뷰 목록 닫기 (선택 해제)
-      } else if (cmd === 'prodReviews-close') {
-        return onProdIdClick(selectedProdId.value);
-      // 상품별 리뷰 페이지 크기 변경
-      } else if (cmd === 'prodReviews-size-change') {
-        return onProdReviewSizeChange();
-      // 상태변경 모달 닫기 (취소)
-      } else if (cmd === 'statusModal-close') {
-        return closeStatusModal();
-      // 상태변경 모달 저장
-      } else if (cmd === 'statusModal-confirm') {
-        return confirmStatusChange();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PdReviewMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'reviews-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'reviews-set-page') {
-        return setPage(param);
-      // 그리드 행 클릭 (상세 토글)
-      } else if (cmd === 'reviews-row-edit') {
-        return openDetail(param);
-      // 그리드 행 미리보기 (새창)
-      } else if (cmd === 'reviews-row-preview') {
-        return previewProduct(param);
-      // 상태변경 select intercept
-      } else if (cmd === 'reviews-row-status-change') {
-        return onStatusSelectChange(param.row, param.evt);
-      // 상품ID 클릭 → 하단 상품별 리뷰 목록 토글
-      } else if (cmd === 'reviews-row-prod-click') {
-        return onProdIdClick(param);
-      // 상품별 리뷰 페이지 번호 클릭
-      } else if (cmd === 'prodReviews-set-page') {
-        return setProdReviewPage(param);
-      // 상품별 리뷰 행 클릭 (상세 토글)
-      } else if (cmd === 'prodReviews-row-edit') {
-        return openDetail(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
         // --- [컬럼 정의] ---
         const baseSearchColumns = [

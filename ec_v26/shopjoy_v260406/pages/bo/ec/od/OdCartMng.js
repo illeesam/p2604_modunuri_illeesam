@@ -20,11 +20,6 @@ window.OdCartMng = {
     const codes = reactive({ sites: [], cart_date_types: [] });
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
-    const searchParam = reactive(_initSearchParam());
-
-    /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
-    const memberPick = reactive({ open: false });                              // 회원 선택 모달 상태
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -96,6 +91,11 @@ window.OdCartMng = {
       }
     };
 
+    const _initSearchParam = () => ({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
+    const searchParam = reactive(_initSearchParam());
+
+    /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
+    const memberPick = reactive({ open: false });                              // 회원 선택 모달 상태
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnCheckedBadgeCls — 선택 여부 배지 클래스 */

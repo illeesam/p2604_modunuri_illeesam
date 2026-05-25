@@ -14,6 +14,49 @@ window.MyClaim = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MyClaim.js : handleBtnAction -> ', cmd, param);
+      // 클레임 유형 필터 변경 (전체/취소/반품/교환)
+      if (cmd === 'claims-set-filter') {
+        claimFilter.value = param;
+        claimStatusFilter.splice(0);
+        pager.page = 1;
+      // 상태 필터 초기화
+      } else if (cmd === 'claims-status-reset') {
+        claimStatusFilter.splice(0);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MyClaim.js : handleSelectAction -> ', cmd, param);
+      // 클레임 상태 토글
+      if (cmd === 'claims-status-toggle') {
+        toggleClaimStatus(param);
+        pager.page = 1;
+      // 클레임 신청 취소
+      } else if (cmd === 'claims-cancel') {
+        return cancelClaim(param);
+      // 주문 모달 열기
+      } else if (cmd === 'claims-order-open') {
+        return openOrderModal(param);
+      // 주문자 모달 열기
+      } else if (cmd === 'claims-customer-open') {
+        return openCustomerModal(param);
+      // 상품 모달 열기
+      } else if (cmd === 'claims-prod-open') {
+        return openProdModal(param);
+      // 배송 추적 (작은 버튼)
+      } else if (cmd === 'claims-track') {
+        return openTracking2(param.courier, param.trackingNo);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -112,50 +155,6 @@ window.MyClaim = {
       if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ MyClaim.js : handleBtnAction -> ', cmd, param);
-      // 클레임 유형 필터 변경 (전체/취소/반품/교환)
-      if (cmd === 'claims-set-filter') {
-        claimFilter.value = param;
-        claimStatusFilter.splice(0);
-        pager.page = 1;
-      // 상태 필터 초기화
-      } else if (cmd === 'claims-status-reset') {
-        claimStatusFilter.splice(0);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ MyClaim.js : handleSelectAction -> ', cmd, param);
-      // 클레임 상태 토글
-      if (cmd === 'claims-status-toggle') {
-        toggleClaimStatus(param);
-        pager.page = 1;
-      // 클레임 신청 취소
-      } else if (cmd === 'claims-cancel') {
-        return cancelClaim(param);
-      // 주문 모달 열기
-      } else if (cmd === 'claims-order-open') {
-        return openOrderModal(param);
-      // 주문자 모달 열기
-      } else if (cmd === 'claims-customer-open') {
-        return openCustomerModal(param);
-      // 상품 모달 열기
-      } else if (cmd === 'claims-prod-open') {
-        return openProdModal(param);
-      // 배송 추적 (작은 버튼)
-      } else if (cmd === 'claims-track') {
-        return openTracking2(param.courier, param.trackingNo);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

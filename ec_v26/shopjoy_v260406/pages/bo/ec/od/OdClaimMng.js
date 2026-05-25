@@ -21,33 +21,6 @@ window.OdClaimMng = {
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', memberId: '', memberNm: '', type: '', status: '', dateType: 'request_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* 하단 상세 (인라인 Dtl) */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
-
-    /* 일괄선택 */
-    const checked = reactive(new Set());
-
-    const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
-
-    /* 변경작업 모달 (actionsModal) */
-    const bulkForm = reactive({
-      statusByType: { '취소':'', '반품':'', '교환':'' }, type: '',
-      apprAction:'', apprComment:'',
-      apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
-      reqTarget:'추가결재', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
-    });
-
-    /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
-    const memberPick = reactive({ open: false });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -161,6 +134,33 @@ window.OdClaimMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', memberId: '', memberNm: '', type: '', status: '', dateType: 'request_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 하단 상세 (인라인 Dtl) */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 일괄선택 */
+    const checked = reactive(new Set());
+
+    const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
+
+    /* 변경작업 모달 (actionsModal) */
+    const bulkForm = reactive({
+      statusByType: { '취소':'', '반품':'', '교환':'' }, type: '',
+      apprAction:'', apprComment:'',
+      apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
+      reqTarget:'추가결재', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
+    });
+
+    /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
+    const memberPick = reactive({ open: false });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* getSortParam — 조회 */

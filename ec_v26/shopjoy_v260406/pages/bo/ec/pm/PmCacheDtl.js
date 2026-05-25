@@ -15,6 +15,64 @@ window.PmCacheDtl = {
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmCacheDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 취소 (목록으로)
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('pmCacheMng');
+      // 폼 닫기 (목록으로)
+      } else if (cmd === 'form-close') {
+        return props.navigate('pmCacheMng');
+      // 상세 보기 → 편집 모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 탭 전환
+      } else if (cmd === 'tab-select') {
+        uiState.tab = param;
+        return;
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode2 = param;
+        return;
+      // 판매업체 모달 열기
+      } else if (cmd === 'vendorModal-open') {
+        uiState.showVendorModal = true;
+        return;
+      // 판매업체 모달 닫기
+      } else if (cmd === 'vendorModal-close') {
+        uiState.showVendorModal = false;
+        return;
+      // 판매업체 초기화
+      } else if (cmd === 'form-vendor-clear') {
+        form.vendorId = '';
+        form.chargeStaff = '';
+        return;
+      // 회원ID 변경
+      } else if (cmd === 'form-member-change') {
+        return onUserIdChange();
+      // 회원 참조 모달 열기
+      } else if (cmd === 'form-member-ref') {
+        return showRefModal('member', Number(form.memberId));
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmCacheDtl.js : handleSelectAction -> ', cmd, param);
+      // 판매업체 선택
+      if (cmd === 'vendorModal-select') {
+        return selectVendor(param.vendorId, param.vendorNm);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== Vue Composition API / boApp 전역 의존 ===========================
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
@@ -89,65 +147,6 @@ window.PmCacheDtl = {
       memberId: yup.string().required('회원ID를 입력해주세요.'),
       cacheDesc: yup.string().required('내용을 입력해주세요.'),
     });
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PmCacheDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장
-      if (cmd === 'form-save') {
-        return handleSave();
-      // 폼 취소 (목록으로)
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('pmCacheMng');
-      // 폼 닫기 (목록으로)
-      } else if (cmd === 'form-close') {
-        return props.navigate('pmCacheMng');
-      // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
-        return props.navigate('__switchToEdit__');
-      // 탭 전환
-      } else if (cmd === 'tab-select') {
-        uiState.tab = param;
-        return;
-      // 뷰모드 변경
-      } else if (cmd === 'tab-mode') {
-        uiState.tabMode2 = param;
-        return;
-      // 판매업체 모달 열기
-      } else if (cmd === 'vendorModal-open') {
-        uiState.showVendorModal = true;
-        return;
-      // 판매업체 모달 닫기
-      } else if (cmd === 'vendorModal-close') {
-        uiState.showVendorModal = false;
-        return;
-      // 판매업체 초기화
-      } else if (cmd === 'form-vendor-clear') {
-        form.vendorId = '';
-        form.chargeStaff = '';
-        return;
-      // 회원ID 변경
-      } else if (cmd === 'form-member-change') {
-        return onUserIdChange();
-      // 회원 참조 모달 열기
-      } else if (cmd === 'form-member-ref') {
-        return showRefModal('member', Number(form.memberId));
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PmCacheDtl.js : handleSelectAction -> ', cmd, param);
-      // 판매업체 선택
-      if (cmd === 'vendorModal-select') {
-        return selectVendor(param.vendorId, param.vendorNm);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ===== 라이프사이클 / 부모 reloadTrigger 동기화 =========================
     // ★ onMounted
     onMounted(() => {

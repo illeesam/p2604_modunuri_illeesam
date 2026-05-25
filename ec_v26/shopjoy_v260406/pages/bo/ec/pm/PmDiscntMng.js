@@ -8,44 +8,6 @@ window.PmDiscntMng = {
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
-    // ===== Vue Composition API / boApp 전역 의존 ===========================
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-
-    // ===== 상태(reactive) 선언 =============================================
-    const discounts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
-    const codes = reactive({
-      discount_types: [],
-      discount_statuses: [],
-      discnt_types: [],
-      promo_statuses: [],
-      date_range_opts: [],
-    });
-
-    // ===== 공통코드 로딩 ===================================================
-    /* 할인 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.discount_types = codeStore.sgGetGrpCodes('DISCOUNT_TYPE');
-        codes.discount_statuses = codeStore.sgGetGrpCodes('DISCOUNT_STATUS');
-        codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE_KR');
-        codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmDiscntMng.js : handleBtnAction -> ', cmd, param);
@@ -103,6 +65,43 @@ window.PmDiscntMng = {
       }
     };
 
+    // ===== Vue Composition API / boApp 전역 의존 ===========================
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+
+    // ===== 상태(reactive) 선언 =============================================
+    const discounts = reactive([]);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const codes = reactive({
+      discount_types: [],
+      discount_statuses: [],
+      discnt_types: [],
+      promo_statuses: [],
+      date_range_opts: [],
+    });
+
+    // ===== 공통코드 로딩 ===================================================
+    /* 할인 fnLoadCodes */
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.discount_types = codeStore.sgGetGrpCodes('DISCOUNT_TYPE');
+        codes.discount_statuses = codeStore.sgGetGrpCodes('DISCOUNT_STATUS');
+        codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE_KR');
+        codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     // ===== 정렬 처리 =======================================================
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'discntNm asc', desc: 'discntNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };

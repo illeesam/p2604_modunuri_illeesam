@@ -14,6 +14,46 @@ window.XsLocalStorage = {
     const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
     const codes = reactive({});
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ XsLocalStorage.js : handleBtnAction -> ', cmd, param);
+      // 목록 새로고침
+      if (cmd === 'lsItems-reload') {
+        return loadStorageData();
+      // 전체 삭제
+      } else if (cmd === 'lsItems-clear-all') {
+        return clearAllStorage();
+      // 편집 취소
+      } else if (cmd === 'lsItems-edit-cancel') {
+        return cancelEdit();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ XsLocalStorage.js : handleSelectAction -> ', cmd, param);
+      // 값 복사
+      if (cmd === 'lsItems-row-copy') {
+        return copyValue(param);
+      // 편집 시작 ({ key, value })
+      } else if (cmd === 'lsItems-row-edit') {
+        return startEdit(param.key, param.value);
+      // 편집 저장
+      } else if (cmd === 'lsItems-row-save') {
+        return saveEdit(param);
+      // 행 삭제
+      } else if (cmd === 'lsItems-row-delete') {
+        return handleDelete(param);
+      // 리사이즈 시작
+      } else if (cmd === 'lsItems-resize') {
+        return startResize(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -140,47 +180,6 @@ window.XsLocalStorage = {
     const stopResize = () => {
       uiState.isResizing = false;
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ XsLocalStorage.js : handleBtnAction -> ', cmd, param);
-      // 목록 새로고침
-      if (cmd === 'lsItems-reload') {
-        return loadStorageData();
-      // 전체 삭제
-      } else if (cmd === 'lsItems-clear-all') {
-        return clearAllStorage();
-      // 편집 취소
-      } else if (cmd === 'lsItems-edit-cancel') {
-        return cancelEdit();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ XsLocalStorage.js : handleSelectAction -> ', cmd, param);
-      // 값 복사
-      if (cmd === 'lsItems-row-copy') {
-        return copyValue(param);
-      // 편집 시작 ({ key, value })
-      } else if (cmd === 'lsItems-row-edit') {
-        return startEdit(param.key, param.value);
-      // 편집 저장
-      } else if (cmd === 'lsItems-row-save') {
-        return saveEdit(param);
-      // 행 삭제
-      } else if (cmd === 'lsItems-row-delete') {
-        return handleDelete(param);
-      // 리사이즈 시작
-      } else if (cmd === 'lsItems-resize') {
-        return startResize(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }

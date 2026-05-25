@@ -31,6 +31,39 @@ window.PdProdDtl = {
     const grpCodes = reactive({ product_statuses: [], prod_types: [], prod_plan_statuses: [], opt_stock_statuses: [], stock_filter_opts: [{value:'in',label:'재고있음'},{value:'out',label:'품절(0)'}] });
 
     /* 상품 fnLoadCodes */
+
+    /* handleBtnAction — 상위 레벨 버튼 액션 dispatch (탭 / 저장 / 취소 / 미리보기 등).
+     * 자식 컴포넌트 콜백 / SKU / 카테고리 매핑 / Quill 등 세부 액션은 기존 함수 유지 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdProdDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장 (현재 탭)
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 취소 (목록으로)
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('pdProdMng');
+      // 탭 전환
+      } else if (cmd === 'tab-select') {
+        topTab.value = param;
+        return;
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        tabMode2.value = param;
+        return;
+      // 사용자 페이스 미리보기 (새창)
+      } else if (cmd === 'form-preview') {
+        return onPreview();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 상위 레벨 선택 액션 dispatch (현재 미사용, 확장 대비) */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdProdDtl.js : handleSelectAction -> ', cmd, param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -1126,39 +1159,6 @@ window.PdProdDtl = {
       if (!cfHasProdId.value) { showToast('상품 등록 후 미리보기 가능합니다.', 'error'); return; }
       window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${cfCurProdId.value}`, '_blank', 'width=1200,height=800,scrollbars=yes');
     };
-
-    /* handleBtnAction — 상위 레벨 버튼 액션 dispatch (탭 / 저장 / 취소 / 미리보기 등).
-     * 자식 컴포넌트 콜백 / SKU / 카테고리 매핑 / Quill 등 세부 액션은 기존 함수 유지 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PdProdDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장 (현재 탭)
-      if (cmd === 'form-save') {
-        return handleSave();
-      // 폼 취소 (목록으로)
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('pdProdMng');
-      // 탭 전환
-      } else if (cmd === 'tab-select') {
-        topTab.value = param;
-        return;
-      // 뷰모드 변경
-      } else if (cmd === 'tab-mode') {
-        tabMode2.value = param;
-        return;
-      // 사용자 페이스 미리보기 (새창)
-      } else if (cmd === 'form-preview') {
-        return onPreview();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 상위 레벨 선택 액션 dispatch (현재 미사용, 확장 대비) */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PdProdDtl.js : handleSelectAction -> ', cmd, param);
-      console.warn('[handleSelectAction] unknown cmd:', cmd);
-    };
-
     /* 공통코드 그룹 미리보기 모달 (BoCodeGrpModal) */
     const codeGrpModal = reactive({ show: false, codeGrp: '', title: '' });
 

@@ -21,25 +21,6 @@ window.CmNoticeDtl = {
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] }); // 공통코드
 
     /* fnToday — 오늘 날짜 */
-    const fnToday = () => new Date().toISOString().slice(0, 10);
-
-    /* fnDateAfter — N일 후 날짜 */
-    const fnDateAfter = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
-
-    const form = reactive({                        // 공지사항 폼 데이터
-      noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: 'N',
-      startDate: fnToday(), endDate: fnDateAfter(7), noticeStatusCd: '', contentHtml: '',
-      attachGrpId: null,
-    });
-    const errors = reactive({});                   // 폼 검증 에러
-
-    const schema = yup.object({                    // 폼 검증 스키마
-      noticeTitle: yup.string().required('제목을 입력해주세요.'),
-    });
-
-    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
-    const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용
-    const dtlId = computed(() => props.dtlId);
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -61,6 +42,25 @@ window.CmNoticeDtl = {
       }
     };
 
+    const fnToday = () => new Date().toISOString().slice(0, 10);
+
+    /* fnDateAfter — N일 후 날짜 */
+    const fnDateAfter = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
+
+    const form = reactive({                        // 공지사항 폼 데이터
+      noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: 'N',
+      startDate: fnToday(), endDate: fnDateAfter(7), noticeStatusCd: '', contentHtml: '',
+      attachGrpId: null,
+    });
+    const errors = reactive({});                   // 폼 검증 에러
+
+    const schema = yup.object({                    // 폼 검증 스키마
+      noticeTitle: yup.string().required('제목을 입력해주세요.'),
+    });
+
+    const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용
+    const dtlId = computed(() => props.dtlId);
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchDetail — 상세 조회 */

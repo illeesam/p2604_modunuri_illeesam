@@ -21,11 +21,6 @@ window.PdQnaMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ status: '', prod: '' });
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -64,6 +59,11 @@ window.PdQnaMng = {
       }
     };
 
+    const _initSearchParam = () => ({ status: '', prod: '' });
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* getSortParam — 정렬 파라미터 */

@@ -22,6 +22,98 @@ window.PdCategoryMng = {
     });
 
     /* 상품 카테고리 fnLoadCodes */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PdCategoryMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 그리드 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 카테고리 그리드 행 추가 (상단)
+      } else if (cmd === 'categories-add') {
+        return addRow();
+      // 카테고리 그리드 저장
+      } else if (cmd === 'categories-save') {
+        return handleSave();
+      // 체크된 행 일괄 삭제
+      } else if (cmd === 'categories-delete-checked') {
+        return deleteRows();
+      // 체크된 행 일괄 취소
+      } else if (cmd === 'categories-cancel-checked') {
+        return cancelChecked();
+      // 좌측 트리 전체 보기 (선택 해제)
+      } else if (cmd === 'categoryTree-clear') {
+        uiState.selectedCatId = null;
+        return;
+      // 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      // 상위카테고리 모달 닫기
+      } else if (cmd === 'parentModal-close') {
+        catPickerModal.show = false;
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'categories-size-change') {
+        return onSizeChange();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PdCategoryMng.js : handleSelectAction -> ', cmd, param);
+      // 좌측 트리 노드 선택
+      if (cmd === 'categoryTree-select') {
+        return selectNode(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'categories-set-page') {
+        return setPage(param);
+      // 그리드 행 포커스
+      } else if (cmd === 'categories-row-focus') {
+        return setFocused(param);
+      // 그리드 행 셀 변경
+      } else if (cmd === 'categories-row-cell-change') {
+        return onCellChange(param);
+      // 하위 행 추가
+      } else if (cmd === 'categories-row-add-child') {
+        return addChildRow(param.row, param.idx);
+      // 행 취소
+      } else if (cmd === 'categories-row-cancel') {
+        return cancelRow(param);
+      // 행 삭제
+      } else if (cmd === 'categories-row-delete') {
+        return deleteRow(param);
+      // 행 체크 토글 (전체 체크)
+      } else if (cmd === 'categories-row-check-all') {
+        return toggleCheckAll();
+      // 그리드 행 드래그 시작
+      } else if (cmd === 'categories-row-drag-start') {
+        return onRowDragStart(param);
+      // 그리드 행 드래그 오버
+      } else if (cmd === 'categories-row-drag-over') {
+        return onRowDragOver(param);
+      // 그리드 행 드롭
+      } else if (cmd === 'categories-row-drop') {
+        return onRowDrop();
+      // 상위카테고리 모달 열기
+      } else if (cmd === 'parentModal-open') {
+        return openParentModal(param);
+      // 상위카테고리 모달에서 선택
+      } else if (cmd === 'parentModal-select') {
+        return onParentSelect(param);
+      // 사이트 변경
+      } else if (cmd === 'searchParam-site-change') {
+        return onSiteChange();
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -375,98 +467,6 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       await handleSearchList();   // 트리 갱신
       await handleGridSearch();   // 그리드 갱신
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PdCategoryMng.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 그리드 조회
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화 + 재조회
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 카테고리 그리드 행 추가 (상단)
-      } else if (cmd === 'categories-add') {
-        return addRow();
-      // 카테고리 그리드 저장
-      } else if (cmd === 'categories-save') {
-        return handleSave();
-      // 체크된 행 일괄 삭제
-      } else if (cmd === 'categories-delete-checked') {
-        return deleteRows();
-      // 체크된 행 일괄 취소
-      } else if (cmd === 'categories-cancel-checked') {
-        return cancelChecked();
-      // 좌측 트리 전체 보기 (선택 해제)
-      } else if (cmd === 'categoryTree-clear') {
-        uiState.selectedCatId = null;
-        return;
-      // 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
-      // 상위카테고리 모달 닫기
-      } else if (cmd === 'parentModal-close') {
-        catPickerModal.show = false;
-        return;
-      // 페이지 크기 변경
-      } else if (cmd === 'categories-size-change') {
-        return onSizeChange();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PdCategoryMng.js : handleSelectAction -> ', cmd, param);
-      // 좌측 트리 노드 선택
-      if (cmd === 'categoryTree-select') {
-        return selectNode(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'categories-set-page') {
-        return setPage(param);
-      // 그리드 행 포커스
-      } else if (cmd === 'categories-row-focus') {
-        return setFocused(param);
-      // 그리드 행 셀 변경
-      } else if (cmd === 'categories-row-cell-change') {
-        return onCellChange(param);
-      // 하위 행 추가
-      } else if (cmd === 'categories-row-add-child') {
-        return addChildRow(param.row, param.idx);
-      // 행 취소
-      } else if (cmd === 'categories-row-cancel') {
-        return cancelRow(param);
-      // 행 삭제
-      } else if (cmd === 'categories-row-delete') {
-        return deleteRow(param);
-      // 행 체크 토글 (전체 체크)
-      } else if (cmd === 'categories-row-check-all') {
-        return toggleCheckAll();
-      // 그리드 행 드래그 시작
-      } else if (cmd === 'categories-row-drag-start') {
-        return onRowDragStart(param);
-      // 그리드 행 드래그 오버
-      } else if (cmd === 'categories-row-drag-over') {
-        return onRowDragOver(param);
-      // 그리드 행 드롭
-      } else if (cmd === 'categories-row-drop') {
-        return onRowDrop();
-      // 상위카테고리 모달 열기
-      } else if (cmd === 'parentModal-open') {
-        return openParentModal(param);
-      // 상위카테고리 모달에서 선택
-      } else if (cmd === 'parentModal-select') {
-        return onParentSelect(param);
-      // 사이트 변경
-      } else if (cmd === 'searchParam-site-change') {
-        return onSiteChange();
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ===== 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ======================
 
     // --- [컬럼 정의] ---

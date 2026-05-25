@@ -21,6 +21,64 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ StStatusMng.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 조회
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화 + 재조회
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 기간 옵션 변경
+      } else if (cmd === 'searchParam-date-range') {
+        return onDateRangeChange();
+      // 탭 전환
+      } else if (cmd === 'tab-select') {
+        uiState.activeTab = param;
+        return;
+      // 설명 토글
+      } else if (cmd === 'desc-toggle') {
+        uiState.descOpen = !uiState.descOpen;
+        return;
+      // 엑셀 내보내기
+      } else if (cmd === 'statuses-export') {
+        return exportTab();
+      // 페이지 크기 변경 — 영역별
+      } else if (cmd === 'statuses-vendor-size-change') {
+        return onVendorSizeChange();
+      } else if (cmd === 'statuses-order-size-change') {
+        return onOrderSizeChange();
+      } else if (cmd === 'statuses-claim-size-change') {
+        return onClaimSizeChange();
+      } else if (cmd === 'statuses-promo-size-change') {
+        return onPromoSizeChange();
+      } else if (cmd === 'statuses-settle-size-change') {
+        return onSettleSizeChange();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 페이지/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StStatusMng.js : handleSelectAction -> ', cmd, param);
+      // 페이지 번호 클릭 — 영역별
+      if (cmd === 'statuses-vendor-set-page') {
+        return setVendorPage(param);
+      } else if (cmd === 'statuses-order-set-page') {
+        return setOrderPage(param);
+      } else if (cmd === 'statuses-claim-set-page') {
+        return setClaimPage(param);
+      } else if (cmd === 'statuses-promo-set-page') {
+        return setPromoPage(param);
+      } else if (cmd === 'statuses-settle-set-page') {
+        return setSettlePage(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -414,65 +472,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         cellStyle: (v) => 'font-weight:700;' + (v >= 0 ? 'color:#27ae60' : 'color:#e74c3c') },
       { key: 'statusCd',  label: '상태', badge: (row) => fnStatusBadge(row.statusCd) },
     ];
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ StStatusMng.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 조회
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화 + 재조회
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 기간 옵션 변경
-      } else if (cmd === 'searchParam-date-range') {
-        return onDateRangeChange();
-      // 탭 전환
-      } else if (cmd === 'tab-select') {
-        uiState.activeTab = param;
-        return;
-      // 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
-      // 엑셀 내보내기
-      } else if (cmd === 'statuses-export') {
-        return exportTab();
-      // 페이지 크기 변경 — 영역별
-      } else if (cmd === 'statuses-vendor-size-change') {
-        return onVendorSizeChange();
-      } else if (cmd === 'statuses-order-size-change') {
-        return onOrderSizeChange();
-      } else if (cmd === 'statuses-claim-size-change') {
-        return onClaimSizeChange();
-      } else if (cmd === 'statuses-promo-size-change') {
-        return onPromoSizeChange();
-      } else if (cmd === 'statuses-settle-size-change') {
-        return onSettleSizeChange();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 페이지/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ StStatusMng.js : handleSelectAction -> ', cmd, param);
-      // 페이지 번호 클릭 — 영역별
-      if (cmd === 'statuses-vendor-set-page') {
-        return setVendorPage(param);
-      } else if (cmd === 'statuses-order-set-page') {
-        return setOrderPage(param);
-      } else if (cmd === 'statuses-claim-set-page') {
-        return setClaimPage(param);
-      } else if (cmd === 'statuses-promo-set-page') {
-        return setPromoPage(param);
-      } else if (cmd === 'statuses-settle-set-page') {
-        return setSettlePage(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     /* 검색바 :columns 자동 렌더 정의 — 모두 uiState 공유 */
     const dateSearchColumns = [
       { key: 'dateRange', label: '기간', type: 'select', options: () => codes.date_range_opts,

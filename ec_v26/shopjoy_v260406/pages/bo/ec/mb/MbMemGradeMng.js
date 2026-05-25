@@ -20,13 +20,6 @@ window.MbMemGradeMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', use: '' });
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== CRUD 그리드 ===== */
-    const grades = reactive([]);                   // 회원등급 목록 (CRUD 그리드 데이터)
-    let _tempId = -1;                              // 신규 행 임시 ID (음수)
-    const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -72,6 +65,13 @@ window.MbMemGradeMng = {
       }
     };
 
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', use: '' });
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== CRUD 그리드 ===== */
+    const grades = reactive([]);                   // 회원등급 목록 (CRUD 그리드 데이터)
+    let _tempId = -1;                              // 신규 행 임시 ID (음수)
+    const EDIT_FIELDS = ['gradeCd', 'gradeNm', 'gradeRank', 'minPurchaseAmt', 'saveRate', 'useYn'];
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* makeRow — 행 생성 */

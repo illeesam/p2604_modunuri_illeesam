@@ -16,6 +16,31 @@ window.MyContact = {
 
     const myStore = window.useFoMyStore();
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ MyContact.js : handleBtnAction -> ', cmd, param);
+      // 날짜 필터 조회
+      if (cmd === 'searchParam-date-search') {
+        return onSearch(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ MyContact.js : handleSelectAction -> ', cmd, param);
+      // 문의 펼침 토글
+      if (cmd === 'contacts-toggle') {
+        expandedInquiry.value = expandedInquiry.value === param ? null : param;
+      // 문의 취소
+      } else if (cmd === 'contacts-cancel') {
+        return cancelInquiry(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -60,32 +85,6 @@ window.MyContact = {
       if (dateParams) { onDateSearch(dateParams); }
       await handleSearchData();
     };
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ MyContact.js : handleBtnAction -> ', cmd, param);
-      // 날짜 필터 조회
-      if (cmd === 'searchParam-date-search') {
-        return onSearch(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ MyContact.js : handleSelectAction -> ', cmd, param);
-      // 문의 펼침 토글
-      if (cmd === 'contacts-toggle') {
-        expandedInquiry.value = expandedInquiry.value === param ? null : param;
-      // 문의 취소
-      } else if (cmd === 'contacts-cancel') {
-        return cancelInquiry(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 

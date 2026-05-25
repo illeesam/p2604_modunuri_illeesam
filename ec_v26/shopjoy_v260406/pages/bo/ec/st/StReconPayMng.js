@@ -20,23 +20,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       date_range_opts: [],
     });
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
-        codes.payment_statuses = codeStore.sgGetGrpCodes('PAYMENT_STATUS');
-        codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_PAY');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StReconPayMng.js : handleBtnAction -> ', cmd, param);
@@ -71,6 +54,22 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
+        codes.payment_statuses = codeStore.sgGetGrpCodes('PAYMENT_STATUS');
+        codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_PAY');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */

@@ -20,28 +20,6 @@ window.SyContactMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', category: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* ===== 상세 인라인 패널 ===== */
-    const detailModal = reactive({
-      show: false,
-      dtlId: null,
-      dtlMode: 'view', // 'view' | 'edit'
-      reloadTrigger: 0 // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
-    });
-
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
-    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
-    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -99,6 +77,28 @@ window.SyContactMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      const today = new Date();
+      const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', category: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* ===== 상세 인라인 패널 ===== */
+    const detailModal = reactive({
+      show: false,
+      dtlId: null,
+      dtlMode: 'view', // 'view' | 'edit'
+      reloadTrigger: 0 // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
+    });
+
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
+    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* getSortParam — 조회 */

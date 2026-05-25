@@ -19,22 +19,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       date_range_opts: [],
     });
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
-        codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_ORDER');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StReconOrderMng.js : handleBtnAction -> ', cmd, param);
@@ -69,6 +53,21 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }
     };
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+        codes.recon_results = codeStore.sgGetGrpCodes('RECON_RESULT_ORDER');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
             const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */

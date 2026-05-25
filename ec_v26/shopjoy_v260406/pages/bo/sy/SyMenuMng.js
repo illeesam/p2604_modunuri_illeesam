@@ -22,28 +22,6 @@ window.SyMenuMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== CRUD 그리드 ===== */
-    const gridRows   = reactive([]);
-    let   _tempId    = -1;
-    const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentMenuId', 'menuUrl', 'menuTypeCd', 'sortOrd', 'useYn', 'menuRemark'];
-
-    /* ===== 깊이 표시 상수 ===== */
-    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
-    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
-
-    /* depthBullet — 깊이 글머리 */
-    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
-
-    /* depthColor — 깊이 색상 */
-    const depthColor  = (d) => DEPTH_COLORS[d % 5];
-
-    /* ===== 상위메뉴 선택 모달 ===== */
-    const parentModal = reactive({ show: false, targetRow: null });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -112,6 +90,28 @@ window.SyMenuMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== CRUD 그리드 ===== */
+    const gridRows   = reactive([]);
+    let   _tempId    = -1;
+    const EDIT_FIELDS = ['menuCode', 'menuNm', 'parentMenuId', 'menuUrl', 'menuTypeCd', 'sortOrd', 'useYn', 'menuRemark'];
+
+    /* ===== 깊이 표시 상수 ===== */
+    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
+    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
+
+    /* depthBullet — 깊이 글머리 */
+    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
+
+    /* depthColor — 깊이 색상 */
+    const depthColor  = (d) => DEPTH_COLORS[d % 5];
+
+    /* ===== 상위메뉴 선택 모달 ===== */
+    const parentModal = reactive({ show: false, targetRow: null });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchList — 목록 조회 */

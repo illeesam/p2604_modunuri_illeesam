@@ -308,10 +308,16 @@ window.BaseAttachGrp = {
       @mouseenter="e=>e.currentTarget.style.background='#fff8f9'"
       @mouseleave="e=>e.currentTarget.style.background='#fff'">
       <!-- 순서 번호 -->
-      <span style="flex-shrink:0;width:16px;font-size:10px;color:#ccc;text-align:center;line-height:1;">{{ idx+1 }}</span>
+      <span style="flex-shrink:0;width:16px;font-size:10px;color:#ccc;text-align:center;line-height:1;">
+        {{ idx+1 }}
+      </span>
       <!-- 드래그 핸들 -->
-      <span style="flex-shrink:0;font-size:12px;color:#ccc;cursor:grab;line-height:1;" title="드래그하여 순서 변경">⠿</span>
-      <span style="font-size:15px;flex-shrink:0;line-height:1;">{{ fnExtIcon(f.fileExt) }}</span>
+      <span style="flex-shrink:0;font-size:12px;color:#ccc;cursor:grab;line-height:1;" title="드래그하여 순서 변경">
+        ⠿
+      </span>
+      <span style="font-size:15px;flex-shrink:0;line-height:1;">
+        {{ fnExtIcon(f.fileExt) }}
+      </span>
       <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;">
         <span style="font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;" :title="f.fileNm">
           {{ f.fileNm }}
@@ -345,10 +351,14 @@ window.BaseAttachGrp = {
           @mouseleave="e=>{e.currentTarget.style.borderColor='#e0e0e0';handleSelectAction('attach-row-hide-hover');}">
           <img v-if="f.thumbCdnUrl" :src="f.thumbCdnUrl"
             style="width:100%;height:100%;object-fit:cover;display:block;" @error="e=>{e.target.style.display='none';e.target.nextElementSibling.style.display='inline-flex';}" />
-          <span style="font-size:12px;color:#666;" :style="{display:f.thumbCdnUrl?'none':'inline-flex'}">🖼</span>
+          <span style="font-size:12px;color:#666;" :style="{display:f.thumbCdnUrl?'none':'inline-flex'}">
+            🖼
+          </span>
         </button>
       </span>
-      <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">{{ fnFmtSize(f.fileSize) }}</span>
+      <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">
+        {{ fnFmtSize(f.fileSize) }}
+      </span>
       <button @click.stop="handleSelectAction('attach-row-remove', f.attachId)" title="삭제"
         style="flex-shrink:0;width:18px;height:18px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:10px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;transition:background .1s;"
         @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
@@ -358,11 +368,15 @@ window.BaseAttachGrp = {
     </div>
   </div>
   <div v-else-if="uiState.loading" style="font-size:12px;color:#c0c0c0;padding:6px 2px 10px;display:flex;align-items:center;gap:5px;">
-    <span style="font-size:14px;">⏳</span>
+    <span style="font-size:14px;">
+      ⏳
+    </span>
     파일 목록 불러오는 중...
   </div>
   <div v-else style="font-size:12px;color:#c0c0c0;padding:6px 2px 10px;display:flex;align-items:center;gap:5px;">
-    <span style="font-size:14px;">📂</span>
+    <span style="font-size:14px;">
+      📂
+    </span>
     첨부된 파일이 없습니다.
   </div>
   <!-- 하단 버튼 + 안내 -->
@@ -371,41 +385,50 @@ window.BaseAttachGrp = {
       style="display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border:1px solid #d9d9d9;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555;font-weight:500;transition:all .15s;white-space:nowrap;"
       @mouseenter="e=>{if(!uiState.uploading){e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}}"
       @mouseleave="e=>{e.currentTarget.style.borderColor='#d9d9d9';e.currentTarget.style.color='#555';}">
-      <span v-if="uiState.uploading">⏳ 업로드 중...</span>
-      <span v-else>📎 파일첨부</span>
+      <span v-if="uiState.uploading">
+        ⏳ 업로드 중...
+      </span>
+      <span v-else>
+        📎 파일첨부
+      </span>
     </button>
     <span style="font-size:11px;color:#bbb;">
       {{ files.length }} / {{ maxCount }}개
-      <span style="margin:0 4px;color:#e8e8e8;">|</span>
+      <span style="margin:0 4px;color:#e8e8e8;">
+        |
+      </span>
       최대 {{ maxSizeMb }}MB
-      <span v-if="allowExt!=='*'"><span style="margin:0 4px;color:#e8e8e8;">|</span>{{ allowExt }}</span>
+      <span v-if="allowExt!=='*'">
+        <span style="margin:0 4px;color:#e8e8e8;">
+          |
+        </span>
+        {{ allowExt }}
+      </span>
     </span>
   </div>
   <!-- hover 미리보기 레이어 (fixed, 마우스 우측 하단) -->
-  <div v-if="hoverState.show && hoverState.url"
-    style="position:fixed;z-index:10000;pointer-events:none;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.35);background:#fff;border:1px solid #e0e0e0;"
-    :style="{left: hoverState.x + 'px', top: hoverState.y + 'px'}">
-    <img :src="hoverState.url" style="display:block;max-width:200px;max-height:200px;object-fit:contain;" />
-  </div>
-  <!-- 팝업 모달 -->
-  <div v-if="thumbState.show" @click.self="handleBtnAction('attach-close-thumb')"
+  <div v-if="hoverState.show && hoverState.url" style="position:fixed;z-index:10000;pointer-events:none;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.35);background:#fff;border:1px solid #e0e0e0;" :style="{left: hoverState.x + 'px', top: hoverState.y + 'px'}">
+  <img :src="hoverState.url" style="display:block;max-width:200px;max-height:200px;object-fit:contain;" />
+</div>
+<!-- 팝업 모달 -->
+<div v-if="thumbState.show" @click.self="handleBtnAction('attach-close-thumb')"
     style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;padding:16px;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 40px rgba(0,0,0,.4);">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
-        <span style="font-size:13px;color:#444;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw;" :title="thumbState.nm">
-          {{ thumbState.nm }}
-        </span>
-        <button @click="handleBtnAction('attach-close-thumb')" type="button"
+  <div style="background:#fff;border-radius:12px;padding:16px;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 40px rgba(0,0,0,.4);">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+      <span style="font-size:13px;color:#444;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60vw;" :title="thumbState.nm">
+        {{ thumbState.nm }}
+      </span>
+      <button @click="handleBtnAction('attach-close-thumb')" type="button"
           style="flex-shrink:0;width:24px;height:24px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:13px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;"
           @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
           @mouseleave="e=>e.currentTarget.style.background='#f0f0f0'">
-          ✕
-        </button>
-      </div>
-      <img :src="thumbState.url" :alt="thumbState.nm"
-        style="max-width:80vw;max-height:75vh;object-fit:contain;border-radius:6px;" />
+        ✕
+      </button>
     </div>
+    <img :src="thumbState.url" :alt="thumbState.nm"
+        style="max-width:80vw;max-height:75vh;object-fit:contain;border-radius:6px;" />
   </div>
+</div>
 </div>
 `
 };
@@ -533,11 +556,15 @@ window.BaseAttachOne = {
     @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
     @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
     :title="file.fileNm || '클릭하여 이미지 선택'">
-    <span v-if="uiState.loading || uiState.uploading" style="font-size:22px;">⏳</span>
+    <span v-if="uiState.loading || uiState.uploading" style="font-size:22px;">
+      ⏳
+    </span>
     <img v-else-if="file.thumbCdnUrl || file.cdnImgUrl"
       :src="file.thumbCdnUrl || file.cdnImgUrl"
       style="width:100%;height:100%;object-fit:cover;display:block;" />
-    <span v-else style="font-size:32px;color:#ccc;">👤</span>
+    <span v-else style="font-size:32px;color:#ccc;">
+      👤
+    </span>
   </div>
   <!-- 버튼 -->
   <div style="display:flex;gap:6px;">
@@ -554,7 +581,9 @@ window.BaseAttachOne = {
       ✕ 삭제
     </button>
   </div>
-  <span style="font-size:10px;color:#bbb;">{{ allowExt }} / 최대 {{ maxSizeMb }}MB</span>
+  <span style="font-size:10px;color:#bbb;">
+    {{ allowExt }} / 최대 {{ maxSizeMb }}MB
+  </span>
 </div>
 `
 };
@@ -712,11 +741,12 @@ window.BaseHtmlEditor = {
       비우기
     </button>
   </div>
-  <div v-show="mode === 'wysiwyg'" ref="editorEl" style="background:#fff;border-radius:6px;"></div>
+  <div v-show="mode === 'wysiwyg'" ref="editorEl" style="background:#fff;border-radius:6px;">
+  </div>
   <textarea v-show="mode === 'source'" :value="modelValue" @input="handleSelectAction('editor-source-input', $event)"
     spellcheck="false"
     :style="{ width:'100%', minHeight: height, padding:'12px 14px', border:'1px solid #d9d9d9', borderRadius:'6px', fontFamily:\"'Consolas','D2Coding',monospace\", fontSize:'12px', lineHeight:'1.7', color:'#333', resize:'vertical', boxSizing:'border-box', margin:0, background:'#fafafa', outline:'none' }"></textarea>
-</div>
+  </div>
 `
 };
 

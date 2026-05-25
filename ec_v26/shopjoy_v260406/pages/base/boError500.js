@@ -4,10 +4,18 @@ window.boError500 = {
   props: ['navigate', 'message'],
   template: /* html */`
 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">
-  <div style="font-size:80px;margin-bottom:16px;">💥</div>
-  <div style="font-size:48px;font-weight:800;color:#1a1a2e;letter-spacing:-1px;">500</div>
-  <div style="font-size:18px;font-weight:600;color:#555;margin-top:8px;">서버 오류가 발생했습니다</div>
-  <div style="font-size:13px;color:#999;margin-top:12px;max-width:520px;">잠시 후 다시 시도해 주세요. 문제가 지속되면 시스템 관리자에게 문의 바랍니다.</div>
+  <div style="font-size:80px;margin-bottom:16px;">
+    💥
+  </div>
+  <div style="font-size:48px;font-weight:800;color:#1a1a2e;letter-spacing:-1px;">
+    500
+  </div>
+  <div style="font-size:18px;font-weight:600;color:#555;margin-top:8px;">
+    서버 오류가 발생했습니다
+  </div>
+  <div style="font-size:13px;color:#999;margin-top:12px;max-width:520px;">
+    잠시 후 다시 시도해 주세요. 문제가 지속되면 시스템 관리자에게 문의 바랍니다.
+  </div>
   <div v-if="message" style="font-size:12px;color:#c62828;margin-top:12px;font-family:monospace;background:#fff5f5;padding:8px 14px;border-radius:6px;max-width:600px;word-break:break-all;">
     {{ message }}
   </div>

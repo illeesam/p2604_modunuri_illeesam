@@ -17,6 +17,70 @@ const _WP_DispWidgetPreview = {
     const uiState = reactive({ isPageCodeLoad: false });
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetPreview.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 필터링
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 트리 전체 펼치기
+      } else if (cmd === 'pathTree-expand-all') {
+        return expandAll();
+      // 트리 전체 닫기
+      } else if (cmd === 'pathTree-collapse-all') {
+        return collapseAll();
+      // 실제컨텐츠 토글
+      } else if (cmd === 'preview-toggle-real') {
+        gridState.showRealContent = !gridState.showRealContent;
+        return;
+      // 현재 그리드 / 대시보드 초기화
+      } else if (cmd === 'preview-reset') {
+        return resetCurrent();
+      // span 팝업 닫기
+      } else if (cmd === 'spanPopup-close') {
+        return closeSpanPopup();
+      // 슬롯 제거 (param: idx)
+      } else if (cmd === 'slot-remove') {
+        return removeSlot(param);
+      // 대시보드 항목 제거 (param: id)
+      } else if (cmd === 'dashItem-remove') {
+        return removeDashItem(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetPreview.js : handleSelectAction -> ', cmd, param);
+      // 트리 노드 토글 (param: key)
+      if (cmd === 'pathTree-toggle') {
+        return toggleNode(param);
+      // 트리에서 위젯 선택 (param: lib)
+      } else if (cmd === 'pathTree-select') {
+        return onTreeSelect(param);
+      // 그리드 탭 전환 (param: tabId)
+      } else if (cmd === 'preview-tab') {
+        gridState.previewGrid = param;
+        return;
+      // 뷰포트 모드 변경 (param: key)
+      } else if (cmd === 'preview-viewport') {
+        gridState.viewportMode = param;
+        return;
+      // span 설정 (param: { idx, axis, delta })
+      } else if (cmd === 'slot-span-set') {
+        return setSpan(param.idx, param.axis, param.delta);
+      // span 팝업 토글 (param: { e, idx })
+      } else if (cmd === 'slot-span-popup') {
+        return toggleSpanPopup(param.e, param.idx);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -419,71 +483,6 @@ window.DpDispWidgetPreview = {
     ] });
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null });
     const widgetLibs = reactive([]);
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispWidgetPreview.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 필터링
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
-        return expandAll();
-      // 트리 전체 닫기
-      } else if (cmd === 'pathTree-collapse-all') {
-        return collapseAll();
-      // 실제컨텐츠 토글
-      } else if (cmd === 'preview-toggle-real') {
-        gridState.showRealContent = !gridState.showRealContent;
-        return;
-      // 현재 그리드 / 대시보드 초기화
-      } else if (cmd === 'preview-reset') {
-        return resetCurrent();
-      // span 팝업 닫기
-      } else if (cmd === 'spanPopup-close') {
-        return closeSpanPopup();
-      // 슬롯 제거 (param: idx)
-      } else if (cmd === 'slot-remove') {
-        return removeSlot(param);
-      // 대시보드 항목 제거 (param: id)
-      } else if (cmd === 'dashItem-remove') {
-        return removeDashItem(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispWidgetPreview.js : handleSelectAction -> ', cmd, param);
-      // 트리 노드 토글 (param: key)
-      if (cmd === 'pathTree-toggle') {
-        return toggleNode(param);
-      // 트리에서 위젯 선택 (param: lib)
-      } else if (cmd === 'pathTree-select') {
-        return onTreeSelect(param);
-      // 그리드 탭 전환 (param: tabId)
-      } else if (cmd === 'preview-tab') {
-        gridState.previewGrid = param;
-        return;
-      // 뷰포트 모드 변경 (param: key)
-      } else if (cmd === 'preview-viewport') {
-        gridState.viewportMode = param;
-        return;
-      // span 설정 (param: { idx, axis, delta })
-      } else if (cmd === 'slot-span-set') {
-        return setSpan(param.idx, param.axis, param.delta);
-      // span 팝업 토글 (param: { e, idx })
-      } else if (cmd === 'slot-span-popup') {
-        return toggleSpanPopup(param.e, param.idx);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */

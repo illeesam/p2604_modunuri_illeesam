@@ -21,33 +21,6 @@ window.PmCouponMng = {
     });
 
     /* 쿠폰 fnLoadCodes */
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.coupon_types = codeStore.sgGetGrpCodes('COUPON_TYPE');
-        codes.coupon_statuses = codeStore.sgGetGrpCodes('COUPON_STATUS_KR');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-/* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
-
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -106,6 +79,33 @@ window.PmCouponMng = {
       }
     };
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.coupon_types = codeStore.sgGetGrpCodes('COUPON_TYPE');
+        codes.coupon_statuses = codeStore.sgGetGrpCodes('COUPON_STATUS_KR');
+        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+/* 하단 상세 */
+    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
     /* 쿠폰 handleDateRangeChange */
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 

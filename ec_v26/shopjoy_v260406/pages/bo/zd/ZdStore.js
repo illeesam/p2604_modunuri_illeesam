@@ -243,12 +243,14 @@ window.ZdStore = {
   <!-- ===== ■. 메인 영역 =================================================== -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
     <!-- ===== ■.■. 페이지 타이틀 =============================================== -->
-    <div class="page-title" style="margin: 0;">Store 정보 관리</div>
+    <div class="page-title" style="margin: 0;">
+      Store 정보 관리
+    </div>
     <button @click="handleBtnAction('stores-reload-all')" style="padding: 8px 16px; font-size: 13px; font-weight: 600; border: none; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; cursor: pointer; border-radius: 4px; transition: all 0.2s; white-space: nowrap;">
       🔄 재로드
     </button>
   </div>
-    <!-- ===== □.□. 페이지 타이틀 =============================================== -->
+  <!-- ===== □.□. 페이지 타이틀 =============================================== -->
   <!-- ===== □. 메인 영역 =================================================== -->
   <!-- ===== ■. Store 선택 탭 + 뷰모드 버튼 ===================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -308,7 +310,7 @@ window.ZdStore = {
       </button>
     </div>
   </div>
-    <!-- ===== □.□. 뷰모드 버튼 (탭바 우측) ======================================== -->
+  <!-- ===== □.□. 뷰모드 버튼 (탭바 우측) ======================================== -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) ================================ -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
@@ -321,27 +323,29 @@ window.ZdStore = {
         {{ store.label }}
       </div>
       <div style="flex: 1; margin-bottom: 8px;">
-        <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 11px;">Store State (JSON)</label>
+        <label style="display: block; margin-bottom: 4px; font-weight: 600; font-size: 11px;">
+          Store State (JSON)
+        </label>
         <textarea
           :value="editedStoreInfo[store.name] || ''"
           @input="editedStoreInfo[store.name] = $event.target.value"
           style="width: 100%; height: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 10px; background: #f5f5f5; resize: vertical;">
         </textarea>
-      </div>
-      <div style="display: flex; gap: 4px; justify-content: flex-end; padding-top: 6px; border-top: 1px solid #e5e7eb;">
-        <button @click="handleBtnAction('selectedStore-clear', store.name)" style="padding: 6px 12px; font-size: 11px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
-          지우기
-        </button>
-        <button v-if="store.api" @click="handleBtnAction('selectedStore-refresh', store.name)" style="padding: 6px 12px; font-size: 11px; background: #3b82f6; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
-          조회
-        </button>
-        <button @click="handleBtnAction('selectedStore-save', store.name)" style="padding: 6px 12px; font-size: 11px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
-          저장
-        </button>
+        </div>
+        <div style="display: flex; gap: 4px; justify-content: flex-end; padding-top: 6px; border-top: 1px solid #e5e7eb;">
+          <button @click="handleBtnAction('selectedStore-clear', store.name)" style="padding: 6px 12px; font-size: 11px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+            지우기
+          </button>
+          <button v-if="store.api" @click="handleBtnAction('selectedStore-refresh', store.name)" style="padding: 6px 12px; font-size: 11px; background: #3b82f6; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+            조회
+          </button>
+          <button @click="handleBtnAction('selectedStore-save', store.name)" style="padding: 6px 12px; font-size: 11px; background: linear-gradient(135deg, #ff6b9d, #c44569); border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+            저장
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->`
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
+`
 };

@@ -19,25 +19,6 @@ window.SyI18nMng = {
     const codes    = reactive({ lang_code: [], use_yn: [], i18n_scopes: ['COMMON','FO','BO'] });
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', scope: '', use: '' };
-    };
-    const searchParam = reactive(_initSearchParam()); // 검색조건
-    const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    const LANGS       = ['ko','en','ja','in']; // 지원 언어
-    const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
-
-    const msgForm = reactive({});              // 번역 입력 폼
-
-    const cfSelectedKey = computed(() => (i18n||[]).find(k => k.i18nId === uiState.selectedId) || null);
-    const cfSelectedMsgs = computed(() => {
-      if (!cfSelectedKey.value) { return {}; }
-      const msgs = {};
-      LANGS.forEach(lang => { msgs[lang] = ''; });
-      (i18nMsgs||[]).filter(m => m.i18nId === uiState.selectedId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
-      return msgs;
-    });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -82,6 +63,25 @@ window.SyI18nMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      return { searchType: '', searchValue: '', scope: '', use: '' };
+    };
+    const searchParam = reactive(_initSearchParam()); // 검색조건
+    const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    const LANGS       = ['ko','en','ja','in']; // 지원 언어
+    const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
+
+    const msgForm = reactive({});              // 번역 입력 폼
+
+    const cfSelectedKey = computed(() => (i18n||[]).find(k => k.i18nId === uiState.selectedId) || null);
+    const cfSelectedMsgs = computed(() => {
+      if (!cfSelectedKey.value) { return {}; }
+      const msgs = {};
+      LANGS.forEach(lang => { msgs[lang] = ''; });
+      (i18nMsgs||[]).filter(m => m.i18nId === uiState.selectedId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
+      return msgs;
+    });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */

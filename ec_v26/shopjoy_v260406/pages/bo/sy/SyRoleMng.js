@@ -29,31 +29,6 @@ window.SyRoleMng = {
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
-
-    /* ===== CRUD 그리드 ===== */
-    const gridRows   = reactive([]);  // 트리 평면화 + 편집 상태 포함 행
-    let   _tempId    = -1;            // 신규 행 임시 ID (음수)
-    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentRoleId', 'roleTypeCd', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'roleRemark'];
-
-    /* ===== 권한 색상 / 깊이 표시 상수 ===== */
-    const PERM_COLORS   = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
-    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
-    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
-
-    /* fnPermColor — 권한 레벨 색상 */
-    const fnPermColor = (p) => PERM_COLORS[p] || '#9ca3af';
-
-    /* depthBullet — 깊이별 글머리 */
-    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
-
-    /* depthColor — 깊이별 색상 */
-    const depthColor  = (d) => DEPTH_COLORS[d % 5];
-
-    // onMounted에서 API 로드
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -189,6 +164,31 @@ window.SyRoleMng = {
       }
     };
 
+    const _initSearchParam = () => {
+      return { searchType: '', searchValue: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
+
+    /* ===== CRUD 그리드 ===== */
+    const gridRows   = reactive([]);  // 트리 평면화 + 편집 상태 포함 행
+    let   _tempId    = -1;            // 신규 행 임시 ID (음수)
+    const EDIT_FIELDS = ['roleCode', 'roleNm', 'parentRoleId', 'roleTypeCd', 'sortOrd', 'useYn', 'restrictPerm', 'roleCat', 'roleRemark'];
+
+    /* ===== 권한 색상 / 깊이 표시 상수 ===== */
+    const PERM_COLORS   = { '없음': '#9ca3af', '읽기': '#2563eb', '쓰기': '#16a34a', '관리': '#f59e0b', '차단': '#e8587a' };
+    const DEPTH_BULLETS = ['●', '◦', '·', '-'];
+    const DEPTH_COLORS  = ['#e8587a', '#2563eb', '#52c41a', '#f59e0b', '#8b5cf6'];
+
+    /* fnPermColor — 권한 레벨 색상 */
+    const fnPermColor = (p) => PERM_COLORS[p] || '#9ca3af';
+
+    /* depthBullet — 깊이별 글머리 */
+    const depthBullet = (d) => DEPTH_BULLETS[Math.min(d, 3)];
+
+    /* depthColor — 깊이별 색상 */
+    const depthColor  = (d) => DEPTH_COLORS[d % 5];
+
+    // onMounted에서 API 로드
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* handleSearchList — 목록 조회 */

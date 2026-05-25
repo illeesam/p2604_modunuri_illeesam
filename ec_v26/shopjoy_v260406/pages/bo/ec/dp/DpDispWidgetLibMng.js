@@ -17,22 +17,6 @@ window.DpDispWidgetLibMng = {
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
-    const searchParam = reactive(_initSearchParam());
-    /* applied: 현재 결과에 실제로 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
-    const applied = reactive({ type: '', status: '' });
-    const cfFilterDirty = computed(() =>
-      searchParam.searchValue !== applied.searchValue ||
-      searchParam.type !== applied.type ||
-      searchParam.status !== applied.status
-    );
-
-    const SORT_MAP = { nm: { asc: 'widgetNm asc', desc: 'widgetNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -89,6 +73,22 @@ window.DpDispWidgetLibMng = {
       }
     };
 
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
+    const searchParam = reactive(_initSearchParam());
+    /* applied: 현재 결과에 실제로 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
+    const applied = reactive({ type: '', status: '' });
+    const cfFilterDirty = computed(() =>
+      searchParam.searchValue !== applied.searchValue ||
+      searchParam.type !== applied.type ||
+      searchParam.status !== applied.status
+    );
+
+    const SORT_MAP = { nm: { asc: 'widgetNm asc', desc: 'widgetNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* ===== 상세 인라인 패널 ===== */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -284,45 +284,53 @@ window.DpDispWidgetLibMng = {
 <div>
   <!-- ===== ■. 영역 ====================================================== -->
   <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}</style>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">위젯라이브러리관리</div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :show-actions="false"
+    <!-- ===== ■. 페이지 타이틀 ================================================= -->
+    <div class="page-title">
+      위젯라이브러리관리
+    </div>
+    <!-- ===== ■. 카드 영역 =================================================== -->
+    <div class="card">
+      <!-- ===== ■.■. 검색 영역 ================================================= -->
+      <bo-search-area :loading="uiState.loading" :show-actions="false"
       :columns="baseSearchColumns" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
-      <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
-        <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
-          변경됨 →
-        </span>
-        <button class="btn btn-primary" @click="handleBtnAction('searchParam-list')"
+        <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
+          <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
+            변경됨 →
+          </span>
+          <button class="btn btn-primary" @click="handleBtnAction('searchParam-list')"
           :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">
-          조회
-        </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">초기화</button>
-      </div>
-    </bo-search-area>
-  </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;min-width:180px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">
-          📂 표시경로
-          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#ec_disp_widget_lib</span>
-        </span>
-        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">전체보기</span>
-      </div>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="ec_disp_widget_lib" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
-      </div>
+            조회
+          </button>
+          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
+            초기화
+          </button>
+        </div>
+      </bo-search-area>
     </div>
-    <div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid :columns="listGridColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
+    <!-- ===== □.□. 검색 영역 ================================================= -->
+    <!-- ===== □. 카드 영역 =================================================== -->
+    <!-- ===== ■. 본문 영역 =================================================== -->
+    <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
+      <div class="card" style="padding:12px;min-width:180px;">
+        <div class="toolbar" style="margin-bottom:6px;">
+          <span class="list-title" style="font-size:13px;">
+            📂 표시경로
+            <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+              #ec_disp_widget_lib
+            </span>
+          </span>
+          <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
+            전체보기
+          </span>
+        </div>
+        <div style="max-height:65vh;overflow:auto;">
+          <bo-path-tree biz-cd="ec_disp_widget_lib" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+        </div>
+      </div>
+      <div>
+        <!-- ===== ■.■.■. 목록 영역 =============================================== -->
+        <bo-grid :columns="listGridColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable
@@ -330,40 +338,50 @@ window.DpDispWidgetLibMng = {
         @set-page="n => handleSelectAction('widgetLibs-set-page', n)"
         @size-change="handleSelectAction('widgetLibs-size-change')"
         @row-click="(r) => handleSelectAction('widgetLibs-row-edit', r.widgetLibId)" row-actions>
-        <template #toolbar-actions>
-          <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
-            #{{ uiState.selectedPath }}
-          </span>
-          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
-            <span v-if="cfNoFilter" style="color:#999;">필터 없음</span>
-            <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
-              검색: {{ applied.searchValue }}
+          <template #toolbar-actions>
+            <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
+              #{{ uiState.selectedPath }}
             </span>
-            <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
-              유형: {{ wTypeLabel(applied.type) }}
-            </span>
-            <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
-              상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
-            </span>
-          </div>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('widgetLibs-add')">+ 신규</button>
-        </template>
-        <template #row-actions="{ row }">
-          <div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('widgetLibs-row-edit', row.widgetLibId)">수정</button>
-            <button class="btn btn-danger btn-sm" @click="handleSelectAction('widgetLibs-row-delete', row)">삭제</button>
-          </div>
-        </template>
-      </bo-grid>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
+              <span v-if="cfNoFilter" style="color:#999;">
+                필터 없음
+              </span>
+              <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
+                검색: {{ applied.searchValue }}
+              </span>
+              <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
+                유형: {{ wTypeLabel(applied.type) }}
+              </span>
+              <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
+                상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
+              </span>
+            </div>
+            <button class="btn btn-primary btn-sm" @click="handleBtnAction('widgetLibs-add')">
+              + 신규
+            </button>
+          </template>
+          <template #row-actions="{ row }">
+            <div class="actions">
+              <button class="btn btn-blue btn-sm" @click="handleSelectAction('widgetLibs-row-edit', row.widgetLibId)">
+                수정
+              </button>
+              <button class="btn btn-danger btn-sm" @click="handleSelectAction('widgetLibs-row-delete', row)">
+                삭제
+              </button>
+            </div>
+          </template>
+        </bo-grid>
+      </div>
     </div>
-  </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">✕ 닫기</button>
-    </div>
-    <dp-disp-widget-lib-dtl
+    <!-- ===== □. 본문 영역 =================================================== -->
+    <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
+    <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+      <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+          ✕ 닫기
+        </button>
+      </div>
+      <dp-disp-widget-lib-dtl
       :key="cfDetailKey"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
@@ -372,8 +390,8 @@ window.DpDispWidgetLibMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchList"
       />
+    </div>
   </div>
-</div>
-
-  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->`
+  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+`
 };

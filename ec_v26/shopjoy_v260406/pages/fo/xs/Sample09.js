@@ -16,6 +16,19 @@ window.XsSample09 = {
       open_opts:        [{ value: '공개', label: '공개' }, { value: '비공개', label: '비공개' }],
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, payload) => {
+      if (cmd === 'faqs-add')           { addRow(); }
+      else if (cmd === 'faqs-save')     { handleSave(); }
+      else if (cmd === 'faqs-delete-checked') { deleteRows(); }
+      else if (cmd === 'faqs-cancel-checked') { cancelChecked(); }
+      else if (cmd === 'faqs-row-cancel')     { onRowCancel(payload); }
+      else if (cmd === 'faqs-row-delete')     { onRowDelete(payload); }
+      else if (cmd === 'faqs-reorder')        { onReorder(); }
+      else if (cmd === 'search-search') { onSearch(); }
+      else if (cmd === 'search-reset')  { onReset(); }
+    };
+
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -211,20 +224,6 @@ window.XsSample09 = {
     const onRowDelete = (row) => deleteRow(gridRows.indexOf(row));
 
     // ===== dispatch (template 이벤트 통합) ===================================
-
-    /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd, payload) => {
-      if (cmd === 'faqs-add')           { addRow(); }
-      else if (cmd === 'faqs-save')     { handleSave(); }
-      else if (cmd === 'faqs-delete-checked') { deleteRows(); }
-      else if (cmd === 'faqs-cancel-checked') { cancelChecked(); }
-      else if (cmd === 'faqs-row-cancel')     { onRowCancel(payload); }
-      else if (cmd === 'faqs-row-delete')     { onRowDelete(payload); }
-      else if (cmd === 'faqs-reorder')        { onReorder(); }
-      else if (cmd === 'search-search') { onSearch(); }
-      else if (cmd === 'search-reset')  { onReset(); }
-    };
-
     // ===== return (템플릿 노출) ===============================================
 
     return {

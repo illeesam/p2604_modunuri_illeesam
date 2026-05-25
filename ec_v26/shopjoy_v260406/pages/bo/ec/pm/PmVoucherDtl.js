@@ -26,6 +26,65 @@ window.PmVoucherDtl = {
 
     // 단건 조회
     /* loadVendors — 로드 */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ PmVoucherDtl.js : handleBtnAction -> ', cmd, param);
+      // 폼 저장
+      if (cmd === 'form-save') {
+        return handleSave();
+      // 폼 취소 (목록으로)
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('pmVoucherMng');
+      // 탭 전환
+      } else if (cmd === 'tab-select') {
+        return onTabChange(param);
+      // 뷰모드 변경
+      } else if (cmd === 'tab-mode') {
+        uiState.tabMode2 = param;
+        return;
+      // 미리보기 서브탭 변경
+      } else if (cmd === 'previewTab-select') {
+        return onPreviewTabChange(param);
+      // 판매업체 모달 열기
+      } else if (cmd === 'vendorModal-open') {
+        uiState.showVendorModal = true;
+        return;
+      // 판매업체 모달 닫기
+      } else if (cmd === 'vendorModal-close') {
+        uiState.showVendorModal = false;
+        return;
+      // 판매업체 초기화
+      } else if (cmd === 'form-vendor-clear') {
+        form.vendorId = '';
+        form.chargeStaff = '';
+        return;
+      // SNS 모달 열기 (param: 'kakao' | 'email')
+      } else if (cmd === 'snsModal-open') {
+        return openSnsModal(param);
+      // SNS 모달 닫기
+      } else if (cmd === 'snsModal-close') {
+        snsModal.show = false;
+        return;
+      // SNS 전송
+      } else if (cmd === 'snsModal-send') {
+        return sendSns();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ PmVoucherDtl.js : handleSelectAction -> ', cmd, param);
+      // 판매업체 선택
+      if (cmd === 'vendorModal-select') {
+        return selectVendor(param.vendorId, param.vendorNm);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -266,65 +325,6 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ PmVoucherDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장
-      if (cmd === 'form-save') {
-        return handleSave();
-      // 폼 취소 (목록으로)
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('pmVoucherMng');
-      // 탭 전환
-      } else if (cmd === 'tab-select') {
-        return onTabChange(param);
-      // 뷰모드 변경
-      } else if (cmd === 'tab-mode') {
-        uiState.tabMode2 = param;
-        return;
-      // 미리보기 서브탭 변경
-      } else if (cmd === 'previewTab-select') {
-        return onPreviewTabChange(param);
-      // 판매업체 모달 열기
-      } else if (cmd === 'vendorModal-open') {
-        uiState.showVendorModal = true;
-        return;
-      // 판매업체 모달 닫기
-      } else if (cmd === 'vendorModal-close') {
-        uiState.showVendorModal = false;
-        return;
-      // 판매업체 초기화
-      } else if (cmd === 'form-vendor-clear') {
-        form.vendorId = '';
-        form.chargeStaff = '';
-        return;
-      // SNS 모달 열기 (param: 'kakao' | 'email')
-      } else if (cmd === 'snsModal-open') {
-        return openSnsModal(param);
-      // SNS 모달 닫기
-      } else if (cmd === 'snsModal-close') {
-        snsModal.show = false;
-        return;
-      // SNS 전송
-      } else if (cmd === 'snsModal-send') {
-        return sendSns();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ PmVoucherDtl.js : handleSelectAction -> ', cmd, param);
-      // 판매업체 선택
-      if (cmd === 'vendorModal-select') {
-        return selectVendor(param.vendorId, param.vendorNm);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     /* BoGrid(bare) 컬럼 정의 — 발급내역 / 사용내역 */
     const issueGridColumns = [
       { key: 'issueNo',     label: '발급번호' },

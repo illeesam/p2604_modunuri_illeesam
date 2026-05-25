@@ -18,22 +18,6 @@ window.DpDispWidgetMng = {
     const widgets = reactive([]);
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
-    const searchParam = reactive(_initSearchParam());
-    /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
-    const applied = reactive({ type: '', status: '' });
-    const cfFilterDirty = computed(() =>
-      searchParam.searchValue !== applied.searchValue ||
-      searchParam.type !== applied.type ||
-      searchParam.status !== applied.status
-    );
-
-    const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -90,6 +74,22 @@ window.DpDispWidgetMng = {
       }
     };
 
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
+    const searchParam = reactive(_initSearchParam());
+    /* applied: 결과에 실제 반영된 검색 조건. searchParam 과 다르면 [조회] 버튼 강조 */
+    const applied = reactive({ type: '', status: '' });
+    const cfFilterDirty = computed(() =>
+      searchParam.searchValue !== applied.searchValue ||
+      searchParam.type !== applied.type ||
+      searchParam.status !== applied.status
+    );
+
+    const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* ===== 상세 인라인 패널 ===== */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */

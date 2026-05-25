@@ -32,23 +32,6 @@ window.SyContactDtl = {
     watch(() => uiState.tabMode2, v => { window._syContactDtlState.tabMode = v; });
 
     /* showTab — 표시 */
-    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
-
-    const form = reactive({
-      contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
-      contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',
-    });
-    const errors = reactive({});
-
-    const schema = yup.object({
-      contactTitle: yup.string().required('제목을 입력해주세요.'),
-      contactContent: yup.string().required('문의 내용을 입력해주세요.'),
-    });
-
-    const cfCurId       = computed(() => props.dtlId || form.contactId || null);
-    const cfHasId       = computed(() => !!cfCurId.value);
-    /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
-    const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -95,6 +78,23 @@ window.SyContactDtl = {
       }
     };
 
+    const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
+
+    const form = reactive({
+      contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
+      contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',
+    });
+    const errors = reactive({});
+
+    const schema = yup.object({
+      contactTitle: yup.string().required('제목을 입력해주세요.'),
+      contactContent: yup.string().required('문의 내용을 입력해주세요.'),
+    });
+
+    const cfCurId       = computed(() => props.dtlId || form.contactId || null);
+    const cfHasId       = computed(() => !!cfCurId.value);
+    /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
+    const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */

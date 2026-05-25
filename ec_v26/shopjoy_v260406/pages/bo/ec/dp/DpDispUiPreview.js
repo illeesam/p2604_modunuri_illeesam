@@ -18,6 +18,70 @@ const _WP_DispUiPreview = {
       return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
     });
 
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiPreview.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 적용
+      if (cmd === 'searchParam-apply') {
+        return onSearch();
+      // 검색조건 초기화 + 재적용
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 좌측 트리 전체 펼치기
+      } else if (cmd === 'pathTree-expand-all') {
+        return expandAll();
+      // 좌측 트리 전체 접기
+      } else if (cmd === 'pathTree-collapse-all') {
+        return collapseAll();
+      // 현재 그리드 초기화
+      } else if (cmd === 'preview-reset') {
+        return resetCurrent();
+      // 실제컨텐츠 토글
+      } else if (cmd === 'preview-toggle-real') {
+        gridState.showRealContent = !gridState.showRealContent;
+        return;
+      // 스팬 팝업 닫기
+      } else if (cmd === 'preview-close-span') {
+        return closeSpanPopup();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispUiPreview.js : handleSelectAction -> ', cmd, param);
+      // 좌측 트리 노드 토글
+      if (cmd === 'pathTree-toggle') {
+        return toggleNode(param);
+      // 좌측 트리 위젯 선택
+      } else if (cmd === 'pathTree-select') {
+        return onTreeSelect(param);
+      // 미리보기 그리드 탭 변경
+      } else if (cmd === 'preview-grid') {
+        uiState.previewGrid = param;
+        return;
+      // 미리보기 뷰포트 모드 변경
+      } else if (cmd === 'preview-viewport') {
+        uiState.viewportMode = param;
+        return;
+      // 슬롯 위치 스팬 팝업 토글
+      } else if (cmd === 'preview-span-popup') {
+        return toggleSpanPopup(param.e, param.idx);
+      // 슬롯 스팬 변경
+      } else if (cmd === 'preview-span-set') {
+        return setSpan(param.idx, param.axis, param.delta);
+      // 슬롯 제거
+      } else if (cmd === 'preview-slot-remove') {
+        return removeSlot(param);
+      // 대시보드 아이템 제거
+      } else if (cmd === 'preview-dash-remove') {
+        return removeDashItem(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== return (템플릿 노출) ===============================================
 
     return { cfChartBars };
@@ -252,71 +316,6 @@ window.DpDispUiPreview = {
       searchValue: ''});
 
     const applied = reactive({ type: '', status: '활성', dispEnv: 'PROD', searchType: '', searchValue: '', visibility: '' });
-
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispUiPreview.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 적용
-      if (cmd === 'searchParam-apply') {
-        return onSearch();
-      // 검색조건 초기화 + 재적용
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 좌측 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expand-all') {
-        return expandAll();
-      // 좌측 트리 전체 접기
-      } else if (cmd === 'pathTree-collapse-all') {
-        return collapseAll();
-      // 현재 그리드 초기화
-      } else if (cmd === 'preview-reset') {
-        return resetCurrent();
-      // 실제컨텐츠 토글
-      } else if (cmd === 'preview-toggle-real') {
-        gridState.showRealContent = !gridState.showRealContent;
-        return;
-      // 스팬 팝업 닫기
-      } else if (cmd === 'preview-close-span') {
-        return closeSpanPopup();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispUiPreview.js : handleSelectAction -> ', cmd, param);
-      // 좌측 트리 노드 토글
-      if (cmd === 'pathTree-toggle') {
-        return toggleNode(param);
-      // 좌측 트리 위젯 선택
-      } else if (cmd === 'pathTree-select') {
-        return onTreeSelect(param);
-      // 미리보기 그리드 탭 변경
-      } else if (cmd === 'preview-grid') {
-        uiState.previewGrid = param;
-        return;
-      // 미리보기 뷰포트 모드 변경
-      } else if (cmd === 'preview-viewport') {
-        uiState.viewportMode = param;
-        return;
-      // 슬롯 위치 스팬 팝업 토글
-      } else if (cmd === 'preview-span-popup') {
-        return toggleSpanPopup(param.e, param.idx);
-      // 슬롯 스팬 변경
-      } else if (cmd === 'preview-span-set') {
-        return setSpan(param.idx, param.axis, param.delta);
-      // 슬롯 제거
-      } else if (cmd === 'preview-slot-remove') {
-        return removeSlot(param);
-      // 대시보드 아이템 제거
-      } else if (cmd === 'preview-dash-remove') {
-        return removeDashItem(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
     /* fnLoadCodes — 공통코드 로드 */

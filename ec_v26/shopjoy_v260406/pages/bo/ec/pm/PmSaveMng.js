@@ -8,33 +8,6 @@ window.PmSaveMng = {
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 
-    // ===== Vue Composition API / boApp 전역 의존 ===========================
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-
-    // ===== 상태(reactive) 선언 =============================================
-    const saves = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, saveList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
-    const codes = reactive({
-      save_statuses: [],
-      save_issue_types: [],
-      promo_statuses: [],
-      date_range_opts: [],
-    });
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
-
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
-    };
-    const searchParam = reactive(_initSearchParam());
-
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmSaveMng.js : handleBtnAction -> ', cmd, param);
@@ -92,6 +65,32 @@ window.PmSaveMng = {
       }
     };
 
+    // ===== Vue Composition API / boApp 전역 의존 ===========================
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const showToast    = window.boApp.showToast;  // 토스트 알림
+    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
+    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
+
+    // ===== 상태(reactive) 선언 =============================================
+    const saves = reactive([]);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, saveList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const codes = reactive({
+      save_statuses: [],
+      save_issue_types: [],
+      promo_statuses: [],
+      date_range_opts: [],
+    });
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => {
+      const today = new Date(); const thisYear = today.getFullYear();
+      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
+    };
+    const searchParam = reactive(_initSearchParam());
     // ===== 공통코드 로딩 ===================================================
     /* 적립금 fnLoadCodes */
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================

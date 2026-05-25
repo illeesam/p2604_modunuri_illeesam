@@ -197,12 +197,16 @@ window.ZdLocalStorage = {
   template: `
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">localStorage 정보 관리</div>
+  <div class="page-title">
+    localStorage 정보 관리
+  </div>
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <div style="display: flex; gap: 16px; margin-bottom: 16px;">
       <div style="flex: 1;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 600;">키 검색</label>
+        <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+          키 검색
+        </label>
         <input
           v-model="uiState.filterKey"
           type="text"
@@ -210,8 +214,12 @@ window.ZdLocalStorage = {
           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
       </div>
       <div style="flex: 0 0 auto; display: flex; gap: 8px; align-items: flex-end;">
-        <button @click="handleBtnAction('lsItems-reload')" class="btn btn-blue" style="padding: 8px 16px;">새로고침</button>
-        <button @click="handleBtnAction('lsItems-clear-all')" class="btn btn-danger" style="padding: 8px 16px;">전체 삭제</button>
+        <button @click="handleBtnAction('lsItems-reload')" class="btn btn-blue" style="padding: 8px 16px;">
+          새로고침
+        </button>
+        <button @click="handleBtnAction('lsItems-clear-all')" class="btn btn-danger" style="padding: 8px 16px;">
+          전체 삭제
+        </button>
       </div>
     </div>
     <div style="overflow-x: auto; position: relative; user-select: none;" :style="{ cursor: isResizing ? 'col-resize' : 'auto' }">
@@ -219,21 +227,28 @@ window.ZdLocalStorage = {
       <table class="bo-table" style="width: 100%;">
         <thead>
           <tr>
-            <th style="width: 25%; text-align: left;">Key</th>
+            <th style="width: 25%; text-align: left;">
+              Key
+            </th>
             <th :style="{ width: uiState.valueColWidth + '%', textAlign: 'left', position: 'relative' }">
               Value
               <div
                 @mousedown="handleSelectAction('lsItems-col-resize', $event)"
                 style="position: absolute; right: -5px; top: 0; width: 10px; height: 100%; cursor: col-resize; background: transparent; display: flex; align-items: center;">
-                <div style="width: 1px; height: 80%; background: #0066cc; opacity: 0; transition: opacity 0.2s;"></div>
+                <div style="width: 1px; height: 80%; background: #0066cc; opacity: 0; transition: opacity 0.2s;">
+                </div>
               </div>
             </th>
-            <th :style="{ width: (100 - 25 - uiState.valueColWidth) + '%', textAlign: 'center' }">작업</th>
+            <th :style="{ width: (100 - 25 - uiState.valueColWidth) + '%', textAlign: 'center' }">
+              작업
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="item in cfFilteredItems" :key="item.key" style="border-bottom: 1px solid #eee;">
-            <td style="padding: 12px; word-break: break-all;">{{ item.key }}</td>
+            <td style="padding: 12px; word-break: break-all;">
+              {{ item.key }}
+            </td>
             <td style="padding: 12px;">
               <template v-if="uiState.editingKey === item.key">
                 <textarea
@@ -241,37 +256,47 @@ window.ZdLocalStorage = {
                   @input="uiState.editingValue = $event.target.value"
                   style="width: 100%; height: 80px; padding: 8px; border: 1px solid #0066cc; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical;">
                 </textarea>
-                <div style="display: flex; gap: 6px; margin-top: 8px;">
-                  <button @click="handleBtnAction('lsItems-row-save', item.key)" class="btn btn-blue" style="padding: 4px 12px; font-size: 12px;">저장</button>
-                  <button @click="handleBtnAction('lsItems-row-cancel')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">취소</button>
-                </div>
-              </template>
-              <template v-else>
-                <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 8px; border-radius: 3px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; border: 1px solid #eee;">
-                  {{ parseValue(item.value) }}
-                </div>
-              </template>
-            </td>
-            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
-            <td style="padding: 12px; text-align: center; white-space: nowrap;">
-              <button @click="handleBtnAction('lsItems-row-copy', item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
-                복사
-              </button>
-              <button v-if="uiState.editingKey !== item.key" @click="handleBtnAction('lsItems-row-edit', { key: item.key, value: item.value })" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
-                수정
-              </button>
-              <button @click="handleBtnAction('lsItems-row-delete', item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">삭제</button>
-            </td>
-          </tr>
-          <tr v-if="cfFilteredItems.length === 0">
-            <td colspan="3" style="text-align: center; padding: 20px; color: #999;">데이터가 없습니다.</td>
-          </tr>
-        </tbody>
-      </table>
+                  <div style="display: flex; gap: 6px; margin-top: 8px;">
+                    <button @click="handleBtnAction('lsItems-row-save', item.key)" class="btn btn-blue" style="padding: 4px 12px; font-size: 12px;">
+                      저장
+                    </button>
+                    <button @click="handleBtnAction('lsItems-row-cancel')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">
+                      취소
+                    </button>
+                  </div>
+                </template>
+                <template v-else>
+                  <div style="max-height: 60px; overflow-y: auto; background: #f9f9f9; padding: 8px; border-radius: 3px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; border: 1px solid #eee;">
+                    {{ parseValue(item.value) }}
+                  </div>
+                </template>
+              </td>
+              <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
+              <td style="padding: 12px; text-align: center; white-space: nowrap;">
+                <button @click="handleBtnAction('lsItems-row-copy', item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                  복사
+                </button>
+                <button v-if="uiState.editingKey !== item.key" @click="handleBtnAction('lsItems-row-edit', { key: item.key, value: item.value })" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                  수정
+                </button>
+                <button @click="handleBtnAction('lsItems-row-delete', item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">
+                  삭제
+                </button>
+              </td>
+            </tr>
+            <tr v-if="cfFilteredItems.length === 0">
+              <td colspan="3" style="text-align: center; padding: 20px; color: #999;">
+                데이터가 없습니다.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top: 12px; font-size: 12px; color: #666;">
+        총 {{ cfFilteredItems.length }}개 항목
+      </div>
     </div>
-    <div style="margin-top: 12px; font-size: 12px; color: #666;">총 {{ cfFilteredItems.length }}개 항목</div>
   </div>
-</div>
-
-  <!-- ===== □. 카드 영역 =================================================== -->`
+  <!-- ===== □. 카드 영역 =================================================== -->
+`
 };

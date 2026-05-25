@@ -24,19 +24,6 @@ window.PdProdHist = {
     const botTab   = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
-    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
-
-    watch(botTab, v => {
-      window._ecProdHistState.tab = v;
-      handleLoadTab(v);
-    });
-
-    watch(() => uiState.tabMode2, v => { window._ecProdHistState.tabMode = v; });
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PdProdHist.js : handleBtnAction -> ', cmd, param);
@@ -67,6 +54,18 @@ window.PdProdHist = {
       }
     };
 
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
+
+    watch(botTab, v => {
+      window._ecProdHistState.tab = v;
+      handleLoadTab(v);
+    });
+
+    watch(() => uiState.tabMode2, v => { window._ecProdHistState.tabMode = v; });
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     /* 상품 showTab */
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
