@@ -553,7 +553,7 @@ window.BaseAttachOne = {
 <div style="display:inline-flex;flex-direction:column;align-items:center;gap:8px;">
   <input ref="inputRef" type="file" style="display:none;" :accept="allowExt.split(',').map(e=>'.'+e.trim()).join(',')" @change="onFileChange" />
   <!-- 이미지 미리보기 박스 -->
-  <div @click="handleBtnAction('attach-open-picker')"
+  <div @click.prevent="handleBtnAction('attach-open-picker')"
     :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
     @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
     @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"

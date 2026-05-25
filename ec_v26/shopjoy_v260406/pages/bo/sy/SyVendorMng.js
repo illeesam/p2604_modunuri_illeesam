@@ -73,10 +73,11 @@ window.SyVendorMng = {
       // 그리드 행 삭제
       } else if (cmd === 'vendors-rowDelete') {
         return handleDelete(param);
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
+      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 닫기
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         pager.pageNo = 1;
+        detailPanel.selectedId = null;
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);

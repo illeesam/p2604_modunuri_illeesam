@@ -149,8 +149,8 @@ window.DpDispAreaMng = {
     /* fnPathLabel — 경로 라벨 */
     const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    /* selectNode — 노드 선택 (상세 패널 닫기) */
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchData('DEFAULT'); };
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {

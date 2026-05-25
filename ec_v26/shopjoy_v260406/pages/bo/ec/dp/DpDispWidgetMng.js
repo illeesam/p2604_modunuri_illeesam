@@ -240,7 +240,7 @@ window.DpDispWidgetMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(); };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchData(); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {

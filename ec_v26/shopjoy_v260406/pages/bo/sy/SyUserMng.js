@@ -81,10 +81,11 @@ window.SyUserMng = {
       // 그리드 행 삭제
       } else if (cmd === 'users-rowDelete') {
         return handleDelete(param);
-      // 부서 트리 노드 선택 → 우측 그리드 필터링
+      // 부서 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 닫기
       } else if (cmd === 'deptTree-select') {
         uiState.selectedDeptId = param;
         pager.pageNo = 1;
+        detailPanel.selectedId = null;
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);

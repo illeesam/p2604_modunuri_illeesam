@@ -671,6 +671,7 @@ window.BoGrid = {
                   :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
                     {{ U.cellText(col, row) }}
                   </span>
+                  <span v-else-if="col.html" v-html="U.cellText(col, row)"></span>
                   <template v-else>
                     {{ U.cellText(col, row) }}
                   </template>

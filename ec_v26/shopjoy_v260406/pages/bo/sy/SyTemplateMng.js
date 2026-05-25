@@ -65,10 +65,11 @@ window.SyTemplateMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyTemplateMng.js : handleSelectAction -> ', cmd, param);
-      // 좌측 경로 트리 노드 선택 → 그리드 필터링
+      // 좌측 경로 트리 노드 선택 → 그리드 필터링 + 상세 패널 닫기
       if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         pager.pageNo = 1;
+        detailPanel.selectedId = null;
         return handleSearchList();
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'templates-sort') {
