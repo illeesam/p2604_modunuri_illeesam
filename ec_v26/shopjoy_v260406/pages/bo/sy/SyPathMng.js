@@ -110,7 +110,7 @@ window.SyPathMng = {
     const uiState   = reactive({ selectedPathId: null }); // UI 상태
 
     const gridRows  = reactive([]);                   // 그리드 행
-    const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [10, 20, 50, 100], pageCond: {} });
+    const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     let _newId      = -1;                             // 신규 행 임시 ID
 
     /* -- 부모경로 선택 모달 -- */

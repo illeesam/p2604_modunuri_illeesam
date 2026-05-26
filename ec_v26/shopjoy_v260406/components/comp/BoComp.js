@@ -574,7 +574,7 @@ window.BoCategoryTree = {
 window.BoPager = {
   name: 'BoPager',
   props: {
-    pager:        { type: Object,   default: () => ({ pageNo: 1, pageTotalPage: 1, pageNums: [1], pageSize: 20, pageSizes: [10, 20, 50, 100] }) },
+    pager:        { type: Object,   default: () => ({ pageNo: 1, pageTotalPage: 1, pageNums: [1], pageSize: 20, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] }) },
     onSetPage:    { type: Function, default: () => {} },
     onSizeChange: { type: Function, default: () => {} },
   },

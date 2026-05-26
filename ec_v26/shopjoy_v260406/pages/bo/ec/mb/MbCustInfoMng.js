@@ -103,7 +103,7 @@
 
       /* ===== 페이저 (탭별 + 모달) ===== */
       const PAGE_SIZE = 10;
-      const _newPager = () => reactive({ pageNo: 1, pageSize: PAGE_SIZE, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 50, 100] });
+      const _newPager = () => reactive({ pageNo: 1, pageSize: PAGE_SIZE, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
       const ordersPager   = _newPager();
       const claimsPager   = _newPager();
       const dlivPager     = _newPager();

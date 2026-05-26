@@ -2580,7 +2580,7 @@ window.CategorySelectModal = {
     const { reactive, computed, watch } = Vue;
 
     const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [10, 20, 50, 100] });
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
 
     /* cfAllCats — 활성 카테고리 (parent-child 평탄화, _depth 부여) */
     const cfAllCats = computed(() => {
@@ -5502,7 +5502,7 @@ window.BoCodeGrpModal = {
     const error = ref('');
     const tab = ref('list'); // 'list' | 'tree'
     const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [10, 20, 50, 100] });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
 
     /* 원본 row 키(codeVal/codeNm/codeSortOrd/codeLevel/parentCodeValue) → 화면용 정규화 */
     const fnNorm = (c) => ({
@@ -5717,12 +5717,17 @@ window.BoCodeGrpModal = {
           등록된 코드가 없습니다.
         </div>
         <!-- ── 일반 코드목록 ── -->
-        <bo-grid v-else-if="tab==='list'" bare
-          :columns="codeGridColumns" :rows="cfPageCodes" :pager="pager"
-          row-key="codeId" row-clickable
-          empty-text="검색 결과가 없습니다."
-          @row-click="row => handleSelectAction('codes-pick', row)"
-          @set-page="onSetPage" @size-change="onSizeChange" />
+        <template v-else-if="tab==='list'">
+          <bo-grid bare
+            :columns="codeGridColumns" :rows="cfPageCodes" :pager="pager"
+            row-key="codeId" row-clickable
+            empty-text="검색 결과가 없습니다."
+            @row-click="row => handleSelectAction('codes-pick', row)"
+            @set-page="onSetPage" @size-change="onSizeChange" />
+          <div v-if="pager.pageTotalCount > 0" style="margin-top:10px;white-space:nowrap;overflow-x:auto;">
+            <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" style="margin-top:0;min-height:34px;" />
+          </div>
+        </template>
         <!-- ── 트리목록 ── -->
         <div v-else-if="tab==='tree'" style="font-size:12px;">
           <div v-if="!cfTree.length" style="padding:32px;text-align:center;color:#aaa;">

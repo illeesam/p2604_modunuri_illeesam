@@ -27,7 +27,7 @@ window.SyMemberLoginHist = {
     const codes = reactive({ login_results: [], date_range_opts: [] });
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes:[10,20,50,100], pageCond:{} });
+    const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond:{} });
 
     /* ===== 목록 데이터 ===== */
     const logs   = reactive([]);                  // 로그인 로그

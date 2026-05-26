@@ -17,7 +17,7 @@ window.SyAttachMng = {
 
     const pager = reactive({
       pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
-      pageNums: [], pageSizes: [10, 20, 50, 100],
+      pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500],
     });
     /* 첨부그룹 페이저 (좌측 영역 페이징) */
     const grpPager = reactive({

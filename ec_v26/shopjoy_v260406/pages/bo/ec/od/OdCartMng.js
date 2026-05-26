@@ -14,7 +14,7 @@ window.OdCartMng = {
 
     /* ── 목록 상태 ── */
     const carts = reactive([]);                                                // 장바구니 목록 (메인 그리드 데이터)
-    const pager  = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 50, 100] });
+    const pager  = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [], cart_date_types: [] });
 
@@ -304,8 +304,6 @@ window.OdCartMng = {
         </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('carts-pager-setPage', n)"
-      :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->

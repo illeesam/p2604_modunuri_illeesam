@@ -66,7 +66,7 @@ window.SyI18nMng = {
       return { searchType: '', searchValue: '', scope: '', use: '' };
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
-    const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const LANGS       = ['ko','en','ja','in']; // 지원 언어
     const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };

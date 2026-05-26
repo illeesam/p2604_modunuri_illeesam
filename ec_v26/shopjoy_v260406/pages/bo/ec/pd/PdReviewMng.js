@@ -150,7 +150,7 @@ window.PdReviewMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
-    const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
 
     /* _initSearchParam — 초기화 */
