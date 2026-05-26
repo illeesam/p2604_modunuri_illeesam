@@ -45,9 +45,9 @@ public class SyUserDto {
         private Integer loginFailCnt;
         private String userMemo;
         private String regBy;
-        private String regDate;
+        private LocalDateTime regDate;
         private String updBy;
-        private String updDate;
+        private LocalDateTime updDate;
         private String authMethodCd;
         private LocalDateTime lastLoginDate;
         private String profileAttachId;

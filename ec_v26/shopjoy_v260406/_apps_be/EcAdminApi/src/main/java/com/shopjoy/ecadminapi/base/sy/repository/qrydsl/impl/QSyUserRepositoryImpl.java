@@ -4,7 +4,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -57,9 +56,9 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                         syUser.loginFailCnt,
                         syUser.userMemo,
                         syUser.regBy,
-                        Expressions.stringTemplate("to_char({0}, 'YYYYMMDDHH24MISS')", syUser.regDate).as("regDate"),
+                        syUser.regDate,
                         syUser.updBy,
-                        Expressions.stringTemplate("to_char({0}, 'YYYYMMDDHH24MISS')", syUser.updDate).as("updDate"),
+                        syUser.updDate,
                         syUser.authMethodCd,
                         syUser.lastLoginDate,
                         syUser.profileAttachId,
