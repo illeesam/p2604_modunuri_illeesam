@@ -142,7 +142,11 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, r.regDate));
+
+            /* sortOrd ASC + regDate ASC (전역 정책) */
+            orders.add(new OrderSpecifier<>(Order.ASC, r.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, r.regDate));
+
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -157,10 +161,14 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
                 } else if ("regDate".equals(field)) {
                     orders.add(new OrderSpecifier(order, r.regDate));
                 }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, r.sortOrd)); }
             }
         }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
+        /* unknown sort → sortOrd ASC + regDate ASC fallback */
+        if (orders.isEmpty()) {
+            orders.add(new OrderSpecifier<>(Order.ASC, r.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, r.regDate));
+        }
         return orders;
     }
 

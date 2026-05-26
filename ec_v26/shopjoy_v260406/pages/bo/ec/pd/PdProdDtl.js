@@ -222,7 +222,7 @@ window.PdProdDtl = {
           const skuList = p.prodSkus || [];
           tabData.skus.splice(0, tabData.skus.length, ...skuList.map(s => ({ ...s, _id: 'sku_' + s.skuId, _optKey: s.skuId, _nm1: s.optItemNm1 || '', _nm2: s.optItemNm2 || '', stock: s.prodOptStock || 0 })));
 
-          // 상품설명 [6]
+          // 상품설명 [6] — 백엔드에서 sortOrd ASC 기본 정렬
           const contentList = r[6].data?.data || [];
           tabData.content.splice(0, tabData.content.length, ...contentList);
 
@@ -668,14 +668,31 @@ window.PdProdDtl = {
     /* onBlockDragOver — 이벤트 */
     const onBlockDragOver  = (idx) => { uiState.dragoverBlockIdx = idx; };
 
-    /* onBlockDrop — 이벤트 */
-    const onBlockDrop = () => {
+    /* onBlockDrop — 이벤트. 정책서 §19 v2: 정렬변경은 즉시 저장 (본문 미저장 편집은 건드리지 않음) */
+    const onBlockDrop = async () => {
       if (uiState.dragBlockIdx === null || uiState.dragBlockIdx === uiState.dragoverBlockIdx) { uiState.dragBlockIdx = null; uiState.dragoverBlockIdx = null; return; }
       const items = [...contentBlocks];
       const [moved] = items.splice(uiState.dragBlockIdx, 1);
       items.splice(uiState.dragoverBlockIdx, 0, moved);
       contentBlocks.splice(0, contentBlocks.length, ...items);
       uiState.dragBlockIdx = null; uiState.dragoverBlockIdx = null;
+
+      /* 저장된 블록들만 sort 즉시 저장 — DB에 없는 신규 블록(prodContentId 없음)은 부모 [저장] 시 일괄 처리 */
+      const prodId = cfCurProdId.value;
+      if (!prodId) { return; }
+      let ord = 0;
+      const list = [];
+      contentBlocks.forEach(b => {
+        ord++;
+        if (b?.prodContentId != null && b.prodContentId !== '') {
+          list.push({ id: b.prodContentId, sortOrd: ord });
+        }
+      });
+      if (list.length === 0) { return; }
+      try {
+        await boApiSvc.pdProd.updateSortOrds(prodId, list, '상품관리', '상품설명순서변경');
+        if (showToast) { showToast('순서가 저장되었습니다.', 'success'); }
+      } catch (err) { _afterApiErr(err); }
     };
     // -- 스플릿 패널 + 미리보기
             const contentSplitRef = ref(null);

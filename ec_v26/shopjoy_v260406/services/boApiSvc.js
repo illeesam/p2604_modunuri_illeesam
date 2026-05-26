@@ -227,6 +227,7 @@
     getSkus(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/skus`,     hdr(uiNm, cmdNm)); },
     getContents(_id, uiNm, cmdNm)  { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/contents`, hdr(uiNm, cmdNm)); },
     saveContents(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/pd/prod/${_id}/contents`, body, hdr(uiNm, cmdNm)); },
+    updateSortOrds(_id, list, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.patch(`/bo/ec/pd/prod/${_id}/contents/sort`, { list }, hdr(uiNm, cmdNm)); },
     saveOpts(_id, body, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/pd/prod/${_id}/opts`,     body, hdr(uiNm, cmdNm)); },
     saveImages(_id, body, uiNm, cmdNm)   { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/pd/prod/${_id}/images`,   body, hdr(uiNm, cmdNm)); },
     getRels(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/pd/prod/${_id}/rels`,     hdr(uiNm, cmdNm)); },

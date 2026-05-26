@@ -164,6 +164,7 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
                 } else if ("regDate".equals(field)) {
                     orders.add(new OrderSpecifier(order, s.regDate));
                 }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, s.sortOrd)); }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */

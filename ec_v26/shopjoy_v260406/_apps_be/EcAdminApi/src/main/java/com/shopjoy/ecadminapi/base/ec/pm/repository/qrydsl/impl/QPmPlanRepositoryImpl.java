@@ -170,7 +170,11 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, p.regDate));
+
+            /* sortOrd ASC + regDate ASC (전역 정책) */
+            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
+
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -187,10 +191,14 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 } else if ("regDate".equals(field)) {
                     orders.add(new OrderSpecifier(order, p.regDate));
                 }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, p.sortOrd)); }
             }
         }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, p.regDate));
+        /* unknown sort → sortOrd ASC + regDate ASC fallback */
+        if (orders.isEmpty()) {
+            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
+        }
         return orders;
     }
 

@@ -324,6 +324,44 @@ public class BoPdProdTabController {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
+    /**
+     * 상품설명 블록 정렬순서만 즉시 저장.
+     * body 예: { "list": [{ "id": "PC...", "sortOrd": 1 }, { "id": "PC...", "sortOrd": 2 }, ...] }
+     * 본문(content) 등 미저장 편집은 건드리지 않음.
+     */
+    @PatchMapping("/contents/sort")
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> updateContentsSort(
+            @PathVariable("prodId") String prodId,
+            @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> list = body != null && body.get("list") instanceof List
+            ? (List<Map<String, Object>>) body.get("list") : List.of();
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Map<String, Object> row : list) {
+            if (row == null) { continue; }
+            Object idObj = row.get("id");
+            Object sortObj = row.get("sortOrd");
+            if (idObj == null || sortObj == null) { continue; }
+            String id = String.valueOf(idObj);
+            if (id.isBlank()) { continue; }
+            int sortOrd;
+            try { sortOrd = Integer.parseInt(String.valueOf(sortObj)); } catch (Exception e) { continue; }
+            PdProdContent entity = pdProdContentRepository.findById(id).orElse(null);
+            if (entity == null) { continue; }
+            if (!prodId.equals(entity.getProdId())) { continue; }
+            if (entity.getSortOrd() == null || entity.getSortOrd() != sortOrd) {
+                entity.setSortOrd(sortOrd);
+                entity.setUpdBy(authId);
+                entity.setUpdDate(now);
+                pdProdContentRepository.save(entity);
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.ok(null, "순서가 저장되었습니다."));
+    }
+
     /** rels */
     @GetMapping("/rels")
     public ResponseEntity<ApiResponse<List<PdProdRelDto.Item>>> rels(

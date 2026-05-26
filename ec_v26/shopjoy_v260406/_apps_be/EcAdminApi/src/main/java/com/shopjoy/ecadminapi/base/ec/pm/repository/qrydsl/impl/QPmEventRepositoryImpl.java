@@ -165,7 +165,11 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, e.regDate));
+
+            /* sortOrd ASC + regDate ASC (전역 정책) */
+            orders.add(new OrderSpecifier<>(Order.ASC, e.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, e.regDate));
+
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -182,10 +186,14 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 } else if ("regDate".equals(field)) {
                     orders.add(new OrderSpecifier(order, e.regDate));
                 }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, e.sortOrd)); }
             }
         }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
+        /* unknown sort → sortOrd ASC + regDate ASC fallback */
+        if (orders.isEmpty()) {
+            orders.add(new OrderSpecifier<>(Order.ASC, e.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, e.regDate));
+        }
         return orders;
     }
 
