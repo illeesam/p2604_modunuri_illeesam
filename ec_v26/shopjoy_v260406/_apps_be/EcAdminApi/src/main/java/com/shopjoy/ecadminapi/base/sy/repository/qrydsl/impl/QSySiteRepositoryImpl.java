@@ -174,8 +174,6 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         String sort = q == null ? null : q.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, s.regDate));
-            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, s.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");

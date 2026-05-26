@@ -205,25 +205,28 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyUserDto.Request s) {
-        String[] sortParts = s.getSort().split(",");
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        for (String part : sortParts) {
-            String trimmed = part.trim();
-            String[] fieldAndDir = trimmed.split(" ");
-            if (fieldAndDir.length == 2) {
-                String field = fieldAndDir[0];
-                String dir = fieldAndDir[1];
-                Order order = "desc".equalsIgnoreCase(dir) ? Order.DESC : Order.ASC;
-                if ("userId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syUser.userId));
-                } else if ("userNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syUser.userNm));
-                } else if ("loginId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syUser.loginId));
-                } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syUser.regDate));
-                } else if ("updDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, syUser.updDate));
+        String sort = s == null ? null : s.getSort();
+        if (StringUtils.hasText(sort)) {
+            String[] sortParts = sort.split(",");
+            for (String part : sortParts) {
+                String trimmed = part.trim();
+                String[] fieldAndDir = trimmed.split(" ");
+                if (fieldAndDir.length == 2) {
+                    String field = fieldAndDir[0];
+                    String dir = fieldAndDir[1];
+                    Order order = "desc".equalsIgnoreCase(dir) ? Order.DESC : Order.ASC;
+                    if ("userId".equals(field)) {
+                        orders.add(new OrderSpecifier(order, syUser.userId));
+                    } else if ("userNm".equals(field)) {
+                        orders.add(new OrderSpecifier(order, syUser.userNm));
+                    } else if ("loginId".equals(field)) {
+                        orders.add(new OrderSpecifier(order, syUser.loginId));
+                    } else if ("regDate".equals(field)) {
+                        orders.add(new OrderSpecifier(order, syUser.regDate));
+                    } else if ("updDate".equals(field)) {
+                        orders.add(new OrderSpecifier(order, syUser.updDate));
+                    }
                 }
             }
         }

@@ -138,8 +138,6 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, h.regDate));
-            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, h.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");

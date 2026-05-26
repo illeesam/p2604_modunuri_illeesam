@@ -152,8 +152,6 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, r.regDate));
-            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");
