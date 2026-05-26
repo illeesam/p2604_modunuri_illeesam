@@ -102,6 +102,7 @@ public class PmGiftService {
     /* 사은품 수정 */
     @Transactional
     public PmGift update(String id, PmGift body) {
+        CmUtil.requireId(id, "id", this);
         PmGift entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "giftId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmGiftService {
     /* 사은품 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmGift entity = findById(id);
         pmGiftRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmGiftService {
     /* 사은품 목록저장 */
     @Transactional
     public void saveList(List<PmGift> rows) {
+        CmUtil.requireRowIds(rows, PmGift::getGiftId, "U", "giftId", this);
+        CmUtil.requireRowIds(rows, PmGift::getGiftId, "D", "giftId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getGiftId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmGift::getGiftId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmGiftService {
             em.clear();
         }
         List<PmGift> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getGiftId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmGift row : updateRows) {
             PmGift entity = findById(row.getGiftId());

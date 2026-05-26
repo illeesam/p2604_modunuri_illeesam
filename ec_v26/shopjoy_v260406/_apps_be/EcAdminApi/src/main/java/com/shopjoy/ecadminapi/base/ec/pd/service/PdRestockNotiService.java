@@ -102,6 +102,7 @@ public class PdRestockNotiService {
     /* 재입고 알림 수정 */
     @Transactional
     public PdRestockNoti update(String id, PdRestockNoti body) {
+        CmUtil.requireId(id, "id", this);
         PdRestockNoti entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "restockNotiId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdRestockNotiService {
     /* 재입고 알림 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdRestockNoti entity = findById(id);
         pdRestockNotiRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdRestockNotiService {
     /* 재입고 알림 목록저장 */
     @Transactional
     public void saveList(List<PdRestockNoti> rows) {
+        CmUtil.requireRowIds(rows, PdRestockNoti::getRestockNotiId, "U", "restockNotiId", this);
+        CmUtil.requireRowIds(rows, PdRestockNoti::getRestockNotiId, "D", "restockNotiId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getRestockNotiId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdRestockNoti::getRestockNotiId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdRestockNotiService {
             em.clear();
         }
         List<PdRestockNoti> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getRestockNotiId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdRestockNoti row : updateRows) {
             PdRestockNoti entity = findById(row.getRestockNotiId());

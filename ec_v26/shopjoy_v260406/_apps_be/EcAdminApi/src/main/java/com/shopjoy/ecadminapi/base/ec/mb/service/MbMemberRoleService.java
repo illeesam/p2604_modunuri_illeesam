@@ -102,6 +102,7 @@ public class MbMemberRoleService {
     /* 회원 역할 연결 수정 */
     @Transactional
     public MbMemberRole update(String id, MbMemberRole body) {
+        CmUtil.requireId(id, "id", this);
         MbMemberRole entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "memberRoleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbMemberRoleService {
     /* 회원 역할 연결 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbMemberRole entity = findById(id);
         mbMemberRoleRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbMemberRoleService {
     /* 회원 역할 연결 목록저장 */
     @Transactional
     public void saveList(List<MbMemberRole> rows) {
+        CmUtil.requireRowIds(rows, MbMemberRole::getMemberRoleId, "U", "memberRoleId", this);
+        CmUtil.requireRowIds(rows, MbMemberRole::getMemberRoleId, "D", "memberRoleId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getMemberRoleId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbMemberRole::getMemberRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbMemberRoleService {
             em.clear();
         }
         List<MbMemberRole> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberRoleId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbMemberRole row : updateRows) {
             MbMemberRole entity = findById(row.getMemberRoleId());

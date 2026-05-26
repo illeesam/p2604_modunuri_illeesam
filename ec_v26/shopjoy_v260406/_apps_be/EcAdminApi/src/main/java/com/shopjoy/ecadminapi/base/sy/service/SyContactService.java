@@ -102,6 +102,7 @@ public class SyContactService {
     /* 문의 수정 */
     @Transactional
     public SyContact update(String id, SyContact body) {
+        CmUtil.requireId(id, "id", this);
         SyContact entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "contactId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyContactService {
     /* 문의 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyContact entity = findById(id);
         syContactRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyContactService {
     /* 문의 목록저장 */
     @Transactional
     public void saveList(List<SyContact> rows) {
+        CmUtil.requireRowIds(rows, SyContact::getContactId, "U", "contactId", this);
+        CmUtil.requireRowIds(rows, SyContact::getContactId, "D", "contactId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getContactId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyContact::getContactId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyContactService {
             em.clear();
         }
         List<SyContact> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getContactId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyContact row : updateRows) {
             SyContact entity = findById(row.getContactId());

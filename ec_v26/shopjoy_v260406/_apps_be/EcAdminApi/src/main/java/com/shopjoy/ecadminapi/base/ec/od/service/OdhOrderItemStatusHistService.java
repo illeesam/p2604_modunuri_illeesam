@@ -102,6 +102,7 @@ public class OdhOrderItemStatusHistService {
     /* 주문 아이템 상태 이력 수정 */
     @Transactional
     public OdhOrderItemStatusHist update(String id, OdhOrderItemStatusHist body) {
+        CmUtil.requireId(id, "id", this);
         OdhOrderItemStatusHist entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "orderItemStatusHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdhOrderItemStatusHistService {
     /* 주문 아이템 상태 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdhOrderItemStatusHist entity = findById(id);
         odhOrderItemStatusHistRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdhOrderItemStatusHistService {
     /* 주문 아이템 상태 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhOrderItemStatusHist> rows) {
+        CmUtil.requireRowIds(rows, OdhOrderItemStatusHist::getOrderItemStatusHistId, "U", "orderItemStatusHistId", this);
+        CmUtil.requireRowIds(rows, OdhOrderItemStatusHist::getOrderItemStatusHistId, "D", "orderItemStatusHistId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getOrderItemStatusHistId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdhOrderItemStatusHist::getOrderItemStatusHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdhOrderItemStatusHistService {
             em.clear();
         }
         List<OdhOrderItemStatusHist> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderItemStatusHistId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdhOrderItemStatusHist row : updateRows) {
             OdhOrderItemStatusHist entity = findById(row.getOrderItemStatusHistId());

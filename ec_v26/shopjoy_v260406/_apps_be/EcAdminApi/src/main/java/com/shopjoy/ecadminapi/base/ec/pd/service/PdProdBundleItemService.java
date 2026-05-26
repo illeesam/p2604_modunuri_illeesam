@@ -102,6 +102,7 @@ public class PdProdBundleItemService {
     /* 묶음상품 구성 수정 */
     @Transactional
     public PdProdBundleItem update(String id, PdProdBundleItem body) {
+        CmUtil.requireId(id, "id", this);
         PdProdBundleItem entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "bundleItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdProdBundleItemService {
     /* 묶음상품 구성 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdProdBundleItem entity = findById(id);
         pdProdBundleItemRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdProdBundleItemService {
     /* 묶음상품 구성 목록저장 */
     @Transactional
     public void saveList(List<PdProdBundleItem> rows) {
+        CmUtil.requireRowIds(rows, PdProdBundleItem::getBundleItemId, "U", "bundleItemId", this);
+        CmUtil.requireRowIds(rows, PdProdBundleItem::getBundleItemId, "D", "bundleItemId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBundleItemId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdProdBundleItem::getBundleItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdProdBundleItemService {
             em.clear();
         }
         List<PdProdBundleItem> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBundleItemId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdProdBundleItem row : updateRows) {
             PdProdBundleItem entity = findById(row.getBundleItemId());

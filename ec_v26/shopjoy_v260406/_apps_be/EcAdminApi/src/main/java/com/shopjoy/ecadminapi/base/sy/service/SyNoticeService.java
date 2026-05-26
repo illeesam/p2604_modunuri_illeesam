@@ -102,6 +102,7 @@ public class SyNoticeService {
     /* 공지사항 수정 */
     @Transactional
     public SyNotice update(String id, SyNotice body) {
+        CmUtil.requireId(id, "id", this);
         SyNotice entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "noticeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyNoticeService {
     /* 공지사항 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyNotice entity = findById(id);
         syNoticeRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyNoticeService {
     /* 공지사항 목록저장 */
     @Transactional
     public void saveList(List<SyNotice> rows) {
+        CmUtil.requireRowIds(rows, SyNotice::getNoticeId, "U", "noticeId", this);
+        CmUtil.requireRowIds(rows, SyNotice::getNoticeId, "D", "noticeId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getNoticeId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyNotice::getNoticeId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyNoticeService {
             em.clear();
         }
         List<SyNotice> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getNoticeId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyNotice row : updateRows) {
             SyNotice entity = findById(row.getNoticeId());

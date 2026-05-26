@@ -102,6 +102,7 @@ public class SyTemplateService {
     /* 템플릿 수정 */
     @Transactional
     public SyTemplate update(String id, SyTemplate body) {
+        CmUtil.requireId(id, "id", this);
         SyTemplate entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "templateId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyTemplateService {
     /* 템플릿 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyTemplate entity = findById(id);
         syTemplateRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyTemplateService {
     /* 템플릿 목록저장 */
     @Transactional
     public void saveList(List<SyTemplate> rows) {
+        CmUtil.requireRowIds(rows, SyTemplate::getTemplateId, "U", "templateId", this);
+        CmUtil.requireRowIds(rows, SyTemplate::getTemplateId, "D", "templateId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getTemplateId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyTemplate::getTemplateId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyTemplateService {
             em.clear();
         }
         List<SyTemplate> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getTemplateId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyTemplate row : updateRows) {
             SyTemplate entity = findById(row.getTemplateId());

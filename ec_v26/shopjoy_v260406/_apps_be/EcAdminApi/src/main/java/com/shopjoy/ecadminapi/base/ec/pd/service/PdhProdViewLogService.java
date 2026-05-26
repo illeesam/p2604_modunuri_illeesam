@@ -102,6 +102,7 @@ public class PdhProdViewLogService {
     /* 상품 조회 로그 수정 */
     @Transactional
     public PdhProdViewLog update(String id, PdhProdViewLog body) {
+        CmUtil.requireId(id, "id", this);
         PdhProdViewLog entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "logId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdhProdViewLogService {
     /* 상품 조회 로그 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdhProdViewLog entity = findById(id);
         pdhProdViewLogRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdhProdViewLogService {
     /* 상품 조회 로그 목록저장 */
     @Transactional
     public void saveList(List<PdhProdViewLog> rows) {
+        CmUtil.requireRowIds(rows, PdhProdViewLog::getLogId, "U", "logId", this);
+        CmUtil.requireRowIds(rows, PdhProdViewLog::getLogId, "D", "logId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdhProdViewLog::getLogId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdhProdViewLogService {
             em.clear();
         }
         List<PdhProdViewLog> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdhProdViewLog row : updateRows) {
             PdhProdViewLog entity = findById(row.getLogId());

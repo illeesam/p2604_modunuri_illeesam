@@ -103,6 +103,7 @@ public class DpAreaService {
     /* 전시 영역 수정 */
     @Transactional
     public DpArea update(String id, DpArea body) {
+        CmUtil.requireId(id, "id", this);
         DpArea entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "areaId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -130,6 +131,7 @@ public class DpAreaService {
     /* 전시 영역 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         DpArea entity = findById(id);
         dpAreaRepository.delete(entity);
         em.flush();
@@ -139,11 +141,13 @@ public class DpAreaService {
     /* 전시 영역 목록저장 */
     @Transactional
     public void saveList(List<DpArea> rows) {
+        CmUtil.requireRowIds(rows, DpArea::getAreaId, "U", "areaId", this);
+        CmUtil.requireRowIds(rows, DpArea::getAreaId, "D", "areaId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getAreaId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(DpArea::getAreaId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -152,7 +156,7 @@ public class DpAreaService {
             em.clear();
         }
         List<DpArea> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getAreaId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (DpArea row : updateRows) {
             DpArea entity = findById(row.getAreaId());

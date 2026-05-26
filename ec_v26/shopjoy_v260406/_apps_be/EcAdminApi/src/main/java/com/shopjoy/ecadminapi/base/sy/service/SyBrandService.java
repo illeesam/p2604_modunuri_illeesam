@@ -102,6 +102,7 @@ public class SyBrandService {
     /* 브랜드 수정 */
     @Transactional
     public SyBrand update(String id, SyBrand body) {
+        CmUtil.requireId(id, "id", this);
         SyBrand entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "brandId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyBrandService {
     /* 브랜드 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyBrand entity = findById(id);
         syBrandRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyBrandService {
     /* 브랜드 목록저장 */
     @Transactional
     public void saveList(List<SyBrand> rows) {
+        CmUtil.requireRowIds(rows, SyBrand::getBrandId, "U", "brandId", this);
+        CmUtil.requireRowIds(rows, SyBrand::getBrandId, "D", "brandId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBrandId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyBrand::getBrandId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyBrandService {
             em.clear();
         }
         List<SyBrand> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBrandId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyBrand row : updateRows) {
             SyBrand entity = findById(row.getBrandId());

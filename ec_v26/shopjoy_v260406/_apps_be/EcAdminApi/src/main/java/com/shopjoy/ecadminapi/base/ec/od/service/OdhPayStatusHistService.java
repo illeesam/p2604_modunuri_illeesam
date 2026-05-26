@@ -102,6 +102,7 @@ public class OdhPayStatusHistService {
     /* 결제 상태 이력 수정 */
     @Transactional
     public OdhPayStatusHist update(String id, OdhPayStatusHist body) {
+        CmUtil.requireId(id, "id", this);
         OdhPayStatusHist entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "payStatusHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdhPayStatusHistService {
     /* 결제 상태 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdhPayStatusHist entity = findById(id);
         odhPayStatusHistRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdhPayStatusHistService {
     /* 결제 상태 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhPayStatusHist> rows) {
+        CmUtil.requireRowIds(rows, OdhPayStatusHist::getPayStatusHistId, "U", "payStatusHistId", this);
+        CmUtil.requireRowIds(rows, OdhPayStatusHist::getPayStatusHistId, "D", "payStatusHistId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getPayStatusHistId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdhPayStatusHist::getPayStatusHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdhPayStatusHistService {
             em.clear();
         }
         List<OdhPayStatusHist> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getPayStatusHistId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdhPayStatusHist row : updateRows) {
             OdhPayStatusHist entity = findById(row.getPayStatusHistId());

@@ -102,6 +102,7 @@ public class PmPlanService {
     /* 프로모션 플랜 수정 */
     @Transactional
     public PmPlan update(String id, PmPlan body) {
+        CmUtil.requireId(id, "id", this);
         PmPlan entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "planId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmPlanService {
     /* 프로모션 플랜 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmPlan entity = findById(id);
         pmPlanRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmPlanService {
     /* 프로모션 플랜 목록저장 */
     @Transactional
     public void saveList(List<PmPlan> rows) {
+        CmUtil.requireRowIds(rows, PmPlan::getPlanId, "U", "planId", this);
+        CmUtil.requireRowIds(rows, PmPlan::getPlanId, "D", "planId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getPlanId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmPlan::getPlanId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmPlanService {
             em.clear();
         }
         List<PmPlan> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getPlanId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmPlan row : updateRows) {
             PmPlan entity = findById(row.getPlanId());

@@ -102,6 +102,7 @@ public class OdRefundService {
     /* 환불 수정 */
     @Transactional
     public OdRefund update(String id, OdRefund body) {
+        CmUtil.requireId(id, "id", this);
         OdRefund entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "refundId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdRefundService {
     /* 환불 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdRefund entity = findById(id);
         odRefundRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdRefundService {
     /* 환불 목록저장 */
     @Transactional
     public void saveList(List<OdRefund> rows) {
+        CmUtil.requireRowIds(rows, OdRefund::getRefundId, "U", "refundId", this);
+        CmUtil.requireRowIds(rows, OdRefund::getRefundId, "D", "refundId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getRefundId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdRefund::getRefundId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdRefundService {
             em.clear();
         }
         List<OdRefund> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getRefundId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdRefund row : updateRows) {
             OdRefund entity = findById(row.getRefundId());

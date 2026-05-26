@@ -102,6 +102,7 @@ public class PdReviewAttachService {
     /* 리뷰 첨부파일 수정 */
     @Transactional
     public PdReviewAttach update(String id, PdReviewAttach body) {
+        CmUtil.requireId(id, "id", this);
         PdReviewAttach entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "reviewAttachId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdReviewAttachService {
     /* 리뷰 첨부파일 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdReviewAttach entity = findById(id);
         pdReviewAttachRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdReviewAttachService {
     /* 리뷰 첨부파일 목록저장 */
     @Transactional
     public void saveList(List<PdReviewAttach> rows) {
+        CmUtil.requireRowIds(rows, PdReviewAttach::getReviewAttachId, "U", "reviewAttachId", this);
+        CmUtil.requireRowIds(rows, PdReviewAttach::getReviewAttachId, "D", "reviewAttachId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getReviewAttachId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdReviewAttach::getReviewAttachId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdReviewAttachService {
             em.clear();
         }
         List<PdReviewAttach> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getReviewAttachId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdReviewAttach row : updateRows) {
             PdReviewAttach entity = findById(row.getReviewAttachId());

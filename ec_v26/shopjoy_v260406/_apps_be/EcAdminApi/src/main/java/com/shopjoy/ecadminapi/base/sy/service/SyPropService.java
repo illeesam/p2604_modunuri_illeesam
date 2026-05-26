@@ -102,6 +102,7 @@ public class SyPropService {
     /* 시스템 속성 수정 */
     @Transactional
     public SyProp update(String id, SyProp body) {
+        CmUtil.requireId(id, "id", this);
         SyProp entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "propId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyPropService {
     /* 시스템 속성 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyProp entity = findById(id);
         syPropRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyPropService {
     /* 시스템 속성 목록저장 */
     @Transactional
     public void saveList(List<SyProp> rows) {
+        CmUtil.requireRowIds(rows, SyProp::getPropId, "U", "propId", this);
+        CmUtil.requireRowIds(rows, SyProp::getPropId, "D", "propId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getPropId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyProp::getPropId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyPropService {
             em.clear();
         }
         List<SyProp> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getPropId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyProp row : updateRows) {
             SyProp entity = findById(row.getPropId());

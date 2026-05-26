@@ -102,6 +102,7 @@ public class PdhProdContentChgHistService {
     /* 상품 콘텐츠 변경 이력 수정 */
     @Transactional
     public PdhProdContentChgHist update(String id, PdhProdContentChgHist body) {
+        CmUtil.requireId(id, "id", this);
         PdhProdContentChgHist entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "histId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdhProdContentChgHistService {
     /* 상품 콘텐츠 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdhProdContentChgHist entity = findById(id);
         pdhProdContentChgHistRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdhProdContentChgHistService {
     /* 상품 콘텐츠 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<PdhProdContentChgHist> rows) {
+        CmUtil.requireRowIds(rows, PdhProdContentChgHist::getHistId, "U", "histId", this);
+        CmUtil.requireRowIds(rows, PdhProdContentChgHist::getHistId, "D", "histId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getHistId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdhProdContentChgHist::getHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdhProdContentChgHistService {
             em.clear();
         }
         List<PdhProdContentChgHist> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getHistId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdhProdContentChgHist row : updateRows) {
             PdhProdContentChgHist entity = findById(row.getHistId());

@@ -106,6 +106,7 @@ public class SyRoleMenuService {
     /* 역할별 메뉴 권한 수정 */
     @Transactional
     public SyRoleMenu update(String id, SyRoleMenu body) {
+        CmUtil.requireId(id, "id", this);
         SyRoleMenu entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "roleMenuId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -135,6 +136,7 @@ public class SyRoleMenuService {
     /* 역할별 메뉴 권한 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyRoleMenu entity = findById(id);
         String roleId = entity.getRoleId();
         syRoleMenuRepository.delete(entity);
@@ -146,11 +148,13 @@ public class SyRoleMenuService {
     /* 역할별 메뉴 권한 목록저장 */
     @Transactional
     public void saveList(List<SyRoleMenu> rows) {
+        CmUtil.requireRowIds(rows, SyRoleMenu::getRoleMenuId, "U", "roleMenuId", this);
+        CmUtil.requireRowIds(rows, SyRoleMenu::getRoleMenuId, "D", "roleMenuId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getRoleMenuId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyRoleMenu::getRoleMenuId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -159,7 +163,7 @@ public class SyRoleMenuService {
             em.clear();
         }
         List<SyRoleMenu> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getRoleMenuId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyRoleMenu row : updateRows) {
             SyRoleMenu entity = findById(row.getRoleMenuId());

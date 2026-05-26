@@ -102,6 +102,7 @@ public class PmDiscntItemService {
     /* 할인 대상 상품 수정 */
     @Transactional
     public PmDiscntItem update(String id, PmDiscntItem body) {
+        CmUtil.requireId(id, "id", this);
         PmDiscntItem entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "discntItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmDiscntItemService {
     /* 할인 대상 상품 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmDiscntItem entity = findById(id);
         pmDiscntItemRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmDiscntItemService {
     /* 할인 대상 상품 목록저장 */
     @Transactional
     public void saveList(List<PmDiscntItem> rows) {
+        CmUtil.requireRowIds(rows, PmDiscntItem::getDiscntItemId, "U", "discntItemId", this);
+        CmUtil.requireRowIds(rows, PmDiscntItem::getDiscntItemId, "D", "discntItemId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getDiscntItemId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmDiscntItem::getDiscntItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmDiscntItemService {
             em.clear();
         }
         List<PmDiscntItem> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getDiscntItemId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmDiscntItem row : updateRows) {
             PmDiscntItem entity = findById(row.getDiscntItemId());

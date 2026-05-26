@@ -102,6 +102,7 @@ public class PmSaveService {
     /* 적립금 수정 */
     @Transactional
     public PmSave update(String id, PmSave body) {
+        CmUtil.requireId(id, "id", this);
         PmSave entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "saveId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmSaveService {
     /* 적립금 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmSave entity = findById(id);
         pmSaveRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmSaveService {
     /* 적립금 목록저장 */
     @Transactional
     public void saveList(List<PmSave> rows) {
+        CmUtil.requireRowIds(rows, PmSave::getSaveId, "U", "saveId", this);
+        CmUtil.requireRowIds(rows, PmSave::getSaveId, "D", "saveId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getSaveId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmSave::getSaveId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmSaveService {
             em.clear();
         }
         List<PmSave> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getSaveId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmSave row : updateRows) {
             PmSave entity = findById(row.getSaveId());

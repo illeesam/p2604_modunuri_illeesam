@@ -102,6 +102,7 @@ public class OdRefundMethodService {
     /* 환불수단 수정 */
     @Transactional
     public OdRefundMethod update(String id, OdRefundMethod body) {
+        CmUtil.requireId(id, "id", this);
         OdRefundMethod entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "refundMethodId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdRefundMethodService {
     /* 환불수단 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdRefundMethod entity = findById(id);
         odRefundMethodRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdRefundMethodService {
     /* 환불수단 목록저장 */
     @Transactional
     public void saveList(List<OdRefundMethod> rows) {
+        CmUtil.requireRowIds(rows, OdRefundMethod::getRefundMethodId, "U", "refundMethodId", this);
+        CmUtil.requireRowIds(rows, OdRefundMethod::getRefundMethodId, "D", "refundMethodId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getRefundMethodId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdRefundMethod::getRefundMethodId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdRefundMethodService {
             em.clear();
         }
         List<OdRefundMethod> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getRefundMethodId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdRefundMethod row : updateRows) {
             OdRefundMethod entity = findById(row.getRefundMethodId());

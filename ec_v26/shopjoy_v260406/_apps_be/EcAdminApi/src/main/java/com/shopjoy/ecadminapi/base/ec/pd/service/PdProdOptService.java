@@ -104,6 +104,7 @@ public class PdProdOptService {
     /* 상품 옵션 수정 */
     @Transactional
     public PdProdOpt update(String id, PdProdOpt body) {
+        CmUtil.requireId(id, "id", this);
         PdProdOpt entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "optId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -131,6 +132,7 @@ public class PdProdOptService {
     /* 상품 옵션 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdProdOpt entity = findById(id);
         pdProdOptRepository.delete(entity);
         em.flush();
@@ -140,11 +142,13 @@ public class PdProdOptService {
     /* 상품 옵션 목록저장 */
     @Transactional
     public void saveList(List<PdProdOpt> rows) {
+        CmUtil.requireRowIds(rows, PdProdOpt::getOptId, "U", "optId", this);
+        CmUtil.requireRowIds(rows, PdProdOpt::getOptId, "D", "optId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getOptId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdProdOpt::getOptId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -153,7 +157,7 @@ public class PdProdOptService {
             em.clear();
         }
         List<PdProdOpt> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getOptId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdProdOpt row : updateRows) {
             PdProdOpt entity = findById(row.getOptId());

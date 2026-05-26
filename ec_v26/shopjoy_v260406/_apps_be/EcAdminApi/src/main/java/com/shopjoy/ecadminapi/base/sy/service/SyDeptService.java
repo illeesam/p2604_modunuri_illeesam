@@ -109,6 +109,7 @@ public class SyDeptService {
     /* 부서 수정 */
     @Transactional
     public SyDept update(String id, SyDept body) {
+        CmUtil.requireId(id, "id", this);
         SyDept entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "deptId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -136,6 +137,7 @@ public class SyDeptService {
     /* 부서 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyDept entity = findById(id);
         syDeptRepository.delete(entity);
         em.flush();
@@ -145,11 +147,13 @@ public class SyDeptService {
     /* 부서 목록저장 */
     @Transactional
     public void saveList(List<SyDept> rows) {
+        CmUtil.requireRowIds(rows, SyDept::getDeptId, "U", "deptId", this);
+        CmUtil.requireRowIds(rows, SyDept::getDeptId, "D", "deptId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getDeptId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyDept::getDeptId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -158,7 +162,7 @@ public class SyDeptService {
             em.clear();
         }
         List<SyDept> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getDeptId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyDept row : updateRows) {
             SyDept entity = findById(row.getDeptId());

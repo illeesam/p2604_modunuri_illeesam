@@ -102,6 +102,7 @@ public class SyVendorUserService {
     /* 업체 사용자 수정 */
     @Transactional
     public SyVendorUser update(String id, SyVendorUser body) {
+        CmUtil.requireId(id, "id", this);
         SyVendorUser entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "vendorUserId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyVendorUserService {
     /* 업체 사용자 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyVendorUser entity = findById(id);
         syVendorUserRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyVendorUserService {
     /* 업체 사용자 목록저장 */
     @Transactional
     public void saveList(List<SyVendorUser> rows) {
+        CmUtil.requireRowIds(rows, SyVendorUser::getVendorUserId, "U", "vendorUserId", this);
+        CmUtil.requireRowIds(rows, SyVendorUser::getVendorUserId, "D", "vendorUserId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getVendorUserId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyVendorUser::getVendorUserId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyVendorUserService {
             em.clear();
         }
         List<SyVendorUser> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorUserId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyVendorUser row : updateRows) {
             SyVendorUser entity = findById(row.getVendorUserId());

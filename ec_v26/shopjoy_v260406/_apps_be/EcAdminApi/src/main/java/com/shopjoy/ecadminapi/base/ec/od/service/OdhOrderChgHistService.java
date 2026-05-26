@@ -102,6 +102,7 @@ public class OdhOrderChgHistService {
     /* 주문 변경 이력 수정 */
     @Transactional
     public OdhOrderChgHist update(String id, OdhOrderChgHist body) {
+        CmUtil.requireId(id, "id", this);
         OdhOrderChgHist entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "orderChgHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdhOrderChgHistService {
     /* 주문 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdhOrderChgHist entity = findById(id);
         odhOrderChgHistRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdhOrderChgHistService {
     /* 주문 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhOrderChgHist> rows) {
+        CmUtil.requireRowIds(rows, OdhOrderChgHist::getOrderChgHistId, "U", "orderChgHistId", this);
+        CmUtil.requireRowIds(rows, OdhOrderChgHist::getOrderChgHistId, "D", "orderChgHistId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getOrderChgHistId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdhOrderChgHist::getOrderChgHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdhOrderChgHistService {
             em.clear();
         }
         List<OdhOrderChgHist> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getOrderChgHistId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdhOrderChgHist row : updateRows) {
             OdhOrderChgHist entity = findById(row.getOrderChgHistId());

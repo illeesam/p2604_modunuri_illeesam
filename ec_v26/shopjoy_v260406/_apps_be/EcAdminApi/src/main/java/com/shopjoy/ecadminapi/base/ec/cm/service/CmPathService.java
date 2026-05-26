@@ -102,6 +102,7 @@ public class CmPathService {
     /* 경로(메뉴/URL) 수정 */
     @Transactional
     public CmPath update(String id, CmPath body) {
+        CmUtil.requireId(id, "id", this);
         CmPath entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "bizCd^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class CmPathService {
     /* 경로(메뉴/URL) 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         CmPath entity = findById(id);
         cmPathRepository.delete(entity);
         em.flush();

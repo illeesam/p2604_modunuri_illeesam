@@ -102,6 +102,7 @@ public class DpAreaPanelService {
     /* 전시 영역-패널 매핑 수정 */
     @Transactional
     public DpAreaPanel update(String id, DpAreaPanel body) {
+        CmUtil.requireId(id, "id", this);
         DpAreaPanel entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "areaPanelId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class DpAreaPanelService {
     /* 전시 영역-패널 매핑 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         DpAreaPanel entity = findById(id);
         dpAreaPanelRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class DpAreaPanelService {
     /* 전시 영역-패널 매핑 목록저장 */
     @Transactional
     public void saveList(List<DpAreaPanel> rows) {
+        CmUtil.requireRowIds(rows, DpAreaPanel::getAreaPanelId, "U", "areaPanelId", this);
+        CmUtil.requireRowIds(rows, DpAreaPanel::getAreaPanelId, "D", "areaPanelId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getAreaPanelId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(DpAreaPanel::getAreaPanelId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class DpAreaPanelService {
             em.clear();
         }
         List<DpAreaPanel> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getAreaPanelId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (DpAreaPanel row : updateRows) {
             DpAreaPanel entity = findById(row.getAreaPanelId());

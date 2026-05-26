@@ -102,6 +102,7 @@ public class DpUiService {
     /* 전시 UI 수정 */
     @Transactional
     public DpUi update(String id, DpUi body) {
+        CmUtil.requireId(id, "id", this);
         DpUi entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "uiId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class DpUiService {
     /* 전시 UI 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         DpUi entity = findById(id);
         dpUiRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class DpUiService {
     /* 전시 UI 목록저장 */
     @Transactional
     public void saveList(List<DpUi> rows) {
+        CmUtil.requireRowIds(rows, DpUi::getUiId, "U", "uiId", this);
+        CmUtil.requireRowIds(rows, DpUi::getUiId, "D", "uiId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getUiId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(DpUi::getUiId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class DpUiService {
             em.clear();
         }
         List<DpUi> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getUiId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (DpUi row : updateRows) {
             DpUi entity = findById(row.getUiId());

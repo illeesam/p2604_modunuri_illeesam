@@ -102,6 +102,7 @@ public class PmEventBenefitService {
     /* 이벤트 혜택 수정 */
     @Transactional
     public PmEventBenefit update(String id, PmEventBenefit body) {
+        CmUtil.requireId(id, "id", this);
         PmEventBenefit entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "benefitId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmEventBenefitService {
     /* 이벤트 혜택 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmEventBenefit entity = findById(id);
         pmEventBenefitRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmEventBenefitService {
     /* 이벤트 혜택 목록저장 */
     @Transactional
     public void saveList(List<PmEventBenefit> rows) {
+        CmUtil.requireRowIds(rows, PmEventBenefit::getBenefitId, "U", "benefitId", this);
+        CmUtil.requireRowIds(rows, PmEventBenefit::getBenefitId, "D", "benefitId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBenefitId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmEventBenefit::getBenefitId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmEventBenefitService {
             em.clear();
         }
         List<PmEventBenefit> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBenefitId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmEventBenefit row : updateRows) {
             PmEventBenefit entity = findById(row.getBenefitId());

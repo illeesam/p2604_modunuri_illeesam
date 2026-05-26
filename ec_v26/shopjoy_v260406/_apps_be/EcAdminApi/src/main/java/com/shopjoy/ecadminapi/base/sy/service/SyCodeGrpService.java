@@ -102,6 +102,7 @@ public class SyCodeGrpService {
     /* 공통 코드 그룹 수정 */
     @Transactional
     public SyCodeGrp update(String id, SyCodeGrp body) {
+        CmUtil.requireId(id, "id", this);
         SyCodeGrp entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "codeGrpId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyCodeGrpService {
     /* 공통 코드 그룹 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyCodeGrp entity = findById(id);
         syCodeGrpRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyCodeGrpService {
     /* 공통 코드 그룹 목록저장 */
     @Transactional
     public void saveList(List<SyCodeGrp> rows) {
+        CmUtil.requireRowIds(rows, SyCodeGrp::getCodeGrpId, "U", "codeGrpId", this);
+        CmUtil.requireRowIds(rows, SyCodeGrp::getCodeGrpId, "D", "codeGrpId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getCodeGrpId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyCodeGrp::getCodeGrpId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyCodeGrpService {
             em.clear();
         }
         List<SyCodeGrp> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getCodeGrpId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyCodeGrp row : updateRows) {
             SyCodeGrp entity = findById(row.getCodeGrpId());

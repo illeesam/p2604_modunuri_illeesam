@@ -289,13 +289,17 @@ window.BaseAttachGrp = {
       if (from === null || from === toIdx) return;
       const moved = files.splice(from, 1)[0];
       files.splice(toIdx, 0, moved);
-      /* sort_ord 업데이트 (fire & forget) */
+      /* sort_ord 즉시 저장 (드롭 시 서버 반영) */
       files.forEach((f, i) => { f.sortOrd = i + 1; });
       try {
         await Promise.all(files.map((f, i) =>
           window.boApi.patch(`co/cm/upload/attach/${f.attachId}/sort`, { sortOrd: i + 1 }, window.coUtil.cofApiHdr('첨부파일', '순서변경'))
         ));
-      } catch(e) { console.warn('[BaseAttachGrp] sort update failed', e); }
+        props.showToast('순서가 저장되었습니다.', 'success');
+      } catch(e) {
+        console.error('[BaseAttachGrp] sort update failed', e);
+        props.showToast(e.response?.data?.message || '순서 저장 실패', 'error', 0);
+      }
     };
 
     return {

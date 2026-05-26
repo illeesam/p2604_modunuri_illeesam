@@ -103,6 +103,7 @@ public class OdClaimService {
     /* 클레임(취소/반품/교환) 수정 */
     @Transactional
     public OdClaim update(String id, OdClaim body) {
+        CmUtil.requireId(id, "id", this);
         OdClaim entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "claimId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -130,6 +131,7 @@ public class OdClaimService {
     /* 클레임(취소/반품/교환) 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdClaim entity = findById(id);
         odClaimRepository.delete(entity);
         em.flush();
@@ -139,11 +141,13 @@ public class OdClaimService {
     /* 클레임(취소/반품/교환) 목록저장 */
     @Transactional
     public void saveList(List<OdClaim> rows) {
+        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
+        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "D", "claimId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getClaimId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdClaim::getClaimId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -152,7 +156,7 @@ public class OdClaimService {
             em.clear();
         }
         List<OdClaim> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdClaim row : updateRows) {
             OdClaim entity = findById(row.getClaimId());

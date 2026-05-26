@@ -102,6 +102,7 @@ public class SyPathService {
     /* 수정 */
     @Transactional
     public SyPath update(String id, SyPath body) {
+        CmUtil.requireId(id, "id", this);
         SyPath entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "pathId^regBy^regDate");
         entity.setUpdBy(CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system"));
@@ -129,6 +130,7 @@ public class SyPathService {
     /* 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyPath entity = findById(id);
         syPathRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyPathService {
     /* 목록저장 */
     @Transactional
     public void saveList(List<SyPath> rows) {
+        CmUtil.requireRowIds(rows, SyPath::getPathId, "U", "pathId", this);
+        CmUtil.requireRowIds(rows, SyPath::getPathId, "D", "pathId", this);
         String authId = CmUtil.nvl(SecurityUtil.getAuthUser().authId(), "system");
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getPathId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyPath::getPathId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyPathService {
             em.clear();
         }
         List<SyPath> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getPathId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyPath row : updateRows) {
             SyPath entity = findById(row.getPathId());

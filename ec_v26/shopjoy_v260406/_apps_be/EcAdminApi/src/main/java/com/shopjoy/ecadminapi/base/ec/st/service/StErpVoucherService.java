@@ -102,6 +102,7 @@ public class StErpVoucherService {
     /* ERP 전표 수정 */
     @Transactional
     public StErpVoucher update(String id, StErpVoucher body) {
+        CmUtil.requireId(id, "id", this);
         StErpVoucher entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "erpVoucherId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class StErpVoucherService {
     /* ERP 전표 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         StErpVoucher entity = findById(id);
         stErpVoucherRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class StErpVoucherService {
     /* ERP 전표 목록저장 */
     @Transactional
     public void saveList(List<StErpVoucher> rows) {
+        CmUtil.requireRowIds(rows, StErpVoucher::getErpVoucherId, "U", "erpVoucherId", this);
+        CmUtil.requireRowIds(rows, StErpVoucher::getErpVoucherId, "D", "erpVoucherId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getErpVoucherId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(StErpVoucher::getErpVoucherId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class StErpVoucherService {
             em.clear();
         }
         List<StErpVoucher> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getErpVoucherId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (StErpVoucher row : updateRows) {
             StErpVoucher entity = findById(row.getErpVoucherId());

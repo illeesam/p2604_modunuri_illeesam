@@ -102,6 +102,7 @@ public class OdOrderItemDiscntService {
     /* 주문 아이템 할인 수정 */
     @Transactional
     public OdOrderItemDiscnt update(String id, OdOrderItemDiscnt body) {
+        CmUtil.requireId(id, "id", this);
         OdOrderItemDiscnt entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "itemDiscntId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdOrderItemDiscntService {
     /* 주문 아이템 할인 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdOrderItemDiscnt entity = findById(id);
         odOrderItemDiscntRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdOrderItemDiscntService {
     /* 주문 아이템 할인 목록저장 */
     @Transactional
     public void saveList(List<OdOrderItemDiscnt> rows) {
+        CmUtil.requireRowIds(rows, OdOrderItemDiscnt::getItemDiscntId, "U", "itemDiscntId", this);
+        CmUtil.requireRowIds(rows, OdOrderItemDiscnt::getItemDiscntId, "D", "itemDiscntId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getItemDiscntId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdOrderItemDiscnt::getItemDiscntId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdOrderItemDiscntService {
             em.clear();
         }
         List<OdOrderItemDiscnt> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getItemDiscntId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdOrderItemDiscnt row : updateRows) {
             OdOrderItemDiscnt entity = findById(row.getItemDiscntId());

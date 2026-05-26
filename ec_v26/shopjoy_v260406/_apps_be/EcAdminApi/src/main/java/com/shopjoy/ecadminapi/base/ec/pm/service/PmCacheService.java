@@ -102,6 +102,7 @@ public class PmCacheService {
     /* 캐시(충전금) 수정 */
     @Transactional
     public PmCache update(String id, PmCache body) {
+        CmUtil.requireId(id, "id", this);
         PmCache entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "cacheId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmCacheService {
     /* 캐시(충전금) 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmCache entity = findById(id);
         pmCacheRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmCacheService {
     /* 캐시(충전금) 목록저장 */
     @Transactional
     public void saveList(List<PmCache> rows) {
+        CmUtil.requireRowIds(rows, PmCache::getCacheId, "U", "cacheId", this);
+        CmUtil.requireRowIds(rows, PmCache::getCacheId, "D", "cacheId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getCacheId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmCache::getCacheId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmCacheService {
             em.clear();
         }
         List<PmCache> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getCacheId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmCache row : updateRows) {
             PmCache entity = findById(row.getCacheId());

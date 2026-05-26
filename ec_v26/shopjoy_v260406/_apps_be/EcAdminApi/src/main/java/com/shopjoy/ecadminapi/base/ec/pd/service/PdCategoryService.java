@@ -103,6 +103,7 @@ public class PdCategoryService {
     /* 상품 카테고리 수정 */
     @Transactional
     public PdCategory update(String id, PdCategory body) {
+        CmUtil.requireId(id, "id", this);
         PdCategory entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "categoryId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -130,6 +131,7 @@ public class PdCategoryService {
     /* 상품 카테고리 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdCategory entity = findById(id);
         pdCategoryRepository.delete(entity);
         em.flush();
@@ -139,11 +141,13 @@ public class PdCategoryService {
     /* 상품 카테고리 목록저장 */
     @Transactional
     public void saveList(List<PdCategory> rows) {
+        CmUtil.requireRowIds(rows, PdCategory::getCategoryId, "U", "categoryId", this);
+        CmUtil.requireRowIds(rows, PdCategory::getCategoryId, "D", "categoryId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getCategoryId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdCategory::getCategoryId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -152,7 +156,7 @@ public class PdCategoryService {
             em.clear();
         }
         List<PdCategory> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getCategoryId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdCategory row : updateRows) {
             PdCategory entity = findById(row.getCategoryId());

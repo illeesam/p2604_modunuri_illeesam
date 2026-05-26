@@ -102,6 +102,7 @@ public class SyAttachGrpService {
     /* 첨부파일 그룹 수정 */
     @Transactional
     public SyAttachGrp update(String id, SyAttachGrp body) {
+        CmUtil.requireId(id, "id", this);
         SyAttachGrp entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "attachGrpId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyAttachGrpService {
     /* 첨부파일 그룹 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyAttachGrp entity = findById(id);
         syAttachGrpRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyAttachGrpService {
     /* 첨부파일 그룹 목록저장 */
     @Transactional
     public void saveList(List<SyAttachGrp> rows) {
+        CmUtil.requireRowIds(rows, SyAttachGrp::getAttachGrpId, "U", "attachGrpId", this);
+        CmUtil.requireRowIds(rows, SyAttachGrp::getAttachGrpId, "D", "attachGrpId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getAttachGrpId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyAttachGrp::getAttachGrpId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyAttachGrpService {
             em.clear();
         }
         List<SyAttachGrp> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getAttachGrpId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyAttachGrp row : updateRows) {
             SyAttachGrp entity = findById(row.getAttachGrpId());

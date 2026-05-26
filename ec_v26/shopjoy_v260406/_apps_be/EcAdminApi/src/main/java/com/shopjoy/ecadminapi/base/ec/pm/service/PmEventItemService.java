@@ -102,6 +102,7 @@ public class PmEventItemService {
     /* 이벤트 대상 상품 수정 */
     @Transactional
     public PmEventItem update(String id, PmEventItem body) {
+        CmUtil.requireId(id, "id", this);
         PmEventItem entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "eventItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmEventItemService {
     /* 이벤트 대상 상품 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmEventItem entity = findById(id);
         pmEventItemRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmEventItemService {
     /* 이벤트 대상 상품 목록저장 */
     @Transactional
     public void saveList(List<PmEventItem> rows) {
+        CmUtil.requireRowIds(rows, PmEventItem::getEventItemId, "U", "eventItemId", this);
+        CmUtil.requireRowIds(rows, PmEventItem::getEventItemId, "D", "eventItemId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getEventItemId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmEventItem::getEventItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmEventItemService {
             em.clear();
         }
         List<PmEventItem> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getEventItemId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmEventItem row : updateRows) {
             PmEventItem entity = findById(row.getEventItemId());

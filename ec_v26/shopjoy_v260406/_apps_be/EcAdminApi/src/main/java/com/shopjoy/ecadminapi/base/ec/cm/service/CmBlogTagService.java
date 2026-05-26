@@ -102,6 +102,7 @@ public class CmBlogTagService {
     /* 게시물 태그 수정 */
     @Transactional
     public CmBlogTag update(String id, CmBlogTag body) {
+        CmUtil.requireId(id, "id", this);
         CmBlogTag entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "blogTagId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class CmBlogTagService {
     /* 게시물 태그 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         CmBlogTag entity = findById(id);
         cmBlogTagRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class CmBlogTagService {
     /* 게시물 태그 목록저장 */
     @Transactional
     public void saveList(List<CmBlogTag> rows) {
+        CmUtil.requireRowIds(rows, CmBlogTag::getBlogTagId, "U", "blogTagId", this);
+        CmUtil.requireRowIds(rows, CmBlogTag::getBlogTagId, "D", "blogTagId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBlogTagId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(CmBlogTag::getBlogTagId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class CmBlogTagService {
             em.clear();
         }
         List<CmBlogTag> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBlogTagId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (CmBlogTag row : updateRows) {
             CmBlogTag entity = findById(row.getBlogTagId());

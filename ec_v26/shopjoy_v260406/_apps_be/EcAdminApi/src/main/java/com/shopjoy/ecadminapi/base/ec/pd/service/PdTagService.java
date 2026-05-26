@@ -102,6 +102,7 @@ public class PdTagService {
     /* 태그 수정 */
     @Transactional
     public PdTag update(String id, PdTag body) {
+        CmUtil.requireId(id, "id", this);
         PdTag entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "tagId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdTagService {
     /* 태그 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdTag entity = findById(id);
         pdTagRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdTagService {
     /* 태그 목록저장 */
     @Transactional
     public void saveList(List<PdTag> rows) {
+        CmUtil.requireRowIds(rows, PdTag::getTagId, "U", "tagId", this);
+        CmUtil.requireRowIds(rows, PdTag::getTagId, "D", "tagId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getTagId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdTag::getTagId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdTagService {
             em.clear();
         }
         List<PdTag> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getTagId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdTag row : updateRows) {
             PdTag entity = findById(row.getTagId());

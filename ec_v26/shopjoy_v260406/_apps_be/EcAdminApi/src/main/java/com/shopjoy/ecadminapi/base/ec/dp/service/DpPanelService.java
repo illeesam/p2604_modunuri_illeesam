@@ -102,6 +102,7 @@ public class DpPanelService {
     /* 전시 패널 수정 */
     @Transactional
     public DpPanel update(String id, DpPanel body) {
+        CmUtil.requireId(id, "id", this);
         DpPanel entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "panelId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class DpPanelService {
     /* 전시 패널 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         DpPanel entity = findById(id);
         dpPanelRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class DpPanelService {
     /* 전시 패널 목록저장 */
     @Transactional
     public void saveList(List<DpPanel> rows) {
+        CmUtil.requireRowIds(rows, DpPanel::getPanelId, "U", "panelId", this);
+        CmUtil.requireRowIds(rows, DpPanel::getPanelId, "D", "panelId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getPanelId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(DpPanel::getPanelId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class DpPanelService {
             em.clear();
         }
         List<DpPanel> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getPanelId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (DpPanel row : updateRows) {
             DpPanel entity = findById(row.getPanelId());

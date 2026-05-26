@@ -102,6 +102,7 @@ public class CmhPushLogService {
     /* 푸시 발송 이력 수정 */
     @Transactional
     public CmhPushLog update(String id, CmhPushLog body) {
+        CmUtil.requireId(id, "id", this);
         CmhPushLog entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "logId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class CmhPushLogService {
     /* 푸시 발송 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         CmhPushLog entity = findById(id);
         cmhPushLogRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class CmhPushLogService {
     /* 푸시 발송 이력 목록저장 */
     @Transactional
     public void saveList(List<CmhPushLog> rows) {
+        CmUtil.requireRowIds(rows, CmhPushLog::getLogId, "U", "logId", this);
+        CmUtil.requireRowIds(rows, CmhPushLog::getLogId, "D", "logId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(CmhPushLog::getLogId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class CmhPushLogService {
             em.clear();
         }
         List<CmhPushLog> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (CmhPushLog row : updateRows) {
             CmhPushLog entity = findById(row.getLogId());

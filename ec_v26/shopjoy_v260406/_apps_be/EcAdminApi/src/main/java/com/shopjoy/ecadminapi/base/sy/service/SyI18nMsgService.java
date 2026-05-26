@@ -102,6 +102,7 @@ public class SyI18nMsgService {
     /* 다국어 메시지 수정 */
     @Transactional
     public SyI18nMsg update(String id, SyI18nMsg body) {
+        CmUtil.requireId(id, "id", this);
         SyI18nMsg entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "i18nMsgId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyI18nMsgService {
     /* 다국어 메시지 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyI18nMsg entity = findById(id);
         syI18nMsgRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyI18nMsgService {
     /* 다국어 메시지 목록저장 */
     @Transactional
     public void saveList(List<SyI18nMsg> rows) {
+        CmUtil.requireRowIds(rows, SyI18nMsg::getI18nMsgId, "U", "i18nMsgId", this);
+        CmUtil.requireRowIds(rows, SyI18nMsg::getI18nMsgId, "D", "i18nMsgId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getI18nMsgId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyI18nMsg::getI18nMsgId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyI18nMsgService {
             em.clear();
         }
         List<SyI18nMsg> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getI18nMsgId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyI18nMsg row : updateRows) {
             SyI18nMsg entity = findById(row.getI18nMsgId());

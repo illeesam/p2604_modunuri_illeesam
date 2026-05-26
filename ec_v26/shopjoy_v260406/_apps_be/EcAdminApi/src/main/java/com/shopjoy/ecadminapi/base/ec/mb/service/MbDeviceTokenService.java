@@ -102,6 +102,7 @@ public class MbDeviceTokenService {
     /* 수정 */
     @Transactional
     public MbDeviceToken update(String id, MbDeviceToken body) {
+        CmUtil.requireId(id, "id", this);
         MbDeviceToken entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "deviceTokenId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbDeviceTokenService {
     /* 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbDeviceToken entity = findById(id);
         mbDeviceTokenRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbDeviceTokenService {
     /* 목록저장 */
     @Transactional
     public void saveList(List<MbDeviceToken> rows) {
+        CmUtil.requireRowIds(rows, MbDeviceToken::getDeviceTokenId, "U", "deviceTokenId", this);
+        CmUtil.requireRowIds(rows, MbDeviceToken::getDeviceTokenId, "D", "deviceTokenId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getDeviceTokenId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbDeviceToken::getDeviceTokenId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbDeviceTokenService {
             em.clear();
         }
         List<MbDeviceToken> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getDeviceTokenId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbDeviceToken row : updateRows) {
             MbDeviceToken entity = findById(row.getDeviceTokenId());

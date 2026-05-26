@@ -102,6 +102,7 @@ public class PdReviewCommentService {
     /* 리뷰 댓글 수정 */
     @Transactional
     public PdReviewComment update(String id, PdReviewComment body) {
+        CmUtil.requireId(id, "id", this);
         PdReviewComment entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "reviewCommentId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdReviewCommentService {
     /* 리뷰 댓글 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdReviewComment entity = findById(id);
         pdReviewCommentRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdReviewCommentService {
     /* 리뷰 댓글 목록저장 */
     @Transactional
     public void saveList(List<PdReviewComment> rows) {
+        CmUtil.requireRowIds(rows, PdReviewComment::getReviewCommentId, "U", "reviewCommentId", this);
+        CmUtil.requireRowIds(rows, PdReviewComment::getReviewCommentId, "D", "reviewCommentId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getReviewCommentId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdReviewComment::getReviewCommentId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdReviewCommentService {
             em.clear();
         }
         List<PdReviewComment> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getReviewCommentId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdReviewComment row : updateRows) {
             PdReviewComment entity = findById(row.getReviewCommentId());

@@ -102,6 +102,7 @@ public class MbMemberGradeService {
     /* 회원 등급 수정 */
     @Transactional
     public MbMemberGrade update(String id, MbMemberGrade body) {
+        CmUtil.requireId(id, "id", this);
         MbMemberGrade entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "memberGradeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbMemberGradeService {
     /* 회원 등급 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbMemberGrade entity = findById(id);
         mbMemberGradeRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbMemberGradeService {
     /* 회원 등급 목록저장 */
     @Transactional
     public void saveList(List<MbMemberGrade> rows) {
+        CmUtil.requireRowIds(rows, MbMemberGrade::getMemberGradeId, "U", "memberGradeId", this);
+        CmUtil.requireRowIds(rows, MbMemberGrade::getMemberGradeId, "D", "memberGradeId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getMemberGradeId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbMemberGrade::getMemberGradeId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbMemberGradeService {
             em.clear();
         }
         List<MbMemberGrade> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberGradeId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbMemberGrade row : updateRows) {
             MbMemberGrade entity = findById(row.getMemberGradeId());

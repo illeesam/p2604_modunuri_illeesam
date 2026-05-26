@@ -102,6 +102,7 @@ public class SyMenuService {
     /* 메뉴 수정 */
     @Transactional
     public SyMenu update(String id, SyMenu body) {
+        CmUtil.requireId(id, "id", this);
         SyMenu entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "menuId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyMenuService {
     /* 메뉴 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyMenu entity = findById(id);
         syMenuRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyMenuService {
     /* 메뉴 목록저장 */
     @Transactional
     public void saveList(List<SyMenu> rows) {
+        CmUtil.requireRowIds(rows, SyMenu::getMenuId, "U", "menuId", this);
+        CmUtil.requireRowIds(rows, SyMenu::getMenuId, "D", "menuId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getMenuId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyMenu::getMenuId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyMenuService {
             em.clear();
         }
         List<SyMenu> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getMenuId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyMenu row : updateRows) {
             SyMenu entity = findById(row.getMenuId());

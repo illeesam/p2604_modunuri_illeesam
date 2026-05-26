@@ -102,6 +102,7 @@ public class SyBatchService {
     /* 배치 수정 */
     @Transactional
     public SyBatch update(String id, SyBatch body) {
+        CmUtil.requireId(id, "id", this);
         SyBatch entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "batchId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyBatchService {
     /* 배치 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyBatch entity = findById(id);
         syBatchRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyBatchService {
     /* 배치 목록저장 */
     @Transactional
     public void saveList(List<SyBatch> rows) {
+        CmUtil.requireRowIds(rows, SyBatch::getBatchId, "U", "batchId", this);
+        CmUtil.requireRowIds(rows, SyBatch::getBatchId, "D", "batchId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBatchId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyBatch::getBatchId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyBatchService {
             em.clear();
         }
         List<SyBatch> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBatchId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyBatch row : updateRows) {
             SyBatch entity = findById(row.getBatchId());

@@ -102,6 +102,7 @@ public class StSettleService {
     /* 정산 수정 */
     @Transactional
     public StSettle update(String id, StSettle body) {
+        CmUtil.requireId(id, "id", this);
         StSettle entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "settleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class StSettleService {
     /* 정산 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         StSettle entity = findById(id);
         stSettleRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class StSettleService {
     /* 정산 목록저장 */
     @Transactional
     public void saveList(List<StSettle> rows) {
+        CmUtil.requireRowIds(rows, StSettle::getSettleId, "U", "settleId", this);
+        CmUtil.requireRowIds(rows, StSettle::getSettleId, "D", "settleId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getSettleId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(StSettle::getSettleId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class StSettleService {
             em.clear();
         }
         List<StSettle> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getSettleId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (StSettle row : updateRows) {
             StSettle entity = findById(row.getSettleId());

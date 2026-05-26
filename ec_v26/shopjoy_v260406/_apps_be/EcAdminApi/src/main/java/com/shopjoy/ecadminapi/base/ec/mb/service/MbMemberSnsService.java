@@ -102,6 +102,7 @@ public class MbMemberSnsService {
     /* SNS 연동 회원 수정 */
     @Transactional
     public MbMemberSns update(String id, MbMemberSns body) {
+        CmUtil.requireId(id, "id", this);
         MbMemberSns entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "memberSnsId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbMemberSnsService {
     /* SNS 연동 회원 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbMemberSns entity = findById(id);
         mbMemberSnsRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbMemberSnsService {
     /* SNS 연동 회원 목록저장 */
     @Transactional
     public void saveList(List<MbMemberSns> rows) {
+        CmUtil.requireRowIds(rows, MbMemberSns::getMemberSnsId, "U", "memberSnsId", this);
+        CmUtil.requireRowIds(rows, MbMemberSns::getMemberSnsId, "D", "memberSnsId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getMemberSnsId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbMemberSns::getMemberSnsId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbMemberSnsService {
             em.clear();
         }
         List<MbMemberSns> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberSnsId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbMemberSns row : updateRows) {
             MbMemberSns entity = findById(row.getMemberSnsId());

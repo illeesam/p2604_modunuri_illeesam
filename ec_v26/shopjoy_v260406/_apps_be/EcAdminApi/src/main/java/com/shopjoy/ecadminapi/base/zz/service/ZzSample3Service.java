@@ -192,6 +192,7 @@ public class ZzSample3Service {
     /** delete — 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         ZzSample3 entity = zzSample3Repository.findById(id)
             .orElseThrow(() -> new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
         zzSample3Repository.delete(entity);

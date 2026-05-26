@@ -202,6 +202,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pd/category', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/pd/category/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pd/category/${_id}`, hdr(uiNm, cmdNm)); },
+    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'categoryId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/pd/category/save-list', rows, hdr(uiNm, cmdNm)); },
     getProds(params, uiNm, cmdNm)  { return global.boApi.get(   '/bo/ec/pd/category-prod/page', { params, ...hdr(uiNm, cmdNm) }); },
     updateProds(body, uiNm, cmdNm) { return global.boApi.put(   '/bo/ec/pd/category-prod', body, hdr(uiNm, cmdNm)); },
   };
@@ -473,6 +474,7 @@
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/code/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/code', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/sy/code/${_id}`, body, hdr(uiNm, cmdNm)); },
+    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'codeId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/code/save-list', rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 문의(Contact) ──────────────────────────────────────── */

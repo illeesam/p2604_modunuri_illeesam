@@ -102,6 +102,7 @@ public class DpWidgetService {
     /* 전시 위젯 수정 */
     @Transactional
     public DpWidget update(String id, DpWidget body) {
+        CmUtil.requireId(id, "id", this);
         DpWidget entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "widgetId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class DpWidgetService {
     /* 전시 위젯 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         DpWidget entity = findById(id);
         dpWidgetRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class DpWidgetService {
     /* 전시 위젯 목록저장 */
     @Transactional
     public void saveList(List<DpWidget> rows) {
+        CmUtil.requireRowIds(rows, DpWidget::getWidgetId, "U", "widgetId", this);
+        CmUtil.requireRowIds(rows, DpWidget::getWidgetId, "D", "widgetId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getWidgetId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(DpWidget::getWidgetId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class DpWidgetService {
             em.clear();
         }
         List<DpWidget> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getWidgetId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (DpWidget row : updateRows) {
             DpWidget entity = findById(row.getWidgetId());

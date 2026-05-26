@@ -102,6 +102,7 @@ public class OdDlivService {
     /* 배송 수정 */
     @Transactional
     public OdDliv update(String id, OdDliv body) {
+        CmUtil.requireId(id, "id", this);
         OdDliv entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "dlivId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdDlivService {
     /* 배송 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdDliv entity = findById(id);
         odDlivRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdDlivService {
     /* 배송 목록저장 */
     @Transactional
     public void saveList(List<OdDliv> rows) {
+        CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
+        CmUtil.requireRowIds(rows, OdDliv::getDlivId, "D", "dlivId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getDlivId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdDliv::getDlivId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdDlivService {
             em.clear();
         }
         List<OdDliv> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getDlivId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdDliv row : updateRows) {
             OdDliv entity = findById(row.getDlivId());

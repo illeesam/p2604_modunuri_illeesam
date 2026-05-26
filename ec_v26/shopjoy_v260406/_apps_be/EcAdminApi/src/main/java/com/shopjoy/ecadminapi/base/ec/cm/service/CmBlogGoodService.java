@@ -102,6 +102,7 @@ public class CmBlogGoodService {
     /* 게시물 좋아요 수정 */
     @Transactional
     public CmBlogGood update(String id, CmBlogGood body) {
+        CmUtil.requireId(id, "id", this);
         CmBlogGood entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "likeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class CmBlogGoodService {
     /* 게시물 좋아요 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         CmBlogGood entity = findById(id);
         cmBlogGoodRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class CmBlogGoodService {
     /* 게시물 좋아요 목록저장 */
     @Transactional
     public void saveList(List<CmBlogGood> rows) {
+        CmUtil.requireRowIds(rows, CmBlogGood::getLikeId, "U", "likeId", this);
+        CmUtil.requireRowIds(rows, CmBlogGood::getLikeId, "D", "likeId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getLikeId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(CmBlogGood::getLikeId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class CmBlogGoodService {
             em.clear();
         }
         List<CmBlogGood> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getLikeId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (CmBlogGood row : updateRows) {
             CmBlogGood entity = findById(row.getLikeId());

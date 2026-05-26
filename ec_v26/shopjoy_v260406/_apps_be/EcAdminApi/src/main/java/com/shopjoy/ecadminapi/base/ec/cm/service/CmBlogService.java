@@ -102,6 +102,7 @@ public class CmBlogService {
     /* 게시물 수정 */
     @Transactional
     public CmBlog update(String id, CmBlog body) {
+        CmUtil.requireId(id, "id", this);
         CmBlog entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "blogId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class CmBlogService {
     /* 게시물 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         CmBlog entity = findById(id);
         cmBlogRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class CmBlogService {
     /* 게시물 목록저장 */
     @Transactional
     public void saveList(List<CmBlog> rows) {
+        CmUtil.requireRowIds(rows, CmBlog::getBlogId, "U", "blogId", this);
+        CmUtil.requireRowIds(rows, CmBlog::getBlogId, "D", "blogId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBlogId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(CmBlog::getBlogId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class CmBlogService {
             em.clear();
         }
         List<CmBlog> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBlogId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (CmBlog row : updateRows) {
             CmBlog entity = findById(row.getBlogId());

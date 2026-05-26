@@ -102,6 +102,7 @@ public class SyBbsService {
     /* 게시판 게시물 수정 */
     @Transactional
     public SyBbs update(String id, SyBbs body) {
+        CmUtil.requireId(id, "id", this);
         SyBbs entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "bbsId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyBbsService {
     /* 게시판 게시물 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyBbs entity = findById(id);
         syBbsRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyBbsService {
     /* 게시판 게시물 목록저장 */
     @Transactional
     public void saveList(List<SyBbs> rows) {
+        CmUtil.requireRowIds(rows, SyBbs::getBbsId, "U", "bbsId", this);
+        CmUtil.requireRowIds(rows, SyBbs::getBbsId, "D", "bbsId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBbsId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyBbs::getBbsId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyBbsService {
             em.clear();
         }
         List<SyBbs> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBbsId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyBbs row : updateRows) {
             SyBbs entity = findById(row.getBbsId());

@@ -102,6 +102,7 @@ public class OdhClaimItemChgHistService {
     /* 클레임 아이템 변경 이력 수정 */
     @Transactional
     public OdhClaimItemChgHist update(String id, OdhClaimItemChgHist body) {
+        CmUtil.requireId(id, "id", this);
         OdhClaimItemChgHist entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "claimItemChgHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdhClaimItemChgHistService {
     /* 클레임 아이템 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdhClaimItemChgHist entity = findById(id);
         odhClaimItemChgHistRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdhClaimItemChgHistService {
     /* 클레임 아이템 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhClaimItemChgHist> rows) {
+        CmUtil.requireRowIds(rows, OdhClaimItemChgHist::getClaimItemChgHistId, "U", "claimItemChgHistId", this);
+        CmUtil.requireRowIds(rows, OdhClaimItemChgHist::getClaimItemChgHistId, "D", "claimItemChgHistId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getClaimItemChgHistId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdhClaimItemChgHist::getClaimItemChgHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdhClaimItemChgHistService {
             em.clear();
         }
         List<OdhClaimItemChgHist> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimItemChgHistId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdhClaimItemChgHist row : updateRows) {
             OdhClaimItemChgHist entity = findById(row.getClaimItemChgHistId());

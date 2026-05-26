@@ -102,6 +102,7 @@ public class SyCodeService {
     /* 수정 */
     @Transactional
     public SyCode update(String id, SyCode body) {
+        CmUtil.requireId(id, "id", this);
         SyCode entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "codeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyCodeService {
     /* 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyCode entity = findById(id);
         syCodeRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyCodeService {
     /* 목록저장 */
     @Transactional
     public void saveList(List<SyCode> rows) {
+        CmUtil.requireRowIds(rows, SyCode::getCodeId, "U", "codeId", this);
+        CmUtil.requireRowIds(rows, SyCode::getCodeId, "D", "codeId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getCodeId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyCode::getCodeId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyCodeService {
             em.clear();
         }
         List<SyCode> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getCodeId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyCode row : updateRows) {
             SyCode entity = findById(row.getCodeId());

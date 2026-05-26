@@ -102,6 +102,7 @@ public class CmChattMsgService {
     /* 채팅 메시지 수정 */
     @Transactional
     public CmChattMsg update(String id, CmChattMsg body) {
+        CmUtil.requireId(id, "id", this);
         CmChattMsg entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "chattMsgId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class CmChattMsgService {
     /* 채팅 메시지 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         CmChattMsg entity = findById(id);
         cmChattMsgRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class CmChattMsgService {
     /* 채팅 메시지 목록저장 */
     @Transactional
     public void saveList(List<CmChattMsg> rows) {
+        CmUtil.requireRowIds(rows, CmChattMsg::getChattMsgId, "U", "chattMsgId", this);
+        CmUtil.requireRowIds(rows, CmChattMsg::getChattMsgId, "D", "chattMsgId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getChattMsgId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(CmChattMsg::getChattMsgId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class CmChattMsgService {
             em.clear();
         }
         List<CmChattMsg> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getChattMsgId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (CmChattMsg row : updateRows) {
             CmChattMsg entity = findById(row.getChattMsgId());

@@ -102,6 +102,7 @@ public class MbhMemberTokenLogService {
     /* 수정 */
     @Transactional
     public MbhMemberTokenLog update(String id, MbhMemberTokenLog body) {
+        CmUtil.requireId(id, "id", this);
         MbhMemberTokenLog entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "logId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbhMemberTokenLogService {
     /* 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbhMemberTokenLog entity = findById(id);
         mbhMemberTokenLogRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbhMemberTokenLogService {
     /* 목록저장 */
     @Transactional
     public void saveList(List<MbhMemberTokenLog> rows) {
+        CmUtil.requireRowIds(rows, MbhMemberTokenLog::getLogId, "U", "logId", this);
+        CmUtil.requireRowIds(rows, MbhMemberTokenLog::getLogId, "D", "logId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbhMemberTokenLog::getLogId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbhMemberTokenLogService {
             em.clear();
         }
         List<MbhMemberTokenLog> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbhMemberTokenLog row : updateRows) {
             MbhMemberTokenLog entity = findById(row.getLogId());

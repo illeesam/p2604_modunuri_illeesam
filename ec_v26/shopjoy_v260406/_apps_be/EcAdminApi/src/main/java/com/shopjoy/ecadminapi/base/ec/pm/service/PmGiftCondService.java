@@ -102,6 +102,7 @@ public class PmGiftCondService {
     /* 사은품 지급 조건 수정 */
     @Transactional
     public PmGiftCond update(String id, PmGiftCond body) {
+        CmUtil.requireId(id, "id", this);
         PmGiftCond entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "giftCondId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmGiftCondService {
     /* 사은품 지급 조건 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmGiftCond entity = findById(id);
         pmGiftCondRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmGiftCondService {
     /* 사은품 지급 조건 목록저장 */
     @Transactional
     public void saveList(List<PmGiftCond> rows) {
+        CmUtil.requireRowIds(rows, PmGiftCond::getGiftCondId, "U", "giftCondId", this);
+        CmUtil.requireRowIds(rows, PmGiftCond::getGiftCondId, "D", "giftCondId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getGiftCondId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmGiftCond::getGiftCondId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmGiftCondService {
             em.clear();
         }
         List<PmGiftCond> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getGiftCondId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmGiftCond row : updateRows) {
             PmGiftCond entity = findById(row.getGiftCondId());

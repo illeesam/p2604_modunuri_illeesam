@@ -102,6 +102,7 @@ public class PmGiftIssueService {
     /* 사은품 발행 이력 수정 */
     @Transactional
     public PmGiftIssue update(String id, PmGiftIssue body) {
+        CmUtil.requireId(id, "id", this);
         PmGiftIssue entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "giftIssueId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmGiftIssueService {
     /* 사은품 발행 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmGiftIssue entity = findById(id);
         pmGiftIssueRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmGiftIssueService {
     /* 사은품 발행 이력 목록저장 */
     @Transactional
     public void saveList(List<PmGiftIssue> rows) {
+        CmUtil.requireRowIds(rows, PmGiftIssue::getGiftIssueId, "U", "giftIssueId", this);
+        CmUtil.requireRowIds(rows, PmGiftIssue::getGiftIssueId, "D", "giftIssueId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getGiftIssueId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmGiftIssue::getGiftIssueId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmGiftIssueService {
             em.clear();
         }
         List<PmGiftIssue> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getGiftIssueId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmGiftIssue row : updateRows) {
             PmGiftIssue entity = findById(row.getGiftIssueId());

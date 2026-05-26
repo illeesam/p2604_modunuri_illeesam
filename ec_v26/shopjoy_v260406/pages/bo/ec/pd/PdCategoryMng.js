@@ -310,8 +310,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     /* onRowDragOver — 이벤트 */
     const onRowDragOver = (idx) => { dragoverRowIdx.value = idx; };
 
-    /* onRowDrop — 이벤트 */
-    const onRowDrop = () => {
+    /* onRowDrop — 이벤트 (드롭 즉시 sortOrd 저장 — 기존 행 'U'만 전송) */
+    const onRowDrop = async () => {
       const from = dragRowIdx.value, to = dragoverRowIdx.value;
       dragRowIdx.value = null; dragoverRowIdx.value = null;
       if (from == null || to == null || from === to) { return; }
@@ -319,13 +319,47 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       gridRows.splice(to, 0, moved);
       // 같은 부모 그룹 내 sortOrd 재계산
       const parentId = moved.parentCategoryId || null;
+      const sortChangedRows = [];
       let ord = 1;
       gridRows.forEach(r => {
         if ((r.parentCategoryId || null) === parentId) {
-          r.sortOrd = ord++;
-          if (r._row_status == null) { r._row_status = 'U'; }
+          if (r.sortOrd !== ord) {
+            r.sortOrd = ord;
+            // 신규('C')는 아직 DB에 없으므로 즉시 저장 대상 제외 — [저장] 버튼에서 일괄 처리
+            if (r._row_status !== 'C' && r.categoryId != null) {
+              sortChangedRows.push({ categoryId: r.categoryId, sortOrd: ord, rowStatus: 'U' });
+              if (r._row_status == null) { r._row_status = 'U'; }
+            }
+          }
+          ord++;
         }
       });
+      // 즉시 저장 (기존 행만)
+      if (sortChangedRows.length > 0) {
+        try {
+          await boApiSvc.pdCategory.saveList(sortChangedRows, '카테고리관리', '순서변경');
+          // 저장된 행은 _row_status 마킹 해제 (다른 편집 없으면 깨끗한 상태로 복귀)
+          sortChangedRows.forEach(s => {
+            const row = gridRows.find(r => r.categoryId === s.categoryId);
+            if (row && row._row_status === 'U' && JSON.stringify(row._row_org?.sortOrd ?? null) !== JSON.stringify(row.sortOrd)) {
+              // 다른 필드 변경이 없고 sortOrd만 바뀐 경우만 클린
+              const onlySort = row._row_org &&
+                row.categoryNm === row._row_org.categoryNm &&
+                row.parentCategoryId === row._row_org.parentCategoryId &&
+                row.categoryDesc === row._row_org.categoryDesc &&
+                row.categoryStatusCd === row._row_org.categoryStatusCd;
+              if (onlySort) {
+                row._row_status = null;
+                row._row_org.sortOrd = row.sortOrd;
+              }
+            }
+          });
+          showToast?.('순서가 저장되었습니다.', 'success');
+        } catch (err) {
+          console.error('[PdCategoryMng] sort save failed', err);
+          showToast?.(err.response?.data?.message || '순서 저장 실패', 'error', 0);
+        }
+      }
     };
 
     /* -- 행 편집 -- */

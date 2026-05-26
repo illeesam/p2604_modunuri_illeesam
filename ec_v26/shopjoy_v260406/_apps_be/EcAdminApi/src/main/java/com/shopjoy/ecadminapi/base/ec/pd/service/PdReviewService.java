@@ -102,6 +102,7 @@ public class PdReviewService {
     /* 상품 리뷰 수정 */
     @Transactional
     public PdReview update(String id, PdReview body) {
+        CmUtil.requireId(id, "id", this);
         PdReview entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "reviewId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdReviewService {
     /* 상품 리뷰 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdReview entity = findById(id);
         pdReviewRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdReviewService {
     /* 상품 리뷰 목록저장 */
     @Transactional
     public void saveList(List<PdReview> rows) {
+        CmUtil.requireRowIds(rows, PdReview::getReviewId, "U", "reviewId", this);
+        CmUtil.requireRowIds(rows, PdReview::getReviewId, "D", "reviewId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getReviewId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdReview::getReviewId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdReviewService {
             em.clear();
         }
         List<PdReview> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getReviewId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdReview row : updateRows) {
             PdReview entity = findById(row.getReviewId());

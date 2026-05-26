@@ -102,6 +102,7 @@ public class PdProdQnaService {
     /* 상품 문의 수정 */
     @Transactional
     public PdProdQna update(String id, PdProdQna body) {
+        CmUtil.requireId(id, "id", this);
         PdProdQna entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "qnaId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdProdQnaService {
     /* 상품 문의 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdProdQna entity = findById(id);
         pdProdQnaRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdProdQnaService {
     /* 상품 문의 목록저장 */
     @Transactional
     public void saveList(List<PdProdQna> rows) {
+        CmUtil.requireRowIds(rows, PdProdQna::getQnaId, "U", "qnaId", this);
+        CmUtil.requireRowIds(rows, PdProdQna::getQnaId, "D", "qnaId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getQnaId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdProdQna::getQnaId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdProdQnaService {
             em.clear();
         }
         List<PdProdQna> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getQnaId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdProdQna row : updateRows) {
             PdProdQna entity = findById(row.getQnaId());

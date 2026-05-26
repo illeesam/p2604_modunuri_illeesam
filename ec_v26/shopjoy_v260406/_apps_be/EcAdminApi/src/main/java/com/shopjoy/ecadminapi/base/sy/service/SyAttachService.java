@@ -102,6 +102,7 @@ public class SyAttachService {
     /* 첨부파일 수정 */
     @Transactional
     public SyAttach update(String id, SyAttach body) {
+        CmUtil.requireId(id, "id", this);
         SyAttach entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "attachId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyAttachService {
     /* 첨부파일 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyAttach entity = findById(id);
         syAttachRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyAttachService {
     /* 첨부파일 목록저장 */
     @Transactional
     public void saveList(List<SyAttach> rows) {
+        CmUtil.requireRowIds(rows, SyAttach::getAttachId, "U", "attachId", this);
+        CmUtil.requireRowIds(rows, SyAttach::getAttachId, "D", "attachId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getAttachId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyAttach::getAttachId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyAttachService {
             em.clear();
         }
         List<SyAttach> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getAttachId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyAttach row : updateRows) {
             SyAttach entity = findById(row.getAttachId());

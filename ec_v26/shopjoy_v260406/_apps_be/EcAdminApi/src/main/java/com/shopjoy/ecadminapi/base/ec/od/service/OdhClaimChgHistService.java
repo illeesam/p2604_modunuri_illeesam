@@ -102,6 +102,7 @@ public class OdhClaimChgHistService {
     /* 클레임 변경 이력 수정 */
     @Transactional
     public OdhClaimChgHist update(String id, OdhClaimChgHist body) {
+        CmUtil.requireId(id, "id", this);
         OdhClaimChgHist entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "claimChgHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdhClaimChgHistService {
     /* 클레임 변경 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdhClaimChgHist entity = findById(id);
         odhClaimChgHistRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdhClaimChgHistService {
     /* 클레임 변경 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhClaimChgHist> rows) {
+        CmUtil.requireRowIds(rows, OdhClaimChgHist::getClaimChgHistId, "U", "claimChgHistId", this);
+        CmUtil.requireRowIds(rows, OdhClaimChgHist::getClaimChgHistId, "D", "claimChgHistId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getClaimChgHistId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdhClaimChgHist::getClaimChgHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdhClaimChgHistService {
             em.clear();
         }
         List<OdhClaimChgHist> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimChgHistId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdhClaimChgHist row : updateRows) {
             OdhClaimChgHist entity = findById(row.getClaimChgHistId());

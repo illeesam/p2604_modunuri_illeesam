@@ -104,6 +104,7 @@ public class SyVendorUserRoleService {
     /* 업체 사용자 역할 연결 수정 */
     @Transactional
     public SyVendorUserRole update(String id, SyVendorUserRole body) {
+        CmUtil.requireId(id, "id", this);
         SyVendorUserRole entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "vendorUserRoleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -131,6 +132,7 @@ public class SyVendorUserRoleService {
     /* 업체 사용자 역할 연결 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyVendorUserRole entity = findById(id);
         syVendorUserRoleRepository.delete(entity);
         em.flush();
@@ -140,11 +142,13 @@ public class SyVendorUserRoleService {
     /* 업체 사용자 역할 연결 목록저장 */
     @Transactional
     public void saveList(List<SyVendorUserRole> rows) {
+        CmUtil.requireRowIds(rows, SyVendorUserRole::getVendorUserRoleId, "U", "vendorUserRoleId", this);
+        CmUtil.requireRowIds(rows, SyVendorUserRole::getVendorUserRoleId, "D", "vendorUserRoleId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getVendorUserRoleId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyVendorUserRole::getVendorUserRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -153,7 +157,7 @@ public class SyVendorUserRoleService {
             em.clear();
         }
         List<SyVendorUserRole> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getVendorUserRoleId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyVendorUserRole row : updateRows) {
             SyVendorUserRole entity = findById(row.getVendorUserRoleId());

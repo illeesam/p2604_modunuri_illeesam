@@ -102,6 +102,7 @@ public class OdhClaimItemStatusHistService {
     /* 클레임 아이템 상태 이력 수정 */
     @Transactional
     public OdhClaimItemStatusHist update(String id, OdhClaimItemStatusHist body) {
+        CmUtil.requireId(id, "id", this);
         OdhClaimItemStatusHist entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "claimItemStatusHistId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdhClaimItemStatusHistService {
     /* 클레임 아이템 상태 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdhClaimItemStatusHist entity = findById(id);
         odhClaimItemStatusHistRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdhClaimItemStatusHistService {
     /* 클레임 아이템 상태 이력 목록저장 */
     @Transactional
     public void saveList(List<OdhClaimItemStatusHist> rows) {
+        CmUtil.requireRowIds(rows, OdhClaimItemStatusHist::getClaimItemStatusHistId, "U", "claimItemStatusHistId", this);
+        CmUtil.requireRowIds(rows, OdhClaimItemStatusHist::getClaimItemStatusHistId, "D", "claimItemStatusHistId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getClaimItemStatusHistId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdhClaimItemStatusHist::getClaimItemStatusHistId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdhClaimItemStatusHistService {
             em.clear();
         }
         List<OdhClaimItemStatusHist> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getClaimItemStatusHistId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdhClaimItemStatusHist row : updateRows) {
             OdhClaimItemStatusHist entity = findById(row.getClaimItemStatusHistId());

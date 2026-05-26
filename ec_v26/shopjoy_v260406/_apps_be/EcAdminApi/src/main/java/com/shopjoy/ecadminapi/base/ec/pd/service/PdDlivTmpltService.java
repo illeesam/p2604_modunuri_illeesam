@@ -102,6 +102,7 @@ public class PdDlivTmpltService {
     /* 배송 템플릿 수정 */
     @Transactional
     public PdDlivTmplt update(String id, PdDlivTmplt body) {
+        CmUtil.requireId(id, "id", this);
         PdDlivTmplt entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "dlivTmpltId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PdDlivTmpltService {
     /* 배송 템플릿 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PdDlivTmplt entity = findById(id);
         pdDlivTmpltRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PdDlivTmpltService {
     /* 배송 템플릿 목록저장 */
     @Transactional
     public void saveList(List<PdDlivTmplt> rows) {
+        CmUtil.requireRowIds(rows, PdDlivTmplt::getDlivTmpltId, "U", "dlivTmpltId", this);
+        CmUtil.requireRowIds(rows, PdDlivTmplt::getDlivTmpltId, "D", "dlivTmpltId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getDlivTmpltId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PdDlivTmplt::getDlivTmpltId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PdDlivTmpltService {
             em.clear();
         }
         List<PdDlivTmplt> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getDlivTmpltId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PdDlivTmplt row : updateRows) {
             PdDlivTmplt entity = findById(row.getDlivTmpltId());

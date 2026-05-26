@@ -822,3 +822,70 @@ props: {
 ```
 
 또는 **`reloadTrigger` props 패턴**(자식이 emit, 부모가 watch)도 가능. MEMORY 의 「Modal reloadTrigger 표준」과 동일한 사상.
+
+---
+
+## 19. 그리드 행간 드래그앤드롭 순서 변경 정책 ⭐
+
+### 19.1 즉시 저장 vs 묶음 저장 — 구분 기준
+
+**기본 원칙**: 그리드 행간 드래그앤드롭으로 순서를 변경할 때 `sort_ord` 즉시 저장이 가능한 화면과 그렇지 않은 화면을 구분한다.
+
+| 분류 | 즉시 저장 적용 | 비고 |
+|---|---|---|
+| **격리된 첨부·이미지 정렬 영역** | ✅ **즉시 저장** | BaseAttachGrp 등 — 다른 편집과 독립. 드롭 즉시 `PATCH .../sort` 호출 |
+| **CRUD 그리드** (`_row_status` 사용) | ❌ **묶음 저장 유지** | PdCategoryMng / PdCategoryProdMng / DpDispPanelMng 등 — 행 추가·수정·삭제와 정렬이 한 트랜잭션. 드롭 시점에는 로컬 `sortOrd` 변경만 + `_row_status='U'` 마킹 → [저장] 버튼으로 `saveList` 일괄 호출 |
+| **Dtl 내부 자식 리스트** | ❌ **묶음 저장 유지** | PdProdDtl 옵션·이미지·SKU / PdBundleMng·PdSetMng 자식 카테고리·아이템 — 부모 Dtl [저장]에 종속 |
+| **미리보기/시뮬레이션** | — | DpDispAreaPreview 등 — DB 저장 없음, 시각적 reorder 만 |
+
+### 19.2 격리된 첨부 정렬 즉시 저장 표준 패턴 (BaseAttachGrp)
+
+```js
+const onDrop = async (toIdx) => {
+  const from = dragState.fromIdx;
+  dragState.fromIdx = null;
+  if (from === null || from === toIdx) return;
+  const moved = files.splice(from, 1)[0];
+  files.splice(toIdx, 0, moved);
+  /* sort_ord 즉시 저장 (드롭 시 서버 반영) */
+  files.forEach((f, i) => { f.sortOrd = i + 1; });
+  try {
+    await Promise.all(files.map((f, i) =>
+      window.boApi.patch(`co/cm/upload/attach/${f.attachId}/sort`,
+        { sortOrd: i + 1 }, window.coUtil.cofApiHdr('첨부파일', '순서변경'))
+    ));
+    props.showToast('순서가 저장되었습니다.', 'success');
+  } catch(e) {
+    console.error('[xxx] sort update failed', e);
+    props.showToast(e.response?.data?.message || '순서 저장 실패', 'error', 0);
+  }
+};
+```
+
+**필수 요소**:
+1. **에러 핸들링** — 실패 시 토스트로 사용자에게 알림
+2. **성공 토스트** — 저장 완료 명시
+3. **컨플릭트 회피** — 격리된 그리드여야 안전. 같은 화면에 추가·삭제·다른 편집 동작이 있다면 적용 금지
+
+### 19.3 CRUD 그리드는 즉시 저장 적용 금지 ⛔
+
+**이유**: CRUD 그리드는 행 추가(`_row_status='C'`) / 수정(`'U'`) / 삭제(`'D'`) 와 정렬이 동일한 트랜잭션 단위다. 드롭만 즉시 저장하면 다른 미완성 편집과 데이터 불일치가 발생한다.
+
+**유지 패턴**:
+```js
+const onRowDrop = () => {
+  /* 로컬 reorder + sortOrd 재계산 + _row_status='U' 마킹만 */
+  const [moved] = gridRows.splice(from, 1);
+  gridRows.splice(to, 0, moved);
+  gridRows.forEach((r, i) => {
+    r.sortOrd = i + 1;
+    if (r._row_status == null) r._row_status = 'U';
+  });
+  /* 저장은 [저장] 버튼 → saveList 호출 시점에 한 번 */
+};
+```
+
+### 19.4 적용 현황 (2026-05-26)
+
+- ✅ **BaseAttachGrp** — 첨부 파일 정렬 드롭 즉시 저장 (에러 트래킹 강화 완료)
+- ❌ DpDispPanelMng / PdCategoryMng / PdCategoryProdMng / PdProdDtl / PdBundleMng / PdSetMng / DpDispWidgetDtl 등 — CRUD 묶음 저장 패턴 유지

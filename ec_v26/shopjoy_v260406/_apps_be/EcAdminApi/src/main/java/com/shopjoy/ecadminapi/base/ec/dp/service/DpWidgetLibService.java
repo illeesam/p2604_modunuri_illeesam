@@ -102,6 +102,7 @@ public class DpWidgetLibService {
     /* 전시 위젯 라이브러리 수정 */
     @Transactional
     public DpWidgetLib update(String id, DpWidgetLib body) {
+        CmUtil.requireId(id, "id", this);
         DpWidgetLib entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "widgetLibId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class DpWidgetLibService {
     /* 전시 위젯 라이브러리 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         DpWidgetLib entity = findById(id);
         dpWidgetLibRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class DpWidgetLibService {
     /* 전시 위젯 라이브러리 목록저장 */
     @Transactional
     public void saveList(List<DpWidgetLib> rows) {
+        CmUtil.requireRowIds(rows, DpWidgetLib::getWidgetLibId, "U", "widgetLibId", this);
+        CmUtil.requireRowIds(rows, DpWidgetLib::getWidgetLibId, "D", "widgetLibId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getWidgetLibId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(DpWidgetLib::getWidgetLibId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class DpWidgetLibService {
             em.clear();
         }
         List<DpWidgetLib> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getWidgetLibId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (DpWidgetLib row : updateRows) {
             DpWidgetLib entity = findById(row.getWidgetLibId());

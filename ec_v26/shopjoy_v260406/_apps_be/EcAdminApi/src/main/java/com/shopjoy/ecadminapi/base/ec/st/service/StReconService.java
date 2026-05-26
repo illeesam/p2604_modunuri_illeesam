@@ -102,6 +102,7 @@ public class StReconService {
     /* 정산 대사(Reconciliation) 수정 */
     @Transactional
     public StRecon update(String id, StRecon body) {
+        CmUtil.requireId(id, "id", this);
         StRecon entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "reconId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class StReconService {
     /* 정산 대사(Reconciliation) 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         StRecon entity = findById(id);
         stReconRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class StReconService {
     /* 정산 대사(Reconciliation) 목록저장 */
     @Transactional
     public void saveList(List<StRecon> rows) {
+        CmUtil.requireRowIds(rows, StRecon::getReconId, "U", "reconId", this);
+        CmUtil.requireRowIds(rows, StRecon::getReconId, "D", "reconId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getReconId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(StRecon::getReconId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class StReconService {
             em.clear();
         }
         List<StRecon> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getReconId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (StRecon row : updateRows) {
             StRecon entity = findById(row.getReconId());

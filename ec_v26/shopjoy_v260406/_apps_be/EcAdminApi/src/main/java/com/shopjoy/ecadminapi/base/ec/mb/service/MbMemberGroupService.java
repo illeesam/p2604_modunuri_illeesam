@@ -102,6 +102,7 @@ public class MbMemberGroupService {
     /* 회원 그룹 수정 */
     @Transactional
     public MbMemberGroup update(String id, MbMemberGroup body) {
+        CmUtil.requireId(id, "id", this);
         MbMemberGroup entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "memberGroupId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbMemberGroupService {
     /* 회원 그룹 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbMemberGroup entity = findById(id);
         mbMemberGroupRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbMemberGroupService {
     /* 회원 그룹 목록저장 */
     @Transactional
     public void saveList(List<MbMemberGroup> rows) {
+        CmUtil.requireRowIds(rows, MbMemberGroup::getMemberGroupId, "U", "memberGroupId", this);
+        CmUtil.requireRowIds(rows, MbMemberGroup::getMemberGroupId, "D", "memberGroupId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getMemberGroupId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbMemberGroup::getMemberGroupId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbMemberGroupService {
             em.clear();
         }
         List<MbMemberGroup> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getMemberGroupId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbMemberGroup row : updateRows) {
             MbMemberGroup entity = findById(row.getMemberGroupId());

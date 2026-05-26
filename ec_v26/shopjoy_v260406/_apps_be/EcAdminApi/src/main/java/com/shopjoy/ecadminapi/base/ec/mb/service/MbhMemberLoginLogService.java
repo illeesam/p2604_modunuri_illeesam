@@ -102,6 +102,7 @@ public class MbhMemberLoginLogService {
     /* 회원 로그인 로그 수정 */
     @Transactional
     public MbhMemberLoginLog update(String id, MbhMemberLoginLog body) {
+        CmUtil.requireId(id, "id", this);
         MbhMemberLoginLog entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "logId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbhMemberLoginLogService {
     /* 회원 로그인 로그 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbhMemberLoginLog entity = findById(id);
         mbhMemberLoginLogRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbhMemberLoginLogService {
     /* 회원 로그인 로그 목록저장 */
     @Transactional
     public void saveList(List<MbhMemberLoginLog> rows) {
+        CmUtil.requireRowIds(rows, MbhMemberLoginLog::getLogId, "U", "logId", this);
+        CmUtil.requireRowIds(rows, MbhMemberLoginLog::getLogId, "D", "logId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbhMemberLoginLog::getLogId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbhMemberLoginLogService {
             em.clear();
         }
         List<MbhMemberLoginLog> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getLogId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbhMemberLoginLog row : updateRows) {
             MbhMemberLoginLog entity = findById(row.getLogId());

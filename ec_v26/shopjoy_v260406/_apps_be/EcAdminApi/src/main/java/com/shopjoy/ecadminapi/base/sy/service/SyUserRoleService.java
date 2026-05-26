@@ -109,6 +109,7 @@ public class SyUserRoleService {
     /* 사용자별 역할 수정 */
     @Transactional
     public SyUserRole update(String id, SyUserRole body) {
+        CmUtil.requireId(id, "id", this);
         SyUserRole entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "userRoleId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -136,6 +137,7 @@ public class SyUserRoleService {
     /* 사용자별 역할 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyUserRole entity = findById(id);
         syUserRoleRepository.delete(entity);
         em.flush();
@@ -145,11 +147,13 @@ public class SyUserRoleService {
     /* 사용자별 역할 목록저장 */
     @Transactional
     public void saveList(List<SyUserRole> rows) {
+        CmUtil.requireRowIds(rows, SyUserRole::getUserRoleId, "U", "userRoleId", this);
+        CmUtil.requireRowIds(rows, SyUserRole::getUserRoleId, "D", "userRoleId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getUserRoleId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyUserRole::getUserRoleId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -158,7 +162,7 @@ public class SyUserRoleService {
             em.clear();
         }
         List<SyUserRole> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getUserRoleId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyUserRole row : updateRows) {
             SyUserRole entity = findById(row.getUserRoleId());

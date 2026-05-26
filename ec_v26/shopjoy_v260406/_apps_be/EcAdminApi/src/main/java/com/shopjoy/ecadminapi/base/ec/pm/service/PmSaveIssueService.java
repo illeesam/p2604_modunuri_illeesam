@@ -102,6 +102,7 @@ public class PmSaveIssueService {
     /* 적립금 지급 이력 수정 */
     @Transactional
     public PmSaveIssue update(String id, PmSaveIssue body) {
+        CmUtil.requireId(id, "id", this);
         PmSaveIssue entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "saveIssueId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmSaveIssueService {
     /* 적립금 지급 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmSaveIssue entity = findById(id);
         pmSaveIssueRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmSaveIssueService {
     /* 적립금 지급 이력 목록저장 */
     @Transactional
     public void saveList(List<PmSaveIssue> rows) {
+        CmUtil.requireRowIds(rows, PmSaveIssue::getSaveIssueId, "U", "saveIssueId", this);
+        CmUtil.requireRowIds(rows, PmSaveIssue::getSaveIssueId, "D", "saveIssueId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getSaveIssueId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmSaveIssue::getSaveIssueId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmSaveIssueService {
             em.clear();
         }
         List<PmSaveIssue> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getSaveIssueId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmSaveIssue row : updateRows) {
             PmSaveIssue entity = findById(row.getSaveIssueId());

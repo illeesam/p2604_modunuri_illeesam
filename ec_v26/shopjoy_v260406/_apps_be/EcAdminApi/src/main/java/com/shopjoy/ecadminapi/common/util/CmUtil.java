@@ -131,6 +131,67 @@ public class CmUtil {
     }
 
     /**
+     * Service의 update/delete/save 메서드 진입부에서 식별자(ID) null/blank 검증.
+     *
+     * <p>호출 예: {@code CmUtil.requireId(id, "userId", this);} → id 누락 시 즉시 예외.
+     *
+     * <p>키 누락을 조용히 무시하면 잘못된 행을 갱신하거나 saveList 의 일부 row 가 사라지는
+     * 데이터 무결성 사고로 이어지므로, 반드시 명시적 예외로 차단한다.
+     *
+     * @param id      검증할 식별자 값
+     * @param idName  필드명(예: "userId") — 예외 메시지에 표시
+     * @param svc     호출 Service 인스턴스(스택 추적용, {@code this} 전달)
+     * @throws CmBizException id 가 null 또는 blank 인 경우
+     */
+    public static void requireId(Object id, String idName, Object svc) {
+        if (id == null || (id instanceof String && ((String) id).isBlank())) {
+            throw new CmBizException(idName + " 가 필요합니다." + "::" + svcCallerInfo(svc));
+        }
+    }
+
+    /**
+     * saveList 의 U/D row 들에 대해 ID 가 모두 채워졌는지 일괄 검증.
+     *
+     * <p>키가 비어 있는 row 가 하나라도 있으면 인덱스와 함께 예외 메시지를 구성한다.
+     * 조용히 filter 로 제외하던 기존 패턴 대신 클라이언트 누락을 명시적으로 차단.
+     *
+     * @param rows         검증 대상 row 목록 (null/empty 면 통과)
+     * @param idExtractor  각 row 에서 ID 를 추출하는 함수 (예: {@code SyUser::getUserId})
+     * @param rowStatus    검증할 상태 코드(보통 "U" 또는 "D")
+     * @param idName       필드명(예: "userId") — 예외 메시지에 표시
+     * @param svc          호출 Service 인스턴스
+     * @param <T>          row 타입
+     * @throws CmBizException 해당 상태 row 중 하나라도 ID 가 비어 있는 경우
+     */
+    public static <T> void requireRowIds(List<T> rows,
+                                          java.util.function.Function<T, ?> idExtractor,
+                                          String rowStatus, String idName, Object svc) {
+        if (rows == null || rows.isEmpty()) return;
+        List<Integer> badIdx = new ArrayList<>();
+        for (int i = 0; i < rows.size(); i++) {
+            T r = rows.get(i);
+            if (r == null) continue;
+            try {
+                // rowStatus 필드 — BaseEntity 의 getRowStatus 로 얻는 게 정석이지만 generic 회피용 reflection
+                java.lang.reflect.Method m = r.getClass().getMethod("getRowStatus");
+                Object rs = m.invoke(r);
+                if (!java.util.Objects.equals(rowStatus, rs)) continue;
+            } catch (Exception ignore) {
+                continue;
+            }
+            Object id = idExtractor.apply(r);
+            if (id == null || (id instanceof String && ((String) id).isBlank())) {
+                badIdx.add(i);
+            }
+        }
+        if (!badIdx.isEmpty()) {
+            throw new CmBizException(
+                "saveList[" + rowStatus + "] " + idName + " 누락 row index=" + badIdx
+                + "::" + svcCallerInfo(svc));
+        }
+    }
+
+    /**
      * '^' 구분자로 이름 파싱 (예: {@code "auth^user^role"} → {@code ["auth","user","role"]}).
      *
      * <p>각 토큰은 trim 되고 빈 토큰은 결과에서 제외된다.

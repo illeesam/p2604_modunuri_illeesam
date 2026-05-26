@@ -102,6 +102,7 @@ public class MbLikeService {
     /* 좋아요(찜) 수정 */
     @Transactional
     public MbLike update(String id, MbLike body) {
+        CmUtil.requireId(id, "id", this);
         MbLike entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "likeId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class MbLikeService {
     /* 좋아요(찜) 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         MbLike entity = findById(id);
         mbLikeRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class MbLikeService {
     /* 좋아요(찜) 목록저장 */
     @Transactional
     public void saveList(List<MbLike> rows) {
+        CmUtil.requireRowIds(rows, MbLike::getLikeId, "U", "likeId", this);
+        CmUtil.requireRowIds(rows, MbLike::getLikeId, "D", "likeId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getLikeId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(MbLike::getLikeId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class MbLikeService {
             em.clear();
         }
         List<MbLike> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getLikeId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (MbLike row : updateRows) {
             MbLike entity = findById(row.getLikeId());

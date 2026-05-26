@@ -102,6 +102,7 @@ public class SyVocService {
     /* 고객의 소리(VOC) 수정 */
     @Transactional
     public SyVoc update(String id, SyVoc body) {
+        CmUtil.requireId(id, "id", this);
         SyVoc entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "vocId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class SyVocService {
     /* 고객의 소리(VOC) 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyVoc entity = findById(id);
         syVocRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class SyVocService {
     /* 고객의 소리(VOC) 목록저장 */
     @Transactional
     public void saveList(List<SyVoc> rows) {
+        CmUtil.requireRowIds(rows, SyVoc::getVocId, "U", "vocId", this);
+        CmUtil.requireRowIds(rows, SyVoc::getVocId, "D", "vocId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getVocId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyVoc::getVocId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class SyVocService {
             em.clear();
         }
         List<SyVoc> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getVocId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyVoc row : updateRows) {
             SyVoc entity = findById(row.getVocId());

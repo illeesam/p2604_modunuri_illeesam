@@ -102,6 +102,7 @@ public class DpPanelItemService {
     /* 전시 패널 아이템 수정 */
     @Transactional
     public DpPanelItem update(String id, DpPanelItem body) {
+        CmUtil.requireId(id, "id", this);
         DpPanelItem entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "panelItemId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class DpPanelItemService {
     /* 전시 패널 아이템 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         DpPanelItem entity = findById(id);
         dpPanelItemRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class DpPanelItemService {
     /* 전시 패널 아이템 목록저장 */
     @Transactional
     public void saveList(List<DpPanelItem> rows) {
+        CmUtil.requireRowIds(rows, DpPanelItem::getPanelItemId, "U", "panelItemId", this);
+        CmUtil.requireRowIds(rows, DpPanelItem::getPanelItemId, "D", "panelItemId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getPanelItemId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(DpPanelItem::getPanelItemId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class DpPanelItemService {
             em.clear();
         }
         List<DpPanelItem> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getPanelItemId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (DpPanelItem row : updateRows) {
             DpPanelItem entity = findById(row.getPanelItemId());

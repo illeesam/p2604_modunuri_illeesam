@@ -114,6 +114,58 @@ public class XxxService {
 
 **2026-04-28 업데이트**: 모든 BO Service에 필수 적용
 
+### ⛔ ID/키 누락 검증 ⭐ (2026-05-26 추가) — saveList·update·delete 안전성
+
+`base/*/service/*Service.java` 의 모든 변경 메서드는 **식별자 누락 시 즉시 예외**를 던져야 한다.
+조용히 filter 로 무시하거나 NPE 로 끝나면 클라이언트 누락이 무인지되어 데이터 손상으로 이어진다.
+
+```java
+// update — 시작부에 requireId
+@Transactional
+public XxxEntity update(String id, XxxEntity body) {
+    CmUtil.requireId(id, "id", this);   // ← 필수
+    XxxEntity entity = findById(id);
+    VoUtil.voCopyExclude(body, entity, "...");
+    ...
+}
+
+// delete — 시작부에 requireId
+@Transactional
+public void delete(String id) {
+    CmUtil.requireId(id, "id", this);   // ← 필수
+    XxxEntity entity = findById(id);
+    ...
+}
+
+// saveList — U/D row 들 id 누락 사전 검증 (filter && != null 패턴 금지)
+@Transactional
+public void saveList(List<XxxEntity> rows) {
+    CmUtil.requireRowIds(rows, XxxEntity::getXxxId, "U", "xxxId", this);   // ← 필수
+    CmUtil.requireRowIds(rows, XxxEntity::getXxxId, "D", "xxxId", this);   // ← 필수
+    ...
+    // 이전: .filter(r -> "D".equals(r.getRowStatus()) && r.getXxxId() != null)
+    // 변경: .filter(r -> "D".equals(r.getRowStatus()))   // id 검증은 위에서 끝남
+    List<String> deleteIds = rows.stream()
+        .filter(r -> "D".equals(r.getRowStatus()))
+        .map(XxxEntity::getXxxId).toList();
+    ...
+}
+```
+
+**적용 현황 (2026-05-26)**: 165개 `base/*/service/*Service.java` 중 143개에 자동 변환 적용 완료
+(BUILD SUCCESSFUL). saveList 가 없거나 update/delete 패턴이 표준에서 벗어난 22개는 변환 대상 외.
+
+**점검 명령**:
+```bash
+# id 검증 누락된 update/delete 찾기
+grep -rL "CmUtil.requireId" \
+  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/*/service/*Service.java
+
+# saveList 에 && r.getXxxId() != null 잔존 패턴 찾기 (위반)
+grep -rnE '\.filter\([^)]*\.getRowStatus\(\)\)\s*&&\s*r\.get\w+Id\(\)\s*!=\s*null' \
+  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base
+```
+
 ### getById / getById - 필수 검증
 
 > 클래스에 `@Transactional(readOnly = true)`가 선언되어 있으므로 조회 메서드에는 어노테이션을 붙이지 않는다.
@@ -234,6 +286,53 @@ VoUtil.mapCopy(body, entity, "id", "regBy", "regDate");
 2. **타입 검증**: 타입이 다른 필드는 복사하지 않음
 3. **필드 누락 허용**: VO/Map에 있지만 Entity에 없는 필드는 무시 (부분 복사)
 4. **필드명 일치**: 같은 이름의 필드만 자동 매핑
+
+### ⛔ Entity·VO 필드 default 값 금지 ⭐ (saveList selective-update 전제조건)
+
+`VoUtil.voCopy*` 의 "null 필드는 복사 제외" 동작은 **VO 객체에 누락된 필드가 진짜 null 일 때만** 안전하다.
+따라서 **Entity 와 모든 VO/DTO 클래스의 필드에 기본값(default)을 두면 안 된다**.
+
+```java
+// ❌ 금지 — Jackson 역직렬화 시 JSON 에 없어도 기본값이 들어가 VoUtil 이 "복사 대상" 으로 인식
+public class SyUser {
+    private String userStatusCd = "ACTIVE";   // ❌ 기본값
+    private Integer sortOrd = 0;              // ❌ 기본값
+    private String useYn = "Y";               // ❌ 기본값
+
+    @Builder.Default                          // ❌ Lombok Builder 기본값도 금지
+    private String authMethodCd = "PWD";
+}
+
+// ✅ 올바름 — 모든 필드는 null 로 시작
+public class SyUser {
+    private String userStatusCd;
+    private Integer sortOrd;
+    private String useYn;
+    private String authMethodCd;
+}
+```
+
+**Why**: saveList 류 API 에서 일부 필드만 변경하는 케이스(예: 드래그앤드롭 정렬 → `userId + sortOrd` 만 전송)
+의 데이터 무결성이 이 전제에 의존한다. 기본값이 있으면 다른 필드까지 의도하지 않게 덮어쓰여
+사용자 상태·옵션 등이 손상될 수 있다.
+
+**적용 대상**:
+- `base/*/entity/*.java` — 모든 JPA Entity
+- `base/*/data/dto/*.java` — 모든 요청 VO/DTO
+- `bo/*/data/dto/*.java`, `fo/*/data/dto/*.java` — 레이어별 VO/DTO
+
+**예외**:
+- 서비스 내부 계산용 임시 객체 (외부 요청 매핑 대상이 아님) 는 상관없음
+- DB 컬럼 default 값(`DEFAULT 'ACTIVE'` 같은 DDL)은 JPA 가 신규 INSERT 시에만 사용 — 영향 없음
+
+**점검 명령**:
+```bash
+# Entity·DTO 클래스에서 필드 default 또는 @Builder.Default 사용 검색
+grep -rnE "private [A-Z][a-zA-Z]+ [a-zA-Z]+ = |@Builder\.Default" \
+  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base \
+  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/bo \
+  _apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/fo
+```
 
 ### 사용 제약
 

@@ -102,6 +102,7 @@ public class OdCartService {
     /* 장바구니 수정 */
     @Transactional
     public OdCart update(String id, OdCart body) {
+        CmUtil.requireId(id, "id", this);
         OdCart entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "cartId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdCartService {
     /* 장바구니 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdCart entity = findById(id);
         odCartRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdCartService {
     /* 장바구니 목록저장 */
     @Transactional
     public void saveList(List<OdCart> rows) {
+        CmUtil.requireRowIds(rows, OdCart::getCartId, "U", "cartId", this);
+        CmUtil.requireRowIds(rows, OdCart::getCartId, "D", "cartId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getCartId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdCart::getCartId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdCartService {
             em.clear();
         }
         List<OdCart> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getCartId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdCart row : updateRows) {
             OdCart entity = findById(row.getCartId());

@@ -102,6 +102,7 @@ public class CmBlogCateService {
     /* 게시판 카테고리 수정 */
     @Transactional
     public CmBlogCate update(String id, CmBlogCate body) {
+        CmUtil.requireId(id, "id", this);
         CmBlogCate entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "blogCateId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class CmBlogCateService {
     /* 게시판 카테고리 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         CmBlogCate entity = findById(id);
         cmBlogCateRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class CmBlogCateService {
     /* 게시판 카테고리 목록저장 */
     @Transactional
     public void saveList(List<CmBlogCate> rows) {
+        CmUtil.requireRowIds(rows, CmBlogCate::getBlogCateId, "U", "blogCateId", this);
+        CmUtil.requireRowIds(rows, CmBlogCate::getBlogCateId, "D", "blogCateId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getBlogCateId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(CmBlogCate::getBlogCateId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class CmBlogCateService {
             em.clear();
         }
         List<CmBlogCate> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getBlogCateId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (CmBlogCate row : updateRows) {
             CmBlogCate entity = findById(row.getBlogCateId());

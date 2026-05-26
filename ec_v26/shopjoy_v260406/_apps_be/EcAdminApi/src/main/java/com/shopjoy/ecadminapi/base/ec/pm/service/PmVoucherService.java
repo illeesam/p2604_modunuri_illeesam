@@ -102,6 +102,7 @@ public class PmVoucherService {
     /* 바우처(상품권) 수정 */
     @Transactional
     public PmVoucher update(String id, PmVoucher body) {
+        CmUtil.requireId(id, "id", this);
         PmVoucher entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "voucherId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmVoucherService {
     /* 바우처(상품권) 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmVoucher entity = findById(id);
         pmVoucherRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmVoucherService {
     /* 바우처(상품권) 목록저장 */
     @Transactional
     public void saveList(List<PmVoucher> rows) {
+        CmUtil.requireRowIds(rows, PmVoucher::getVoucherId, "U", "voucherId", this);
+        CmUtil.requireRowIds(rows, PmVoucher::getVoucherId, "D", "voucherId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getVoucherId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmVoucher::getVoucherId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmVoucherService {
             em.clear();
         }
         List<PmVoucher> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getVoucherId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmVoucher row : updateRows) {
             PmVoucher entity = findById(row.getVoucherId());

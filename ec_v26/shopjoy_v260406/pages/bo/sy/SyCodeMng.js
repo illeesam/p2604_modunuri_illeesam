@@ -196,16 +196,30 @@ window.SyCodeMng = {
       syncGrpDirty();
     };
 
-    /* onDragEnd — 드래그 정렬 종료 → sortOrd 재할당 */
-    const onDragEnd = () => {
+    /* onDragEnd — 드래그 정렬 종료 → sortOrd 재할당 + 즉시 저장 (기존 행 'U'만 전송) */
+    const onDragEnd = async () => {
       if (uiState.dragMoved) {
+        const sortChangedRows = [];
         uiState.gridRows.forEach((r, i) => {
           const newOrd = i + 1;
           if (r.sortOrd !== newOrd) {
             r.sortOrd = newOrd;
-            if (r._row_status === 'N') { r._row_status = 'U'; }
+            // 신규('I')는 아직 DB에 없으므로 즉시 저장 대상 제외 — [저장] 버튼에서 일괄 처리
+            if (r._row_status !== 'I' && r._row_status !== 'D' && r.codeId != null) {
+              sortChangedRows.push({ codeId: r.codeId, sortOrd: newOrd, rowStatus: 'U' });
+              if (r._row_status === 'N') { r._row_status = 'U'; }
+            }
           }
         });
+        if (sortChangedRows.length > 0) {
+          try {
+            await boApiSvc.syCode.saveList(sortChangedRows, '공통코드관리', '순서변경');
+            showToast?.('순서가 저장되었습니다.', 'success');
+          } catch (err) {
+            console.error('[SyCodeMng] sort save failed', err);
+            showToast?.(err.response?.data?.message || '순서 저장 실패', 'error', 0);
+          }
+        }
       }
       uiState.dragSrc = null;
       uiState.dragMoved = false;

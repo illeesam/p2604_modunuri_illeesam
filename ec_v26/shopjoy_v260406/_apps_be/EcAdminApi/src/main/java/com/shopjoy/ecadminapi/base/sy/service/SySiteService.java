@@ -104,6 +104,7 @@ public class SySiteService {
     /** update — 선택 필드 수정 (JPA + VoUtil voCopyExclude) */
     @Transactional
     public SySite update(String id, SySite body) {
+        CmUtil.requireId(id, "id", this);
         SySite entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "siteId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -132,6 +133,7 @@ public class SySiteService {
     /** delete — 삭제 (JPA) */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SySite entity = findById(id);
         sySiteRepository.delete(entity);
         em.flush();
@@ -142,11 +144,13 @@ public class SySiteService {
     /** saveList — 일괄 저장 */
     @Transactional
     public void saveList(List<SySite> rows) {
+        CmUtil.requireRowIds(rows, SySite::getSiteId, "U", "siteId", this);
+        CmUtil.requireRowIds(rows, SySite::getSiteId, "D", "siteId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getSiteId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SySite::getSiteId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -155,7 +159,7 @@ public class SySiteService {
             em.clear();
         }
         List<SySite> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getSiteId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SySite row : updateRows) {
             SySite entity = findById(row.getSiteId());

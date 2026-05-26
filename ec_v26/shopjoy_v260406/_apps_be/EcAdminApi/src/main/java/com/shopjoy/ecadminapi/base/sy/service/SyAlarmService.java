@@ -101,6 +101,7 @@ public class SyAlarmService {
     /* 알람 수정 */
     @Transactional
     public SyAlarm update(String id, SyAlarm body) {
+        CmUtil.requireId(id, "id", this);
         SyAlarm entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "alarmId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -128,6 +129,7 @@ public class SyAlarmService {
     /* 알람 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyAlarm entity = findById(id);
         syAlarmRepository.delete(entity);
         em.flush();

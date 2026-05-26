@@ -102,6 +102,7 @@ public class PmCouponUsageService {
     /* 쿠폰 사용 이력 수정 */
     @Transactional
     public PmCouponUsage update(String id, PmCouponUsage body) {
+        CmUtil.requireId(id, "id", this);
         PmCouponUsage entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "usageId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class PmCouponUsageService {
     /* 쿠폰 사용 이력 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         PmCouponUsage entity = findById(id);
         pmCouponUsageRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class PmCouponUsageService {
     /* 쿠폰 사용 이력 목록저장 */
     @Transactional
     public void saveList(List<PmCouponUsage> rows) {
+        CmUtil.requireRowIds(rows, PmCouponUsage::getUsageId, "U", "usageId", this);
+        CmUtil.requireRowIds(rows, PmCouponUsage::getUsageId, "D", "usageId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getUsageId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(PmCouponUsage::getUsageId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class PmCouponUsageService {
             em.clear();
         }
         List<PmCouponUsage> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getUsageId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (PmCouponUsage row : updateRows) {
             PmCouponUsage entity = findById(row.getUsageId());

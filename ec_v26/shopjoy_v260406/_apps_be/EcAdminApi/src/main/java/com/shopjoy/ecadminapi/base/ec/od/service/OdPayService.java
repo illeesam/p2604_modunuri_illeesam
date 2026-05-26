@@ -102,6 +102,7 @@ public class OdPayService {
     /* 결제 수정 */
     @Transactional
     public OdPay update(String id, OdPay body) {
+        CmUtil.requireId(id, "id", this);
         OdPay entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "payId^regBy^regDate");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -129,6 +130,7 @@ public class OdPayService {
     /* 결제 삭제 */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         OdPay entity = findById(id);
         odPayRepository.delete(entity);
         em.flush();
@@ -138,11 +140,13 @@ public class OdPayService {
     /* 결제 목록저장 */
     @Transactional
     public void saveList(List<OdPay> rows) {
+        CmUtil.requireRowIds(rows, OdPay::getPayId, "U", "payId", this);
+        CmUtil.requireRowIds(rows, OdPay::getPayId, "D", "payId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getPayId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(OdPay::getPayId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -151,7 +155,7 @@ public class OdPayService {
             em.clear();
         }
         List<OdPay> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getPayId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (OdPay row : updateRows) {
             OdPay entity = findById(row.getPayId());

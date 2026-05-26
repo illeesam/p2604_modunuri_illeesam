@@ -157,6 +157,7 @@ public class SyUserService {
     /** update — 선택 필드 수정 (JPA + VoUtil voCopyExclude) */
     @Transactional
     public SyUser update(String id, SyUser body) {
+        CmUtil.requireId(id, "id", this);
         SyUser entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "userId^loginId^loginPwdHash^regBy^regDate^lastLogin^lastLoginDate^loginFailCnt");
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
@@ -186,6 +187,7 @@ public class SyUserService {
     /** delete — 삭제 (JPA) */
     @Transactional
     public void delete(String id) {
+        CmUtil.requireId(id, "id", this);
         SyUser entity = findById(id);
         syUserRepository.delete(entity);
         em.flush();
@@ -196,12 +198,14 @@ public class SyUserService {
     /** saveList — 일괄 저장 (DELETE/UPDATE/INSERT 단계별 처리). 처리된 row 들의 최신 SyUser 반환 */
     @Transactional
     public void saveList(List<SyUser> rows) {
+        CmUtil.requireRowIds(rows, SyUser::getUserId, "U", "userId", this);
+        CmUtil.requireRowIds(rows, SyUser::getUserId, "D", "userId", this);
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 
         // 1단계: DELETE 일괄 처리
         List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()) && r.getUserId() != null)
+            .filter(r -> "D".equals(r.getRowStatus()))
             .map(SyUser::getUserId)
             .toList();
         if (!deleteIds.isEmpty()) {
@@ -212,7 +216,7 @@ public class SyUserService {
 
         // 2단계: UPDATE 처리 + 처리된 ID 수집
         List<SyUser> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()) && r.getUserId() != null)
+            .filter(r -> "U".equals(r.getRowStatus()))
             .toList();
         for (SyUser row : updateRows) {
             SyUser entity = findById(row.getUserId());
