@@ -257,6 +257,9 @@ window.PdProdHist = {
     return {
       uiState, botTab, tabMode2, tabs,                                                      // 상태 / reactive(tabs)
       qnas, reviews, relatedOrders, stockHistories, priceHistories, statusHistories, changeHistories, // 데이터
+      qnaPager, reviewPager, orderPager, stockPager, pricePager, statusPager, changePager,  // 페이저
+      cfPageQnas, cfPageReviews, cfPageOrders, cfPageStock, cfPagePrice, cfPageStatus, cfPageChange, // 페이지 슬라이스
+      onHistSetPage, onHistSizeChange,                                                      // 페이저 콜백
       qnaGridColumns, reviewGridColumns, orderGridColumns, stockGridColumns, priceGridColumns, statusGridColumns, changeGridColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch
       showTab, fnFmtDate, fnStockBadge, fnNoCursor,                                         // 헬퍼
@@ -291,8 +294,9 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="qnaGridColumns" :rows="qnas" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
+      <bo-grid bare :columns="qnaGridColumns" :rows="cfPageQnas" :pager="qnaPager" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
       </bo-grid>
+      <bo-pager v-if="qnaPager.pageTotalCount > 0" :pager="qnaPager" :on-set-page="n => onHistSetPage('qna', n)" :on-size-change="() => onHistSizeChange('qna')" />
     </div>
     <!-- ===== □.□. 상품 Q&A ================================================ -->
     <!-- ===== ■.■. 리뷰 ==================================================== -->
@@ -304,8 +308,9 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="reviewGridColumns" :rows="reviews" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
+      <bo-grid bare :columns="reviewGridColumns" :rows="cfPageReviews" :pager="reviewPager" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
       </bo-grid>
+      <bo-pager v-if="reviewPager.pageTotalCount > 0" :pager="reviewPager" :on-set-page="n => onHistSetPage('review', n)" :on-size-change="() => onHistSizeChange('review')" />
     </div>
     <!-- ===== □.□. 리뷰 ==================================================== -->
     <!-- ===== ■.■. 연관 주문 ================================================= -->
@@ -317,13 +322,14 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" row-actions>
+      <bo-grid bare :columns="orderGridColumns" :rows="cfPageOrders" :pager="orderPager" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowDetail', row)">
             상세
           </button>
         </template>
       </bo-grid>
+      <bo-pager v-if="orderPager.pageTotalCount > 0" :pager="orderPager" :on-set-page="n => onHistSetPage('order', n)" :on-size-change="() => onHistSizeChange('order')" />
     </div>
     <!-- ===== □.□. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 재고 이력 ================================================= -->
@@ -335,8 +341,9 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="stockGridColumns" :rows="stockHistories" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
+      <bo-grid bare :columns="stockGridColumns" :rows="cfPageStock" :pager="stockPager" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
       </bo-grid>
+      <bo-pager v-if="stockPager.pageTotalCount > 0" :pager="stockPager" :on-set-page="n => onHistSetPage('stock', n)" :on-size-change="() => onHistSizeChange('stock')" />
     </div>
     <!-- ===== □.□. 재고 이력 ================================================= -->
     <!-- ===== ■.■. 가격변경이력 ================================================ -->
@@ -348,8 +355,9 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="priceGridColumns" :rows="priceHistories" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
+      <bo-grid bare :columns="priceGridColumns" :rows="cfPagePrice" :pager="pricePager" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
       </bo-grid>
+      <bo-pager v-if="pricePager.pageTotalCount > 0" :pager="pricePager" :on-set-page="n => onHistSetPage('price', n)" :on-size-change="() => onHistSizeChange('price')" />
     </div>
     <!-- ===== □.□. 가격변경이력 ================================================ -->
     <!-- ===== ■.■. 상품상태 이력 =============================================== -->
@@ -361,8 +369,9 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="statusGridColumns" :rows="statusHistories" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
+      <bo-grid bare :columns="statusGridColumns" :rows="cfPageStatus" :pager="statusPager" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
       </bo-grid>
+      <bo-pager v-if="statusPager.pageTotalCount > 0" :pager="statusPager" :on-set-page="n => onHistSetPage('status', n)" :on-size-change="() => onHistSizeChange('status')" />
     </div>
     <!-- ===== □.□. 상품상태 이력 =============================================== -->
     <!-- ===== ■.■. 상품정보 변경이력 ============================================= -->
@@ -374,8 +383,9 @@ window.PdProdHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="changeGridColumns" :rows="changeHistories" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
+      <bo-grid bare :columns="changeGridColumns" :rows="cfPageChange" :pager="changePager" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
       </bo-grid>
+      <bo-pager v-if="changePager.pageTotalCount > 0" :pager="changePager" :on-set-page="n => onHistSetPage('change', n)" :on-size-change="() => onHistSizeChange('change')" />
     </div>
   </div>
 </div>

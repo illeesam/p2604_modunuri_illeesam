@@ -706,6 +706,7 @@
             @set-page="n => onSetPage('orders', n)" @size-change="() => onSizeChange('orders')">
           </bo-grid>
         </div>
+        <bo-pager v-if="ordersPager.pageTotalCount > 0" :pager="ordersPager" :on-set-page="n => onSetPage('orders', n)" :on-size-change="() => onSizeChange('orders')" />
       </div>
       <!-- ===== ■.■.■. 클레임이력 =============================================== -->
       <div v-show="showTab('claims')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -725,6 +726,7 @@
             @set-page="n => onSetPage('claims', n)" @size-change="() => onSizeChange('claims')">
           </bo-grid>
         </div>
+        <bo-pager v-if="claimsPager.pageTotalCount > 0" :pager="claimsPager" :on-set-page="n => onSetPage('claims', n)" :on-size-change="() => onSizeChange('claims')" />
       </div>
       <!-- ===== ■.■.■. 배송이력 ================================================ -->
       <div v-show="showTab('dliv')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -743,6 +745,7 @@
             @set-page="n => onSetPage('dliv', n)" @size-change="() => onSizeChange('dliv')">
           </bo-grid>
         </div>
+        <bo-pager v-if="dlivPager.pageTotalCount > 0" :pager="dlivPager" :on-set-page="n => onSetPage('dliv', n)" :on-size-change="() => onSizeChange('dliv')" />
       </div>
       <!-- ===== ■.■.■. 캐쉬내역 ================================================ -->
       <div v-show="showTab('cache')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -764,6 +767,7 @@
             @set-page="n => onSetPage('cache', n)" @size-change="() => onSizeChange('cache')">
           </bo-grid>
         </div>
+        <bo-pager v-if="cachePager.pageTotalCount > 0" :pager="cachePager" :on-set-page="n => onSetPage('cache', n)" :on-size-change="() => onSizeChange('cache')" />
       </div>
       <!-- ===== ■.■.■. 문의이력 ================================================ -->
       <div v-show="showTab('contacts')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -782,6 +786,7 @@
             @set-page="n => onSetPage('contacts', n)" @size-change="() => onSizeChange('contacts')">
           </bo-grid>
         </div>
+        <bo-pager v-if="contactsPager.pageTotalCount > 0" :pager="contactsPager" :on-set-page="n => onSetPage('contacts', n)" :on-size-change="() => onSizeChange('contacts')" />
       </div>
       <!-- ===== ■.■.■. 채팅이력 ================================================ -->
       <div v-show="showTab('chats')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -800,6 +805,7 @@
             @set-page="n => onSetPage('chats', n)" @size-change="() => onSizeChange('chats')">
           </bo-grid>
         </div>
+        <bo-pager v-if="chatsPager.pageTotalCount > 0" :pager="chatsPager" :on-set-page="n => onSetPage('chats', n)" :on-size-change="() => onSizeChange('chats')" />
       </div>
       <!-- ===== ■.■.■. 로그인이력 =============================================== -->
       <div v-show="showTab('login')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -818,6 +824,7 @@
             @set-page="n => onSetPage('login', n)" @size-change="() => onSizeChange('login')">
           </bo-grid>
         </div>
+        <bo-pager v-if="loginPager.pageTotalCount > 0" :pager="loginPager" :on-set-page="n => onSetPage('login', n)" :on-size-change="() => onSizeChange('login')" />
       </div>
       <!-- ===== ■.■.■. 쿠폰사용이력 ============================================== -->
       <div v-show="showTab('coupon')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -837,6 +844,7 @@
             @set-page="n => onSetPage('coupon', n)" @size-change="() => onSizeChange('coupon')">
           </bo-grid>
         </div>
+        <bo-pager v-if="couponPager.pageTotalCount > 0" :pager="couponPager" :on-set-page="n => onSetPage('coupon', n)" :on-size-change="() => onSizeChange('coupon')" />
       </div>
       <!-- ===== ■.■.■. 발송이력 ================================================ -->
       <div v-show="showTab('send')" style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);overflow:hidden;">
@@ -855,6 +863,7 @@
             @set-page="n => onSetPage('send', n)" @size-change="() => onSizeChange('send')">
           </bo-grid>
         </div>
+        <bo-pager v-if="sendPager.pageTotalCount > 0" :pager="sendPager" :on-set-page="n => onSetPage('send', n)" :on-size-change="() => onSizeChange('send')" />
       </div>
     </div>
     <!-- ===== □.■. 이력 패널 ================================================= -->
@@ -876,6 +885,7 @@
         </button>
       </template>
     </bo-grid>
+    <bo-pager v-if="modalPager.pageTotalCount > 0" :pager="modalPager" :on-set-page="n => onSetPage('modal', n)" :on-size-change="() => onSizeChange('modal')" />
     <!-- ===== □.■. 목록 영역 ================================================= -->
   </bo-modal>
   <!-- ===== □. 고객 선택 모달 ================================================ -->

@@ -304,6 +304,7 @@ window.OdCartMng = {
         </button>
       </template>
     </bo-grid>
+    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
