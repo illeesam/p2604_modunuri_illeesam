@@ -158,6 +158,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     private List<OrderSpecifier<?>> buildOrder(SyCodeDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
+        if (!StringUtils.hasText(sort)) /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (!StringUtils.hasText(sort)) if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, c.regDate));
         if (!StringUtils.hasText(sort)) return orders;
         String[] sortParts = sort.split(",");
         for (String part : sortParts) {
@@ -173,6 +175,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 }
             }
         }
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, c.regDate));
         return orders;
     }
 

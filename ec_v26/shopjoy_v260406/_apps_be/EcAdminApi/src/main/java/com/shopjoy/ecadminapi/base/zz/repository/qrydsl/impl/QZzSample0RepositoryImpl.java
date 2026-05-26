@@ -145,6 +145,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         String sort = search == null ? null : search.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.ASC, s.sortOrd));
+            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, s.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -163,6 +165,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
                 }
             }
         }
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, s.regDate));
         return orders;
     }
 

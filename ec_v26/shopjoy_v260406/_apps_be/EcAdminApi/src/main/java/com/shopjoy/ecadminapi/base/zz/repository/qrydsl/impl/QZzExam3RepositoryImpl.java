@@ -167,6 +167,8 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
             orders.add(new OrderSpecifier(Order.ASC, e.exam1Id));
             orders.add(new OrderSpecifier(Order.ASC, e.exam2Id));
             orders.add(new OrderSpecifier(Order.ASC, e.exam3Id));
+            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -185,6 +187,8 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
                 }
             }
         }
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
         return orders;
     }
 

@@ -159,6 +159,8 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.ASC, e.exam1Id));
             orders.add(new OrderSpecifier(Order.ASC, e.exam2Id));
+            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -175,6 +177,8 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
                 }
             }
         }
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
         return orders;
     }
 

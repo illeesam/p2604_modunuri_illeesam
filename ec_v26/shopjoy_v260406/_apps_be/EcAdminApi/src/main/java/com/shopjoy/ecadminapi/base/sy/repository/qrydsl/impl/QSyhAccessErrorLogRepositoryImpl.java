@@ -170,8 +170,12 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, l.logDt));
+            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, l.regDate));
             return orders;
         }
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, l.regDate));
         return orders;
     }
 }

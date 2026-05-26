@@ -119,6 +119,8 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         orders.add(new OrderSpecifier(Order.ASC, p.sortOrd));
         orders.add(new OrderSpecifier(Order.ASC, p.pathId));
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, p.regDate));
         return orders;
     }
 

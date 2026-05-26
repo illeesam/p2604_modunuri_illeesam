@@ -164,6 +164,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
                 orders.add(new OrderSpecifier(Order.ASC, a.regDate));
             }
+            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
             return orders;
         }
         if ("id_asc".equals(sort)) {
@@ -181,6 +183,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         } else {
             orders.add(new OrderSpecifier(Order.DESC, a.regDate));
         }
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
         return orders;
     }
 

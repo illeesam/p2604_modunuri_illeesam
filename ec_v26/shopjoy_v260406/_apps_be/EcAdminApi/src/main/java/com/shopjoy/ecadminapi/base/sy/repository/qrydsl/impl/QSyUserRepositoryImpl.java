@@ -202,7 +202,6 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyUserDto.Request s) {
-        if (!StringUtils.hasText(s.getSort())) return new ArrayList<>();
         String[] sortParts = s.getSort().split(",");
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         for (String part : sortParts) {
@@ -225,6 +224,8 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 }
             }
         }
+        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, syUser.regDate));
         return orders;
     }
 
