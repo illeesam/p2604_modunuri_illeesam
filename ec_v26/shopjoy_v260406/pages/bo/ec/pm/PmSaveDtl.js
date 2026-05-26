@@ -259,7 +259,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     // --- [컬럼 정의] ---
     const infoFormColumns = [
       { key: 'saveNm',      label: '마일리지명', type: 'text', required: true,
-        placeholder: '마일리지명 입력', colSpan: 2 },
+        placeholder: '마일리지명 입력' },
       { key: 'saveType',    label: '적립유형', type: 'select', options: () => codes.save_issue_types },
       { key: 'saveVal',     label: '적립값', type: 'number', required: true, placeholder: '적립값 입력' },
       { key: 'saveUnit',    label: '적립단위', type: 'select', options: () => codes.save_units },

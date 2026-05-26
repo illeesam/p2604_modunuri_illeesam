@@ -645,14 +645,27 @@ const baseFormColumns = [
 - ❌ 금지: `rowSpan: 1` 명시 (default 이므로 노이즈)
 - 관련 코드: [components/comp/BoAreaComp.js](components/comp/BoAreaComp.js) `cfFieldStyle` 헬퍼
 
-**Dtl BoFormArea cols=3 강제 정책** ⭐⭐ (2026-05-27):
+**Dtl BoFormArea cols=3 강제 + 통합 폼 정책** ⭐⭐ (2026-05-27):
 - **모든 Dtl 의 `<bo-form-area>` 호출은 `:cols="3"` 으로 통일**. `:cols="2"` 사용 금지
-- 한 Dtl 안에 여러 BoFormArea 가 분리되어 있어도 각각 `:cols="3"` 유지
-- 행에 필드 합계 colSpan 이 cols(=3) 미만이면 **BoFormArea 가 마지막 필드의 colSpan 을 자동 확장**하여 grid 빈 칸을 채움 (BoAreaComp.js cfRows `fillSpan` 로직)
-  - 예: 필드 2개 (각 1칸) → 마지막 필드가 자동으로 2칸 차지하여 grid 꽉 참
-  - 예: 필드 1개 (1칸) → 자동으로 3칸 차지
-- ❌ 금지: 작은 폼이라는 이유로 `:cols="2"` 명시 → 일관성 깨짐
-- ✅ 권장: 명시적으로 빈 칸을 원할 때만 마지막에 `{ key: '_spacer', type: 'slot', hideLabel: true }` 같은 placeholder 추가
+- **한 화면(탭)에 작은 BoFormArea 여러 개 분할 금지** — 하나의 통합 컬럼 배열(`infoFormColumns` 등)로 합쳐 cols=3 한 행에 3개씩 표시되게 함
+  - ❌ 금지 사례: `prodNameFormColumns`(2필드) + `categoryBrandFormColumns`(2필드) + `vendorTypeFormColumns`(2필드) 처럼 의미 단위마다 폼 분할 → 각 폼이 cols=3 인데 2필드만 → 매 행 빈 칸 1개
+  - ✅ 권장: 위 폼들을 하나의 `infoFormColumns` 로 합치면 `상품명 / 상품코드 / 상품유형` → `카테고리 / 브랜드 / 업체` → ... 한 줄에 3필드씩 자동 흐름
+  - 슬롯(`<template #xxx>`)들도 하나의 통합 BoFormArea 안에 모음 (외부 모달은 폼 바깥 유지)
+- ❌ 금지: 빈 칸을 메우려고 마지막 필드에 `colSpan: 2`/`colSpan: 3` 임의 부여 (의미 왜곡)
+- ❌ 금지: 빈 칸 자동 확장 로직 (사용자가 명시적으로 거부)
+- ✅ 빈 칸이 자연스럽게 남는 행은 인접 필드를 의미 단위 재배치하여 메움 (전화번호/이메일 + 계약일 같이)
+- 적용 사례: PdProdDtl 기본정보 탭 5개 → infoFormColumns, 상세설정 탭 2개 → detailFormColumns 통합 (2026-05-27), SyVendorDtl 빈칸 재배치
+- 관련 코드: [components/comp/BoAreaComp.js](components/comp/BoAreaComp.js) BoFormArea, [pages/bo/ec/pd/PdProdDtl.js](pages/bo/ec/pd/PdProdDtl.js)
+
+**Dtl 큰 영역(리스트/멀티첨부/내용)은 한 줄 전체 폭** ⭐⭐ (2026-05-27):
+- 다음 항목은 무조건 `colSpan: 3` (cols=3 환경에서 한 줄 전체 폭) 으로 표시:
+  - **리스트 형 필드**: 카테고리 다중 선택, 태그 다중, 옵션 그룹 같은 동적 리스트 슬롯
+  - **멀티첨부**: 첨부파일 그리드/업로더 (`type: 'slot'` + 첨부 UI)
+  - **내용**: `type: 'textarea'`, `type: 'htmlEditor'`, Quill 에디터, 메모/설명/리뷰 본문 등 긴 텍스트 영역
+- ❌ 금지: textarea/htmlEditor 를 1칸·2칸으로 좁게 배치 → 사용자 입력 영역이 좁아 가독성 저하
+- ✅ 권장: `{ key: 'memo', label: '메모', type: 'slot', name: 'remark', colSpan: 3 }` 처럼 명시
+- 짧은 입력(text/number/select/date)은 기본 1칸, 주소/도메인/제목 등 중간 길이는 2칸, 긴 영역은 3칸
+- 적용 사례 (2026-05-27): SyVendorDtl 메모(colSpan:3), PdProdDtl 상품설명(향후 colSpan:3 권장)
 
 ### Dtl 탭 뷰모드 (최근 도입)
 

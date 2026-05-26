@@ -176,29 +176,29 @@ window.SyBbsDtl = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // 사이트명 폼
+    // 사이트명 폼 (cols=3 전체 폭)
     const siteFormColumns = [
-      { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
+      { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
     ];
 
-    // 기본 폼
+    // 기본 폼 (cols=3, 1열씩)
     const baseFormColumns = [
       { key: 'bbsTitle',    label: '제목', type: 'text', required: true,
-        placeholder: '게시글 제목', colSpan: 2 },
+        placeholder: '게시글 제목' },
       { key: 'authorNm',    label: '작성자', type: 'text', placeholder: '작성자명' },
       { key: 'bbsStatusCd', label: '상태', type: 'select', options: () => codes.bbs_post_statuses },
     ];
 
-    // 내용 입력 폼
+    // 내용 입력 폼 (한 줄 전체 폭, colSpan=3)
     const contentFormColumns = [
-      { key: '_noBbm', label: '내용', type: 'slot', name: 'contentNoBbm', colSpan: 4,
+      { key: '_noBbm', label: '내용', type: 'slot', name: 'contentNoBbm', colSpan: 3,
         visible: () => !uiState.selectedBbm },
-      { key: '_notAllow', label: '내용', type: 'slot', name: 'contentNotAllow', colSpan: 4,
+      { key: '_notAllow', label: '내용', type: 'slot', name: 'contentNotAllow', colSpan: 3,
         visible: () => uiState.selectedBbm && cfContentType.value === '불가' },
       { key: 'contentHtml', label: '내용', type: 'textarea', placeholder: '게시글 내용을 입력하세요.',
-        colSpan: 4, rows: 8,
+        colSpan: 3, rows: 8,
         visible: () => uiState.selectedBbm && cfContentType.value === 'textarea' },
-      { key: '_htmlEditor', label: '내용', type: 'slot', name: 'contentHtmlEditor', colSpan: 4,
+      { key: '_htmlEditor', label: '내용', type: 'slot', name: 'contentHtmlEditor', colSpan: 3,
         visible: () => uiState.selectedBbm && cfContentType.value === 'htmleditor' },
     ];
 

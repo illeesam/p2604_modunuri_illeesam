@@ -31,7 +31,12 @@ window.SyTemplateDtl = {
     const cfIsNew         = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
     const cfDtlMode       = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용
-    const cfUseHtmlEditor = computed(() => ['메일템플릿', '시스템알림'].includes(form.templateTypeCd));
+    /* cfUseHtmlEditor — 메일/시스템알림 유형 + 본문이 HTML 태그를 포함하면 htmlEditor */
+    const cfUseHtmlEditor = computed(() => {
+      if (['메일템플릿', '시스템알림'].includes(form.templateTypeCd)) return true;
+      const c = form.templateContent || '';
+      return /<\s*\w+[^>]*>/.test(c); // HTML 태그 패턴 자동 감지
+    });
     const cfNeedSubject   = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));
     const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 

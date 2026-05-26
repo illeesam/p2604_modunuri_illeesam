@@ -207,38 +207,36 @@ window.SyUserDtl = {
       { key: 'remark',       label: '비고', cellStyle: 'color:#666;' },
     ];
 
-    // 기본 폼
+    // 기본 폼 (cols=3, 1열 위주 + 주소/프로필은 한 줄 전체 폭)
     const baseFormColumns = [
+      // 1행: 사이트명(2) + 로그인ID(1)
       { key: '_siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'loginId',      label: '로그인ID', type: 'text', required: true,
         placeholder: '로그인 아이디',
         readonly: !cfIsNew.value },
+      // 2행: 비밀번호 / 이름 / 이메일
       { key: 'password',     label: '비밀번호', type: 'password',
         required: cfIsNew.value, placeholder: '비밀번호',
         visible: () => !cfDtlMode.value,
         hint: cfIsNew.value ? '' : '변경 시에만 입력' },
       { key: 'userNm',       label: '이름', type: 'text', required: true, placeholder: '이름' },
       { key: 'userEmail',    label: '이메일', type: 'text', required: true, placeholder: '이메일' },
+      // 3행: 연락처 / 부서 / 역할
       { key: 'userPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000' },
       { key: 'deptNm',       label: '부서', type: 'slot', name: 'dept' },
       { key: 'roleId',       label: '역할', type: 'select', options: () => codes.user_roles },
+      // 4행: 상태 (1) + (자연 빈칸 2)
       { key: 'userStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
-    ];
-
-    // 주소 폼
-    const addrFormColumns = [
-      { key: '_addr', label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
-    ];
-
-    // 프로필 폼
-    const profileFormColumns = [
-      { key: 'profileAttachId', label: '프로필 이미지', type: 'slot', name: 'profile', colSpan: 2 },
+      // 5행: 주소 (한 줄 전체)
+      { key: '_addr',           label: '주소',         type: 'slot', name: 'addr',    colSpan: 3 },
+      // 6행: 프로필 이미지 (한 줄 전체)
+      { key: 'profileAttachId', label: '프로필 이미지', type: 'slot', name: 'profile', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, form, errors, addrDetailRef, deptModal,             // 상태 / 데이터
-      baseFormColumns, addrFormColumns, profileFormColumns,               // 컬럼 정의
+      baseFormColumns,                                                    // 컬럼 정의
       userRoleGridColumns, cfUserRoles,                                   // 역할 목록 (하단)
       handleBtnAction, handleSelectAction,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode,                                                 // computed
@@ -284,45 +282,7 @@ window.SyUserDtl = {
         </div>
       </template>
     </bo-form-area>
-    <!-- ===== □.□. 기본정보 폼 ============================================== -->
-    <!-- ===== ■.■. 주소 영역 (BoFormArea 자동 렌더) ============================== -->
-    <bo-form-area :columns="addrFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" :show-actions="false">
-      <template #addr>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-          <input class="form-control" v-model="form.zipcode" placeholder="우편번호"
-            style="width:110px;flex-shrink:0;" readonly />
-          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
-            style="white-space:nowrap;">
-            🔍 주소 검색
-          </button>
-        </div>
-        <input class="form-control" v-model="form.address"
-          placeholder="기본주소 (주소 검색 후 자동 입력)" style="margin-bottom:6px;" readonly />
-        <input class="form-control" v-model="form.addressDetail" ref="addrDetailRef"
-          placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
-      </template>
-    </bo-form-area>
-    <!-- ===== □.□. 주소 영역 ================================================= -->
-    <!-- ===== ■.■. 프로필 이미지 (BoFormArea 자동 렌더) ============================ -->
-    <bo-form-area :columns="profileFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" :show-actions="false">
-      <template #profile>
-        <base-attach-grp
-          :model-value="form.profileAttachId"
-          @update:model-value="form.profileAttachId = $event"
-          display-mode="image"
-          :max-count="1"
-          grp-code="USER_PROFILE"
-          grp-nm="사용자 프로필"
-          :max-size-mb="5"
-          allow-ext="jpg,jpeg,png,gif,webp"
-          width="120px"
-          height="120px"
-          :show-toast="showToast" />
-      </template>
-    </bo-form-area>
-    <!-- ===== □.□. 프로필 이미지 ============================================== -->
+    <!-- ===== □.□. 기본정보 폼 (주소/프로필 포함, 단일 BoFormArea) ================== -->
     <!-- ===== ■.■. 폼 액션 ================================================== -->
     <div class="form-actions" v-if="!cfDtlMode">
       <template v-if="cfDtlMode">

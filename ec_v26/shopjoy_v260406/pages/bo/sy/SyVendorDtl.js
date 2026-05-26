@@ -147,20 +147,25 @@ window.SyVendorDtl = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // 기본 폼
+    // 기본 폼 (cols=3 빈칸 최소화 + 메모는 한 줄 전체 폭)
     const baseFormColumns = [
+      // 1행: 사이트명(2) + 업체유형(1)
       { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'vendorType',     label: '업체유형', type: 'select', nullable: false, required: true,
         options: () => codes.vendor_type_kr },
+      // 2행: 업체명 / 사업자등록번호 / 대표자명
       { key: 'vendorNm',       label: '업체명', type: 'text', required: true, placeholder: '업체명' },
-      { key: 'ceoNm',          label: '대표자명', type: 'text' },
       { key: 'vendorNo',       label: '사업자등록번호', type: 'text', required: true, placeholder: '000-00-00000' },
+      { key: 'ceoNm',          label: '대표자명', type: 'text' },
+      // 3행: 전화번호 / 이메일 / 계약일
       { key: 'vendorPhone',    label: '전화번호', type: 'text' },
       { key: 'vendorEmail',    label: '이메일', type: 'text' },
-      { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
       { key: 'contractDate',   label: '계약일', type: 'date' },
+      // 4행: 주소(2) + 상태(1)
+      { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
       { key: 'vendorStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
-      { key: 'vendorRemark',   label: '메모', type: 'slot', name: 'remark', colSpan: 2 },
+      // 5행: 메모 (3, 한 줄 전체)
+      { key: 'vendorRemark',   label: '메모', type: 'slot', name: 'remark', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

@@ -170,7 +170,7 @@ window.SyBbmDtl = {
       { key: 'allowLike',     label: '좋아요허용',  type: 'select', options: () => codes.allow_yn_opts },
       { key: 'contentTypeCd', label: '내용입력',    type: 'select', options: () => codes.bbm_content_types },
       { key: 'scopeTypeCd',   label: '공개범위',    type: 'select', options: () => codes.bbm_scope_types },
-      { key: 'pathId',        label: '표시경로',    type: 'pathPick', colSpan: 2,
+      { key: 'pathId',        label: '표시경로',    type: 'pathPick',
         pathLabel: (id) => pathLabel(id),
         onOpen: () => handleBtnAction('pathModal-open') },
       { key: 'sortOrd',       label: '정렬순서',    type: 'number', min: 1 },

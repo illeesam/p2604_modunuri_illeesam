@@ -326,20 +326,24 @@ window.OdClaimDtl = {
         } },
     ];
 
-    // 기본 폼
+    // 기본 폼 (cols=3 한 줄 3필드 + 상세 사유는 한 줄 전체)
     const baseFormColumns = [
+      // 1행: 클레임ID / 주문ID / 회원ID
       { key: 'claimId',      label: '클레임ID', type: 'text', required: true,
         placeholder: 'CLM-2026-XXX', readonly: !cfIsNew.value },
       { key: 'orderId',      label: '주문ID', type: 'slot', name: 'orderId', required: true },
       { key: 'memberId',     label: '회원ID', type: 'slot', name: 'memberId' },
+      // 2행: 회원명 / 클레임유형 / 처리상태
       { key: 'memberNm',     label: '회원명', type: 'text' },
       { key: 'claimTypeCd',  label: '클레임 유형', type: 'select', options: () => codes.claim_types },
       { key: 'claimStatusCd', label: '처리 상태', type: 'select', nullable: false,
         options: () => cfStatusOptions.value },
-      { key: 'prodNm',       label: '상품명', type: 'text', colSpan: 2 },
+      // 3행: 상품명 / 사유 / 신청일
+      { key: 'prodNm',       label: '상품명', type: 'text' },
       { key: 'reasonCd',     label: '사유', type: 'text' },
       { key: 'requestDate',  label: '신청일', type: 'text', placeholder: '2026-04-08 10:00' },
-      { key: 'reasonDetail', label: '상세 사유', type: 'textarea', rows: 3, colSpan: 2 },
+      // 4행: 상세 사유 (한 줄 전체)
+      { key: 'reasonDetail', label: '상세 사유', type: 'textarea', rows: 3, colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

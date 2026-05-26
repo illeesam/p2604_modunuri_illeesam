@@ -259,7 +259,7 @@ window.PmDiscntDtl = {
     // 정보 영역 폼
     const infoFormColumns = [
       { key: 'discntNm',     label: '할인명', type: 'text', required: true,
-        placeholder: '할인명 입력', colSpan: 2 },
+        placeholder: '할인명 입력' },
       { key: 'discntTypeCd', label: '할인유형', type: 'select', options: () => codes.discnt_types },
       { key: 'discntValue',  label: '할인값', type: 'number', required: true },
       { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },

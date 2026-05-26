@@ -274,7 +274,7 @@ window.PmGiftDtl = {
     // 정보 영역 폼
     const infoFormColumns = [
       { key: 'giftNm',       label: '사은품명', type: 'text', required: true,
-        placeholder: '사은품명 입력', colSpan: 2 },
+        placeholder: '사은품명 입력' },
       { key: 'giftTypeCd',   label: '조건유형', type: 'select', options: () => codes.gift_cond_types },
       { key: 'condVal',      label: '조건값', type: 'number', placeholder: '0',
         visible: (f) => f.giftTypeCd !== '무조건',

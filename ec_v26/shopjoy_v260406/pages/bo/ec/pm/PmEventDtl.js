@@ -348,7 +348,7 @@ window.PmEventDtl = {
     // 정보 영역 폼
     const infoFormColumns = [
       { key: 'eventTitle',   label: '이벤트 제목', type: 'text', required: true,
-        placeholder: '이벤트 제목을 입력하세요', colSpan: 2 },
+        placeholder: '이벤트 제목을 입력하세요' },
       { key: 'startDate',    label: '시작일', type: 'date' },
       { key: 'endDate',      label: '종료일', type: 'date' },
       { key: 'eventStatusCd', label: '상태', type: 'select', options: () => codes.event_statuses },

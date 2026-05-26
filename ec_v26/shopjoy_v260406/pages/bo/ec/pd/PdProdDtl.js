@@ -1339,11 +1339,7 @@ window.PdProdDtl = {
       { key: 'platformFeeAmount', label: '플랫폼수수료 금액 (platform_fee_amount)', type: 'number', min: 0,
         placeholder: '(요율과 둘 중 하나만 입력)', hint: '원 — 내부관리용' },
     ];
-    // 광고 노출 기간 (2 fields)
-    const advrtPeriodFormColumns = [
-      { key: 'advrtStartDate', label: '노출 시작 (advrt_start_date)', type: 'slot', name: 'advrtStart' },
-      { key: 'advrtEndDate',   label: '노출 종료 (advrt_end_date)', type: 'slot', name: 'advrtEnd' },
-    ];
+    // (광고 노출 기간 / 구매 제한은 detailFormColumns 로 통합됨 — 위 정의 참조)
     // 단일 재고 (옵션 미사용)
     const singleStockFormColumns = [
       { key: 'prodStock', label: '재고수량 (prod_stock)', type: 'number',
@@ -1380,7 +1376,7 @@ window.PdProdDtl = {
       relProdGridColumns, codeProdGridColumns, planGridColumns,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
-      infoFormColumns, buyLimitFormColumns, basePriceFormColumns, advrtPeriodFormColumns,
+      infoFormColumns, detailFormColumns, basePriceFormColumns,
       singleStockFormColumns,
     };
   },
@@ -2024,9 +2020,8 @@ window.PdProdDtl = {
       {{ (form.advrtStmt||'').length }} / 500
     </div>
   </div>
-  <!-- ===== ■.■.■. 광고 노출 기간 (BoFormArea 자동 렌더) ========================= -->
-  <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-  <bo-form-area :columns="advrtPeriodFormColumns" :form="form" :errors="errors"
+  <!-- ===== ■.■.■. 상세설정 통합 폼 (광고 노출 + 구매 제한, cols=3 한 줄 3필드) ===== -->
+  <bo-form-area :columns="detailFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" :show-actions="false">
     <template #advrtStart>
       <bo-date-time-picker v-model="form.advrtStartDate" />
@@ -2035,16 +2030,6 @@ window.PdProdDtl = {
       <bo-date-time-picker v-model="form.advrtEndDate" />
     </template>
   </bo-form-area>
-  <!-- ===== ■.■.■. 구매 제한 (BoFormArea 자동 렌더) ============================ -->
-  <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
-    구매 제한
-    <span style="color:#aaa;font-size:11px;font-weight:400;">
-      (NULL = 무제한)
-    </span>
-  </div>
-  <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-  <bo-form-area :columns="buyLimitFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
   <!-- ===== ■.■.■. 혜택 적용 여부 ============================================ -->
   <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">
     혜택 적용 여부

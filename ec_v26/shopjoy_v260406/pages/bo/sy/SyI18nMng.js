@@ -262,7 +262,7 @@ window.SyI18nMng = {
       <div style="padding:12px">
         <!-- ===== ■.■.■. 폼 영역 ================================================ -->
         <bo-form-area :columns="msgFormColumns" :form="msgForm" :errors="{}"
-        :cols="2" :show-actions="false" />
+        :cols="3" :show-actions="false" />
       </div>
     </div>
     <!-- ===== □.□. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->

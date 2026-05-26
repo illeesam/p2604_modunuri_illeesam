@@ -339,7 +339,7 @@ window.PdDlivTmpltMng = {
     <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 ============================ -->
     <div class="toolbar">
       <span class="list-title">
-        {{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}
+        {{ uiState.isNew ? '배송템플릿 신규 등록' : '배송템플릿 상세 / 수정' }}
       </span>
       <div style="margin-left:auto;display:flex;gap:6px;">
         <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">
