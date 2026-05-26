@@ -150,7 +150,6 @@ window.SyVendorDtl = {
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'vendorType',     label: '업체유형', type: 'select', nullable: false, required: true,
         options: () => codes.vendor_type_kr },
       { key: 'vendorNm',       label: '업체명', type: 'text', required: true, placeholder: '업체명' },
@@ -158,12 +157,9 @@ window.SyVendorDtl = {
       { key: 'vendorNo',       label: '사업자등록번호', type: 'text', required: true, placeholder: '000-00-00000' },
       { key: 'vendorPhone',    label: '전화번호', type: 'text' },
       { key: 'vendorEmail',    label: '이메일', type: 'text' },
-      { type: 'rowBreak' },
       { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'contractDate',   label: '계약일', type: 'date' },
       { key: 'vendorStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
-      { type: 'rowBreak' },
       { key: 'vendorRemark',   label: '메모', type: 'slot', name: 'remark', colSpan: 2 },
     ];
 

@@ -162,7 +162,6 @@ window.SyBbmDtl = {
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',       label: '사이트명',    type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
-      { type: 'rowBreak' },
       { key: 'bbmCode',       label: '게시판코드',  type: 'text', required: true, mono: true, placeholder: 'BOARD_CODE' },
       { key: 'bbmNm',         label: '게시판명',    type: 'text', required: true, placeholder: '게시판명' },
       { key: 'bbmTypeCd',     label: '유형',        type: 'select', options: () => codes.bbm_types },
@@ -171,11 +170,9 @@ window.SyBbmDtl = {
       { key: 'allowLike',     label: '좋아요허용',  type: 'select', options: () => codes.allow_yn_opts },
       { key: 'contentTypeCd', label: '내용입력',    type: 'select', options: () => codes.bbm_content_types },
       { key: 'scopeTypeCd',   label: '공개범위',    type: 'select', options: () => codes.bbm_scope_types },
-      { type: 'rowBreak' },
       { key: 'pathId',        label: '표시경로',    type: 'pathPick', colSpan: 2,
         pathLabel: (id) => pathLabel(id),
         onOpen: () => handleBtnAction('pathModal-open') },
-      { type: 'rowBreak' },
       { key: 'sortOrd',       label: '정렬순서',    type: 'number', min: 1 },
       { key: 'useYn',         label: '사용여부',    type: 'select', options: () => codes.use_yn },
       { key: 'bbmRemark',     label: '비고',        type: 'text', placeholder: '비고' },

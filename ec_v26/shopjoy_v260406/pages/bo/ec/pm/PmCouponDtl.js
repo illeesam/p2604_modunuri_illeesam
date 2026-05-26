@@ -385,9 +385,7 @@ window.PmCouponDtl = {
       { key: 'issueLimit',     label: '총 발급수량', type: 'number', placeholder: '0 = 무제한' },
       { key: 'useLimit',       label: '사용 제한', type: 'select', nullable: false,
         options: () => codes.coupon_use_limit_opts },
-      { type: 'rowBreak' },
       { key: 'memo',           label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'vendorId',       label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
@@ -404,10 +402,8 @@ window.PmCouponDtl = {
     const detailUseFormColumns = [
       { key: 'useScope',   label: '사용 범위', type: 'select', nullable: false, colSpan: 2,
         options: () => codes.coupon_apply_opts },
-      { type: 'rowBreak' },
       { key: 'useExclude', label: '제외 상품/카테고리', type: 'textarea', rows: 3, colSpan: 2,
         placeholder: '쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)' },
-      { type: 'rowBreak' },
       { key: 'useRemark',  label: '사용 제약사항', type: 'textarea', rows: 3, colSpan: 2,
         placeholder: '예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등' },
     ];

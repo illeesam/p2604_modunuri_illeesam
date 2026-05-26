@@ -606,7 +606,52 @@ AG-Grid 의 `valueFormatter`/`cellStyle`/`cellClass` 와 동일한 패턴.
 | `readonly` | 표시 전용 | `fmt: ()=>cfSiteNm.value` |
 | `pathPick` | 표시경로 picker | `onOpen` / `pathLabel` 콜백 |
 | `slot` | 슬롯 탈출구 | `name` 지정, 부모에서 `<template #name>` |
-| `rowBreak` | 강제 줄바꿈 | 다음 필드를 새 form-row 로 |
+| `rowBreak` | 강제 줄바꿈 | 다음 필드를 새 form-row 로 — **꼭 필요한 경우만 사용 (§4.7.x 빈칸 최소화 규칙)** |
+
+#### 4.7.x cols=3 3열 빈칸 최소화 규칙 ⭐ (2026-05-27)
+
+cols=3 환경에서 인접 필드의 colSpan 합계가 3이 되도록 배치하여 **불필요한 빈 칸을 없애는** 것을 표준으로 한다.
+
+**rowBreak 사용 정책**:
+- ✅ 허용: textarea/htmlEditor/슬롯 직후 의도적 줄바꿈
+- ✅ 허용: 명시적 그룹 분리(주석 동반) — 예: `// 기본정보 ↔ 부가정보`
+- ❌ 금지: 단지 1칸 필드 1개를 한 줄에 띄우려는 rowBreak
+- ❌ 금지: 누적 colSpan 이 3의 배수 직후(이미 줄 끝)에 추가하는 무의미한 rowBreak
+
+**필드 배치 권장 패턴 (cols=3)**:
+| 행 구성 | colSpan 합 | 예시 |
+|---|---|---|
+| 1+1+1 | 3 | 이름·이메일·전화 같은 짧은 필드 묶음 |
+| 2+1 | 3 | 도메인(긴 입력) + 상태 (드롭다운) |
+| 1+2 | 3 | ID + 주소(긴 입력) |
+| 3 (단독) | 3 | 사이트 설명·메모 등 전체 폭 |
+
+**예시 — Before / After**:
+```js
+// ❌ Before: rowBreak 남발로 빈 칸 다수
+const baseFormColumns = [
+  { key: 'siteCode', label: '사이트코드' },
+  { type: 'rowBreak' },                       // ← 불필요
+  { key: 'siteNm', label: '사이트명' },
+  { type: 'rowBreak' },                       // ← 불필요
+  { key: 'siteEmail', label: '대표이메일' },
+  { key: 'sitePhone', label: '대표전화' },
+];
+
+// ✅ After: 인접 필드 자동 흐름으로 3열 채움
+const baseFormColumns = [
+  { key: 'siteCode',   label: '사이트코드' },  // 1
+  { key: 'siteTypeCd', label: '사이트유형' },  // 2
+  { key: 'siteNm',     label: '사이트명' },    // 3
+  // ↑ 1행 완성, 자동 줄바꿈
+  { key: 'siteEmail',  label: '대표이메일' },  // 1
+  { key: 'sitePhone',  label: '대표전화' },    // 2
+  { key: 'siteCeo',    label: '대표자명' },    // 3
+];
+```
+
+**적용 현황 (2026-05-27)**: 26개 Dtl 파일에서 불필요한 rowBreak 87개 일괄 제거. `node --check` 0 실패.
+점검 명령: `grep -rn "rowBreak" pages/bo/**/*Dtl.js | wc -l` 잔존 확인.
 
 #### 공통 컬럼 속성
 

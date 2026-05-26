@@ -334,17 +334,13 @@ window.PmPlanDtl = {
     const infoFormColumns = [
       { key: 'planNm',    label: '기획전명', type: 'text', required: true,
         placeholder: '기획전명을 입력하세요', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'category',  label: '카테고리', type: 'select', required: true,
         options: () => codes.plan_categories },
       { key: 'theme',     label: '테마', type: 'text', placeholder: '예: 봄맞이, 세일' },
-      { type: 'rowBreak' },
       { key: 'status',    label: '상태', type: 'select', options: () => codes.plan_statuses },
       { key: '_visibility', label: '공개대상', type: 'slot', name: 'visibility' },
-      { type: 'rowBreak' },
       { key: 'startDate', label: '시작일', type: 'date' },
       { key: 'endDate',   label: '종료일', type: 'date' },
-      { type: 'rowBreak' },
       { key: 'desc',      label: '간단설명', type: 'textarea', rows: 3, placeholder: '기획전 설명', colSpan: 2 },
     ];
 

@@ -1288,30 +1288,44 @@ window.PdProdDtl = {
     /* fnPlanRowStyle2 — 유틸 */
     const fnPlanRowStyle2 = (row) => planRowStyle(row._row_status);
 
-    // 상품명/상품코드 (2 fields, 1 row)
-    const prodNameFormColumns = [
-      { key: 'prodNm',   label: '상품명', type: 'text', required: true, placeholder: '상품명' },
-      { key: 'prodCode', label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
-    ];
-    // 상태/미판매메시지 (2 fields)
-    const prodStatusFormColumns = [
+    // 기본정보 통합 폼 (cols=3 한 줄에 3필드씩 배치)
+    const infoFormColumns = [
+      // 1행: 상품명 / 상품코드(SKU) / 상품유형
+      { key: 'prodNm',       label: '상품명', type: 'text', required: true, placeholder: '상품명' },
+      { key: 'prodCode',     label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
+      { key: 'prodTypeCd',   label: '상품유형 (prod_type_cd)', type: 'select', nullable: false,
+        options: () => grpCodes.prod_types },
+      // 2행: 카테고리 / 브랜드 / 업체
+      { key: '_categories',  label: '카테고리', type: 'slot', name: 'categories' },
+      { key: 'brandId',      label: '브랜드', type: 'slot', name: 'brand' },
+      { key: 'vendorId',     label: '업체', type: 'slot', name: 'vendor' },
+      // 3행: 담당MD / 배송템플릿 / 상태
+      { key: 'mdUserId',     label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
+      { key: 'dlivTmpltId',  label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
       { key: 'prodStatusCd', label: '상태 (prod_status_cd)', type: 'select',
         options: () => grpCodes.product_statuses },
+      // 4행: 미판매메시지 / 무게 / 사이즈
       { key: 'unsaleMsg',    label: '미판매메시지', type: 'text', placeholder: '예: 현재 판매 준비 중입니다.',
         hint: '판매불가 시 고객 노출' },
-    ];
-    // 무게/사이즈
-    const prodSizeFormColumns = [
-      { key: 'weight',     label: '무게 (kg)', type: 'number', min: 0, placeholder: '예: 0.35' },
-      { key: 'sizeInfoCd', label: '사이즈 (size_info_cd)', type: 'select',
+      { key: 'weight',       label: '무게 (kg)', type: 'number', min: 0, placeholder: '예: 0.35' },
+      { key: 'sizeInfoCd',   label: '사이즈 (size_info_cd)', type: 'select',
         options: () => ['FREE','XS','S','M','L','XL','XXL'] },
+      // 5행: 판매시작 / 판매종료 / (빈)
+      { key: 'saleStartDate', label: '판매 시작일시', type: 'slot', name: 'saleStart',
+        hint: 'NULL=즉시' },
+      { key: 'saleEndDate',   label: '판매 종료일시', type: 'slot', name: 'saleEnd',
+        hint: 'NULL=무기한' },
     ];
-    // 구매 제한 (4 fields, 2 rows)
-    const buyLimitFormColumns = [
-      { key: 'minBuyQty',    label: '최소구매수량 (min_buy_qty)', type: 'number', min: 1, placeholder: '1' },
-      { key: 'maxBuyQty',    label: '1회 최대구매수량 (max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
-      { key: 'dayMaxBuyQty', label: '1일 최대구매수량 (day_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
-      { key: 'idMaxBuyQty',  label: 'ID당 누적 최대 (id_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
+    // 상세설정 통합 (광고 노출 기간 + 구매 제한) — cols=3 한 행 3필드 채움
+    const detailFormColumns = [
+      // 1행: 광고 시작 / 광고 종료 / 최소구매수량
+      { key: 'advrtStartDate', label: '광고 노출 시작', type: 'slot', name: 'advrtStart' },
+      { key: 'advrtEndDate',   label: '광고 노출 종료', type: 'slot', name: 'advrtEnd' },
+      { key: 'minBuyQty',      label: '최소구매수량 (min_buy_qty)', type: 'number', min: 1, placeholder: '1' },
+      // 2행: 1회 최대 / 1일 최대 / ID당 누적 최대
+      { key: 'maxBuyQty',      label: '1회 최대구매수량 (max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
+      { key: 'dayMaxBuyQty',   label: '1일 최대구매수량 (day_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
+      { key: 'idMaxBuyQty',    label: 'ID당 누적 최대 (id_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
     ];
     // 기본 가격 (3 rows: 정가/판매가, 매입가/마진율, 플랫폼수수료율/금액)
     const basePriceFormColumns = [
@@ -1329,29 +1343,6 @@ window.PdProdDtl = {
     const advrtPeriodFormColumns = [
       { key: 'advrtStartDate', label: '노출 시작 (advrt_start_date)', type: 'slot', name: 'advrtStart' },
       { key: 'advrtEndDate',   label: '노출 종료 (advrt_end_date)', type: 'slot', name: 'advrtEnd' },
-    ];
-    // 판매기간 (BoDateTimePicker slot)
-    const salePeriodFormColumns = [
-      { key: 'saleStartDate', label: '판매 시작일시', type: 'slot', name: 'saleStart',
-        hint: 'NULL=즉시' },
-      { key: 'saleEndDate',   label: '판매 종료일시', type: 'slot', name: 'saleEnd',
-        hint: 'NULL=무기한' },
-    ];
-    // 카테고리 / 브랜드 (카테고리는 동적 행 slot, 브랜드는 select)
-    const categoryBrandFormColumns = [
-      { key: '_categories', label: '카테고리', type: 'slot', name: 'categories' },
-      { key: 'brandId',     label: '브랜드', type: 'slot', name: 'brand' },
-    ];
-    // 업체 / 상품유형
-    const vendorTypeFormColumns = [
-      { key: 'vendorId',    label: '업체', type: 'slot', name: 'vendor' },
-      { key: 'prodTypeCd',  label: '상품유형 (prod_type_cd)', type: 'select', nullable: false,
-        options: () => grpCodes.prod_types },
-    ];
-    // 담당MD / 배송템플릿
-    const mdDlivFormColumns = [
-      { key: 'mdUserId',    label: '담당MD (md_user_id)', type: 'slot', name: 'mdUser' },
-      { key: 'dlivTmpltId', label: '배송템플릿 (dliv_tmplt_id)', type: 'slot', name: 'dlivTmplt' },
     ];
     // 단일 재고 (옵션 미사용)
     const singleStockFormColumns = [
@@ -1389,9 +1380,8 @@ window.PdProdDtl = {
       relProdGridColumns, codeProdGridColumns, planGridColumns,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
-      buyLimitFormColumns, basePriceFormColumns, advrtPeriodFormColumns, salePeriodFormColumns,
-      prodNameFormColumns, prodStatusFormColumns, prodSizeFormColumns,
-      vendorTypeFormColumns, mdDlivFormColumns, categoryBrandFormColumns, singleStockFormColumns,
+      infoFormColumns, buyLimitFormColumns, basePriceFormColumns, advrtPeriodFormColumns,
+      singleStockFormColumns,
     };
   },
   template: /* html */`
@@ -1424,13 +1414,8 @@ window.PdProdDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📋 기본정보
       </div>
-      <!-- ===== ■.■.■. 상품명 / 상품코드 (BoFormArea 자동 렌더) ======================= -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="prodNameFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
-      <!-- ===== ■.■.■. 카테고리 / 브랜드 (BoFormArea 자동 렌더) ======================= -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="categoryBrandFormColumns" :form="form" :errors="errors"
+      <!-- ===== ■.■.■. 기본정보 통합 폼 (BoFormArea 자동 렌더, cols=3 한 줄 3필드) ======== -->
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #categories>
           <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
@@ -1475,14 +1460,6 @@ window.PdProdDtl = {
             </option>
           </select>
         </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
-      <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
-        @select="addCategory" @close="catPickerOpen=false" />
-      <!-- ===== ■.■.■. 업체 / 상품유형 (BoFormArea 자동 렌더) ======================== -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="vendorTypeFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #vendor>
           <select class="form-control" v-model="form.vendorId">
             <option value="">
@@ -1493,11 +1470,6 @@ window.PdProdDtl = {
             </option>
           </select>
         </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 담당MD / 배송템플릿 (BoFormArea 자동 렌더) ===================== -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="mdDlivFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #mdUser>
           <div style="display:flex;gap:6px;align-items:center;">
             <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
@@ -1520,7 +1492,16 @@ window.PdProdDtl = {
             </option>
           </select>
         </template>
+        <template #saleStart>
+          <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
+        </template>
+        <template #saleEnd>
+          <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
+        </template>
       </bo-form-area>
+      <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
+      <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
+        @select="addCategory" @close="catPickerOpen=false" />
       <!-- ===== ■.■.■. 담당MD 선택 모달 ========================================== -->
       <teleport to="body">
         <div v-if="mdModalOpen"
@@ -1566,25 +1547,6 @@ window.PdProdDtl = {
           </div>
         </div>
       </teleport>
-      <!-- ===== ■.■.■. 상태 / 미판매메시지 (BoFormArea 자동 렌더) ====================== -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="prodStatusFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
-      <!-- ===== ■.■.■. 판매기간 (BoFormArea 자동 렌더, BoDateTimePicker slot) ====== -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="salePeriodFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false">
-        <template #saleStart>
-          <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
-        </template>
-        <template #saleEnd>
-          <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
-        </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 무게 / 사이즈 (BoFormArea 자동 렌더) ========================= -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="prodSizeFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
       <!-- ===== ■.■.■. 체크박스 그룹 ============================================= -->
       <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">

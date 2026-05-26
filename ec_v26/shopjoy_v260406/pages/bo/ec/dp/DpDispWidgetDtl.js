@@ -651,9 +651,7 @@ window.DpDispWidgetDtl = {
         placeholder: '비워두면 자동 생성 (예: DW_260508_191415)', mono: true },
       { key: 'name',    label: '라이브러리명', type: 'text', required: true, placeholder: '위젯 이름' },
       { key: 'status',  label: '상태', type: 'select', options: () => codes.active_statuses },
-      { type: 'rowBreak' },
       { key: 'desc',    label: '설명', type: 'text', placeholder: '위젯 용도·설명 메모', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'tags',    label: '태그', type: 'text', placeholder: '봄,배너,시즌',
         hint: '쉼표 구분', colSpan: 2 },
     ];

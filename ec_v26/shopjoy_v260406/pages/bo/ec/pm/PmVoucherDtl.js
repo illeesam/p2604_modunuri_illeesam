@@ -362,10 +362,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'voucherStatus', label: '상태', type: 'select', options: () => codes.promo_statuses },
       { key: 'startDate',     label: '판매 시작일', type: 'date' },
       { key: 'endDate',       label: '판매 종료일', type: 'date' },
-      { type: 'rowBreak' },
       { key: 'remark',        label: '비고', type: 'textarea', rows: 4,
         placeholder: '상품권 설명 또는 특이사항 입력', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'vendorId',      label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',   label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];

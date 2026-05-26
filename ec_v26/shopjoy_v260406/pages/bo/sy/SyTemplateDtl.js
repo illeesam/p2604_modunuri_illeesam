@@ -144,24 +144,19 @@ window.SyTemplateDtl = {
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
-      { type: 'rowBreak' },
       { key: 'templateTypeCd', label: '템플릿유형', type: 'select', nullable: false, required: true,
         options: () => codes.template_types },
       { key: 'templateCode',   label: '템플릿코드', type: 'text', required: true,
         placeholder: '예) ORDER_CONFIRM_MAIL', mono: true,
         onChange: (v, f) => { f.templateCode = (f.templateCode || '').toUpperCase().replace(/[^A-Z0-9_]/g, ''); } },
       { key: 'templateNm',     label: '템플릿명', type: 'text', required: true, placeholder: '템플릿명 입력' },
-      { type: 'rowBreak' },
       { key: 'templateSubject', label: '제목 (Subject)', type: 'text', colSpan: 3,
         placeholder: '메일/MMS/시스템 제목', visible: () => cfNeedSubject.value },
-      { type: 'rowBreak' },
       { key: 'templateContent', label: '내용', required: true, type: 'slot', name: 'content', colSpan: 3,
         hint: '사용 가능 변수: {{username}}, {{orderId}}, {{prodNm}}, {{trackingNo}} 등' },
-      { type: 'rowBreak' },
       { key: 'sampleParams',   label: '파라미터 샘플 (JSON)', type: 'textarea', rows: 3, mono: true, colSpan: 3,
         placeholder: '{"username":"홍길동","orderId":"ORD-20260410-001"}',
         hint: '미리보기에 사용되는 샘플 변수값' },
-      { type: 'rowBreak' },
       { key: 'useYn',          label: '사용여부', type: 'select', options: () => codes.use_yn },
     ];
 

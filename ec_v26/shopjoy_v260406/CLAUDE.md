@@ -610,6 +610,50 @@ Vue `app.component('EcOrderMng', window.EcOrderMng)` → 템플릿에서 `<ec-or
 - 넓은 영역(상세 폼 전체 폭, 펼침 정보 영역)은 `:cols="4"` 또는 `:cols="5"`/`:cols="6"` 사용 + `label-left` 모드
 - 이전에 `:cols="2"`로 명시되어 있던 24개 Dtl 파일을 2026-05-25 일괄 `:cols="3"`으로 변경 → 게시판 수정 화면처럼 한 줄에 3필드 표시
 
+**Dtl baseFormColumns 3열 빈칸 최소화 정책** ⭐ (2026-05-27):
+- cols=3 환경에서 인접 필드 colSpan 합계가 3이 되도록 배치하여 빈 칸 최소화
+- `{ type: 'rowBreak' }` 는 **명시적 그룹 분리** 또는 **textarea/슬롯 직후 의도적 줄바꿈**에만 사용
+- ❌ 금지: 단지 1칸 필드 1개를 한 줄에 띄우려고 rowBreak 사용 → 인접 필드들이 자동으로 합쳐서 채우게 함
+- ❌ 금지: 누적 colSpan 이 3의 배수 직후 (이미 줄이 끝난 상태)에 rowBreak 추가 → 무의미
+- ❌ 금지: 작은 폼(2필드)을 cols=2로 명시 → cols=3 표준 유지하고 **colSpan으로 채움** (예: 첫 필드 colSpan:2 + 둘째 1칸)
+- ✅ 권장: 자주 함께 보는 필드 (예: 대표이메일·대표전화·대표자명) 를 한 줄에 묶어 한눈에 보이게
+- ✅ 권장: 긴 텍스트(설명·주소)는 `colSpan: 2` 또는 `colSpan: 3` 으로 가로폭 확보
+- 적용 현황 (2026-05-27): 26개 Dtl 파일에서 불필요한 rowBreak 87개 일괄 제거. SyUserDtl/SySiteDtl/PdProdDtl 등 cols=3 채움 최적화
+- 점검: `grep -rn "rowBreak" pages/bo/**/*Dtl.js | wc -l` 로 잔존 확인. 주석으로 의도가 명시된 경우만 유지
+
+**BoFormArea slot 타입 라벨 자동 표시** ⭐ (2026-05-27):
+- `type: 'slot'` 컬럼도 `col.label` 이 있고 `hideLabel` 이 아니면 위쪽 라벨이 **자동 렌더**
+- 이전: slot 은 라벨 미렌더 (슬롯 내부가 자체 렌더 책임) → 라벨 누락 다수 발생
+- 변경: BoAreaComp.js 의 BoFormArea template 에 `v-else-if="col.type === 'slot' && !labelLeft && col.label && !col.hideLabel"` 분기 추가
+- 결과: PdProdDtl 의 `광고 노출 시작/종료`, `판매 시작일시/종료일시`, `카테고리`, `브랜드`, `업체`, `담당MD`, `배송템플릿` 등 slot 라벨 모두 자동 표시
+- 슬롯 내부에서 별도 라벨을 그리지 않는 것이 원칙 (이중 라벨 방지)
+- `hideLabel: true` 명시 시에만 라벨 자리 빈 칸으로 유지 (정렬용)
+
+**BoFormArea colSpan / rowSpan 명시 정책** ⭐ (2026-05-27):
+- **`colSpan` 미지정 시 = 1** (기본값). 특별한 경우만 명시 (긴 입력, 주소, 설명, textarea 등)
+- **`rowSpan` 미지정 시 = 1** (기본값). textarea/htmlEditor/큰 슬롯이 세로 2~3행 차지할 때만 명시
+- rowSpan>1 은 CSS grid `grid-row: span N` 으로 처리 — `form-row` 가 `display: grid` 인 환경에서 자연스럽게 세로 점유
+- 예시:
+```js
+const baseFormColumns = [
+  { key: 'prodNm',  label: '상품명', type: 'text', colSpan: 2 },        // 2칸
+  { key: 'prodCode', label: '상품코드', type: 'text' },                  // 1칸 (default)
+  { key: 'desc',    label: '상품설명', type: 'textarea', colSpan: 3, rowSpan: 2 }, // 전체 폭 + 세로 2행
+];
+```
+- ❌ 금지: `colSpan: 1` 명시 (default 이므로 노이즈). 작성 시 1은 생략
+- ❌ 금지: `rowSpan: 1` 명시 (default 이므로 노이즈)
+- 관련 코드: [components/comp/BoAreaComp.js](components/comp/BoAreaComp.js) `cfFieldStyle` 헬퍼
+
+**Dtl BoFormArea cols=3 강제 정책** ⭐⭐ (2026-05-27):
+- **모든 Dtl 의 `<bo-form-area>` 호출은 `:cols="3"` 으로 통일**. `:cols="2"` 사용 금지
+- 한 Dtl 안에 여러 BoFormArea 가 분리되어 있어도 각각 `:cols="3"` 유지
+- 행에 필드 합계 colSpan 이 cols(=3) 미만이면 **BoFormArea 가 마지막 필드의 colSpan 을 자동 확장**하여 grid 빈 칸을 채움 (BoAreaComp.js cfRows `fillSpan` 로직)
+  - 예: 필드 2개 (각 1칸) → 마지막 필드가 자동으로 2칸 차지하여 grid 꽉 참
+  - 예: 필드 1개 (1칸) → 자동으로 3칸 차지
+- ❌ 금지: 작은 폼이라는 이유로 `:cols="2"` 명시 → 일관성 깨짐
+- ✅ 권장: 명시적으로 빈 칸을 원할 때만 마지막에 `{ key: '_spacer', type: 'slot', hideLabel: true }` 같은 placeholder 추가
+
 ### Dtl 탭 뷰모드 (최근 도입)
 
 Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt Dtl + Prod/Member/Order/Claim/Dliv Hist에 5개 뷰모드 버튼 노출:

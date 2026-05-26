@@ -246,17 +246,13 @@ window.PmCacheDtl = {
     const baseFormColumns = [
       { key: 'memberId',    label: '회원ID', type: 'slot', name: 'memberId', required: true },
       { key: 'memberNm',    label: '회원명', type: 'readonly' },
-      { type: 'rowBreak' },
       { key: 'cacheTypeCd', label: '유형', type: 'select', options: () => codes.cache_trans_types },
       { key: 'cacheDate',   label: '일시', type: 'text', placeholder: '2026-04-08 10:00' },
-      { type: 'rowBreak' },
       { key: 'cacheAmt',    label: '금액', type: 'number', required: true,
         hint: '사용/소멸은 음수' },
       { key: 'balanceAmt',  label: '처리 후 잔액', type: 'number' },
-      { type: 'rowBreak' },
       { key: 'cacheDesc',   label: '내용', type: 'text', required: true,
         placeholder: '내용 입력', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];

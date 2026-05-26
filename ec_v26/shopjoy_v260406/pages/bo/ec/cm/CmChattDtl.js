@@ -268,10 +268,8 @@ window.CmChattDtl = {
     const newFormColumns = [
       { key: 'memberId',      label: '회원ID', type: 'slot', name: 'memberId', required: true },
       { key: 'memberNm',      label: '회원명', type: 'text', placeholder: '회원명' },
-      { type: 'rowBreak' },
       { key: 'subject',       label: '제목', type: 'text', required: true,
         placeholder: '채팅 제목', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'chattStatusCd', label: '상태', type: 'select', options: () => codes.chatt_statuses,
         width: '200px' },
     ];

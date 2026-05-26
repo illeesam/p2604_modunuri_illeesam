@@ -349,10 +349,8 @@ window.PmEventDtl = {
     const infoFormColumns = [
       { key: 'eventTitle',   label: '이벤트 제목', type: 'text', required: true,
         placeholder: '이벤트 제목을 입력하세요', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'startDate',    label: '시작일', type: 'date' },
       { key: 'endDate',      label: '종료일', type: 'date' },
-      { type: 'rowBreak' },
       { key: 'eventStatusCd', label: '상태', type: 'select', options: () => codes.event_statuses },
       { key: 'authRequired', label: '로그인 인증 필요', type: 'checkbox',
         checkboxLabel: '로그인 인증 필요', hideLabel: true,

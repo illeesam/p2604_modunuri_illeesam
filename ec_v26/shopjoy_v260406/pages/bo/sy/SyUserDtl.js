@@ -210,7 +210,6 @@ window.SyUserDtl = {
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'loginId',      label: '로그인ID', type: 'text', required: true,
         placeholder: '로그인 아이디',
         readonly: !cfIsNew.value },
@@ -218,13 +217,10 @@ window.SyUserDtl = {
         required: cfIsNew.value, placeholder: '비밀번호',
         visible: () => !cfDtlMode.value,
         hint: cfIsNew.value ? '' : '변경 시에만 입력' },
-      { type: 'rowBreak' },
       { key: 'userNm',       label: '이름', type: 'text', required: true, placeholder: '이름' },
       { key: 'userEmail',    label: '이메일', type: 'text', required: true, placeholder: '이메일' },
-      { type: 'rowBreak' },
       { key: 'userPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000' },
       { key: 'deptNm',       label: '부서', type: 'slot', name: 'dept' },
-      { type: 'rowBreak' },
       { key: 'roleId',       label: '역할', type: 'select', options: () => codes.user_roles },
       { key: 'userStatusCd', label: '상태', type: 'select', options: () => codes.active_statuses },
     ];

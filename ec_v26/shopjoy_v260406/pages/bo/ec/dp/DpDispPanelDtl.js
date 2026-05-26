@@ -876,7 +876,6 @@ window.DpDispPanelDtl = {
     const pathAreaFormColumns = [
       { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
         hint: '예: FO.모바일메인' },
-      { type: 'rowBreak' },
       { key: 'area',   label: '포함된 화면영역', type: 'slot', name: 'areaDisp', colSpan: 3,
         hint: '전시영역관리에서 편집' },
     ];

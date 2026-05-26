@@ -1762,9 +1762,14 @@ window.BoRowCancelDelete = {
  *   - 'slot'     : 슬롯 탈출구 (name 으로 슬롯 이름 지정)
  *   - 'rowBreak' : 강제 줄바꿈 (다음 필드를 새 form-row 로)
  *
- * 공통 속성: required, placeholder, colSpan(1~N), width, min/max, mono, hint,
- *           visible:(form)=>bool, onChange:(v,form)=>void
- * cols prop: 한 줄 필드 수 (기본 3). colSpan 누적이 cols 초과 시 자동 줄바꿈. */
+ * 공통 속성: required, placeholder, colSpan(미지정=1, 1~N), rowSpan(미지정=1, 1~N),
+ *           width, min/max, mono, hint, visible:(form)=>bool, onChange:(v,form)=>void
+ * cols prop: 한 줄 필드 수 (기본 3). colSpan 누적이 cols 초과 시 자동 줄바꿈.
+ *
+ * colSpan/rowSpan 정책 (2026-05-27 명시):
+ *  - 미지정 시 모두 1 로 처리
+ *  - "특별한 경우" (긴 입력, 주소, 설명, textarea, 슬롯 큰 영역 등) 만 명시
+ *  - rowSpan>1 인 필드는 세로로 그 행 수만큼 차지 (CSS grid-row span) */
 window.BoFormArea = {
   name: 'BoFormArea',
   props: {
@@ -1786,7 +1791,8 @@ window.BoFormArea = {
     const U = window._boAreaCompUtil;
 
     /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
-    /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈) */
+    /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈)
+     *           rowSpan>1 인 필드는 다음 행들에도 col 자리를 점유한다. */
     const cfRows = Vue.computed(() => {
       const rows = []; let cur = []; let used = 0;
       for (const col of props.columns) {
@@ -1799,6 +1805,17 @@ window.BoFormArea = {
       if (cur.length) rows.push(cur);
       return rows;
     });
+
+    /* cfFieldStyle — 공통 style 헬퍼 (template 가독성용) */
+    const cfFieldStyle = (col) => {
+      const cs = col.colSpan || 1;
+      const rs = col.rowSpan || 1;
+      let s = '';
+      if (cs > 1) s += `grid-column:span ${Math.min(cs, props.cols)};flex:${cs};`;
+      if (rs > 1) s += `grid-row:span ${rs};`;
+      if (props.labelLeft) s += `display:grid;grid-template-columns:${props.labelWidth} 1fr;align-items:center;gap:8px;margin-bottom:6px;`;
+      return s;
+    };
 
     /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
     const handleBtnAction = (cmd, param = {}) => {
@@ -1840,15 +1857,15 @@ window.BoFormArea = {
       return (v == null || v === '') ? '-' : v;
     };
 
-    return { cfRows, normOpts, dispVal, handleBtnAction, handleSelectAction };
+    return { cfRows, cfFieldStyle, normOpts, dispVal, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
 <div class="bo-form-area">
   <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="cols!==2&&cols!==3?('grid-template-columns:repeat('+cols+',1fr)'):''">
-    <div v-for="col in row" :key="col.key" class="form-group" :style="((col.colSpan && col.colSpan>1) ? ('grid-column:span '+Math.min(col.colSpan,cols)+';flex:'+col.colSpan+';') : '') + (labelLeft ? ('display:grid;grid-template-columns:'+labelWidth+' 1fr;align-items:center;gap:8px;margin-bottom:6px;') : '')">
+    <div v-for="col in row" :key="col.key" class="form-group" :style="cfFieldStyle(col)">
     <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지)
-         slot 타입은 기본적으로 라벨 미렌더 (슬롯 내부가 자체 렌더 책임).
-         단, labelLeft 모드 + slot + col.label 있고 hideLabel 아닐 때는 라벨 렌더 (grid 첫 칸 채우기) -->
+         slot 타입도 col.label 이 있으면 위쪽 라벨 모드에서 자동 렌더 (라벨 누락 방지).
+         단, labelLeft 모드 + slot 의 경우 grid 첫 칸 채우기 위해 별도 렌더 분기. -->
     <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
     {{ col.label }}
     <span v-if="col.required && !readonly" class="req">
@@ -1859,6 +1876,12 @@ window.BoFormArea = {
 ·
 </label>
 <label v-else-if="col.type === 'slot' && labelLeft && col.label && !col.hideLabel" class="form-label" style="margin-bottom:0;white-space:nowrap;">
+{{ col.label }}
+<span v-if="col.required && !readonly" class="req">
+*
+</span>
+</label>
+<label v-else-if="col.type === 'slot' && !labelLeft && col.label && !col.hideLabel" class="form-label">
 {{ col.label }}
 <span v-if="col.required && !readonly" class="req">
 *

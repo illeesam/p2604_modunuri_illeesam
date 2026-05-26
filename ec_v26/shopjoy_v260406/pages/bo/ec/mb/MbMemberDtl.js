@@ -69,7 +69,6 @@ window.MbMemberDtl = {
       { key: 'gradeCd',        label: '등급',      type: 'select', options: () => codes.member_grades },
       { key: 'memberStatusCd', label: '상태',      type: 'select', options: () => codes.member_statuses },
       { key: 'joinDate',       label: '가입일',    type: 'date' },
-      { type: 'rowBreak' },
       { key: 'memberMemo',     label: '메모',      type: 'textarea', rows: 6,
         placeholder: '관리자 메모', colSpan: 2 },
     ];

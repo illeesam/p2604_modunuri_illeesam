@@ -305,15 +305,11 @@ window.OdDlivDtl = {
       { key: 'dlivId',       label: '배송ID', type: 'text', required: true,
         placeholder: 'DLIV-XXX', readonly: !cfIsNew.value },
       { key: 'orderId',      label: '주문ID', type: 'slot', name: 'orderId', required: true },
-      { type: 'rowBreak' },
       { key: 'memberNm',     label: '회원명', type: 'slot', name: 'memberNm' },
       { key: 'recvNm',       label: '수령인', type: 'text' },
-      { type: 'rowBreak' },
       { key: 'recvAddr',     label: '배송지 주소', type: 'text', placeholder: '주소 입력', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'recvPhone',    label: '연락처', type: 'text', placeholder: '010-0000-0000' },
       { key: 'dlivStatusCd', label: '상태', type: 'select', options: () => codes.dliv_statuses },
-      { type: 'rowBreak' },
       { key: 'dlivMemo',     label: '메모', type: 'slot', name: 'memo', colSpan: 2 },
     ];
 

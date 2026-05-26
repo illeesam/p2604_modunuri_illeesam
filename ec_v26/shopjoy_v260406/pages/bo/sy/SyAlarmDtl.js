@@ -132,15 +132,12 @@ window.SyAlarmDtl = {
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
-      { type: 'rowBreak' },
       { key: 'alarmTitle',    label: '제목', type: 'text', required: true, placeholder: '알림 제목', colSpan: 2 },
       { key: 'alarmTypeCd',   label: '유형', type: 'select', options: () => codes.alarm_types },
       { key: 'alarmStatusCd', label: '상태', type: 'select', options: () => codes.alarm_statuses },
-      { type: 'rowBreak' },
       { key: 'targetTypeCd',  label: '대상 유형', type: 'select', options: () => codes.alarm_target_types },
       { key: 'targetId',      label: '대상 ID', type: 'text', placeholder: '특정회원 ID (선택)' },
       { key: 'alarmSendDate', label: '발송일시', type: 'slot', name: 'sendDate' },
-      { type: 'rowBreak' },
       { key: 'alarmMsg',      label: '메시지', type: 'textarea', required: true, rows: 4,
         placeholder: '알림 메시지 내용', colSpan: 3 },
     ];

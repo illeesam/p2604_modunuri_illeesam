@@ -142,19 +142,14 @@ window.SyBatchDtl = {
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'batchNm',       label: '배치명', type: 'text', required: true, placeholder: '배치 이름' },
       { key: 'batchCode',     label: '배치코드', type: 'text', required: true,
         placeholder: 'ORDER_AUTO_COMPLETE', mono: true },
-      { type: 'rowBreak' },
       { key: 'batchDesc',     label: '설명', type: 'text', placeholder: '배치 처리 내용 설명', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'cronExpr',      label: 'Cron 표현식', type: 'text', required: true,
         placeholder: '0 0 * * *', mono: true, hint: '분 시 일 월 요일', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: '_cronPreset',   label: 'Cron 프리셋', type: 'slot', name: 'cronPreset',
         colSpan: 2, visible: () => !cfDtlMode.value },
-      { type: 'rowBreak' },
       { key: 'batchStatusCd', label: '활성여부', type: 'select', options: () => codes.active_statuses },
     ];
 

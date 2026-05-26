@@ -123,7 +123,6 @@ window.CmNoticeDtl = {
       { key: 'noticeTitle',    label: '제목', type: 'text', required: true, placeholder: '공지 제목', colSpan: 2 },
       { key: 'noticeTypeCd',   label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '선택' },
       { key: 'noticeStatusCd', label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '선택' },
-      { type: 'rowBreak' },
       { key: 'startDate',      label: '시작일', type: 'date' },
       { key: 'endDate',        label: '종료일', type: 'date' },
       { key: 'isFixed',        label: '상단고정', type: 'checkbox',

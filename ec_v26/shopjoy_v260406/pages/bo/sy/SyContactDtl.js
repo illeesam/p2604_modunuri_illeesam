@@ -229,9 +229,7 @@ window.SyContactDtl = {
       { key: 'memberNm',        label: '회원명', type: 'readonly' },
       { key: 'categoryCd',      label: '카테고리', type: 'select', options: () => codes.contact_categories },
       { key: 'contactStatusCd', label: '상태',     type: 'select', options: () => codes.contact_statuses },
-      { type: 'rowBreak' },
       { key: 'contactTitle',    label: '제목', type: 'text', required: true, colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'contactContent',  label: '문의 내용', type: 'slot', name: 'contactContent', colSpan: 2 },
     ];
 

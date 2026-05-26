@@ -128,7 +128,6 @@ window.SyCodeDtl = {
     // 기본 폼
     const baseFormColumns = [
       { key: '_siteNm',   label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'codeGrp',   label: '코드그룹 (code_grp)',  type: 'text', required: true,
         placeholder: '예: ORDER_STATUS', mono: true },
       { key: 'codeLabel', label: '코드라벨 (code_label)', type: 'text', required: true,

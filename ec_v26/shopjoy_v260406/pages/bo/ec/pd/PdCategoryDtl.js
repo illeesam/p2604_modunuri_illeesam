@@ -157,13 +157,10 @@ window.PdCategoryDtl = {
       { key: 'parentCategoryId', label: '상위카테고리', type: 'select', nullable: false,
         options: () => cfParentSelectOptions.value, onChange: () => onParentChange() },
       { key: 'categoryNm',       label: '카테고리명', type: 'text', required: true, placeholder: '카테고리명' },
-      { type: 'rowBreak' },
       { key: 'categoryDepth',    label: 'depth (자동산정)', type: 'number', min: 1, readonly: true },
       { key: 'sortOrd',          label: '정렬순서', type: 'number', min: 1 },
-      { type: 'rowBreak' },
       { key: 'categoryStatusCd', label: '상태', type: 'select', options: () => codes.category_statuses },
       { key: 'imgUrl',           label: '아이콘/이미지 URL', type: 'text', placeholder: '/assets/icons/category.png' },
-      { type: 'rowBreak' },
       { key: 'categoryDesc',     label: '설명', type: 'text', colSpan: 2 },
     ];
 

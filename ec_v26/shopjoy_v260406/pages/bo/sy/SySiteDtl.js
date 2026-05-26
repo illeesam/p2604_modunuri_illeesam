@@ -156,28 +156,29 @@ window.SySiteDtl = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // 기본 폼
+    // 기본 폼 (cols=3 — 빈 칸 없이 3열을 모두 채우도록 colSpan 배치)
     const baseFormColumns = [
+      // 1행: 사이트코드 / 사이트유형 / 사이트명
       { key: 'siteCode',       label: '사이트코드', type: 'text', required: true,
         placeholder: 'ST0001', mono: true },
       { key: 'siteTypeCd',     label: '사이트유형', type: 'select', nullable: false,
         options: () => codes.site_types },
       { key: 'siteNm',         label: '사이트명',   type: 'text', required: true, placeholder: 'ShopJoy' },
-      { key: 'siteDomain',     label: '도메인',     type: 'text', required: true, placeholder: 'shopjoy.com' },
-      { type: 'rowBreak' },
-      { key: 'siteDesc',       label: '사이트 설명', type: 'text', placeholder: '사이트 한줄 설명', colSpan: 2 },
-      { type: 'rowBreak' },
+      // 2행: 도메인(2) / 운영상태(1)
+      { key: 'siteDomain',     label: '도메인',     type: 'text', required: true, placeholder: 'shopjoy.com', colSpan: 2 },
+      { key: 'siteStatusCd',   label: '운영상태',   type: 'select', options: () => codes.site_oper_statuses },
+      // 3행: 사이트 설명 (3열 전체)
+      { key: 'siteDesc',       label: '사이트 설명', type: 'text', placeholder: '사이트 한줄 설명', colSpan: 3 },
+      // 4행: 대표이메일 / 대표전화 / 대표자명
       { key: 'siteEmail',      label: '대표이메일', type: 'text', placeholder: 'help@shopjoy.com' },
       { key: 'sitePhone',      label: '대표전화',   type: 'text', placeholder: '02-1234-5678' },
       { key: 'siteCeo',        label: '대표자명',   type: 'text' },
+      // 5행: 사업자등록번호 / 주소(2)
       { key: 'siteBusinessNo', label: '사업자등록번호', type: 'text', placeholder: '000-00-00000' },
-      { type: 'rowBreak' },
       { key: '_addr',          label: '주소', type: 'slot', name: 'addr', colSpan: 2 },
-      { type: 'rowBreak' },
+      // 6행: 로고 URL / 파비콘 URL / (빈칸 1)
       { key: 'logoUrl',        label: '로고 URL',   type: 'text', placeholder: '/assets/img/logo.png' },
       { key: 'faviconUrl',     label: '파비콘 URL', type: 'text', placeholder: '/favicon.ico' },
-      { type: 'rowBreak' },
-      { key: 'siteStatusCd',   label: '운영상태',   type: 'select', options: () => codes.site_oper_statuses },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
