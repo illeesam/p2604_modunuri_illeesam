@@ -331,7 +331,7 @@ window.SyBbsDtl = {
         @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'BBS-'+dtlId : ''"
         :show-toast="showToast"
         grp-code="BBS_ATTACH"
-        grp-name="게시글 첨부파일"
+        grp-nm="게시글 첨부파일"
         :max-count="cfAttachMaxCount"
         :max-size-mb="10"
         allow-ext="*" />

@@ -345,9 +345,41 @@ window.BaseAttachGrp = {
     <span style="font-size:10px;color:#bbb;">
       {{ allowExt }} / 최대 {{ maxSizeMb }}MB
     </span>
+    <!-- 저장 기준정보 (이미지 모드: 박스 아래 세로 배치) -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#aaa;line-height:1.4;margin-top:2px;">
+      <span style="display:inline-flex;align-items:center;gap:3px;">
+        <span style="color:#bbb;">📂</span>
+        <span style="color:#777;font-weight:500;">{{ grpNm }}</span>
+      </span>
+      <code style="font-family:monospace;color:#7c5cbf;background:#f7f4ff;padding:0 4px;border-radius:3px;font-size:9px;">{{ grpCode }}</code>
+      <code v-if="refId" style="font-family:monospace;color:#4a90d9;background:#eff6fc;padding:0 4px;border-radius:3px;font-size:9px;">{{ refId }}</code>
+      <code v-if="modelValue" style="font-family:monospace;color:#999;background:#f5f5f5;padding:0 4px;border-radius:3px;font-size:9px;">{{ modelValue }}</code>
+    </div>
   </template>
   <!-- ============= [list 모드] 기본 파일 목록 UI ============= -->
   <template v-else>
+  <!-- 저장 기준정보 (businessCode / grpNm / refId / attachGrpId) -->
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:11px;color:#888;margin-bottom:8px;padding:6px 8px;background:#fff;border:1px solid #f0f0f0;border-radius:4px;">
+    <span style="display:inline-flex;align-items:center;gap:3px;">
+      <span style="color:#bbb;">📂</span>
+      <span style="color:#666;font-weight:500;">{{ grpNm }}</span>
+    </span>
+    <span style="color:#e0e0e0;">|</span>
+    <span style="display:inline-flex;align-items:center;gap:3px;">
+      <span style="color:#bbb;">분류</span>
+      <code style="font-family:monospace;color:#7c5cbf;background:#f7f4ff;padding:1px 5px;border-radius:3px;">{{ grpCode }}</code>
+    </span>
+    <span v-if="refId" style="color:#e0e0e0;">|</span>
+    <span v-if="refId" style="display:inline-flex;align-items:center;gap:3px;">
+      <span style="color:#bbb;">참조</span>
+      <code style="font-family:monospace;color:#4a90d9;background:#eff6fc;padding:1px 5px;border-radius:3px;">{{ refId }}</code>
+    </span>
+    <span v-if="modelValue" style="color:#e0e0e0;">|</span>
+    <span v-if="modelValue" style="display:inline-flex;align-items:center;gap:3px;">
+      <span style="color:#bbb;">그룹ID</span>
+      <code style="font-family:monospace;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:3px;">{{ modelValue }}</code>
+    </span>
+  </div>
   <!-- 파일 목록 -->
   <div v-if="files.length" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
     <div v-for="(f, idx) in files" :key="f.attachId"
@@ -638,6 +670,15 @@ window.BaseAttachOne = {
   <span style="font-size:10px;color:#bbb;">
     {{ allowExt }} / 최대 {{ maxSizeMb }}MB
   </span>
+  <!-- 저장 기준정보 (그룹명/businessCode/attachGrpId) -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#aaa;line-height:1.4;margin-top:2px;">
+    <span style="display:inline-flex;align-items:center;gap:3px;">
+      <span style="color:#bbb;">📂</span>
+      <span style="color:#777;font-weight:500;">{{ grpNm }}</span>
+    </span>
+    <code style="font-family:monospace;color:#7c5cbf;background:#f7f4ff;padding:0 4px;border-radius:3px;font-size:9px;">{{ grpCode }}</code>
+    <code v-if="modelValue" style="font-family:monospace;color:#999;background:#f5f5f5;padding:0 4px;border-radius:3px;font-size:9px;">{{ modelValue }}</code>
+  </div>
 </div>
 `
 };

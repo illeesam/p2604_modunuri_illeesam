@@ -126,6 +126,54 @@ grep -nE '(:[a-zA-Z-]+|v-[a-z]+|@[a-z.]+)="[^"]*\\\\["\x27]' pages/bo/**/*.js co
 
 ---
 
+## ⛔ 0-C. 파일 업로드·삭제·HMR 의심 증상 → 우선 VS Code Live Server 끄고 테스트 ⭐
+
+### 증상
+
+- 파일 첨부 추가/삭제 직후 **브라우저 화면 전체가 자동 새로고침**
+- 폼 입력 중 작성하던 값이 갑자기 사라지고 화면이 처음 상태로 돌아감
+- 콘솔에 **에러 메시지가 전혀 없음** — 그냥 조용히 페이지가 리로드
+- Vue 코드 상에는 `location.reload()` / `<form>` / `<a href>` / 페이지 이동 호출이 전혀 없는데도 발생
+
+### 원인
+
+VS Code **Live Server** 확장의 chokidar watcher 가 워크스페이스 안의 파일 변경을 감지하면
+브라우저를 자동 리로드한다. **백엔드(EcAdminApi)가 업로드된 파일을 워크스페이스 내부 디렉토리**에
+저장하면 이 변경이 감지되어 화면이 통째로 새로고침된다.
+
+검증 완료(2026-05-26):
+- 실제 저장 경로: `_apps_be/EcAdminApi/bin/main/static/cdn/attach/{businessCode}/{yyyy}/...`
+- `liveServer.settings.ignoreFiles` 에 `**/bin/**` / `**/static/cdn/**` / `**/cdn/**` /
+  이미지 확장자 등을 추가해도 **여전히 리프레시 발생** — Live Server 의 ignore 규칙이
+  부모 디렉토리 watch 와 충돌하여 효과 없음.
+- Live Server 자체를 끄면 → **추가·삭제 모두 리프레시 없음**.
+
+### 진단 절차 (Live Server 의심 시)
+
+1. **VS Code 하단 "Port: 5501" 클릭해서 Live Server 끄기**
+2. 브라우저 주소창에 직접 워크스페이스의 `bo.html` 을 `file://` 또는 다른 정적 서버로 열기
+3. 같은 시나리오 재현 시 리프레시가 **없으면 → Live Server 가 원인**
+4. 리프레시가 **여전히 발생하면** → 다른 원인(`<form>` submit, `api-error` 핸들러, location 조작 등)
+
+### 운영 가이드
+
+- **메인 개발은 Live Server OFF** 권장. 파일 변경 후 브라우저 수동 새로고침(`Ctrl+R`).
+- 코드 수정 후 즉시 반영이 필요할 때만 Live Server ON.
+- 업로드·삭제 기능을 테스트할 때는 **반드시 Live Server OFF**.
+
+### 재발 사례(2026-05-26)
+
+- **현상**: 공지사항/사용자관리 첨부파일 추가·삭제 시, 사진 변경 시 화면 전체 리프레시.
+  콘솔 에러 없음. Network 탭에 `bo.html` GET 이 다시 발생.
+- **원인 추적**: `find ... -path "*NOTICE_ATTACH*"` 로 실제 업로드 파일 위치를 찾아
+  `_apps_be/EcAdminApi/bin/main/static/cdn/...` 임을 확인. ignore 패턴 추가해도 해결 안 됨.
+  Live Server OFF 후 정상 동작.
+- **장기 해결안**(아직 미적용): `application-local.yml` 의 `app.file.local.physical-root` 를
+  워크스페이스 외부 경로(예: `C:/_shopjoy_uploads/cdn`)로 변경하면 Live Server ON 상태에서도
+  안전. 현재는 운영 가이드(필요할 때만 Live Server)로 운영.
+
+---
+
 ## 0. watch / computed 최소화 원칙 ⭐
 
 **핵심 방침**: `watch`와 `computed`는 꼭 필요한 경우에만 사용하고, 가능하면 직접 함수 호출 방식으로 대체한다.

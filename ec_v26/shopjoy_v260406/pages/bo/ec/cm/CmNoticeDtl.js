@@ -170,16 +170,13 @@ window.CmNoticeDtl = {
     <div class="form-group" style="margin-top:12px;">
       <label class="form-label">
         첨부파일
-        <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">
-          #{{ form.attachGrpId }}
-        </span>
       </label>
       <base-attach-grp :model-value="form.attachGrpId"
         @update:model-value="form.attachGrpId = $event"
         :ref-id="cfAttachRefId"
         :show-toast="showToast"
         grp-code="NOTICE_ATTACH"
-        grp-name="공지 첨부파일"
+        grp-nm="공지 첨부파일"
         :max-count="5"
         :max-size-mb="10"
         allow-ext="jpg,png,gif,pdf,xlsx,docx" />
