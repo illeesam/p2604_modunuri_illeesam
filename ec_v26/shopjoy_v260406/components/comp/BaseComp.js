@@ -38,6 +38,9 @@ window.BaseAttachGrp = {
     maxCount:   { default: 10 },
     maxSizeMb:  { default: 10 },
     allowExt:   { default: '*' },
+    displayMode: { default: 'list' },  // 'list' | 'image' (image: 단일 프로필 이미지 박스 UI)
+    width:      { default: '120px' },  // displayMode='image' 일 때 박스 폭
+    height:     { default: '120px' },  // displayMode='image' 일 때 박스 높이
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -102,8 +105,13 @@ window.BaseAttachGrp = {
       }
     };
 
+    /* 자기 emit 으로 인한 watch 재진입 차단 (업로드 직후 깜빡임/리프레시 방지) */
+    let _lastEmittedGrpId = null;
     onMounted(() => { if (props.modelValue) loadFiles(props.modelValue); });
-    watch(() => props.modelValue, (val) => { if (val) loadFiles(val); });
+    watch(() => props.modelValue, (val) => {
+      if (val === _lastEmittedGrpId) { _lastEmittedGrpId = null; return; }
+      if (val) loadFiles(val);
+    });
 
     /* 허용 확장자 accept 문자열 변환 */
     const cfAcceptAttr = computed(() => {
@@ -124,6 +132,8 @@ window.BaseAttachGrp = {
 
     /* onFileChange */
     const onFileChange = async (e) => {
+      /* 폼 submit·페이지 이탈 차단 (브라우저 전체 새로고침 방지) */
+      try { e.preventDefault?.(); e.stopPropagation?.(); } catch (_) {}
       const selectedFiles = Array.from(e.target.files || []);
       e.target.value = '';
       if (!selectedFiles.length) return;
@@ -168,7 +178,7 @@ window.BaseAttachGrp = {
 
         /* attachGrpId emit (첫 업로드 or 기존 그룹에 추가) */
         const grpId = d.attachGrpId;
-        if (!props.modelValue) emit('update:modelValue', grpId);
+        if (!props.modelValue) { _lastEmittedGrpId = grpId; emit('update:modelValue', grpId); }
 
         /* 파일 목록 추가 */
         (d.files || []).forEach(f => {
@@ -216,7 +226,7 @@ window.BaseAttachGrp = {
       }
       const idx = files.findIndex(f => f.attachId === attachId);
       if (idx !== -1) files.splice(idx, 1);
-      if (files.length === 0) emit('update:modelValue', null);
+      if (files.length === 0) { _lastEmittedGrpId = null; emit('update:modelValue', null); }
     };
 
     /* fnFmtSize */
@@ -297,8 +307,47 @@ window.BaseAttachGrp = {
     };
   },
   template: /* html */`
-<div style="border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;">
-  <input ref="fileInputRef" type="file" :accept="cfAcceptAttr" multiple style="display:none;" @change="onFileChange" />
+<div :style="displayMode==='image' ? 'display:inline-flex;flex-direction:column;align-items:center;gap:8px;' : 'border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;'">
+  <input ref="fileInputRef" type="file" :accept="cfAcceptAttr" :multiple="displayMode!=='image' && maxCount>1" style="display:none;" @change="onFileChange" @click.stop />
+  <!-- ============= [image 모드] 단일 프로필 이미지 박스 UI ============= -->
+  <template v-if="displayMode==='image'">
+    <!-- 이미지 미리보기 박스 -->
+    <div @click.prevent.stop="handleBtnAction('attach-open-picker')"
+      :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
+      @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
+      @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
+      :title="(files[0] && files[0].fileNm) || '클릭하여 이미지 선택'">
+      <span v-if="uiState.loading || uiState.uploading" style="font-size:22px;">
+        ⏳
+      </span>
+      <img v-else-if="files[0] && (files[0].thumbCdnUrl || files[0].cdnImgUrl)"
+        :src="files[0].thumbCdnUrl || files[0].cdnImgUrl"
+        style="width:100%;height:100%;object-fit:cover;display:block;" />
+      <span v-else style="font-size:32px;color:#ccc;">
+        👤
+      </span>
+    </div>
+    <!-- 버튼 -->
+    <div style="display:flex;gap:6px;">
+      <button type="button" @click.prevent.stop="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading"
+        style="font-size:11px;padding:3px 10px;border:1px solid #d9d9d9;border-radius:5px;background:#fff;cursor:pointer;color:#555;transition:all .15s;"
+        @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
+        @mouseleave="e=>{e.currentTarget.style.borderColor='#d9d9d9';e.currentTarget.style.color='#555';}">
+        {{ uiState.uploading ? '업로드중…' : '📷 변경' }}
+      </button>
+      <button v-if="files[0]" type="button" @click.prevent.stop="handleSelectAction('attach-row-remove', files[0].attachId)"
+        style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fff;cursor:pointer;color:#e8587a;transition:all .15s;"
+        @mouseenter="e=>{e.currentTarget.style.background='#fde8e8';}"
+        @mouseleave="e=>{e.currentTarget.style.background='#fff';}">
+        ✕ 삭제
+      </button>
+    </div>
+    <span style="font-size:10px;color:#bbb;">
+      {{ allowExt }} / 최대 {{ maxSizeMb }}MB
+    </span>
+  </template>
+  <!-- ============= [list 모드] 기본 파일 목록 UI ============= -->
+  <template v-else>
   <!-- 파일 목록 -->
   <div v-if="files.length" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
     <div v-for="(f, idx) in files" :key="f.attachId"
@@ -431,6 +480,7 @@ window.BaseAttachGrp = {
         style="max-width:80vw;max-height:75vh;object-fit:contain;border-radius:6px;" />
   </div>
 </div>
+  </template>
 </div>
 `
 };
@@ -495,6 +545,8 @@ window.BaseAttachOne = {
 
     /* onFileChange */
     const onFileChange = async (e) => {
+      /* 폼 submit·페이지 이탈 차단 (브라우저 전체 새로고침 방지) */
+      try { e.preventDefault?.(); e.stopPropagation?.(); } catch (_) {}
       const f = e.target.files?.[0]; e.target.value = '';
       if (!f) return;
       const ext = f.name.split('.').pop().toLowerCase();
@@ -551,9 +603,9 @@ window.BaseAttachOne = {
   },
   template: /* html */`
 <div style="display:inline-flex;flex-direction:column;align-items:center;gap:8px;">
-  <input ref="inputRef" type="file" style="display:none;" :accept="allowExt.split(',').map(e=>'.'+e.trim()).join(',')" @change="onFileChange" />
+  <input ref="inputRef" type="file" style="display:none;" :accept="allowExt.split(',').map(e=>'.'+e.trim()).join(',')" @change="onFileChange" @click.stop />
   <!-- 이미지 미리보기 박스 -->
-  <div @click.prevent="handleBtnAction('attach-open-picker')"
+  <div @click.prevent.stop="handleBtnAction('attach-open-picker')"
     :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
     @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
     @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
@@ -570,13 +622,13 @@ window.BaseAttachOne = {
   </div>
   <!-- 버튼 -->
   <div style="display:flex;gap:6px;">
-    <button type="button" @click="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading"
+    <button type="button" @click.prevent.stop="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading"
       style="font-size:11px;padding:3px 10px;border:1px solid #d9d9d9;border-radius:5px;background:#fff;cursor:pointer;color:#555;transition:all .15s;"
       @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
       @mouseleave="e=>{e.currentTarget.style.borderColor='#d9d9d9';e.currentTarget.style.color='#555';}">
       {{ uiState.uploading ? '업로드중…' : '📷 변경' }}
     </button>
-    <button v-if="file.attachId" type="button" @click.stop="handleBtnAction('attach-remove')"
+    <button v-if="file.attachId" type="button" @click.prevent.stop="handleBtnAction('attach-remove')"
       style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fff;cursor:pointer;color:#e8587a;transition:all .15s;"
       @mouseenter="e=>{e.currentTarget.style.background='#fde8e8';}"
       @mouseleave="e=>{e.currentTarget.style.background='#fff';}">

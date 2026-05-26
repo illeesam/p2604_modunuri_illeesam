@@ -312,8 +312,11 @@ window.SyUserDtl = {
     <bo-form-area :columns="profileFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" :show-actions="false">
       <template #profile>
-        <base-attach-one
-          v-model="form.profileAttachId"
+        <base-attach-grp
+          :model-value="form.profileAttachId"
+          @update:model-value="form.profileAttachId = $event"
+          display-mode="image"
+          :max-count="1"
           grp-code="USER_PROFILE"
           grp-nm="사용자 프로필"
           :max-size-mb="5"
