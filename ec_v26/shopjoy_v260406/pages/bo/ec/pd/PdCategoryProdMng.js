@@ -273,6 +273,13 @@ window.PdCategoryProdMng = {
       TYPE_TABS.forEach(t => { map[t.cd] = categoryProds.filter(cp => cp.categoryProdTypeCd === t.cd).length; });
       return map;
     });
+
+    /* tabs — TYPE_TABS 를 BoTabBar 형식으로 변환 (reactive). count 는 cfTypeCountMap getter 로 반응형 유지 */
+    const tabs = reactive(TYPE_TABS.map(t => ({
+      id: t.cd, label: t.nm,
+      get count() { return cfTypeCountMap.value[t.cd] || 0; },
+    })));
+
     /* cfFilteredRows 제거: 카테고리(자식포함)+진열유형 필터는 서버(API)가 수행 → categoryProds 직접 사용 */
 
     /* -- 드래그 상태 -- */
@@ -451,7 +458,7 @@ window.PdCategoryProdMng = {
       codes, uiState, categories, categoryProds, searchParam, pager, pickerResults,         // 상태 / 데이터
       baseSearchColumns, cfCatProdGridColumns, catProdPickerGridColumns,                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap,                          // computed
+      cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs,                    // computed / reactive(tabs)
       fnCatProdRowStyle, fnDepthColor, fnDepthBullet, totalProdCount,                       // 헬퍼
       TYPE_TABS, EMPHASIS_OPTS, hasEmphasis, getProdNm, getProd, getCatPath,                // 헬퍼
       dragoverIdx, pickerOpen, pickerSearchType, pickerSearch,                              // ref
@@ -518,33 +525,9 @@ window.PdCategoryProdMng = {
           </div>
         </div>
         <!-- ===== ■.■.■.■. 탭바 + 뷰모드 버튼 ======================================= -->
-        <div class="tab-bar-row" style="margin:12px 0 0">
-          <div class="tab-nav" style="flex:1;flex-wrap:wrap">
-            <button v-for="tab in TYPE_TABS" :key="(tab && tab.cd)" class="tab-btn" :class="{ active: uiState.activeTypeCd===tab.cd }" @click="handleBtnAction('tab-typeSelect', tab.cd)">
-            {{ tab.nm }}
-            <span v-if="cfTypeCountMap[tab.cd]" class="tab-count">
-              {{ cfTypeCountMap[tab.cd] }}
-            </span>
-          </button>
-        </div>
-        <div class="tab-modes">
-          <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='tab' }"  @click="handleBtnAction('tab-mode', 'tab')"  title="탭으로 보기">
-            📑
-          </button>
-          <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='1col' }" @click="handleBtnAction('tab-mode', '1col')" title="1열로 보기">
-            1▭
-          </button>
-          <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='2col' }" @click="handleBtnAction('tab-mode', '2col')" title="2열로 보기">
-            2▭
-          </button>
-          <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='3col' }" @click="handleBtnAction('tab-mode', '3col')" title="3열로 보기">
-            3▭
-          </button>
-          <button class="tab-mode-btn" :class="{ active: uiState.tabMode==='4col' }" @click="handleBtnAction('tab-mode', '4col')" title="4열로 보기">
-            4▭
-          </button>
-        </div>
-      </div>
+        <bo-tab-bar :tabs="tabs" :tab="uiState.activeTypeCd" :tab-mode="uiState.tabMode"
+          @tab-select="id => handleBtnAction('tab-typeSelect', id)"
+          @mode-select="m => handleBtnAction('tab-mode', m)" />
       <div style="font-size:12px;color:#aaa;margin:8px 0 4px;padding:0 2px">
         ≡ 드래그로 순서 변경 · 저장 후 반영됩니다.
       </div>

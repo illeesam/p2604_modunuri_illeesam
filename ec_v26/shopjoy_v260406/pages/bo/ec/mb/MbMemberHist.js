@@ -88,6 +88,12 @@ window.MbMemberHist = {
       return sampleClaims[props.memberId] || [];
     });
 
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'orders', label: '연관 주문',   icon: '🛒', get count() { return cfMemberOrders.value.length; } },
+      { id: 'claims', label: '연관 클레임', icon: '↩',  get count() { return cfMemberClaims.value.length; } },
+    ]);
+
     // 주문 그리드
     const orderGridColumns = [
       { key: 'orderId', label: '주문ID', refLink: 'order' },
@@ -111,7 +117,7 @@ window.MbMemberHist = {
       uiState,                                                                         // 상태 / 데이터
       orderGridColumns, claimGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfMemberOrders, cfMemberClaims,                                                  // computed
+      cfMemberOrders, cfMemberClaims, tabs,                                            // computed / reactive(tabs)
       showTab,                                                                         // 헬퍼
     };
   },
@@ -126,39 +132,9 @@ window.MbMemberHist = {
   </div>
   <!-- ===== □. 이력 타이틀 ================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
-  <div class="tab-bar-row">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:uiState.tab==='orders'}" :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'orders')">
-        🛒 연관 주문
-        <span class="tab-count">
-          {{ cfMemberOrders.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:uiState.tab==='claims'}" :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'claims')">
-        ↩ 연관 클레임
-        <span class="tab-count">
-          {{ cfMemberClaims.length }}
-        </span>
-      </button>
-    </div>
-    <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='tab'}" @click="handleSelectAction('tab-mode', 'tab')" title="탭으로 보기">
-        📑
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='1col'}" @click="handleSelectAction('tab-mode', '1col')" title="1열로 보기">
-        1▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='2col'}" @click="handleSelectAction('tab-mode', '2col')" title="2열로 보기">
-        2▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='3col'}" @click="handleSelectAction('tab-mode', '3col')" title="3열로 보기">
-        3▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='4col'}" @click="handleSelectAction('tab-mode', '4col')" title="4열로 보기">
-        4▭
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="tabs" :tab="uiState.tab" :tab-mode="uiState.tabMode2"
+    @tab-select="id => handleSelectAction('tab-select', id)"
+    @mode-select="m => handleSelectAction('tab-mode', m)" />
   <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="uiState.tabMode2!=='tab' ? 'dtl-tab-grid cols-'+uiState.tabMode2.charAt(0) : ''">

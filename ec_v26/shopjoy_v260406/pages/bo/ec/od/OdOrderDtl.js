@@ -331,12 +331,13 @@ window.OdOrderDtl = {
       { date: String(form.orderDate||'').slice(0,10)+' 11:02', user:'bo', field:'수령인 연락처', before:'010-0000-0000', after: form.phone || '010-1234-5678' },
       { date: String(form.orderDate||'').slice(0,10)+' 13:45', user:'bo', field:'메모',          before:'-',              after:'(수정됨)' },
     ] : []);
-    const cfTabs = computed(() => [
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
       { id:'info',     label:'상세정보',      icon:'📋' },
-      { id:'items',    label:'주문항목',      icon:'📦', count: orderItems.length },
-      { id:'payment',  label:'결제정보',      icon:'💳', count: cfPaymentList.value.length },
-      { id:'hist',     label:'상태변경이력',  icon:'🕒', count: cfStatusHistList.value.length },
-      { id:'editHist', label:'정보수정이력',  icon:'📝', count: cfEditHistList.value.length },
+      { id:'items',    label:'주문항목',      icon:'📦', get count() { return orderItems.length; } },
+      { id:'payment',  label:'결제정보',      icon:'💳', get count() { return cfPaymentList.value.length; } },
+      { id:'hist',     label:'상태변경이력',  icon:'🕒', get count() { return cfStatusHistList.value.length; } },
+      { id:'editHist', label:'정보수정이력',  icon:'📝', get count() { return cfEditHistList.value.length; } },
     ]);
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
@@ -445,7 +446,7 @@ window.OdOrderDtl = {
       baseFormColumns, paymentGridColumns, editHistGridColumns, orderItemGridColumns, itemExpandColumns,  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfCurrentStepIdx, cfIsCanceled, cfRelatedVendor, cfRelatedDelivery,             // computed
-      cfRelatedClaim, cfTabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded,             // computed
+      cfRelatedClaim, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded,             // computed
       ORDER_STEPS, CLAIM_FLOWS, CLAIM_TYPE_COLOR,                                                         // 상수
       fmt, showTab, isExpanded, fnItemExpanded, getExchangedItem, fnPayStatusBadge,                       // 헬퍼
       showRefModal,                                                                                       // 모달 (template 직접 참조)
@@ -462,37 +463,10 @@ window.OdOrderDtl = {
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 ======================================================= -->
-  <div v-if="!cfIsNew" style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
-    <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-      <button v-for="t in cfTabs" :key="t?.id" @click="handleBtnAction('tab-change', t.id)" :disabled="tabMode2!=='tab'" :style="{ flex:1, padding:'11px 12px', border:'none', cursor: tabMode2==='tab'?'pointer':'default', fontSize:'12.5px', borderRadius:'9px', transition:'all .18s', display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'6px', opacity: tabMode2==='tab' ? 1 : 0.55, fontWeight: activeTab===t.id ? 800 : 600, background: (tabMode2==='tab' && activeTab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent', color: (tabMode2==='tab' && activeTab===t.id) ? '#e8587a' : '#666', boxShadow: (tabMode2==='tab' && activeTab===t.id) ? '0 2px 8px rgba(232,88,122,0.18)' : 'none', borderBottom: (tabMode2==='tab' && activeTab===t.id) ? '2px solid #e8587a' : '2px solid transparent', }">
-      <span style="font-size:14px;">
-        {{ t.icon }}
-      </span>
-      <span>
-        {{ t.label }}
-      </span>
-      <span v-if="t.count !== undefined" :style="{ fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px', background: (tabMode2==='tab' && activeTab===t.id) ? '#e8587a' : '#e5e7eb', color: (tabMode2==='tab' && activeTab===t.id) ? '#fff' : '#666', minWidth:'18px', textAlign:'center', }">
-      {{ t.count }}
-    </span>
-  </button>
-</div>
-<div style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
-  <button v-for="v in [{id:'tab',label:'탭',icon:'📑'},{id:'1col',label:'1열',icon:'1▭'},{id:'2col',label:'2열',icon:'2▭'},{id:'3col',label:'3열',icon:'3▭'},{id:'4col',label:'4열',icon:'4▭'}]" :key="v?.id"
-        @click="handleBtnAction('viewMode-change', v.id)" :title="v.label+'로 보기'"
-        :style="{
-        padding:'8px 12px', border:'none', cursor:'pointer', fontSize:'13px', borderRadius:'8px',
-        fontWeight: tabMode2===v.id ? 800 : 600,
-        background: tabMode2===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
-        color: tabMode2===v.id ? '#e8587a' : '#888',
-        boxShadow: tabMode2===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none',
-        }">
-    <span style="font-size:15px;">
-      {{ v.icon }}
-    </span>
-  </button>
-</div>
-</div>
-<!-- ===== □. 탭 ======================================================= -->
+  <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-change', id)"
+    @mode-select="m => handleBtnAction('viewMode-change', m)" />
+  <!-- ===== □. 탭 ======================================================= -->
 <!-- ===== ■. 탭 컨텐츠 =================================================== -->
 <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
   <div v-if="cfIsNew || showTab('info')" class="card">

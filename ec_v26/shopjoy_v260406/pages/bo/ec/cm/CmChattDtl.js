@@ -232,6 +232,18 @@ window.CmChattDtl = {
       return [];
     });
 
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'chat',    label: '채팅 내용',     icon: '💬' },
+      { id: 'history', label: '회원 채팅 이력', icon: '🕒', get count() { return cfMemberChats.value.length; } },
+    ]);
+
+    /* newTabs — 신규 채팅 등록 탭 정의 */
+    const newTabs = reactive([
+      { id: 'new',    label: '신규 등록' },
+      { id: 'search', label: '고객 채팅 조회' },
+    ]);
+
     // 회원 채팅 그리드
     const memberChatGridColumns = [
       { key: 'subject', label: '제목' },
@@ -269,7 +281,7 @@ window.CmChattDtl = {
       uiState, codes, form, errors, refModal, msgBoxRef, cfUserChats,                  // 상태 / 데이터
       memberChatGridColumns, userChatGridColumns, newFormColumns,                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode, cfMemberChats,                                               // computed
+      cfIsNew, cfDtlMode, cfMemberChats, tabs, newTabs,                                // computed / reactive(tabs)
       showTab, hasRef, refLabel,                                                       // 헬퍼
       showRefModal,                                                                    // 참조 모달 (직접 호출)
     };
@@ -286,36 +298,9 @@ window.CmChattDtl = {
 <!-- ===== □. 페이지 타이틀 ================================================= -->
 <!-- ===== ■. 채팅 상세 =================================================== -->
 <div v-if="!cfIsNew">
-  <div class="tab-bar-row">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:uiState.tab==='chat'}" :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'chat')">
-        💬 채팅 내용
-      </button>
-      <button class="tab-btn" :class="{active:uiState.tab==='history'}" :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'history')">
-        🕒 회원 채팅 이력
-        <span class="tab-count">
-          {{ cfMemberChats.length }}
-        </span>
-      </button>
-    </div>
-    <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='tab'}" @click="handleSelectAction('tab-mode', 'tab')" title="탭으로 보기">
-        📑
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='1col'}" @click="handleSelectAction('tab-mode', '1col')" title="1열로 보기">
-        1▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='2col'}" @click="handleSelectAction('tab-mode', '2col')" title="2열로 보기">
-        2▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='3col'}" @click="handleSelectAction('tab-mode', '3col')" title="3열로 보기">
-        3▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='4col'}" @click="handleSelectAction('tab-mode', '4col')" title="4열로 보기">
-        4▭
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="tabs" :tab="uiState.tab" :tab-mode="uiState.tabMode2"
+    @tab-select="id => handleSelectAction('tab-select', id)"
+    @mode-select="m => handleSelectAction('tab-mode', m)" />
   <div :class="uiState.tabMode2!=='tab' ? 'dtl-tab-grid cols-'+uiState.tabMode2.charAt(0) : ''">
     <!-- ===== ■.■.■. 채팅 내용 탭 ============================================= -->
     <div class="card" v-show="showTab('chat')" style="margin:0;">
@@ -411,14 +396,8 @@ window.CmChattDtl = {
   <!-- ===== ■. 신규 채팅 등록 ================================================ -->
   <template v-if="cfIsNew">
     <div class="card">
-      <div class="tab-nav">
-        <button class="tab-btn" :class="{active:uiState.tab==='new'}" @click="handleSelectAction('tab-select', 'new')">
-          신규 등록
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='search'}" @click="handleSelectAction('tab-select', 'search')">
-          고객 채팅 조회
-        </button>
-      </div>
+      <bo-tab-bar :tabs="newTabs" :tab="uiState.tab" :show-modes="false"
+        @tab-select="id => handleSelectAction('tab-select', id)" />
       <!-- ===== ■.■.■. 신규 등록 탭 (BoFormArea 자동 렌더) ========================== -->
       <div v-show="uiState.tab==='new'">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->

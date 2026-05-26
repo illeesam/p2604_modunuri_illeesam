@@ -93,6 +93,13 @@ window.SyContactDtl = {
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
     const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
+
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'content', label: '문의 내용',     icon: '📋' },
+      { id: 'answer',  label: '답변',          icon: '💬' },
+      { id: 'history', label: '회원 문의 이력', icon: '🕒', get visible() { return !cfIsNew.value && !!form.memberId; } },
+    ]);
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -233,7 +240,7 @@ window.SyContactDtl = {
       uiState, codes, form, errors, tab, tabMode2,                  // 상태 / 데이터
       contentFormColumns, siteFormColumns,                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasId, cfSaveDisabled, cfSiteNm, cfDtlMode,        // computed
+      cfIsNew, cfHasId, cfSaveDisabled, cfSiteNm, cfDtlMode, tabs,  // computed / reactive(tabs)
       showTab, fnStatusBadge,                                       // 헬퍼
     };
   },
@@ -253,36 +260,9 @@ window.SyContactDtl = {
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
       :cols="4" :show-actions="false" />
-    <div class="tab-bar-row">
-      <div class="tab-nav">
-        <button class="tab-btn" :class="{active:tab==='content'}" :disabled="tabMode2!=='tab'" @click="handleSelectAction('tabs-select', 'content')">
-          📋 문의 내용
-        </button>
-        <button class="tab-btn" :class="{active:tab==='answer'}"  :disabled="tabMode2!=='tab'" @click="handleSelectAction('tabs-select', 'answer')">
-          💬 답변
-        </button>
-        <button v-if="!cfIsNew && form.memberId" class="tab-btn" :class="{active:tab==='history'}" :disabled="tabMode2!=='tab'" @click="handleSelectAction('tabs-select', 'history')">
-        🕒 회원 문의 이력
-      </button>
-    </div>
-    <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="handleSelectAction('tabMode-select', 'tab')" title="탭으로 보기">
-        📑
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleSelectAction('tabMode-select', '1col')" title="1열로 보기">
-        1▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleSelectAction('tabMode-select', '2col')" title="2열로 보기">
-        2▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleSelectAction('tabMode-select', '3col')" title="3열로 보기">
-        3▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleSelectAction('tabMode-select', '4col')" title="4열로 보기">
-        4▭
-      </button>
-    </div>
-  </div>
+    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+      @tab-select="id => handleSelectAction('tabs-select', id)"
+      @mode-select="m => handleSelectAction('tabMode-select', m)" />
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■.■. 문의 내용 탭 (BoFormArea 자동 렌더) ========================== -->
     <div class="card" v-show="showTab('content')" style="margin:0;">

@@ -234,7 +234,35 @@ const cfStatusLabel = computed(() => ({ A:'활성', I:'비활성' }[status.value
 
 // ✅ 대체 — 순수 fn 함수
 const fnStatusLabel = (s) => ({ A:'활성', I:'비활성' }[s] || s);
+
+// ❌ 금지 — 정적 데이터(탭/메뉴 정의)를 computed로 선언
+const cfTabs = computed(() => [
+  { id: 'info',  label: '기본정보',  icon: '📋' },
+  { id: 'items', label: '배송항목',  icon: '📦', count: dlivItems.length },
+]);
+
+// ✅ 대체 — reactive 배열 + 동적 카운트는 getter 로
+//   reactive([...]) 는 배열 자체와 내부 객체가 모두 반응형이 되며,
+//   getter 안의 reactive 값(dlivItems.length 등)은 자동으로 의존 추적된다.
+const tabs = reactive([
+  { id: 'info',  label: '기본정보',  icon: '📋' },
+  { id: 'items', label: '배송항목',  icon: '📦', get count() { return dlivItems.length; } },
+]);
+// template: <bo-tab-bar :tabs="tabs" ... />
 ```
+
+### 정적/준정적 데이터는 reactive 우선
+
+탭 정의·메뉴 정의·옵션 리스트처럼 **구조가 정적**이고 일부 필드만 reactive 값에 의존하는 경우, `computed`로 전체 배열을 재생성하지 말고 **`reactive` 배열 + 필요한 필드만 getter** 로 한다.
+
+| 케이스 | 권장 패턴 | 변수명 |
+|---|---|---|
+| 완전 정적 탭/옵션 정의 | `const tabs = reactive([...])` | `tabs`, `options`, `menus` (prefix 없음) |
+| 카운트만 동적인 탭 정의 | `const tabs = reactive([{ ..., get count() { return list.length; } }])` | `tabs` |
+| 여러 reactive 값 조합 결과 | `const cfXxx = computed(() => ...)` | `cfXxx` (cf prefix 유지) |
+
+> ❌ `const cfTabs = computed(() => [...])` — 매 변경 시 새 배열·새 객체가 생성되어 자식 컴포넌트의 watch/re-render 가 과도하게 트리거됨
+> ✅ `const tabs = reactive([...])` — 같은 배열·같은 객체를 공유하고, 필드 변경만 반응형으로 전파됨
 
 ### 판단 기준 요약
 

@@ -171,6 +171,14 @@ window.PmPlanDtl = {
     /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'banner', label: '배너이미지', icon: '🎨' },
+      { id: 'info', label: '기본정보', icon: '📋' },
+      { id: 'content', label: '내용입력', icon: '📝' },
+      { id: 'preview', label: '미리보기', icon: '👁' },
+    ]);
     /* 프로모션 플랜 fnLoadCodes */
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
     /* fnLoadCodes — 공통코드 로드 */
@@ -367,45 +375,9 @@ window.PmPlanDtl = {
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
-  <div class="tab-bar-row">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:tab==='banner'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'banner')">
-        🎨 배너이미지
-      </button>
-      <button class="tab-btn" :class="{active:tab==='info'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'info')">
-        📋 기본정보
-      </button>
-      <button class="tab-btn" :class="{active:tab==='content'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'content')">
-        📝 내용입력
-      </button>
-      <button class="tab-btn" :class="{active:tab==='products'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'products')">
-        🛍 대상 상품
-        <span class="tab-count">
-          {{ form.productIds.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:tab==='preview'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'preview')">
-        👁 미리보기
-      </button>
-    </div>
-    <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="handleBtnAction('tab-mode', 'tab')" title="탭으로 보기">
-        📑
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tab-mode', '1col')" title="1열로 보기">
-        1▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tab-mode', '2col')" title="2열로 보기">
-        2▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tab-mode', '3col')" title="3열로 보기">
-        3▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tab-mode', '4col')" title="4열로 보기">
-        4▭
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
   <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">

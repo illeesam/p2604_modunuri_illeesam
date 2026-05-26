@@ -75,6 +75,17 @@ window.PdProdHist = {
     const statusHistories = reactive([]);
     const changeHistories = reactive([]);
 
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'qna',     label: '상품 Q&A',       icon: '💬', get count() { return qnas.length; } },
+      { id: 'review',  label: '리뷰',           icon: '⭐', get count() { return reviews.length; } },
+      { id: 'orders',  label: '연관 주문',      icon: '🛒', get count() { return relatedOrders.length; } },
+      { id: 'stock',   label: '재고 이력',      icon: '📦', get count() { return stockHistories.length; } },
+      { id: 'price',   label: '가격변경이력',   icon: '💰', get count() { return priceHistories.length; } },
+      { id: 'status',  label: '상품상태 이력',  icon: '🏷', get count() { return statusHistories.length; } },
+      { id: 'changes', label: '상품정보 변경이력', icon: '📝', get count() { return changeHistories.length; } },
+    ]);
+
     /* BASE — 기본 */
     const BASE = (tab) => `/bo/ec/pd/prod/${props.prodId}/hist/${tab}`;
 
@@ -244,7 +255,7 @@ window.PdProdHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, botTab, tabMode2,                                                            // 상태
+      uiState, botTab, tabMode2, tabs,                                                      // 상태 / reactive(tabs)
       qnas, reviews, relatedOrders, stockHistories, priceHistories, statusHistories, changeHistories, // 데이터
       qnaGridColumns, reviewGridColumns, orderGridColumns, stockGridColumns, priceGridColumns, statusGridColumns, changeGridColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch
@@ -265,69 +276,9 @@ window.PdProdHist = {
   </div>
   <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
-  <div class="tab-bar-row">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='qna'}"     :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'qna')">
-        💬 상품 Q&amp;A
-        <span class="tab-count">
-          {{ qnas.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='review'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'review')">
-        ⭐ 리뷰
-        <span class="tab-count">
-          {{ reviews.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='orders'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'orders')">
-        🛒 연관 주문
-        <span class="tab-count">
-          {{ relatedOrders.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='stock'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'stock')">
-        📦 재고 이력
-        <span class="tab-count">
-          {{ stockHistories.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='price'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'price')">
-        💰 가격변경이력
-        <span class="tab-count">
-          {{ priceHistories.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='status'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'status')">
-        🏷 상품상태 이력
-        <span class="tab-count">
-          {{ statusHistories.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='changes'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'changes')">
-        📝 상품정보 변경이력
-        <span class="tab-count">
-          {{ changeHistories.length }}
-        </span>
-      </button>
-    </div>
-    <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="handleBtnAction('tabMode-change', 'tab')"  title="탭으로 보기">
-        📑
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tabMode-change', '1col')" title="1열로 보기">
-        1▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tabMode-change', '2col')" title="2열로 보기">
-        2▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tabMode-change', '3col')" title="3열로 보기">
-        3▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tabMode-change', '4col')" title="4열로 보기">
-        4▭
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-change', id)"
+    @mode-select="m => handleBtnAction('tabMode-change', m)" />
   <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">

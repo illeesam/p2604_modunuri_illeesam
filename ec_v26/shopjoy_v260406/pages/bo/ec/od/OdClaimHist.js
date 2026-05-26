@@ -27,6 +27,13 @@ window.OdClaimHist = {
     /* 처리 정보 로컬 폼 */
     const processForm = reactive({ refundAmount: 0, refundMethodCd: '계좌환불', memo: '' });
 
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive). 카운트는 getter 로 반응형 유지 */
+    const tabs = reactive([
+      { id: 'items',   label: '클레임 항목', icon: '↩',  get count() { return claimItems.length; } },
+      { id: 'process', label: '처리 정보',   icon: '⚙' },
+      { id: 'order',   label: '연관 주문',   icon: '🛒', get count() { return relatedOrder.value ? 1 : 0; } },
+    ]);
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -137,7 +144,7 @@ window.OdClaimHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      claimItems, processForm, codes, botTab, tabMode2, relatedOrder, relatedDliv,                         // 상태 / 데이터
+      claimItems, processForm, codes, botTab, tabMode2, relatedOrder, relatedDliv, tabs,                   // 상태 / 데이터 / reactive(tabs)
       processFormColumns,                                                                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfStatusOptions,                                                                                     // computed
@@ -156,25 +163,8 @@ window.OdClaimHist = {
   </div>
   <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
-  <div class="tab-bar-row">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='items'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'items')">
-        ↩ 클레임 항목
-        <span class="tab-count">
-          {{ claimItems.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='process'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'process')">
-        ⚙ 처리 정보
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='order'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'order')">
-        🛒 연관 주문
-        <span class="tab-count">
-          {{ relatedOrder ? 1 : 0 }}
-        </span>
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2" :show-modes="false"
+    @tab-select="id => handleBtnAction('tab-change', id)" />
   <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">

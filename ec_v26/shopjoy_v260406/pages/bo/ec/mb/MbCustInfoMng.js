@@ -340,6 +340,19 @@
           (sendHistories || []).filter(s => s.userId === uiState.customer.userId), 'sendDate')
       );
 
+      /* tabs — 탭 정의 (BoTabBar 데이터, reactive). 카운트는 cfCust* getter 로 반응형 유지 */
+      const tabs = reactive([
+        { id: 'orders',   label: '주문이력',  icon: '🛒', get count() { return cfCustOrders.value.length; } },
+        { id: 'claims',   label: '클레임이력', icon: '↩',  get count() { return cfCustClaims.value.length; } },
+        { id: 'dliv',     label: '배송이력',  icon: '🚚', get count() { return cfCustDeliveries.value.length; } },
+        { id: 'cache',    label: '캐쉬내역',  icon: '💰', get count() { return cfCustCache.value.length; } },
+        { id: 'contacts', label: '문의이력',  icon: '📋', get count() { return cfCustContacts.value.length; } },
+        { id: 'chats',    label: '채팅이력',  icon: '💬', get count() { return cfCustChats.value.length; } },
+        { id: 'login',    label: '로그인',    icon: '🔐', get count() { return cfCustLoginHist.value.length; } },
+        { id: 'coupon',   label: '쿠폰',      icon: '🎟', get count() { return cfCustCouponUsage.value.length; } },
+        { id: 'send',     label: '발송',      icon: '📨', get count() { return cfCustSendHist.value.length; } },
+      ]);
+
       /* cfCustCacheBalance — 캐쉬 잔액 (전체 마지막 레코드) */
       const cfCustCacheBalance = computed(() => {
         if (!uiState.customer) { return 0; }
@@ -494,7 +507,7 @@
         onSetPage, onSizeChange,                                                                                                    // BoGrid pager 콜백
         handleBtnAction, handleSelectAction,                                                                                        // dispatch (모든 이벤트 / 액션 라우팅)
         cfDateFrom, cfDateTo, cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,                        // computed
-        cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist,
+        cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist, tabs,
         showTab, fnFmtPrice,                                                                                                        // 헬퍼
       };
     },
@@ -669,81 +682,9 @@
     </div>
     <!-- ===== □.■. 고객 프로필 카드 ============================================ -->
     <!-- ===== ■.■. 이력 탭바 + 뷰모드 =========================================== -->
-    <div class="tab-bar-row">
-      <div class="tab-nav">
-        <button class="tab-btn" :class="{active:uiState.tab==='orders'}"   :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'orders')">
-          🛒 주문이력
-          <span class="tab-count">
-            {{ cfCustOrders.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='claims'}"   :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'claims')">
-          ↩ 클레임이력
-          <span class="tab-count">
-            {{ cfCustClaims.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='dliv'}"     :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'dliv')">
-          🚚 배송이력
-          <span class="tab-count">
-            {{ cfCustDeliveries.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='cache'}"    :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'cache')">
-          💰 캐쉬내역
-          <span class="tab-count">
-            {{ cfCustCache.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='contacts'}" :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'contacts')">
-          📋 문의이력
-          <span class="tab-count">
-            {{ cfCustContacts.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='chats'}"    :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'chats')">
-          💬 채팅이력
-          <span class="tab-count">
-            {{ cfCustChats.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='login'}"    :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'login')">
-          🔐 로그인
-          <span class="tab-count">
-            {{ cfCustLoginHist.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='coupon'}"   :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'coupon')">
-          🎟 쿠폰
-          <span class="tab-count">
-            {{ cfCustCouponUsage.length }}
-          </span>
-        </button>
-        <button class="tab-btn" :class="{active:uiState.tab==='send'}"     :disabled="uiState.tabMode2!=='tab'" @click="handleSelectAction('tab-select', 'send')">
-          📨 발송
-          <span class="tab-count">
-            {{ cfCustSendHist.length }}
-          </span>
-        </button>
-      </div>
-      <div class="tab-modes">
-        <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='tab'}" @click="handleSelectAction('tab-mode', 'tab')" title="탭으로 보기">
-          📑
-        </button>
-        <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='1col'}" @click="handleSelectAction('tab-mode', '1col')" title="1열로 보기">
-          1▭
-        </button>
-        <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='2col'}" @click="handleSelectAction('tab-mode', '2col')" title="2열로 보기">
-          2▭
-        </button>
-        <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='3col'}" @click="handleSelectAction('tab-mode', '3col')" title="3열로 보기">
-          3▭
-        </button>
-        <button class="tab-mode-btn" :class="{active:uiState.tabMode2==='4col'}" @click="handleSelectAction('tab-mode', '4col')" title="4열로 보기">
-          4▭
-        </button>
-      </div>
-    </div>
+    <bo-tab-bar :tabs="tabs" :tab="uiState.tab" :tab-mode="uiState.tabMode2"
+      @tab-select="id => handleSelectAction('tab-select', id)"
+      @mode-select="m => handleSelectAction('tab-mode', m)" />
     <!-- ===== □.■. 이력 탭바 + 뷰모드 =========================================== -->
     <!-- ===== ■.■. 이력 패널 ================================================= -->
     <div :class="uiState.tabMode2!=='tab' ? 'dtl-tab-grid cols-'+uiState.tabMode2.charAt(0) : ''">

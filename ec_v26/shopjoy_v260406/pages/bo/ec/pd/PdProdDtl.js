@@ -257,6 +257,17 @@ window.PdProdDtl = {
     /* showTab — 표시 */
     const showTab = id => tabMode2.value !== 'tab' || topTab.value === id;
 
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive). 카운트는 tabData getter 로 반응형 유지 */
+    const tabs = reactive([
+      { id: 'info',    label: '기본정보',        icon: '📋' },
+      { id: 'detail',  label: '상세설정',        icon: '📝' },
+      { id: 'content', label: '상품설명',        icon: '📄', get count() { return tabData.content.length; } },
+      { id: 'option',  label: '옵션설정',        icon: '⚙',  get count() { return tabData.opts.groups.length; } },
+      { id: 'price',   label: '옵션(가격/재고)', icon: '💰', get count() { return tabData.skus.length; } },
+      { id: 'image',   label: '이미지',          icon: '🖼', get count() { return tabData.images.length; } },
+      { id: 'related', label: '연관상품',        icon: '🔗', get count() { return tabData.rels.length; } },
+    ]);
+
     // -- form: pd_prod 전체 필드
     const form = reactive({
       prodId: null,
@@ -1350,7 +1361,7 @@ window.PdProdDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return { handleBtnAction, handleSelectAction,                                  // dispatch (상위 레벨 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
+      cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypeRef, prodPickerSearchType,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus, moveSku,
@@ -1400,63 +1411,9 @@ window.PdProdDtl = {
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭바 ====================================================== -->
-  <div class="tab-bar-row">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:topTab==='info'}"    :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'info')">
-        📋 기본정보
-      </button>
-      <button class="tab-btn" :class="{active:topTab==='detail'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'detail')">
-        📝 상세설정
-      </button>
-      <button class="tab-btn" :class="{active:topTab==='content'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'content')">
-        📄 상품설명
-        <span class="tab-count">
-          {{ tabData.content.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:topTab==='option'}"  :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'option')">
-        ⚙ 옵션설정
-        <span class="tab-count">
-          {{ tabData.opts.groups.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:topTab==='price'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'price')">
-        💰 옵션(가격/재고)
-        <span class="tab-count">
-          {{ tabData.skus.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:topTab==='image'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'image')">
-        🖼 이미지
-        <span class="tab-count">
-          {{ tabData.images.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:topTab==='related'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-select', 'related')">
-        🔗 연관상품
-        <span class="tab-count">
-          {{ tabData.rels.length }}
-        </span>
-      </button>
-    </div>
-    <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}"  @click="handleBtnAction('tab-mode', 'tab')"  title="탭">
-        📑
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tab-mode', '1col')" title="1열">
-        1▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tab-mode', '2col')" title="2열">
-        2▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tab-mode', '3col')" title="3열">
-        3▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tab-mode', '4col')" title="4열">
-        4▭
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="tabs" :tab="topTab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
   <!-- ===== □. 탭바 ====================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">

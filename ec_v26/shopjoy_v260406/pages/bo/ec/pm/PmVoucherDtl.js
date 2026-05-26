@@ -117,6 +117,15 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
+    const tabs = reactive([
+      { id: 'info',      label: '기본정보', icon: '📋' },
+      { id: 'detail',    label: '상세정보', icon: '📋' },
+      { id: 'issueHist', label: '발급내역', icon: '📊' },
+      { id: 'useHist',   label: '사용내역', icon: '✅' },
+      { id: 'preview',   label: '미리보기', icon: '👁' },
+    ]);
+
     /* 바우처(상품권) fnLoadCodes */
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
@@ -366,7 +375,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       vendors, showVendorModal, uiState, codes, form, errors, snsModal, snsMsg,        // 상태 / 데이터
       infoFormColumns, issueGridColumns, usageGridColumns,                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfIssuedList, cfUsedList, cfSelectedVendorNm, // computed
+      cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfIssuedList, cfUsedList, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
       tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer,                    // toRef
       showTab, DEFAULT_START, DEFAULT_END,                                             // 헬퍼
     };
@@ -381,36 +390,11 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;justify-content:flex-end;">
-    <div class="tab-modes">
-      <button class="tab-mode-btn" :class="{active:tabMode2==='tab'}" @click="handleBtnAction('tab-mode', 'tab')" title="탭">
-        📑
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='1col'}" @click="handleBtnAction('tab-mode', '1col')" title="1열">
-        1▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='2col'}" @click="handleBtnAction('tab-mode', '2col')" title="2열">
-        2▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='3col'}" @click="handleBtnAction('tab-mode', '3col')" title="3열">
-        3▭
-      </button>
-      <button class="tab-mode-btn" :class="{active:tabMode2==='4col'}" @click="handleBtnAction('tab-mode', '4col')" title="4열">
-        4▭
-      </button>
-    </div>
-  </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 탭 네비게이션 ================================================= -->
-  <div class="tab-nav">
-    <button v-for="t in ['info','detail','issueHist','useHist','preview']" :key="Math.random()"
-      :class="['tab-btn', {active:tab===t}]"
-      @click="handleBtnAction('tab-select', t)">
-      {{ {info:'기본정보',detail:'상세정보',issueHist:'발급내역',useHist:'사용내역',preview:'미리보기'}[t] }}
-    </button>
-  </div>
-  <!-- ===== □. 탭 네비게이션 ================================================= -->
+  <!-- ===== ■. 탭 + 뷰모드 ================================================= -->
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
+  <!-- ===== □. 탭 + 뷰모드 ================================================= -->
   <!-- ===== ■. 기본정보 탭 (BoFormArea 자동 렌더) =============================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">

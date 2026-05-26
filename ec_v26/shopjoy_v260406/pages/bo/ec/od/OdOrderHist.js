@@ -99,6 +99,13 @@ window.OdOrderHist = {
 
     const cfRelatedDliv   = computed(() => window.safeArrayUtils.safeFind(deliveries || [], d => d.orderId === props.orderId) || null);
     const cfRelatedClaims = computed(() => window.safeArrayUtils.safeFilter(claims || [], c => c.orderId === props.orderId));
+
+    /* tabs — 탭 정의 (BoTabBar 데이터, reactive). 카운트는 getter 로 반응형 유지 */
+    const tabs = reactive([
+      { id: 'products', label: '구성 상품',   icon: '📦', get count() { return orderItems.length; } },
+      { id: 'dliv',     label: '배송 이력',   icon: '🚚', get count() { return cfRelatedDliv.value ? 1 : 0; } },
+      { id: 'claims',   label: '연관 클레임', icon: '↩',  get count() { return cfRelatedClaims.value.length; } },
+    ]);
     const cfDlivHistory   = computed(() => {
       if (!cfRelatedDliv.value) { return []; }
       const o = window.safeArrayUtils.safeFind(orders, x => x.orderId === props.orderId);
@@ -142,7 +149,7 @@ window.OdOrderHist = {
       uiState, orderItems, botTab, tabMode2,                                                              // 상태 / 데이터
       itemGridColumns, dlivHistGridColumns, claimGridColumns,                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
-      cfRelatedDliv, cfRelatedClaims, cfDlivHistory,                                                      // computed
+      cfRelatedDliv, cfRelatedClaims, cfDlivHistory, tabs,                                                // computed / reactive(tabs)
       showTab,                                                                                            // 헬퍼
       orderId: props.orderId,                                                                             // template 직접 참조
     };
@@ -158,28 +165,8 @@ window.OdOrderHist = {
   </div>
   <!-- ===== □. 이력 화면 =================================================== -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
-  <div class="tab-bar-row">
-    <div class="tab-nav">
-      <button class="tab-btn" :class="{active:botTab==='products'}" :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'products')">
-        📦 구성 상품
-        <span class="tab-count">
-          {{ orderItems.length }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='dliv'}"     :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'dliv')">
-        🚚 배송 이력
-        <span class="tab-count">
-          {{ cfRelatedDliv ? 1 : 0 }}
-        </span>
-      </button>
-      <button class="tab-btn" :class="{active:botTab==='claims'}"   :disabled="tabMode2!=='tab'" @click="handleBtnAction('tab-change', 'claims')">
-        ↩ 연관 클레임
-        <span class="tab-count">
-          {{ cfRelatedClaims.length }}
-        </span>
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2" :show-modes="false"
+    @tab-select="id => handleBtnAction('tab-change', id)" />
   <!-- ===== □. 탭 영역 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">

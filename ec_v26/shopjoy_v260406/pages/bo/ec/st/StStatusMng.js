@@ -582,13 +582,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 공통 날짜 필터 ================================================ -->
   <!-- ===== ■. 탭 ======================================================= -->
-  <div class="tab-bar-row" style="margin-bottom:0">
-    <div class="tab-nav">
-      <button v-for="t in TABS" :key="t?.id" class="tab-btn" :class="{active: uiState.activeTab===t.id}" @click="handleBtnAction('tab-select', t.id)">
-        {{ t.label }}
-      </button>
-    </div>
-  </div>
+  <bo-tab-bar :tabs="TABS" :tab="uiState.activeTab" :show-modes="false"
+    @tab-select="id => handleBtnAction('tab-select', id)" />
   <!-- ===== □. 탭 ======================================================= -->
   <!-- ===== ■. ══ 1. 업체별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">

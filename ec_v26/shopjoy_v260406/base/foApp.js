@@ -1163,6 +1163,8 @@
   .component('FoGridCrud',   window.FoGridCrud)
   .component('FoModal',      window.FoModal)
   .component('FoRowCancelDelete', window.FoRowCancelDelete)
+  /* ── components/comp/FoComp.js — FO 공통 단위 컴포넌트 ── */
+  .component('FoTabBar',     window.FoTabBar)
   /* ── components/modals/FoModals.js — FO 전용 모달 ── */
   .component('CustomerModal',        window.CustomerModal)
   .component('OrderDetailModal',     window.OrderDetailModal)

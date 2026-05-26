@@ -2863,6 +2863,7 @@
     .component('SyPathMng', window.SyPathMng)
     .component('SyI18nMng', window.SyI18nMng)
     .component('BoPager', window.BoPager)
+    .component('BoTabBar', window.BoTabBar)
     .component('BoPathTree', window.BoPathTree)
     .component('BoPathPickField', window.BoPathPickField)
     .component('BoPathTreeNode', window.BoPathTreeNode)

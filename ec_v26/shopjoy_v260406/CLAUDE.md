@@ -617,6 +617,25 @@ Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt Dtl + Prod/Member/Order/Claim/Dli
 - 3/4열 모드 활성화 시 `.admin-wrap:has(.dtl-tab-grid.cols-3/.cols-4)` CSS로 폭 제한 해제
 - Hist 컴포넌트가 Dtl의 "hist" 탭 안에 임베드되는 경우(OrderHist/ClaimHist/DlivHist)는 뷰모드 아이콘 제거, 항상 `tab` 모드
 
+**탭 컴포넌트 표준** ⭐ (2026-05-27):
+- BO: `<bo-tab-bar>` ([components/comp/BoComp.js](components/comp/BoComp.js)), FO: `<fo-tab-bar>` ([components/comp/FoComp.js](components/comp/FoComp.js))
+- 정적 마크업(`<div class="tab-bar-row">...</div>`) 직접 작성 금지 → 컴포넌트로 통일
+- Props: `:tabs` (배열) / `:tab` (현재) / `:tab-mode` ('tab'|'1col'|'2col'|'3col'|'4col') / `:show-modes` (Bool, FO 는 기본 false)
+- Emits: `@tab-select="id => ..."`, `@mode-select="m => ..."`
+- 탭 정의는 **`computed` 금지 → `reactive([...])` 사용**. 동적 카운트는 `get count() { return list.length; }` getter 패턴
+- 변수명: 정적 탭 정의는 `tabs` (cf prefix 없음), 여러 reactive 값 조합으로만 가능한 경우만 `cfTabs`
+- 예시:
+```js
+const tabs = reactive([
+  { id: 'info',  label: '기본정보', icon: '📋' },
+  { id: 'items', label: '배송항목', icon: '📦', get count() { return dlivItems.length; } },
+]);
+// template: <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+//             @tab-select="id => handleBtnAction('tab-select', id)"
+//             @mode-select="m => handleBtnAction('tab-mode', m)" />
+```
+- 상세 정책: [`_doc/정책서/base/base.코드스타일-admin-vue.md`](_doc/정책서/base/base.코드스타일-admin-vue.md) §0 watch / computed 최소화
+
 ## 전시관리 (Display) 구조
 
 **계층**: `UI > Area > Panel > Widget` (각각 `DispX01Ui`, `DispX02Area`, `DispX03Panel`, `DispX04Widget` 컴포넌트)

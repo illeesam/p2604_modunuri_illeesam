@@ -11,7 +11,7 @@ window.ZdStore = {
     /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, computed, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
-    const uiState = reactive({ storeInfo: '', isPageCodeLoad: false, selectedStore: null, tabMode: 'col5' });
+    const uiState = reactive({ storeInfo: '', isPageCodeLoad: false, selectedStore: null, tabMode: '5col' });
 
     const openStores = reactive([]);
     const editedStoreInfo = reactive({});
@@ -37,6 +37,10 @@ window.ZdStore = {
       if (window.useFoMyStore) { stores.push({ name: 'useFoMyStore', label: 'foMyStore.js', api: null, hasLocalStorage: false }); }
       return stores;
     });
+
+    /* storeTabs — BoTabBar 데이터 (storeList 를 {id, label} 로 변환). storeList 가 computed 라
+     *             자체도 computed 로 유지 (여러 reactive 값 조합 케이스 — 정책 허용) */
+    const storeTabs = computed(() => storeList.value.map(s => ({ id: s.name, label: s.label })));
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -73,7 +77,7 @@ window.ZdStore = {
       // 좌측 스토어 탭 선택 (param: storeName)
       if (cmd === 'stores-select') {
         return selectStore(param);
-      // 뷰모드 변경 (param: 'tab' | 'col1'~'col5')
+      // 뷰모드 변경 (param: 'tab' | '1col'~'5col')
       } else if (cmd === 'tabMode-set') {
         uiState.tabMode = param;
         return;
@@ -230,7 +234,7 @@ window.ZdStore = {
     return {
       uiState, openStores, editedStoreInfo,                                // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      storeList,                                                             // computed
+      storeList, storeTabs,                                                  // computed
     };
   },
   template: `
@@ -248,68 +252,13 @@ window.ZdStore = {
   <!-- ===== □.□. 페이지 타이틀 =============================================== -->
   <!-- ===== □. 메인 영역 =================================================== -->
   <!-- ===== ■. Store 선택 탭 + 뷰모드 버튼 ===================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="background: white; border-bottom: 2px solid #e5e7eb; padding: 0 16px; display: flex; align-items: center; justify-content: space-between;">
-    <div class="tab-nav" style="display: flex; gap: 4px; overflow-x: auto; flex: 1; border-bottom: 1px solid #e5e7eb;">
-      <div v-for="store in storeList" :key="store.name"
-        :class="['tab-btn', {active: uiState.selectedStore === store.name}]"
-        @click="handleSelectAction('stores-select', store.name)"
-        style="padding: 12px 16px; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 13px; font-weight: 500; white-space: nowrap; transition: all 0.15s;">
-        {{ store.label }}
-      </div>
-    </div>
-    <!-- ===== ■.■. 뷰모드 버튼 (탭바 우측) ======================================== -->
-    <div class="tab-modes" style="display: flex; gap: 2px; padding-left: 16px;">
-      <button
-        :class="{active: uiState.tabMode === 'tab'}"
-        @click="handleSelectAction('tabMode-set', 'tab')"
-        title="탭 뷰"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
-        📑
-      </button>
-      <button
-        :class="{active: uiState.tabMode === 'col1'}"
-        @click="handleSelectAction('tabMode-set', 'col1')"
-        title="1열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
-        1
-      </button>
-      <button
-        :class="{active: uiState.tabMode === 'col2'}"
-        @click="handleSelectAction('tabMode-set', 'col2')"
-        title="2열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
-        2
-      </button>
-      <!-- ===== ■.■.■. 버튼 영역 =============================================== -->
-      <button
-        :class="{active: uiState.tabMode === 'col3'}"
-        @click="handleSelectAction('tabMode-set', 'col3')"
-        title="3열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
-        3
-      </button>
-      <button
-        :class="{active: uiState.tabMode === 'col4'}"
-        @click="handleSelectAction('tabMode-set', 'col4')"
-        title="4열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
-        4
-      </button>
-      <button
-        :class="{active: uiState.tabMode === 'col5'}"
-        @click="handleSelectAction('tabMode-set', 'col5')"
-        title="5열 보기"
-        style="padding: 4px 8px; font-size: 12px; border: 1px solid #d1d5db; background: white; cursor: pointer; border-radius: 3px; transition: all 0.15s;">
-        5
-      </button>
-    </div>
-  </div>
-  <!-- ===== □.□. 뷰모드 버튼 (탭바 우측) ======================================== -->
-  <!-- ===== □. 본문 영역 =================================================== -->
+  <bo-tab-bar :tabs="storeTabs" :tab="uiState.selectedStore" :tab-mode="uiState.tabMode" :max-cols="5"
+    @tab-select="name => handleSelectAction('stores-select', name)"
+    @mode-select="m => handleSelectAction('tabMode-set', m)" />
+  <!-- ===== □. Store 선택 탭 + 뷰모드 버튼 ===================================== -->
   <!-- ===== ■. 탭 콘텐츠 영역 (뷰모드별 그리드 레이아웃) ================================ -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
-  <div :class="['dtl-tab-grid', 'cols-' + (uiState.tabMode === 'col1' ? '1' : uiState.tabMode === 'col2' ? '2' : uiState.tabMode === 'col3' ? '3' : uiState.tabMode === 'col4' ? '4' : uiState.tabMode === 'col5' ? '5' : 'tab')]"
+  <div :class="['dtl-tab-grid', 'cols-' + (uiState.tabMode === 'tab' ? 'tab' : uiState.tabMode.charAt(0))]"
     style="display: grid; gap: 4px; padding: 0; auto-flow: row;">
     <div v-for="store in storeList" :key="store.name"
       v-show="uiState.tabMode === 'tab' ? uiState.selectedStore === store.name : true"
