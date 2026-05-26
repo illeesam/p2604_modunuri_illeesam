@@ -30,34 +30,46 @@
 window.FoTabBar = {
   name: 'FoTabBar',
   props: {
-    tabs:      { type: Array,   default: () => [] },
-    tab:       { type: String,  default: '' },
-    tabMode:   { type: String,  default: 'tab' },
-    showModes: { type: Boolean, default: false },
+    tabs:        { type: Array,   default: () => [] },
+    tab:         { type: String,  default: '' },
+    tabMode:     { type: String,  default: 'tab' },
+    showModes:   { type: Boolean, default: false },
+    maxCols:     { type: Number,  default: 4 },
+    orientation: { type: String,  default: 'horizontal' }, // 'horizontal' | 'vertical'
   },
   emits: ['tab-select', 'mode-select'],
   setup(props, { emit }) {
-    const VIEW_MODES = [
+    const VIEW_MODES_4 = [
       { id: 'tab',  label: '탭',  icon: '📑' },
       { id: '1col', label: '1열', icon: '1▭' },
       { id: '2col', label: '2열', icon: '2▭' },
       { id: '3col', label: '3열', icon: '3▭' },
       { id: '4col', label: '4열', icon: '4▭' },
     ];
+    const VIEW_MODES_5 = [...VIEW_MODES_4, { id: '5col', label: '5열', icon: '5▭' }];
+    const VIEW_MODES = Vue.computed(() => props.maxCols === 5 ? VIEW_MODES_5 : VIEW_MODES_4);
     const onTab  = (id) => { if (props.tabMode === 'tab') emit('tab-select', id); };
     const onMode = (id) => emit('mode-select', id);
     const isTabMode = () => props.tabMode === 'tab';
     return { VIEW_MODES, onTab, onMode, isTabMode };
   },
   template: /* html */`
-<div style="display:flex;gap:8px;margin-bottom:14px;align-items:stretch;">
-  <div style="flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+<div :style="orientation==='vertical'
+  ? 'display:flex;gap:8px;margin-bottom:14px;align-items:flex-start;flex-direction:column;width:max-content;'
+  : 'display:flex;gap:8px;margin-bottom:14px;align-items:stretch;'">
+  <div :style="orientation==='vertical'
+    ? 'display:flex;flex-direction:column;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);min-width:160px;'
+    : 'flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);'">
     <template v-for="t in tabs" :key="t?.id">
       <button v-if="t.visible===undefined || t.visible" @click="onTab(t.id)" :disabled="!isTabMode()"
         :style="{
-          flex:1, padding:'11px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
+          flex: orientation==='vertical' ? 'none' : 1,
+          width: orientation==='vertical' ? '100%' : 'auto',
+          padding:'11px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
           fontSize:'12.5px', borderRadius:'9px', transition:'all .18s',
-          display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'6px',
+          display:'inline-flex', alignItems:'center',
+          justifyContent: orientation==='vertical' ? 'flex-start' : 'center',
+          gap:'6px',
           opacity: isTabMode() ? 1 : 0.55,
           fontWeight: tab===t.id ? 800 : 600,
           background: (isTabMode() && tab===t.id) ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
@@ -71,7 +83,7 @@ window.FoTabBar = {
           fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px',
           background: (isTabMode() && tab===t.id) ? '#e8587a' : '#e5e7eb',
           color:      (isTabMode() && tab===t.id) ? '#fff' : '#666',
-          minWidth:'18px', textAlign:'center'
+          minWidth:'18px', textAlign:'center', marginLeft:'auto'
         }">{{ t.count }}</span>
       </button>
     </template>

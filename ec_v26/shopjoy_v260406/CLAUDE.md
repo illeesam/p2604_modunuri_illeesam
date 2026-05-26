@@ -619,20 +619,32 @@ Order/Claim/Dliv/Prod/Event/Cache/Coupon/Chatt Dtl + Prod/Member/Order/Claim/Dli
 
 **탭 컴포넌트 표준** ⭐ (2026-05-27):
 - BO: `<bo-tab-bar>` ([components/comp/BoComp.js](components/comp/BoComp.js)), FO: `<fo-tab-bar>` ([components/comp/FoComp.js](components/comp/FoComp.js))
-- 정적 마크업(`<div class="tab-bar-row">...</div>`) 직접 작성 금지 → 컴포넌트로 통일
-- Props: `:tabs` (배열) / `:tab` (현재) / `:tab-mode` ('tab'|'1col'|'2col'|'3col'|'4col') / `:show-modes` (Bool, FO 는 기본 false)
+- 정적 마크업(`<div class="tab-bar-row">...</div>` / `<div class="tab-nav">` / `<div class="tab-modes">`) 직접 작성 금지 → 컴포넌트로 통일
+- Props:
+  - `:tabs` (Array<{id,label,icon?,count?,visible?}>) — 탭 정의 배열. `visible` (Bool 또는 getter) 로 조건부 탭
+  - `:tab` (String) — 현재 선택된 탭 id
+  - `:tab-mode` (String) — `'tab'|'1col'|'2col'|'3col'|'4col'|'5col'` (기본 `'tab'`)
+  - `:show-modes` (Bool) — 뷰모드 아이콘 그룹 노출 (BO 기본 `true`, FO 기본 `false`, Hist 는 `false`)
+  - `:max-cols` (Number) — 뷰모드 최대 열 수, `4` 또는 `5` (기본 `4`). `5` 지정 시 `5▭` 추가
+  - `:orientation` (String) — `'horizontal'`(기본) 또는 `'vertical'` (탭 세로 배치)
 - Emits: `@tab-select="id => ..."`, `@mode-select="m => ..."`
 - 탭 정의는 **`computed` 금지 → `reactive([...])` 사용**. 동적 카운트는 `get count() { return list.length; }` getter 패턴
-- 변수명: 정적 탭 정의는 `tabs` (cf prefix 없음), 여러 reactive 값 조합으로만 가능한 경우만 `cfTabs`
+- 변수명: 정적 탭 정의는 `tabs` (cf prefix 없음), 여러 reactive 값 조합으로만 가능한 경우만 `cfTabs`/`storeTabs` 등 computed
 - 예시:
 ```js
 const tabs = reactive([
   { id: 'info',  label: '기본정보', icon: '📋' },
   { id: 'items', label: '배송항목', icon: '📦', get count() { return dlivItems.length; } },
+  { id: 'hist',  label: '회원 이력', icon: '🕒', get visible() { return !cfIsNew.value && !!form.memberId; } },
 ]);
-// template: <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-//             @tab-select="id => handleBtnAction('tab-select', id)"
-//             @mode-select="m => handleBtnAction('tab-mode', m)" />
+// template:
+// <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+//   @tab-select="id => handleBtnAction('tab-select', id)"
+//   @mode-select="m => handleBtnAction('tab-mode', m)" />
+// 세로 모드:
+// <bo-tab-bar :tabs="tabs" :tab="tab" orientation="vertical" :show-modes="false" ... />
+// 5열 뷰모드:
+// <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode" :max-cols="5" ... />
 ```
 - 상세 정책: [`_doc/정책서/base/base.코드스타일-admin-vue.md`](_doc/정책서/base/base.코드스타일-admin-vue.md) §0 watch / computed 최소화
 
