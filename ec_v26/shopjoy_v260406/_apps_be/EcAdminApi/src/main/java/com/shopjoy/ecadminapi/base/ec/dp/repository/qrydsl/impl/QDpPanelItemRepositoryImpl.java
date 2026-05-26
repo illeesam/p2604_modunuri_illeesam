@@ -106,25 +106,28 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QDpPanelItem 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(i.contentTypeCd.likeIgnoreCase(pattern));
-            or.or(i.dispEnv.likeIgnoreCase(pattern));
-            or.or(i.dispYn.likeIgnoreCase(pattern));
-            or.or(i.panelId.likeIgnoreCase(pattern));
-            or.or(i.panelItemId.likeIgnoreCase(pattern));
-            or.or(i.siteId.likeIgnoreCase(pattern));
-            or.or(i.titleShowYn.likeIgnoreCase(pattern));
-            or.or(i.useYn.likeIgnoreCase(pattern));
-            or.or(i.visibilityTargets.likeIgnoreCase(pattern));
-            or.or(i.widgetConfigJson.likeIgnoreCase(pattern));
-            or.or(i.widgetContent.likeIgnoreCase(pattern));
-            or.or(i.widgetLibId.likeIgnoreCase(pattern));
-            or.or(i.widgetLibRefYn.likeIgnoreCase(pattern));
-            or.or(i.widgetTitle.likeIgnoreCase(pattern));
-            or.or(i.widgetTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentTypeCd,")) or.or(i.contentTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dispEnv,")) or.or(i.dispEnv.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dispYn,")) or.or(i.dispYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",panelId,")) or.or(i.panelId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",panelItemId,")) or.or(i.panelItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(i.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",titleShowYn,")) or.or(i.titleShowYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(i.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",visibilityTargets,")) or.or(i.visibilityTargets.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetConfigJson,")) or.or(i.widgetConfigJson.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetContent,")) or.or(i.widgetContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetLibId,")) or.or(i.widgetLibId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetLibRefYn,")) or.or(i.widgetLibRefYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetTitle,")) or.or(i.widgetTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetTypeCd,")) or.or(i.widgetTypeCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

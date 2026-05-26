@@ -150,24 +150,27 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyhApiLog 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.apiNm.likeIgnoreCase(pattern));
-            or.or(l.apiTypeCd.likeIgnoreCase(pattern));
-            or.or(l.cmdNm.likeIgnoreCase(pattern));
-            or.or(l.endpoint.likeIgnoreCase(pattern));
-            or.or(l.errorMsg.likeIgnoreCase(pattern));
-            or.or(l.logId.likeIgnoreCase(pattern));
-            or.or(l.methodCd.likeIgnoreCase(pattern));
-            or.or(l.refId.likeIgnoreCase(pattern));
-            or.or(l.refTypeCd.likeIgnoreCase(pattern));
-            or.or(l.reqBody.likeIgnoreCase(pattern));
-            or.or(l.resBody.likeIgnoreCase(pattern));
-            or.or(l.resultCd.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
-            or.or(l.uiNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apiNm,")) or.or(l.apiNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apiTypeCd,")) or.or(l.apiTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cmdNm,")) or.or(l.cmdNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",endpoint,")) or.or(l.endpoint.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",errorMsg,")) or.or(l.errorMsg.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",methodCd,")) or.or(l.methodCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refTypeCd,")) or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqBody,")) or.or(l.reqBody.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",resBody,")) or.or(l.resBody.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",resultCd,")) or.or(l.resultCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiNm,")) or.or(l.uiNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

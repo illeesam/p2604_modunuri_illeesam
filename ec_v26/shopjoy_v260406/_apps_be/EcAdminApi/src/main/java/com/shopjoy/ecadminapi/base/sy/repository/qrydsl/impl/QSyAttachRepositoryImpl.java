@@ -120,30 +120,33 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyAttach 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(a.attachGrpId.likeIgnoreCase(pattern));
-            or.or(a.attachId.likeIgnoreCase(pattern));
-            or.or(a.attachMemo.likeIgnoreCase(pattern));
-            or.or(a.attachUrl.likeIgnoreCase(pattern));
-            or.or(a.cdnHost.likeIgnoreCase(pattern));
-            or.or(a.cdnImgUrl.likeIgnoreCase(pattern));
-            or.or(a.cdnThumbUrl.likeIgnoreCase(pattern));
-            or.or(a.fileExt.likeIgnoreCase(pattern));
-            or.or(a.fileNm.likeIgnoreCase(pattern));
-            or.or(a.mimeTypeCd.likeIgnoreCase(pattern));
-            or.or(a.physicalPath.likeIgnoreCase(pattern));
-            or.or(a.siteId.likeIgnoreCase(pattern));
-            or.or(a.storagePath.likeIgnoreCase(pattern));
-            or.or(a.storageType.likeIgnoreCase(pattern));
-            or.or(a.storedNm.likeIgnoreCase(pattern));
-            or.or(a.thumbCdnUrl.likeIgnoreCase(pattern));
-            or.or(a.thumbFileNm.likeIgnoreCase(pattern));
-            or.or(a.thumbGeneratedYn.likeIgnoreCase(pattern));
-            or.or(a.thumbStoredNm.likeIgnoreCase(pattern));
-            or.or(a.thumbUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachGrpId,")) or.or(a.attachGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachId,")) or.or(a.attachId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachMemo,")) or.or(a.attachMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachUrl,")) or.or(a.attachUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cdnHost,")) or.or(a.cdnHost.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cdnImgUrl,")) or.or(a.cdnImgUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cdnThumbUrl,")) or.or(a.cdnThumbUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",fileExt,")) or.or(a.fileExt.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",fileNm,")) or.or(a.fileNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",mimeTypeCd,")) or.or(a.mimeTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",physicalPath,")) or.or(a.physicalPath.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",storagePath,")) or.or(a.storagePath.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",storageType,")) or.or(a.storageType.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",storedNm,")) or.or(a.storedNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbCdnUrl,")) or.or(a.thumbCdnUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbFileNm,")) or.or(a.thumbFileNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbGeneratedYn,")) or.or(a.thumbGeneratedYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbStoredNm,")) or.or(a.thumbStoredNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbUrl,")) or.or(a.thumbUrl.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

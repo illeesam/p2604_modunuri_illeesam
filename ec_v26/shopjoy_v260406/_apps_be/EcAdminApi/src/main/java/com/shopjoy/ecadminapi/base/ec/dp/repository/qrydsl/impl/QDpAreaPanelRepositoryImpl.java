@@ -93,18 +93,21 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QDpAreaPanel 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(p.areaId.likeIgnoreCase(pattern));
-            or.or(p.areaPanelId.likeIgnoreCase(pattern));
-            or.or(p.dispEnv.likeIgnoreCase(pattern));
-            or.or(p.dispYn.likeIgnoreCase(pattern));
-            or.or(p.panelId.likeIgnoreCase(pattern));
-            or.or(p.siteId.likeIgnoreCase(pattern));
-            or.or(p.useYn.likeIgnoreCase(pattern));
-            or.or(p.visibilityTargets.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",areaId,")) or.or(p.areaId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",areaPanelId,")) or.or(p.areaPanelId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dispEnv,")) or.or(p.dispEnv.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dispYn,")) or.or(p.dispYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",panelId,")) or.or(p.panelId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(p.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",visibilityTargets,")) or.or(p.visibilityTargets.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

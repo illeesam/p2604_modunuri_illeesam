@@ -131,20 +131,23 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyCode 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.childCodeValues.likeIgnoreCase(pattern));
-            or.or(c.codeGrp.likeIgnoreCase(pattern));
-            or.or(c.codeId.likeIgnoreCase(pattern));
-            or.or(c.codeLabel.likeIgnoreCase(pattern));
-            or.or(c.codeOpt1.likeIgnoreCase(pattern));
-            or.or(c.codeRemark.likeIgnoreCase(pattern));
-            or.or(c.codeValue.likeIgnoreCase(pattern));
-            or.or(c.parentCodeValue.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
-            or.or(c.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",childCodeValues,")) or.or(c.childCodeValues.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeGrp,")) or.or(c.codeGrp.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeId,")) or.or(c.codeId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeLabel,")) or.or(c.codeLabel.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeOpt1,")) or.or(c.codeOpt1.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeRemark,")) or.or(c.codeRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeValue,")) or.or(c.codeValue.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",parentCodeValue,")) or.or(c.parentCodeValue.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(c.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

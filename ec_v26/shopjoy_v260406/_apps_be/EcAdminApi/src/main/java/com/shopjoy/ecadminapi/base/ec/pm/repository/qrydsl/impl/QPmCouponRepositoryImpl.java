@@ -153,27 +153,30 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QPmCoupon 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.couponCd.likeIgnoreCase(pattern));
-            or.or(c.couponDesc.likeIgnoreCase(pattern));
-            or.or(c.couponId.likeIgnoreCase(pattern));
-            or.or(c.couponNm.likeIgnoreCase(pattern));
-            or.or(c.couponStatusCd.likeIgnoreCase(pattern));
-            or.or(c.couponStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(c.couponTypeCd.likeIgnoreCase(pattern));
-            or.or(c.dvcMappYn.likeIgnoreCase(pattern));
-            or.or(c.dvcMwebYn.likeIgnoreCase(pattern));
-            or.or(c.dvcPcYn.likeIgnoreCase(pattern));
-            or.or(c.memGradeCd.likeIgnoreCase(pattern));
-            or.or(c.memo.likeIgnoreCase(pattern));
-            or.or(c.sellerCdivRemark.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
-            or.or(c.targetTypeCd.likeIgnoreCase(pattern));
-            or.or(c.targetValue.likeIgnoreCase(pattern));
-            or.or(c.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponCd,")) or.or(c.couponCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponDesc,")) or.or(c.couponDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponId,")) or.or(c.couponId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponNm,")) or.or(c.couponNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponStatusCd,")) or.or(c.couponStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponStatusCdBefore,")) or.or(c.couponStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponTypeCd,")) or.or(c.couponTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dvcMappYn,")) or.or(c.dvcMappYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dvcMwebYn,")) or.or(c.dvcMwebYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dvcPcYn,")) or.or(c.dvcPcYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memGradeCd,")) or.or(c.memGradeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memo,")) or.or(c.memo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sellerCdivRemark,")) or.or(c.sellerCdivRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",targetTypeCd,")) or.or(c.targetTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",targetValue,")) or.or(c.targetValue.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(c.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

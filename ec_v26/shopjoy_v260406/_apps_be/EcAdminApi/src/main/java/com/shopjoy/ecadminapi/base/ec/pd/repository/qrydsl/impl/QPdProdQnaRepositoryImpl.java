@@ -131,25 +131,28 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdProdQna 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(q.answContent.likeIgnoreCase(pattern));
-            or.or(q.answUserId.likeIgnoreCase(pattern));
-            or.or(q.answYn.likeIgnoreCase(pattern));
-            or.or(q.dispYn.likeIgnoreCase(pattern));
-            or.or(q.memberId.likeIgnoreCase(pattern));
-            or.or(q.orderId.likeIgnoreCase(pattern));
-            or.or(q.prodId.likeIgnoreCase(pattern));
-            or.or(q.qnaContent.likeIgnoreCase(pattern));
-            or.or(q.qnaId.likeIgnoreCase(pattern));
-            or.or(q.qnaTitle.likeIgnoreCase(pattern));
-            or.or(q.qnaTypeCd.likeIgnoreCase(pattern));
-            or.or(q.scrtYn.likeIgnoreCase(pattern));
-            or.or(q.siteId.likeIgnoreCase(pattern));
-            or.or(q.skuId.likeIgnoreCase(pattern));
-            or.or(q.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",answContent,")) or.or(q.answContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",answUserId,")) or.or(q.answUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",answYn,")) or.or(q.answYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dispYn,")) or.or(q.dispYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(q.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(q.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(q.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",qnaContent,")) or.or(q.qnaContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",qnaId,")) or.or(q.qnaId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",qnaTitle,")) or.or(q.qnaTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",qnaTypeCd,")) or.or(q.qnaTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",scrtYn,")) or.or(q.scrtYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(q.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",skuId,")) or.or(q.skuId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(q.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -120,21 +120,24 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyContact 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.answerUserId.likeIgnoreCase(pattern));
-            or.or(c.attachGrpId.likeIgnoreCase(pattern));
-            or.or(c.categoryCd.likeIgnoreCase(pattern));
-            or.or(c.contactAnswer.likeIgnoreCase(pattern));
-            or.or(c.contactContent.likeIgnoreCase(pattern));
-            or.or(c.contactId.likeIgnoreCase(pattern));
-            or.or(c.contactStatusCd.likeIgnoreCase(pattern));
-            or.or(c.contactTitle.likeIgnoreCase(pattern));
-            or.or(c.memberId.likeIgnoreCase(pattern));
-            or.or(c.memberNm.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",answerUserId,")) or.or(c.answerUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachGrpId,")) or.or(c.attachGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryCd,")) or.or(c.categoryCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contactAnswer,")) or.or(c.contactAnswer.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contactContent,")) or.or(c.contactContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contactId,")) or.or(c.contactId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contactStatusCd,")) or.or(c.contactStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contactTitle,")) or.or(c.contactTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(c.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberNm,")) or.or(c.memberNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

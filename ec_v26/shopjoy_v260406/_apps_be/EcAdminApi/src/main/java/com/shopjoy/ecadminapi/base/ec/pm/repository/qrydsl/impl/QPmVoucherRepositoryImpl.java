@@ -138,18 +138,21 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPmVoucher 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(v.siteId.likeIgnoreCase(pattern));
-            or.or(v.useYn.likeIgnoreCase(pattern));
-            or.or(v.voucherDesc.likeIgnoreCase(pattern));
-            or.or(v.voucherId.likeIgnoreCase(pattern));
-            or.or(v.voucherNm.likeIgnoreCase(pattern));
-            or.or(v.voucherStatusCd.likeIgnoreCase(pattern));
-            or.or(v.voucherStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(v.voucherTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(v.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(v.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherDesc,")) or.or(v.voucherDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherId,")) or.or(v.voucherId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherNm,")) or.or(v.voucherNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherStatusCd,")) or.or(v.voucherStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherStatusCdBefore,")) or.or(v.voucherStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherTypeCd,")) or.or(v.voucherTypeCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

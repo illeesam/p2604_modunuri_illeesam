@@ -162,25 +162,28 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyhUserTokenLog 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.accessToken.likeIgnoreCase(pattern));
-            or.or(l.actionCd.likeIgnoreCase(pattern));
-            or.or(l.authId.likeIgnoreCase(pattern));
-            or.or(l.cmdNm.likeIgnoreCase(pattern));
-            or.or(l.deviceInfo.likeIgnoreCase(pattern));
-            or.or(l.ip.likeIgnoreCase(pattern));
-            or.or(l.logId.likeIgnoreCase(pattern));
-            or.or(l.loginLogId.likeIgnoreCase(pattern));
-            or.or(l.prevToken.likeIgnoreCase(pattern));
-            or.or(l.refreshToken.likeIgnoreCase(pattern));
-            or.or(l.revokeReason.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
-            or.or(l.tokenTypeCd.likeIgnoreCase(pattern));
-            or.or(l.uiNm.likeIgnoreCase(pattern));
-            or.or(l.userId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",accessToken,")) or.or(l.accessToken.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",actionCd,")) or.or(l.actionCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",authId,")) or.or(l.authId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cmdNm,")) or.or(l.cmdNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",deviceInfo,")) or.or(l.deviceInfo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",ip,")) or.or(l.ip.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",loginLogId,")) or.or(l.loginLogId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prevToken,")) or.or(l.prevToken.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refreshToken,")) or.or(l.refreshToken.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",revokeReason,")) or.or(l.revokeReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",tokenTypeCd,")) or.or(l.tokenTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiNm,")) or.or(l.uiNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userId,")) or.or(l.userId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

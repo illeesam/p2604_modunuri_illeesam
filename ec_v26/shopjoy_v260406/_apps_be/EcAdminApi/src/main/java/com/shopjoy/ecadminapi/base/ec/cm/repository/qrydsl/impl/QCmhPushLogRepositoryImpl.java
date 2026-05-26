@@ -135,22 +135,25 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QCmhPushLog 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.channelCd.likeIgnoreCase(pattern));
-            or.or(l.failReason.likeIgnoreCase(pattern));
-            or.or(l.logId.likeIgnoreCase(pattern));
-            or.or(l.memberId.likeIgnoreCase(pattern));
-            or.or(l.pushLogContent.likeIgnoreCase(pattern));
-            or.or(l.pushLogTitle.likeIgnoreCase(pattern));
-            or.or(l.recvAddr.likeIgnoreCase(pattern));
-            or.or(l.refId.likeIgnoreCase(pattern));
-            or.or(l.refTypeCd.likeIgnoreCase(pattern));
-            or.or(l.resultCd.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
-            or.or(l.templateId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",channelCd,")) or.or(l.channelCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",failReason,")) or.or(l.failReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(l.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pushLogContent,")) or.or(l.pushLogContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pushLogTitle,")) or.or(l.pushLogTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",recvAddr,")) or.or(l.recvAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refTypeCd,")) or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",resultCd,")) or.or(l.resultCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateId,")) or.or(l.templateId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

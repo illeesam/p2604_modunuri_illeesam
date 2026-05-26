@@ -119,22 +119,25 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyBbs 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(b.attachGrpId.likeIgnoreCase(pattern));
-            or.or(b.authorNm.likeIgnoreCase(pattern));
-            or.or(b.bbmId.likeIgnoreCase(pattern));
-            or.or(b.bbsId.likeIgnoreCase(pattern));
-            or.or(b.bbsStatusCd.likeIgnoreCase(pattern));
-            or.or(b.bbsTitle.likeIgnoreCase(pattern));
-            or.or(b.contentHtml.likeIgnoreCase(pattern));
-            or.or(b.isFixed.likeIgnoreCase(pattern));
-            or.or(b.memberId.likeIgnoreCase(pattern));
-            or.or(b.parentBbsId.likeIgnoreCase(pattern));
-            or.or(b.pathId.likeIgnoreCase(pattern));
-            or.or(b.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachGrpId,")) or.or(b.attachGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",authorNm,")) or.or(b.authorNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbmId,")) or.or(b.bbmId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbsId,")) or.or(b.bbsId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbsStatusCd,")) or.or(b.bbsStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbsTitle,")) or.or(b.bbsTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentHtml,")) or.or(b.contentHtml.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",isFixed,")) or.or(b.isFixed.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(b.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",parentBbsId,")) or.or(b.parentBbsId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(b.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

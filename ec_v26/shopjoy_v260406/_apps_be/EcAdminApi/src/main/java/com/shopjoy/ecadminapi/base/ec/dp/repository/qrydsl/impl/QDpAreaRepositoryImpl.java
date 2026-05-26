@@ -102,19 +102,22 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QDpArea 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(a.areaCd.likeIgnoreCase(pattern));
-            or.or(a.areaDesc.likeIgnoreCase(pattern));
-            or.or(a.areaId.likeIgnoreCase(pattern));
-            or.or(a.areaNm.likeIgnoreCase(pattern));
-            or.or(a.areaTypeCd.likeIgnoreCase(pattern));
-            or.or(a.pathId.likeIgnoreCase(pattern));
-            or.or(a.siteId.likeIgnoreCase(pattern));
-            or.or(a.uiId.likeIgnoreCase(pattern));
-            or.or(a.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",areaCd,")) or.or(a.areaCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",areaDesc,")) or.or(a.areaDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",areaId,")) or.or(a.areaId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",areaNm,")) or.or(a.areaNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",areaTypeCd,")) or.or(a.areaTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(a.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiId,")) or.or(a.uiId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(a.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

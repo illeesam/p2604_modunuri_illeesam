@@ -142,22 +142,25 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QStSettlePay 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (c != null && StringUtils.hasText(c.getSearchValue())) {
             String pattern = "%" + c.getSearchValue() + "%";
+            String __typeRaw = c.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(p.bankAccount.likeIgnoreCase(pattern));
-            or.or(p.bankHolder.likeIgnoreCase(pattern));
-            or.or(p.bankNm.likeIgnoreCase(pattern));
-            or.or(p.payBy.likeIgnoreCase(pattern));
-            or.or(p.payMethodCd.likeIgnoreCase(pattern));
-            or.or(p.payStatusCd.likeIgnoreCase(pattern));
-            or.or(p.payStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(p.settleId.likeIgnoreCase(pattern));
-            or.or(p.settlePayId.likeIgnoreCase(pattern));
-            or.or(p.settlePayMemo.likeIgnoreCase(pattern));
-            or.or(p.siteId.likeIgnoreCase(pattern));
-            or.or(p.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bankAccount,")) or.or(p.bankAccount.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bankHolder,")) or.or(p.bankHolder.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bankNm,")) or.or(p.bankNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payBy,")) or.or(p.payBy.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payMethodCd,")) or.or(p.payMethodCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payStatusCd,")) or.or(p.payStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payStatusCdBefore,")) or.or(p.payStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleId,")) or.or(p.settleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settlePayId,")) or.or(p.settlePayId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settlePayMemo,")) or.or(p.settlePayMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(p.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

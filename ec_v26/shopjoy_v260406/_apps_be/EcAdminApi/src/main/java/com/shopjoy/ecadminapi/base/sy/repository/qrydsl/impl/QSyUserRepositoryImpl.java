@@ -174,23 +174,26 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyUser 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(syUser.authMethodCd.likeIgnoreCase(pattern));
-            or.or(syUser.deptId.likeIgnoreCase(pattern));
-            or.or(syUser.loginId.likeIgnoreCase(pattern));
-            or.or(syUser.loginPwdHash.likeIgnoreCase(pattern));
-            or.or(syUser.profileAttachId.likeIgnoreCase(pattern));
-            or.or(syUser.roleId.likeIgnoreCase(pattern));
-            or.or(syUser.siteId.likeIgnoreCase(pattern));
-            or.or(syUser.userEmail.likeIgnoreCase(pattern));
-            or.or(syUser.userId.likeIgnoreCase(pattern));
-            or.or(syUser.userMemo.likeIgnoreCase(pattern));
-            or.or(syUser.userNm.likeIgnoreCase(pattern));
-            or.or(syUser.userPhone.likeIgnoreCase(pattern));
-            or.or(syUser.userStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",authMethodCd,")) or.or(syUser.authMethodCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",deptId,")) or.or(syUser.deptId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",loginId,")) or.or(syUser.loginId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",loginPwdHash,")) or.or(syUser.loginPwdHash.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",profileAttachId,")) or.or(syUser.profileAttachId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",roleId,")) or.or(syUser.roleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(syUser.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userEmail,")) or.or(syUser.userEmail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userId,")) or.or(syUser.userId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userMemo,")) or.or(syUser.userMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userNm,")) or.or(syUser.userNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userPhone,")) or.or(syUser.userPhone.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userStatusCd,")) or.or(syUser.userStatusCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) b.and(or);
         }
         return b;

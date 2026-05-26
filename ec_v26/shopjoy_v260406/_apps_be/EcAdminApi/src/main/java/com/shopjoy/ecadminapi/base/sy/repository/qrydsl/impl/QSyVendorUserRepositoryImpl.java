@@ -148,24 +148,27 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyVendorUser 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(u.authYn.likeIgnoreCase(pattern));
-            or.or(u.isMain.likeIgnoreCase(pattern));
-            or.or(u.memberNm.likeIgnoreCase(pattern));
-            or.or(u.positionCd.likeIgnoreCase(pattern));
-            or.or(u.siteId.likeIgnoreCase(pattern));
-            or.or(u.userId.likeIgnoreCase(pattern));
-            or.or(u.vendorId.likeIgnoreCase(pattern));
-            or.or(u.vendorUserDeptNm.likeIgnoreCase(pattern));
-            or.or(u.vendorUserEmail.likeIgnoreCase(pattern));
-            or.or(u.vendorUserId.likeIgnoreCase(pattern));
-            or.or(u.vendorUserMobile.likeIgnoreCase(pattern));
-            or.or(u.vendorUserPhone.likeIgnoreCase(pattern));
-            or.or(u.vendorUserRemark.likeIgnoreCase(pattern));
-            or.or(u.vendorUserStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",authYn,")) or.or(u.authYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",isMain,")) or.or(u.isMain.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberNm,")) or.or(u.memberNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",positionCd,")) or.or(u.positionCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(u.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userId,")) or.or(u.userId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(u.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserDeptNm,")) or.or(u.vendorUserDeptNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserEmail,")) or.or(u.vendorUserEmail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserId,")) or.or(u.vendorUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserMobile,")) or.or(u.vendorUserMobile.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserPhone,")) or.or(u.vendorUserPhone.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserRemark,")) or.or(u.vendorUserRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserStatusCd,")) or.or(u.vendorUserStatusCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

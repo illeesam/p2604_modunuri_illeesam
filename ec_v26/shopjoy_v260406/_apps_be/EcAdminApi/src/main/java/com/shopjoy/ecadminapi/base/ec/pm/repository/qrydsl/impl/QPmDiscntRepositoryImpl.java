@@ -134,23 +134,26 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QPmDiscnt 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(d.discntDesc.likeIgnoreCase(pattern));
-            or.or(d.discntId.likeIgnoreCase(pattern));
-            or.or(d.discntNm.likeIgnoreCase(pattern));
-            or.or(d.discntStatusCd.likeIgnoreCase(pattern));
-            or.or(d.discntStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(d.discntTargetCd.likeIgnoreCase(pattern));
-            or.or(d.discntTypeCd.likeIgnoreCase(pattern));
-            or.or(d.dvcMappYn.likeIgnoreCase(pattern));
-            or.or(d.dvcMwebYn.likeIgnoreCase(pattern));
-            or.or(d.dvcPcYn.likeIgnoreCase(pattern));
-            or.or(d.memGradeCd.likeIgnoreCase(pattern));
-            or.or(d.siteId.likeIgnoreCase(pattern));
-            or.or(d.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntDesc,")) or.or(d.discntDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntId,")) or.or(d.discntId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntNm,")) or.or(d.discntNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntStatusCd,")) or.or(d.discntStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntStatusCdBefore,")) or.or(d.discntStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntTargetCd,")) or.or(d.discntTargetCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntTypeCd,")) or.or(d.discntTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dvcMappYn,")) or.or(d.dvcMappYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dvcMwebYn,")) or.or(d.dvcMwebYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dvcPcYn,")) or.or(d.dvcPcYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memGradeCd,")) or.or(d.memGradeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(d.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(d.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

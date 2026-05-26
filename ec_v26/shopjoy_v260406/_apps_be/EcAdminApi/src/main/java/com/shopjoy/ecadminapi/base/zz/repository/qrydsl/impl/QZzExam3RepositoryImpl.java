@@ -141,18 +141,21 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
             if (all || types.contains(",col35,"))     or.or(e.col35.containsIgnoreCase(v));
             if (or.getValue() != null) w.and(or);
         }
-        /* searchValue LIKE OR — QZzExam3 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
             String pattern = "%" + search.getSearchValue() + "%";
+            String __typeRaw = search.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(e.col31.likeIgnoreCase(pattern));
-            or.or(e.col32.likeIgnoreCase(pattern));
-            or.or(e.col33.likeIgnoreCase(pattern));
-            or.or(e.col34.likeIgnoreCase(pattern));
-            or.or(e.col35.likeIgnoreCase(pattern));
-            or.or(e.exam1Id.likeIgnoreCase(pattern));
-            or.or(e.exam2Id.likeIgnoreCase(pattern));
-            or.or(e.exam3Id.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col31,")) or.or(e.col31.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col32,")) or.or(e.col32.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col33,")) or.or(e.col33.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col34,")) or.or(e.col34.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col35,")) or.or(e.col35.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",exam1Id,")) or.or(e.exam1Id.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",exam2Id,")) or.or(e.exam2Id.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",exam3Id,")) or.or(e.exam3Id.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

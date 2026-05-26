@@ -138,22 +138,25 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPmSaveIssue 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(i.issueStatusCd.likeIgnoreCase(pattern));
-            or.or(i.issueStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(i.memberId.likeIgnoreCase(pattern));
-            or.or(i.orderId.likeIgnoreCase(pattern));
-            or.or(i.orderItemId.likeIgnoreCase(pattern));
-            or.or(i.prodId.likeIgnoreCase(pattern));
-            or.or(i.refId.likeIgnoreCase(pattern));
-            or.or(i.refTypeCd.likeIgnoreCase(pattern));
-            or.or(i.saveIssueId.likeIgnoreCase(pattern));
-            or.or(i.saveIssueTypeCd.likeIgnoreCase(pattern));
-            or.or(i.saveMemo.likeIgnoreCase(pattern));
-            or.or(i.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",issueStatusCd,")) or.or(i.issueStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",issueStatusCdBefore,")) or.or(i.issueStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(i.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(i.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemId,")) or.or(i.orderItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(i.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(i.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refTypeCd,")) or.or(i.refTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",saveIssueId,")) or.or(i.saveIssueId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",saveIssueTypeCd,")) or.or(i.saveIssueTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",saveMemo,")) or.or(i.saveMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(i.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

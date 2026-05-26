@@ -131,18 +131,21 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdReview 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(r.memberId.likeIgnoreCase(pattern));
-            or.or(r.prodId.likeIgnoreCase(pattern));
-            or.or(r.reviewContent.likeIgnoreCase(pattern));
-            or.or(r.reviewId.likeIgnoreCase(pattern));
-            or.or(r.reviewStatusCd.likeIgnoreCase(pattern));
-            or.or(r.reviewStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(r.reviewTitle.likeIgnoreCase(pattern));
-            or.or(r.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(r.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(r.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewContent,")) or.or(r.reviewContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewId,")) or.or(r.reviewId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewStatusCd,")) or.or(r.reviewStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewStatusCdBefore,")) or.or(r.reviewStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewTitle,")) or.or(r.reviewTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(r.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

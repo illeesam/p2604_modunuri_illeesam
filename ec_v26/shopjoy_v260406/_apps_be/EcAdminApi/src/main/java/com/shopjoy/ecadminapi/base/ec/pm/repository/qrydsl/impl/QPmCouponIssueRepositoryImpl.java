@@ -155,16 +155,19 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QPmCouponIssue 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(ci.couponId.likeIgnoreCase(pattern));
-            or.or(ci.issueId.likeIgnoreCase(pattern));
-            or.or(ci.memberId.likeIgnoreCase(pattern));
-            or.or(ci.orderId.likeIgnoreCase(pattern));
-            or.or(ci.siteId.likeIgnoreCase(pattern));
-            or.or(ci.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponId,")) or.or(ci.couponId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",issueId,")) or.or(ci.issueId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(ci.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(ci.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(ci.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(ci.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -119,21 +119,24 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyBatch 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(b.batchCode.likeIgnoreCase(pattern));
-            or.or(b.batchCycleCd.likeIgnoreCase(pattern));
-            or.or(b.batchDesc.likeIgnoreCase(pattern));
-            or.or(b.batchId.likeIgnoreCase(pattern));
-            or.or(b.batchMemo.likeIgnoreCase(pattern));
-            or.or(b.batchNm.likeIgnoreCase(pattern));
-            or.or(b.batchRunStatus.likeIgnoreCase(pattern));
-            or.or(b.batchStatusCd.likeIgnoreCase(pattern));
-            or.or(b.cronExpr.likeIgnoreCase(pattern));
-            or.or(b.pathId.likeIgnoreCase(pattern));
-            or.or(b.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchCode,")) or.or(b.batchCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchCycleCd,")) or.or(b.batchCycleCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchDesc,")) or.or(b.batchDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchId,")) or.or(b.batchId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchMemo,")) or.or(b.batchMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchNm,")) or.or(b.batchNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchRunStatus,")) or.or(b.batchRunStatus.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchStatusCd,")) or.or(b.batchStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cronExpr,")) or.or(b.cronExpr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(b.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

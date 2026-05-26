@@ -132,19 +132,22 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdReviewComment 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.parentReplyId.likeIgnoreCase(pattern));
-            or.or(c.replyStatusCd.likeIgnoreCase(pattern));
-            or.or(c.reviewCommentId.likeIgnoreCase(pattern));
-            or.or(c.reviewId.likeIgnoreCase(pattern));
-            or.or(c.reviewReplyContent.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
-            or.or(c.writerId.likeIgnoreCase(pattern));
-            or.or(c.writerNm.likeIgnoreCase(pattern));
-            or.or(c.writerTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",parentReplyId,")) or.or(c.parentReplyId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",replyStatusCd,")) or.or(c.replyStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewCommentId,")) or.or(c.reviewCommentId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewId,")) or.or(c.reviewId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewReplyContent,")) or.or(c.reviewReplyContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",writerId,")) or.or(c.writerId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",writerNm,")) or.or(c.writerNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",writerTypeCd,")) or.or(c.writerTypeCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

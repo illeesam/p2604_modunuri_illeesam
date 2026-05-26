@@ -232,34 +232,37 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdProd 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(p.adltYn.likeIgnoreCase(pattern));
-            or.or(p.advrtStmt.likeIgnoreCase(pattern));
-            or.or(p.brandId.likeIgnoreCase(pattern));
-            or.or(p.categoryId.likeIgnoreCase(pattern));
-            or.or(p.contentHtml.likeIgnoreCase(pattern));
-            or.or(p.couponUseYn.likeIgnoreCase(pattern));
-            or.or(p.discntUseYn.likeIgnoreCase(pattern));
-            or.or(p.dlivTmpltId.likeIgnoreCase(pattern));
-            or.or(p.isBest.likeIgnoreCase(pattern));
-            or.or(p.isNew.likeIgnoreCase(pattern));
-            or.or(p.mdUserId.likeIgnoreCase(pattern));
-            or.or(p.prodCode.likeIgnoreCase(pattern));
-            or.or(p.prodId.likeIgnoreCase(pattern));
-            or.or(p.prodNm.likeIgnoreCase(pattern));
-            or.or(p.prodStatusCd.likeIgnoreCase(pattern));
-            or.or(p.prodStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(p.prodTypeCd.likeIgnoreCase(pattern));
-            or.or(p.sameDayDlivYn.likeIgnoreCase(pattern));
-            or.or(p.saveUseYn.likeIgnoreCase(pattern));
-            or.or(p.siteId.likeIgnoreCase(pattern));
-            or.or(p.sizeInfoCd.likeIgnoreCase(pattern));
-            or.or(p.soldOutYn.likeIgnoreCase(pattern));
-            or.or(p.thumbnailUrl.likeIgnoreCase(pattern));
-            or.or(p.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",adltYn,")) or.or(p.adltYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",advrtStmt,")) or.or(p.advrtStmt.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",brandId,")) or.or(p.brandId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryId,")) or.or(p.categoryId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentHtml,")) or.or(p.contentHtml.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponUseYn,")) or.or(p.couponUseYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntUseYn,")) or.or(p.discntUseYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivTmpltId,")) or.or(p.dlivTmpltId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",isBest,")) or.or(p.isBest.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",isNew,")) or.or(p.isNew.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",mdUserId,")) or.or(p.mdUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodCode,")) or.or(p.prodCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(p.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodNm,")) or.or(p.prodNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodStatusCd,")) or.or(p.prodStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodStatusCdBefore,")) or.or(p.prodStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodTypeCd,")) or.or(p.prodTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sameDayDlivYn,")) or.or(p.sameDayDlivYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",saveUseYn,")) or.or(p.saveUseYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sizeInfoCd,")) or.or(p.sizeInfoCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",soldOutYn,")) or.or(p.soldOutYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbnailUrl,")) or.or(p.thumbnailUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(p.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

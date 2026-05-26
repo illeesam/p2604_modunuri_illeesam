@@ -130,19 +130,22 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
                 w.and(h.regDate.goe(start)).and(h.regDate.lt(endExcl));
             }
         }
-        /* searchValue LIKE OR — QPdhProdSkuChgHist 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(h.afterVal.likeIgnoreCase(pattern));
-            or.or(h.beforeVal.likeIgnoreCase(pattern));
-            or.or(h.chgBy.likeIgnoreCase(pattern));
-            or.or(h.chgReason.likeIgnoreCase(pattern));
-            or.or(h.chgTypeCd.likeIgnoreCase(pattern));
-            or.or(h.histId.likeIgnoreCase(pattern));
-            or.or(h.prodId.likeIgnoreCase(pattern));
-            or.or(h.siteId.likeIgnoreCase(pattern));
-            or.or(h.skuId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",afterVal,")) or.or(h.afterVal.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",beforeVal,")) or.or(h.beforeVal.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgBy,")) or.or(h.chgBy.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgReason,")) or.or(h.chgReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgTypeCd,")) or.or(h.chgTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",histId,")) or.or(h.histId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(h.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(h.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",skuId,")) or.or(h.skuId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -105,24 +105,27 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QDpWidget 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(w.dispEnv.likeIgnoreCase(pattern));
-            or.or(w.siteId.likeIgnoreCase(pattern));
-            or.or(w.thumbnailUrl.likeIgnoreCase(pattern));
-            or.or(w.titleShowYn.likeIgnoreCase(pattern));
-            or.or(w.useYn.likeIgnoreCase(pattern));
-            or.or(w.widgetConfigJson.likeIgnoreCase(pattern));
-            or.or(w.widgetContent.likeIgnoreCase(pattern));
-            or.or(w.widgetDesc.likeIgnoreCase(pattern));
-            or.or(w.widgetId.likeIgnoreCase(pattern));
-            or.or(w.widgetLibId.likeIgnoreCase(pattern));
-            or.or(w.widgetLibRefYn.likeIgnoreCase(pattern));
-            or.or(w.widgetNm.likeIgnoreCase(pattern));
-            or.or(w.widgetTitle.likeIgnoreCase(pattern));
-            or.or(w.widgetTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dispEnv,")) or.or(w.dispEnv.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(w.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbnailUrl,")) or.or(w.thumbnailUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",titleShowYn,")) or.or(w.titleShowYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(w.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetConfigJson,")) or.or(w.widgetConfigJson.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetContent,")) or.or(w.widgetContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetDesc,")) or.or(w.widgetDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetId,")) or.or(w.widgetId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetLibId,")) or.or(w.widgetLibId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetLibRefYn,")) or.or(w.widgetLibRefYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetNm,")) or.or(w.widgetNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetTitle,")) or.or(w.widgetTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",widgetTypeCd,")) or.or(w.widgetTypeCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w2.and(or);
         }
         return w2;

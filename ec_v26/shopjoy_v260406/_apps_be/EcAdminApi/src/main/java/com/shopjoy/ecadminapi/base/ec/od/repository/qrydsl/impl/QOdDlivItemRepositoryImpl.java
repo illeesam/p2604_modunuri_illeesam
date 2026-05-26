@@ -121,20 +121,23 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QOdDlivItem 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(i.dlivId.likeIgnoreCase(pattern));
-            or.or(i.dlivItemId.likeIgnoreCase(pattern));
-            or.or(i.dlivItemStatusCd.likeIgnoreCase(pattern));
-            or.or(i.dlivItemStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(i.dlivTypeCd.likeIgnoreCase(pattern));
-            or.or(i.optItemId1.likeIgnoreCase(pattern));
-            or.or(i.optItemId2.likeIgnoreCase(pattern));
-            or.or(i.orderItemId.likeIgnoreCase(pattern));
-            or.or(i.prodId.likeIgnoreCase(pattern));
-            or.or(i.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivId,")) or.or(i.dlivId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivItemId,")) or.or(i.dlivItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivItemStatusCd,")) or.or(i.dlivItemStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivItemStatusCdBefore,")) or.or(i.dlivItemStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivTypeCd,")) or.or(i.dlivTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId1,")) or.or(i.optItemId1.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId2,")) or.or(i.optItemId2.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemId,")) or.or(i.orderItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(i.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(i.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

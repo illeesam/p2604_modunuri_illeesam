@@ -135,17 +135,20 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
             if (all || types.contains(",col25,"))     or.or(e.col25.containsIgnoreCase(v));
             if (or.getValue() != null) w.and(or);
         }
-        /* searchValue LIKE OR — QZzExam2 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
             String pattern = "%" + search.getSearchValue() + "%";
+            String __typeRaw = search.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(e.col21.likeIgnoreCase(pattern));
-            or.or(e.col22.likeIgnoreCase(pattern));
-            or.or(e.col23.likeIgnoreCase(pattern));
-            or.or(e.col24.likeIgnoreCase(pattern));
-            or.or(e.col25.likeIgnoreCase(pattern));
-            or.or(e.exam1Id.likeIgnoreCase(pattern));
-            or.or(e.exam2Id.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col21,")) or.or(e.col21.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col22,")) or.or(e.col22.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col23,")) or.or(e.col23.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col24,")) or.or(e.col24.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col25,")) or.or(e.col25.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",exam1Id,")) or.or(e.exam1Id.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",exam2Id,")) or.or(e.exam2Id.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

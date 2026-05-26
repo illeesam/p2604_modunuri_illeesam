@@ -132,22 +132,25 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QPmEvent 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(e.eventContent.likeIgnoreCase(pattern));
-            or.or(e.eventDesc.likeIgnoreCase(pattern));
-            or.or(e.eventId.likeIgnoreCase(pattern));
-            or.or(e.eventNm.likeIgnoreCase(pattern));
-            or.or(e.eventStatusCd.likeIgnoreCase(pattern));
-            or.or(e.eventStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(e.eventTitle.likeIgnoreCase(pattern));
-            or.or(e.eventTypeCd.likeIgnoreCase(pattern));
-            or.or(e.imgUrl.likeIgnoreCase(pattern));
-            or.or(e.siteId.likeIgnoreCase(pattern));
-            or.or(e.targetTypeCd.likeIgnoreCase(pattern));
-            or.or(e.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventContent,")) or.or(e.eventContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventDesc,")) or.or(e.eventDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventId,")) or.or(e.eventId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventNm,")) or.or(e.eventNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventStatusCd,")) or.or(e.eventStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventStatusCdBefore,")) or.or(e.eventStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventTitle,")) or.or(e.eventTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventTypeCd,")) or.or(e.eventTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",imgUrl,")) or.or(e.imgUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(e.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",targetTypeCd,")) or.or(e.targetTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(e.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

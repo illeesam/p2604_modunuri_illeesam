@@ -131,16 +131,19 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
             if (all || types.contains(",col15,"))     or.or(e.col15.containsIgnoreCase(v));
             if (or.getValue() != null) w.and(or);
         }
-        /* searchValue LIKE OR — QZzExam1 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
             String pattern = "%" + search.getSearchValue() + "%";
+            String __typeRaw = search.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(e.col11.likeIgnoreCase(pattern));
-            or.or(e.col12.likeIgnoreCase(pattern));
-            or.or(e.col13.likeIgnoreCase(pattern));
-            or.or(e.col14.likeIgnoreCase(pattern));
-            or.or(e.col15.likeIgnoreCase(pattern));
-            or.or(e.exam1Id.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col11,")) or.or(e.col11.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col12,")) or.or(e.col12.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col13,")) or.or(e.col13.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col14,")) or.or(e.col14.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col15,")) or.or(e.col15.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",exam1Id,")) or.or(e.exam1Id.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

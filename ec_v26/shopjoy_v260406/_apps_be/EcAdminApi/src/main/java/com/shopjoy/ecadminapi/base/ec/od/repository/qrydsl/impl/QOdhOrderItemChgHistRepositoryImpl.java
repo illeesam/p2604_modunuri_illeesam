@@ -106,20 +106,23 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
                 w.and(h.regDate.goe(start)).and(h.regDate.lt(endExcl));
             }
         }
-        /* searchValue LIKE OR — QOdhOrderItemChgHist 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(h.afterVal.likeIgnoreCase(pattern));
-            or.or(h.beforeVal.likeIgnoreCase(pattern));
-            or.or(h.chgField.likeIgnoreCase(pattern));
-            or.or(h.chgReason.likeIgnoreCase(pattern));
-            or.or(h.chgTypeCd.likeIgnoreCase(pattern));
-            or.or(h.chgUserId.likeIgnoreCase(pattern));
-            or.or(h.orderId.likeIgnoreCase(pattern));
-            or.or(h.orderItemChgHistId.likeIgnoreCase(pattern));
-            or.or(h.orderItemId.likeIgnoreCase(pattern));
-            or.or(h.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",afterVal,")) or.or(h.afterVal.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",beforeVal,")) or.or(h.beforeVal.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgField,")) or.or(h.chgField.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgReason,")) or.or(h.chgReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgTypeCd,")) or.or(h.chgTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgUserId,")) or.or(h.chgUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(h.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemChgHistId,")) or.or(h.orderItemChgHistId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemId,")) or.or(h.orderItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(h.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -142,21 +142,24 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdhProdViewLog 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.device.likeIgnoreCase(pattern));
-            or.or(l.ip.likeIgnoreCase(pattern));
-            or.or(l.logId.likeIgnoreCase(pattern));
-            or.or(l.memberId.likeIgnoreCase(pattern));
-            or.or(l.prodId.likeIgnoreCase(pattern));
-            or.or(l.refId.likeIgnoreCase(pattern));
-            or.or(l.refNm.likeIgnoreCase(pattern));
-            or.or(l.referrer.likeIgnoreCase(pattern));
-            or.or(l.searchKw.likeIgnoreCase(pattern));
-            or.or(l.sessionKey.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",device,")) or.or(l.device.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",ip,")) or.or(l.ip.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(l.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(l.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refNm,")) or.or(l.refNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",referrer,")) or.or(l.referrer.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",searchKw,")) or.or(l.searchKw.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sessionKey,")) or.or(l.sessionKey.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

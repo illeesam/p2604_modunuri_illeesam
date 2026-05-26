@@ -131,17 +131,20 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QStSettleConfig 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.categoryId.likeIgnoreCase(pattern));
-            or.or(c.settleConfigId.likeIgnoreCase(pattern));
-            or.or(c.settleConfigRemark.likeIgnoreCase(pattern));
-            or.or(c.settleCycleCd.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
-            or.or(c.useYn.likeIgnoreCase(pattern));
-            or.or(c.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryId,")) or.or(c.categoryId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleConfigId,")) or.or(c.settleConfigId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleConfigRemark,")) or.or(c.settleConfigRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleCycleCd,")) or.or(c.settleCycleCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(c.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(c.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

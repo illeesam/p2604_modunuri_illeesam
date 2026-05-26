@@ -124,17 +124,20 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdProdSku 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (req != null && StringUtils.hasText(req.getSearchValue())) {
             String pattern = "%" + req.getSearchValue() + "%";
+            String __typeRaw = req.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(s.optItemId1.likeIgnoreCase(pattern));
-            or.or(s.optItemId2.likeIgnoreCase(pattern));
-            or.or(s.prodId.likeIgnoreCase(pattern));
-            or.or(s.siteId.likeIgnoreCase(pattern));
-            or.or(s.skuCode.likeIgnoreCase(pattern));
-            or.or(s.skuId.likeIgnoreCase(pattern));
-            or.or(s.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId1,")) or.or(s.optItemId1.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId2,")) or.or(s.optItemId2.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(s.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(s.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",skuCode,")) or.or(s.skuCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",skuId,")) or.or(s.skuId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(s.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

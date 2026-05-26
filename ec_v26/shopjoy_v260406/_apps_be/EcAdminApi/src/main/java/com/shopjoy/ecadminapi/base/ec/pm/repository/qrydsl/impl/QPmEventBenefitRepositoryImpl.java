@@ -131,18 +131,21 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QPmEventBenefit 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(b.benefitId.likeIgnoreCase(pattern));
-            or.or(b.benefitNm.likeIgnoreCase(pattern));
-            or.or(b.benefitTypeCd.likeIgnoreCase(pattern));
-            or.or(b.benefitValue.likeIgnoreCase(pattern));
-            or.or(b.conditionDesc.likeIgnoreCase(pattern));
-            or.or(b.couponId.likeIgnoreCase(pattern));
-            or.or(b.eventId.likeIgnoreCase(pattern));
-            or.or(b.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",benefitId,")) or.or(b.benefitId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",benefitNm,")) or.or(b.benefitNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",benefitTypeCd,")) or.or(b.benefitTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",benefitValue,")) or.or(b.benefitValue.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",conditionDesc,")) or.or(b.conditionDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponId,")) or.or(b.couponId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",eventId,")) or.or(b.eventId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

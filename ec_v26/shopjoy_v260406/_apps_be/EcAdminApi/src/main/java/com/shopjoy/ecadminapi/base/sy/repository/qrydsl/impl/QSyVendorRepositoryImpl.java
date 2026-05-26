@@ -139,34 +139,37 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyVendor 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(v.ceoNm.likeIgnoreCase(pattern));
-            or.or(v.corpNo.likeIgnoreCase(pattern));
-            or.or(v.pathId.likeIgnoreCase(pattern));
-            or.or(v.siteId.likeIgnoreCase(pattern));
-            or.or(v.vendorAddr.likeIgnoreCase(pattern));
-            or.or(v.vendorAddrDetail.likeIgnoreCase(pattern));
-            or.or(v.vendorBankAccount.likeIgnoreCase(pattern));
-            or.or(v.vendorBankHolder.likeIgnoreCase(pattern));
-            or.or(v.vendorBankNm.likeIgnoreCase(pattern));
-            or.or(v.vendorClassCd.likeIgnoreCase(pattern));
-            or.or(v.vendorEmail.likeIgnoreCase(pattern));
-            or.or(v.vendorFax.likeIgnoreCase(pattern));
-            or.or(v.vendorHomepage.likeIgnoreCase(pattern));
-            or.or(v.vendorId.likeIgnoreCase(pattern));
-            or.or(v.vendorItem.likeIgnoreCase(pattern));
-            or.or(v.vendorNm.likeIgnoreCase(pattern));
-            or.or(v.vendorNmEn.likeIgnoreCase(pattern));
-            or.or(v.vendorNo.likeIgnoreCase(pattern));
-            or.or(v.vendorPhone.likeIgnoreCase(pattern));
-            or.or(v.vendorRegUrl.likeIgnoreCase(pattern));
-            or.or(v.vendorRemark.likeIgnoreCase(pattern));
-            or.or(v.vendorStatusCd.likeIgnoreCase(pattern));
-            or.or(v.vendorType.likeIgnoreCase(pattern));
-            or.or(v.vendorZipCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",ceoNm,")) or.or(v.ceoNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",corpNo,")) or.or(v.corpNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(v.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(v.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorAddr,")) or.or(v.vendorAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorAddrDetail,")) or.or(v.vendorAddrDetail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorBankAccount,")) or.or(v.vendorBankAccount.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorBankHolder,")) or.or(v.vendorBankHolder.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorBankNm,")) or.or(v.vendorBankNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorClassCd,")) or.or(v.vendorClassCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorEmail,")) or.or(v.vendorEmail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorFax,")) or.or(v.vendorFax.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorHomepage,")) or.or(v.vendorHomepage.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(v.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorItem,")) or.or(v.vendorItem.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorNm,")) or.or(v.vendorNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorNmEn,")) or.or(v.vendorNmEn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorNo,")) or.or(v.vendorNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorPhone,")) or.or(v.vendorPhone.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorRegUrl,")) or.or(v.vendorRegUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorRemark,")) or.or(v.vendorRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorStatusCd,")) or.or(v.vendorStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorType,")) or.or(v.vendorType.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorZipCode,")) or.or(v.vendorZipCode.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

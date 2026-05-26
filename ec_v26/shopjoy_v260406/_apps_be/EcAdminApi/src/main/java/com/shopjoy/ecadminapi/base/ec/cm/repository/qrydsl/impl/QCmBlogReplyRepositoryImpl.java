@@ -135,19 +135,22 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QCmBlogReply 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(r.blogCommentContent.likeIgnoreCase(pattern));
-            or.or(r.blogId.likeIgnoreCase(pattern));
-            or.or(r.commentId.likeIgnoreCase(pattern));
-            or.or(r.commentStatusCd.likeIgnoreCase(pattern));
-            or.or(r.commentStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(r.parentCommentId.likeIgnoreCase(pattern));
-            or.or(r.siteId.likeIgnoreCase(pattern));
-            or.or(r.writerId.likeIgnoreCase(pattern));
-            or.or(r.writerNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",blogCommentContent,")) or.or(r.blogCommentContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",blogId,")) or.or(r.blogId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",commentId,")) or.or(r.commentId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",commentStatusCd,")) or.or(r.commentStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",commentStatusCdBefore,")) or.or(r.commentStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",parentCommentId,")) or.or(r.parentCommentId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(r.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",writerId,")) or.or(r.writerId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",writerNm,")) or.or(r.writerNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

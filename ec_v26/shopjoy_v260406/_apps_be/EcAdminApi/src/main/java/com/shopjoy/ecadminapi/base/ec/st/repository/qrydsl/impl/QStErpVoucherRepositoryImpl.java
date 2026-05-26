@@ -132,21 +132,24 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QStErpVoucher 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (c != null && StringUtils.hasText(c.getSearchValue())) {
             String pattern = "%" + c.getSearchValue() + "%";
+            String __typeRaw = c.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(v.erpResMsg.likeIgnoreCase(pattern));
-            or.or(v.erpVoucherDesc.likeIgnoreCase(pattern));
-            or.or(v.erpVoucherId.likeIgnoreCase(pattern));
-            or.or(v.erpVoucherNo.likeIgnoreCase(pattern));
-            or.or(v.erpVoucherStatusCd.likeIgnoreCase(pattern));
-            or.or(v.erpVoucherStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(v.erpVoucherTypeCd.likeIgnoreCase(pattern));
-            or.or(v.settleId.likeIgnoreCase(pattern));
-            or.or(v.settleYm.likeIgnoreCase(pattern));
-            or.or(v.siteId.likeIgnoreCase(pattern));
-            or.or(v.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpResMsg,")) or.or(v.erpResMsg.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherDesc,")) or.or(v.erpVoucherDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherId,")) or.or(v.erpVoucherId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherNo,")) or.or(v.erpVoucherNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherStatusCd,")) or.or(v.erpVoucherStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherStatusCdBefore,")) or.or(v.erpVoucherStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherTypeCd,")) or.or(v.erpVoucherTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleId,")) or.or(v.settleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleYm,")) or.or(v.settleYm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(v.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(v.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

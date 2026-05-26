@@ -137,24 +137,27 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdDlivTmplt 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(t.baseDlivYn.likeIgnoreCase(pattern));
-            or.or(t.dlivCourierCd.likeIgnoreCase(pattern));
-            or.or(t.dlivMethodCd.likeIgnoreCase(pattern));
-            or.or(t.dlivPayTypeCd.likeIgnoreCase(pattern));
-            or.or(t.dlivTmpltId.likeIgnoreCase(pattern));
-            or.or(t.dlivTmpltNm.likeIgnoreCase(pattern));
-            or.or(t.returnAddr.likeIgnoreCase(pattern));
-            or.or(t.returnAddrDetail.likeIgnoreCase(pattern));
-            or.or(t.returnAddrZip.likeIgnoreCase(pattern));
-            or.or(t.returnCourierCd.likeIgnoreCase(pattern));
-            or.or(t.returnTelNo.likeIgnoreCase(pattern));
-            or.or(t.siteId.likeIgnoreCase(pattern));
-            or.or(t.useYn.likeIgnoreCase(pattern));
-            or.or(t.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",baseDlivYn,")) or.or(t.baseDlivYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivCourierCd,")) or.or(t.dlivCourierCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivMethodCd,")) or.or(t.dlivMethodCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivPayTypeCd,")) or.or(t.dlivPayTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivTmpltId,")) or.or(t.dlivTmpltId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivTmpltNm,")) or.or(t.dlivTmpltNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",returnAddr,")) or.or(t.returnAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",returnAddrDetail,")) or.or(t.returnAddrDetail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",returnAddrZip,")) or.or(t.returnAddrZip.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",returnCourierCd,")) or.or(t.returnCourierCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",returnTelNo,")) or.or(t.returnTelNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(t.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(t.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(t.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

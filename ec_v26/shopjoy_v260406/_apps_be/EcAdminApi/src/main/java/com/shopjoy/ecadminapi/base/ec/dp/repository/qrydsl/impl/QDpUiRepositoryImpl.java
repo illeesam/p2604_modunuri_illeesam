@@ -149,18 +149,21 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QDpUi 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(u.deviceTypeCd.likeIgnoreCase(pattern));
-            or.or(u.pathId.likeIgnoreCase(pattern));
-            or.or(u.siteId.likeIgnoreCase(pattern));
-            or.or(u.uiCd.likeIgnoreCase(pattern));
-            or.or(u.uiDesc.likeIgnoreCase(pattern));
-            or.or(u.uiId.likeIgnoreCase(pattern));
-            or.or(u.uiNm.likeIgnoreCase(pattern));
-            or.or(u.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",deviceTypeCd,")) or.or(u.deviceTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(u.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(u.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiCd,")) or.or(u.uiCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiDesc,")) or.or(u.uiDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiId,")) or.or(u.uiId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiNm,")) or.or(u.uiNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(u.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

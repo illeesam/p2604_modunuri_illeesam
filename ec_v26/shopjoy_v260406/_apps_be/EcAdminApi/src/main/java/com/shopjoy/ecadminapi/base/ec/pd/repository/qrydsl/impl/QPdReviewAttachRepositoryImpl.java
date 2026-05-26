@@ -137,16 +137,19 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdReviewAttach 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(a.attachId.likeIgnoreCase(pattern));
-            or.or(a.mediaTypeCd.likeIgnoreCase(pattern));
-            or.or(a.reviewAttachId.likeIgnoreCase(pattern));
-            or.or(a.reviewId.likeIgnoreCase(pattern));
-            or.or(a.siteId.likeIgnoreCase(pattern));
-            or.or(a.thumbUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachId,")) or.or(a.attachId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",mediaTypeCd,")) or.or(a.mediaTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewAttachId,")) or.or(a.reviewAttachId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reviewId,")) or.or(a.reviewId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbUrl,")) or.or(a.thumbUrl.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

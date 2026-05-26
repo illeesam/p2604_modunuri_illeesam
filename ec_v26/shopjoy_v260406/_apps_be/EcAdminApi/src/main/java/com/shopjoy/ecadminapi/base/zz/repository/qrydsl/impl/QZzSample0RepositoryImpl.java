@@ -112,24 +112,27 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         if (StringUtils.hasText(search.getSample0Id())) w.and(s.sample0Id.eq(search.getSample0Id()));
         if (StringUtils.hasText(search.getUseYn()))     w.and(s.useYn.eq(search.getUseYn()));
-        /* searchValue LIKE OR — QZzSample0 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
             String pattern = "%" + search.getSearchValue() + "%";
+            String __typeRaw = search.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(s.col01.likeIgnoreCase(pattern));
-            or.or(s.col02.likeIgnoreCase(pattern));
-            or.or(s.col03.likeIgnoreCase(pattern));
-            or.or(s.col04.likeIgnoreCase(pattern));
-            or.or(s.col05.likeIgnoreCase(pattern));
-            or.or(s.col06.likeIgnoreCase(pattern));
-            or.or(s.col07.likeIgnoreCase(pattern));
-            or.or(s.col08.likeIgnoreCase(pattern));
-            or.or(s.col09.likeIgnoreCase(pattern));
-            or.or(s.sample0Id.likeIgnoreCase(pattern));
-            or.or(s.sampleDesc.likeIgnoreCase(pattern));
-            or.or(s.sampleName.likeIgnoreCase(pattern));
-            or.or(s.sampleValue.likeIgnoreCase(pattern));
-            or.or(s.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col01,")) or.or(s.col01.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col02,")) or.or(s.col02.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col03,")) or.or(s.col03.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col04,")) or.or(s.col04.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col05,")) or.or(s.col05.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col06,")) or.or(s.col06.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col07,")) or.or(s.col07.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col08,")) or.or(s.col08.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",col09,")) or.or(s.col09.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sample0Id,")) or.or(s.sample0Id.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sampleDesc,")) or.or(s.sampleDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sampleName,")) or.or(s.sampleName.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sampleValue,")) or.or(s.sampleValue.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(s.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -119,18 +119,21 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyNotice 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(n.attachGrpId.likeIgnoreCase(pattern));
-            or.or(n.contentHtml.likeIgnoreCase(pattern));
-            or.or(n.isFixed.likeIgnoreCase(pattern));
-            or.or(n.noticeId.likeIgnoreCase(pattern));
-            or.or(n.noticeStatusCd.likeIgnoreCase(pattern));
-            or.or(n.noticeTitle.likeIgnoreCase(pattern));
-            or.or(n.noticeTypeCd.likeIgnoreCase(pattern));
-            or.or(n.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachGrpId,")) or.or(n.attachGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentHtml,")) or.or(n.contentHtml.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",isFixed,")) or.or(n.isFixed.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",noticeId,")) or.or(n.noticeId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",noticeStatusCd,")) or.or(n.noticeStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",noticeTitle,")) or.or(n.noticeTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",noticeTypeCd,")) or.or(n.noticeTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(n.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

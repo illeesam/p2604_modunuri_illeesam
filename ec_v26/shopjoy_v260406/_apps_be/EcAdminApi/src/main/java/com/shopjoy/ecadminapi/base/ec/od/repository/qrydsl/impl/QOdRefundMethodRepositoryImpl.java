@@ -131,20 +131,23 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QOdRefundMethod 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(m.orderId.likeIgnoreCase(pattern));
-            or.or(m.payId.likeIgnoreCase(pattern));
-            or.or(m.payMethodCd.likeIgnoreCase(pattern));
-            or.or(m.pgRefundId.likeIgnoreCase(pattern));
-            or.or(m.pgResponse.likeIgnoreCase(pattern));
-            or.or(m.refundId.likeIgnoreCase(pattern));
-            or.or(m.refundMethodId.likeIgnoreCase(pattern));
-            or.or(m.refundStatusCd.likeIgnoreCase(pattern));
-            or.or(m.refundStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(m.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payId,")) or.or(m.payId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payMethodCd,")) or.or(m.payMethodCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pgRefundId,")) or.or(m.pgRefundId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pgResponse,")) or.or(m.pgResponse.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundId,")) or.or(m.refundId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundMethodId,")) or.or(m.refundMethodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundStatusCd,")) or.or(m.refundStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundStatusCdBefore,")) or.or(m.refundStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

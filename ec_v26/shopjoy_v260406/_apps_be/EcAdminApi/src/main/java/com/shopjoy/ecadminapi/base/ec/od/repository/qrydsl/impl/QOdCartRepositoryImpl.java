@@ -152,19 +152,22 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QOdCart 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.cartId.likeIgnoreCase(pattern));
-            or.or(c.isChecked.likeIgnoreCase(pattern));
-            or.or(c.memberId.likeIgnoreCase(pattern));
-            or.or(c.optItemId1.likeIgnoreCase(pattern));
-            or.or(c.optItemId2.likeIgnoreCase(pattern));
-            or.or(c.prodId.likeIgnoreCase(pattern));
-            or.or(c.sessionKey.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
-            or.or(c.skuId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cartId,")) or.or(c.cartId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",isChecked,")) or.or(c.isChecked.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(c.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId1,")) or.or(c.optItemId1.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId2,")) or.or(c.optItemId2.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(c.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sessionKey,")) or.or(c.sessionKey.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",skuId,")) or.or(c.skuId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

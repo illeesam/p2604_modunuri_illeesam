@@ -123,35 +123,38 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyhAccessLog 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.appTypeCd.likeIgnoreCase(pattern));
-            or.or(l.cmdNm.likeIgnoreCase(pattern));
-            or.or(l.deptId.likeIgnoreCase(pattern));
-            or.or(l.fileNm.likeIgnoreCase(pattern));
-            or.or(l.funcNm.likeIgnoreCase(pattern));
-            or.or(l.lineNo.likeIgnoreCase(pattern));
-            or.or(l.localeId.likeIgnoreCase(pattern));
-            or.or(l.logId.likeIgnoreCase(pattern));
-            or.or(l.profile.likeIgnoreCase(pattern));
-            or.or(l.reqBody.likeIgnoreCase(pattern));
-            or.or(l.reqHost.likeIgnoreCase(pattern));
-            or.or(l.reqIp.likeIgnoreCase(pattern));
-            or.or(l.reqMethod.likeIgnoreCase(pattern));
-            or.or(l.reqPath.likeIgnoreCase(pattern));
-            or.or(l.reqQuery.likeIgnoreCase(pattern));
-            or.or(l.reqUa.likeIgnoreCase(pattern));
-            or.or(l.respBody.likeIgnoreCase(pattern));
-            or.or(l.roleId.likeIgnoreCase(pattern));
-            or.or(l.serverNm.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
-            or.or(l.threadNm.likeIgnoreCase(pattern));
-            or.or(l.traceId.likeIgnoreCase(pattern));
-            or.or(l.uiNm.likeIgnoreCase(pattern));
-            or.or(l.userId.likeIgnoreCase(pattern));
-            or.or(l.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",appTypeCd,")) or.or(l.appTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cmdNm,")) or.or(l.cmdNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",deptId,")) or.or(l.deptId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",fileNm,")) or.or(l.fileNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",funcNm,")) or.or(l.funcNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",lineNo,")) or.or(l.lineNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",localeId,")) or.or(l.localeId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",profile,")) or.or(l.profile.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqBody,")) or.or(l.reqBody.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqHost,")) or.or(l.reqHost.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqIp,")) or.or(l.reqIp.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqMethod,")) or.or(l.reqMethod.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqPath,")) or.or(l.reqPath.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqQuery,")) or.or(l.reqQuery.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reqUa,")) or.or(l.reqUa.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",respBody,")) or.or(l.respBody.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",roleId,")) or.or(l.roleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",serverNm,")) or.or(l.serverNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",threadNm,")) or.or(l.threadNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",traceId,")) or.or(l.traceId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",uiNm,")) or.or(l.uiNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userId,")) or.or(l.userId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(l.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

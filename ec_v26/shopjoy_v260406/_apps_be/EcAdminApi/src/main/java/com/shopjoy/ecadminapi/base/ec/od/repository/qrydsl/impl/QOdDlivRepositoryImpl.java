@@ -173,41 +173,44 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QOdDliv 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(d.apprAprvUserId.likeIgnoreCase(pattern));
-            or.or(d.apprReason.likeIgnoreCase(pattern));
-            or.or(d.apprReqUserId.likeIgnoreCase(pattern));
-            or.or(d.apprStatusCd.likeIgnoreCase(pattern));
-            or.or(d.apprStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(d.apprTargetCd.likeIgnoreCase(pattern));
-            or.or(d.apprTargetNm.likeIgnoreCase(pattern));
-            or.or(d.claimId.likeIgnoreCase(pattern));
-            or.or(d.dlivDivCd.likeIgnoreCase(pattern));
-            or.or(d.dlivId.likeIgnoreCase(pattern));
-            or.or(d.dlivMemo.likeIgnoreCase(pattern));
-            or.or(d.dlivPayTypeCd.likeIgnoreCase(pattern));
-            or.or(d.dlivStatusCd.likeIgnoreCase(pattern));
-            or.or(d.dlivStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(d.dlivTypeCd.likeIgnoreCase(pattern));
-            or.or(d.inboundCourierCd.likeIgnoreCase(pattern));
-            or.or(d.inboundTrackingNo.likeIgnoreCase(pattern));
-            or.or(d.memberId.likeIgnoreCase(pattern));
-            or.or(d.memberNm.likeIgnoreCase(pattern));
-            or.or(d.orderId.likeIgnoreCase(pattern));
-            or.or(d.outboundCourierCd.likeIgnoreCase(pattern));
-            or.or(d.outboundTrackingNo.likeIgnoreCase(pattern));
-            or.or(d.parentDlivId.likeIgnoreCase(pattern));
-            or.or(d.recvAddr.likeIgnoreCase(pattern));
-            or.or(d.recvAddrDetail.likeIgnoreCase(pattern));
-            or.or(d.recvNm.likeIgnoreCase(pattern));
-            or.or(d.recvPhone.likeIgnoreCase(pattern));
-            or.or(d.recvZip.likeIgnoreCase(pattern));
-            or.or(d.shippingFeeTypeCd.likeIgnoreCase(pattern));
-            or.or(d.siteId.likeIgnoreCase(pattern));
-            or.or(d.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apprAprvUserId,")) or.or(d.apprAprvUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apprReason,")) or.or(d.apprReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apprReqUserId,")) or.or(d.apprReqUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apprStatusCd,")) or.or(d.apprStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apprStatusCdBefore,")) or.or(d.apprStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apprTargetCd,")) or.or(d.apprTargetCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",apprTargetNm,")) or.or(d.apprTargetNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimId,")) or.or(d.claimId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivDivCd,")) or.or(d.dlivDivCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivId,")) or.or(d.dlivId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivMemo,")) or.or(d.dlivMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivPayTypeCd,")) or.or(d.dlivPayTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivStatusCd,")) or.or(d.dlivStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivStatusCdBefore,")) or.or(d.dlivStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivTypeCd,")) or.or(d.dlivTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",inboundCourierCd,")) or.or(d.inboundCourierCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",inboundTrackingNo,")) or.or(d.inboundTrackingNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(d.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberNm,")) or.or(d.memberNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(d.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",outboundCourierCd,")) or.or(d.outboundCourierCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",outboundTrackingNo,")) or.or(d.outboundTrackingNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",parentDlivId,")) or.or(d.parentDlivId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",recvAddr,")) or.or(d.recvAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",recvAddrDetail,")) or.or(d.recvAddrDetail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",recvNm,")) or.or(d.recvNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",recvPhone,")) or.or(d.recvPhone.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",recvZip,")) or.or(d.recvZip.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",shippingFeeTypeCd,")) or.or(d.shippingFeeTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(d.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(d.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

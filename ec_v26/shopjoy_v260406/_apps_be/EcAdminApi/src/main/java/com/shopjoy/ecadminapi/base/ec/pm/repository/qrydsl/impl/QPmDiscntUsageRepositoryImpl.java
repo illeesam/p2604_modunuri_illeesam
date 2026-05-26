@@ -127,19 +127,22 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QPmDiscntUsage 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(u.discntId.likeIgnoreCase(pattern));
-            or.or(u.discntNm.likeIgnoreCase(pattern));
-            or.or(u.discntTypeCd.likeIgnoreCase(pattern));
-            or.or(u.discntUsageId.likeIgnoreCase(pattern));
-            or.or(u.memberId.likeIgnoreCase(pattern));
-            or.or(u.orderId.likeIgnoreCase(pattern));
-            or.or(u.orderItemId.likeIgnoreCase(pattern));
-            or.or(u.prodId.likeIgnoreCase(pattern));
-            or.or(u.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntId,")) or.or(u.discntId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntNm,")) or.or(u.discntNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntTypeCd,")) or.or(u.discntTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discntUsageId,")) or.or(u.discntUsageId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(u.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(u.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemId,")) or.or(u.orderItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(u.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(u.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

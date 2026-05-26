@@ -106,20 +106,23 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
                 w.and(h.regDate.goe(start)).and(h.regDate.lt(endExcl));
             }
         }
-        /* searchValue LIKE OR — QOdhClaimItemStatusHist 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(h.chgUserId.likeIgnoreCase(pattern));
-            or.or(h.claimId.likeIgnoreCase(pattern));
-            or.or(h.claimItemId.likeIgnoreCase(pattern));
-            or.or(h.claimItemStatusCd.likeIgnoreCase(pattern));
-            or.or(h.claimItemStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(h.claimItemStatusHistId.likeIgnoreCase(pattern));
-            or.or(h.memo.likeIgnoreCase(pattern));
-            or.or(h.orderItemId.likeIgnoreCase(pattern));
-            or.or(h.siteId.likeIgnoreCase(pattern));
-            or.or(h.statusReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgUserId,")) or.or(h.chgUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimId,")) or.or(h.claimId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimItemId,")) or.or(h.claimItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimItemStatusCd,")) or.or(h.claimItemStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimItemStatusCdBefore,")) or.or(h.claimItemStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimItemStatusHistId,")) or.or(h.claimItemStatusHistId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memo,")) or.or(h.memo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemId,")) or.or(h.orderItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(h.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",statusReason,")) or.or(h.statusReason.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

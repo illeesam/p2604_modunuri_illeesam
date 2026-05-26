@@ -115,16 +115,19 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdProdRel 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(r.prodId.likeIgnoreCase(pattern));
-            or.or(r.prodRelId.likeIgnoreCase(pattern));
-            or.or(r.prodRelTypeCd.likeIgnoreCase(pattern));
-            or.or(r.relProdId.likeIgnoreCase(pattern));
-            or.or(r.siteId.likeIgnoreCase(pattern));
-            or.or(r.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(r.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodRelId,")) or.or(r.prodRelId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodRelTypeCd,")) or.or(r.prodRelTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",relProdId,")) or.or(r.relProdId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(r.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(r.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

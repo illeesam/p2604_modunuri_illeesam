@@ -158,27 +158,30 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyhSendEmailLog 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.bccAddr.likeIgnoreCase(pattern));
-            or.or(l.ccAddr.likeIgnoreCase(pattern));
-            or.or(l.content.likeIgnoreCase(pattern));
-            or.or(l.failReason.likeIgnoreCase(pattern));
-            or.or(l.fromAddr.likeIgnoreCase(pattern));
-            or.or(l.logId.likeIgnoreCase(pattern));
-            or.or(l.memberId.likeIgnoreCase(pattern));
-            or.or(l.params.likeIgnoreCase(pattern));
-            or.or(l.refId.likeIgnoreCase(pattern));
-            or.or(l.refTypeCd.likeIgnoreCase(pattern));
-            or.or(l.resultCd.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
-            or.or(l.subject.likeIgnoreCase(pattern));
-            or.or(l.templateCode.likeIgnoreCase(pattern));
-            or.or(l.templateId.likeIgnoreCase(pattern));
-            or.or(l.toAddr.likeIgnoreCase(pattern));
-            or.or(l.userId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bccAddr,")) or.or(l.bccAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",ccAddr,")) or.or(l.ccAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",content,")) or.or(l.content.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",failReason,")) or.or(l.failReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",fromAddr,")) or.or(l.fromAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(l.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",params,")) or.or(l.params.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refTypeCd,")) or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",resultCd,")) or.or(l.resultCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",subject,")) or.or(l.subject.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateCode,")) or.or(l.templateCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateId,")) or.or(l.templateId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",toAddr,")) or.or(l.toAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userId,")) or.or(l.userId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -119,16 +119,19 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QCmBlogFile 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(f.blogId.likeIgnoreCase(pattern));
-            or.or(f.blogImgId.likeIgnoreCase(pattern));
-            or.or(f.imgAltText.likeIgnoreCase(pattern));
-            or.or(f.imgUrl.likeIgnoreCase(pattern));
-            or.or(f.siteId.likeIgnoreCase(pattern));
-            or.or(f.thumbUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",blogId,")) or.or(f.blogId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",blogImgId,")) or.or(f.blogImgId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",imgAltText,")) or.or(f.imgAltText.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",imgUrl,")) or.or(f.imgUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(f.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbUrl,")) or.or(f.thumbUrl.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

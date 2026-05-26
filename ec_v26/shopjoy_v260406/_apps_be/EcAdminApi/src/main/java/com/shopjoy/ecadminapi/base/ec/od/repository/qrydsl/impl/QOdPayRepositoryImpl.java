@@ -206,40 +206,43 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QOdPay 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(p.cardIssuerCd.likeIgnoreCase(pattern));
-            or.or(p.cardIssuerNm.likeIgnoreCase(pattern));
-            or.or(p.cardNo.likeIgnoreCase(pattern));
-            or.or(p.cardTypeCd.likeIgnoreCase(pattern));
-            or.or(p.claimId.likeIgnoreCase(pattern));
-            or.or(p.failureCode.likeIgnoreCase(pattern));
-            or.or(p.failureReason.likeIgnoreCase(pattern));
-            or.or(p.memo.likeIgnoreCase(pattern));
-            or.or(p.orderId.likeIgnoreCase(pattern));
-            or.or(p.payChannelCd.likeIgnoreCase(pattern));
-            or.or(p.payDirCd.likeIgnoreCase(pattern));
-            or.or(p.payDivCd.likeIgnoreCase(pattern));
-            or.or(p.payId.likeIgnoreCase(pattern));
-            or.or(p.payMethodCd.likeIgnoreCase(pattern));
-            or.or(p.payOccurTypeCd.likeIgnoreCase(pattern));
-            or.or(p.payStatusCd.likeIgnoreCase(pattern));
-            or.or(p.payStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(p.pgApprovalNo.likeIgnoreCase(pattern));
-            or.or(p.pgCompanyCd.likeIgnoreCase(pattern));
-            or.or(p.pgResponse.likeIgnoreCase(pattern));
-            or.or(p.pgTransactionId.likeIgnoreCase(pattern));
-            or.or(p.refundReason.likeIgnoreCase(pattern));
-            or.or(p.refundStatusCd.likeIgnoreCase(pattern));
-            or.or(p.refundStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(p.siteId.likeIgnoreCase(pattern));
-            or.or(p.vbankAccount.likeIgnoreCase(pattern));
-            or.or(p.vbankBankCode.likeIgnoreCase(pattern));
-            or.or(p.vbankBankNm.likeIgnoreCase(pattern));
-            or.or(p.vbankDepositNm.likeIgnoreCase(pattern));
-            or.or(p.vbankHolderNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cardIssuerCd,")) or.or(p.cardIssuerCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cardIssuerNm,")) or.or(p.cardIssuerNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cardNo,")) or.or(p.cardNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",cardTypeCd,")) or.or(p.cardTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimId,")) or.or(p.claimId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",failureCode,")) or.or(p.failureCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",failureReason,")) or.or(p.failureReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memo,")) or.or(p.memo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(p.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payChannelCd,")) or.or(p.payChannelCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payDirCd,")) or.or(p.payDirCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payDivCd,")) or.or(p.payDivCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payId,")) or.or(p.payId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payMethodCd,")) or.or(p.payMethodCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payOccurTypeCd,")) or.or(p.payOccurTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payStatusCd,")) or.or(p.payStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payStatusCdBefore,")) or.or(p.payStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pgApprovalNo,")) or.or(p.pgApprovalNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pgCompanyCd,")) or.or(p.pgCompanyCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pgResponse,")) or.or(p.pgResponse.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pgTransactionId,")) or.or(p.pgTransactionId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundReason,")) or.or(p.refundReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundStatusCd,")) or.or(p.refundStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundStatusCdBefore,")) or.or(p.refundStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vbankAccount,")) or.or(p.vbankAccount.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vbankBankCode,")) or.or(p.vbankBankCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vbankBankNm,")) or.or(p.vbankBankNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vbankDepositNm,")) or.or(p.vbankDepositNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vbankHolderNm,")) or.or(p.vbankHolderNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

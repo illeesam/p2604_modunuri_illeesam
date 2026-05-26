@@ -110,15 +110,18 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QMbMemberGrade 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(g.gradeCd.likeIgnoreCase(pattern));
-            or.or(g.gradeNm.likeIgnoreCase(pattern));
-            or.or(g.memberGradeId.likeIgnoreCase(pattern));
-            or.or(g.siteId.likeIgnoreCase(pattern));
-            or.or(g.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",gradeCd,")) or.or(g.gradeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",gradeNm,")) or.or(g.gradeNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberGradeId,")) or.or(g.memberGradeId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(g.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(g.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

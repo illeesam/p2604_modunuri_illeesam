@@ -125,15 +125,18 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdTag 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(t.siteId.likeIgnoreCase(pattern));
-            or.or(t.tagDesc.likeIgnoreCase(pattern));
-            or.or(t.tagId.likeIgnoreCase(pattern));
-            or.or(t.tagNm.likeIgnoreCase(pattern));
-            or.or(t.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(t.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",tagDesc,")) or.or(t.tagDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",tagId,")) or.or(t.tagId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",tagNm,")) or.or(t.tagNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(t.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

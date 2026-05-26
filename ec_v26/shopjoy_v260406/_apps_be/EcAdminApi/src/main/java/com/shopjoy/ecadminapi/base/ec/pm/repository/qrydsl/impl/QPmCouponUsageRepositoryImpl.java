@@ -127,20 +127,23 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QPmCouponUsage 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(u.couponCode.likeIgnoreCase(pattern));
-            or.or(u.couponId.likeIgnoreCase(pattern));
-            or.or(u.couponNm.likeIgnoreCase(pattern));
-            or.or(u.discountTypeCd.likeIgnoreCase(pattern));
-            or.or(u.memberId.likeIgnoreCase(pattern));
-            or.or(u.orderId.likeIgnoreCase(pattern));
-            or.or(u.orderItemId.likeIgnoreCase(pattern));
-            or.or(u.prodId.likeIgnoreCase(pattern));
-            or.or(u.siteId.likeIgnoreCase(pattern));
-            or.or(u.usageId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponCode,")) or.or(u.couponCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponId,")) or.or(u.couponId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",couponNm,")) or.or(u.couponNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",discountTypeCd,")) or.or(u.discountTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(u.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(u.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemId,")) or.or(u.orderItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(u.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(u.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",usageId,")) or.or(u.usageId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

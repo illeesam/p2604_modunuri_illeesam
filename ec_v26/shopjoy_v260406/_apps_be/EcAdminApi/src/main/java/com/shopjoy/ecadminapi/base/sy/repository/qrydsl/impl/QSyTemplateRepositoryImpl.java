@@ -120,20 +120,23 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyTemplate 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(t.pathId.likeIgnoreCase(pattern));
-            or.or(t.sampleParams.likeIgnoreCase(pattern));
-            or.or(t.siteId.likeIgnoreCase(pattern));
-            or.or(t.templateCode.likeIgnoreCase(pattern));
-            or.or(t.templateContent.likeIgnoreCase(pattern));
-            or.or(t.templateId.likeIgnoreCase(pattern));
-            or.or(t.templateNm.likeIgnoreCase(pattern));
-            or.or(t.templateSubject.likeIgnoreCase(pattern));
-            or.or(t.templateTypeCd.likeIgnoreCase(pattern));
-            or.or(t.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(t.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sampleParams,")) or.or(t.sampleParams.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(t.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateCode,")) or.or(t.templateCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateContent,")) or.or(t.templateContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateId,")) or.or(t.templateId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateNm,")) or.or(t.templateNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateSubject,")) or.or(t.templateSubject.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateTypeCd,")) or.or(t.templateTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(t.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

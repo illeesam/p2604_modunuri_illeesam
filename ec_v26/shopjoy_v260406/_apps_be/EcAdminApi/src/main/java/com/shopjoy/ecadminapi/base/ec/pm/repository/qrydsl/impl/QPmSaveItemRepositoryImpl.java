@@ -127,15 +127,18 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPmSaveItem 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(i.saveId.likeIgnoreCase(pattern));
-            or.or(i.saveItemId.likeIgnoreCase(pattern));
-            or.or(i.siteId.likeIgnoreCase(pattern));
-            or.or(i.targetId.likeIgnoreCase(pattern));
-            or.or(i.targetTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",saveId,")) or.or(i.saveId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",saveItemId,")) or.or(i.saveItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(i.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",targetId,")) or.or(i.targetId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",targetTypeCd,")) or.or(i.targetTypeCd.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

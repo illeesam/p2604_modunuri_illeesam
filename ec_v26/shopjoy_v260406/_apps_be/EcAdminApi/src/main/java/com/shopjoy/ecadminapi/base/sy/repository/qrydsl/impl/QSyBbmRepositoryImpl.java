@@ -119,23 +119,26 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyBbm 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(b.allowAttach.likeIgnoreCase(pattern));
-            or.or(b.allowComment.likeIgnoreCase(pattern));
-            or.or(b.allowLike.likeIgnoreCase(pattern));
-            or.or(b.bbmCode.likeIgnoreCase(pattern));
-            or.or(b.bbmId.likeIgnoreCase(pattern));
-            or.or(b.bbmNm.likeIgnoreCase(pattern));
-            or.or(b.bbmRemark.likeIgnoreCase(pattern));
-            or.or(b.bbmTypeCd.likeIgnoreCase(pattern));
-            or.or(b.contentTypeCd.likeIgnoreCase(pattern));
-            or.or(b.pathId.likeIgnoreCase(pattern));
-            or.or(b.scopeTypeCd.likeIgnoreCase(pattern));
-            or.or(b.siteId.likeIgnoreCase(pattern));
-            or.or(b.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",allowAttach,")) or.or(b.allowAttach.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",allowComment,")) or.or(b.allowComment.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",allowLike,")) or.or(b.allowLike.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbmCode,")) or.or(b.bbmCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbmId,")) or.or(b.bbmId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbmNm,")) or.or(b.bbmNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbmRemark,")) or.or(b.bbmRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bbmTypeCd,")) or.or(b.bbmTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentTypeCd,")) or.or(b.contentTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(b.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",scopeTypeCd,")) or.or(b.scopeTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(b.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

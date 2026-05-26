@@ -130,17 +130,20 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyCodeGrp 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(g.codeGrp.likeIgnoreCase(pattern));
-            or.or(g.codeGrpDesc.likeIgnoreCase(pattern));
-            or.or(g.codeGrpId.likeIgnoreCase(pattern));
-            or.or(g.grpNm.likeIgnoreCase(pattern));
-            or.or(g.pathId.likeIgnoreCase(pattern));
-            or.or(g.siteId.likeIgnoreCase(pattern));
-            or.or(g.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeGrp,")) or.or(g.codeGrp.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeGrpDesc,")) or.or(g.codeGrpDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",codeGrpId,")) or.or(g.codeGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",grpNm,")) or.or(g.grpNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(g.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(g.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(g.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -126,20 +126,23 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QStErpVoucherLine 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (c != null && StringUtils.hasText(c.getSearchValue())) {
             String pattern = "%" + c.getSearchValue() + "%";
+            String __typeRaw = c.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.accountCd.likeIgnoreCase(pattern));
-            or.or(l.accountNm.likeIgnoreCase(pattern));
-            or.or(l.costCenterCd.likeIgnoreCase(pattern));
-            or.or(l.erpVoucherId.likeIgnoreCase(pattern));
-            or.or(l.erpVoucherLineId.likeIgnoreCase(pattern));
-            or.or(l.lineMemo.likeIgnoreCase(pattern));
-            or.or(l.profitCenterCd.likeIgnoreCase(pattern));
-            or.or(l.refId.likeIgnoreCase(pattern));
-            or.or(l.refTypeCd.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",accountCd,")) or.or(l.accountCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",accountNm,")) or.or(l.accountNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",costCenterCd,")) or.or(l.costCenterCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherId,")) or.or(l.erpVoucherId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",erpVoucherLineId,")) or.or(l.erpVoucherLineId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",lineMemo,")) or.or(l.lineMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",profitCenterCd,")) or.or(l.profitCenterCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refTypeCd,")) or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -133,17 +133,20 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
                     break;
             }
         }
-        /* searchValue LIKE OR — QPdhProdStatusHist 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(h.afterStatusCd.likeIgnoreCase(pattern));
-            or.or(h.beforeStatusCd.likeIgnoreCase(pattern));
-            or.or(h.memo.likeIgnoreCase(pattern));
-            or.or(h.procUserId.likeIgnoreCase(pattern));
-            or.or(h.prodId.likeIgnoreCase(pattern));
-            or.or(h.prodStatusHistId.likeIgnoreCase(pattern));
-            or.or(h.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",afterStatusCd,")) or.or(h.afterStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",beforeStatusCd,")) or.or(h.beforeStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memo,")) or.or(h.memo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",procUserId,")) or.or(h.procUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(h.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodStatusHistId,")) or.or(h.prodStatusHistId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(h.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

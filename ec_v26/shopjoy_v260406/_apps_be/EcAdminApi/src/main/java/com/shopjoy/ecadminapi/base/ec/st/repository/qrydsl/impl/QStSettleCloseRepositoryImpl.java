@@ -122,16 +122,19 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QStSettleClose 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.closeBy.likeIgnoreCase(pattern));
-            or.or(c.closeReason.likeIgnoreCase(pattern));
-            or.or(c.closeStatusCd.likeIgnoreCase(pattern));
-            or.or(c.settleCloseId.likeIgnoreCase(pattern));
-            or.or(c.settleId.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",closeBy,")) or.or(c.closeBy.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",closeReason,")) or.or(c.closeReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",closeStatusCd,")) or.or(c.closeStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleCloseId,")) or.or(c.settleCloseId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleId,")) or.or(c.settleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

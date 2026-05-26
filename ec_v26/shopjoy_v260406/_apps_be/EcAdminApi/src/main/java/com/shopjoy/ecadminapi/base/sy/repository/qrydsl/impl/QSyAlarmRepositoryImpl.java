@@ -135,21 +135,24 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyAlarm 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(a.alarmId.likeIgnoreCase(pattern));
-            or.or(a.alarmMsg.likeIgnoreCase(pattern));
-            or.or(a.alarmStatusCd.likeIgnoreCase(pattern));
-            or.or(a.alarmTitle.likeIgnoreCase(pattern));
-            or.or(a.alarmTypeCd.likeIgnoreCase(pattern));
-            or.or(a.channelCd.likeIgnoreCase(pattern));
-            or.or(a.pathId.likeIgnoreCase(pattern));
-            or.or(a.siteId.likeIgnoreCase(pattern));
-            or.or(a.targetId.likeIgnoreCase(pattern));
-            or.or(a.targetTypeCd.likeIgnoreCase(pattern));
-            or.or(a.templateId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",alarmId,")) or.or(a.alarmId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",alarmMsg,")) or.or(a.alarmMsg.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",alarmStatusCd,")) or.or(a.alarmStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",alarmTitle,")) or.or(a.alarmTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",alarmTypeCd,")) or.or(a.alarmTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",channelCd,")) or.or(a.channelCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(a.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",targetId,")) or.or(a.targetId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",targetTypeCd,")) or.or(a.targetTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",templateId,")) or.or(a.templateId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

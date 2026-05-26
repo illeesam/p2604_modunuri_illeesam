@@ -117,17 +117,20 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyVoc 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(v.siteId.likeIgnoreCase(pattern));
-            or.or(v.useYn.likeIgnoreCase(pattern));
-            or.or(v.vocContent.likeIgnoreCase(pattern));
-            or.or(v.vocDetailCd.likeIgnoreCase(pattern));
-            or.or(v.vocId.likeIgnoreCase(pattern));
-            or.or(v.vocMasterCd.likeIgnoreCase(pattern));
-            or.or(v.vocNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(v.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(v.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vocContent,")) or.or(v.vocContent.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vocDetailCd,")) or.or(v.vocDetailCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vocId,")) or.or(v.vocId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vocMasterCd,")) or.or(v.vocMasterCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vocNm,")) or.or(v.vocNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

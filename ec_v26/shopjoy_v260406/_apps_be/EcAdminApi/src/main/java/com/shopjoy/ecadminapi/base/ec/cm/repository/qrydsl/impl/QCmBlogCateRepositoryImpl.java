@@ -131,15 +131,18 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QCmBlogCate 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.blogCateId.likeIgnoreCase(pattern));
-            or.or(c.blogCateNm.likeIgnoreCase(pattern));
-            or.or(c.parentBlogCateId.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
-            or.or(c.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",blogCateId,")) or.or(c.blogCateId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",blogCateNm,")) or.or(c.blogCateNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",parentBlogCateId,")) or.or(c.parentBlogCateId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(c.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

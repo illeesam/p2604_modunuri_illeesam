@@ -131,20 +131,23 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyBrand 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(b.brandCode.likeIgnoreCase(pattern));
-            or.or(b.brandEnNm.likeIgnoreCase(pattern));
-            or.or(b.brandId.likeIgnoreCase(pattern));
-            or.or(b.brandNm.likeIgnoreCase(pattern));
-            or.or(b.brandRemark.likeIgnoreCase(pattern));
-            or.or(b.logoUrl.likeIgnoreCase(pattern));
-            or.or(b.pathId.likeIgnoreCase(pattern));
-            or.or(b.siteId.likeIgnoreCase(pattern));
-            or.or(b.useYn.likeIgnoreCase(pattern));
-            or.or(b.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",brandCode,")) or.or(b.brandCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",brandEnNm,")) or.or(b.brandEnNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",brandId,")) or.or(b.brandId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",brandNm,")) or.or(b.brandNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",brandRemark,")) or.or(b.brandRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logoUrl,")) or.or(b.logoUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(b.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(b.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(b.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

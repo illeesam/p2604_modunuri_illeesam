@@ -133,18 +133,21 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                     break;
             }
         }
-        /* searchValue LIKE OR — QPmVoucherIssue 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(i.memberId.likeIgnoreCase(pattern));
-            or.or(i.orderId.likeIgnoreCase(pattern));
-            or.or(i.siteId.likeIgnoreCase(pattern));
-            or.or(i.voucherCode.likeIgnoreCase(pattern));
-            or.or(i.voucherId.likeIgnoreCase(pattern));
-            or.or(i.voucherIssueId.likeIgnoreCase(pattern));
-            or.or(i.voucherIssueStatusCd.likeIgnoreCase(pattern));
-            or.or(i.voucherIssueStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(i.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(i.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(i.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherCode,")) or.or(i.voucherCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherId,")) or.or(i.voucherId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherIssueId,")) or.or(i.voucherIssueId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherIssueStatusCd,")) or.or(i.voucherIssueStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",voucherIssueStatusCdBefore,")) or.or(i.voucherIssueStatusCdBefore.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

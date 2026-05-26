@@ -135,18 +135,21 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyhAlarmSendHist 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(h.alarmId.likeIgnoreCase(pattern));
-            or.or(h.channel.likeIgnoreCase(pattern));
-            or.or(h.errorMsg.likeIgnoreCase(pattern));
-            or.or(h.memberId.likeIgnoreCase(pattern));
-            or.or(h.sendHistId.likeIgnoreCase(pattern));
-            or.or(h.sendHistStatusCd.likeIgnoreCase(pattern));
-            or.or(h.sendTo.likeIgnoreCase(pattern));
-            or.or(h.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",alarmId,")) or.or(h.alarmId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",channel,")) or.or(h.channel.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",errorMsg,")) or.or(h.errorMsg.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(h.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sendHistId,")) or.or(h.sendHistId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sendHistStatusCd,")) or.or(h.sendHistStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sendTo,")) or.or(h.sendTo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(h.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

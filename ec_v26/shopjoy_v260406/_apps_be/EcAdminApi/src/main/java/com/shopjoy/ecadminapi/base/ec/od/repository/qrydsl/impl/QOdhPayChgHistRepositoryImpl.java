@@ -108,22 +108,25 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
                 w.and(h.regDate.goe(start)).and(h.regDate.lt(endExcl));
             }
         }
-        /* searchValue LIKE OR — QOdhPayChgHist 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(h.chgReason.likeIgnoreCase(pattern));
-            or.or(h.chgTypeCd.likeIgnoreCase(pattern));
-            or.or(h.chgUserId.likeIgnoreCase(pattern));
-            or.or(h.memo.likeIgnoreCase(pattern));
-            or.or(h.orderId.likeIgnoreCase(pattern));
-            or.or(h.payChgHistId.likeIgnoreCase(pattern));
-            or.or(h.payId.likeIgnoreCase(pattern));
-            or.or(h.payStatusCdAfter.likeIgnoreCase(pattern));
-            or.or(h.payStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(h.pgResponse.likeIgnoreCase(pattern));
-            or.or(h.refundPgTid.likeIgnoreCase(pattern));
-            or.or(h.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgReason,")) or.or(h.chgReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgTypeCd,")) or.or(h.chgTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chgUserId,")) or.or(h.chgUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memo,")) or.or(h.memo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(h.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payChgHistId,")) or.or(h.payChgHistId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payId,")) or.or(h.payId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payStatusCdAfter,")) or.or(h.payStatusCdAfter.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payStatusCdBefore,")) or.or(h.payStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pgResponse,")) or.or(h.pgResponse.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refundPgTid,")) or.or(h.refundPgTid.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(h.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

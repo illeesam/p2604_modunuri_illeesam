@@ -144,24 +144,27 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QMbMember 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(m.gradeCd.likeIgnoreCase(pattern));
-            or.or(m.loginId.likeIgnoreCase(pattern));
-            or.or(m.loginPwdHash.likeIgnoreCase(pattern));
-            or.or(m.memberAddr.likeIgnoreCase(pattern));
-            or.or(m.memberAddrDetail.likeIgnoreCase(pattern));
-            or.or(m.memberGender.likeIgnoreCase(pattern));
-            or.or(m.memberId.likeIgnoreCase(pattern));
-            or.or(m.memberMemo.likeIgnoreCase(pattern));
-            or.or(m.memberNm.likeIgnoreCase(pattern));
-            or.or(m.memberPhone.likeIgnoreCase(pattern));
-            or.or(m.memberStatusCd.likeIgnoreCase(pattern));
-            or.or(m.memberStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(m.memberZipCode.likeIgnoreCase(pattern));
-            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",gradeCd,")) or.or(m.gradeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",loginId,")) or.or(m.loginId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",loginPwdHash,")) or.or(m.loginPwdHash.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberAddr,")) or.or(m.memberAddr.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberAddrDetail,")) or.or(m.memberAddrDetail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberGender,")) or.or(m.memberGender.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(m.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberMemo,")) or.or(m.memberMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberNm,")) or.or(m.memberNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberPhone,")) or.or(m.memberPhone.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberStatusCd,")) or.or(m.memberStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberStatusCdBefore,")) or.or(m.memberStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberZipCode,")) or.or(m.memberZipCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

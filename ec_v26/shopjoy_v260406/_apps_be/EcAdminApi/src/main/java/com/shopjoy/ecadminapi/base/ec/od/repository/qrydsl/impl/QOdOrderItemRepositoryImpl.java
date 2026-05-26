@@ -165,30 +165,33 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QOdOrderItem 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(oi.brandNm.likeIgnoreCase(pattern));
-            or.or(oi.bundleGroupId.likeIgnoreCase(pattern));
-            or.or(oi.buyConfirmYn.likeIgnoreCase(pattern));
-            or.or(oi.claimYn.likeIgnoreCase(pattern));
-            or.or(oi.dlivCourierCd.likeIgnoreCase(pattern));
-            or.or(oi.dlivTmpltId.likeIgnoreCase(pattern));
-            or.or(oi.dlivTrackingNo.likeIgnoreCase(pattern));
-            or.or(oi.giftId.likeIgnoreCase(pattern));
-            or.or(oi.optItemId1.likeIgnoreCase(pattern));
-            or.or(oi.optItemId2.likeIgnoreCase(pattern));
-            or.or(oi.orderId.likeIgnoreCase(pattern));
-            or.or(oi.orderItemId.likeIgnoreCase(pattern));
-            or.or(oi.orderItemStatusCd.likeIgnoreCase(pattern));
-            or.or(oi.orderItemStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(oi.prodId.likeIgnoreCase(pattern));
-            or.or(oi.prodNm.likeIgnoreCase(pattern));
-            or.or(oi.reserveSaleYn.likeIgnoreCase(pattern));
-            or.or(oi.settleYn.likeIgnoreCase(pattern));
-            or.or(oi.siteId.likeIgnoreCase(pattern));
-            or.or(oi.skuId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",brandNm,")) or.or(oi.brandNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bundleGroupId,")) or.or(oi.bundleGroupId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",buyConfirmYn,")) or.or(oi.buyConfirmYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",claimYn,")) or.or(oi.claimYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivCourierCd,")) or.or(oi.dlivCourierCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivTmpltId,")) or.or(oi.dlivTmpltId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",dlivTrackingNo,")) or.or(oi.dlivTrackingNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",giftId,")) or.or(oi.giftId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId1,")) or.or(oi.optItemId1.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",optItemId2,")) or.or(oi.optItemId2.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderId,")) or.or(oi.orderId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemId,")) or.or(oi.orderItemId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemStatusCd,")) or.or(oi.orderItemStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",orderItemStatusCdBefore,")) or.or(oi.orderItemStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodId,")) or.or(oi.prodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",prodNm,")) or.or(oi.prodNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reserveSaleYn,")) or.or(oi.reserveSaleYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleYn,")) or.or(oi.settleYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(oi.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",skuId,")) or.or(oi.skuId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

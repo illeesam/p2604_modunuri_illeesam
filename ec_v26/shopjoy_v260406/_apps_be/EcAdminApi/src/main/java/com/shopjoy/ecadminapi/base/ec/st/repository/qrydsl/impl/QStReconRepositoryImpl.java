@@ -136,23 +136,26 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QStRecon 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (c != null && StringUtils.hasText(c.getSearchValue())) {
             String pattern = "%" + c.getSearchValue() + "%";
+            String __typeRaw = c.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(r.reconId.likeIgnoreCase(pattern));
-            or.or(r.reconNote.likeIgnoreCase(pattern));
-            or.or(r.reconStatusCd.likeIgnoreCase(pattern));
-            or.or(r.reconStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(r.reconTypeCd.likeIgnoreCase(pattern));
-            or.or(r.refId.likeIgnoreCase(pattern));
-            or.or(r.refNo.likeIgnoreCase(pattern));
-            or.or(r.resolvedBy.likeIgnoreCase(pattern));
-            or.or(r.settleId.likeIgnoreCase(pattern));
-            or.or(r.settlePeriod.likeIgnoreCase(pattern));
-            or.or(r.settleRawId.likeIgnoreCase(pattern));
-            or.or(r.siteId.likeIgnoreCase(pattern));
-            or.or(r.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reconId,")) or.or(r.reconId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reconNote,")) or.or(r.reconNote.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reconStatusCd,")) or.or(r.reconStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reconStatusCdBefore,")) or.or(r.reconStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",reconTypeCd,")) or.or(r.reconTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(r.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refNo,")) or.or(r.refNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",resolvedBy,")) or.or(r.resolvedBy.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleId,")) or.or(r.settleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settlePeriod,")) or.or(r.settlePeriod.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",settleRawId,")) or.or(r.settleRawId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(r.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(r.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

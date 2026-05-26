@@ -131,17 +131,20 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyVendorUserRole 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(r.grantUserId.likeIgnoreCase(pattern));
-            or.or(r.roleId.likeIgnoreCase(pattern));
-            or.or(r.siteId.likeIgnoreCase(pattern));
-            or.or(r.userId.likeIgnoreCase(pattern));
-            or.or(r.vendorId.likeIgnoreCase(pattern));
-            or.or(r.vendorUserRoleId.likeIgnoreCase(pattern));
-            or.or(r.vendorUserRoleRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",grantUserId,")) or.or(r.grantUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",roleId,")) or.or(r.roleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(r.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",userId,")) or.or(r.userId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(r.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserRoleId,")) or.or(r.vendorUserRoleId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorUserRoleRemark,")) or.or(r.vendorUserRoleRemark.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

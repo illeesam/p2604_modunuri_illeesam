@@ -138,21 +138,24 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QPmPlan 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(p.bannerUrl.likeIgnoreCase(pattern));
-            or.or(p.planDesc.likeIgnoreCase(pattern));
-            or.or(p.planId.likeIgnoreCase(pattern));
-            or.or(p.planNm.likeIgnoreCase(pattern));
-            or.or(p.planStatusCd.likeIgnoreCase(pattern));
-            or.or(p.planStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(p.planTitle.likeIgnoreCase(pattern));
-            or.or(p.planTypeCd.likeIgnoreCase(pattern));
-            or.or(p.siteId.likeIgnoreCase(pattern));
-            or.or(p.thumbnailUrl.likeIgnoreCase(pattern));
-            or.or(p.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",bannerUrl,")) or.or(p.bannerUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",planDesc,")) or.or(p.planDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",planId,")) or.or(p.planId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",planNm,")) or.or(p.planNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",planStatusCd,")) or.or(p.planStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",planStatusCdBefore,")) or.or(p.planStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",planTitle,")) or.or(p.planTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",planTypeCd,")) or.or(p.planTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbnailUrl,")) or.or(p.thumbnailUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(p.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

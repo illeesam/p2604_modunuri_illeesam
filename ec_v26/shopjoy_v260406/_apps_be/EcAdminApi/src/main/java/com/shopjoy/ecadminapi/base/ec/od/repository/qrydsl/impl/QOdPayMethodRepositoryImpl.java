@@ -132,18 +132,21 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QOdPayMethod 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(m.mainMethodYn.likeIgnoreCase(pattern));
-            or.or(m.memberId.likeIgnoreCase(pattern));
-            or.or(m.payKeyNo.likeIgnoreCase(pattern));
-            or.or(m.payMethodAlias.likeIgnoreCase(pattern));
-            or.or(m.payMethodId.likeIgnoreCase(pattern));
-            or.or(m.payMethodNm.likeIgnoreCase(pattern));
-            or.or(m.payMethodTypeCd.likeIgnoreCase(pattern));
-            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",mainMethodYn,")) or.or(m.mainMethodYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(m.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payKeyNo,")) or.or(m.payKeyNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payMethodAlias,")) or.or(m.payMethodAlias.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payMethodId,")) or.or(m.payMethodId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payMethodNm,")) or.or(m.payMethodNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",payMethodTypeCd,")) or.or(m.payMethodTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

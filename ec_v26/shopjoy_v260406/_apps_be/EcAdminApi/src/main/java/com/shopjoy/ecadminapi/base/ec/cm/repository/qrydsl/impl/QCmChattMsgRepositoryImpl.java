@@ -120,18 +120,21 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QCmChattMsg 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(m.chattMsgId.likeIgnoreCase(pattern));
-            or.or(m.chattRoomId.likeIgnoreCase(pattern));
-            or.or(m.msgText.likeIgnoreCase(pattern));
-            or.or(m.readYn.likeIgnoreCase(pattern));
-            or.or(m.refId.likeIgnoreCase(pattern));
-            or.or(m.refType.likeIgnoreCase(pattern));
-            or.or(m.senderCd.likeIgnoreCase(pattern));
-            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chattMsgId,")) or.or(m.chattMsgId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chattRoomId,")) or.or(m.chattRoomId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",msgText,")) or.or(m.msgText.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",readYn,")) or.or(m.readYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refId,")) or.or(m.refId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",refType,")) or.or(m.refType.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",senderCd,")) or.or(m.senderCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

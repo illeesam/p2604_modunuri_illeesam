@@ -134,20 +134,23 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QCmChattRoom 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(r.adminUserId.likeIgnoreCase(pattern));
-            or.or(r.chattMemo.likeIgnoreCase(pattern));
-            or.or(r.chattRoomId.likeIgnoreCase(pattern));
-            or.or(r.chattStatusCd.likeIgnoreCase(pattern));
-            or.or(r.chattStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(r.closeReason.likeIgnoreCase(pattern));
-            or.or(r.memberId.likeIgnoreCase(pattern));
-            or.or(r.memberNm.likeIgnoreCase(pattern));
-            or.or(r.siteId.likeIgnoreCase(pattern));
-            or.or(r.subject.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",adminUserId,")) or.or(r.adminUserId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chattMemo,")) or.or(r.chattMemo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chattRoomId,")) or.or(r.chattRoomId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chattStatusCd,")) or.or(r.chattStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",chattStatusCdBefore,")) or.or(r.chattStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",closeReason,")) or.or(r.closeReason.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberId,")) or.or(r.memberId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",memberNm,")) or.or(r.memberNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(r.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",subject,")) or.or(r.subject.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -135,27 +135,30 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSySite 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (q != null && StringUtils.hasText(q.getSearchValue())) {
             String pattern = "%" + q.getSearchValue() + "%";
+            String __typeRaw = q.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(s.configJson.likeIgnoreCase(pattern));
-            or.or(s.faviconUrl.likeIgnoreCase(pattern));
-            or.or(s.logoUrl.likeIgnoreCase(pattern));
-            or.or(s.pathId.likeIgnoreCase(pattern));
-            or.or(s.siteAddress.likeIgnoreCase(pattern));
-            or.or(s.siteBusinessNo.likeIgnoreCase(pattern));
-            or.or(s.siteCeo.likeIgnoreCase(pattern));
-            or.or(s.siteCode.likeIgnoreCase(pattern));
-            or.or(s.siteDesc.likeIgnoreCase(pattern));
-            or.or(s.siteDomain.likeIgnoreCase(pattern));
-            or.or(s.siteEmail.likeIgnoreCase(pattern));
-            or.or(s.siteId.likeIgnoreCase(pattern));
-            or.or(s.siteNm.likeIgnoreCase(pattern));
-            or.or(s.sitePhone.likeIgnoreCase(pattern));
-            or.or(s.siteStatusCd.likeIgnoreCase(pattern));
-            or.or(s.siteTypeCd.likeIgnoreCase(pattern));
-            or.or(s.siteZipCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",configJson,")) or.or(s.configJson.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",faviconUrl,")) or.or(s.faviconUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",logoUrl,")) or.or(s.logoUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(s.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteAddress,")) or.or(s.siteAddress.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteBusinessNo,")) or.or(s.siteBusinessNo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteCeo,")) or.or(s.siteCeo.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteCode,")) or.or(s.siteCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteDesc,")) or.or(s.siteDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteDomain,")) or.or(s.siteDomain.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteEmail,")) or.or(s.siteEmail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(s.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteNm,")) or.or(s.siteNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",sitePhone,")) or.or(s.sitePhone.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteStatusCd,")) or.or(s.siteStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteTypeCd,")) or.or(s.siteTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteZipCode,")) or.or(s.siteZipCode.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

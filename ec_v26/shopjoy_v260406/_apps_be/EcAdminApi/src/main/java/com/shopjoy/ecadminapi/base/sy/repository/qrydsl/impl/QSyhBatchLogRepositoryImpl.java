@@ -145,18 +145,21 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyhBatchLog 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(l.batchCode.likeIgnoreCase(pattern));
-            or.or(l.batchId.likeIgnoreCase(pattern));
-            or.or(l.batchLogId.likeIgnoreCase(pattern));
-            or.or(l.batchNm.likeIgnoreCase(pattern));
-            or.or(l.detail.likeIgnoreCase(pattern));
-            or.or(l.message.likeIgnoreCase(pattern));
-            or.or(l.runStatus.likeIgnoreCase(pattern));
-            or.or(l.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchCode,")) or.or(l.batchCode.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchId,")) or.or(l.batchId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchLogId,")) or.or(l.batchLogId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",batchNm,")) or.or(l.batchNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",detail,")) or.or(l.detail.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",message,")) or.or(l.message.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",runStatus,")) or.or(l.runStatus.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

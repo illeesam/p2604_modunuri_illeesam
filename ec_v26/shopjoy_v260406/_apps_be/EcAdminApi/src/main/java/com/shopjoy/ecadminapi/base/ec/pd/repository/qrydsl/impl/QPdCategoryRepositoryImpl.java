@@ -115,18 +115,21 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
             if (all || types.contains(",categoryNm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
-        /* searchValue LIKE OR — QPdCategory 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.categoryDesc.likeIgnoreCase(pattern));
-            or.or(c.categoryId.likeIgnoreCase(pattern));
-            or.or(c.categoryNm.likeIgnoreCase(pattern));
-            or.or(c.categoryStatusCd.likeIgnoreCase(pattern));
-            or.or(c.categoryStatusCdBefore.likeIgnoreCase(pattern));
-            or.or(c.imgUrl.likeIgnoreCase(pattern));
-            or.or(c.parentCategoryId.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryDesc,")) or.or(c.categoryDesc.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryId,")) or.or(c.categoryId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryNm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryStatusCd,")) or.or(c.categoryStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",categoryStatusCdBefore,")) or.or(c.categoryStatusCdBefore.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",imgUrl,")) or.or(c.imgUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",parentCategoryId,")) or.or(c.parentCategoryId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

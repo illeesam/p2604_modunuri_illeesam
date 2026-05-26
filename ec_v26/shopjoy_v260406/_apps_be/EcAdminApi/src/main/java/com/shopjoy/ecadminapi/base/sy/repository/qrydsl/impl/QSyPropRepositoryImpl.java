@@ -107,19 +107,22 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 default: break;
             }
         }
-        /* searchValue LIKE OR — QSyProp 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(p.pathId.likeIgnoreCase(pattern));
-            or.or(p.propId.likeIgnoreCase(pattern));
-            or.or(p.propKey.likeIgnoreCase(pattern));
-            or.or(p.propLabel.likeIgnoreCase(pattern));
-            or.or(p.propRemark.likeIgnoreCase(pattern));
-            or.or(p.propTypeCd.likeIgnoreCase(pattern));
-            or.or(p.propValue.likeIgnoreCase(pattern));
-            or.or(p.siteId.likeIgnoreCase(pattern));
-            or.or(p.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",pathId,")) or.or(p.pathId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",propId,")) or.or(p.propId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",propKey,")) or.or(p.propKey.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",propLabel,")) or.or(p.propLabel.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",propRemark,")) or.or(p.propRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",propTypeCd,")) or.or(p.propTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",propValue,")) or.or(p.propValue.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(p.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

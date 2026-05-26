@@ -142,25 +142,28 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                     break;
             }
         }
-        /* searchValue LIKE OR — QSyVendorContent 의 String 필드 (감사필드 제외) */
+        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
         if (s != null && StringUtils.hasText(s.getSearchValue())) {
             String pattern = "%" + s.getSearchValue() + "%";
+            String __typeRaw = s.getSearchType();
+            boolean __all = !StringUtils.hasText(__typeRaw);
+            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
-            or.or(c.attachGrpId.likeIgnoreCase(pattern));
-            or.or(c.contentHtml.likeIgnoreCase(pattern));
-            or.or(c.contentTypeCd.likeIgnoreCase(pattern));
-            or.or(c.imageUrl.likeIgnoreCase(pattern));
-            or.or(c.langCd.likeIgnoreCase(pattern));
-            or.or(c.linkUrl.likeIgnoreCase(pattern));
-            or.or(c.siteId.likeIgnoreCase(pattern));
-            or.or(c.thumbUrl.likeIgnoreCase(pattern));
-            or.or(c.useYn.likeIgnoreCase(pattern));
-            or.or(c.vendorContentId.likeIgnoreCase(pattern));
-            or.or(c.vendorContentRemark.likeIgnoreCase(pattern));
-            or.or(c.vendorContentStatusCd.likeIgnoreCase(pattern));
-            or.or(c.vendorContentSubtitle.likeIgnoreCase(pattern));
-            or.or(c.vendorContentTitle.likeIgnoreCase(pattern));
-            or.or(c.vendorId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",attachGrpId,")) or.or(c.attachGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentHtml,")) or.or(c.contentHtml.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentTypeCd,")) or.or(c.contentTypeCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",imageUrl,")) or.or(c.imageUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",langCd,")) or.or(c.langCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",linkUrl,")) or.or(c.linkUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",thumbUrl,")) or.or(c.thumbUrl.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",useYn,")) or.or(c.useYn.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorContentId,")) or.or(c.vendorContentId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorContentRemark,")) or.or(c.vendorContentRemark.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorContentStatusCd,")) or.or(c.vendorContentStatusCd.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorContentSubtitle,")) or.or(c.vendorContentSubtitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorContentTitle,")) or.or(c.vendorContentTitle.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",vendorId,")) or.or(c.vendorId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;
