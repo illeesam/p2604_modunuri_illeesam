@@ -166,6 +166,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.brandId));
 
             return orders;
         }
@@ -190,6 +191,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.brandId));
         }
         return orders;
     }

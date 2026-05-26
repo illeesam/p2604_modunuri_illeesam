@@ -182,6 +182,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, u.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, u.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, u.uiId));
 
             return orders;
         }
@@ -206,6 +207,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, u.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, u.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, u.uiId));
         }
         return orders;
     }

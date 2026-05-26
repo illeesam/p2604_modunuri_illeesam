@@ -171,7 +171,11 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
+        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
+        if (orders.isEmpty()) {
+            orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, e.exam1Id));
+        }
         return orders;
     }
 

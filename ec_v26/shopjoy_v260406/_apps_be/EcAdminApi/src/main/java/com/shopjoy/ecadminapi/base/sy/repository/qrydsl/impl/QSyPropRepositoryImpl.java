@@ -141,6 +141,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, p.propId));
 
             return orders;
         }
@@ -163,6 +164,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, p.propId));
         }
         return orders;
     }

@@ -165,6 +165,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, v.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, v.erpVoucherId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -182,7 +183,11 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, v.regDate));
+        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
+        if (orders.isEmpty()) {
+            orders.add(new OrderSpecifier<>(Order.DESC, v.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, v.erpVoucherId));
+        }
         return orders;
     }
 

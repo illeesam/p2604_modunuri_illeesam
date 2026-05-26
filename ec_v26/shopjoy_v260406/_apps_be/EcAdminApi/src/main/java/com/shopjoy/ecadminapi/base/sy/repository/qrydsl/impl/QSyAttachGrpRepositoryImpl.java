@@ -144,6 +144,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, g.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, g.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, g.attachGrpId));
 
             return orders;
         }
@@ -168,6 +169,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, g.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, g.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, g.attachGrpId));
         }
         return orders;
     }

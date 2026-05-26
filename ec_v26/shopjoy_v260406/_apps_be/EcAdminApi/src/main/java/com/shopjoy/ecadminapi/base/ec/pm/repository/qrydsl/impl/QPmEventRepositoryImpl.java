@@ -169,6 +169,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, e.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, e.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, e.eventId));
 
             return orders;
         }
@@ -193,6 +194,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, e.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, e.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, e.eventId));
         }
         return orders;
     }

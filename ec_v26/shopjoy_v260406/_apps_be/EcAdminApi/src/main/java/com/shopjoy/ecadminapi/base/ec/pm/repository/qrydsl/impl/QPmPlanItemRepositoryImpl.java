@@ -155,6 +155,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.planItemId));
 
             return orders;
         }
@@ -177,6 +178,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.planItemId));
         }
         return orders;
     }

@@ -157,6 +157,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.bbmId));
 
             return orders;
         }
@@ -181,6 +182,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.bbmId));
         }
         return orders;
     }

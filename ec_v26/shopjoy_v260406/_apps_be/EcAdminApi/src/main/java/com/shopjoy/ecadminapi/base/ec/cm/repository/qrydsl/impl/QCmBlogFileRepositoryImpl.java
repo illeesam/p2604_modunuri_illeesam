@@ -150,6 +150,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, f.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, f.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, f.blogImgId));
 
             return orders;
         }
@@ -172,6 +173,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, f.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, f.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, f.blogImgId));
         }
         return orders;
     }

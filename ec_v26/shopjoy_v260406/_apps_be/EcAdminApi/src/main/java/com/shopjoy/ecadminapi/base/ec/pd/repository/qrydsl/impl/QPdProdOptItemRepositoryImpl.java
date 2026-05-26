@@ -180,6 +180,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.optItemId));
 
             return orders;
         }
@@ -204,6 +205,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.optItemId));
         }
         return orders;
     }

@@ -146,6 +146,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.panelItemId));
 
             return orders;
         }
@@ -170,6 +171,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.panelItemId));
         }
         return orders;
     }

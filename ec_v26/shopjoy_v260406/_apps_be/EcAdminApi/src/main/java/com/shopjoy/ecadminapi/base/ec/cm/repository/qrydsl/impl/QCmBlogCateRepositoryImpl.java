@@ -161,6 +161,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.blogCateId));
 
             return orders;
         }
@@ -185,6 +186,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.blogCateId));
         }
         return orders;
     }

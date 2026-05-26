@@ -132,6 +132,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, g.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, g.memberGroupId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -151,7 +152,11 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, g.regDate));
+        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
+        if (orders.isEmpty()) {
+            orders.add(new OrderSpecifier<>(Order.DESC, g.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, g.memberGroupId));
+        }
         return orders;
     }
 

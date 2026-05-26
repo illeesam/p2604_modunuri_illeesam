@@ -138,6 +138,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.i18nId));
 
             return orders;
         }
@@ -160,6 +161,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, i.i18nId));
         }
         return orders;
     }

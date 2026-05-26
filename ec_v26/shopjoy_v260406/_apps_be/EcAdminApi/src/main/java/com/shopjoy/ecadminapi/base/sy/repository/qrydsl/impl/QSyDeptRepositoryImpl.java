@@ -168,6 +168,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, d.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, d.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, d.deptId));
 
             return orders;
         }
@@ -192,6 +193,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, d.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, d.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, d.deptId));
         }
         return orders;
     }

@@ -182,6 +182,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.vendorContentId));
 
             return orders;
         }
@@ -206,6 +207,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.vendorContentId));
         }
         return orders;
     }

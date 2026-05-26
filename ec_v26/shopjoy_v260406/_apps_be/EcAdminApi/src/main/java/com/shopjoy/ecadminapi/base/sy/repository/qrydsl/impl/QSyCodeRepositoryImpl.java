@@ -166,6 +166,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.codeId));
 
             return orders;
         }
@@ -188,6 +189,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.codeId));
         }
         return orders;
     }

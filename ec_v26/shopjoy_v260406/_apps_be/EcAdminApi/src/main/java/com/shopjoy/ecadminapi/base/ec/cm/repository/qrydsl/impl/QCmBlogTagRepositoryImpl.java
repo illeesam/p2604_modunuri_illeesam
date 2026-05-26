@@ -162,6 +162,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, t.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, t.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, t.blogTagId));
 
             return orders;
         }
@@ -186,6 +187,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, t.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, t.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, t.blogTagId));
         }
         return orders;
     }

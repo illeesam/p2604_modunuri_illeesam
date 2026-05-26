@@ -164,6 +164,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.benefitId));
 
             return orders;
         }
@@ -188,6 +189,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.benefitId));
         }
         return orders;
     }

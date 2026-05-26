@@ -148,6 +148,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.categoryId));
 
             return orders;
         }
@@ -172,6 +173,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, c.categoryId));
         }
         return orders;
     }

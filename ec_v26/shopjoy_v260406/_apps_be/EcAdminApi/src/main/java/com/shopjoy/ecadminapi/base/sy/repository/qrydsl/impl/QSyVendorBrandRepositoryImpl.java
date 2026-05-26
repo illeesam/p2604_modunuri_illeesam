@@ -162,6 +162,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.vendorBrandId));
 
             return orders;
         }
@@ -184,6 +185,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, b.vendorBrandId));
         }
         return orders;
     }

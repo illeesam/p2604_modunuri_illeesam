@@ -155,6 +155,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, t.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, t.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, t.tagId));
 
             return orders;
         }
@@ -179,6 +180,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, t.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, t.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, t.tagId));
         }
         return orders;
     }

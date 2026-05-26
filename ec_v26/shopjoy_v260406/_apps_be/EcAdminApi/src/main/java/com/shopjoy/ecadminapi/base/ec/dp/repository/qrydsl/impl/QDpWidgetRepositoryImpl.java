@@ -144,6 +144,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, w.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, w.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, w.widgetId));
 
             return orders;
         }
@@ -168,6 +169,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, w.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, w.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, w.widgetId));
         }
         return orders;
     }

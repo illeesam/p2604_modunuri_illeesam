@@ -177,6 +177,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, r.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, r.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, r.roleId));
 
             return orders;
         }
@@ -201,6 +202,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, r.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, r.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, r.roleId));
         }
         return orders;
     }

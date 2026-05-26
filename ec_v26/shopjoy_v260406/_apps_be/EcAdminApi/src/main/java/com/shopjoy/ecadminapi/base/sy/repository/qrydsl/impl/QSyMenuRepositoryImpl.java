@@ -168,6 +168,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, m.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, m.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, m.menuId));
 
             return orders;
         }
@@ -192,6 +193,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, m.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, m.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, m.menuId));
         }
         return orders;
     }

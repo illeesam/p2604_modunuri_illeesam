@@ -147,6 +147,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
             /* sortOrd ASC + regDate ASC (전역 정책) */
             orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, p.bizCd));
 
             return orders;
         }
@@ -169,6 +170,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         if (orders.isEmpty()) {
             orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
             orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, p.bizCd));
         }
         return orders;
     }

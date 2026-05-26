@@ -171,7 +171,12 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 orders.add(new OrderSpecifier(Order.DESC, a.regDate));
             }
             /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-            if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
+            if (orders.isEmpty()) {
+                orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+                orders.add(new OrderSpecifier<>(Order.ASC, a.reviewAttachId));
+            }
+                orders.add(new OrderSpecifier<>(Order.ASC, a.reviewAttachId));
             return orders;
         }
         if ("id_asc".equals(sort)) {
