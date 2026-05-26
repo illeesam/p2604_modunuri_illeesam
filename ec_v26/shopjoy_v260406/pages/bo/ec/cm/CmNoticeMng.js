@@ -322,18 +322,9 @@ window.CmNoticeMng = {
         ✕ 닫기
       </button>
     </div>
-    <cm-notice-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
-      :dtl-id="cfDetailEditId"
+    <cm-notice-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger"
-      :tab-mode="cfIsViewMode"
-      :on-list-reload="handleSearchList"
-      />
+      :reload-trigger="detailPanel.reloadTrigger" />
   </div>
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
 </div>

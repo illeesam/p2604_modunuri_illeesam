@@ -16,22 +16,16 @@ window.CmNoticeDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] }); // 공통코드
 
-    /* fnToday — 오늘 날짜 */
-
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CmNoticeDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장 (신규 등록 또는 수정)
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 편집 취소 → 목록으로 이동
       } else if (cmd === 'form-cancel') {
         return props.navigate('cmNoticeMng');
-      // 상세 보기 → 편집 모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
-      // 폼 닫기 → 목록으로 이동
       } else if (cmd === 'form-close') {
         return props.navigate('cmNoticeMng');
       } else {
@@ -57,7 +51,8 @@ window.CmNoticeDtl = {
 
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용
-    const dtlId = computed(() => props.dtlId);
+    const cfAttachRefId = computed(() => props.dtlId ? ('NOTICE-' + props.dtlId) : '');
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchDetail — 상세 조회 */
     const handleSearchDetail = async () => {
@@ -88,10 +83,8 @@ window.CmNoticeDtl = {
         const res = await (isNewNotice
           ? boApiSvc.cmNotice.create({ ...form }, '공지사항관리', '등록')
           : boApiSvc.cmNotice.update(props.dtlId, { ...form }, '공지사항관리', '저장'));
-        console.log('[handleSave] API Response:', res);
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewNotice ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
-        // 200ms 딜레이 후 목록으로 복귀 (서버 반영 대기)
         await new Promise(r => setTimeout(r, 200));
         if (props.navigate) { props.navigate('cmNoticeMng', { reload: true }); }
       } catch (err) {
@@ -136,18 +129,14 @@ window.CmNoticeDtl = {
       { key: 'isFixed',        label: '상단고정', type: 'checkbox',
         checkboxLabel: '상단고정', hideLabel: true,
         checkedValue: 'Y', uncheckedValue: 'N' },
-      { type: 'rowBreak' },
-      { key: 'contentHtml',    label: '내용', type: 'slot', name: 'contentHtml', colSpan: 4 },
-      { type: 'rowBreak' },
-      { key: 'attachGrpId',    label: '첨부파일', type: 'slot', name: 'attachGrp', colSpan: 4 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, form, errors, dtlId,                                             // 상태 / 데이터
+      uiState, codes, form, errors,                                                    // 상태 / 데이터
       baseFormColumns,                                                                 // 컬럼 정의
-      handleBtnAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode,                                                              // computed
+      handleBtnAction,                                                                 // dispatch
+      cfIsNew, cfDtlMode, cfAttachRefId,                                               // computed
       showToast,                                                                       // 첨부 컴포넌트 prop 전달용
     };
   },
@@ -161,41 +150,60 @@ window.CmNoticeDtl = {
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
+  <!-- ===== ■. 폼 영역 ===================================================== -->
   <div class="card">
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
+    <!-- ===== ■.■. 기본정보 (BoFormArea 자동 렌더) ============================= -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="4"
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')">
-      <!-- ===== ■.■.■. 내용 (Quill 또는 view 모드 HTML) ========================== -->
-      <template #contentHtml>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;" v-html="form.contentHtml || '<span style=color:#bbb>-</span>'">
-        </div>
-        <base-html-editor v-else v-model="form.contentHtml" height="280px" />
+      :readonly="cfDtlMode" :cols="4" :show-actions="false" />
+    <!-- ===== ■.■. 내용 (HtmlEditor 또는 view 모드 HTML) ======================== -->
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">
+        내용
+      </label>
+      <div v-if="cfDtlMode" class="form-control" style="min-height:200px;line-height:1.6;">
+        <div v-if="form.contentHtml" v-html="form.contentHtml"></div>
+        <span v-else style="color:#bbb;">-</span>
+      </div>
+      <base-html-editor v-else v-model="form.contentHtml" height="280px" />
+    </div>
+    <!-- ===== ■.■. 첨부파일 ================================================== -->
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">
+        첨부파일
+        <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">
+          #{{ form.attachGrpId }}
+        </span>
+      </label>
+      <base-attach-grp :model-value="form.attachGrpId"
+        @update:model-value="form.attachGrpId = $event"
+        :ref-id="cfAttachRefId"
+        :show-toast="showToast"
+        grp-code="NOTICE_ATTACH"
+        grp-name="공지 첨부파일"
+        :max-count="5"
+        :max-size-mb="10"
+        allow-ext="jpg,png,gif,pdf,xlsx,docx" />
+    </div>
+    <!-- ===== ■.■. 폼 액션 ================================================== -->
+    <div class="form-actions">
+      <template v-if="cfDtlMode">
+        <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
       </template>
-      <!-- ===== ■.■.■. 첨부파일 ================================================ -->
-      <template #attachGrp>
-        <div style="font-size:11px;font-weight:400;color:#aaa;margin-bottom:4px;">
-          #NOTICE_ATTACH
-          <span v-if="form.attachGrpId" style="margin-left:4px;">
-            #{{ form.attachGrpId }}
-          </span>
-        </div>
-        <base-attach-grp
-          :model-value="form.attachGrpId"
-          @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'NOTICE-'+dtlId : ''"
-          :show-toast="showToast"
-          grp-code="NOTICE_ATTACH"
-          grp-name="공지 첨부파일"
-          :max-count="5"
-          :max-size-mb="10"
-          allow-ext="jpg,png,gif,pdf,xlsx,docx"
-          />
+      <template v-else>
+        <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          취소
+        </button>
       </template>
-    </bo-form-area>
+    </div>
+    <!-- ===== □.□. 폼 액션 ================================================== -->
   </div>
   <!-- ===== □. 폼 영역 ==================================================== -->
 </div>

@@ -58,6 +58,74 @@ grep -nE '(:[a-zA-Z-]+|v-[a-z]+|@[a-z.]+)="[^"]*&' pages/bo/**/*.js components/*
 
 ---
 
+## ⛔ 0-B. 템플릿 속성값 인라인 객체에 따옴표 이스케이프(`\"` / `\'`) 금지 ⭐ (런타임 컴파일 크래시)
+
+### 증상
+
+특정 컴포넌트(`BaseHtmlEditor` 등)를 자식으로 마운트하려는 순간 **Vue 컴파일 단계에서**
+다음 에러로 화면 자체가 깨진다.
+
+```
+SyntaxError: Unexpected token ')'
+  at new Function (<anonymous>)
+  at Uu (vue.global.prod.js:11:65058)
+  ...
+```
+
+콘솔에 다른 에러는 안 보이고, 부모(Mng) 화면은 정상인데 **자식 Dtl/컴포넌트가 mount 시도하는
+순간**에만 발생. 부모 메뉴를 다른 곳으로 옮겨도 `<keep-alive>` 같은 잔류 효과로 화면이
+박혀 보일 수 있다.
+
+### 원인
+
+Vue 의 template 파서는 `:style="{ ... }"` 같은 **속성값 안에 들어간 객체 리터럴**을
+**JavaScript 표현식**으로 컴파일해 `new Function('with(this){...}')` 로 평가한다.
+이때 속성값 자체가 **백틱 template literal**(`` template: /* html */`...` ``) 안에 정의되어
+있으면, **JS 이스케이프(`\"`, `\'`) + HTML 속성 이스케이프 + Vue 표현식 파서**가 3중으로 충돌해
+컴파일된 코드의 따옴표 매칭이 깨지고 `Unexpected token ')'` 가 발생한다.
+
+> 검증 완료(BaseHtmlEditor textarea):
+> `:style="{ ..., fontFamily:\"'Consolas','D2Coding',monospace\", ... }"` — **크래시**
+> → `cfTextareaStyle` computed 로 분리 후 정상.
+
+### 금지 / 대체
+
+| 구분 | ❌ 금지 (속성값 내) | ✅ 대체 |
+|---|---|---|
+| 인라인 객체에 `\"` | `:style="{ fontFamily:\"'A','B'\" }"` | setup 에 `cfXxxStyle = computed(() => ({ fontFamily: \"'A','B'\" }))` 후 `:style="cfXxxStyle"` |
+| 인라인 객체에 `\'` | `:title="\\'X\\'"` 등 백슬래시가 섞인 패턴 | 일반 텍스트면 `:title="form.x"` / 가공 필요하면 computed 분리 |
+| 인라인 객체에 중첩 따옴표 | `:class="{ 'a-b': cond }"` (외부 `"` + 내부 `'` 정상) | **이건 OK** — 백슬래시 없이 단순 중첩만 허용 |
+
+### 안전 규칙
+
+1. **단순 문자열 스타일**: `style="font-size:12px;color:#333;"` (정적 문자열) 은 그대로 OK
+2. **단순 동적 바인딩**: `:style="form.style"` / `:class="cfClass"` 처럼 식별자만 가리키면 OK
+3. **인라인 객체에 백슬래시 이스케이프가 필요한 순간** → setup 에서 객체/computed 로 분리
+
+> 일반 규칙: **`\"` 또는 `\'` 가 속성값 안에 등장한다면 무조건 분리**.
+> 백틱 template literal 안에서 JS 이스케이프와 Vue 표현식 파서가 충돌할 위험이 항상 있다.
+
+### 점검 명령
+
+```bash
+# 속성값 안에 백슬래시 이스케이프된 따옴표가 들어있는지
+grep -nE '(:[a-zA-Z-]+|v-[a-z]+|@[a-z.]+)="[^"]*\\\\["\x27]' pages/bo/**/*.js components/**/*.js
+```
+
+결과가 있으면 위반. 신규/수정 컴포넌트는 작성 후 위 grep 으로 0건임을 확인한다.
+
+### 재발 사례(2026-05-26)
+
+- **현상**: 공지사항관리(수정/신규) 클릭 시 `SyntaxError: Unexpected token ')'` 로 화면이 깨지고
+  다른 시스템 메뉴로 이동해도 화면이 박힘.
+- **원인 추적**: CmNoticeDtl 의 template 를 단계적으로 줄여서 좁힌 결과,
+  `<base-html-editor>` 자체가 mount 시 깨짐 → BaseHtmlEditor textarea 의
+  `:style="{ ..., fontFamily:\"'Consolas','D2Coding',monospace\", ... }"` 가 원인.
+- **수정**: `components/comp/BaseComp.js` 의 BaseHtmlEditor 에 `cfTextareaStyle` computed 추가,
+  template 는 `:style="cfTextareaStyle"` 로 변경.
+
+---
+
 ## 0. watch / computed 최소화 원칙 ⭐
 
 **핵심 방침**: `watch`와 `computed`는 꼭 필요한 경우에만 사용하고, 가능하면 직접 함수 호출 방식으로 대체한다.

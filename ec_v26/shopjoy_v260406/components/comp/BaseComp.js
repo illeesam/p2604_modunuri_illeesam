@@ -770,8 +770,26 @@ window.BaseHtmlEditor = {
       }
     });
 
+    /* source 모드 textarea 스타일 (template 속성값 이스케이프 회피용 computed) */
+    const cfTextareaStyle = Vue.computed(() => ({
+      width: '100%',
+      minHeight: props.height,
+      padding: '12px 14px',
+      border: '1px solid #d9d9d9',
+      borderRadius: '6px',
+      fontFamily: "'Consolas','D2Coding',monospace",
+      fontSize: '12px',
+      lineHeight: '1.7',
+      color: '#333',
+      resize: 'vertical',
+      boxSizing: 'border-box',
+      margin: 0,
+      background: '#fafafa',
+      outline: 'none',
+    }));
+
     return {
-      editorEl, mode,                          // 상태
+      editorEl, mode, cfTextareaStyle,         // 상태
       handleBtnAction, handleSelectAction,     // dispatch
     };
   },
@@ -799,7 +817,7 @@ window.BaseHtmlEditor = {
   </div>
   <textarea v-show="mode === 'source'" :value="modelValue" @input="handleSelectAction('editor-source-input', $event)"
     spellcheck="false"
-    :style="{ width:'100%', minHeight: height, padding:'12px 14px', border:'1px solid #d9d9d9', borderRadius:'6px', fontFamily:\"'Consolas','D2Coding',monospace\", fontSize:'12px', lineHeight:'1.7', color:'#333', resize:'vertical', boxSizing:'border-box', margin:0, background:'#fafafa', outline:'none' }"></textarea>
+    :style="cfTextareaStyle"></textarea>
   </div>
 `
 };
