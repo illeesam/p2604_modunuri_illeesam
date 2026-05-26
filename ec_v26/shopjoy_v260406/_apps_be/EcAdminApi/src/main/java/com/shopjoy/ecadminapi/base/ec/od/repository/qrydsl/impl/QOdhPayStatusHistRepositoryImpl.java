@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** OdhPayStatusHist QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistRepository {
@@ -106,6 +105,21 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
             if ("reg_date".equals(s.getDateType())) {
                 w.and(h.regDate.goe(start)).and(h.regDate.lt(endExcl));
             }
+        }
+        /* searchValue LIKE OR — QOdhPayStatusHist 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(h.chgUserId.likeIgnoreCase(pattern));
+            or.or(h.memo.likeIgnoreCase(pattern));
+            or.or(h.orderId.likeIgnoreCase(pattern));
+            or.or(h.payId.likeIgnoreCase(pattern));
+            or.or(h.payStatusCd.likeIgnoreCase(pattern));
+            or.or(h.payStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(h.payStatusHistId.likeIgnoreCase(pattern));
+            or.or(h.siteId.likeIgnoreCase(pattern));
+            or.or(h.statusReason.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

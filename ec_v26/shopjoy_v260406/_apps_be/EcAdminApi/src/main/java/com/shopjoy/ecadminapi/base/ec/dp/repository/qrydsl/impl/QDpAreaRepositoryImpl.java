@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 
@@ -102,6 +101,21 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 case "upd_date": w.and(a.updDate.goe(start)).and(a.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QDpArea 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(a.areaCd.likeIgnoreCase(pattern));
+            or.or(a.areaDesc.likeIgnoreCase(pattern));
+            or.or(a.areaId.likeIgnoreCase(pattern));
+            or.or(a.areaNm.likeIgnoreCase(pattern));
+            or.or(a.areaTypeCd.likeIgnoreCase(pattern));
+            or.or(a.pathId.likeIgnoreCase(pattern));
+            or.or(a.siteId.likeIgnoreCase(pattern));
+            or.or(a.uiId.likeIgnoreCase(pattern));
+            or.or(a.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

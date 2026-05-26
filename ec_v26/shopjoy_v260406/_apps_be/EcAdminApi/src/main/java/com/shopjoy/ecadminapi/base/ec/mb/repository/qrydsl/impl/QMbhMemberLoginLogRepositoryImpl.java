@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepository {
 
@@ -116,6 +115,27 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                 case "reg_date": w.and(l.regDate.goe(start)).and(l.regDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QMbhMemberLoginLog 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.accessToken.likeIgnoreCase(pattern));
+            or.or(l.authId.likeIgnoreCase(pattern));
+            or.or(l.browser.likeIgnoreCase(pattern));
+            or.or(l.cmdNm.likeIgnoreCase(pattern));
+            or.or(l.country.likeIgnoreCase(pattern));
+            or.or(l.device.likeIgnoreCase(pattern));
+            or.or(l.ip.likeIgnoreCase(pattern));
+            or.or(l.logId.likeIgnoreCase(pattern));
+            or.or(l.loginId.likeIgnoreCase(pattern));
+            or.or(l.memberId.likeIgnoreCase(pattern));
+            or.or(l.os.likeIgnoreCase(pattern));
+            or.or(l.refreshToken.likeIgnoreCase(pattern));
+            or.or(l.resultCd.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            or.or(l.uiNm.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

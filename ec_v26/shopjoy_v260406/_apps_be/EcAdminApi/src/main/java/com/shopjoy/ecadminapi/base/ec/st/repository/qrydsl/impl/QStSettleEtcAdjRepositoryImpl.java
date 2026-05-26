@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** StSettleEtcAdj QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository {
@@ -126,6 +125,19 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                     w.and(a.updDate.goe(start)).and(a.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QStSettleEtcAdj 의 String 필드 (감사필드 제외) */
+        if (c != null && StringUtils.hasText(c.getSearchValue())) {
+            String pattern = "%" + c.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(a.etcAdjDirCd.likeIgnoreCase(pattern));
+            or.or(a.etcAdjReason.likeIgnoreCase(pattern));
+            or.or(a.etcAdjTypeCd.likeIgnoreCase(pattern));
+            or.or(a.settleEtcAdjId.likeIgnoreCase(pattern));
+            or.or(a.settleEtcAdjMemo.likeIgnoreCase(pattern));
+            or.or(a.settleId.likeIgnoreCase(pattern));
+            or.or(a.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

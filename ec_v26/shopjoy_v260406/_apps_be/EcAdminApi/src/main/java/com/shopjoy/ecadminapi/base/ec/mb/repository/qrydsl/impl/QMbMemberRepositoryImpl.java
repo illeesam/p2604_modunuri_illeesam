@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** MbMember QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QMbMemberRepositoryImpl implements QMbMemberRepository {
@@ -144,6 +143,26 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                     w.and(m.updDate.goe(start)).and(m.updDate.lt(endExcl));   break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QMbMember 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(m.gradeCd.likeIgnoreCase(pattern));
+            or.or(m.loginId.likeIgnoreCase(pattern));
+            or.or(m.loginPwdHash.likeIgnoreCase(pattern));
+            or.or(m.memberAddr.likeIgnoreCase(pattern));
+            or.or(m.memberAddrDetail.likeIgnoreCase(pattern));
+            or.or(m.memberGender.likeIgnoreCase(pattern));
+            or.or(m.memberId.likeIgnoreCase(pattern));
+            or.or(m.memberMemo.likeIgnoreCase(pattern));
+            or.or(m.memberNm.likeIgnoreCase(pattern));
+            or.or(m.memberPhone.likeIgnoreCase(pattern));
+            or.or(m.memberStatusCd.likeIgnoreCase(pattern));
+            or.or(m.memberStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(m.memberZipCode.likeIgnoreCase(pattern));
+            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

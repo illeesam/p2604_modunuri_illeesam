@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyAttach QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAttachRepositoryImpl implements QSyAttachRepository {
@@ -120,6 +119,32 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyAttach 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(a.attachGrpId.likeIgnoreCase(pattern));
+            or.or(a.attachId.likeIgnoreCase(pattern));
+            or.or(a.attachMemo.likeIgnoreCase(pattern));
+            or.or(a.attachUrl.likeIgnoreCase(pattern));
+            or.or(a.cdnHost.likeIgnoreCase(pattern));
+            or.or(a.cdnImgUrl.likeIgnoreCase(pattern));
+            or.or(a.cdnThumbUrl.likeIgnoreCase(pattern));
+            or.or(a.fileExt.likeIgnoreCase(pattern));
+            or.or(a.fileNm.likeIgnoreCase(pattern));
+            or.or(a.mimeTypeCd.likeIgnoreCase(pattern));
+            or.or(a.physicalPath.likeIgnoreCase(pattern));
+            or.or(a.siteId.likeIgnoreCase(pattern));
+            or.or(a.storagePath.likeIgnoreCase(pattern));
+            or.or(a.storageType.likeIgnoreCase(pattern));
+            or.or(a.storedNm.likeIgnoreCase(pattern));
+            or.or(a.thumbCdnUrl.likeIgnoreCase(pattern));
+            or.or(a.thumbFileNm.likeIgnoreCase(pattern));
+            or.or(a.thumbGeneratedYn.likeIgnoreCase(pattern));
+            or.or(a.thumbStoredNm.likeIgnoreCase(pattern));
+            or.or(a.thumbUrl.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

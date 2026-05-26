@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyVendor QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorRepositoryImpl implements QSyVendorRepository {
@@ -139,6 +138,36 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyVendor 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(v.ceoNm.likeIgnoreCase(pattern));
+            or.or(v.corpNo.likeIgnoreCase(pattern));
+            or.or(v.pathId.likeIgnoreCase(pattern));
+            or.or(v.siteId.likeIgnoreCase(pattern));
+            or.or(v.vendorAddr.likeIgnoreCase(pattern));
+            or.or(v.vendorAddrDetail.likeIgnoreCase(pattern));
+            or.or(v.vendorBankAccount.likeIgnoreCase(pattern));
+            or.or(v.vendorBankHolder.likeIgnoreCase(pattern));
+            or.or(v.vendorBankNm.likeIgnoreCase(pattern));
+            or.or(v.vendorClassCd.likeIgnoreCase(pattern));
+            or.or(v.vendorEmail.likeIgnoreCase(pattern));
+            or.or(v.vendorFax.likeIgnoreCase(pattern));
+            or.or(v.vendorHomepage.likeIgnoreCase(pattern));
+            or.or(v.vendorId.likeIgnoreCase(pattern));
+            or.or(v.vendorItem.likeIgnoreCase(pattern));
+            or.or(v.vendorNm.likeIgnoreCase(pattern));
+            or.or(v.vendorNmEn.likeIgnoreCase(pattern));
+            or.or(v.vendorNo.likeIgnoreCase(pattern));
+            or.or(v.vendorPhone.likeIgnoreCase(pattern));
+            or.or(v.vendorRegUrl.likeIgnoreCase(pattern));
+            or.or(v.vendorRemark.likeIgnoreCase(pattern));
+            or.or(v.vendorStatusCd.likeIgnoreCase(pattern));
+            or.or(v.vendorType.likeIgnoreCase(pattern));
+            or.or(v.vendorZipCode.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

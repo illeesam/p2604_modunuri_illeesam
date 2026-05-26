@@ -142,6 +142,24 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QStSettlePay 의 String 필드 (감사필드 제외) */
+        if (c != null && StringUtils.hasText(c.getSearchValue())) {
+            String pattern = "%" + c.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(p.bankAccount.likeIgnoreCase(pattern));
+            or.or(p.bankHolder.likeIgnoreCase(pattern));
+            or.or(p.bankNm.likeIgnoreCase(pattern));
+            or.or(p.payBy.likeIgnoreCase(pattern));
+            or.or(p.payMethodCd.likeIgnoreCase(pattern));
+            or.or(p.payStatusCd.likeIgnoreCase(pattern));
+            or.or(p.payStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(p.settleId.likeIgnoreCase(pattern));
+            or.or(p.settlePayId.likeIgnoreCase(pattern));
+            or.or(p.settlePayMemo.likeIgnoreCase(pattern));
+            or.or(p.siteId.likeIgnoreCase(pattern));
+            or.or(p.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

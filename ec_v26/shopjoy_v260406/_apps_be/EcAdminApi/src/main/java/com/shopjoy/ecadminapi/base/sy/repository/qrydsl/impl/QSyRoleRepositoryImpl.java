@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyRole QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyRoleRepositoryImpl implements QSyRoleRepository {
@@ -95,6 +94,14 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
+    /* 검색조건 기준 전체 카운트 (대량 export 안전 상한 검증용) */
+    @Override
+    public long selectCount(SyRoleDto.Request search) {
+        BooleanBuilder where = buildCondition(search);
+        Long total = queryFactory.select(r.count()).from(r).where(where).fetchOne();
+        return total == null ? 0L : total;
+    }
+
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     private BooleanBuilder buildCondition(SyRoleDto.Request s) {
         BooleanBuilder w = new BooleanBuilder();
@@ -134,6 +141,22 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyRole 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.parentRoleId.likeIgnoreCase(pattern));
+            or.or(r.pathId.likeIgnoreCase(pattern));
+            or.or(r.restrictPerm.likeIgnoreCase(pattern));
+            or.or(r.roleCode.likeIgnoreCase(pattern));
+            or.or(r.roleId.likeIgnoreCase(pattern));
+            or.or(r.roleNm.likeIgnoreCase(pattern));
+            or.or(r.roleRemark.likeIgnoreCase(pattern));
+            or.or(r.roleTypeCd.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            or.or(r.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

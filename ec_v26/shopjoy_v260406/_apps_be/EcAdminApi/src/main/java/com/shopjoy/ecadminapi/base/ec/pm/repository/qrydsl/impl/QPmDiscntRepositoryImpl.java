@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmDiscnt QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
@@ -134,6 +133,25 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                     w.and(d.updDate.goe(start)).and(d.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmDiscnt 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(d.discntDesc.likeIgnoreCase(pattern));
+            or.or(d.discntId.likeIgnoreCase(pattern));
+            or.or(d.discntNm.likeIgnoreCase(pattern));
+            or.or(d.discntStatusCd.likeIgnoreCase(pattern));
+            or.or(d.discntStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(d.discntTargetCd.likeIgnoreCase(pattern));
+            or.or(d.discntTypeCd.likeIgnoreCase(pattern));
+            or.or(d.dvcMappYn.likeIgnoreCase(pattern));
+            or.or(d.dvcMwebYn.likeIgnoreCase(pattern));
+            or.or(d.dvcPcYn.likeIgnoreCase(pattern));
+            or.or(d.memGradeCd.likeIgnoreCase(pattern));
+            or.or(d.siteId.likeIgnoreCase(pattern));
+            or.or(d.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

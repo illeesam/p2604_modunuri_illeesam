@@ -135,6 +135,21 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
                     break;
             }
         }
+        /* searchValue LIKE OR — QCmBlogReply 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.blogCommentContent.likeIgnoreCase(pattern));
+            or.or(r.blogId.likeIgnoreCase(pattern));
+            or.or(r.commentId.likeIgnoreCase(pattern));
+            or.or(r.commentStatusCd.likeIgnoreCase(pattern));
+            or.or(r.commentStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(r.parentCommentId.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            or.or(r.writerId.likeIgnoreCase(pattern));
+            or.or(r.writerNm.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

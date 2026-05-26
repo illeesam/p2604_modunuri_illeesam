@@ -19,7 +19,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyAttachGrp QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
@@ -111,6 +110,20 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyAttachGrp 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(g.attachGrpCode.likeIgnoreCase(pattern));
+            or.or(g.attachGrpId.likeIgnoreCase(pattern));
+            or.or(g.attachGrpNm.likeIgnoreCase(pattern));
+            or.or(g.attachGrpRemark.likeIgnoreCase(pattern));
+            or.or(g.fileExtAllow.likeIgnoreCase(pattern));
+            or.or(g.siteId.likeIgnoreCase(pattern));
+            or.or(g.storagePath.likeIgnoreCase(pattern));
+            or.or(g.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

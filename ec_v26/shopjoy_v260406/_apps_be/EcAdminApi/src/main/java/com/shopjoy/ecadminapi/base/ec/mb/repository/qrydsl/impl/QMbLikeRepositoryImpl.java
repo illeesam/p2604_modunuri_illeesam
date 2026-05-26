@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
@@ -108,6 +107,17 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 case "upd_date": w.and(l.updDate.goe(start)).and(l.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QMbLike 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.likeId.likeIgnoreCase(pattern));
+            or.or(l.memberId.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            or.or(l.targetId.likeIgnoreCase(pattern));
+            or.or(l.targetTypeCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

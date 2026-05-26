@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
@@ -105,6 +104,18 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
                 case "upd_date": w.and(r.updDate.goe(start)).and(r.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QMbMemberRole 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.grantUserId.likeIgnoreCase(pattern));
+            or.or(r.memberId.likeIgnoreCase(pattern));
+            or.or(r.memberRoleId.likeIgnoreCase(pattern));
+            or.or(r.memberRoleRemark.likeIgnoreCase(pattern));
+            or.or(r.roleId.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

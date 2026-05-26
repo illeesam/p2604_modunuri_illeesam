@@ -15,5 +15,8 @@ public interface QSyRoleRepository {
 
     SyRoleDto.PageResponse selectPageList(SyRoleDto.Request search);
 
+    /** 검색조건 기준 전체 카운트 (대량 export 안전 상한 검증용) */
+    long selectCount(SyRoleDto.Request search);
+
     int updateSelective(SyRole entity);
 }

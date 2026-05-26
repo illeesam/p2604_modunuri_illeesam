@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
@@ -98,6 +97,18 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                 case "upd_date": w.and(t.updDate.goe(start)).and(t.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QMbDeviceToken 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(t.benefitNotiYn.likeIgnoreCase(pattern));
+            or.or(t.deviceToken.likeIgnoreCase(pattern));
+            or.or(t.deviceTokenId.likeIgnoreCase(pattern));
+            or.or(t.memberId.likeIgnoreCase(pattern));
+            or.or(t.osType.likeIgnoreCase(pattern));
+            or.or(t.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

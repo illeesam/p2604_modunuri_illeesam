@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyhAlarmSendHist QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistRepository {
@@ -135,6 +134,20 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyhAlarmSendHist 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(h.alarmId.likeIgnoreCase(pattern));
+            or.or(h.channel.likeIgnoreCase(pattern));
+            or.or(h.errorMsg.likeIgnoreCase(pattern));
+            or.or(h.memberId.likeIgnoreCase(pattern));
+            or.or(h.sendHistId.likeIgnoreCase(pattern));
+            or.or(h.sendHistStatusCd.likeIgnoreCase(pattern));
+            or.or(h.sendTo.likeIgnoreCase(pattern));
+            or.or(h.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

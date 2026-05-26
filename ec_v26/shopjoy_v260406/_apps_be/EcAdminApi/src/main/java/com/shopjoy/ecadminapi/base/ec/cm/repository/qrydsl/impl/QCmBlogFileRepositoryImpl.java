@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** CmBlogFile QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
@@ -119,6 +118,18 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QCmBlogFile 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(f.blogId.likeIgnoreCase(pattern));
+            or.or(f.blogImgId.likeIgnoreCase(pattern));
+            or.or(f.imgAltText.likeIgnoreCase(pattern));
+            or.or(f.imgUrl.likeIgnoreCase(pattern));
+            or.or(f.siteId.likeIgnoreCase(pattern));
+            or.or(f.thumbUrl.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

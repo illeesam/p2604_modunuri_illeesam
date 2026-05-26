@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** DpUiArea QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
@@ -114,6 +113,20 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QDpUiArea 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(a.areaId.likeIgnoreCase(pattern));
+            or.or(a.dispEnv.likeIgnoreCase(pattern));
+            or.or(a.dispYn.likeIgnoreCase(pattern));
+            or.or(a.siteId.likeIgnoreCase(pattern));
+            or.or(a.uiAreaId.likeIgnoreCase(pattern));
+            or.or(a.uiId.likeIgnoreCase(pattern));
+            or.or(a.useYn.likeIgnoreCase(pattern));
+            or.or(a.visibilityTargets.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

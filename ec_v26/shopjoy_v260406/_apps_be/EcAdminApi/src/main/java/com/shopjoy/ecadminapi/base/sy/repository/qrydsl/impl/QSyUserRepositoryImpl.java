@@ -20,6 +20,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +86,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         return Optional.ofNullable(dto);
     }
 
-    /** 전체 목록 (page/size 가 양수면 페이징 적용) */
+    /** 전체 목록 (page/size 가 양수면 페이징 적용. null 안전) */
     @Override
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {
         BooleanBuilder where = buildCondition(search);
@@ -93,10 +96,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
-        if (search.getPageSize() > 0 && search.getPageNo() > 0) {
-            int offset = (search.getPageNo() - 1) * search.getPageSize();
-            int limit  = search.getPageSize();
-            query.offset(offset).limit(limit);
+        Integer pageNo = search == null ? null : search.getPageNo();
+        Integer pageSize = search == null ? null : search.getPageSize();
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            query.offset(offset).limit(pageSize);
         }
         return query.fetch();
     }
@@ -131,44 +135,65 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** 검색조건 빌드 */
+    /** 검색조건 기준 전체 카운트 (스트리밍 export 시 안전 상한 검증용) */
+    @Override
+    public long selectCount(SyUserDto.Request search) {
+        BooleanBuilder where = buildCondition(search);
+        Long total = queryFactory.select(syUser.count())
+                .from(syUser)
+                .where(where)
+                .fetchOne();
+        return total == null ? 0L : total;
+    }
+
+    /** 검색조건 빌드 — searchValue LIKE OR (Q-class StringPath 자동) + 기간 + 단일 비교조건. */
     private BooleanBuilder buildCondition(SyUserDto.Request s) {
         BooleanBuilder b = new BooleanBuilder();
+        if (s == null) return b;
+
         if (StringUtils.hasText(s.getSiteId())) b.and(syUser.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getDeptId())) b.and(syUser.deptId.eq(s.getDeptId()));
         if (StringUtils.hasText(s.getStatus())) b.and(syUser.userStatusCd.eq(s.getStatus()));
-        // 추가 검색 조건은 MyBatis처럼 복잡하므로 간단히 구현. 필요시 확장// 1. siteId 조건 (exists 사용)
-        // if (StringUtils.hasText(s.getSiteId())) {
-        //     b.and(JPAExpressions
-        //             .selectOne()
-        //             .from(sySite)
-        //             .where(sySite.siteId.eq(syUser.siteId)
-        //                     .and(sySite.siteId.eq(s.getSiteId())))
-        //             .exists());
-        // }
 
-        // // 2. deptId 조건 (exists 사용)
-        // if (StringUtils.hasText(s.getDeptId())) {
-        //     b.and(JPAExpressions
-        //             .selectOne()
-        //             .from(syDept)
-        //             .where(syDept.deptId.eq(syUser.deptId)
-        //                     .and(syDept.deptId.eq(s.getDeptId())))
-        //             .exists());
-        // }
-
-        // // 3. status 조건 (단일 테이블 내 exists 혹은 eq)
-        // // userStatusCd는 syUser의 컬럼이므로 exists로 돌리려면 자기 자신을 조회하거나 
-        // // 공통 코드 테이블(syCode) 기준으로 체크해야 합니다.
-        // if (StringUtils.hasText(s.getStatus())) {
-        //     b.and(JPAExpressions
-        //             .selectOne()
-        //             .from(syCode_userStatusCd)
-        //             .where(syCode_userStatusCd.codeGrp.eq("USER_STATUS")
-        //                     .and(syCode_userStatusCd.codeValue.eq(syUser.userStatusCd))
-        //                     .and(syCode_userStatusCd.codeValue.eq(s.getStatus())))
-        //             .exists());
-        // }
+        /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+        if (StringUtils.hasText(s.getDateType())
+                && StringUtils.hasText(s.getDateStart())
+                && StringUtils.hasText(s.getDateEnd())) {
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
+            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+            switch (s.getDateType()) {
+                case "reg_date":
+                    b.and(syUser.regDate.goe(start)).and(syUser.regDate.lt(endExcl));
+                    break;
+                case "upd_date":
+                    b.and(syUser.updDate.goe(start)).and(syUser.updDate.lt(endExcl));
+                    break;
+                case "last_login_date":
+                    b.and(syUser.lastLoginDate.goe(start)).and(syUser.lastLoginDate.lt(endExcl));
+                    break;
+                default: break;
+            }
+        }
+        /* searchValue LIKE OR — QSyUser 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(syUser.authMethodCd.likeIgnoreCase(pattern));
+            or.or(syUser.deptId.likeIgnoreCase(pattern));
+            or.or(syUser.loginId.likeIgnoreCase(pattern));
+            or.or(syUser.loginPwdHash.likeIgnoreCase(pattern));
+            or.or(syUser.profileAttachId.likeIgnoreCase(pattern));
+            or.or(syUser.roleId.likeIgnoreCase(pattern));
+            or.or(syUser.siteId.likeIgnoreCase(pattern));
+            or.or(syUser.userEmail.likeIgnoreCase(pattern));
+            or.or(syUser.userId.likeIgnoreCase(pattern));
+            or.or(syUser.userMemo.likeIgnoreCase(pattern));
+            or.or(syUser.userNm.likeIgnoreCase(pattern));
+            or.or(syUser.userPhone.likeIgnoreCase(pattern));
+            or.or(syUser.userStatusCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) b.and(or);
+        }
         return b;
     }
 

@@ -134,6 +134,21 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QOdClaimItem 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(i.claimId.likeIgnoreCase(pattern));
+            or.or(i.claimItemId.likeIgnoreCase(pattern));
+            or.or(i.claimItemStatusCd.likeIgnoreCase(pattern));
+            or.or(i.claimItemStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(i.orderItemId.likeIgnoreCase(pattern));
+            or.or(i.prodId.likeIgnoreCase(pattern));
+            or.or(i.prodNm.likeIgnoreCase(pattern));
+            or.or(i.prodOption.likeIgnoreCase(pattern));
+            or.or(i.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

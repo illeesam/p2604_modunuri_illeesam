@@ -53,6 +53,11 @@ window.SyRoleMng = {
       // 역할 목록 엑셀 내보내기
       } else if (cmd === 'roles-excel') {
         return exportExcel();
+      // 역할 엑셀 업로드 모달 열기
+      } else if (cmd === 'roles-excel-upload') {
+        excelUploadModal.reloadTrigger++;
+        excelUploadModal.show = true;
+        return;
       // 역할 목록 재조회
       } else if (cmd === 'roles-reload') {
         return handleSearchList('RELOAD');
@@ -205,6 +210,9 @@ window.SyRoleMng = {
         uiState.loading = false;
       }
     };
+    /* -- 엑셀 업로드 모달 (컬럼/키는 다운로드 파일의 3행 헤더에서 자동 추출) -- */
+    const excelUploadModal = reactive({ show: false, reloadTrigger: 0 });
+
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
 
@@ -739,11 +747,13 @@ window.SyRoleMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, searchParam, gridRows, expanded,                                                       // 상태 / 데이터
+      excelUploadModal,                                                                                      // 엑셀 업로드 모달
       baseSearchColumns, baseGridColumns,                                                                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked, cfRoleUsersList,            // computed
       fnPermColor, getMenuPerm, isMenuChecked,                                                               // 헬퍼
       pathPickModal, roleTreeModal,                                                                          // 모달 상태
+      showToast, showConfirm,                                                                                // 모달 콜백
     };
   },
   template: /* html */`
@@ -779,12 +789,14 @@ window.SyRoleMng = {
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="baseGridColumns" :rows="gridRows" row-key="roleId"
-        list-title="역할목록" :show-export="true" :draggable="false"
+        list-title="역할목록" :show-export="true" :show-excel-upload="true" :draggable="false"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('roles-add')" @save="handleBtnAction('roles-save')"
         @delete-checked="handleBtnAction('roles-deleteChecked')" @cancel-checked="handleBtnAction('roles-cancelChecked')"
-        @cell-change="row => handleSelectAction('roles-rowCellChange', row)" @export="handleBtnAction('roles-excel')">
+        @cell-change="row => handleSelectAction('roles-rowCellChange', row)"
+        @export="handleBtnAction('roles-excel')"
+        @excel-upload="handleBtnAction('roles-excel-upload')">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-rowCancel', idx)" @delete="handleSelectAction('roles-rowDelete', idx)">
           </bo-row-cancel-delete>
@@ -947,6 +959,12 @@ window.SyRoleMng = {
     <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
     <!-- ===== ■. 조건부 영역 ================================================== -->
     <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role" :value="pathPickModal.row ? pathPickModal.row.pathId : null" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+
+    <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
+    <bo-excel-upload-modal v-if="excelUploadModal.show"
+      default-domain="role"
+      @close="excelUploadModal.show = false"
+      @saved="handleBtnAction('roles-reload')" />
   </div>
   <!-- ===== □. 조건부 영역 ================================================== -->
 `,

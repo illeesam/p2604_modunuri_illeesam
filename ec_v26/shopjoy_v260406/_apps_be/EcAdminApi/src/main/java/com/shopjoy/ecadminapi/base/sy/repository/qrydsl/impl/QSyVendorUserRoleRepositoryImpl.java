@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyVendorUserRole QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleRepository {
@@ -131,6 +130,19 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyVendorUserRole 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.grantUserId.likeIgnoreCase(pattern));
+            or.or(r.roleId.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            or.or(r.userId.likeIgnoreCase(pattern));
+            or.or(r.vendorId.likeIgnoreCase(pattern));
+            or.or(r.vendorUserRoleId.likeIgnoreCase(pattern));
+            or.or(r.vendorUserRoleRemark.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

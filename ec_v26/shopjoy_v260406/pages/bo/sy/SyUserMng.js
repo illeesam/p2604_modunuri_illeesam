@@ -45,6 +45,11 @@ window.SyUserMng = {
       // 사용자 목록 엑셀 내보내기
       } else if (cmd === 'users-excel') {
         return exportExcel();
+      // 사용자 엑셀 업로드 모달 열기
+      } else if (cmd === 'users-excel-upload') {
+        excelUploadModal.reloadTrigger++;
+        excelUploadModal.show = true;
+        return;
       // 부서 트리 전체 펼치기
       } else if (cmd === 'deptTree-expandAll') {
         return expandAll();
@@ -107,6 +112,9 @@ window.SyUserMng = {
 
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 인라인 Dtl 패널 상태
+
+    /* ===== 엑셀 업로드 모달 (컬럼은 다운로드 파일의 3행 헤더에서 자동 추출) ===== */
+    const excelUploadModal = reactive({ show: false, reloadTrigger: 0 });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -245,8 +253,15 @@ window.SyUserMng = {
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(users, [{label:'ID',key:'userId'},{label:'로그인ID',key:'loginId'},{label:'이름',key:'userNm'},{label:'이메일',key:'userEmail'},{label:'연락처',key:'userPhone'},{label:'권한',key:'roleNm'},{label:'부서',key:'deptNm'},{label:'상태',key:'userStatusCd'},{label:'최종로그인',key:'lastLoginDate'}], '사용자목록.csv');
+    /* exportExcel — 엑셀(xlsx) 내보내기. 백엔드 SXSSF 스트리밍 — 대용량 메모리 안전. */
+    const exportExcel = () => {
+      const params = {
+        ...getSortParam(),
+        ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+      };
+      if (uiState.selectedDeptId != null) { params.deptId = uiState.selectedDeptId; }
+      return coUtil.cofDownloadExcel('/bo/sy/user/excel', params, '사용자목록', '사용자관리', '엑셀다운로드');
+    };
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -326,6 +341,7 @@ window.SyUserMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       users, uiState, codes, searchParam, pager, detailPanel, expanded,  // 상태 / 데이터
+      excelUploadModal,                                                  // 엑셀 업로드 모달
       baseSearchColumns, baseGridColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfDetailEditId, cfIsViewMode, cfDetailKey,                 // computed
@@ -385,6 +401,9 @@ window.SyUserMng = {
             <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
               📥 엑셀
             </button>
+            <button class="btn btn-blue btn-sm" @click="handleBtnAction('users-excel-upload')">
+              📤 엑셀업로드
+            </button>
             <button class="btn btn-primary btn-sm" @click="handleBtnAction('users-add')">
               + 신규
             </button>
@@ -424,6 +443,12 @@ window.SyUserMng = {
       :on-list-reload="handleSearchList" />
   </div>
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+
+  <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
+  <bo-excel-upload-modal v-if="excelUploadModal.show"
+    default-domain="user"
+    @close="excelUploadModal.show = false"
+    @saved="handleSearchList" />
 </div>
 `,
 };

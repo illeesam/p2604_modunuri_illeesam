@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyContact QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyContactRepositoryImpl implements QSyContactRepository {
@@ -120,6 +119,23 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyContact 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.answerUserId.likeIgnoreCase(pattern));
+            or.or(c.attachGrpId.likeIgnoreCase(pattern));
+            or.or(c.categoryCd.likeIgnoreCase(pattern));
+            or.or(c.contactAnswer.likeIgnoreCase(pattern));
+            or.or(c.contactContent.likeIgnoreCase(pattern));
+            or.or(c.contactId.likeIgnoreCase(pattern));
+            or.or(c.contactStatusCd.likeIgnoreCase(pattern));
+            or.or(c.contactTitle.likeIgnoreCase(pattern));
+            or.or(c.memberId.likeIgnoreCase(pattern));
+            or.or(c.memberNm.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

@@ -731,6 +731,7 @@ window.BoGridCrud = {
     checkAll:   { type: Boolean, default: false },             // 헤더 체크올 v-model 미러
     focusedIdx: { type: Number,  default: null },              // 행 포커스 인덱스 (v-model:focusedIdx, addRow 삽입 기준)
     showExport: { type: Boolean, default: false },             // 📥 엑셀 버튼 노출
+    showExcelUpload: { type: Boolean, default: false },        // 📤 엑셀업로드 버튼 노출
     showRowNo:     { type: Boolean, default: true },           // 번호 컬럼 표시
     showRowId:     { type: Boolean, default: true },           // ID 컬럼 표시
     showRowStatus: { type: Boolean, default: true },           // 상태(N/I/U/D 뱃지) 컬럼 표시
@@ -751,7 +752,7 @@ window.BoGridCrud = {
     treeRowKey:  { type: Function, default: null },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
-          'update:checkAll', 'update:focusedIdx', 'export', 'sort', 'row-dblclick'],
+          'update:checkAll', 'update:focusedIdx', 'export', 'excel-upload', 'sort', 'row-dblclick'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
@@ -797,6 +798,8 @@ window.BoGridCrud = {
         return emit('delete-checked');
       } else if (cmd === 'toolbar-export') {
         return emit('export');
+      } else if (cmd === 'toolbar-excel-upload') {
+        return emit('excel-upload');
       } else if (cmd === 'grid-toggle-check-all') {
         const v = !allChecked.value;
         allChecked.value = v;
@@ -881,6 +884,9 @@ window.BoGridCrud = {
       </slot>
       <button v-if="showExport" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-export')">
         📥 엑셀
+      </button>
+      <button v-if="showExcelUpload" class="btn btn-blue btn-sm" @click="handleBtnAction('toolbar-excel-upload')">
+        📤 엑셀업로드
       </button>
       <button v-if="showAdd" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-add')">
         + 행추가

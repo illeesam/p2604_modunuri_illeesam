@@ -69,6 +69,10 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+    // Apache POI (XLSX 다운로드, SXSSF 스트리밍 — 대용량 메모리 효율)
+    implementation("org.apache.poi:poi:5.2.5")
+    implementation("org.apache.poi:poi-ooxml:5.2.5")
+
     // Flyway (Database Migration)
     implementation("org.flywaydb:flyway-core:10.0.1")
     implementation("org.flywaydb:flyway-database-postgresql:10.0.1")

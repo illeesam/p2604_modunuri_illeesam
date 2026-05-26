@@ -165,6 +165,32 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QOdOrderItem 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(oi.brandNm.likeIgnoreCase(pattern));
+            or.or(oi.bundleGroupId.likeIgnoreCase(pattern));
+            or.or(oi.buyConfirmYn.likeIgnoreCase(pattern));
+            or.or(oi.claimYn.likeIgnoreCase(pattern));
+            or.or(oi.dlivCourierCd.likeIgnoreCase(pattern));
+            or.or(oi.dlivTmpltId.likeIgnoreCase(pattern));
+            or.or(oi.dlivTrackingNo.likeIgnoreCase(pattern));
+            or.or(oi.giftId.likeIgnoreCase(pattern));
+            or.or(oi.optItemId1.likeIgnoreCase(pattern));
+            or.or(oi.optItemId2.likeIgnoreCase(pattern));
+            or.or(oi.orderId.likeIgnoreCase(pattern));
+            or.or(oi.orderItemId.likeIgnoreCase(pattern));
+            or.or(oi.orderItemStatusCd.likeIgnoreCase(pattern));
+            or.or(oi.orderItemStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(oi.prodId.likeIgnoreCase(pattern));
+            or.or(oi.prodNm.likeIgnoreCase(pattern));
+            or.or(oi.reserveSaleYn.likeIgnoreCase(pattern));
+            or.or(oi.settleYn.likeIgnoreCase(pattern));
+            or.or(oi.siteId.likeIgnoreCase(pattern));
+            or.or(oi.skuId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

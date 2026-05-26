@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmCoupon QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCouponRepositoryImpl implements QPmCouponRepository {
@@ -153,6 +152,29 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                     w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmCoupon 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.couponCd.likeIgnoreCase(pattern));
+            or.or(c.couponDesc.likeIgnoreCase(pattern));
+            or.or(c.couponId.likeIgnoreCase(pattern));
+            or.or(c.couponNm.likeIgnoreCase(pattern));
+            or.or(c.couponStatusCd.likeIgnoreCase(pattern));
+            or.or(c.couponStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(c.couponTypeCd.likeIgnoreCase(pattern));
+            or.or(c.dvcMappYn.likeIgnoreCase(pattern));
+            or.or(c.dvcMwebYn.likeIgnoreCase(pattern));
+            or.or(c.dvcPcYn.likeIgnoreCase(pattern));
+            or.or(c.memGradeCd.likeIgnoreCase(pattern));
+            or.or(c.memo.likeIgnoreCase(pattern));
+            or.or(c.sellerCdivRemark.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            or.or(c.targetTypeCd.likeIgnoreCase(pattern));
+            or.or(c.targetValue.likeIgnoreCase(pattern));
+            or.or(c.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

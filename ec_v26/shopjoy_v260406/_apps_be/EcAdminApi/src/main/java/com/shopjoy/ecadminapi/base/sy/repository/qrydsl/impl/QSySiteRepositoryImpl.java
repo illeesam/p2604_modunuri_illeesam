@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SySite QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSySiteRepositoryImpl implements QSySiteRepository {
@@ -135,6 +134,29 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSySite 의 String 필드 (감사필드 제외) */
+        if (q != null && StringUtils.hasText(q.getSearchValue())) {
+            String pattern = "%" + q.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(s.configJson.likeIgnoreCase(pattern));
+            or.or(s.faviconUrl.likeIgnoreCase(pattern));
+            or.or(s.logoUrl.likeIgnoreCase(pattern));
+            or.or(s.pathId.likeIgnoreCase(pattern));
+            or.or(s.siteAddress.likeIgnoreCase(pattern));
+            or.or(s.siteBusinessNo.likeIgnoreCase(pattern));
+            or.or(s.siteCeo.likeIgnoreCase(pattern));
+            or.or(s.siteCode.likeIgnoreCase(pattern));
+            or.or(s.siteDesc.likeIgnoreCase(pattern));
+            or.or(s.siteDomain.likeIgnoreCase(pattern));
+            or.or(s.siteEmail.likeIgnoreCase(pattern));
+            or.or(s.siteId.likeIgnoreCase(pattern));
+            or.or(s.siteNm.likeIgnoreCase(pattern));
+            or.or(s.sitePhone.likeIgnoreCase(pattern));
+            or.or(s.siteStatusCd.likeIgnoreCase(pattern));
+            or.or(s.siteTypeCd.likeIgnoreCase(pattern));
+            or.or(s.siteZipCode.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

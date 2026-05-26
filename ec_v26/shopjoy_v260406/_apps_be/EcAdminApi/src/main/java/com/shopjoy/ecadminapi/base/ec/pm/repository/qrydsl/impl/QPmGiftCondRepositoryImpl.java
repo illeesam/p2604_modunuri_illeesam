@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmGiftCond QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
@@ -126,6 +125,18 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPmGiftCond 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.condTypeCd.likeIgnoreCase(pattern));
+            or.or(c.giftCondId.likeIgnoreCase(pattern));
+            or.or(c.giftId.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            or.or(c.targetId.likeIgnoreCase(pattern));
+            or.or(c.targetTypeCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

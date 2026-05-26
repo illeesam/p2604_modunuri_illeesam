@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyNotice QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
@@ -119,6 +118,20 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyNotice 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(n.attachGrpId.likeIgnoreCase(pattern));
+            or.or(n.contentHtml.likeIgnoreCase(pattern));
+            or.or(n.isFixed.likeIgnoreCase(pattern));
+            or.or(n.noticeId.likeIgnoreCase(pattern));
+            or.or(n.noticeStatusCd.likeIgnoreCase(pattern));
+            or.or(n.noticeTitle.likeIgnoreCase(pattern));
+            or.or(n.noticeTypeCd.likeIgnoreCase(pattern));
+            or.or(n.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

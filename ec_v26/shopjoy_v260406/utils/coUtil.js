@@ -442,6 +442,45 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  /* cofDownloadExcel — 백엔드 엑셀(xlsx) 스트리밍 다운로드 (BO 전용)
+   *   url        : '/bo/sy/user/excel' 형식 (boApiAxios baseURL 기준 상대)
+   *   params     : 화면 검색조건 객체 그대로
+   *   areaNm     : 파일명 prefix (백엔드에서 areaNm_YYYYMMDD_hhmmss.xlsx 로 응답.
+   *                 Content-Disposition 의 filename 이 우선 적용되므로 클라이언트는 fallback 용)
+   *   uiNm/cmdNm : apiHdr 용 (X-UI-Nm / X-Cmd-Nm, BO 정책)
+   *
+   * 동작:
+   *   - boApi.get(url, { params, responseType:'blob', ...apiHdr })
+   *   - 응답 Blob 을 임시 a 태그 클릭으로 다운로드
+   *   - Content-Disposition 의 filename 을 우선 사용, 없으면 areaNm_타임스탬프.xlsx
+   *   - 에러 시 Blob 안의 JSON 메시지를 토스트로 표시 가능 (호출자가 catch)
+   */
+  function cofDownloadExcel(url, params, areaNm, uiNm, cmdNm) {
+    if (!global.boApi || typeof global.boApi.get !== 'function') {
+      return Promise.reject(new Error('boApi 가 로드되지 않았습니다.'));
+    }
+    const cfg = { params: params || {}, responseType: 'blob' };
+    if (typeof global.coUtil.cofApiHdr === 'function' && uiNm) {
+      Object.assign(cfg, global.coUtil.cofApiHdr(uiNm, cmdNm || '엑셀다운로드'));
+    }
+    return global.boApi.get(url, cfg).then(res => {
+      const blob = res.data;
+      /* Content-Disposition 에서 filename 파싱 (filename*=UTF-8'' 우선) */
+      const cd = res.headers && (res.headers['content-disposition'] || res.headers['Content-Disposition']);
+      let filename = cofBuildExportFilename((areaNm || 'export') + '.xlsx');
+      if (cd) {
+        const mStar = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(cd);
+        const mAlt  = /filename\s*=\s*"?([^"]+)"?/i.exec(cd);
+        if (mStar) filename = decodeURIComponent(mStar[1]);
+        else if (mAlt) filename = mAlt[1].trim();
+      }
+      const a = document.createElement('a');
+      const objUrl = URL.createObjectURL(blob);
+      a.href = objUrl; a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(objUrl), 1000);
+    });
+  }
+
   /* cofBuildExportFilename — 다운로드 파일명 표준화 (영역명_YYYYMMDD_hhmmss.확장자)
    * 입력 예: '주문목록.csv' → '주문목록_20260525_143012.csv'
    * 이미 _YYYYMMDD_hhmmss 형식이 포함되어 있으면 중복 추가하지 않음. */
@@ -462,6 +501,58 @@
              + p2(d.getMinutes())
              + p2(d.getSeconds());
     return `${base}_${ts}${ext}`;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * 엑셀 업로드 관련 상수/유틸 (BoExcelUploadModal 에서 사용)
+   * ─────────────────────────────────────────────────────────────────────
+   * EXCEL_UPLOAD_MAX_ROWS — 업로드 행수 안전 상한 (다운로드 상한과 동일).
+   *   이 이상은 비동기 잡 큐로 처리 권장. 현재 동기 처리 환경에서는 차단.
+   * ───────────────────────────────────────────────────────────────────── */
+  const EXCEL_UPLOAD_MAX_ROWS = 300_000;
+
+  /* cofParseCsv — CSV 텍스트를 [{컬럼명:값},...] 행 배열로 파싱.
+   *   1행을 헤더로 사용. 따옴표 escape ("...""..."), 구분자 = 콤마 고정.
+   *   BOM(﻿) 제거, CRLF/LF 모두 허용. 빈 줄은 스킵.
+   * 사용: const rows = coUtil.cofParseCsv(await file.text()); */
+  function cofParseCsv(text) {
+    if (!text) return [];
+    /* BOM 제거 */
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+    /* 토큰 단위 파서 (따옴표 안 콤마/개행 보존) */
+    const rows = [];
+    let cur = []; let field = ''; let inQuote = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuote) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; } /* escape "" */
+          else inQuote = false;
+        } else field += c;
+      } else {
+        if (c === '"') inQuote = true;
+        else if (c === ',') { cur.push(field); field = ''; }
+        else if (c === '\r') { /* CRLF 의 CR 은 무시 */ }
+        else if (c === '\n') { cur.push(field); rows.push(cur); cur = []; field = ''; }
+        else field += c;
+      }
+    }
+    /* 마지막 행 처리 */
+    if (field !== '' || cur.length) { cur.push(field); rows.push(cur); }
+
+    if (!rows.length) return [];
+    const headers = rows[0].map(h => (h || '').trim());
+    const out = [];
+    for (let r = 1; r < rows.length; r++) {
+      const row = rows[r];
+      /* 빈 줄 스킵 (모든 셀이 빈 문자열인 경우) */
+      if (row.every(v => v === '' || v == null)) continue;
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = row[idx] != null ? row[idx] : ''; });
+      out.push(obj);
+    }
+    return out;
   }
 
   /* ─────────────────────────────────────────────────────────────────────
@@ -581,8 +672,11 @@
   // 공통코드 배지/라벨 헬퍼
   global.coUtil.cofCodeBadge = global.coUtil.cofCodeBadge || cofCodeBadge;
   global.coUtil.cofCodeNm = global.coUtil.cofCodeNm || cofCodeNm;
-  // CSV/트리 헬퍼
+  // CSV/엑셀 헬퍼
   global.coUtil.cofExportCsv = global.coUtil.cofExportCsv || cofExportCsv;
+  global.coUtil.cofDownloadExcel = global.coUtil.cofDownloadExcel || cofDownloadExcel;
+  global.coUtil.cofParseCsv = global.coUtil.cofParseCsv || cofParseCsv;
+  global.coUtil.EXCEL_UPLOAD_MAX_ROWS = global.coUtil.EXCEL_UPLOAD_MAX_ROWS || EXCEL_UPLOAD_MAX_ROWS;
   global.coUtil.cofBuildExportFilename = global.coUtil.cofBuildExportFilename || cofBuildExportFilename;
   global.coUtil.cofBuildGenericTree = global.coUtil.cofBuildGenericTree || cofBuildGenericTree;
   global.coUtil.cofCollectDescendantIds = global.coUtil.cofCollectDescendantIds || cofCollectDescendantIds;

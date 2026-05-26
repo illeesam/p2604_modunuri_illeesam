@@ -1099,8 +1099,8 @@
     </div>
   </div>
 
-  <!-- CONFIRM MODAL -->
-  <div v-if="confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
+  <!-- CONFIRM MODAL — FoModal(z-index 9000) 위에 항상 노출되도록 z-index 10000 -->
+  <div v-if="confirmState.show" class="modal-overlay" style="z-index:10000;" @click.self="closeConfirm(false)">
     <div class="modal-box">
       <div class="modal-icon icon-warning">⚠️</div>
       <div class="modal-title">{{ confirmState.title }}</div>

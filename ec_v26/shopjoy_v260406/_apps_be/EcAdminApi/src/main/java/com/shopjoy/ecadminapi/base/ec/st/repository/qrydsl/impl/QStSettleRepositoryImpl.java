@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** StSettle QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleRepositoryImpl implements QStSettleRepository {
@@ -131,6 +130,19 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                     w.and(s.updDate.goe(start)).and(s.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QStSettle 의 String 필드 (감사필드 제외) */
+        if (c != null && StringUtils.hasText(c.getSearchValue())) {
+            String pattern = "%" + c.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(s.settleId.likeIgnoreCase(pattern));
+            or.or(s.settleMemo.likeIgnoreCase(pattern));
+            or.or(s.settleStatusCd.likeIgnoreCase(pattern));
+            or.or(s.settleStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(s.settleYm.likeIgnoreCase(pattern));
+            or.or(s.siteId.likeIgnoreCase(pattern));
+            or.or(s.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

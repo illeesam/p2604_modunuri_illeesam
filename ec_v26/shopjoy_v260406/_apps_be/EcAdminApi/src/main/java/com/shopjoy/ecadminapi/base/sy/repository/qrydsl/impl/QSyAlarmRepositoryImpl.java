@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyAlarm QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
@@ -135,6 +134,23 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyAlarm 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(a.alarmId.likeIgnoreCase(pattern));
+            or.or(a.alarmMsg.likeIgnoreCase(pattern));
+            or.or(a.alarmStatusCd.likeIgnoreCase(pattern));
+            or.or(a.alarmTitle.likeIgnoreCase(pattern));
+            or.or(a.alarmTypeCd.likeIgnoreCase(pattern));
+            or.or(a.channelCd.likeIgnoreCase(pattern));
+            or.or(a.pathId.likeIgnoreCase(pattern));
+            or.or(a.siteId.likeIgnoreCase(pattern));
+            or.or(a.targetId.likeIgnoreCase(pattern));
+            or.or(a.targetTypeCd.likeIgnoreCase(pattern));
+            or.or(a.templateId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

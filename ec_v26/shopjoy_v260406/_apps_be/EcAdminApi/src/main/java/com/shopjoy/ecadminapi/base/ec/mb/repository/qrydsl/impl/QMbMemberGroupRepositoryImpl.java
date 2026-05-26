@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
@@ -105,6 +104,17 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
                 case "upd_date": w.and(g.updDate.goe(start)).and(g.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QMbMemberGroup 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(g.groupMemo.likeIgnoreCase(pattern));
+            or.or(g.groupNm.likeIgnoreCase(pattern));
+            or.or(g.memberGroupId.likeIgnoreCase(pattern));
+            or.or(g.siteId.likeIgnoreCase(pattern));
+            or.or(g.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

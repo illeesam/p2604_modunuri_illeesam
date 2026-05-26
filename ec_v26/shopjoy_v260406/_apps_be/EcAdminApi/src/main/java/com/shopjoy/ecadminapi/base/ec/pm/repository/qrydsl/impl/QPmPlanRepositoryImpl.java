@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmPlan QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmPlanRepositoryImpl implements QPmPlanRepository {
@@ -138,6 +137,23 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPmPlan 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(p.bannerUrl.likeIgnoreCase(pattern));
+            or.or(p.planDesc.likeIgnoreCase(pattern));
+            or.or(p.planId.likeIgnoreCase(pattern));
+            or.or(p.planNm.likeIgnoreCase(pattern));
+            or.or(p.planStatusCd.likeIgnoreCase(pattern));
+            or.or(p.planStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(p.planTitle.likeIgnoreCase(pattern));
+            or.or(p.planTypeCd.likeIgnoreCase(pattern));
+            or.or(p.siteId.likeIgnoreCase(pattern));
+            or.or(p.thumbnailUrl.likeIgnoreCase(pattern));
+            or.or(p.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

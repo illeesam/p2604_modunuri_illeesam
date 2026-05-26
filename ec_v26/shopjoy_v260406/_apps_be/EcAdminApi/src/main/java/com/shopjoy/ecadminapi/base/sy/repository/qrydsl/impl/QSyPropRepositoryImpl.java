@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyProp QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPropRepositoryImpl implements QSyPropRepository {
@@ -107,6 +106,21 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyProp 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(p.pathId.likeIgnoreCase(pattern));
+            or.or(p.propId.likeIgnoreCase(pattern));
+            or.or(p.propKey.likeIgnoreCase(pattern));
+            or.or(p.propLabel.likeIgnoreCase(pattern));
+            or.or(p.propRemark.likeIgnoreCase(pattern));
+            or.or(p.propTypeCd.likeIgnoreCase(pattern));
+            or.or(p.propValue.likeIgnoreCase(pattern));
+            or.or(p.siteId.likeIgnoreCase(pattern));
+            or.or(p.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

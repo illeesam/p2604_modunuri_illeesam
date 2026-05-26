@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PdProdOpt QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
@@ -147,6 +146,18 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPdProdOpt 의 String 필드 (감사필드 제외) */
+        if (req != null && StringUtils.hasText(req.getSearchValue())) {
+            String pattern = "%" + req.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(o.optGrpNm.likeIgnoreCase(pattern));
+            or.or(o.optId.likeIgnoreCase(pattern));
+            or.or(o.optInputTypeCd.likeIgnoreCase(pattern));
+            or.or(o.optTypeCd.likeIgnoreCase(pattern));
+            or.or(o.prodId.likeIgnoreCase(pattern));
+            or.or(o.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

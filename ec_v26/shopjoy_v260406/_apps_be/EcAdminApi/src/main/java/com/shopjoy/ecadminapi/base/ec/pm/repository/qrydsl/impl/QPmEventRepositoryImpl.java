@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmEvent QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventRepositoryImpl implements QPmEventRepository {
@@ -132,6 +131,24 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                     w.and(e.updDate.goe(start)).and(e.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmEvent 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(e.eventContent.likeIgnoreCase(pattern));
+            or.or(e.eventDesc.likeIgnoreCase(pattern));
+            or.or(e.eventId.likeIgnoreCase(pattern));
+            or.or(e.eventNm.likeIgnoreCase(pattern));
+            or.or(e.eventStatusCd.likeIgnoreCase(pattern));
+            or.or(e.eventStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(e.eventTitle.likeIgnoreCase(pattern));
+            or.or(e.eventTypeCd.likeIgnoreCase(pattern));
+            or.or(e.imgUrl.likeIgnoreCase(pattern));
+            or.or(e.siteId.likeIgnoreCase(pattern));
+            or.or(e.targetTypeCd.likeIgnoreCase(pattern));
+            or.or(e.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

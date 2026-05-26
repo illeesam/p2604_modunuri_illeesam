@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyUserRole QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
@@ -124,6 +123,18 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyUserRole 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.grantUserId.likeIgnoreCase(pattern));
+            or.or(r.roleId.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            or.or(r.userId.likeIgnoreCase(pattern));
+            or.or(r.userRoleId.likeIgnoreCase(pattern));
+            or.or(r.userRoleRemark.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

@@ -6267,3 +6267,1117 @@ window.AuthLoginModal = {
 </bo-modal>
 `,
 };
+
+/* ══════════════════════════════════════════════════════════════════════
+   엑셀 업로드 공통 모달 (BoExcelUploadModal)
+   ─────────────────────────────────────────────────────────────────────
+   탭: ① 업로드  ② 설명
+   기능: 샘플 다운로드 / 조건데이타 다운로드 / 파일선택 → 미리보기 → 저장
+   ─────────────────────────────────────────────────────────────────────
+   props:
+     title         — 모달 제목 (예: '사용자 엑셀업로드')
+     uiNm          — apiHdr 용 UI 명 (예: '사용자관리')
+     keyField      — 키 컬럼 필드명 (예: 'userId'). 키 값 있으면 UPDATE, 없으면 INSERT
+     columns       — [{ field, label, required, codeGrp, readOnly, width, desc }]
+                     codeGrp 주면 select 로 표시 + 검증, desc 는 설명탭 비고
+     sampleUrl     — 샘플 다운로드 엔드포인트 (백엔드. 없으면 클라이언트가 빈 행으로 생성)
+     allDataUrl    — 조건데이타 다운로드 엔드포인트 (필수, GET, 검색조건 없이 전체)
+     existsCheckUrl— 키 존재체크 배치 엔드포인트 (POST, body: { keys: [] } → { existsMap })
+     uploadUrl     — 업로드(upsert) 엔드포인트 (POST, body: { rows: [...] })
+   emits: close, saved (업로드 완료 시 부모가 목록 재조회)
+   ══════════════════════════════════════════════════════════════════════ */
+window.BoExcelUploadModal = {
+  name: 'BoExcelUploadModal',
+  props: {
+    /* 사용법:
+     *   <bo-excel-upload-modal v-if="show" default-domain="role"
+     *     @close="show=false" @saved="reload" />
+     *
+     * 모든 메타(URL/title/keyField/columns/codeGrp 등)는 자동:
+     *   - URL: config/excelDomains.js 의 baseUrl + 컨벤션 (/excel, /exists-check, /upsert-list)
+     *   - title/uiNm/areaNm: 선택된 도메인 라벨
+     *   - keyField/columns: 다운로드 파일 3행 헤더에서 자동 추출
+     *
+     * default-domain 미지정 시 사용자가 모달 안 select 로 직접 선택. */
+    defaultDomain: { type: String, default: '' },                          // config 키 (예: 'role', 'user')
+  },
+  emits: ['close', 'saved'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed } = Vue;
+
+    /* ##### [01] 초기 변수 정의 #################################################### */
+    const tab = ref('upload');               // 'upload' | 'desc'
+    const rows = ref([]);                    // 미리보기 행 [{ ...col, _exists, _err }]
+    const fileName = ref('');                // 선택된 파일명
+    const loading = ref(false);              // 업로드/체크 진행중
+    const codesMap = reactive({});           // { codeGrp: [{value,label}] }
+    const summary = reactive({ total: 0, insert: 0, update: 0, errors: 0 });
+
+    /* 다운로드 시 함께 전달할 검색조건 — 모달 공통 영역에 노출.
+     *   dateType : 백엔드 BaseRequest 가 받는 기간 컬럼 토큰 (기본 reg_date)
+     *   useYn    : USE_YN 코드값 (ACTIVE/INACTIVE/Y/N 등). 도메인별로 매핑되는 컬럼이 다르므로
+     *              상태/사용여부 어느 쪽이든 매핑되도록 status 와 useYn 양쪽으로 전송.
+     * 도메인이 받지 않는 필드는 Spring @ModelAttribute 가 자동으로 무시한다. */
+    const _today = new Date();
+    const _thisYear = _today.getFullYear();
+    const searchParam = reactive({
+      dateType:  'reg_date',
+      dateStart: `${_thisYear - 3}-01-01`,
+      dateEnd:   `${_thisYear}-12-31`,
+      useYn:     '',
+    });
+    const useYnOptions = ref([]);    // [{value,label}] — USE_YN 코드 그룹
+
+    /* 원본 파일 보관 — [엑셀업로드] 시 multipart 로 그대로 전송하기 위함 */
+    const selectedFile = ref(null);
+    /** 파일에서 자동 추출되는 메타 정보 (3행 헤더 파싱 결과) */
+    const detectedColumns = ref([]);     // [{ field, label, isKey, codeGrp }]
+    const detectedKeyField = ref('');    // (key) 마커가 붙은 필드명
+    const detectedTableLabel = ref('');  // Row 1 의 테이블 라벨
+
+    /** 백엔드에서 받아온 도메인 메타 (도메인 변경 시 자동 fetch)
+     *  { tableLabel, keyField, columns: [{fieldName, label, codeGrp, isKey, readOnly}, ...] } */
+    const domainMeta = ref(null);
+    const domainMetaLoading = ref(false);
+    const domainMetaCache = new Map(); // domain key → meta 캐시 (모달 세션 동안)
+
+    /** fnLoadDomainMeta — 선택된 도메인의 컬럼 메타를 백엔드에서 가져옴 (캐시 사용) */
+    const fnLoadDomainMeta = async () => {
+      const key = selectedDomainKey.value;
+      if (!key) { domainMeta.value = null; return; }
+      if (domainMetaCache.has(key)) {
+        domainMeta.value = domainMetaCache.get(key);
+        return;
+      }
+      const url = '/bo/excel/' + key + '/meta';
+      domainMetaLoading.value = true;
+      try {
+        const res = await window.boApi.get(url, window.coUtil.cofApiHdr(cfUiNm.value, '도메인메타조회'));
+        const meta = res.data?.data || null;
+        domainMetaCache.set(key, meta);
+        domainMeta.value = meta;
+        /* 백엔드 메타가 들어왔으니 codeGrp 컬럼 코드도 미리 로드 */
+        if (meta && Array.isArray(meta.columns)) {
+          const store = window.sfGetBoCodeStore?.();
+          if (store) {
+            meta.columns.forEach(c => {
+              if (c.codeGrp && !codesMap[c.codeGrp]) {
+                const list = store.sgGetGrpCodes?.(c.codeGrp) || [];
+                codesMap[c.codeGrp] = list.map(x => ({
+                  value: x.codeValue ?? x.codeVal,
+                  label: x.codeLabel ?? x.codeNm
+                }));
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('[BoExcelUploadModal] 도메인 메타 조회 실패:', err);
+        domainMeta.value = null;
+      } finally { domainMetaLoading.value = false; }
+    };
+
+    /** 업로드 점검 결과 — [업로드 점검하기] 클릭 후 채워짐.
+     *  { ok, summary, items: [{level, label, detail, count?}], ranAt } */
+    const inspect = reactive({ ran: false, ok: true, items: [], ranAt: '' });
+
+    /* 도메인 select 상태 — defaultDomain prop 으로 초기값 결정. 모달 안에서 전환 가능. */
+    const cfDomains = computed(() => window.BO_EXCEL_DOMAINS || []);
+    const selectedDomainKey = ref(props.defaultDomain || (cfDomains.value[0]?.key || ''));
+    /** 현재 선택된 도메인 메타 (key/label/baseUrl) */
+    const cfDomain = computed(() => {
+      if (!selectedDomainKey.value) return null;
+      return cfDomains.value.find(d => d.key === selectedDomainKey.value) || null;
+    });
+    /* URL/라벨 자동 도출 — 선택된 도메인 baseUrl 에서 3개 URL + 화면명 컨벤션으로 도출 */
+    const cfBaseUrl = computed(() => cfDomain.value?.baseUrl || '');
+    const cfAllDataUrl     = computed(() => cfBaseUrl.value ? cfBaseUrl.value + '/excel'        : '');
+    const cfExistsCheckUrl = computed(() => cfBaseUrl.value ? cfBaseUrl.value + '/exists-check' : '');
+    const cfUploadUrl      = computed(() => cfBaseUrl.value ? cfBaseUrl.value + '/upsert-list'  : '');
+    /* 라벨 — 도메인 라벨 > 파일에서 추출한 tableLabel > 기본값 */
+    const cfLabel  = computed(() => cfDomain.value?.label || detectedTableLabel.value || '');
+    const cfUiNm   = computed(() => cfLabel.value || '엑셀업로드');
+    const cfAreaNm = computed(() => cfLabel.value || '데이터');
+    const cfTitle  = computed(() => cfLabel.value ? cfLabel.value + ' 엑셀 업로드' : '엑셀 업로드');
+    /* boApp 직접 호출 */
+    const fnShowToast   = (msg, type, dur) => (window.boApp?.showToast   || (() => {}))(msg, type, dur);
+    const fnShowConfirm = (t, m)           => (window.boApp?.showConfirm || (() => Promise.resolve(true)))(t, m);
+
+    /* 컬럼/키 computed — 파일 3행 헤더의 (key), (gcd:XXX) 마커에서 자동 추출 */
+    const cfCols = computed(() => detectedColumns.value);
+    const cfKeyField = computed(() => detectedKeyField.value);
+    const cfHasRows = computed(() => rows.value.length > 0);
+    const cfValidRows = computed(() => rows.value.filter(r => !r._err));
+
+    /** cfDescCols — [설명] 탭 전용 컬럼 목록.
+     *   우선순위: 1) 파일에서 인식된 cfCols (파일 첨부된 경우)
+     *             2) 백엔드 domainMeta.columns (파일 미첨부 시 도메인 선택만으로도 표시)
+     *   양쪽 키 명을 {field, label, codeGrp, isKey, required, desc} 로 정규화. */
+    const cfDescCols = computed(() => {
+      if (cfCols.value.length) return cfCols.value;
+      const meta = domainMeta.value;
+      if (!meta || !Array.isArray(meta.columns)) return [];
+      return meta.columns.map(c => ({
+        field:    c.fieldName || c.field,
+        label:    c.label || c.fieldName || c.field,
+        codeGrp:  c.codeGrp || '',
+        isKey:    !!c.isKey || (meta.keyField && (c.fieldName || c.field) === meta.keyField),
+        required: !!c.required,
+        readOnly: !!c.readOnly,
+        desc:     c.desc || c.remark || '',
+      }));
+    });
+    /** cfDescKeyField — [설명] 탭에서 사용할 키 필드명 (파일 우선, 없으면 도메인 메타). */
+    const cfDescKeyField = computed(() => cfKeyField.value || domainMeta.value?.keyField || '');
+
+    /* fnRecalcSummary — 요약 재계산 */
+    const fnRecalcSummary = () => {
+      summary.total = rows.value.length;
+      summary.insert = rows.value.filter(r => !r._err && !r._exists).length;
+      summary.update = rows.value.filter(r => !r._err && r._exists).length;
+      summary.errors = rows.value.filter(r => r._err).length;
+    };
+
+    /* fnLoadCodes — codeGrp 가 지정된 컬럼들의 코드 목록 로드.
+     *   빈 배열은 캐시하지 않음 (codeStore 가 아직 준비 안 된 경우 다음 호출 시 재시도).
+     *   파일 인식 컬럼(cfCols) + 도메인 메타 컬럼(domainMeta.columns) 양쪽 모두 대상. */
+    const fnLoadCodes = () => {
+      const store = window.sfGetBoCodeStore?.();
+      if (!store) return;
+      const sources = [];
+      cfCols.value.forEach(c => sources.push({ codeGrp: c.codeGrp }));
+      (domainMeta.value?.columns || []).forEach(c => sources.push({ codeGrp: c.codeGrp }));
+      const seen = new Set();
+      sources.forEach(c => {
+        if (!c.codeGrp || seen.has(c.codeGrp)) return;
+        seen.add(c.codeGrp);
+        if (codesMap[c.codeGrp] && codesMap[c.codeGrp].length) return; // 정상 로드된 경우만 캐시 유지
+        const list = store.sgGetGrpCodes?.(c.codeGrp) || [];
+        if (!list.length) return;                                      // 빈 결과는 캐시 안 함 → 재시도 가능
+        codesMap[c.codeGrp] = list.map(x => ({ value: x.codeValue ?? x.codeVal, label: x.codeLabel ?? x.codeNm }));
+      });
+    };
+
+    /* fnLoadSearchCodes — 검색조건 select 용 코드 로드 (USE_YN) */
+    const fnLoadSearchCodes = () => {
+      const store = window.sfGetBoCodeStore?.();
+      if (!store || useYnOptions.value.length) return;
+      const list = store.sgGetGrpCodes?.('USE_YN') || [];
+      useYnOptions.value = list.map(x => ({ value: x.codeValue ?? x.codeVal, label: x.codeLabel ?? x.codeNm }));
+    };
+    fnLoadSearchCodes();
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+    /* handleBtnAction — 버튼/액션 dispatch (cmd: '{영역}-{기능}'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = async (cmd, param = {}) => {
+      console.log(' ■■ BoExcelUploadModal : handleBtnAction -> ', cmd, param);
+      // 탭 전환 (업로드 / 설명) — 설명 탭 진입 시 도메인 메타/코드 미리 로드
+      if (cmd === 'tab-change') {
+        tab.value = param;
+        if (param === 'desc') {
+          if (!domainMeta.value) await fnLoadDomainMeta();
+          fnLoadCodes();
+        }
+        return;
+      // 샘플 csv 다운로드
+      } else if (cmd === 'download-sample') {
+        return onDownloadSample();
+      // 전체 데이터 다운로드 (백엔드 chunk streaming xlsx)
+      } else if (cmd === 'download-all') {
+        return onDownloadAll();
+      // 파일 선택 다이얼로그 열기
+      } else if (cmd === 'choose-file') {
+        document.getElementById('__bo_excel_upload_file__')?.click();
+        return;
+      // 미리보기 초기화
+      } else if (cmd === 'clear-rows') {
+        rows.value = []; fileName.value = '';
+        fnRecalcSummary(); fnResetInspect();
+        return;
+      // 미리보기 한 행 제거
+      } else if (cmd === 'remove-row') {
+        rows.value.splice(param, 1); fnRecalcSummary();
+        return;
+      // 검증 정보 지우기 — 점검 결과 패널 닫기 + 행별 _err 도 함께 초기화
+      } else if (cmd === 'clear-inspect') {
+        fnResetInspect();
+        rows.value.forEach(r => { r._err = ''; });
+        fnRecalcSummary();
+        return;
+      // UI 점검 — 클라이언트 데이터만으로 키중복/필수/코드값 검증 (서버 미호출)
+      } else if (cmd === 'ui-inspect') {
+        return fnInspectClient();
+      // 업로드 점검 — 도메인 메타 호환성 + DB 존재체크 (서버 호출)
+      } else if (cmd === 'inspect') {
+        return fnInspect();
+      // 그리드 다운로드 — 현재 미리보기 그리드의 행을 xlsx 로 저장 (SheetJS)
+      } else if (cmd === 'grid-download') {
+        return onGridDownload();
+      // 엑셀업로드 — 원본 파일을 multipart 로 백엔드에 전송 (백엔드가 직접 파싱+upsert)
+      } else if (cmd === 'excel-upload') {
+        return onExcelUpload();
+      // 그리드업로드 — 미리보기 그리드의 행(JSON)을 upsert (기존 save 동작)
+      } else if (cmd === 'grid-upload' || cmd === 'save') {
+        return onSave();
+      // 닫기
+      } else if (cmd === 'close') {
+        emit('close'); return;
+      } else {
+        console.warn('[BoExcelUploadModal:handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — select/드롭다운/그리드 선택 dispatch */
+    const handleSelectAction = async (cmd, param = {}) => {
+      console.log(' ■■ BoExcelUploadModal : handleSelectAction -> ', cmd, param);
+      // 대상 도메인 변경 (상단 select)
+      if (cmd === 'domain-change') {
+        selectedDomainKey.value = param;
+        /* 도메인이 바뀌면 해당 도메인의 메타/코드를 다시 로드 — 설명 탭이 즉시 갱신됨 */
+        domainMeta.value = null;
+        await fnLoadDomainMeta();
+        fnLoadCodes();
+        return;
+      } else {
+        console.warn('[BoExcelUploadModal:handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /** 점검 결과 초기화 — 파일 변경/초기화 시 */
+    const fnResetInspect = () => {
+      inspect.ran = false; inspect.ok = true; inspect.items = []; inspect.ranAt = '';
+    };
+
+    /**
+     * fnInspect — [업로드점검]: 백엔드 testRun 호출로 실제 upsert 흐름을 수행하되 DB 미반영.
+     *   - POST {baseUrl}/upsert-list  body: { rows, testRun: true }
+     *   - 응답 { inserted, updated, errors: [{rowIndex, message}], testRun: true }
+     *   - 응답의 errors 를 행별 _err 에 매핑 → 그리드 [오류] 뱃지/_row_status=E 즉시 반영
+     *   - 클라이언트 사전 검증은 모두 제거 (서버가 모두 검증).
+     */
+    const fnInspect = async () => {
+      fnResetInspect();
+      const items = [];
+      const push = (level, label, detail) => items.push({ level, label, detail });
+
+      if (!cfHasRows.value) {
+        push('error', '데이터 없음', '미리보기 그리드에 행이 없습니다.');
+        Object.assign(inspect, { ran: true, ok: false, items, ranAt: new Date().toLocaleTimeString() });
+        return;
+      }
+      if (!cfUploadUrl.value) {
+        push('error', '대상 도메인 미선택', '상단 [대상] select 에서 도메인을 선택하세요.');
+        Object.assign(inspect, { ran: true, ok: false, items, ranAt: new Date().toLocaleTimeString() });
+        return;
+      }
+
+      /* 행별 _err 초기화 — 서버 응답으로 다시 채움 */
+      rows.value.forEach(r => { r._err = ''; });
+
+      push('info', '점검 모드', '서버 testRun (DB 미반영, 행마다 검증)');
+      push('info', '대상 도메인', `${cfDomain.value?.label || ''} (${cfBaseUrl.value})`);
+
+      loading.value = true;
+      let res;
+      try {
+        /* upsert-list 에 보낼 body 는 onSave 와 동일 형태 + testRun:true */
+        const body = {
+          testRun: true,
+          rows: rows.value.map(r => {
+            const o = {};
+            cfCols.value.forEach(c => { const k = c.field || c.fieldName; o[k] = r[k]; });
+            o._row_status = r._rowStatus || 'I';
+            return o;
+          }),
+        };
+        res = await window.boApi.post(cfUploadUrl.value, body,
+          window.coUtil.cofApiHdr(cfUiNm.value, '업로드점검'));
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || '서버 점검 호출 실패';
+        push('error', '서버 호출 실패', msg);
+        Object.assign(inspect, { ran: true, ok: false, items, ranAt: new Date().toLocaleTimeString() });
+        loading.value = false;
+        return;
+      }
+      loading.value = false;
+
+      const data = res.data?.data || {};
+      const errors = Array.isArray(data.errors) ? data.errors : [];
+      const inserted = data.inserted ?? 0;
+      const updated  = data.updated  ?? 0;
+      const total    = rows.value.length;
+
+      /* 행별 _err 매핑 — rowIndex 는 1-base (서버 규약) */
+      errors.forEach(e => {
+        const idx = (e.rowIndex || 0) - 1;
+        if (idx >= 0 && idx < rows.value.length) {
+          const prev = rows.value[idx]._err;
+          rows.value[idx]._err = (prev ? prev + ' / ' : '') + (e.message || '오류');
+        }
+      });
+      fnRecalcSummary();
+
+      /* 점검 결과 패널 — 요약 */
+      push('ok', '행수', `${total.toLocaleString()}건 / 상한 ${window.coUtil.EXCEL_UPLOAD_MAX_ROWS.toLocaleString()}건`);
+      if (errors.length === 0) {
+        push('ok', '검증 통과', `정상 ${total}건 (예상 — 신규 ${inserted} / 수정 ${updated})`);
+      } else {
+        push('error', '오류 행', `${errors.length}건 — 그리드의 오류 행에서 메시지를 확인하세요.`);
+        const sample = errors.slice(0, 3).map(e => `${e.rowIndex}행: ${e.message}`).join(' / ');
+        push('info', '오류 샘플', sample + (errors.length > 3 ? ' …' : ''));
+        push('ok', '정상 행', `${total - errors.length}건 (예상 — 신규 ${inserted} / 수정 ${updated})`);
+      }
+      push('info', 'DB 반영 여부', '미반영 (testRun) — 검증만 수행');
+
+      const hasError = items.some(i => i.level === 'error');
+      Object.assign(inspect, {
+        ran: true,
+        ok: !hasError,
+        items,
+        ranAt: new Date().toLocaleTimeString(),
+      });
+    };
+
+    /**
+     * fnInspectClient — UI 점검 (클라이언트 단독). 서버 호출 없이 그리드 행만 검증.
+     *   1. 행수 상한
+     *   2. 키 컬럼 필수 / 중복
+     *   3. codeGrp 컬럼의 코드값 유효성
+     *   각 행의 _err 도 갱신 → 미리보기 그리드의 [오류] 뱃지가 즉시 반영됨.
+     */
+    const fnInspectClient = () => {
+      fnResetInspect();
+      const items = [];
+      const push = (level, label, detail) => items.push({ level, label, detail });
+
+      if (!cfHasRows.value) {
+        push('error', '데이터 없음', '미리보기 그리드에 행이 없습니다.');
+        Object.assign(inspect, { ran: true, ok: false, items, ranAt: new Date().toLocaleTimeString() });
+        return;
+      }
+      const cols = cfCols.value;
+      const kf = cfKeyField.value;
+      push('info', '점검 모드', 'UI 점검 (클라이언트 단독 검증)');
+      push('ok', '컬럼 인식', `${cols.length}개 컬럼`);
+
+      /* 1. 행수 상한 */
+      const total = rows.value.length;
+      const limit = window.coUtil.EXCEL_UPLOAD_MAX_ROWS;
+      if (total > limit) {
+        push('error', '행수 상한 초과', `${total.toLocaleString()}건 > 상한 ${limit.toLocaleString()}건`);
+      } else {
+        push('ok', '행수', `${total.toLocaleString()}건 / 상한 ${limit.toLocaleString()}건`);
+      }
+
+      /* 행별 _err 초기화 */
+      rows.value.forEach(r => { r._err = ''; });
+
+      /* 2. 키 중복 (파일 내) */
+      if (kf) {
+        const seen = new Map();
+        const dupes = [];
+        rows.value.forEach((r, idx) => {
+          const v = r[kf];
+          if (v == null || v === '') return;
+          if (seen.has(v)) {
+            dupes.push({ key: v, first: seen.get(v) + 1, second: idx + 1 });
+            r._err = (r._err ? r._err + ' / ' : '') + `키중복(${v})`;
+          } else seen.set(v, idx);
+        });
+        if (dupes.length) {
+          const sample = dupes.slice(0, 3).map(d => `${d.key}(${d.first}↔${d.second})`).join(', ');
+          push('error', '키 중복', `${dupes.length}건 — ${sample}${dupes.length > 3 ? ' ...' : ''}`);
+        } else {
+          push('ok', '키 중복 없음', `${kf} 값 모두 유일`);
+        }
+      } else {
+        push('warn', '키 필드 미인식', '키 컬럼이 없어 중복 검사 생략');
+      }
+
+      /* 3. codeGrp 코드값 유효성 */
+      const codeCols = cols.filter(c => c.codeGrp);
+      if (codeCols.length) {
+        let totalBad = 0;
+        const samples = [];
+        for (const c of codeCols) {
+          const opts = codesMap[c.codeGrp] || [];
+          if (opts.length === 0) { samples.push(`${c.label}: 코드그룹(${c.codeGrp}) 로드 실패`); continue; }
+          const validSet = new Set(opts.map(o => String(o.value)));
+          let bad = 0;
+          rows.value.forEach((r, idx) => {
+            const v = r[c.field];
+            if (v == null || v === '') return;
+            if (!validSet.has(String(v))) {
+              bad++; totalBad++;
+              r._err = (r._err ? r._err + ' / ' : '') + `${c.label}:${v}`;
+            }
+          });
+          if (bad) samples.push(`${c.label}(${c.codeGrp}): ${bad}건`);
+        }
+        if (totalBad) push('error', '코드값 오류', samples.join(' / '));
+        else push('ok', '코드값 검증', `${codeCols.length}개 코드 컬럼 모두 유효`);
+      }
+
+      fnRecalcSummary();
+      const hasError = items.some(i => i.level === 'error');
+      Object.assign(inspect, { ran: true, ok: !hasError, items, ranAt: new Date().toLocaleTimeString() });
+    };
+
+    /* ##### [03] 내장 사용 함수 (다운로드 / 업로드 / 점검 핸들러) ##################### */
+    /* onDownloadSample — 빈 헤더 템플릿 csv 생성 (클라이언트 사이드, 파일에서 메타 추출 후 사용 가능) */
+    const onDownloadSample = () => {
+      if (!cfCols.value.length) {
+        fnShowToast('먼저 [조건데이타 다운로드] 받은 파일을 한 번 선택하면 컬럼 정보가 인식됩니다.', 'info');
+        return;
+      }
+      const kf = cfKeyField.value;
+      const headers = cfCols.value.map(c => c.label + ((c.field || c.fieldName) === kf ? '[키]' : ''));
+      const rows1 = [headers];
+      window.coUtil.cofExportCsv(rows1, headers.map((h, i) => ({ label: h, key: i })), cfAreaNm.value + '_샘플.csv');
+    };
+
+    /* onDownloadAll — 검색조건(등록기간/사용여부) 적용해서 다운로드.
+     *   - 빈 값은 제외하여 백엔드 ModelAttribute 가 받지 않는 필드의 false-match 방지.
+     *   - useYn 은 도메인에 따라 status/useYn 두 가지 매핑이 있으므로 동시에 전달. */
+    const onDownloadAll = async () => {
+      if (!cfAllDataUrl.value) { fnShowToast('대상 도메인을 먼저 선택하세요.', 'error'); return; }
+      const params = {};
+      if (searchParam.dateType)  params.dateType  = searchParam.dateType;
+      if (searchParam.dateStart) params.dateStart = searchParam.dateStart;
+      if (searchParam.dateEnd)   params.dateEnd   = searchParam.dateEnd;
+      if (searchParam.useYn)     { params.useYn = searchParam.useYn; params.status = searchParam.useYn; }
+      loading.value = true;
+      try {
+        await window.coUtil.cofDownloadExcel(cfAllDataUrl.value, params, cfAreaNm.value + '_전체', cfUiNm.value, '전체다운로드');
+      } catch (err) {
+        fnShowToast(err.response?.data?.message || err.message || '전체 다운로드 실패', 'error', 0);
+      } finally { loading.value = false; }
+    };
+
+    /**
+     * onGridDownload — 현재 미리보기 그리드의 행을 xlsx 로 저장 (SheetJS).
+     *   - Row 1: 테이블 라벨
+     *   - Row 2: 한글 라벨 (key 표시 포함)
+     *   - Row 3: 필드명 ((key), (gcd:XXX) 마커 포함) ← 재업로드 시 메타 자동 인식
+     *   - Row 4~: 데이터
+     */
+    const onGridDownload = () => {
+      if (!cfHasRows.value) { fnShowToast('다운로드할 데이타가 없습니다.', 'error'); return; }
+      if (typeof window.XLSX === 'undefined') { fnShowToast('xlsx 라이브러리(SheetJS)가 로드되지 않았습니다.', 'error', 0); return; }
+      const cols = cfCols.value;
+      const kf = cfKeyField.value;
+      const aoa = [];
+      /* Row 1 — 테이블 라벨 (남는 열은 빈칸) */
+      aoa.push([detectedTableLabel.value || cfLabel.value, ...Array(Math.max(cols.length - 1, 0)).fill('')]);
+      /* Row 2 — 한글 라벨 */
+      aoa.push(cols.map(c => c.label + (c.field === kf ? '(key)' : '') + (c.codeGrp ? `(코드:${c.codeGrp})` : '')));
+      /* Row 3 — 필드명 + 마커 */
+      aoa.push(cols.map(c => c.field + (c.field === kf ? '(key)' : '') + (c.codeGrp ? `(gcd:${c.codeGrp})` : '')));
+      /* Row 4+ — 데이터 */
+      rows.value.forEach(r => {
+        aoa.push(cols.map(c => r[c.field] != null ? r[c.field] : ''));
+      });
+      const ws = window.XLSX.utils.aoa_to_sheet(aoa);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, cfAreaNm.value.substring(0, 31) || 'Sheet1');
+      const fname = window.coUtil.cofBuildExportFilename(cfAreaNm.value + '_그리드.xlsx');
+      window.XLSX.writeFile(wb, fname);
+    };
+
+    /**
+     * onExcelUpload — 원본 파일을 multipart 로 백엔드에 그대로 전송.
+     *   백엔드가 직접 파싱 + upsert (대용량/서버측 처리). 엔드포인트: {baseUrl}/upsert-file
+     *   엔드포인트 미구현이면 자동으로 그리드업로드(onSave)로 fallback.
+     */
+    const onExcelUpload = async () => {
+      if (!selectedFile.value) { fnShowToast('업로드할 파일이 없습니다. [파일 선택] 하세요.', 'error'); return; }
+      if (!cfBaseUrl.value) { fnShowToast('대상 도메인을 먼저 선택하세요.', 'error'); return; }
+      const ok = await fnShowConfirm('엑셀업로드',
+        `원본 파일 [${selectedFile.value.name}]을 그대로 서버에 업로드합니다.\n` +
+        `(서버에서 직접 파싱 후 upsert. 그리드 수정사항은 반영되지 않습니다.)`);
+      if (!ok) return;
+      const url = cfBaseUrl.value + '/upsert-file';
+      const fd = new FormData();
+      fd.append('file', selectedFile.value);
+      loading.value = true;
+      try {
+        const res = await window.boApi.post(url, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          ...window.coUtil.cofApiHdr(cfUiNm.value, '엑셀업로드'),
+        });
+        const data = res.data?.data || {};
+        fnShowToast(`엑셀업로드 완료 - 신규 ${data.inserted ?? '?'} / 수정 ${data.updated ?? '?'}`, 'success');
+        emit('saved', data); emit('close');
+      } catch (err) {
+        const status = err.response?.status;
+        if (status === 404 || status === 405) {
+          fnShowToast('서버에 [엑셀업로드] 엔드포인트가 없어 그리드업로드로 진행합니다.', 'info');
+          loading.value = false;
+          return onSave();
+        }
+        fnShowToast(err.response?.data?.message || err.message || '엑셀업로드 실패', 'error', 0);
+      } finally { loading.value = false; }
+    };
+
+    /* onFileChange — 파일 선택 → 파싱 → 존재체크 → 미리보기 */
+    const onFileChange = async (ev) => {
+      const file = ev.target.files?.[0];
+      if (!file) return;
+      selectedFile.value = file;
+      fileName.value = file.name;
+      ev.target.value = '';
+      fnResetInspect();
+      loading.value = true;
+      try {
+        const parsed = await fnParseExcelOrCsv(file);
+        if (parsed.length === 0) {
+          fnShowToast('파일에 데이타가 없습니다.', 'error');
+          rows.value = []; fnRecalcSummary(); return;
+        }
+        if (parsed.length > window.coUtil.EXCEL_UPLOAD_MAX_ROWS) {
+          fnShowToast(`업로드 행수가 상한(${window.coUtil.EXCEL_UPLOAD_MAX_ROWS.toLocaleString()})을 초과합니다. 현재 ${parsed.length.toLocaleString()}건.`, 'error', 0);
+          return;
+        }
+        /* 컬럼 매핑 + 검증 */
+        const mapped = parsed.map(p => fnMapAndValidate(p));
+        rows.value = mapped;
+        fnRecalcSummary();
+        /* 키 존재체크 (배치 API 1회) */
+        if (cfExistsCheckUrl.value) await fnCheckExists();
+        fnRecalcSummary();
+      } catch (err) {
+        console.error('[BoExcelUploadModal:onFileChange]', err);
+        fnShowToast(err.message || '파일 파싱 실패', 'error', 0);
+      } finally { loading.value = false; }
+    };
+
+    /* fnParseExcelOrCsv — File 객체에서 행 배열 추출.
+     *
+     *  메타 인식 파일(3행 헤더) 자동 감지:
+     *    Row 1: tableLabel + comment (병합)
+     *    Row 2: 한글 라벨 (key 면 "이름(key)")
+     *    Row 3: 필드명 (key 면 "fieldName(key)")  ← 이 행을 진짜 헤더로 사용
+     *    Row 4~: 데이터
+     *
+     *  레거시 1행 헤더 (한글명만) 도 fallback 으로 지원.
+     */
+    const fnParseExcelOrCsv = async (file) => {
+      const name = (file.name || '').toLowerCase();
+      if (name.endsWith('.csv') || name.endsWith('.txt')) {
+        const text = await file.text();
+        return fnParseCsvWithMetaDetect(text);
+      }
+      if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+        if (typeof window.XLSX === 'undefined') {
+          throw new Error('xlsx 파서(SheetJS)가 로드되지 않았습니다. 페이지를 새로고침 후 다시 시도해 주세요.');
+        }
+        const buf = await file.arrayBuffer();
+        const wb = window.XLSX.read(buf, { type: 'array' });
+        const sheetName = wb.SheetNames[0];
+        if (!sheetName) throw new Error('엑셀 파일에 시트가 없습니다.');
+        const csvText = window.XLSX.utils.sheet_to_csv(wb.Sheets[sheetName], { blankrows: false });
+        return fnParseCsvWithMetaDetect(csvText);
+      }
+      throw new Error('지원하지 않는 파일 형식입니다. (.csv / .xlsx / .xls 만 지원)');
+    };
+
+    /** 3행 헤더 메타 자동인식 csv 파서.
+     *  - 첫 행의 첫 셀이 "ID(key)" 패턴이거나, 모든 셀이 camelCase 필드명이면 메타 파일로 인식
+     *  - 메타 파일: Row 3 의 필드명을 헤더로 사용 + Row 1/2 를 detectedTableLabel/detectedColumns 로 저장
+     *  - 일반 csv: Row 1 을 헤더로 사용 (기존 동작) */
+    const fnParseCsvWithMetaDetect = (text) => {
+      /* coUtil 의 raw 토큰 파서 호출 — 행/셀 2차원 배열 */
+      const allRows = fnParseCsvRaw(text);
+      if (allRows.length === 0) return [];
+
+      /* 메타 파일 감지 — Row 2 또는 Row 3 의 셀에 (key) 마커가 있고
+       * Row 3 의 셀들이 camelCase 필드명처럼 보이면 메타 파일로 판정 */
+      const looksLikeMeta = allRows.length >= 4 && fnIsMetaHeader(allRows);
+
+      if (looksLikeMeta) {
+        const row1 = allRows[0];                  // 테이블 라벨 + 코멘트 (첫 셀에)
+        const row2 = allRows[1];                  // 한글 라벨
+        const row3 = allRows[2];                  // 필드명 — 진짜 헤더
+        detectedTableLabel.value = (row1[0] || '').trim();
+
+        /* 컬럼 자동 구성 — (key), 공통코드 그룹 마커 인식.
+         *   Row 3 예시: "userId(key)", "userStatusCd(gcd:USER_STATUS)", "roleId(key)(gcd:ROLE_TYPE)"
+         *   Row 2 에도 legacy 표기 "(코드: XXX)" 가 있을 수 있어 함께 파싱. */
+        const KEY_RE      = /\(\s*key\s*\)/i;
+        /* 한글 "코드" / 영문 "code" / 축약 "gcd" 모두 허용. 콜론 뒤 공백/추가설명도 허용 */
+        const CODE_GRP_RE = /\(\s*(?:코드|code|gcd)\s*[:：]\s*([A-Za-z][A-Za-z0-9_]*)\b[^)]*\)/i;
+        const cols = [];
+        let keyFieldFound = '';
+        row3.forEach((cell, idx) => {
+          const fieldRaw = (cell || '').trim();
+          if (!fieldRaw) return;
+          const isKey = KEY_RE.test(fieldRaw);
+          /* codeGrp 는 Row 3 우선 → Row 2 (legacy "(코드: XXX)") 까지 fallback */
+          const row2Cell = (row2[idx] || '').trim();
+          const grpMatch = fieldRaw.match(CODE_GRP_RE) || row2Cell.match(CODE_GRP_RE);
+          const codeGrp = grpMatch ? grpMatch[1].toUpperCase() : '';
+          /* 마커 모두 제거하여 순수 필드명 추출 */
+          const field = fieldRaw.replace(KEY_RE, '').replace(CODE_GRP_RE, '').trim();
+          /* Row 2 라벨에서도 (key)/(gcd:)/(코드:) 마커 제거 → 사람용 한글만 */
+          const labelRaw = row2Cell || field;
+          const label = labelRaw.replace(KEY_RE, '').replace(CODE_GRP_RE, '').replace(/\s+/g, ' ').trim();
+          cols.push({ field, label, isKey, codeGrp });
+          if (isKey) keyFieldFound = field;
+        });
+        detectedColumns.value = cols;
+        detectedKeyField.value = keyFieldFound;
+        /* 감지된 codeGrp 들의 코드 목록 자동 로드 → 미리보기 select 자동 렌더 */
+        fnLoadCodes();
+
+        /* Row 4 ~ 를 데이터로 변환 (필드명 키 기반) */
+        const headers = cols.map(c => c.field);
+        const dataRows = [];
+        for (let i = 3; i < allRows.length; i++) {
+          const row = allRows[i];
+          if (row.every(v => v === '' || v == null)) continue;
+          const obj = {};
+          headers.forEach((h, idx) => { obj[h] = row[idx] != null ? row[idx] : ''; });
+          dataRows.push(obj);
+        }
+        return dataRows;
+      }
+
+      /* 일반 1행 헤더 csv (legacy) — coUtil.cofParseCsv 와 동일 동작 */
+      const headers = allRows[0].map(h => (h || '').trim());
+      const out = [];
+      for (let r = 1; r < allRows.length; r++) {
+        const row = allRows[r];
+        if (row.every(v => v === '' || v == null)) continue;
+        const obj = {};
+        headers.forEach((h, idx) => { obj[h] = row[idx] != null ? row[idx] : ''; });
+        out.push(obj);
+      }
+      return out;
+    };
+
+    /** csv 텍스트 → 2차원 raw 배열 (헤더 인식 없이 순수 토큰) */
+    const fnParseCsvRaw = (text) => {
+      if (!text) return [];
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      const rows = [];
+      let cur = []; let field = ''; let inQuote = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (inQuote) {
+          if (c === '"') {
+            if (text[i + 1] === '"') { field += '"'; i++; }
+            else inQuote = false;
+          } else field += c;
+        } else {
+          if (c === '"') inQuote = true;
+          else if (c === ',') { cur.push(field); field = ''; }
+          else if (c === '\r') {}
+          else if (c === '\n') { cur.push(field); rows.push(cur); cur = []; field = ''; }
+          else field += c;
+        }
+      }
+      if (field !== '' || cur.length) { cur.push(field); rows.push(cur); }
+      return rows;
+    };
+
+    /** 3행 메타 헤더 패턴 감지 — Row 2/3 에 (key) 또는 코드그룹 마커가 있거나
+     *  Row 3 셀들이 모두 camelCase 식별자 형태이면 true */
+    const fnIsMetaHeader = (allRows) => {
+      if (allRows.length < 4) return false;
+      const row2 = allRows[1] || [];
+      const row3 = allRows[2] || [];
+      const MARKER_RE = /\(\s*(?:key|코드|code|gcd)\b/i;
+      const hasMarker = row2.some(c => MARKER_RE.test(c || ''))
+                     || row3.some(c => MARKER_RE.test(c || ''));
+      if (hasMarker) return true;
+      /* 마커 없는 경우 Row 3 셀이 모두 식별자 형태인지 검사 */
+      const allLookLikeFields = row3.length > 0 && row3.every(c => {
+        const t = (c || '').replace(/\(\s*key\s*\)/i, '').replace(/\(\s*(?:코드|code|gcd)\s*[:：][^)]*\)/i, '').trim();
+        return t === '' || /^[a-z][a-zA-Z0-9_]*$/.test(t);
+      });
+      return allLookLikeFields;
+    };
+
+    /* fnMapAndValidate — 한 행 검증 + 정규화. _err 에 오류 메시지 누적 */
+    /* 파일 첨부 시점에는 값 정규화(trim) 만 수행 — _err 는 비워둠.
+     * _rowStatus 기본 'I' (INSERT) · DB 존재체크 후 U 로 자동 전환 가능. 사용자가 직접 변경 가능. */
+    const fnMapAndValidate = (raw) => {
+      const out = { _err: '', _exists: false, _rowStatus: 'I' };
+      cfCols.value.forEach(c => {
+        const fieldKey = c.field || c.fieldName;     // 자동인식/명시정의 둘 다 지원
+        let v = raw[fieldKey] ?? raw[c.label] ?? '';
+        if (typeof v === 'string') v = v.trim();
+        out[fieldKey] = v;
+      });
+      return out;
+    };
+
+    /* fnCheckExists — 키 값 배치로 보내서 존재 여부 매핑 */
+    const fnCheckExists = async () => {
+      const kf = cfKeyField.value;
+      if (!kf || !cfExistsCheckUrl.value) return;
+      const keys = rows.value.map(r => r[kf]).filter(v => v != null && v !== '');
+      if (!keys.length) return;
+      try {
+        const res = await window.boApi.post(cfExistsCheckUrl.value, { keys }, window.coUtil.cofApiHdr(cfUiNm.value, '키존재체크'));
+        const existsMap = res.data?.data?.existsMap || res.data?.existsMap || {};
+        /* 사용자가 직접 D/M 등으로 바꿔놓은 행은 유지. I→U 자동 전환만 수행 (반대 방향도). */
+        rows.value.forEach(r => {
+          r._exists = !!existsMap[r[kf]];
+          if (r._rowStatus === 'I' && r._exists) r._rowStatus = 'U';
+          else if (r._rowStatus === 'U' && !r._exists) r._rowStatus = 'I';
+        });
+      } catch (err) {
+        console.warn('[BoExcelUploadModal:fnCheckExists]', err);
+      }
+    };
+
+    /* onSave — 유효 행만 upload */
+    const onSave = async () => {
+      if (!cfHasRows.value) { fnShowToast('업로드할 데이타가 없습니다.', 'error'); return; }
+      if (!cfUploadUrl.value) { fnShowToast('대상 도메인을 먼저 선택하세요.', 'error'); return; }
+      if (summary.errors > 0) {
+        const ok = await fnShowConfirm('업로드', `오류 ${summary.errors}건은 제외하고 ${summary.total - summary.errors}건만 저장합니다. 계속할까요?`);
+        if (!ok) return;
+      } else {
+        const ok = await fnShowConfirm('업로드', `${summary.total}건 (신규 ${summary.insert} / 수정 ${summary.update})을 저장합니다.`);
+        if (!ok) return;
+      }
+      loading.value = true;
+      try {
+        const body = { rows: cfValidRows.value.map(r => {
+          const o = {};
+          cfCols.value.forEach(c => { const k = c.field || c.fieldName; o[k] = r[k]; });
+          /* _row_status — 사용자가 그리드에서 선택한 값 그대로 전송.
+           *   I=INSERT · U=UPDATE · D=DELETE · M=MERGE(키 존재 시 UPDATE, 없으면 INSERT) */
+          o._row_status = r._rowStatus || 'I';
+          return o;
+        }) };
+        const res = await window.boApi.post(cfUploadUrl.value, body, window.coUtil.cofApiHdr(cfUiNm.value, '엑셀업로드'));
+        const data = res.data?.data || {};
+        fnShowToast(`저장 완료 - 신규 ${data.inserted ?? summary.insert} / 수정 ${data.updated ?? summary.update}`, 'success');
+        emit('saved', data);
+        emit('close');
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || '업로드 실패';
+        fnShowToast(msg, 'error', 0);
+      } finally { loading.value = false; }
+    };
+
+    /* ##### [04] 라이프사이클 ##################################################### */
+    Vue.onMounted(() => {
+      fnLoadCodes();
+      fnLoadDomainMeta(); // 마운트 시 기본 도메인 메타 로드
+    });
+
+    /* 도메인 변경 시 파일/rows 자동 초기화 + 새 도메인 메타 로드 */
+    Vue.watch(selectedDomainKey, () => {
+      rows.value = [];
+      fileName.value = '';
+      detectedColumns.value = [];
+      detectedKeyField.value = '';
+      detectedTableLabel.value = '';
+      fnRecalcSummary();
+      fnResetInspect();
+      fnLoadCodes();
+      fnLoadDomainMeta();
+    });
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      tab, rows, fileName, loading, codesMap, summary, inspect,            // 상태 / 데이터
+      cfCols, cfKeyField, cfHasRows, cfValidRows, cfTitle, cfLabel,        // computed
+      cfDescCols, cfDescKeyField, domainMetaLoading,                       // 설명 탭 전용
+      cfDomains, cfDomain, selectedDomainKey,                              // 도메인 select
+      searchParam, useYnOptions,                                           // 다운로드 검색조건
+      selectedFile,                                                        // 원본 파일 보관 (엑셀업로드 버튼 활성 판단)
+      handleBtnAction, handleSelectAction, onFileChange,                   // dispatch + 파일 입력 핸들러
+    };
+  },
+  template: `
+<bo-modal :title="cfTitle" width="1100px" height="auto" max-height="95vh" body-pad="0" @close="$emit('close')">
+  <!-- bodyPad=0 → BoModal body 의 padding 제거 → wrapper 가 body 영역을 정확히 100% 채움.
+        wrapper 내부 padding 은 직접 관리. 모달 body 자체 스크롤은 절대 활성화되지 않도록
+        모든 자식이 wrapper 안에서 flex 로 줄어들도록 구성. -->
+  <div style="display:flex;flex-direction:column;height:100%;min-height:0;padding:20px;box-sizing:border-box;">
+
+  <!-- ═══ 상단 영역 (자연 높이, flex:0 0 auto) ═══ -->
+  <div style="flex:0 0 auto;">
+
+  <!-- 도메인 select (config/excelDomains.js 기반) -->
+  <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;padding:10px 12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;">
+    <label style="font-size:12px;color:#475569;font-weight:600;min-width:48px;">대상</label>
+    <select :value="selectedDomainKey" @change="e => handleSelectAction('domain-change', e.target.value)"
+            class="form-control" style="flex:1;max-width:280px;font-size:13px;" :disabled="cfDomains.length === 0">
+      <option v-for="d in cfDomains" :key="d.key" :value="d.key">{{ d.group ? '[' + d.group + '] ' : '' }}{{ d.label }}</option>
+    </select>
+    <span v-if="cfDomain" style="font-size:11px;color:#94a3b8;font-family:monospace;">
+      {{ cfDomain.baseUrl }}
+    </span>
+  </div>
+
+  <!-- 다운로드 검색조건 (등록기간 + 사용여부). [조건데이타 다운로드] 시 백엔드로 함께 전달 -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:#fffaf3;border:1px solid #fde6c4;border-radius:8px;">
+    <label style="font-size:12px;color:#92400e;font-weight:600;min-width:48px;">조건</label>
+    <select v-model="searchParam.dateType" class="form-control" style="font-size:12px;width:110px;">
+      <option value="reg_date">등록일</option>
+      <option value="upd_date">수정일</option>
+    </select>
+    <input type="date" v-model="searchParam.dateStart" class="form-control" style="font-size:12px;width:140px;" />
+    <span style="color:#94a3b8;">~</span>
+    <input type="date" v-model="searchParam.dateEnd" class="form-control" style="font-size:12px;width:140px;" />
+    <label style="font-size:12px;color:#92400e;font-weight:600;margin-left:8px;">사용여부</label>
+    <select v-model="searchParam.useYn" class="form-control" style="font-size:12px;width:120px;">
+      <option value="">전체</option>
+      <option v-for="o in useYnOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
+    </select>
+    <span style="font-size:11px;color:#94a3b8;margin-left:auto;">※ [조건데이타 다운로드]에만 적용</span>
+  </div>
+
+  <!-- 탭 헤더 -->
+  <div class="tab-nav" style="margin-bottom:12px;">
+    <button class="tab-btn" :class="{active: tab==='upload'}" @click="handleBtnAction('tab-change','upload')">업로드</button>
+    <button class="tab-btn" :class="{active: tab==='desc'}"   @click="handleBtnAction('tab-change','desc')">설명</button>
+  </div>
+
+  <!-- 업로드 탭의 액션 바 (상단 고정 영역에 포함) -->
+  <div v-show="tab==='upload'" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+    <button class="btn btn-secondary btn-sm" :disabled="loading" @click="handleBtnAction('download-sample')">📄 샘플 다운로드</button>
+    <button class="btn btn-secondary btn-sm" :disabled="loading" @click="handleBtnAction('download-all')">📥 조건데이타 다운로드</button>
+    <span style="flex:1;"></span>
+    <input type="file" id="__bo_excel_upload_file__" accept=".csv,.txt,.xlsx,.xls" style="display:none;" @change="onFileChange" />
+    <button class="btn btn-blue btn-sm" :disabled="loading" @click="handleBtnAction('choose-file')">📁 파일 선택</button>
+    <button v-if="cfHasRows" class="btn btn-secondary btn-sm" :disabled="loading" @click="handleBtnAction('ui-inspect')">🔍 UI점검</button>
+    <button v-if="cfHasRows" class="btn btn-secondary btn-sm" :disabled="loading" @click="handleBtnAction('inspect')">📋 업로드점검</button>
+    <button v-if="cfHasRows" class="btn btn-secondary btn-sm" :disabled="loading" @click="handleBtnAction('grid-download')">📤 그리드다운로드</button>
+    <button v-if="cfHasRows" class="btn btn-secondary btn-sm" @click="handleBtnAction('clear-rows')">초기화</button>
+  </div>
+
+  </div>
+  <!-- ═══ /상단 영역 ═══ -->
+
+  <!-- ───── 탭1: 업로드 컨텐츠 (남는 영역 flex:1) ───── -->
+  <div v-show="tab==='upload'" style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;">
+
+    <!-- 점검 결과 패널 -->
+    <div v-if="inspect.ran"
+         :style="(inspect.ok ? 'border:1px solid #86efac;background:#f0fdf4;' : 'border:1px solid #fca5a5;background:#fef2f2;') + 'border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;'">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span style="font-weight:700;" :style="inspect.ok ? 'color:#15803d;' : 'color:#b91c1c;'">
+          {{ inspect.ok ? '✔ 업로드 가능' : '✖ 업로드 불가 — 오류 항목 확인' }}
+        </span>
+        <span style="flex:1;"></span>
+        <span style="font-size:11px;color:#94a3b8;">점검 {{ inspect.ranAt }}</span>
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('clear-inspect')" title="검증 정보 지우기">✕ 지우기</button>
+      </div>
+      <table style="width:100%;font-size:11px;border-collapse:collapse;">
+        <colgroup>
+          <col style="width:24px;" />
+          <col style="width:130px;" />
+          <col />
+        </colgroup>
+        <tbody>
+          <tr v-for="(it, i) in inspect.items" :key="i" style="border-top:1px solid rgba(0,0,0,0.05);">
+            <td style="text-align:center;padding:3px 4px;">
+              <span v-if="it.level==='ok'"   style="color:#16a34a;">●</span>
+              <span v-else-if="it.level==='warn'"  style="color:#f59e0b;">▲</span>
+              <span v-else-if="it.level==='error'" style="color:#dc2626;">✖</span>
+              <span v-else style="color:#64748b;">·</span>
+            </td>
+            <td style="padding:3px 6px;font-weight:600;color:#334155;">{{ it.label }}</td>
+            <td style="padding:3px 6px;color:#475569;">{{ it.detail }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 파일 안내 -->
+    <div v-if="fileName" style="font-size:12px;color:#666;margin-bottom:8px;">
+      선택: <strong>{{ fileName }}</strong>
+      <span style="margin-left:12px;">전체 {{ summary.total }}건</span>
+      <span style="margin-left:8px;color:#2563eb;">신규 {{ summary.insert }}</span>
+      <span style="margin-left:8px;color:#16a34a;">수정 {{ summary.update }}</span>
+      <span v-if="summary.errors" style="margin-left:8px;color:#dc2626;">오류 {{ summary.errors }}</span>
+    </div>
+
+    <!-- 미리보기 그리드 — 화면 안에서 가로 스크롤바까지 함께 보이도록 높이 제한.
+         max-height: 95vh - 모달 상단/하단/패딩 합산(약 320px) → 화면 안에 가로 스크롤바도 함께 노출. -->
+    <div v-if="cfHasRows" style="height:calc(95vh - 320px);min-height:280px;max-height:680px;overflow:auto;border:1px solid #e5e7eb;border-radius:8px;">
+      <table class="admin-table" style="font-size:12px;margin:0;">
+        <thead style="position:sticky;top:0;background:#f9fafb;z-index:1;">
+          <tr>
+            <th rowspan="2" style="width:36px;text-align:center;vertical-align:middle;">#</th>
+            <th rowspan="2" style="width:60px;text-align:center;vertical-align:middle;">상태</th>
+            <th rowspan="2" style="width:74px;text-align:center;vertical-align:middle;background:#fff7ed;color:#9a3412;font-family:Consolas,Menlo,monospace;font-size:11px;">
+              _row_status
+            </th>
+            <th v-for="c in cfCols" :key="'lbl-'+c.field"
+                :style="(c.field===cfKeyField ? 'background:#fff3d6;color:#92400e;' : '') + (c.width ? 'width:' + c.width + ';' : '') + 'min-width:130px;text-align:center;'">
+              {{ c.label }}
+              <span v-if="c.required" style="color:#dc2626;"> *</span>
+            </th>
+            <th rowspan="2" style="width:40px;"></th>
+          </tr>
+          <tr>
+            <th v-for="c in cfCols" :key="'fld-'+c.field"
+                :style="(c.field===cfKeyField ? 'background:#fff3d6;color:#92400e;' : 'background:#f3f4f6;color:#6b7280;') + 'min-width:130px;font-weight:400;font-size:11px;text-align:center;font-family:Consolas,Menlo,monospace;'">
+              {{ c.field }}<span v-if="c.field===cfKeyField" style="color:#92400e;">(key)</span><span v-if="c.codeGrp" style="color:#7c3aed;">(gcd:{{ c.codeGrp }})</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(r, idx) in rows" :key="idx" :style="r._err ? 'background:#fef2f2;' : ''">
+            <td style="text-align:center;color:#999;">{{ idx + 1 }}</td>
+            <td style="text-align:center;">
+              <span v-if="r._err" class="badge" style="background:#fee2e2;color:#dc2626;" :title="r._err">오류</span>
+              <span v-else-if="r._exists" class="badge" style="background:#dcfce7;color:#16a34a;">수정</span>
+              <span v-else class="badge" style="background:#dbeafe;color:#2563eb;">신규</span>
+            </td>
+            <td style="padding:2px 4px;"
+                :style="r._err ? 'background:#fef2f2;' : (r._rowStatus==='D' ? 'background:#fef2f2;' : (r._rowStatus==='M' ? 'background:#fefce8;' : (r._exists ? 'background:#f0fdf4;' : 'background:#eff6ff;')))">
+              <select v-model="r._rowStatus" class="form-control"
+                      style="font-size:11px;padding:2px 4px;width:100%;font-family:Consolas,Menlo,monospace;font-weight:600;text-align:center;"
+                      :title="'I=INSERT(신규) · U=UPDATE(수정) · D=DELETE(삭제) · M=MERGE(키 있으면 수정, 없으면 신규)'">
+                <option value="I">I</option>
+                <option value="U">U</option>
+                <option value="D">D</option>
+                <option value="M">M</option>
+              </select>
+            </td>
+            <td v-for="c in cfCols" :key="c.field"
+                :style="(c.field===cfKeyField ? 'background:#fffbeb;font-weight:600;' : '') + 'min-width:130px;'">
+              <select v-if="c.codeGrp" v-model="r[c.field]" class="form-control" style="font-size:11px;padding:2px 4px;width:100%;">
+                <option value="">선택</option>
+                <option v-for="o in (codesMap[c.codeGrp] || [])" :key="o.value" :value="o.value">{{ o.label }}</option>
+              </select>
+              <input v-else-if="!c.readOnly" type="text" v-model="r[c.field]" class="form-control" style="font-size:11px;padding:2px 4px;width:100%;" />
+              <span v-else>{{ r[c.field] }}</span>
+            </td>
+            <td style="text-align:center;">
+              <button class="btn btn-secondary btn-xs" @click="handleBtnAction('remove-row', idx)">✕</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 안내 (파일 미선택 시) -->
+    <div v-else style="padding:40px;text-align:center;color:#999;border:2px dashed #e5e7eb;border-radius:8px;">
+      <div style="font-size:14px;margin-bottom:6px;">파일을 선택하면 미리보기가 표시됩니다.</div>
+      <div style="font-size:11px;">키 컬럼(노란색)에 값이 있으면 <strong>수정</strong>, 없으면 <strong>신규</strong>로 처리됩니다.</div>
+    </div>
+  </div>
+  <!-- ───── /탭1: 업로드 컨텐츠 ───── -->
+
+  <!-- ───── 탭2: 설명 컨텐츠 (남는 영역 flex:1, 내부 스크롤) ───── -->
+  <div v-show="tab==='desc'" style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column;">
+    <div style="flex:0 0 auto;display:flex;align-items:center;gap:8px;font-size:12px;color:#666;margin-bottom:8px;">
+      <span style="font-weight:600;color:#334155;">{{ cfLabel || '대상 미선택' }}</span>
+      <span style="color:#94a3b8;">컬럼 정의 및 코드 설명</span>
+      <span v-if="cfDescCols.length" style="margin-left:auto;font-size:11px;color:#94a3b8;">{{ cfDescCols.length }}개 컬럼</span>
+    </div>
+
+    <div v-if="!cfDescCols.length" style="flex:0 0 auto;padding:24px;text-align:center;color:#999;border:2px dashed #e5e7eb;border-radius:8px;">
+      <div v-if="domainMetaLoading" style="font-size:13px;">메타 정보를 불러오는 중입니다...</div>
+      <div v-else style="font-size:13px;">대상 도메인의 컬럼 정보가 없습니다. 상단에서 도메인을 선택해 주세요.</div>
+    </div>
+
+    <!-- 컬럼 정의 + 코드 그룹별 값 — 내부에서만 스크롤 -->
+    <div v-if="cfDescCols.length" style="flex:1 1 auto;min-height:0;overflow:auto;">
+    <table class="admin-table" style="font-size:12px;">
+      <thead>
+        <tr>
+          <th style="width:36px;text-align:center;">#</th>
+          <th>필드명</th>
+          <th>한글명</th>
+          <th style="width:60px;text-align:center;">필수</th>
+          <th style="width:80px;text-align:center;">키컬럼</th>
+          <th style="width:140px;">코드그룹</th>
+          <th style="width:220px;">코드정보</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(c, idx) in cfDescCols" :key="c.field"
+            :style="c.field===cfDescKeyField ? 'background:#fffbeb;' : ''">
+          <td style="text-align:center;color:#999;">{{ idx + 1 }}</td>
+          <td><code>{{ c.field }}</code></td>
+          <td>{{ c.label }}</td>
+          <td style="text-align:center;">
+            <span v-if="c.required" style="color:#dc2626;">●</span>
+          </td>
+          <td style="text-align:center;">
+            <span v-if="c.field===cfDescKeyField" class="badge" style="background:#fef3c7;color:#92400e;">키</span>
+          </td>
+          <td>
+            <span v-if="c.codeGrp"><code>{{ c.codeGrp }}</code></span>
+          </td>
+          <td>
+            <select v-if="c.codeGrp" class="form-control" style="font-size:11px;padding:2px 4px;width:100%;"
+                    :title="(codesMap[c.codeGrp] || []).length + '개 코드 — 표시 전용'">
+              <option v-if="!(codesMap[c.codeGrp] || []).length" value="">코드 그룹({{ c.codeGrp }}) 로드 안 됨</option>
+              <option v-for="o in (codesMap[c.codeGrp] || [])" :key="o.value" :value="o.value">{{ o.label }} ({{ o.value }})</option>
+            </select>
+          </td>
+          <td>{{ c.desc || '' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 코드 그룹별 값 목록 -->
+    <div v-for="c in cfDescCols.filter(x => x.codeGrp)" :key="'code-' + c.codeGrp" style="margin-top:16px;">
+      <div style="font-size:12px;font-weight:600;margin-bottom:6px;">
+        📋 {{ c.label }} 코드값 (<code>{{ c.codeGrp }}</code>)
+      </div>
+      <table class="admin-table" style="font-size:11px;">
+        <thead>
+          <tr><th style="width:120px;">코드값</th><th>코드명</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="o in (codesMap[c.codeGrp] || [])" :key="o.value">
+            <td><code>{{ o.value }}</code></td>
+            <td>{{ o.label }}</td>
+          </tr>
+          <tr v-if="!(codesMap[c.codeGrp] || []).length">
+            <td colspan="2" style="text-align:center;color:#94a3b8;">코드 그룹({{ c.codeGrp }}) 로드 안 됨</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    </div>
+    <!-- /설명 내부 스크롤 영역 -->
+
+  </div>
+  <!-- ───── /탭2: 설명 컨텐츠 ───── -->
+
+  </div>
+  <!-- /flex column wrapper -->
+
+  <!-- ═══ 하단 고정 영역 — BoModal #footer 슬롯 사용 (모달 박스 하단에 고정, body 스크롤과 분리) ═══ -->
+  <template #footer>
+    <!-- 업로드 탭: [취소] [엑셀업로드] [그리드업로드] -->
+    <template v-if="tab==='upload'">
+      <button class="btn btn-secondary" :disabled="loading" @click="handleBtnAction('close')">취소</button>
+      <button class="btn btn-primary" :disabled="loading || !selectedFile"
+              @click="handleBtnAction('excel-upload')"
+              title="원본 파일을 서버에 그대로 전송 — 그리드 수정사항은 반영되지 않음">
+        📤 엑셀업로드
+      </button>
+      <button class="btn"
+              :class="(inspect.ran && !inspect.ok) ? 'btn-danger' : 'btn-primary'"
+              :disabled="loading || !cfHasRows" @click="handleBtnAction('grid-upload')"
+              :title="(inspect.ran && !inspect.ok) ? '점검 결과 오류가 있습니다. 강행 시 일부 행만 저장될 수 있어요.' : '그리드에 표시된 행(편집 후 상태)을 upsert'">
+        {{ (inspect.ran && !inspect.ok) ? '⚠ 강행 그리드업로드' : '📋 그리드업로드' }}
+      </button>
+    </template>
+
+    <!-- 설명 탭: [닫기] -->
+    <template v-else-if="tab==='desc'">
+      <button class="btn btn-secondary" @click="handleBtnAction('close')">닫기</button>
+    </template>
+  </template>
+  <!-- ═══ /하단 고정 영역 ═══ -->
+</bo-modal>
+`,
+};

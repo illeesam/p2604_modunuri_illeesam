@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** ZzSample0 QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QZzSample0RepositoryImpl implements QZzSample0Repository {
@@ -113,6 +112,26 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         if (StringUtils.hasText(search.getSample0Id())) w.and(s.sample0Id.eq(search.getSample0Id()));
         if (StringUtils.hasText(search.getUseYn()))     w.and(s.useYn.eq(search.getUseYn()));
+        /* searchValue LIKE OR — QZzSample0 의 String 필드 (감사필드 제외) */
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            String pattern = "%" + search.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(s.col01.likeIgnoreCase(pattern));
+            or.or(s.col02.likeIgnoreCase(pattern));
+            or.or(s.col03.likeIgnoreCase(pattern));
+            or.or(s.col04.likeIgnoreCase(pattern));
+            or.or(s.col05.likeIgnoreCase(pattern));
+            or.or(s.col06.likeIgnoreCase(pattern));
+            or.or(s.col07.likeIgnoreCase(pattern));
+            or.or(s.col08.likeIgnoreCase(pattern));
+            or.or(s.col09.likeIgnoreCase(pattern));
+            or.or(s.sample0Id.likeIgnoreCase(pattern));
+            or.or(s.sampleDesc.likeIgnoreCase(pattern));
+            or.or(s.sampleName.likeIgnoreCase(pattern));
+            or.or(s.sampleValue.likeIgnoreCase(pattern));
+            or.or(s.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

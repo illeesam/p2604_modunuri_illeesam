@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmVoucher QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
@@ -138,6 +137,20 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPmVoucher 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(v.siteId.likeIgnoreCase(pattern));
+            or.or(v.useYn.likeIgnoreCase(pattern));
+            or.or(v.voucherDesc.likeIgnoreCase(pattern));
+            or.or(v.voucherId.likeIgnoreCase(pattern));
+            or.or(v.voucherNm.likeIgnoreCase(pattern));
+            or.or(v.voucherStatusCd.likeIgnoreCase(pattern));
+            or.or(v.voucherStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(v.voucherTypeCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

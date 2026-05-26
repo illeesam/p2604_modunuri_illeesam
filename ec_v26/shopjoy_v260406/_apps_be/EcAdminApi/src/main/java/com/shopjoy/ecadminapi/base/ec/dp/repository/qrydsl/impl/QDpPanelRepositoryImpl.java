@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QDpPanelRepositoryImpl implements QDpPanelRepository {
 
@@ -125,6 +124,22 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 case "upd_date": w.and(p.updDate.goe(start)).and(p.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QDpPanel 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(p.contentJson.likeIgnoreCase(pattern));
+            or.or(p.dispPanelStatusCd.likeIgnoreCase(pattern));
+            or.or(p.dispPanelStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(p.panelId.likeIgnoreCase(pattern));
+            or.or(p.panelNm.likeIgnoreCase(pattern));
+            or.or(p.panelTypeCd.likeIgnoreCase(pattern));
+            or.or(p.pathId.likeIgnoreCase(pattern));
+            or.or(p.siteId.likeIgnoreCase(pattern));
+            or.or(p.useYn.likeIgnoreCase(pattern));
+            or.or(p.visibilityTargets.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

@@ -218,6 +218,54 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QStSettleRaw 의 String 필드 (감사필드 제외) */
+        if (c != null && StringUtils.hasText(c.getSearchValue())) {
+            String pattern = "%" + c.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.brandId.likeIgnoreCase(pattern));
+            or.or(r.brandNm.likeIgnoreCase(pattern));
+            or.or(r.buyConfirmYn.likeIgnoreCase(pattern));
+            or.or(r.categoryId1.likeIgnoreCase(pattern));
+            or.or(r.categoryId2.likeIgnoreCase(pattern));
+            or.or(r.categoryId3.likeIgnoreCase(pattern));
+            or.or(r.categoryId4.likeIgnoreCase(pattern));
+            or.or(r.categoryId5.likeIgnoreCase(pattern));
+            or.or(r.claimId.likeIgnoreCase(pattern));
+            or.or(r.claimItemId.likeIgnoreCase(pattern));
+            or.or(r.closeYn.likeIgnoreCase(pattern));
+            or.or(r.couponId.likeIgnoreCase(pattern));
+            or.or(r.couponIssueId.likeIgnoreCase(pattern));
+            or.or(r.discntId.likeIgnoreCase(pattern));
+            or.or(r.erpSendYn.likeIgnoreCase(pattern));
+            or.or(r.erpVoucherId.likeIgnoreCase(pattern));
+            or.or(r.giftId.likeIgnoreCase(pattern));
+            or.or(r.mdUserId.likeIgnoreCase(pattern));
+            or.or(r.memberId.likeIgnoreCase(pattern));
+            or.or(r.optItemId1.likeIgnoreCase(pattern));
+            or.or(r.optItemId2.likeIgnoreCase(pattern));
+            or.or(r.orderId.likeIgnoreCase(pattern));
+            or.or(r.orderItemId.likeIgnoreCase(pattern));
+            or.or(r.orderItemStatusCd.likeIgnoreCase(pattern));
+            or.or(r.orderNo.likeIgnoreCase(pattern));
+            or.or(r.payMethodCd.likeIgnoreCase(pattern));
+            or.or(r.prodId.likeIgnoreCase(pattern));
+            or.or(r.prodNm.likeIgnoreCase(pattern));
+            or.or(r.promoId.likeIgnoreCase(pattern));
+            or.or(r.rawStatusCd.likeIgnoreCase(pattern));
+            or.or(r.rawStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(r.rawTypeCd.likeIgnoreCase(pattern));
+            or.or(r.settleCloseId.likeIgnoreCase(pattern));
+            or.or(r.settleId.likeIgnoreCase(pattern));
+            or.or(r.settlePeriod.likeIgnoreCase(pattern));
+            or.or(r.settleRawId.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            or.or(r.skuId.likeIgnoreCase(pattern));
+            or.or(r.vendorId.likeIgnoreCase(pattern));
+            or.or(r.vendorTypeCd.likeIgnoreCase(pattern));
+            or.or(r.voucherId.likeIgnoreCase(pattern));
+            or.or(r.voucherIssueId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

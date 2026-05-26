@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyI18n QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyI18nRepositoryImpl implements QSyI18nRepository {
@@ -106,6 +105,19 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyI18n 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(i.i18nCategory.likeIgnoreCase(pattern));
+            or.or(i.i18nDesc.likeIgnoreCase(pattern));
+            or.or(i.i18nId.likeIgnoreCase(pattern));
+            or.or(i.i18nKey.likeIgnoreCase(pattern));
+            or.or(i.i18nScopeCd.likeIgnoreCase(pattern));
+            or.or(i.siteId.likeIgnoreCase(pattern));
+            or.or(i.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

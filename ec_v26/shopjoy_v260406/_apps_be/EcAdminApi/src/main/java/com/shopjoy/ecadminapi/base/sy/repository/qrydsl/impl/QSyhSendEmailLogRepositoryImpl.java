@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyhSendEmailLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepository {
@@ -158,6 +157,29 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyhSendEmailLog 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.bccAddr.likeIgnoreCase(pattern));
+            or.or(l.ccAddr.likeIgnoreCase(pattern));
+            or.or(l.content.likeIgnoreCase(pattern));
+            or.or(l.failReason.likeIgnoreCase(pattern));
+            or.or(l.fromAddr.likeIgnoreCase(pattern));
+            or.or(l.logId.likeIgnoreCase(pattern));
+            or.or(l.memberId.likeIgnoreCase(pattern));
+            or.or(l.params.likeIgnoreCase(pattern));
+            or.or(l.refId.likeIgnoreCase(pattern));
+            or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            or.or(l.resultCd.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            or.or(l.subject.likeIgnoreCase(pattern));
+            or.or(l.templateCode.likeIgnoreCase(pattern));
+            or.or(l.templateId.likeIgnoreCase(pattern));
+            or.or(l.toAddr.likeIgnoreCase(pattern));
+            or.or(l.userId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

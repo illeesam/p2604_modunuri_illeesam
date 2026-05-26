@@ -134,6 +134,22 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
                     break;
             }
         }
+        /* searchValue LIKE OR — QCmChattRoom 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.adminUserId.likeIgnoreCase(pattern));
+            or.or(r.chattMemo.likeIgnoreCase(pattern));
+            or.or(r.chattRoomId.likeIgnoreCase(pattern));
+            or.or(r.chattStatusCd.likeIgnoreCase(pattern));
+            or.or(r.chattStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(r.closeReason.likeIgnoreCase(pattern));
+            or.or(r.memberId.likeIgnoreCase(pattern));
+            or.or(r.memberNm.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            or.or(r.subject.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

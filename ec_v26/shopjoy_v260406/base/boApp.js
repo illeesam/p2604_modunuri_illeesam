@@ -2578,8 +2578,8 @@
   <!-- 도움말 모달 -->
   <help-bo-modal v-if="helpModal.show" :show="helpModal.show" :topic="helpModal.topic" @close="helpModal.show=false" />
 
-  <!-- Confirm -->
-  <div v-if="confirmState && confirmState.show" class="modal-overlay" @click.self="closeConfirm(false)">
+  <!-- Confirm — BoModal(z-index 9000) 위에 항상 노출되도록 z-index 10000 -->
+  <div v-if="confirmState && confirmState.show" class="modal-overlay" style="z-index:10000;" @click.self="closeConfirm(false)">
     <div class="confirm-box">
       <div class="confirm-icon">💾</div>
       <div class="confirm-title">{{ confirmState.title }}</div>
@@ -2737,6 +2737,7 @@
     .component('BoRefModal', window.BoRefModal)
     .component('BoCodeGrpModal', window.BoCodeGrpModal)
     .component('BoCodeGrpTreeNode', window.BoCodeGrpTreeNode)
+    .component('BoExcelUploadModal', window.BoExcelUploadModal)
     /* ── pages/bo/ec/ — 회원 ── */
     .component('MbMemberMng', window.MbMemberMng)
     .component('MbMemberDtl', window.MbMemberDtl)

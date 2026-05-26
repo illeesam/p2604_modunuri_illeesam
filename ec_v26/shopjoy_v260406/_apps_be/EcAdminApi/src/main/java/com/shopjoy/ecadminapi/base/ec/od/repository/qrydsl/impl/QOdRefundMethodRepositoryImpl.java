@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** OdRefundMethod QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository {
@@ -131,6 +130,22 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                     w.and(m.updDate.goe(start)).and(m.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QOdRefundMethod 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(m.orderId.likeIgnoreCase(pattern));
+            or.or(m.payId.likeIgnoreCase(pattern));
+            or.or(m.payMethodCd.likeIgnoreCase(pattern));
+            or.or(m.pgRefundId.likeIgnoreCase(pattern));
+            or.or(m.pgResponse.likeIgnoreCase(pattern));
+            or.or(m.refundId.likeIgnoreCase(pattern));
+            or.or(m.refundMethodId.likeIgnoreCase(pattern));
+            or.or(m.refundStatusCd.likeIgnoreCase(pattern));
+            or.or(m.refundStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

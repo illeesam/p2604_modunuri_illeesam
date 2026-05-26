@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyTemplate QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
@@ -120,6 +119,22 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyTemplate 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(t.pathId.likeIgnoreCase(pattern));
+            or.or(t.sampleParams.likeIgnoreCase(pattern));
+            or.or(t.siteId.likeIgnoreCase(pattern));
+            or.or(t.templateCode.likeIgnoreCase(pattern));
+            or.or(t.templateContent.likeIgnoreCase(pattern));
+            or.or(t.templateId.likeIgnoreCase(pattern));
+            or.or(t.templateNm.likeIgnoreCase(pattern));
+            or.or(t.templateSubject.likeIgnoreCase(pattern));
+            or.or(t.templateTypeCd.likeIgnoreCase(pattern));
+            or.or(t.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

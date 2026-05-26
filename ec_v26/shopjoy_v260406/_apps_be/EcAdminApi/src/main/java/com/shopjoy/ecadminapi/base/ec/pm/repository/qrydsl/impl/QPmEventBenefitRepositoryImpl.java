@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmEventBenefit QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository {
@@ -131,6 +130,20 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                     w.and(b.updDate.goe(start)).and(b.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmEventBenefit 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(b.benefitId.likeIgnoreCase(pattern));
+            or.or(b.benefitNm.likeIgnoreCase(pattern));
+            or.or(b.benefitTypeCd.likeIgnoreCase(pattern));
+            or.or(b.benefitValue.likeIgnoreCase(pattern));
+            or.or(b.conditionDesc.likeIgnoreCase(pattern));
+            or.or(b.couponId.likeIgnoreCase(pattern));
+            or.or(b.eventId.likeIgnoreCase(pattern));
+            or.or(b.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

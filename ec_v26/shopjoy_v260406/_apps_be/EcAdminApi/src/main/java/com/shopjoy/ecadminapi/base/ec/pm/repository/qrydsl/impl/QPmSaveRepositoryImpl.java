@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmSave QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmSaveRepositoryImpl implements QPmSaveRepository {
@@ -126,6 +125,19 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPmSave 의 String 필드 (감사필드 제외) */
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            String pattern = "%" + search.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(s.memberId.likeIgnoreCase(pattern));
+            or.or(s.refId.likeIgnoreCase(pattern));
+            or.or(s.refTypeCd.likeIgnoreCase(pattern));
+            or.or(s.saveId.likeIgnoreCase(pattern));
+            or.or(s.saveMemo.likeIgnoreCase(pattern));
+            or.or(s.saveTypeCd.likeIgnoreCase(pattern));
+            or.or(s.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

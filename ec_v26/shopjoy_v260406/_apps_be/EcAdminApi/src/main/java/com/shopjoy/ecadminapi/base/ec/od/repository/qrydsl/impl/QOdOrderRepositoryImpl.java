@@ -218,6 +218,45 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QOdOrder 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(o.accessChannelCd.likeIgnoreCase(pattern));
+            or.or(o.apprAprvUserId.likeIgnoreCase(pattern));
+            or.or(o.apprReason.likeIgnoreCase(pattern));
+            or.or(o.apprReqUserId.likeIgnoreCase(pattern));
+            or.or(o.apprStatusCd.likeIgnoreCase(pattern));
+            or.or(o.apprStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(o.apprTargetCd.likeIgnoreCase(pattern));
+            or.or(o.apprTargetNm.likeIgnoreCase(pattern));
+            or.or(o.couponId.likeIgnoreCase(pattern));
+            or.or(o.dlivCourierCd.likeIgnoreCase(pattern));
+            or.or(o.dlivStatusCd.likeIgnoreCase(pattern));
+            or.or(o.dlivStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(o.dlivTrackingNo.likeIgnoreCase(pattern));
+            or.or(o.entrancePwd.likeIgnoreCase(pattern));
+            or.or(o.memberId.likeIgnoreCase(pattern));
+            or.or(o.memberNm.likeIgnoreCase(pattern));
+            or.or(o.memo.likeIgnoreCase(pattern));
+            or.or(o.orderGradeCd.likeIgnoreCase(pattern));
+            or.or(o.orderId.likeIgnoreCase(pattern));
+            or.or(o.orderStatusCd.likeIgnoreCase(pattern));
+            or.or(o.orderStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(o.ordererEmail.likeIgnoreCase(pattern));
+            or.or(o.payMethodCd.likeIgnoreCase(pattern));
+            or.or(o.recvAddr.likeIgnoreCase(pattern));
+            or.or(o.recvAddrDetail.likeIgnoreCase(pattern));
+            or.or(o.recvMemo.likeIgnoreCase(pattern));
+            or.or(o.recvNm.likeIgnoreCase(pattern));
+            or.or(o.recvPhone.likeIgnoreCase(pattern));
+            or.or(o.recvZip.likeIgnoreCase(pattern));
+            or.or(o.refundAccountNm.likeIgnoreCase(pattern));
+            or.or(o.refundAccountNo.likeIgnoreCase(pattern));
+            or.or(o.refundBankCd.likeIgnoreCase(pattern));
+            or.or(o.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

@@ -142,6 +142,23 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
                     break;
             }
         }
+        /* searchValue LIKE OR — QPdhProdViewLog 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.device.likeIgnoreCase(pattern));
+            or.or(l.ip.likeIgnoreCase(pattern));
+            or.or(l.logId.likeIgnoreCase(pattern));
+            or.or(l.memberId.likeIgnoreCase(pattern));
+            or.or(l.prodId.likeIgnoreCase(pattern));
+            or.or(l.refId.likeIgnoreCase(pattern));
+            or.or(l.refNm.likeIgnoreCase(pattern));
+            or.or(l.referrer.likeIgnoreCase(pattern));
+            or.or(l.searchKw.likeIgnoreCase(pattern));
+            or.or(l.sessionKey.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

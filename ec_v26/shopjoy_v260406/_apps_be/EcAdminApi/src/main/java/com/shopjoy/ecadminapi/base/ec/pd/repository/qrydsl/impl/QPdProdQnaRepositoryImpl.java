@@ -131,6 +131,27 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                     break;
             }
         }
+        /* searchValue LIKE OR — QPdProdQna 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(q.answContent.likeIgnoreCase(pattern));
+            or.or(q.answUserId.likeIgnoreCase(pattern));
+            or.or(q.answYn.likeIgnoreCase(pattern));
+            or.or(q.dispYn.likeIgnoreCase(pattern));
+            or.or(q.memberId.likeIgnoreCase(pattern));
+            or.or(q.orderId.likeIgnoreCase(pattern));
+            or.or(q.prodId.likeIgnoreCase(pattern));
+            or.or(q.qnaContent.likeIgnoreCase(pattern));
+            or.or(q.qnaId.likeIgnoreCase(pattern));
+            or.or(q.qnaTitle.likeIgnoreCase(pattern));
+            or.or(q.qnaTypeCd.likeIgnoreCase(pattern));
+            or.or(q.scrtYn.likeIgnoreCase(pattern));
+            or.or(q.siteId.likeIgnoreCase(pattern));
+            or.or(q.skuId.likeIgnoreCase(pattern));
+            or.or(q.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

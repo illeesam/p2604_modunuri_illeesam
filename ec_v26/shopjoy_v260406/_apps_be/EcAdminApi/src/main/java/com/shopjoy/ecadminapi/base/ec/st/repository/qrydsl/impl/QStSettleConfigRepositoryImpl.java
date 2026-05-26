@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** StSettleConfig QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository {
@@ -131,6 +130,19 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                     w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QStSettleConfig 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.categoryId.likeIgnoreCase(pattern));
+            or.or(c.settleConfigId.likeIgnoreCase(pattern));
+            or.or(c.settleConfigRemark.likeIgnoreCase(pattern));
+            or.or(c.settleCycleCd.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            or.or(c.useYn.likeIgnoreCase(pattern));
+            or.or(c.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

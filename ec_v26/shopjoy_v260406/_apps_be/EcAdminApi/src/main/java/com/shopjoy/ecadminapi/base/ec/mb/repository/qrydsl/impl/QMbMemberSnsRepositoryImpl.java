@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
@@ -101,6 +100,17 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 case "upd_date": w.and(m.updDate.goe(start)).and(m.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QMbMemberSns 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(m.memberId.likeIgnoreCase(pattern));
+            or.or(m.memberSnsId.likeIgnoreCase(pattern));
+            or.or(m.siteId.likeIgnoreCase(pattern));
+            or.or(m.snsChannelCd.likeIgnoreCase(pattern));
+            or.or(m.snsUserId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyhBatchHist QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
@@ -145,6 +144,20 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyhBatchHist 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(h.batchCode.likeIgnoreCase(pattern));
+            or.or(h.batchHistId.likeIgnoreCase(pattern));
+            or.or(h.batchId.likeIgnoreCase(pattern));
+            or.or(h.batchNm.likeIgnoreCase(pattern));
+            or.or(h.detail.likeIgnoreCase(pattern));
+            or.or(h.message.likeIgnoreCase(pattern));
+            or.or(h.runStatus.likeIgnoreCase(pattern));
+            or.or(h.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

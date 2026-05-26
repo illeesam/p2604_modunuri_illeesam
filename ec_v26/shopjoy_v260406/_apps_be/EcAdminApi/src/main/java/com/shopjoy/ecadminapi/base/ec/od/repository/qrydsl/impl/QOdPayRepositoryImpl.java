@@ -206,6 +206,42 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QOdPay 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(p.cardIssuerCd.likeIgnoreCase(pattern));
+            or.or(p.cardIssuerNm.likeIgnoreCase(pattern));
+            or.or(p.cardNo.likeIgnoreCase(pattern));
+            or.or(p.cardTypeCd.likeIgnoreCase(pattern));
+            or.or(p.claimId.likeIgnoreCase(pattern));
+            or.or(p.failureCode.likeIgnoreCase(pattern));
+            or.or(p.failureReason.likeIgnoreCase(pattern));
+            or.or(p.memo.likeIgnoreCase(pattern));
+            or.or(p.orderId.likeIgnoreCase(pattern));
+            or.or(p.payChannelCd.likeIgnoreCase(pattern));
+            or.or(p.payDirCd.likeIgnoreCase(pattern));
+            or.or(p.payDivCd.likeIgnoreCase(pattern));
+            or.or(p.payId.likeIgnoreCase(pattern));
+            or.or(p.payMethodCd.likeIgnoreCase(pattern));
+            or.or(p.payOccurTypeCd.likeIgnoreCase(pattern));
+            or.or(p.payStatusCd.likeIgnoreCase(pattern));
+            or.or(p.payStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(p.pgApprovalNo.likeIgnoreCase(pattern));
+            or.or(p.pgCompanyCd.likeIgnoreCase(pattern));
+            or.or(p.pgResponse.likeIgnoreCase(pattern));
+            or.or(p.pgTransactionId.likeIgnoreCase(pattern));
+            or.or(p.refundReason.likeIgnoreCase(pattern));
+            or.or(p.refundStatusCd.likeIgnoreCase(pattern));
+            or.or(p.refundStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(p.siteId.likeIgnoreCase(pattern));
+            or.or(p.vbankAccount.likeIgnoreCase(pattern));
+            or.or(p.vbankBankCode.likeIgnoreCase(pattern));
+            or.or(p.vbankBankNm.likeIgnoreCase(pattern));
+            or.or(p.vbankDepositNm.likeIgnoreCase(pattern));
+            or.or(p.vbankHolderNm.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

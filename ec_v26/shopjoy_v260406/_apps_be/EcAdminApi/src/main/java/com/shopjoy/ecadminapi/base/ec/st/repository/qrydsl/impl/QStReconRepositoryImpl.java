@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** StRecon QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStReconRepositoryImpl implements QStReconRepository {
@@ -136,6 +135,25 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                     w.and(r.updDate.goe(start)).and(r.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QStRecon 의 String 필드 (감사필드 제외) */
+        if (c != null && StringUtils.hasText(c.getSearchValue())) {
+            String pattern = "%" + c.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.reconId.likeIgnoreCase(pattern));
+            or.or(r.reconNote.likeIgnoreCase(pattern));
+            or.or(r.reconStatusCd.likeIgnoreCase(pattern));
+            or.or(r.reconStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(r.reconTypeCd.likeIgnoreCase(pattern));
+            or.or(r.refId.likeIgnoreCase(pattern));
+            or.or(r.refNo.likeIgnoreCase(pattern));
+            or.or(r.resolvedBy.likeIgnoreCase(pattern));
+            or.or(r.settleId.likeIgnoreCase(pattern));
+            or.or(r.settlePeriod.likeIgnoreCase(pattern));
+            or.or(r.settleRawId.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            or.or(r.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

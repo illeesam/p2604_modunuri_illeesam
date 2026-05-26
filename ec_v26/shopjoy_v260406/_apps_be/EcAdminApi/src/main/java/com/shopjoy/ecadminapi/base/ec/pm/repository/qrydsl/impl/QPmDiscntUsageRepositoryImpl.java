@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmDiscntUsage QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
@@ -127,6 +126,21 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                     w.and(u.updDate.goe(start)).and(u.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmDiscntUsage 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(u.discntId.likeIgnoreCase(pattern));
+            or.or(u.discntNm.likeIgnoreCase(pattern));
+            or.or(u.discntTypeCd.likeIgnoreCase(pattern));
+            or.or(u.discntUsageId.likeIgnoreCase(pattern));
+            or.or(u.memberId.likeIgnoreCase(pattern));
+            or.or(u.orderId.likeIgnoreCase(pattern));
+            or.or(u.orderItemId.likeIgnoreCase(pattern));
+            or.or(u.prodId.likeIgnoreCase(pattern));
+            or.or(u.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

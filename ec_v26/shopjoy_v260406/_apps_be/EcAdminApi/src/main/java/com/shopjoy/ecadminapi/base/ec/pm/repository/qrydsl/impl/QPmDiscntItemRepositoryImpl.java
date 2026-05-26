@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmDiscntItem QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
@@ -116,6 +115,17 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
                     w.and(i.updDate.goe(start)).and(i.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmDiscntItem 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(i.discntId.likeIgnoreCase(pattern));
+            or.or(i.discntItemId.likeIgnoreCase(pattern));
+            or.or(i.siteId.likeIgnoreCase(pattern));
+            or.or(i.targetId.likeIgnoreCase(pattern));
+            or.or(i.targetTypeCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

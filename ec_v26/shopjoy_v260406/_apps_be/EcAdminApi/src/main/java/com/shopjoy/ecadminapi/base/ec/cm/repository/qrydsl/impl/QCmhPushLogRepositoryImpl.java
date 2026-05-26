@@ -135,6 +135,24 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
                     break;
             }
         }
+        /* searchValue LIKE OR — QCmhPushLog 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.channelCd.likeIgnoreCase(pattern));
+            or.or(l.failReason.likeIgnoreCase(pattern));
+            or.or(l.logId.likeIgnoreCase(pattern));
+            or.or(l.memberId.likeIgnoreCase(pattern));
+            or.or(l.pushLogContent.likeIgnoreCase(pattern));
+            or.or(l.pushLogTitle.likeIgnoreCase(pattern));
+            or.or(l.recvAddr.likeIgnoreCase(pattern));
+            or.or(l.refId.likeIgnoreCase(pattern));
+            or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            or.or(l.resultCd.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            or.or(l.templateId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

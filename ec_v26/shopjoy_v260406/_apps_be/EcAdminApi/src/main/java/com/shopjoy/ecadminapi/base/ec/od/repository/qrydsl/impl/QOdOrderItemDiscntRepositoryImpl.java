@@ -25,7 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** OdOrderItemDiscnt QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepository {
@@ -131,6 +130,19 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                     w.and(d.updDate.goe(start)).and(d.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QOdOrderItemDiscnt 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(d.couponId.likeIgnoreCase(pattern));
+            or.or(d.couponIssueId.likeIgnoreCase(pattern));
+            or.or(d.discntTypeCd.likeIgnoreCase(pattern));
+            or.or(d.itemDiscntId.likeIgnoreCase(pattern));
+            or.or(d.orderId.likeIgnoreCase(pattern));
+            or.or(d.orderItemId.likeIgnoreCase(pattern));
+            or.or(d.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

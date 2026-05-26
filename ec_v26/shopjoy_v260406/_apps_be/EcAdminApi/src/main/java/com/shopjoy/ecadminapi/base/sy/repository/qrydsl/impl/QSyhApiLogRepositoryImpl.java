@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyhApiLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
@@ -150,6 +149,26 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyhApiLog 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.apiNm.likeIgnoreCase(pattern));
+            or.or(l.apiTypeCd.likeIgnoreCase(pattern));
+            or.or(l.cmdNm.likeIgnoreCase(pattern));
+            or.or(l.endpoint.likeIgnoreCase(pattern));
+            or.or(l.errorMsg.likeIgnoreCase(pattern));
+            or.or(l.logId.likeIgnoreCase(pattern));
+            or.or(l.methodCd.likeIgnoreCase(pattern));
+            or.or(l.refId.likeIgnoreCase(pattern));
+            or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            or.or(l.reqBody.likeIgnoreCase(pattern));
+            or.or(l.resBody.likeIgnoreCase(pattern));
+            or.or(l.resultCd.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            or.or(l.uiNm.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

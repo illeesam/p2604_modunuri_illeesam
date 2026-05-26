@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PdhProdSkuStockHist QueryDSL Custom 구현체 — write-once 로그성 (updBy/updDate 없음) */
 @RequiredArgsConstructor
 public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistRepository {
@@ -131,6 +130,20 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
             if ("reg_date".equals(s.getDateType())) {
                 w.and(h.regDate.goe(start)).and(h.regDate.lt(endExcl));
             }
+        }
+        /* searchValue LIKE OR — QPdhProdSkuStockHist 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(h.chgBy.likeIgnoreCase(pattern));
+            or.or(h.chgReason.likeIgnoreCase(pattern));
+            or.or(h.chgReasonCd.likeIgnoreCase(pattern));
+            or.or(h.histId.likeIgnoreCase(pattern));
+            or.or(h.orderItemId.likeIgnoreCase(pattern));
+            or.or(h.prodId.likeIgnoreCase(pattern));
+            or.or(h.siteId.likeIgnoreCase(pattern));
+            or.or(h.skuId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

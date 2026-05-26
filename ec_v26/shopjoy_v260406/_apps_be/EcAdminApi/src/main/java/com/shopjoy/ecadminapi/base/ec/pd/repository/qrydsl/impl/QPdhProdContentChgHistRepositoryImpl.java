@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PdhProdContentChgHist QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgHistRepository {
@@ -135,6 +134,21 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPdhProdContentChgHist 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(h.chgReason.likeIgnoreCase(pattern));
+            or.or(h.chgUserId.likeIgnoreCase(pattern));
+            or.or(h.contentAfter.likeIgnoreCase(pattern));
+            or.or(h.contentBefore.likeIgnoreCase(pattern));
+            or.or(h.contentTypeCd.likeIgnoreCase(pattern));
+            or.or(h.histId.likeIgnoreCase(pattern));
+            or.or(h.prodContentId.likeIgnoreCase(pattern));
+            or.or(h.prodId.likeIgnoreCase(pattern));
+            or.or(h.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

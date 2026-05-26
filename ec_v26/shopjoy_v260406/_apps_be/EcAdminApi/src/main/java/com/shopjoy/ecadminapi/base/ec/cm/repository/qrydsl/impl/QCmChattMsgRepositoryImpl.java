@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** CmChattMsg QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
@@ -120,6 +119,20 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QCmChattMsg 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(m.chattMsgId.likeIgnoreCase(pattern));
+            or.or(m.chattRoomId.likeIgnoreCase(pattern));
+            or.or(m.msgText.likeIgnoreCase(pattern));
+            or.or(m.readYn.likeIgnoreCase(pattern));
+            or.or(m.refId.likeIgnoreCase(pattern));
+            or.or(m.refType.likeIgnoreCase(pattern));
+            or.or(m.senderCd.likeIgnoreCase(pattern));
+            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

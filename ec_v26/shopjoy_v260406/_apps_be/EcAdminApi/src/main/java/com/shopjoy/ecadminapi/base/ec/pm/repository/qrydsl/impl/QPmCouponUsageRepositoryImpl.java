@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmCouponUsage QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
@@ -127,6 +126,22 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
                     w.and(u.updDate.goe(start)).and(u.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmCouponUsage 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(u.couponCode.likeIgnoreCase(pattern));
+            or.or(u.couponId.likeIgnoreCase(pattern));
+            or.or(u.couponNm.likeIgnoreCase(pattern));
+            or.or(u.discountTypeCd.likeIgnoreCase(pattern));
+            or.or(u.memberId.likeIgnoreCase(pattern));
+            or.or(u.orderId.likeIgnoreCase(pattern));
+            or.or(u.orderItemId.likeIgnoreCase(pattern));
+            or.or(u.prodId.likeIgnoreCase(pattern));
+            or.or(u.siteId.likeIgnoreCase(pattern));
+            or.or(u.usageId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

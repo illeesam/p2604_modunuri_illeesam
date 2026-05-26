@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyCode QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyCodeRepositoryImpl implements QSyCodeRepository {
@@ -131,6 +130,22 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyCode 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.childCodeValues.likeIgnoreCase(pattern));
+            or.or(c.codeGrp.likeIgnoreCase(pattern));
+            or.or(c.codeId.likeIgnoreCase(pattern));
+            or.or(c.codeLabel.likeIgnoreCase(pattern));
+            or.or(c.codeOpt1.likeIgnoreCase(pattern));
+            or.or(c.codeRemark.likeIgnoreCase(pattern));
+            or.or(c.codeValue.likeIgnoreCase(pattern));
+            or.or(c.parentCodeValue.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            or.or(c.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

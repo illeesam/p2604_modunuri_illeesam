@@ -148,6 +148,22 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                     break;
             }
         }
+        /* searchValue LIKE OR — QPmGift 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(g.giftDesc.likeIgnoreCase(pattern));
+            or.or(g.giftId.likeIgnoreCase(pattern));
+            or.or(g.giftNm.likeIgnoreCase(pattern));
+            or.or(g.giftStatusCd.likeIgnoreCase(pattern));
+            or.or(g.giftStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(g.giftTypeCd.likeIgnoreCase(pattern));
+            or.or(g.memGradeCd.likeIgnoreCase(pattern));
+            or.or(g.prodId.likeIgnoreCase(pattern));
+            or.or(g.siteId.likeIgnoreCase(pattern));
+            or.or(g.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

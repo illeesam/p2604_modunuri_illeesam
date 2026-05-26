@@ -102,7 +102,15 @@ public class AccessLogFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
         boolean captureBody = props.getMaxBodySize() > 0;
-        ContentCachingRequestWrapper  reqWrap  = captureBody
+        /* multipart 요청은 본문이 바이너리(파일)이므로 캐싱하지 않는다.
+         * - reqBody 컬럼이 TEXT 라 0x00 등 바이너리 바이트가 들어가면 PostgreSQL INSERT 실패
+         * - 또한 큰 파일을 통째로 메모리에 잡지 않아 OOM 회피 */
+        String contentType = request.getContentType();
+        boolean isMultipart = contentType != null
+                && contentType.toLowerCase().startsWith("multipart/");
+        boolean captureReqBody = captureBody && !isMultipart;
+
+        ContentCachingRequestWrapper  reqWrap  = captureReqBody
                 ? new ContentCachingRequestWrapper(request,  props.getMaxBodySize())
                 : null;
         ContentCachingResponseWrapper respWrap = captureBody
@@ -151,7 +159,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
                             .reqQuery(query)
                             .reqIp(resolveIp(request))
                             .reqUa(truncate(ua, 500))
-                            .reqBody(captureBody ? bodyOf(reqWrap.getContentAsByteArray(),  props.getMaxBodySize()) : null)
+                            .reqBody(reqWrap != null ? bodyOf(reqWrap.getContentAsByteArray(),  props.getMaxBodySize()) : (isMultipart ? "[multipart/form-data omitted]" : null))
                             .siteId(siteId)
                             .appTypeCd(appTypeCd)
                             .userId(userId)
@@ -211,6 +219,10 @@ public class AccessLogFilter extends OncePerRequestFilter {
     private static String bodyOf(byte[] bytes, int maxSize) {
         if (bytes == null || bytes.length == 0) return null;
         String body = new String(bytes, StandardCharsets.UTF_8);
+        /* PostgreSQL TEXT 컬럼은 NUL(0x00) 바이트를 거부한다.
+         * "invalid byte sequence for encoding UTF8: 0x00" 방지를 위해 모든 0x00 을 제거.
+         * 응답이 바이너리(파일 다운로드 등)인 경우에도 안전. */
+        if (body.indexOf('\u0000') >= 0) body = body.replace("\u0000", "");
         return body.length() <= maxSize ? body : body.substring(0, maxSize);
     }
 

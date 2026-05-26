@@ -133,6 +133,16 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
                     break;
             }
         }
+        /* searchValue LIKE OR — QCmBlogTag 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(t.blogId.likeIgnoreCase(pattern));
+            or.or(t.blogTagId.likeIgnoreCase(pattern));
+            or.or(t.siteId.likeIgnoreCase(pattern));
+            or.or(t.tagNm.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

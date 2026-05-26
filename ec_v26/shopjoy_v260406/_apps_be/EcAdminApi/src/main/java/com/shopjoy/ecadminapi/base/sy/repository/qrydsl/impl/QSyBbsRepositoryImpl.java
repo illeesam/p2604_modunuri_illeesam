@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyBbs QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBbsRepositoryImpl implements QSyBbsRepository {
@@ -119,6 +118,24 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyBbs 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(b.attachGrpId.likeIgnoreCase(pattern));
+            or.or(b.authorNm.likeIgnoreCase(pattern));
+            or.or(b.bbmId.likeIgnoreCase(pattern));
+            or.or(b.bbsId.likeIgnoreCase(pattern));
+            or.or(b.bbsStatusCd.likeIgnoreCase(pattern));
+            or.or(b.bbsTitle.likeIgnoreCase(pattern));
+            or.or(b.contentHtml.likeIgnoreCase(pattern));
+            or.or(b.isFixed.likeIgnoreCase(pattern));
+            or.or(b.memberId.likeIgnoreCase(pattern));
+            or.or(b.parentBbsId.likeIgnoreCase(pattern));
+            or.or(b.pathId.likeIgnoreCase(pattern));
+            or.or(b.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
 
@@ -105,6 +104,26 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                 case "upd_date": w2.and(w.updDate.goe(start)).and(w.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QDpWidget 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(w.dispEnv.likeIgnoreCase(pattern));
+            or.or(w.siteId.likeIgnoreCase(pattern));
+            or.or(w.thumbnailUrl.likeIgnoreCase(pattern));
+            or.or(w.titleShowYn.likeIgnoreCase(pattern));
+            or.or(w.useYn.likeIgnoreCase(pattern));
+            or.or(w.widgetConfigJson.likeIgnoreCase(pattern));
+            or.or(w.widgetContent.likeIgnoreCase(pattern));
+            or.or(w.widgetDesc.likeIgnoreCase(pattern));
+            or.or(w.widgetId.likeIgnoreCase(pattern));
+            or.or(w.widgetLibId.likeIgnoreCase(pattern));
+            or.or(w.widgetLibRefYn.likeIgnoreCase(pattern));
+            or.or(w.widgetNm.likeIgnoreCase(pattern));
+            or.or(w.widgetTitle.likeIgnoreCase(pattern));
+            or.or(w.widgetTypeCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w2.and(or);
         }
         return w2;
     }

@@ -76,6 +76,55 @@ public class SyUserService {
         return syUserRepository.selectPageList(req);
     }
 
+    /** countList — 검색조건 기준 전체 카운트 (대량 export 시 안전 상한 검증용) */
+    public long countList(SyUserDto.Request req) {
+        return syUserRepository.selectCount(req);
+    }
+
+    /**
+     * fetchChunked — 검색조건 기준 전체 결과를 chunk 단위로 fetch 하여 consumer 에 흘려보낸다.
+     * <p>QueryDSL + JPA 환경에서 메모리 안전한 대용량 export 용도.
+     * <ul>
+     *   <li>chunk 크기만큼만 JVM heap 점유 → 마이크로 백엔드(작은 메모리)에서도 안전</li>
+     *   <li>각 chunk 처리 후 em.clear() 로 영속성 컨텍스트 정리</li>
+     *   <li>호출 측은 row 단위 consumer 로 받아 SXSSF sheet 등에 즉시 write</li>
+     * </ul>
+     * <p><b>안전장치</b>:
+     * <ul>
+     *   <li>req 원본을 변형하지 않음 — snapshot 복사본에 pageNo/pageSize 만 세팅</li>
+     *   <li>sort 미지정 시 PK(userId) 기본 정렬 강제 — chunk 사이 중복/누락 방지</li>
+     * </ul>
+     *
+     * @param req       검색조건 (원본은 변경되지 않음. pageNo/pageSize 는 무시됨)
+     * @param chunkSize 한 번에 조회할 행수 (권장 1,000~5,000)
+     * @param consumer  각 행을 받는 콜백
+     * @return 총 처리 행수
+     */
+    public int fetchChunked(SyUserDto.Request req, int chunkSize, java.util.function.Consumer<SyUserDto.Item> consumer) {
+        // req snapshot — 원본 보존
+        SyUserDto.Request snap = new SyUserDto.Request();
+        VoUtil.voCopy(req, snap);
+        snap.setPageSize(chunkSize);
+        // 정렬이 없으면 PK 강제 — PostgreSQL 임의순서로 인한 chunk 간 중복/누락 방지
+        if (snap.getSort() == null || snap.getSort().isBlank()) {
+            snap.setSort("userId asc");
+        }
+
+        int pageNo = 1;
+        int totalProcessed = 0;
+        while (true) {
+            snap.setPageNo(pageNo);
+            List<SyUserDto.Item> chunk = syUserRepository.selectList(snap);
+            if (chunk.isEmpty()) break;
+            for (SyUserDto.Item item : chunk) consumer.accept(item);
+            totalProcessed += chunk.size();
+            if (chunk.size() < chunkSize) break;
+            pageNo++;
+            em.clear();
+        }
+        return totalProcessed;
+    }
+
     // ── 변경 (JPA - SyUser 엔티티 반환) ──────────────────────────
 
     /** create — 생성 */

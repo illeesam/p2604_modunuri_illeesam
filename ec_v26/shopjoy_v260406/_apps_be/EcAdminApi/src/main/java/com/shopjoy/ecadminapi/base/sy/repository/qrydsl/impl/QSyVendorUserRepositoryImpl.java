@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyVendorUser QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
@@ -148,6 +147,26 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyVendorUser 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(u.authYn.likeIgnoreCase(pattern));
+            or.or(u.isMain.likeIgnoreCase(pattern));
+            or.or(u.memberNm.likeIgnoreCase(pattern));
+            or.or(u.positionCd.likeIgnoreCase(pattern));
+            or.or(u.siteId.likeIgnoreCase(pattern));
+            or.or(u.userId.likeIgnoreCase(pattern));
+            or.or(u.vendorId.likeIgnoreCase(pattern));
+            or.or(u.vendorUserDeptNm.likeIgnoreCase(pattern));
+            or.or(u.vendorUserEmail.likeIgnoreCase(pattern));
+            or.or(u.vendorUserId.likeIgnoreCase(pattern));
+            or.or(u.vendorUserMobile.likeIgnoreCase(pattern));
+            or.or(u.vendorUserPhone.likeIgnoreCase(pattern));
+            or.or(u.vendorUserRemark.likeIgnoreCase(pattern));
+            or.or(u.vendorUserStatusCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

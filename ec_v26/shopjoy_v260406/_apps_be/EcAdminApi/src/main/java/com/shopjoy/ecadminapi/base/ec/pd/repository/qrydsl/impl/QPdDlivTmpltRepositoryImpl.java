@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PdDlivTmplt QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
@@ -137,6 +136,26 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPdDlivTmplt 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(t.baseDlivYn.likeIgnoreCase(pattern));
+            or.or(t.dlivCourierCd.likeIgnoreCase(pattern));
+            or.or(t.dlivMethodCd.likeIgnoreCase(pattern));
+            or.or(t.dlivPayTypeCd.likeIgnoreCase(pattern));
+            or.or(t.dlivTmpltId.likeIgnoreCase(pattern));
+            or.or(t.dlivTmpltNm.likeIgnoreCase(pattern));
+            or.or(t.returnAddr.likeIgnoreCase(pattern));
+            or.or(t.returnAddrDetail.likeIgnoreCase(pattern));
+            or.or(t.returnAddrZip.likeIgnoreCase(pattern));
+            or.or(t.returnCourierCd.likeIgnoreCase(pattern));
+            or.or(t.returnTelNo.likeIgnoreCase(pattern));
+            or.or(t.siteId.likeIgnoreCase(pattern));
+            or.or(t.useYn.likeIgnoreCase(pattern));
+            or.or(t.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

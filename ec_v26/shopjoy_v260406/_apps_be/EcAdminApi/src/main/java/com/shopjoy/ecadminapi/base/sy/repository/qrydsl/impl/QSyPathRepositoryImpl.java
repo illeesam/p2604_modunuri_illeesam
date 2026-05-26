@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyPath QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPathRepositoryImpl implements QSyPathRepository {
@@ -93,6 +92,19 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",pathLabel,"))  or.or(p.pathLabel.likeIgnoreCase(pattern));
             if (all || types.contains(",pathRemark,")) or.or(p.pathRemark.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
+        /* searchValue LIKE OR — QSyPath 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(p.bizCd.likeIgnoreCase(pattern));
+            or.or(p.parentPathId.likeIgnoreCase(pattern));
+            or.or(p.pathId.likeIgnoreCase(pattern));
+            or.or(p.pathLabel.likeIgnoreCase(pattern));
+            or.or(p.pathRemark.likeIgnoreCase(pattern));
+            or.or(p.siteId.likeIgnoreCase(pattern));
+            or.or(p.useYn.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

@@ -18,7 +18,6 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PdCategory QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
@@ -114,6 +113,20 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
             String pattern = "%" + s.getSearchValue() + "%";
             BooleanBuilder or = new BooleanBuilder();
             if (all || types.contains(",categoryNm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
+        /* searchValue LIKE OR — QPdCategory 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.categoryDesc.likeIgnoreCase(pattern));
+            or.or(c.categoryId.likeIgnoreCase(pattern));
+            or.or(c.categoryNm.likeIgnoreCase(pattern));
+            or.or(c.categoryStatusCd.likeIgnoreCase(pattern));
+            or.or(c.categoryStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(c.imgUrl.likeIgnoreCase(pattern));
+            or.or(c.parentCategoryId.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
             if (or.getValue() != null) w.and(or);
         }
         return w;

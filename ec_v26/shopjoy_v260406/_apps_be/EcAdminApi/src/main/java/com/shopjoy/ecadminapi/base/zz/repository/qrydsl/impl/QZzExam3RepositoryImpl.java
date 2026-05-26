@@ -141,6 +141,20 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
             if (all || types.contains(",col35,"))     or.or(e.col35.containsIgnoreCase(v));
             if (or.getValue() != null) w.and(or);
         }
+        /* searchValue LIKE OR — QZzExam3 의 String 필드 (감사필드 제외) */
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            String pattern = "%" + search.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(e.col31.likeIgnoreCase(pattern));
+            or.or(e.col32.likeIgnoreCase(pattern));
+            or.or(e.col33.likeIgnoreCase(pattern));
+            or.or(e.col34.likeIgnoreCase(pattern));
+            or.or(e.col35.likeIgnoreCase(pattern));
+            or.or(e.exam1Id.likeIgnoreCase(pattern));
+            or.or(e.exam2Id.likeIgnoreCase(pattern));
+            or.or(e.exam3Id.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

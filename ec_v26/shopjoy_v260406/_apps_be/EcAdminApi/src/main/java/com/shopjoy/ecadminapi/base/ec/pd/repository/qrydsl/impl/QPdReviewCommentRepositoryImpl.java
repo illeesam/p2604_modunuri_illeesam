@@ -132,6 +132,21 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                     break;
             }
         }
+        /* searchValue LIKE OR — QPdReviewComment 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.parentReplyId.likeIgnoreCase(pattern));
+            or.or(c.replyStatusCd.likeIgnoreCase(pattern));
+            or.or(c.reviewCommentId.likeIgnoreCase(pattern));
+            or.or(c.reviewId.likeIgnoreCase(pattern));
+            or.or(c.reviewReplyContent.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            or.or(c.writerId.likeIgnoreCase(pattern));
+            or.or(c.writerNm.likeIgnoreCase(pattern));
+            or.or(c.writerTypeCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

@@ -132,6 +132,20 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QOdPayMethod 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(m.mainMethodYn.likeIgnoreCase(pattern));
+            or.or(m.memberId.likeIgnoreCase(pattern));
+            or.or(m.payKeyNo.likeIgnoreCase(pattern));
+            or.or(m.payMethodAlias.likeIgnoreCase(pattern));
+            or.or(m.payMethodId.likeIgnoreCase(pattern));
+            or.or(m.payMethodNm.likeIgnoreCase(pattern));
+            or.or(m.payMethodTypeCd.likeIgnoreCase(pattern));
+            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

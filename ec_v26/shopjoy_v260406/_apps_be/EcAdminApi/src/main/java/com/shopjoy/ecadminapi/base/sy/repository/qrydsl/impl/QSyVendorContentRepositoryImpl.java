@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyVendorContent QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepository {
@@ -142,6 +141,27 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyVendorContent 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.attachGrpId.likeIgnoreCase(pattern));
+            or.or(c.contentHtml.likeIgnoreCase(pattern));
+            or.or(c.contentTypeCd.likeIgnoreCase(pattern));
+            or.or(c.imageUrl.likeIgnoreCase(pattern));
+            or.or(c.langCd.likeIgnoreCase(pattern));
+            or.or(c.linkUrl.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            or.or(c.thumbUrl.likeIgnoreCase(pattern));
+            or.or(c.useYn.likeIgnoreCase(pattern));
+            or.or(c.vendorContentId.likeIgnoreCase(pattern));
+            or.or(c.vendorContentRemark.likeIgnoreCase(pattern));
+            or.or(c.vendorContentStatusCd.likeIgnoreCase(pattern));
+            or.or(c.vendorContentSubtitle.likeIgnoreCase(pattern));
+            or.or(c.vendorContentTitle.likeIgnoreCase(pattern));
+            or.or(c.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

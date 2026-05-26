@@ -72,6 +72,40 @@ public class SyRoleService {
         return syRoleRepository.selectPageList(req);
     }
 
+    /** countList — 검색조건 기준 전체 카운트 (대량 export 시 안전 상한 검증용) */
+    public long countList(SyRoleDto.Request req) {
+        return syRoleRepository.selectCount(req);
+    }
+
+    /**
+     * fetchChunked — 검색조건 기준 전체 결과를 chunk 단위로 fetch 하여 consumer 에 흘려보낸다.
+     * <p>QueryDSL + JPA 환경에서 메모리 안전한 대용량 export 용도.
+     * <p><b>안전장치</b>: req 원본 보존(snapshot 복사) + sort 미지정 시 PK 강제 정렬.
+     * 각 chunk 처리 후 em.clear() 로 영속성 컨텍스트 정리.
+     */
+    public int fetchChunked(SyRoleDto.Request req, int chunkSize, java.util.function.Consumer<SyRoleDto.Item> consumer) {
+        SyRoleDto.Request snap = new SyRoleDto.Request();
+        VoUtil.voCopy(req, snap);
+        snap.setPageSize(chunkSize);
+        if (snap.getSort() == null || snap.getSort().isBlank()) {
+            snap.setSort("roleId asc");
+        }
+
+        int pageNo = 1;
+        int totalProcessed = 0;
+        while (true) {
+            snap.setPageNo(pageNo);
+            List<SyRoleDto.Item> chunk = syRoleRepository.selectList(snap);
+            if (chunk.isEmpty()) break;
+            for (SyRoleDto.Item item : chunk) consumer.accept(item);
+            totalProcessed += chunk.size();
+            if (chunk.size() < chunkSize) break;
+            pageNo++;
+            em.clear();
+        }
+        return totalProcessed;
+    }
+
     /* 역할(권한) 등록 */
     @Transactional
     public SyRole create(SyRole body) {

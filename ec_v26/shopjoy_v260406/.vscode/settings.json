@@ -65,11 +65,9 @@
     "java.test.config": {
         "vmargs": ["-Duser.timezone=Asia/Seoul"]
     },
-    "liveServer.settings.default.browser": "chrome",
-    "liveServer.settings.chromeDebuggingAttachment": true,
+    "liveServer.settings.CustomBrowser": "chrome",
     "liveServer.settings.file": "bo.html",
     "liveServer.settings.root": "/",
     "liveServer.settings.useWebExt": false,
-    "liveServer.settings.NoneBlockingThrottling": true,
     "java.configuration.updateBuildConfiguration": "automatic"
 }

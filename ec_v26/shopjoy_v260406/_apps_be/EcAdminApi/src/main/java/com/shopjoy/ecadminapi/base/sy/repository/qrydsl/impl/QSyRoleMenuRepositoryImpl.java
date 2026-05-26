@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyRoleMenu QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
@@ -114,6 +113,16 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyRoleMenu 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(m.menuId.likeIgnoreCase(pattern));
+            or.or(m.roleId.likeIgnoreCase(pattern));
+            or.or(m.roleMenuId.likeIgnoreCase(pattern));
+            or.or(m.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

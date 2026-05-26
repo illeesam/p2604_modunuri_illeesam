@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 @RequiredArgsConstructor
 public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
 
@@ -106,6 +105,27 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                 case "upd_date": w.and(i.updDate.goe(start)).and(i.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QDpPanelItem 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(i.contentTypeCd.likeIgnoreCase(pattern));
+            or.or(i.dispEnv.likeIgnoreCase(pattern));
+            or.or(i.dispYn.likeIgnoreCase(pattern));
+            or.or(i.panelId.likeIgnoreCase(pattern));
+            or.or(i.panelItemId.likeIgnoreCase(pattern));
+            or.or(i.siteId.likeIgnoreCase(pattern));
+            or.or(i.titleShowYn.likeIgnoreCase(pattern));
+            or.or(i.useYn.likeIgnoreCase(pattern));
+            or.or(i.visibilityTargets.likeIgnoreCase(pattern));
+            or.or(i.widgetConfigJson.likeIgnoreCase(pattern));
+            or.or(i.widgetContent.likeIgnoreCase(pattern));
+            or.or(i.widgetLibId.likeIgnoreCase(pattern));
+            or.or(i.widgetLibRefYn.likeIgnoreCase(pattern));
+            or.or(i.widgetTitle.likeIgnoreCase(pattern));
+            or.or(i.widgetTypeCd.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

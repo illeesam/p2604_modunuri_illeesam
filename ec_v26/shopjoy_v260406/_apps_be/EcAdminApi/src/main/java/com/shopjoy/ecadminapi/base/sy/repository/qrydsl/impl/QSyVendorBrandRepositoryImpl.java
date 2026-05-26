@@ -24,7 +24,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyVendorBrand QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
@@ -129,6 +128,20 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyVendorBrand 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(b.brandId.likeIgnoreCase(pattern));
+            or.or(b.contractCd.likeIgnoreCase(pattern));
+            or.or(b.isMain.likeIgnoreCase(pattern));
+            or.or(b.siteId.likeIgnoreCase(pattern));
+            or.or(b.useYn.likeIgnoreCase(pattern));
+            or.or(b.vendorBrandId.likeIgnoreCase(pattern));
+            or.or(b.vendorBrandRemark.likeIgnoreCase(pattern));
+            or.or(b.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

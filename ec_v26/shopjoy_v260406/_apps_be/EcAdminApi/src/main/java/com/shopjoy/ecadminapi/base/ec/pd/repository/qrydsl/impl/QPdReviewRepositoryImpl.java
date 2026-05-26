@@ -131,6 +131,20 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                     break;
             }
         }
+        /* searchValue LIKE OR — QPdReview 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(r.memberId.likeIgnoreCase(pattern));
+            or.or(r.prodId.likeIgnoreCase(pattern));
+            or.or(r.reviewContent.likeIgnoreCase(pattern));
+            or.or(r.reviewId.likeIgnoreCase(pattern));
+            or.or(r.reviewStatusCd.likeIgnoreCase(pattern));
+            or.or(r.reviewStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(r.reviewTitle.likeIgnoreCase(pattern));
+            or.or(r.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

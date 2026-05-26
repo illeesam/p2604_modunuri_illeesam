@@ -245,6 +245,66 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QOdClaim 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.addShippingFeeChargeCd.likeIgnoreCase(pattern));
+            or.or(c.addShippingFeeReason.likeIgnoreCase(pattern));
+            or.or(c.apprAprvUserId.likeIgnoreCase(pattern));
+            or.or(c.apprReason.likeIgnoreCase(pattern));
+            or.or(c.apprReqUserId.likeIgnoreCase(pattern));
+            or.or(c.apprStatusCd.likeIgnoreCase(pattern));
+            or.or(c.apprStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(c.apprTargetCd.likeIgnoreCase(pattern));
+            or.or(c.apprTargetNm.likeIgnoreCase(pattern));
+            or.or(c.claimCancelReasonCd.likeIgnoreCase(pattern));
+            or.or(c.claimCancelReasonDetail.likeIgnoreCase(pattern));
+            or.or(c.claimCancelYn.likeIgnoreCase(pattern));
+            or.or(c.claimId.likeIgnoreCase(pattern));
+            or.or(c.claimStatusCd.likeIgnoreCase(pattern));
+            or.or(c.claimStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(c.claimTypeCd.likeIgnoreCase(pattern));
+            or.or(c.collectAddr.likeIgnoreCase(pattern));
+            or.or(c.collectAddrDetail.likeIgnoreCase(pattern));
+            or.or(c.collectNm.likeIgnoreCase(pattern));
+            or.or(c.collectPhone.likeIgnoreCase(pattern));
+            or.or(c.collectReqMemo.likeIgnoreCase(pattern));
+            or.or(c.collectZip.likeIgnoreCase(pattern));
+            or.or(c.customerFaultYn.likeIgnoreCase(pattern));
+            or.or(c.exchRecvAddr.likeIgnoreCase(pattern));
+            or.or(c.exchRecvAddrDetail.likeIgnoreCase(pattern));
+            or.or(c.exchRecvNm.likeIgnoreCase(pattern));
+            or.or(c.exchRecvPhone.likeIgnoreCase(pattern));
+            or.or(c.exchRecvReqMemo.likeIgnoreCase(pattern));
+            or.or(c.exchRecvZip.likeIgnoreCase(pattern));
+            or.or(c.exchangeCourierCd.likeIgnoreCase(pattern));
+            or.or(c.exchangeTrackingNo.likeIgnoreCase(pattern));
+            or.or(c.inboundCourierCd.likeIgnoreCase(pattern));
+            or.or(c.inboundDlivId.likeIgnoreCase(pattern));
+            or.or(c.inboundTrackingNo.likeIgnoreCase(pattern));
+            or.or(c.memberId.likeIgnoreCase(pattern));
+            or.or(c.memberNm.likeIgnoreCase(pattern));
+            or.or(c.memo.likeIgnoreCase(pattern));
+            or.or(c.orderId.likeIgnoreCase(pattern));
+            or.or(c.outboundDlivId.likeIgnoreCase(pattern));
+            or.or(c.procUserId.likeIgnoreCase(pattern));
+            or.or(c.prodNm.likeIgnoreCase(pattern));
+            or.or(c.reasonCd.likeIgnoreCase(pattern));
+            or.or(c.reasonDetail.likeIgnoreCase(pattern));
+            or.or(c.refundAccountNm.likeIgnoreCase(pattern));
+            or.or(c.refundAccountNo.likeIgnoreCase(pattern));
+            or.or(c.refundBankCd.likeIgnoreCase(pattern));
+            or.or(c.refundMethodCd.likeIgnoreCase(pattern));
+            or.or(c.returnCourierCd.likeIgnoreCase(pattern));
+            or.or(c.returnStatusCd.likeIgnoreCase(pattern));
+            or.or(c.returnStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(c.returnTrackingNo.likeIgnoreCase(pattern));
+            or.or(c.shippingFeeMemo.likeIgnoreCase(pattern));
+            or.or(c.shippingFeePaidYn.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

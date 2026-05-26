@@ -126,6 +126,22 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QStErpVoucherLine 의 String 필드 (감사필드 제외) */
+        if (c != null && StringUtils.hasText(c.getSearchValue())) {
+            String pattern = "%" + c.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.accountCd.likeIgnoreCase(pattern));
+            or.or(l.accountNm.likeIgnoreCase(pattern));
+            or.or(l.costCenterCd.likeIgnoreCase(pattern));
+            or.or(l.erpVoucherId.likeIgnoreCase(pattern));
+            or.or(l.erpVoucherLineId.likeIgnoreCase(pattern));
+            or.or(l.lineMemo.likeIgnoreCase(pattern));
+            or.or(l.profitCenterCd.likeIgnoreCase(pattern));
+            or.or(l.refId.likeIgnoreCase(pattern));
+            or.or(l.refTypeCd.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

@@ -18,7 +18,6 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** ZzSample3 QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QZzSample3RepositoryImpl implements QZzSample3Repository {
@@ -132,6 +131,40 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
         if (StringUtils.hasText(search.getSample1Id())) w.and(s.sample1Id.eq(search.getSample1Id()));
         if (StringUtils.hasText(search.getSample2Id())) w.and(s.sample2Id.eq(search.getSample2Id()));
         if (StringUtils.hasText(search.getUseYn()))     w.and(s.useYn.eq(search.getUseYn()));
+        /* searchValue LIKE OR — QZzSample3 의 String 필드 (감사필드 제외) */
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            String pattern = "%" + search.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(s.attrNm1.likeIgnoreCase(pattern));
+            or.or(s.attrNm2.likeIgnoreCase(pattern));
+            or.or(s.attrNm3.likeIgnoreCase(pattern));
+            or.or(s.attrNm4.likeIgnoreCase(pattern));
+            or.or(s.cateCds.likeIgnoreCase(pattern));
+            or.or(s.cdGrp.likeIgnoreCase(pattern));
+            or.or(s.cdInfwSeCd.likeIgnoreCase(pattern));
+            or.or(s.cdNm.likeIgnoreCase(pattern));
+            or.or(s.cdVl.likeIgnoreCase(pattern));
+            or.or(s.col01.likeIgnoreCase(pattern));
+            or.or(s.col02.likeIgnoreCase(pattern));
+            or.or(s.col03.likeIgnoreCase(pattern));
+            or.or(s.col04.likeIgnoreCase(pattern));
+            or.or(s.col05.likeIgnoreCase(pattern));
+            or.or(s.col06.likeIgnoreCase(pattern));
+            or.or(s.col07.likeIgnoreCase(pattern));
+            or.or(s.col08.likeIgnoreCase(pattern));
+            or.or(s.col09.likeIgnoreCase(pattern));
+            or.or(s.divCd.likeIgnoreCase(pattern));
+            or.or(s.explnCn.likeIgnoreCase(pattern));
+            or.or(s.groupCd.likeIgnoreCase(pattern));
+            or.or(s.kindCd.likeIgnoreCase(pattern));
+            or.or(s.sample1Id.likeIgnoreCase(pattern));
+            or.or(s.sample2Id.likeIgnoreCase(pattern));
+            or.or(s.sample3Id.likeIgnoreCase(pattern));
+            or.or(s.statusCd.likeIgnoreCase(pattern));
+            or.or(s.typeCd.likeIgnoreCase(pattern));
+            or.or(s.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

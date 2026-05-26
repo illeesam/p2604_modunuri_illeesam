@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
 /** SyhAccessLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
@@ -123,6 +122,37 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyhAccessLog 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(l.appTypeCd.likeIgnoreCase(pattern));
+            or.or(l.cmdNm.likeIgnoreCase(pattern));
+            or.or(l.deptId.likeIgnoreCase(pattern));
+            or.or(l.fileNm.likeIgnoreCase(pattern));
+            or.or(l.funcNm.likeIgnoreCase(pattern));
+            or.or(l.lineNo.likeIgnoreCase(pattern));
+            or.or(l.localeId.likeIgnoreCase(pattern));
+            or.or(l.logId.likeIgnoreCase(pattern));
+            or.or(l.profile.likeIgnoreCase(pattern));
+            or.or(l.reqBody.likeIgnoreCase(pattern));
+            or.or(l.reqHost.likeIgnoreCase(pattern));
+            or.or(l.reqIp.likeIgnoreCase(pattern));
+            or.or(l.reqMethod.likeIgnoreCase(pattern));
+            or.or(l.reqPath.likeIgnoreCase(pattern));
+            or.or(l.reqQuery.likeIgnoreCase(pattern));
+            or.or(l.reqUa.likeIgnoreCase(pattern));
+            or.or(l.respBody.likeIgnoreCase(pattern));
+            or.or(l.roleId.likeIgnoreCase(pattern));
+            or.or(l.serverNm.likeIgnoreCase(pattern));
+            or.or(l.siteId.likeIgnoreCase(pattern));
+            or.or(l.threadNm.likeIgnoreCase(pattern));
+            or.or(l.traceId.likeIgnoreCase(pattern));
+            or.or(l.uiNm.likeIgnoreCase(pattern));
+            or.or(l.userId.likeIgnoreCase(pattern));
+            or.or(l.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

@@ -20,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyBatch QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyBatchRepositoryImpl implements QSyBatchRepository {
@@ -119,6 +118,23 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                     break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QSyBatch 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(b.batchCode.likeIgnoreCase(pattern));
+            or.or(b.batchCycleCd.likeIgnoreCase(pattern));
+            or.or(b.batchDesc.likeIgnoreCase(pattern));
+            or.or(b.batchId.likeIgnoreCase(pattern));
+            or.or(b.batchMemo.likeIgnoreCase(pattern));
+            or.or(b.batchNm.likeIgnoreCase(pattern));
+            or.or(b.batchRunStatus.likeIgnoreCase(pattern));
+            or.or(b.batchStatusCd.likeIgnoreCase(pattern));
+            or.or(b.cronExpr.likeIgnoreCase(pattern));
+            or.or(b.pathId.likeIgnoreCase(pattern));
+            or.or(b.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

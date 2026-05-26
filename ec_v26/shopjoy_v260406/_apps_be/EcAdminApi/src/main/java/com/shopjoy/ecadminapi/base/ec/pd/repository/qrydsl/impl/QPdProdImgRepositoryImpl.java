@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PdProdImg QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
@@ -129,6 +128,23 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QPdProdImg 의 String 필드 (감사필드 제외) */
+        if (req != null && StringUtils.hasText(req.getSearchValue())) {
+            String pattern = "%" + req.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(i.attachId.likeIgnoreCase(pattern));
+            or.or(i.cdnHost.likeIgnoreCase(pattern));
+            or.or(i.cdnImgUrl.likeIgnoreCase(pattern));
+            or.or(i.cdnThumbUrl.likeIgnoreCase(pattern));
+            or.or(i.imgAltText.likeIgnoreCase(pattern));
+            or.or(i.isThumb.likeIgnoreCase(pattern));
+            or.or(i.optItemId1.likeIgnoreCase(pattern));
+            or.or(i.optItemId2.likeIgnoreCase(pattern));
+            or.or(i.prodId.likeIgnoreCase(pattern));
+            or.or(i.prodImgId.likeIgnoreCase(pattern));
+            or.or(i.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

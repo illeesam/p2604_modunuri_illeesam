@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** PmCache QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPmCacheRepositoryImpl implements QPmCacheRepository {
@@ -134,6 +133,20 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                     w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QPmCache 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.cacheDesc.likeIgnoreCase(pattern));
+            or.or(c.cacheId.likeIgnoreCase(pattern));
+            or.or(c.cacheTypeCd.likeIgnoreCase(pattern));
+            or.or(c.memberId.likeIgnoreCase(pattern));
+            or.or(c.memberNm.likeIgnoreCase(pattern));
+            or.or(c.procUserId.likeIgnoreCase(pattern));
+            or.or(c.refId.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

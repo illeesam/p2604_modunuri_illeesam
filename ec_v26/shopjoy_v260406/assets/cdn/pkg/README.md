@@ -58,6 +58,9 @@ assets/cdn/pkg/
 ├── qrcodejs/1.0.0/
 │   └── qrcode.min.js                 ●  20KB  QR 코드 생성 (admin)
 │
+├── xlsx/0.20.3/
+│   └── xlsx.full.min.js              ● 929KB  SheetJS — .xlsx/.xls 파싱 (admin 엑셀 업로드)
+│
 └── tailwind/3.4.19.build/
     └── tailwind.min.css              ●  빌드 결과물 (`.build` 접미사로 생성물 표시)
 ```
@@ -176,6 +179,19 @@ assets/cdn/pkg/
 |---|---|
 | 원본 | `https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js` |
 | 로드 위치 | `bo.html` |
+
+### SheetJS (xlsx) · `xlsx/0.20.3/xlsx.full.min.js`
+
+<!-- .xlsx / .xls 파일을 브라우저에서 직접 파싱 → 2차원 배열 / CSV 텍스트 변환.
+     관리자 엑셀 업로드 모달(BoExcelUploadModal)에서 사용자가 CSV 변환 없이
+     엑셀 원본 그대로 업로드할 수 있도록 함. -->
+
+| 항목 | 내용 |
+|---|---|
+| 원본 | `https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js` |
+| 로드 위치 | `bo.html` |
+| 사용 파일 | `components/modals/BoModals.js` (BoExcelUploadModal `fnParseExcelOrCsv`) |
+| 사용 예시 | `XLSX.read(arrayBuffer, { type: 'array' })` → `XLSX.utils.sheet_to_csv(sheet)` |
 
 ---
 
@@ -342,6 +358,8 @@ curl -Lo postcode/2/postcode.v2.js                 https://t1.daumcdn.net/mapjsa
 curl -Lo marked/11.1.1/marked.min.js               https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.umd.min.js
 curl -Lo jsbarcode/3.11.6/JsBarcode.all.min.js     https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js
 curl -Lo qrcodejs/1.0.0/qrcode.min.js              https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js
+mkdir -p xlsx/0.20.3
+curl -Lo xlsx/0.20.3/xlsx.full.min.js              https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js
 ```
 
 ---
@@ -375,6 +393,7 @@ curl -Lo qrcodejs/1.0.0/qrcode.min.js              https://cdnjs.cloudflare.com/
 <script src="assets/cdn/pkg/marked/11.1.1/marked.min.js"></script>
 <script src="assets/cdn/pkg/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="assets/cdn/pkg/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="assets/cdn/pkg/xlsx/0.20.3/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="assets/css/backOfficeStyle.css">
 <link rel="stylesheet" href="assets/cdn/pkg/tailwind/3.4.19.build/tailwind.min.css">
 ```

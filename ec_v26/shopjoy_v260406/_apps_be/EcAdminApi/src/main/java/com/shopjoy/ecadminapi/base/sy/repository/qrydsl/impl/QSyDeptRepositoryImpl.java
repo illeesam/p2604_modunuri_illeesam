@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** SyDept QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyDeptRepositoryImpl implements QSyDeptRepository {
@@ -134,6 +133,21 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 default:
                     break;
             }
+        }
+        /* searchValue LIKE OR — QSyDept 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(d.deptCode.likeIgnoreCase(pattern));
+            or.or(d.deptId.likeIgnoreCase(pattern));
+            or.or(d.deptNm.likeIgnoreCase(pattern));
+            or.or(d.deptRemark.likeIgnoreCase(pattern));
+            or.or(d.deptTypeCd.likeIgnoreCase(pattern));
+            or.or(d.managerId.likeIgnoreCase(pattern));
+            or.or(d.parentDeptId.likeIgnoreCase(pattern));
+            or.or(d.siteId.likeIgnoreCase(pattern));
+            or.or(d.useYn.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

@@ -152,6 +152,21 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 default: break;
             }
         }
+        /* searchValue LIKE OR — QOdCart 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.cartId.likeIgnoreCase(pattern));
+            or.or(c.isChecked.likeIgnoreCase(pattern));
+            or.or(c.memberId.likeIgnoreCase(pattern));
+            or.or(c.optItemId1.likeIgnoreCase(pattern));
+            or.or(c.optItemId2.likeIgnoreCase(pattern));
+            or.or(c.prodId.likeIgnoreCase(pattern));
+            or.or(c.sessionKey.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            or.or(c.skuId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
+        }
         return w;
     }
 

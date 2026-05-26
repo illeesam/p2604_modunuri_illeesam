@@ -23,7 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** StErpVoucher QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
@@ -132,6 +131,23 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                     w.and(v.updDate.goe(start)).and(v.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QStErpVoucher 의 String 필드 (감사필드 제외) */
+        if (c != null && StringUtils.hasText(c.getSearchValue())) {
+            String pattern = "%" + c.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(v.erpResMsg.likeIgnoreCase(pattern));
+            or.or(v.erpVoucherDesc.likeIgnoreCase(pattern));
+            or.or(v.erpVoucherId.likeIgnoreCase(pattern));
+            or.or(v.erpVoucherNo.likeIgnoreCase(pattern));
+            or.or(v.erpVoucherStatusCd.likeIgnoreCase(pattern));
+            or.or(v.erpVoucherStatusCdBefore.likeIgnoreCase(pattern));
+            or.or(v.erpVoucherTypeCd.likeIgnoreCase(pattern));
+            or.or(v.settleId.likeIgnoreCase(pattern));
+            or.or(v.settleYm.likeIgnoreCase(pattern));
+            or.or(v.siteId.likeIgnoreCase(pattern));
+            or.or(v.vendorId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }

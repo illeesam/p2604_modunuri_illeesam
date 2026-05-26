@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 /** StSettleClose QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
@@ -122,6 +121,18 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                     w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl)); break;
                 default: break;
             }
+        }
+        /* searchValue LIKE OR — QStSettleClose 의 String 필드 (감사필드 제외) */
+        if (s != null && StringUtils.hasText(s.getSearchValue())) {
+            String pattern = "%" + s.getSearchValue() + "%";
+            BooleanBuilder or = new BooleanBuilder();
+            or.or(c.closeBy.likeIgnoreCase(pattern));
+            or.or(c.closeReason.likeIgnoreCase(pattern));
+            or.or(c.closeStatusCd.likeIgnoreCase(pattern));
+            or.or(c.settleCloseId.likeIgnoreCase(pattern));
+            or.or(c.settleId.likeIgnoreCase(pattern));
+            or.or(c.siteId.likeIgnoreCase(pattern));
+            if (or.getValue() != null) w.and(or);
         }
         return w;
     }
