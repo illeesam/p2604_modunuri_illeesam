@@ -124,7 +124,6 @@ window.SyContactDtl = {
         const data = res.data?.data;
         if (data) {
           Object.assign(form, data);
-          if (form.contactAnswer) { uiState.tab = 'answer'; }
         }
         uiState.error = null;
       } catch (err) {
