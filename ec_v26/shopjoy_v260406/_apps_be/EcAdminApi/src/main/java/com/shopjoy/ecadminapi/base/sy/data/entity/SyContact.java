@@ -48,9 +48,9 @@ public class SyContact extends BaseEntity {
     @Column(name = "contact_content", columnDefinition = "TEXT")
     private String contactContent;
 
-    @Comment("첨부파일그룹ID")
-    @Column(name = "attach_grp_id", length = 21)
-    private String attachGrpId;
+    @Comment("문의 내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_CONTENT_ATTACH)")
+    @Column(name = "content_attach_grp_id", length = 21)
+    private String contentAttachGrpId;
 
     @Comment("처리상태 (코드: CONTACT_STATUS)")
     @Column(name = "contact_status_cd", length = 20)
@@ -59,6 +59,10 @@ public class SyContact extends BaseEntity {
     @Comment("답변내용")
     @Column(name = "contact_answer", columnDefinition = "TEXT")
     private String contactAnswer;
+
+    @Comment("답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_ANSWER_ATTACH)")
+    @Column(name = "answer_attach_grp_id", length = 21)
+    private String answerAttachGrpId;
 
     @Comment("답변자 (sy_user.user_id)")
     @Column(name = "answer_user_id", length = 21)

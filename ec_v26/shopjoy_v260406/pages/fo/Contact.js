@@ -59,7 +59,7 @@ window.Contact = {
       coUtil.cofCodesByGroup(window.SITE_CONFIG || {}, 'shopjoy_contact_inquiry')
     );
 
-    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
+    const form = reactive({ name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', contentAttachGrpId: null });
     const errors = reactive({});
 
     /* validate — 검증 */
@@ -109,7 +109,7 @@ window.Contact = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes,                                  // 상태
+      uiState, codes, showToast,                       // 상태
       handleBtnAction, handleSelectAction,             // dispatch
       form, errors, baseFormColumns,                   // 폼
       cfInquiryCodes,                                  // computed
@@ -156,11 +156,16 @@ window.Contact = {
       <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
       <div style="margin-bottom:22px;">
         <label class="form-label">
-          첨부파일 (준비중)
+          첨부파일
         </label>
-        <div style="padding:12px;background:#f5f5f5;border-radius:6px;color:#666;font-size:0.9rem;">
-          파일 업로드 기능은 별도로 구현 예정입니다.
-        </div>
+        <base-attach-grp :model-value="form.contentAttachGrpId"
+          @update:model-value="form.contentAttachGrpId = $event"
+          :show-toast="showToast"
+          grp-code="CONTACT_CONTENT_ATTACH"
+          grp-nm="문의 첨부파일"
+          :max-count="5"
+          :max-size-mb="10"
+          allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
       </div>
       <button class="btn-blue" @click="handleBtnAction('form-submit')" style="width:100%;padding:13px;">
         문의 접수하기

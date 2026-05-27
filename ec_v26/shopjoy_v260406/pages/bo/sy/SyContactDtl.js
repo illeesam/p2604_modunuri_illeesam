@@ -81,7 +81,13 @@ window.SyContactDtl = {
     const form = reactive({
       contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
       contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',
+      contentAttachGrpId: null,  // 문의내용 첨부그룹 ID
+      answerAttachGrpId: null,   // 답변 첨부그룹 ID
     });
+
+    /* cfContentAttachRefId / cfAnswerAttachRefId — 첨부 ref ID (contactId) */
+    const cfContentAttachRefId = computed(() => form.contactId);
+    const cfAnswerAttachRefId  = computed(() => form.contactId);
     const errors = reactive({});
 
     const schema = yup.object({
@@ -96,9 +102,8 @@ window.SyContactDtl = {
 
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
     const tabs = reactive([
-      { id: 'content', label: '문의 내용',     icon: '📋' },
-      { id: 'answer',  label: '답변',          icon: '💬' },
-      { id: 'history', label: '회원 문의 이력', icon: '🕒', get visible() { return !cfIsNew.value && !!form.memberId; } },
+      { id: 'content', label: '문의 내용', icon: '📋' },
+      { id: 'answer',  label: '답변',      icon: '💬' },
     ]);
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnLoadCodes — 공통코드 로드 */
@@ -289,6 +294,21 @@ window.SyContactDtl = {
           </span>
         </template>
       </bo-form-area>
+      <!-- ===== ■.■.■.■. 문의 내용 첨부 ======================================== -->
+      <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
+        <label class="form-label">
+          첨부파일
+        </label>
+        <base-attach-grp :model-value="form.contentAttachGrpId"
+          @update:model-value="form.contentAttachGrpId = $event"
+          :ref-id="cfContentAttachRefId"
+          :show-toast="showToast"
+          grp-code="CONTACT_CONTENT_ATTACH"
+          grp-nm="문의 내용 첨부파일"
+          :max-count="5"
+          :max-size-mb="10"
+          allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
+      </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
@@ -335,6 +355,21 @@ window.SyContactDtl = {
         </div>
         <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
       </div>
+      <!-- ===== ■.■.■.■. 답변 첨부 ========================================== -->
+      <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
+        <label class="form-label">
+          첨부파일
+        </label>
+        <base-attach-grp :model-value="form.answerAttachGrpId"
+          @update:model-value="form.answerAttachGrpId = $event"
+          :ref-id="cfAnswerAttachRefId"
+          :show-toast="showToast"
+          grp-code="CONTACT_ANSWER_ATTACH"
+          grp-nm="문의 답변 첨부파일"
+          :max-count="5"
+          :max-size-mb="10"
+          allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
+      </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
@@ -352,15 +387,6 @@ window.SyContactDtl = {
             취소
           </button>
         </template>
-      </div>
-    </div>
-    <!-- ===== ■.■.■. 회원 문의 이력 ============================================ -->
-    <div class="card" v-show="showTab('history')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        🕒 회원 문의 이력
-      </div>
-      <div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">
-        회원 문의 이력은 목록에서 확인하세요.
       </div>
     </div>
   </div>

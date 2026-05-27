@@ -77,8 +77,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         return queryFactory
                 .select(Projections.bean(SyContactDto.Item.class,
                         c.contactId, c.siteId, c.memberId, c.memberNm, c.categoryCd,
-                        c.contactTitle, c.contactContent, c.attachGrpId, c.contactStatusCd,
-                        c.contactAnswer, c.answerUserId, c.answerDate, c.contactDate,
+                        c.contactTitle, c.contactContent, c.contentAttachGrpId, c.contactStatusCd,
+                        c.contactAnswer, c.answerAttachGrpId, c.answerUserId, c.answerDate, c.contactDate,
                         c.regBy, c.regDate, c.updBy, c.updDate,
                         ste.siteNm.as("siteNm")
                 ))
@@ -128,7 +128,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
             String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
             BooleanBuilder or = new BooleanBuilder();
             if (__all || __types.contains(",answerUserId,")) or.or(c.answerUserId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",attachGrpId,")) or.or(c.attachGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",contentAttachGrpId,")) or.or(c.contentAttachGrpId.likeIgnoreCase(pattern));
+            if (__all || __types.contains(",answerAttachGrpId,")) or.or(c.answerAttachGrpId.likeIgnoreCase(pattern));
             if (__all || __types.contains(",categoryCd,")) or.or(c.categoryCd.likeIgnoreCase(pattern));
             if (__all || __types.contains(",contactAnswer,")) or.or(c.contactAnswer.likeIgnoreCase(pattern));
             if (__all || __types.contains(",contactContent,")) or.or(c.contactContent.likeIgnoreCase(pattern));
@@ -195,9 +196,10 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         if (entity.getCategoryCd()      != null) { update.set(c.categoryCd,      entity.getCategoryCd());      hasAny = true; }
         if (entity.getContactTitle()    != null) { update.set(c.contactTitle,    entity.getContactTitle());    hasAny = true; }
         if (entity.getContactContent()  != null) { update.set(c.contactContent,  entity.getContactContent());  hasAny = true; }
-        if (entity.getAttachGrpId()     != null) { update.set(c.attachGrpId,     entity.getAttachGrpId());     hasAny = true; }
+        if (entity.getContentAttachGrpId() != null) { update.set(c.contentAttachGrpId, entity.getContentAttachGrpId()); hasAny = true; }
         if (entity.getContactStatusCd() != null) { update.set(c.contactStatusCd, entity.getContactStatusCd()); hasAny = true; }
         if (entity.getContactAnswer()   != null) { update.set(c.contactAnswer,   entity.getContactAnswer());   hasAny = true; }
+        if (entity.getAnswerAttachGrpId() != null) { update.set(c.answerAttachGrpId, entity.getAnswerAttachGrpId()); hasAny = true; }
         if (entity.getAnswerUserId()    != null) { update.set(c.answerUserId,    entity.getAnswerUserId());    hasAny = true; }
         if (entity.getAnswerDate()      != null) { update.set(c.answerDate,      entity.getAnswerDate());      hasAny = true; }
         if (entity.getContactDate()     != null) { update.set(c.contactDate,     entity.getContactDate());     hasAny = true; }

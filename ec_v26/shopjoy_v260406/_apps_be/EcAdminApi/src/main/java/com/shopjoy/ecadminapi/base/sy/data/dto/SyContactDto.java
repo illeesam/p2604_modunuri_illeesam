@@ -31,9 +31,10 @@ public class SyContactDto {
         private String categoryCd;
         private String contactTitle;
         private String contactContent;
-        private String attachGrpId;
+        private String contentAttachGrpId;
         private String contactStatusCd;
         private String contactAnswer;
+        private String answerAttachGrpId;
         private String answerUserId;
         private LocalDateTime answerDate;
         private LocalDateTime contactDate;

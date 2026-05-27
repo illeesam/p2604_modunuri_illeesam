@@ -134,11 +134,29 @@ window.MyContact = {
       <div style="background:var(--bg-base);border-radius:6px;padding:12px;font-size:0.85rem;color:var(--text-secondary);margin-bottom:10px;">
         {{ q.content }}
       </div>
+      <!-- ===== ■.■. 문의 첨부파일 ============================================ -->
+      <div v-if="q.contentAttachGrpId" style="margin-bottom:10px;">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;">
+          📎 첨부파일
+        </div>
+        <base-attach-grp :model-value="q.contentAttachGrpId" :ref-id="q.inquiryId"
+          grp-code="CONTACT_CONTENT_ATTACH" grp-nm="문의 첨부파일"
+          display-mode="list" :readonly="true" />
+      </div>
       <div v-if="q.answer" style="background:var(--blue-dim);border-radius:6px;padding:12px;font-size:0.85rem;color:var(--text-primary);">
         <span style="font-size:0.78rem;font-weight:700;color:var(--blue);display:block;margin-bottom:4px;">
           📩 답변
         </span>
         {{ q.answer }}
+      </div>
+      <!-- ===== ■.■. 답변 첨부파일 ============================================ -->
+      <div v-if="q.answer && q.answerAttachGrpId" style="margin-top:10px;">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;">
+          📎 답변 첨부파일
+        </div>
+        <base-attach-grp :model-value="q.answerAttachGrpId" :ref-id="q.inquiryId"
+          grp-code="CONTACT_ANSWER_ATTACH" grp-nm="답변 첨부파일"
+          display-mode="list" :readonly="true" />
       </div>
     </div>
   </div>
