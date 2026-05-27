@@ -691,7 +691,7 @@ window.BaseAttachOne = {
  * BaseHtmlEditor — Toast UI Editor 래퍼 컴포넌트 (구 TuiHtmlEditor)
  * 공통 HTML 에디터.
  *  - v-model 양방향 바인딩 (modelValue ↔ form 필드)
- *  - 디자인/HTML 소스 모드 토글
+ *  - 디자인/HTML 소스/미리보기 모드 토글
  *  - 이미지 URL/업로드/클립보드 붙여넣기/드래그앤드롭 (Base64 자동 인라인)
  *  - 한국어 IME, 한글 UI
  *
@@ -699,6 +699,58 @@ window.BaseAttachOne = {
  *   <base-html-editor v-model="form.content" />
  *   <base-html-editor :model-value="form.content" @update:model-value="v => form.content = v" />
  * ========================================================================== */
+/* Toast UI Editor 팝업(이미지/링크 추가) 크기 보정 — 하단 확인/취소 버튼이 잘리지 않도록
+ * 최소 높이를 확보하고 스크롤 가능하게 함. 1회만 주입. */
+(function injectBaseHtmlEditorStyle() {
+  if (document.getElementById('base-html-editor-style')) return;
+  const style = document.createElement('style');
+  style.id = 'base-html-editor-style';
+  style.textContent = `
+    /* 에디터 컨테이너 전체 — overflow 해제로 팝업이 영역 밖으로 자유롭게 표시 */
+    .toastui-editor-defaultUI,
+    .toastui-editor-defaultUI-toolbar,
+    .toastui-editor-toolbar,
+    .toastui-editor-toolbar-icons,
+    .toastui-editor-main,
+    .toastui-editor-main-container,
+    .toastui-editor-ww-container,
+    .toastui-editor-md-container { overflow: visible !important; }
+
+    /* 팝업 — viewport 기준 fixed 로 변경하여 어떤 부모의 overflow:hidden 도 무시 */
+    .toastui-editor-popup {
+      z-index: 10050 !important;
+      position: fixed !important;
+    }
+    /* 표 팝업은 예외: 그리드 셀 좌표 계산이 fixed 컨테이너 안에서 어긋나 hover 가
+     * 어긋남. absolute 유지 (폭이 작아 잘림 영향도 미미). */
+    .toastui-editor-popup.toastui-editor-popup-add-table {
+      position: absolute !important;
+    }
+    .toastui-editor-popup-body {
+      min-width: 360px;
+      max-height: 70vh;
+      overflow-y: auto;
+      padding-bottom: 8px;
+    }
+    /* 하단 확인/취소 버튼 영역 — 스크롤 시에도 항상 하단 고정 */
+    .toastui-editor-popup .toastui-editor-button-container,
+    .toastui-editor-popup-add-image .toastui-editor-button-container,
+    .toastui-editor-popup-add-link  .toastui-editor-button-container,
+    .toastui-editor-popup-add-table .toastui-editor-button-container {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
 window.BaseHtmlEditor = {
   name: 'BaseHtmlEditor',
   props: {
@@ -711,9 +763,12 @@ window.BaseHtmlEditor = {
     const { ref, watch, onMounted, onBeforeUnmount, nextTick } = Vue;
 
     const editorEl = ref(null);
-    const mode = ref('wysiwyg');  /* 'wysiwyg' | 'source' */
+    const mode = ref('wysiwyg');  /* 'wysiwyg' | 'source' | 'preview' */
     let inst = null;
     let syncing = false;
+    let popupObserver = null;
+    let popupMouseHandler = null;
+    let popupRoot = null;
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -779,6 +834,100 @@ window.BaseHtmlEditor = {
         if (syncing) return;
         try { emit('update:modelValue', inst.getHTML()); } catch (_) {}
       });
+
+      /* 팝업(이미지/링크/표 추가)을 클릭한 toolbar 버튼 바로 아래에 띄운다.
+       * - 부모 overflow:hidden 에 잘리지 않도록 CSS 에서 position:fixed 지정
+       * - mousedown 으로 클릭 버튼의 좌표를 캡처해 두었다가, 팝업이 보이는 순간 그 좌표로 이동 */
+      _attachPopupPositioner(el);
+    };
+
+    /* _attachPopupPositioner — toolbar 버튼 클릭 좌표를 기억했다가 팝업을 그 아래로 이동 */
+    const _attachPopupPositioner = (rootEl) => {
+      if (!rootEl) return;
+      let lastBtnRect = null;
+
+      /* mousedown 으로 toolbar 버튼 좌표 캡처 (popup 이 열리기 직전 시점)
+       * - toolbar 영역(.toastui-editor-toolbar 또는 .toastui-editor-defaultUI-toolbar) 내부의
+       *   .toastui-editor-toolbar-icons 버튼만 대상. 팝업 내부 버튼/그리드 셀은 제외. */
+      const onMouseDown = (e) => {
+        const btn = e.target.closest('.toastui-editor-toolbar-icons');
+        if (!btn) return;
+        if (!rootEl.contains(btn)) return;
+        /* 팝업 내부 요소는 제외 (팝업 내부에도 .toastui-editor-toolbar-icons 가 있을 수 있음) */
+        if (btn.closest('.toastui-editor-popup')) return;
+        lastBtnRect = btn.getBoundingClientRect();
+      };
+      rootEl.addEventListener('mousedown', onMouseDown, true);
+
+      /* 팝업 표시 감지: style 변경(display:none → block) 또는 새로 추가되는 경우 */
+      const positionPopup = (popup) => {
+        if (!popup || !lastBtnRect) return;
+        try {
+          /* requestAnimationFrame: 팝업이 렌더링되어 크기가 잡힌 뒤 측정 */
+          requestAnimationFrame(() => {
+            const pRect = popup.getBoundingClientRect();
+            const margin = 4;
+            const vH = window.innerHeight, vW = window.innerWidth;
+            let top  = lastBtnRect.bottom + margin;
+            let left = lastBtnRect.left;
+            /* 화면 하단을 벗어나면 버튼 위쪽으로 표시 */
+            if (top + pRect.height > vH - 8) {
+              top = Math.max(8, lastBtnRect.top - pRect.height - margin);
+            }
+            /* 화면 오른쪽을 벗어나면 왼쪽으로 보정 */
+            if (left + pRect.width > vW - 8) {
+              left = Math.max(8, vW - pRect.width - 8);
+            }
+            popup.style.top    = top  + 'px';
+            popup.style.left   = left + 'px';
+            popup.style.right  = 'auto';
+            popup.style.bottom = 'auto';
+          });
+        } catch (_) {}
+      };
+
+      /* 이미 위치를 잡은 팝업은 재배치하지 않는다 (그리드 hover 등 내부 상호작용 시
+       * 발생하는 style 변경에 반응해 팝업이 점프하는 부작용 차단). */
+      const positionedPopups = new WeakSet();
+      /* 표 팝업(toastui-editor-popup-add-table)은 그리드 셀 좌표 계산이
+       * position:fixed 컨테이너 안에서 어긋나므로 위치 보정 대상에서 제외 (CSS 에서도
+       * fixed 적용 안 함). 표는 폭이 작아 잘릴 일이 거의 없음. */
+      const isTablePopup = (popup) =>
+        popup.classList && popup.classList.contains('toastui-editor-popup-add-table');
+      const positionOnce = (popup) => {
+        if (isTablePopup(popup)) return;
+        if (positionedPopups.has(popup)) return;
+        const disp = popup.style.display;
+        if (disp === 'none' || disp === '') return;
+        positionedPopups.add(popup);
+        positionPopup(popup);
+      };
+      /* 팝업이 닫힐 때는 set 에서 제거하여 다음 열림 때 다시 배치되도록 */
+      const resetIfHidden = (popup) => {
+        if (popup.style.display === 'none') positionedPopups.delete(popup);
+      };
+
+      const observer = new MutationObserver((muts) => {
+        muts.forEach((m) => {
+          /* 1) 기존 팝업의 style display 가 'none' → 'block' 으로 바뀐 경우 */
+          if (m.type === 'attributes' && m.target.classList && m.target.classList.contains('toastui-editor-popup')) {
+            resetIfHidden(m.target);
+            positionOnce(m.target);
+          }
+          /* 2) 새 팝업 노드가 추가되는 경우 */
+          if (m.type === 'childList') {
+            m.addedNodes.forEach((n) => {
+              if (n.nodeType === 1 && n.classList && n.classList.contains('toastui-editor-popup')) {
+                positionOnce(n);
+              }
+            });
+          }
+        });
+      });
+      observer.observe(rootEl, { attributes: true, subtree: true, childList: true, attributeFilter: ['style', 'class'] });
+      popupObserver = observer;
+      popupMouseHandler = onMouseDown;
+      popupRoot = rootEl;
     };
 
     /* _syncFromProp */
@@ -833,9 +982,23 @@ window.BaseHtmlEditor = {
       outline: 'none',
     }));
 
+    /* preview 모드 컨테이너 스타일 (실제 렌더링 결과 표시) */
+    const cfPreviewStyle = Vue.computed(() => ({
+      width: '100%',
+      minHeight: props.height,
+      padding: '14px 16px',
+      border: '1px solid #d9d9d9',
+      borderRadius: '6px',
+      background: '#fff',
+      boxSizing: 'border-box',
+      overflowY: 'auto',
+      lineHeight: '1.7',
+      color: '#222',
+    }));
+
     return {
-      editorEl, mode, cfTextareaStyle,         // 상태
-      handleBtnAction, handleSelectAction,     // dispatch
+      editorEl, mode, cfTextareaStyle, cfPreviewStyle,   // 상태
+      handleBtnAction, handleSelectAction,               // dispatch
     };
   },
   template: /* html */`
@@ -852,6 +1015,11 @@ window.BaseHtmlEditor = {
         style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
         &lt;/&gt; HTML
       </button>
+      <button type="button" @click="handleBtnAction('editor-set-mode', 'preview')"
+        :style="mode === 'preview' ? 'background:#047857;color:#fff;border-color:#047857;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
+        style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;transition:all .15s;">
+        👁 미리보기
+      </button>
     </div>
     <button type="button" @click="handleBtnAction('editor-clear')"
       style="font-size:11px;padding:3px 10px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;">
@@ -863,6 +1031,8 @@ window.BaseHtmlEditor = {
   <textarea v-show="mode === 'source'" :value="modelValue" @input="handleSelectAction('editor-source-input', $event)"
     spellcheck="false"
     :style="cfTextareaStyle"></textarea>
+  <div v-show="mode === 'preview'" :style="cfPreviewStyle" v-html="modelValue || '<span style=color:#bbb>(내용 없음)</span>'">
+  </div>
   </div>
 `
 };
