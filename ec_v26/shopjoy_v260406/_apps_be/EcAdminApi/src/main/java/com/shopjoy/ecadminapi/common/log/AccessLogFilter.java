@@ -68,10 +68,21 @@ public class AccessLogFilter extends OncePerRequestFilter {
         this.activeProfile = activeProfile;
     }
 
-    /** CORS preflight (OPTIONS) 는 비즈니스 정보가 없으므로 로그 적재 자체 skip */
+    /**
+     * 로그 적재 자체를 skip 하는 요청 판별.
+     *
+     * <p>제외 대상:
+     * <ul>
+     *   <li>CORS preflight (OPTIONS) — 비즈니스 정보 없음</li>
+     *   <li>정적 첨부 다운로드(/cdn/**) — 응답 바디가 이미지/PDF 등 바이너리라
+     *       TEXT 컬럼에 적재 시 인코딩 깨짐 및 로그 가독성 저하</li>
+     * </ul>
+     */
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        return "OPTIONS".equalsIgnoreCase(request.getMethod());
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+        String uri = request.getRequestURI();
+        return uri != null && uri.startsWith("/cdn/");
     }
 
     /**
@@ -169,7 +180,11 @@ public class AccessLogFilter extends OncePerRequestFilter {
                             .localeId(null)
                             .respStatus(response.getStatus())
                             .respTimeMs(elapsedMs)
-                            .respBody(captureBody ? bodyOf(respWrap.getContentAsByteArray(), props.getMaxBodySize()) : null)
+                            .respBody(captureBody
+                                    ? (isBinaryContentType(response.getContentType())
+                                        ? "[binary response omitted]"
+                                        : bodyOf(respWrap.getContentAsByteArray(), props.getMaxBodySize()))
+                                    : null)
                             .serverNm(serverNm)
                             .profile(activeProfile)
                             .threadNm(Thread.currentThread().getName())
@@ -236,6 +251,35 @@ public class AccessLogFilter extends OncePerRequestFilter {
     private static String truncate(String s, int max) {
         if (s == null) return null;
         return s.length() <= max ? s : s.substring(0, max);
+    }
+
+    /**
+     * 응답 Content-Type 이 바이너리 계열인지 판별한다.
+     *
+     * <p>이미지/PDF/zip/octet-stream 등 텍스트로 디코딩하면 의미가 없거나 로그를 깨뜨리는
+     * 응답은 respBody 적재를 생략하기 위한 게이트.
+     *
+     * @param contentType 응답 Content-Type 헤더 (null 허용)
+     * @return 바이너리로 간주되면 true. text/* · application/json · application/xml · 빈 값은 false
+     */
+    private static boolean isBinaryContentType(String contentType) {
+        if (contentType == null || contentType.isBlank()) return false;
+        String ct = contentType.toLowerCase();
+        if (ct.startsWith("text/")) return false;
+        if (ct.startsWith("application/json")) return false;
+        if (ct.startsWith("application/xml") || ct.startsWith("application/xhtml")) return false;
+        if (ct.startsWith("application/javascript") || ct.startsWith("application/x-www-form-urlencoded")) return false;
+        return ct.startsWith("image/")
+                || ct.startsWith("audio/")
+                || ct.startsWith("video/")
+                || ct.startsWith("font/")
+                || ct.startsWith("application/octet-stream")
+                || ct.startsWith("application/pdf")
+                || ct.startsWith("application/zip")
+                || ct.contains("msword")
+                || ct.contains("excel")
+                || ct.contains("powerpoint")
+                || ct.contains("openxmlformats");
     }
 
     /**

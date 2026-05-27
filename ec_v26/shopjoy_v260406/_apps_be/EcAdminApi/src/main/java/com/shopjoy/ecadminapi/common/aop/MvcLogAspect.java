@@ -46,8 +46,14 @@ public class MvcLogAspect {
     enum ComponentType {
         CONTROLLER("■■ ▶", "■■ ◀"),
         CLIENT("■■ ■", "■■ ◀"),
+        API("■■ ▶|", "■■ ◀|"),
+        APIIMPL("■■ ▶|", "■■ ◀|"),
         SERVICE("■■ ▶▶", "■■ ◀◀"),
+        SERVICEIMPL("■■ ▶▶", "■■ ◀◀"),
+        STORE("■■ ▶▶|", "■■ ◀◀|"),
+        STOREIMPL("■■ ▶▶|", "■■ ◀◀|"),
         MAPPER("■■ ▶▶▶", "■■ ◀◀◀"),
+        MAPPERIMPL("■■ ▶▶▶", "■■ ◀◀◀"),
         REPOSITORY("■■ ▶▶▶", "■■ ◀◀◀"),
         REPOSITORY_QDSL("■■ ▶▶▶|", "■■ ◀◀◀|"),
         DEFAULT("■■ ▶", "■■ ◀");
@@ -81,11 +87,18 @@ public class MvcLogAspect {
             String upper = className.toUpperCase();
             if (upper.contains("CONTROLLER")) return CONTROLLER;
             if (upper.contains("CLIENT")) return CLIENT;
+            // *Impl 변형은 일반 키워드보다 먼저 판별 (더 구체적인 매칭 우선)
+            if (upper.endsWith("SERVICEIMPL")) return SERVICEIMPL;
+            if (upper.endsWith("STOREIMPL")) return STOREIMPL;
+            if (upper.endsWith("MAPPERIMPL")) return MAPPERIMPL;
+            if (upper.endsWith("APIIMPL")) return APIIMPL;
             if (upper.contains("SERVICE")) return SERVICE;
+            if (upper.contains("STORE")) return STORE;
             if (upper.contains("MAPPER")) return MAPPER;
             // Querydsl 커스텀 구현체(Q*Impl): REPOSITORY 보다 먼저 판별 (별도 ▩ 프리픽스)
             if (upper.startsWith("Q") && upper.endsWith("IMPL")) return REPOSITORY_QDSL;
             if (upper.contains("REPOSITORY")) return REPOSITORY;
+            if (upper.endsWith("API")) return API;
             return DEFAULT;
         }
     }
@@ -106,9 +119,17 @@ public class MvcLogAspect {
     @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Repository.*(..))")
     private void repositoryLayer() {}
 
-    /** Mapper 계층 포인트컷: 이름이 {@code *Mapper} 인 MyBatis 매퍼 메서드. */
-    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Mapper.*(..))")
+    /** Mapper 계층 포인트컷: 이름에 {@code Mapper} 가 포함된 클래스(MapperImpl 등 변형 포함). */
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Mapper*.*(..))")
     private void mapperLayer() {}
+
+    /** Api 계층 포인트컷: 이름에 {@code Api} 가 포함된 클래스(ApiImpl 등 변형 포함). */
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Api*.*(..))")
+    private void apiLayer() {}
+
+    /** Store 계층 포인트컷: 이름에 {@code Store} 가 포함된 클래스(StoreImpl 등 변형 포함). */
+    @org.aspectj.lang.annotation.Pointcut("execution(* com.shopjoy..*Store*.*(..))")
+    private void storeLayer() {}
 
     /**
      * 메서드 진입·반환·예외를 가로채 호출 흐름을 로깅하는 핵심 어드바이스.
@@ -122,7 +143,7 @@ public class MvcLogAspect {
      * @throws Throwable 원본 메서드가 던진 예외는 ERROR 로그 후 그대로 재전파
      *                   (로깅이 예외 전파를 삼키지 않음)
      */
-    @Around("controllerLayer() || clientLayer() || serviceLayer() || repositoryLayer() || mapperLayer()")
+    @Around("controllerLayer() || clientLayer() || serviceLayer() || repositoryLayer() || mapperLayer() || apiLayer() || storeLayer()")
     public Object logging(ProceedingJoinPoint pjp) throws Throwable {
         // local/dev profile일 때만 로깅
         if (!isLoggingEnabled()) {
