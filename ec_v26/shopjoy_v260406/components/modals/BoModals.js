@@ -89,47 +89,12 @@
    ───────────────────────────────────────────────────────────────────────
 */
 
-/* ── 공통 모달 디자인 스타일 주입 ────────────────────────────── */
+/* ── 공통 모달 ESC 키 핸들러 ───────────────────────────────────
+ * 모달 디자인 CSS 는 assets/css/boGlobalStyle{01,02,03}.css 로 이동(2026-05-28).
+ * 이 블록에는 키 이벤트(JS) 만 남긴다. */
 (() => {
-  if (document.getElementById('__shopjoy_modal_enh_style__')) return;
-  const css = `
-    .modal-overlay { background: rgba(18,24,40,0.55) !important; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
-    .modal-box { border-radius: 16px !important; box-shadow: 0 24px 60px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.08) !important; border: 1px solid rgba(255,255,255,0.6); overflow: hidden; }
-    .modal-header {
-      margin: -20px -20px 14px -20px !important; padding: 14px 18px !important;
-      background: linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%) !important;
-      border-bottom: 1px solid #ffc9d6 !important;
-      display:flex !important; align-items:center !important; justify-content:space-between !important;
-    }
-    .modal-title { font-size: 15px !important; font-weight: 800 !important; color: #9f2946 !important; letter-spacing:-0.2px; }
-    .modal-title::before { content:'●'; display:inline-block; color:#e8587a; font-size:9px; margin-right:8px; vertical-align:middle; }
-    .modal-close {
-      width:28px; height:28px; border-radius:50%; display:inline-flex !important; align-items:center; justify-content:center;
-      background:rgba(255,255,255,0.6); color:#9f2946 !important; font-size:13px !important; cursor:pointer; transition:all .15s;
-    }
-    .modal-close:hover { background:#e8587a !important; color:#fff !important; transform:rotate(90deg); }
-    .tree-modal-header {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 18px !important;
-      background: linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);
-      border-bottom:1px solid #ffc9d6 !important; flex-shrink:0;
-    }
-    .tree-modal-header > div > div:first-child,
-    .tree-modal-header > div > div:first-child > div:first-child { color:#9f2946 !important; font-weight:800 !important; }
-    .tree-modal-header .modal-close { background:rgba(255,255,255,0.6) !important; color:#9f2946 !important; }
-    .tree-modal-header .modal-close:hover { background:#e8587a !important; color:#fff !important; }
-    .modal-box .form-control { border-radius:10px; border-color:#e5e7eb; transition:all .15s; }
-    .modal-box .form-control:focus { border-color:#e8587a !important; box-shadow:0 0 0 3px rgba(232,88,122,0.12) !important; }
-    .modal-box .btn-primary { background:linear-gradient(135deg,#e8587a,#d64669) !important; border:none !important; box-shadow:0 2px 6px rgba(232,88,122,0.35) !important; }
-    .modal-box .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(232,88,122,0.5) !important; }
-    .modal-box .btn-secondary { background:#f3f4f6 !important; color:#4b5563 !important; border:1px solid #e5e7eb !important; }
-    .modal-box .btn-secondary:hover { background:#e5e7eb !important; }
-  `;
-  const style = document.createElement('style');
-  style.id = '__shopjoy_modal_enh_style__';
-  style.textContent = css;
-  document.head.appendChild(style);
-
+  if (window.__shopjoy_modal_esc_attached__) return;
+  window.__shopjoy_modal_esc_attached__ = true;
   /* ESC 키로 최상단 모달 닫기 — overlay 클릭과 동일 효과 */
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
