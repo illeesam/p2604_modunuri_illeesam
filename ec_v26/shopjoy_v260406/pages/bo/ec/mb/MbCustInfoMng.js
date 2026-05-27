@@ -175,39 +175,68 @@
       };
 
       /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-      /* handleSearchData — 데이터 조회 (전체 영역 통합) */
-      const handleSearchData = async (searchType = 'DEFAULT') => {
+
+      /* ===== 영역별 메타 정의 (api / dateType / pager / rows / dateField) ===== */
+      const HIST_META = {
+        orders:   { api: boApiSvc.odOrder,        dateType: 'order_date',   pager: ordersPager,   rows: orders,         label: '주문조회' },
+        claims:   { api: boApiSvc.odClaim,        dateType: 'request_date', pager: claimsPager,   rows: claims,         label: '클레임조회' },
+        dliv:     { api: boApiSvc.odDliv,         dateType: 'reg_date',     pager: dlivPager,     rows: deliveries,     label: '배송조회' },
+        cache:    { api: boApiSvc.pmCache,        dateType: 'reg_date',     pager: cachePager,    rows: caches,         label: '캐쉬조회' },
+        contacts: { api: boApiSvc.syContact,      dateType: 'reg_date',     pager: contactsPager, rows: contacts,       label: '문의조회' },
+        chats:    { api: boApiSvc.cmChatt,        dateType: 'reg_date',     pager: chatsPager,    rows: chats,          label: '채팅조회' },
+        login:    { api: boApiSvc.syUserLoginLog, dateType: 'reg_date',     pager: loginPager,    rows: loginHistories, label: '로그인조회' },
+        coupon:   { api: boApiSvc.pmCouponUsage,  dateType: 'reg_date',     pager: couponPager,   rows: couponUsages,   label: '쿠폰조회' },
+        send:     { api: boApiSvc.syAlarm,        dateType: 'reg_date',     pager: sendPager,     rows: sendHistories,  label: '발송조회' },
+      };
+
+      /* fnPagerOf — which → pager 객체 */
+      const fnPagerOf = (which) => HIST_META[which]?.pager || (which === 'modal' ? modalPager : null);
+
+      /* fnDateParams — 기간 검색 파라미터 (period='all' 면 미전달) */
+      const fnDateParams = (dateType) => {
+        const from = calcFrom(searchParam.period, searchParam.customFrom);
+        if (!from) return {};
+        const to = searchParam.period === 'custom' ? searchParam.customTo : today();
+        return { dateType, dateStart: from, dateEnd: to };
+      };
+
+      /* fnLoadHist — 단일 영역 서버사이드 페이지 조회 */
+      const fnLoadHist = async (which) => {
+        if (!uiState.customer) { return; }
+        const meta = HIST_META[which];
+        if (!meta) { return; }
+        try {
+          const params = {
+            pageNo: meta.pager.pageNo, pageSize: meta.pager.pageSize,
+            userId: uiState.customer.userId,
+            ...fnDateParams(meta.dateType),
+          };
+          const res = await meta.api.getPage(params, '고객종합정보', meta.label);
+          const d = res.data?.data || {};
+          const list = d.pageList || d.list || [];
+          meta.rows.splice(0, meta.rows.length, ...list);
+          meta.pager.pageTotalCount = d.pageTotalCount || list.length;
+          meta.pager.pageTotalPage  = d.pageTotalPage  || Math.max(1, Math.ceil(meta.pager.pageTotalCount / meta.pager.pageSize));
+          const c = meta.pager.pageNo, l = meta.pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+          meta.pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+        } catch (err) {
+          console.error('[fnLoadHist:' + which + ']', err);
+        }
+      };
+
+      /* handleSearchData — 고객 선택 후 9개 영역 동시 조회 (각 영역 페이지 1) */
+      const handleSearchData = async () => {
+        if (!uiState.customer) { return; }
         uiState.loading = true;
         try {
-          // 기간(period) → 서버 검색 파라미터. period='all' 이면 날짜조건 미전달(전체).
-          const from = calcFrom(searchParam.period, searchParam.customFrom);
-          const to   = searchParam.period === 'custom' ? searchParam.customTo : today();
-          const dateP = (dateType) => from ? { dateType, dateStart: from, dateEnd: to } : {};
-          const PG = { pageNo: 1, pageSize: 10000 };
-          const [resCust, resLogin, resCoupon, resSend, resMember, resOrder, resClaim, resDliv, resCache, resContact, resChatt] = await Promise.all([
-            boApiSvc.mbCustInfo.getPage(PG, '고객종합정보', '조회'),
-            boApiSvc.syUserLoginLog.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '조회'),
-            boApiSvc.pmCouponUsage.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '조회'),
-            boApiSvc.syAlarm.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '조회'),
-            boApiSvc.mbMember.getPage(PG, '고객종합정보', '회원조회'),
-            boApiSvc.odOrder.getPage({ ...PG, ...dateP('order_date') }, '고객종합정보', '주문조회'),
-            boApiSvc.odClaim.getPage({ ...PG, ...dateP('request_date') }, '고객종합정보', '클레임조회'),
-            boApiSvc.odDliv.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '배송조회'),
-            boApiSvc.pmCache.getPage(PG, '고객종합정보', '캐쉬조회'),
-            boApiSvc.syContact.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '문의조회'),
-            boApiSvc.cmChatt.getPage({ ...PG, ...dateP('reg_date') }, '고객종합정보', '채팅조회'),
-          ]);
-          custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
-          loginHistories.splice(0, loginHistories.length, ...(resLogin.data?.data?.pageList || []));
-          couponUsages.splice(0, couponUsages.length, ...(resCoupon.data?.data?.pageList || []));
-          sendHistories.splice(0, sendHistories.length, ...(resSend.data?.data?.pageList || []));
-          members.splice(0, members.length, ...(resMember.data?.data?.pageList || resMember.data?.data?.list || []));
-          orders.splice(0, orders.length, ...(resOrder.data?.data?.pageList || resOrder.data?.data?.list || []));
-          claims.splice(0, claims.length, ...(resClaim.data?.data?.pageList || resClaim.data?.data?.list || []));
-          deliveries.splice(0, deliveries.length, ...(resDliv.data?.data?.pageList || resDliv.data?.data?.list || []));
-          caches.splice(0, caches.length, ...(resCache.data?.data?.pageList || resCache.data?.data?.list || []));
-          contacts.splice(0, contacts.length, ...(resContact.data?.data?.pageList || resContact.data?.data?.list || []));
-          chats.splice(0, chats.length, ...(resChatt.data?.data?.pageList || resChatt.data?.data?.list || []));
+          // 각 영역 페이지 1 로 초기화 후 병렬 조회
+          Object.values(HIST_META).forEach(m => { m.pager.pageNo = 1; });
+          await Promise.all(Object.keys(HIST_META).map(fnLoadHist));
+          // 고객종합정보 (캐쉬 잔액용)
+          try {
+            const resCust = await boApiSvc.mbCustInfo.getPage({ pageNo: 1, pageSize: 1, userId: uiState.customer.userId }, '고객종합정보', '조회');
+            custInfos.splice(0, custInfos.length, ...(resCust.data?.data?.pageList || []));
+          } catch (_) { /* ignore */ }
           uiState.error = null;
         } catch (err) {
           console.error('[catch-info]', err);
@@ -217,18 +246,31 @@
         }
       };
 
-      /* onSearch — 조회 */
+      /* onSearch — 검색 (선택 고객 있으면 9개 영역 재조회) */
       const onSearch = async () => {
-        await handleSearchData('DEFAULT');
+        if (uiState.customer) { await handleSearchData(); }
+        else { await loadMembersForModal(); }
+      };
+
+      /* loadMembersForModal — 모달용 회원 전체 로드 (별도 화면, picker 용도) */
+      const loadMembersForModal = async () => {
+        try {
+          const r = await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '회원조회');
+          members.splice(0, members.length, ...(r.data?.data?.pageList || r.data?.data?.list || []));
+        } catch (e) { console.error('[loadMembersForModal]', e); }
       };
 
       /* clearCustomer — 선택 고객 초기화 */
-      const clearCustomer = () => { uiState.customer = null; uiState.searchInput = ''; };
+      const clearCustomer = () => {
+        uiState.customer = null; uiState.searchInput = '';
+        // 9개 영역 데이터 비움
+        Object.values(HIST_META).forEach(m => { m.rows.splice(0, m.rows.length); m.pager.pageTotalCount = 0; });
+      };
 
-      /* openMemberModal — 고객 검색 모달 열기 */
+      /* openMemberModal — 고객 검색 모달 열기 (회원 목록 picker) */
       const openMemberModal = async () => {
         memberModal.keyword = '';
-        await handleSearchData('DEFAULT');
+        await loadMembersForModal();
         memberModal.list = [...members];
         memberModal.show = true;
       };
@@ -268,11 +310,18 @@
       };
       const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-      // ★ onMounted — 진입 시 코드 로드 + 초기 조회
-      onMounted(() => {
+      // ★ onMounted — 진입 시 코드 로드 + 회원 목록 (picker 용)
+      onMounted(async () => {
         if (isAppReady.value) { fnLoadCodes(); }
         Object.assign(searchParamOrg, searchParam);
-        if (isAppReady.value) { fnLoadCodes(); handleSearchData('DEFAULT'); }
+        // 진입 시 회원 목록만 로드 (고객 선택 모달 picker 용). 9개 영역은 고객 선택 후 조회.
+        await loadMembersForModal();
+      });
+
+      /* watch — 고객 선택 시 9개 영역 서버 조회 */
+      watch(() => uiState.customer?.userId, async (uid) => {
+        if (uid) { await handleSearchData(); }
+        else { Object.values(HIST_META).forEach(m => { m.rows.splice(0, m.rows.length); m.pager.pageTotalCount = 0; }); }
       });
 
       /* watch — 탭/뷰모드 변경 시 window 영속화 */
@@ -295,105 +344,53 @@
       /* showTab — 탭 표시 여부 */
       const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
-      /* filtered — 서버 필터링 통과 (재필터 없음) */
-      const filtered = (list) => list;
-
-      /* filteredLocal — 로컬 기간 필터링 (캐쉬용) */
-      const filteredLocal = (list, dateField) =>
-        list.filter(r => inRange(r[dateField], cfDateFrom.value, cfDateTo.value));
-
-      /* -- 파생 데이터 (computed) -- */
-      const cfCustOrders = computed(() =>
-        !uiState.customer ? [] : filtered(
-          orders.filter(o => o.userId === uiState.customer.userId), 'orderDate')
-      );
-      const cfCustClaims = computed(() =>
-        !uiState.customer ? [] : filtered(
-          claims.filter(c => c.userId === uiState.customer.userId), 'requestDate')
-      );
-      const cfCustDeliveries = computed(() =>
-        !uiState.customer ? [] : filtered(
-          deliveries.filter(d => d.userId === uiState.customer.userId), 'regDate')
-      );
-      const cfCustCache = computed(() =>
-        !uiState.customer ? [] : filteredLocal(
-          caches.filter(c => c.userId === uiState.customer.userId), 'date')
-      );
-      const cfCustContacts = computed(() =>
-        !uiState.customer ? [] : filtered(
-          contacts.filter(c => c.userId === uiState.customer.userId), 'date')
-      );
-      const cfCustChats = computed(() =>
-        !uiState.customer ? [] : filtered(
-          chats.filter(c => c.userId === uiState.customer.userId), 'date')
-      );
-      const cfCustLoginHist = computed(() =>
-        !uiState.customer ? [] : filtered(
-          (loginHistories || []).filter(l => l.userId === uiState.customer.userId), 'loginDate')
-      );
-      const cfCustCouponUsage = computed(() =>
-        !uiState.customer ? [] : filtered(
-          (couponUsages || []).filter(u => u.userId === uiState.customer.userId), 'usedDate')
-      );
-      const cfCustSendHist = computed(() =>
-        !uiState.customer ? [] : filtered(
-          (sendHistories || []).filter(s => s.userId === uiState.customer.userId), 'sendDate')
-      );
-
-      /* tabs — 탭 정의 (BoTabBar 데이터, reactive). 카운트는 cfCust* getter 로 반응형 유지 */
+      /* tabs — 탭 정의 (BoTabBar 데이터). 카운트는 각 영역 pager.pageTotalCount (서버 응답) */
       const tabs = reactive([
-        { id: 'orders',   label: '주문이력',  icon: '🛒', get count() { return cfCustOrders.value.length; } },
-        { id: 'claims',   label: '클레임이력', icon: '↩',  get count() { return cfCustClaims.value.length; } },
-        { id: 'dliv',     label: '배송이력',  icon: '🚚', get count() { return cfCustDeliveries.value.length; } },
-        { id: 'cache',    label: '캐쉬내역',  icon: '💰', get count() { return cfCustCache.value.length; } },
-        { id: 'contacts', label: '문의이력',  icon: '📋', get count() { return cfCustContacts.value.length; } },
-        { id: 'chats',    label: '채팅이력',  icon: '💬', get count() { return cfCustChats.value.length; } },
-        { id: 'login',    label: '로그인',    icon: '🔐', get count() { return cfCustLoginHist.value.length; } },
-        { id: 'coupon',   label: '쿠폰',      icon: '🎟', get count() { return cfCustCouponUsage.value.length; } },
-        { id: 'send',     label: '발송',      icon: '📨', get count() { return cfCustSendHist.value.length; } },
+        { id: 'orders',   label: '주문이력',  icon: '🛒', get count() { return ordersPager.pageTotalCount; } },
+        { id: 'claims',   label: '클레임이력', icon: '↩',  get count() { return claimsPager.pageTotalCount; } },
+        { id: 'dliv',     label: '배송이력',  icon: '🚚', get count() { return dlivPager.pageTotalCount; } },
+        { id: 'cache',    label: '캐쉬내역',  icon: '💰', get count() { return cachePager.pageTotalCount; } },
+        { id: 'contacts', label: '문의이력',  icon: '📋', get count() { return contactsPager.pageTotalCount; } },
+        { id: 'chats',    label: '채팅이력',  icon: '💬', get count() { return chatsPager.pageTotalCount; } },
+        { id: 'login',    label: '로그인',    icon: '🔐', get count() { return loginPager.pageTotalCount; } },
+        { id: 'coupon',   label: '쿠폰',      icon: '🎟', get count() { return couponPager.pageTotalCount; } },
+        { id: 'send',     label: '발송',      icon: '📨', get count() { return sendPager.pageTotalCount; } },
       ]);
 
-      /* cfCustCacheBalance — 캐쉬 잔액 (전체 마지막 레코드) */
+      /* cfCustCacheBalance — 캐쉬 잔액 (현 페이지 마지막 행 기준 — 서버에서 정렬되어 옴) */
       const cfCustCacheBalance = computed(() => {
-        if (!uiState.customer) { return 0; }
-        const all = caches.filter(c => c.userId === uiState.customer.userId);
-        if (!all.length) { return 0; }
-        return all.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
+        if (!uiState.customer || !caches.length) { return 0; }
+        return caches.slice().sort((a, b) => a.cacheId - b.cacheId).at(-1)?.balance ?? 0;
       });
 
-      /* fnBuildPage — pager 정보 빌드 (cfCustXxx 변경 시 자동 호출) */
-      const fnBuildPage = (rows, pager) => {
-        const total = rows.length;
-        pager.pageTotalCount = total;
-        pager.pageTotalPage = Math.max(1, Math.ceil(total / pager.pageSize));
-        if (pager.pageNo > pager.pageTotalPage) pager.pageNo = pager.pageTotalPage;
-        const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-        pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-        return rows.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize);
+      /* onSetPage / onSizeChange — 그리드 페이저 콜백 (서버사이드: 해당 영역만 재조회) */
+      const onSetPage = (which, n) => {
+        const p = fnPagerOf(which); if (!p || n < 1 || n > p.pageTotalPage) { return; }
+        p.pageNo = n;
+        if (which === 'modal') { fnRebuildModalPager(); return; }
+        fnLoadHist(which);
+      };
+      const onSizeChange = (which) => {
+        const p = fnPagerOf(which); if (!p) { return; }
+        p.pageNo = 1;
+        if (which === 'modal') { fnRebuildModalPager(); return; }
+        fnLoadHist(which);
       };
 
-      /* cfPageXxx — 페이지 슬라이스 (각 탭별) */
-      const cfPageOrders   = computed(() => fnBuildPage(cfCustOrders.value,      ordersPager));
-      const cfPageClaims   = computed(() => fnBuildPage(cfCustClaims.value,      claimsPager));
-      const cfPageDliv     = computed(() => fnBuildPage(cfCustDeliveries.value,  dlivPager));
-      const cfPageCache    = computed(() => fnBuildPage(cfCustCache.value,       cachePager));
-      const cfPageContacts = computed(() => fnBuildPage(cfCustContacts.value,    contactsPager));
-      const cfPageChats    = computed(() => fnBuildPage(cfCustChats.value,       chatsPager));
-      const cfPageLogin    = computed(() => fnBuildPage(cfCustLoginHist.value,   loginPager));
-      const cfPageCoupon   = computed(() => fnBuildPage(cfCustCouponUsage.value, couponPager));
-      const cfPageSend     = computed(() => fnBuildPage(cfCustSendHist.value,    sendPager));
-      const cfPageModalList = computed(() => fnBuildPage(memberModal.list || [], modalPager));
-
-      /* fnPagerOf — cmd suffix로 pager 객체 찾기 */
-      const fnPagerOf = (which) => ({
-        orders: ordersPager, claims: claimsPager, dliv: dlivPager, cache: cachePager,
-        contacts: contactsPager, chats: chatsPager, login: loginPager,
-        coupon: couponPager, send: sendPager, modal: modalPager,
-      })[which];
-
-      /* onSetPage / onSizeChange — 그리드 페이저 콜백 */
-      const onSetPage    = (which, n) => { const p = fnPagerOf(which); if (p && n >= 1 && n <= p.pageTotalPage) p.pageNo = n; };
-      const onSizeChange = (which)    => { const p = fnPagerOf(which); if (p) p.pageNo = 1; };
+      /* fnRebuildModalPager — 모달은 클라이언트 picker 라 슬라이싱 유지 (모달 검색 결과 표시용) */
+      const fnRebuildModalPager = () => {
+        const list = memberModal.list || [];
+        modalPager.pageTotalCount = list.length;
+        modalPager.pageTotalPage = Math.max(1, Math.ceil(list.length / modalPager.pageSize));
+        if (modalPager.pageNo > modalPager.pageTotalPage) modalPager.pageNo = modalPager.pageTotalPage;
+        const c = modalPager.pageNo, l = modalPager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+        modalPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+      };
+      const cfPageModalList = computed(() => {
+        fnRebuildModalPager();
+        const list = memberModal.list || [];
+        return list.slice((modalPager.pageNo - 1) * modalPager.pageSize, modalPager.pageNo * modalPager.pageSize);
+      });
 
       /* _ellipsis — 말줄임 스타일 */
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
@@ -498,16 +495,16 @@
       /* ##### [06] return (템플릿 노출) ############################################## */
       return {
         uiState, codes, searchParam, memberModal,                                                                                   // 상태 / 데이터
+        orders, claims, deliveries, caches, contacts, chats, loginHistories, couponUsages, sendHistories,                           // 9개 이력 데이터 (서버사이드 페이지별)
         SEARCH_MODES, PERIOD_OPTS,                                                                                                  // 정적 옵션
         orderGridColumns, claimGridColumns, dlivGridColumns, cacheGridColumns, contactGridColumns, chatGridColumns,                 // 컬럼 정의
         loginGridColumns, couponGridColumns, sendGridColumns, memberModalGridColumns,
         periodSearchColumns, memberModalSearchColumns,                                                                              // BoSearchArea 컬럼
         ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, modalPager, // 페이저
-        cfPageOrders, cfPageClaims, cfPageDliv, cfPageCache, cfPageContacts, cfPageChats, cfPageLogin, cfPageCoupon, cfPageSend, cfPageModalList,
+        cfPageModalList,                                                                                                            // 모달용 클라이언트 슬라이스 (picker)
         onSetPage, onSizeChange,                                                                                                    // BoGrid pager 콜백
         handleBtnAction, handleSelectAction,                                                                                        // dispatch (모든 이벤트 / 액션 라우팅)
-        cfDateFrom, cfDateTo, cfCustOrders, cfCustClaims, cfCustDeliveries, cfCustCache, cfCustCacheBalance,                        // computed
-        cfCustContacts, cfCustChats, cfCustLoginHist, cfCustCouponUsage, cfCustSendHist, tabs,
+        cfDateFrom, cfDateTo, cfCustCacheBalance, tabs,                                                                             // computed
         showTab, fnFmtPrice,                                                                                                        // 헬퍼
       };
     },
@@ -697,11 +694,11 @@
             주문이력
           </span>
           <span style="margin-left:2px;background:#e3f2fd;color:#1565c0;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustOrders.length }}건
+            {{ ordersPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="orderGridColumns" :rows="cfPageOrders" :pager="ordersPager" row-key="orderId" empty-text="주문 내역이 없습니다."
+          <bo-grid bare :columns="orderGridColumns" :rows="orders" :pager="ordersPager" row-key="orderId" empty-text="주문 내역이 없습니다."
             @ref-click="ref => handleSelectAction('row-ref', ref)"
             @set-page="n => onSetPage('orders', n)" @size-change="() => onSizeChange('orders')">
           </bo-grid>
@@ -717,11 +714,11 @@
             클레임이력
           </span>
           <span style="margin-left:2px;background:#ffebee;color:#c62828;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustClaims.length }}건
+            {{ claimsPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="claimGridColumns" :rows="cfPageClaims" :pager="claimsPager" row-key="claimId" empty-text="클레임 내역이 없습니다."
+          <bo-grid bare :columns="claimGridColumns" :rows="claims" :pager="claimsPager" row-key="claimId" empty-text="클레임 내역이 없습니다."
             @ref-click="ref => handleSelectAction('row-ref', ref)"
             @set-page="n => onSetPage('claims', n)" @size-change="() => onSizeChange('claims')">
           </bo-grid>
@@ -737,11 +734,11 @@
             배송이력
           </span>
           <span style="margin-left:2px;background:#e0f2f1;color:#00695c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustDeliveries.length }}건
+            {{ dlivPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="dlivGridColumns" :rows="cfPageDliv" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다."
+          <bo-grid bare :columns="dlivGridColumns" :rows="deliveries" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다."
             @set-page="n => onSetPage('dliv', n)" @size-change="() => onSizeChange('dliv')">
           </bo-grid>
         </div>
@@ -756,14 +753,14 @@
             캐쉬내역
           </span>
           <span style="margin-left:2px;background:#fff3e0;color:#e65100;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustCache.length }}건
+            {{ cachePager.pageTotalCount }}건
           </span>
           <span style="margin-left:auto;font-size:12px;color:#7b1fa2;font-weight:600;">
             잔액 {{ fnFmtPrice(cfCustCacheBalance) }}
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="cacheGridColumns" :rows="cfPageCache" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."
+          <bo-grid bare :columns="cacheGridColumns" :rows="caches" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."
             @set-page="n => onSetPage('cache', n)" @size-change="() => onSizeChange('cache')">
           </bo-grid>
         </div>
@@ -778,11 +775,11 @@
             문의이력
           </span>
           <span style="margin-left:2px;background:#e8eaf6;color:#283593;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustContacts.length }}건
+            {{ contactsPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="contactGridColumns" :rows="cfPageContacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다."
+          <bo-grid bare :columns="contactGridColumns" :rows="contacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다."
             @set-page="n => onSetPage('contacts', n)" @size-change="() => onSizeChange('contacts')">
           </bo-grid>
         </div>
@@ -797,11 +794,11 @@
             채팅이력
           </span>
           <span style="margin-left:2px;background:#e0f2f1;color:#004d40;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustChats.length }}건
+            {{ chatsPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="chatGridColumns" :rows="cfPageChats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다."
+          <bo-grid bare :columns="chatGridColumns" :rows="chats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다."
             @set-page="n => onSetPage('chats', n)" @size-change="() => onSizeChange('chats')">
           </bo-grid>
         </div>
@@ -816,11 +813,11 @@
             로그인이력
           </span>
           <span style="margin-left:2px;background:#eceff1;color:#37474f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustLoginHist.length }}건
+            {{ loginPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="loginGridColumns" :rows="cfPageLogin" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다."
+          <bo-grid bare :columns="loginGridColumns" :rows="loginHistories" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다."
             @set-page="n => onSetPage('login', n)" @size-change="() => onSizeChange('login')">
           </bo-grid>
         </div>
@@ -835,11 +832,11 @@
             쿠폰사용이력
           </span>
           <span style="margin-left:2px;background:#fce4ec;color:#880e4f;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustCouponUsage.length }}건
+            {{ couponPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="couponGridColumns" :rows="cfPageCoupon" :pager="couponPager" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
+          <bo-grid bare :columns="couponGridColumns" :rows="couponUsages" :pager="couponPager" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
             @ref-click="ref => handleSelectAction('row-ref', ref)"
             @set-page="n => onSetPage('coupon', n)" @size-change="() => onSizeChange('coupon')">
           </bo-grid>
@@ -855,11 +852,11 @@
             발송이력
           </span>
           <span style="margin-left:2px;background:#fbe9e7;color:#bf360c;font-size:11px;font-weight:600;padding:1px 8px;border-radius:10px;">
-            {{ cfCustSendHist.length }}건
+            {{ sendPager.pageTotalCount }}건
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="sendGridColumns" :rows="cfPageSend" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다."
+          <bo-grid bare :columns="sendGridColumns" :rows="sendHistories" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다."
             @set-page="n => onSetPage('send', n)" @size-change="() => onSizeChange('send')">
           </bo-grid>
         </div>

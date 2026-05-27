@@ -645,6 +645,27 @@ const baseFormColumns = [
 - ❌ 금지: `rowSpan: 1` 명시 (default 이므로 노이즈)
 - 관련 코드: [components/comp/BoAreaComp.js](components/comp/BoAreaComp.js) `cfFieldStyle` 헬퍼
 
+**페이징은 서버사이드만 사용** ⭐⭐ (2026-05-27):
+- **클라이언트 사이드 페이징 금지** — 모든 리스트 그리드는 서버사이드 페이징(API 호출 시 pageNo/pageSize 전달)만 사용
+- ❌ 금지: `coUtil.cofUseClientPager` 같은 클라이언트 페이저 헬퍼 (삭제됨)
+- ❌ 금지: `fnBuildPage(list, pager)` 같은 슬라이스 헬퍼로 전체 데이터를 한 번에 받은 후 클라이언트에서 페이지 표시
+- ❌ 금지: `_newPager` + `cfPageXxx = computed(() => list.slice(...))` 패턴
+- ✅ 권장 패턴: 그리드별로 **별도 API 호출** + `pager.pageNo`/`pager.pageSize` 를 서버에 전달 → 응답의 `pageList/pageTotalCount` 사용
+- 작은 데이터(연관 클레임 1건, 결제정보 소수 행) 는 페이저 없이 전체 표시
+- 큰 데이터 누적 가능 영역(상품 Q&A/리뷰/주문 이력 등) 은 별도 API 엔드포인트 + 서버 페이징 구현 필요
+- **다영역 통합 화면 표준 패턴** (MbCustInfoMng 등):
+  ```js
+  const HIST_META = {
+    orders: { api: boApiSvc.odOrder, dateType: 'order_date', pager: ordersPager, rows: orders, label: '주문조회' },
+    /* ... 영역별 메타 ... */
+  };
+  const fnLoadHist = async (which) => { /* userId + pageNo + pageSize → 서버 호출 */ };
+  const onSetPage    = (which, n) => { pager.pageNo = n; fnLoadHist(which); };
+  const onSizeChange = (which)    => { pager.pageNo = 1; fnLoadHist(which); };
+  watch(() => uiState.customer?.userId, async () => { await Promise.all(Object.keys(HIST_META).map(fnLoadHist)); });
+  ```
+- 예외: 모달 picker(고객 검색 등)는 전체 회원 한 번에 받아 키워드 즉시 필터링이 UX 상 합리적 → 모달 내부에 한해 클라이언트 슬라이싱 허용 (modalPager + cfPageModalList)
+
 **Dtl BoFormArea cols=3 강제 + 통합 폼 정책** ⭐⭐ (2026-05-27):
 - **모든 Dtl 의 `<bo-form-area>` 호출은 `:cols="3"` 으로 통일**. `:cols="2"` 사용 금지
 - **한 화면(탭)에 작은 BoFormArea 여러 개 분할 금지** — 하나의 통합 컬럼 배열(`infoFormColumns` 등)로 합쳐 cols=3 한 행에 3개씩 표시되게 함
