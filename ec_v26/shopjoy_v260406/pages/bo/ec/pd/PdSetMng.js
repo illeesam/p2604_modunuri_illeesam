@@ -43,7 +43,7 @@ window.PdSetMng = {
         return closeDtl();
       // 페이지 크기 변경
       } else if (cmd === 'sets-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 설명 토글
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -86,7 +86,7 @@ window.PdSetMng = {
         return handleDelete(param);
       // 페이지 번호 클릭
       } else if (cmd === 'sets-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 카테고리 행 삭제
       } else if (cmd === 'baseDetail-categoryRemove') {
         return removeCategory(param);
@@ -172,14 +172,7 @@ window.PdSetMng = {
       handleSearchData('DEFAULT');
     });
 
-const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* -- 신규등록 폼 -- */
-    const newForm = reactive({
-      prodNm: '', brandId: '', vendorId: '',
-      listPrice: 0, salePrice: 0, stock: 0,
-      prodStatusCd: 'DRAFT',
-    });
+const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
     const newErrors = reactive({});
 
     /* -- 카테고리 N개 -- */
@@ -324,43 +317,18 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
         })
         .filter(g => !searchVal || g.prodNm.toLowerCase().includes(searchVal));
       setList.splice(0, setList.length, ...result);
-      pager.pageTotalCount = setList.length;
-      pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / pager.pageSize));
-      fnBuildPagerNums();
-    };
+      baseGrid.pager.pageTotalCount = setList.length;
+      baseGrid.pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / baseGrid.pager.pageSize));    };
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchData('DEFAULT');
-    };
-
+    /* — 유틸 */
     /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
       await handleSearchData();
     };
 
-    /* setPage — 설정 */
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; };
-
-    /* openNew — 신규 열기 */
-    const openNew = () => {
-      uiState.dtlMode = 'new';
-      uiState.editSetId = null;
-      Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, stock: 0, prodStatusCd: 'DRAFT' });
-      Object.keys(newErrors).forEach(k => delete newErrors[k]);
-      dtlCategories.length = 0;
-      dtlItems.length = 0;
-    };
-
+    /* — 설정 */
     /* openDtl — 열기 */
     const openDtl = setProdId => {
       uiState.dtlMode = 'edit';
@@ -516,7 +484,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       }
     };
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
-    const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfSetPageRows = computed(() => setList.slice((baseGrid.pager.pageNo - 1) * baseGrid.pager.pageSize, baseGrid.pager.pageNo * baseGrid.pager.pageSize));
         // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'nm', label: '세트상품명', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
@@ -574,7 +542,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      codes, uiState, setList, searchParam, pager,                                          // 상태 / 데이터
+      codes, uiState, setList, searchParam,                                           // 상태 / 데이터
       dtlCategories, dtlItems, newForm, newErrors, pickerResults, pickerPager,              // 상태 / 데이터
       baseSearchColumns, setGridColumns, setItemGridColumns, pickerGridColumns, newSetFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
@@ -640,7 +608,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
         세트상품 목록
       </span>
       <span class="list-count">
-        총 {{ pager.pageTotalCount }}건
+        총 {{ baseGrid.pager.pageTotalCount }}건
       </span>
       <div class="pager-right">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('sets-add')">
@@ -651,7 +619,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="pager"
+      <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="baseGrid.pager"
         row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
         <template #cell-prodNm="{ row }">
           <td>
@@ -693,7 +661,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
+      <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

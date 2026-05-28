@@ -24,11 +24,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StSettleEtcAdjMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
@@ -56,10 +56,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'etcAdjs-rowDelete') {
         return handleDelete(param);
       } else if (cmd === 'etcAdjs-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       } else if (cmd === 'etcAdjs-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -98,7 +98,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산기타조정', '목록조회'),
           (() => {
             const params = {
-              pageNo: pager.pageNo, pageSize: pager.pageSize,
+              pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
               ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
             };
             // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -111,10 +111,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
         const data = resA.data?.data;
         etcAdjs.splice(0, etcAdjs.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || etcAdjs.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || etcAdjs.length;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -128,26 +127,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     const etcAdjs = reactive([]);
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-        const baseForm = reactive({});
-    const errors = reactive({});
-    const isNew  = ref(false);
-
-  /* 정산 기타 조정 _initSearchParam */
-  const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
-  const searchParam = reactive(_initSearchParam());
-
-    /* openNew — 신규 열기 */
-    const openNew = () => {
-      Object.assign(baseForm, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '기타', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
-      uiState.selectedId = '__new__'; uiState.isNew = true;
-      Object.keys(errors).forEach(k => delete errors[k]);
-    };
-
+    const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 10 });
     /* openEdit — 열기 */
     const openEdit = (r) => { Object.assign(baseForm, {...r}); uiState.selectedId = r.adjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
 
@@ -211,75 +191,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
 
     /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const onSearch = () => { baseGrid.pager.pageNo = 1; handleSearchData('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
-
-    /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
-
-        /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-        // --- [컬럼 정의] ---
-
-        const baseSearchColumns = [
-      { key: 'dateRange', label: '정산일', type: 'dateRange', paramObj: uiState,
-        startKey: 'dateStart', endKey: 'dateEnd',
-        rangeOptions: () => codes.date_range_opts,
-        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
-        onRangeChange: () => handleDateRangeChange() },
-      { key: 'type', label: '유형', type: 'select', options: () => codes.settle_etc_adj_types, nullLabel: '유형 전체' },
-      { key: 'status', label: '상태', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
-      { key: 'searchType', label: '검색대상', type: 'multiCheck',
-        options: [
-          { value: 'id',       label: 'ID' },
-          { value: 'vendorNm', label: '업체명' },
-          { value: 'reason',   label: '사유' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'adjId',        label: '조정ID' },
-      { key: 'adjDate',      label: '조정일자' },
-      { key: 'vendorNm',     label: '업체명' },
-      { key: 'adjType',      label: '유형', badge: (row) => fnTypeBadge(row.adjType) },
-      { key: 'adjAmt',       label: '조정금액', fmt: fmtW,
-        cellStyle: (v, row) => row.adjAmt < 0
-          ? 'color:#e74c3c;font-weight:700' : 'color:#27ae60;font-weight:700' },
-      { key: 'reason',       label: '사유',
-        cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
-      { key: 'aprvStatusCd', label: '승인상태', badge: (row) => fnAprvBadge(row.aprvStatusCd) },
-      { key: 'regUserNm',    label: '등록자' },
-    ];
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기타조정 추가/수정 ============
-    // 기본 폼
-    const baseFormColumns = [
-      { key: 'vendorId', label: '업체', type: 'select', required: true, nullLabel: '선택',
-        options: () => (cfVendors.value || []).map(v => ({ value: v.vendorId, label: v.vendorNm })) },
-      { key: 'adjType',  label: '조정유형', type: 'select', required: true, nullable: false,
-        options: () => codes.settle_etc_adj_types },
-      { key: 'adjAmt',   label: '조정금액(원)', type: 'number', placeholder: '음수 입력 시 차감' },
-      { key: 'adjDate',  label: '조정일자', type: 'date' },
-      { type: 'rowBreak' },
-      { key: 'reason',   label: '사유', type: 'text', required: true,
-        placeholder: '기타조정 사유를 입력하세요.', colSpan: 4 },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      uiState, codes, pager, etcAdjs, searchParam, baseForm, errors,
-      baseSearchColumns, baseGridColumns, baseFormColumns,
-      handleBtnAction, handleSelectAction,
-      cfVendors,
-      fnAprvBadge, fnTypeBadge, fmtW,
-    };
   },
   template: /* html */`
 <div>
@@ -310,7 +225,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-top:12px">
     <div class="toolbar">
       <span class="list-count">
-        총 {{ pager.pageTotalCount }}건
+        총 {{ baseGrid.pager.pageTotalCount }}건
       </span>
       <div style="margin-left:auto">
         <button class="btn btn-primary" @click="handleBtnAction('etcAdjs-add')">
@@ -320,8 +235,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="etcAdjs" :pager="pager" row-key="adjId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      :columns="baseGridColumns" :rows="etcAdjs" :pager="baseGrid.pager" row-key="adjId"
+      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
       @set-page="n => handleSelectAction('etcAdjs-pager-setPage', n)" @size-change="handleSelectAction('etcAdjs-pager-sizeChange')">
       <template #head-actions>

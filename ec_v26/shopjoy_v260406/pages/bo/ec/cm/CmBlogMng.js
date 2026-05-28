@@ -13,7 +13,7 @@ window.CmBlogMng = {
     const blogs = reactive([]);                    // 블로그 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
-      selectedId: null, sortKey: '', sortDir: 'asc',
+      selectedId: null,
     });
     const codes = reactive({                       // 공통코드 / 정적 옵션
       blog_display_statuses: [],
@@ -31,13 +31,13 @@ window.CmBlogMng = {
       console.log(' ■■ CmBlogMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 블로그 신규 등록 (인라인 패널)
       } else if (cmd === 'blogs-add') {
@@ -61,13 +61,13 @@ window.CmBlogMng = {
       console.log(' ■■ CmBlogMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'blogs-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'blogs-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'blogs-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 그리드 행 클릭 → 상세 보기 토글
       } else if (cmd === 'blogs-rowView') {
         return openDetail(param);
@@ -85,7 +85,7 @@ window.CmBlogMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
 
     /* ===== 상세 인라인 패널 ===== */
     const baseDetail = reactive({ show: false, isNew: false, dtlId: null, form: {} }); // 인라인 Dtl 패널 상태
@@ -106,33 +106,16 @@ window.CmBlogMng = {
     });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
+    /* — 정렬 파라미터 */
     /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
+    /* — 정렬 아이콘 */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...getSortParam(),
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          ...baseGrid.sortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -142,10 +125,8 @@ window.CmBlogMng = {
         const res = await boApiSvc.cmBlog.getPage(params, '블로그관리', '목록조회');
         const data = res.data?.data;
         blogs.splice(0, blogs.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -155,22 +136,7 @@ window.CmBlogMng = {
       }
     };
 
-    /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* openDetail — 인라인 패널 열기 (토글) */
-    const openDetail = (row) => {
-      if (baseDetail.dtlId === row.blogId) { baseDetail.show = false; baseDetail.dtlId = null; return; }
-      Object.assign(baseDetail.form, { ...row });
-      baseDetail.dtlId = row.blogId; baseDetail.isNew = false; baseDetail.show = true;
-    };
-
+    /* — 페이지 번호 변경 */
     /* openNew — 신규 등록 */
     const openNew = () => {
       Object.assign(baseDetail.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
@@ -300,11 +266,11 @@ window.CmBlogMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      blogs, uiState, codes, searchParam, pager, baseDetail,                          // 상태 / 데이터
+      blogs, uiState, codes, searchParam,  baseDetail,                          // 상태 / 데이터
       baseSearchColumns, baseGridColumns, blogFormColumns,                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
-      sortIcon, fnYnBadge, fnGridRowClass,                                             // 헬퍼
+       fnYnBadge, fnGridRowClass,                                             // 헬퍼
     };
   },
   template: `
@@ -320,9 +286,9 @@ window.CmBlogMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
-    :sort-state="uiState" list-title="게시글 목록"
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
+  <bo-grid :columns="baseGridColumns" :rows="blogs" :pager="baseGrid.pager" row-key="blogId"
+    :sort-state="baseGrid" list-title="게시글 목록"
+    :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
     @sort="key => handleSelectAction('blogs-sort', key)"
     @set-page="n => handleSelectAction('blogs-pager-setPage', n)"

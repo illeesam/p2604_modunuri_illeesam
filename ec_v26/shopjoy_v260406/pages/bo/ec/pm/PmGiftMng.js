@@ -14,13 +14,13 @@ window.PmGiftMng = {
       console.log(' ■■ PmGiftMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -48,13 +48,13 @@ window.PmGiftMng = {
       console.log(' ■■ PmGiftMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬
       if (cmd === 'gifts-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'gifts-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'gifts-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 행 클릭 → 상세 편집
       } else if (cmd === 'gifts-rowEdit') {
         return handleLoadDetail(param);
@@ -75,14 +75,14 @@ window.PmGiftMng = {
 
     // ===== 상태(reactive) 선언 =============================================
     const gifts = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, giftList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, giftList: [], tabMode: 'list' });
     const codes = reactive({
       gift_statuses: [],
       gift_cond_types: [],
       date_range_opts: [],
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
     const baseDetail = coUtil.cofDetail();
 
     /* _initSearchParam — 초기화 */
@@ -110,45 +110,23 @@ window.PmGiftMng = {
 
     // ===== 정렬 처리 =======================================================
     const SORT_MAP = { nm: { asc: 'giftNm asc', desc: 'giftNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    /* getSortParam — 조회 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
     /* 사은품 onSort */
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     // ===== 목록 조회 API ===================================================
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'giftNm,giftId';
         }
         const res = await boApiSvc.pmGift.getPage(params, '선물관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, res.data?.data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -169,7 +147,7 @@ window.PmGiftMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
@@ -196,98 +174,6 @@ window.PmGiftMng = {
     const cfDetailKey    = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     // ===== 페이저 번호 빌더 ================================================
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    // ===== 배지(badge) 헬퍼 ================================================
-    /* 사은품 fnTypeBadge — sy_code GIFT_COND_TYPE_KR code_opt1 우선, 없으면 FB */
-    const _GIFT_COND_TYPE_FB = { '구매조건': 'badge-blue', '금액조건': 'badge-green', '수량조건': 'badge-orange', '무조건': 'badge-purple' };
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge   = t => coUtil.cofCodeBadge('GIFT_COND_TYPE_KR', t, _GIFT_COND_TYPE_FB[t] || 'badge-gray');
-
-    /* 사은품 fnStatusBadge */
-    const _GIFT_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red', '품절': 'badge-orange' };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _GIFT_STATUS_FB[s] || 'badge-gray');
-
-    /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    // ===== 삭제 / 엑셀 다운로드 ============================================
-    /* handleDelete — 삭제 */
-    const handleDelete = async (g) => {
-      const ok = await showConfirm('삭제', `[${g.giftNm}] 사은품을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = (gifts || []).findIndex(x => x.giftId === g.giftId);
-      if (idx !== -1) { gifts.splice(idx, 1); }
-      if (baseDetail.selectedId === g.giftId) { baseDetail.selectedId = null; }
-      try {
-        const res = await boApiSvc.pmGift.remove(g.giftId, '사은품관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(gifts,
-      [{label:'ID',key:'giftId'},{label:'사은품명',key:'giftNm'},{label:'유형',key:'giftTypeCd'},{label:'최소주문금액',key:'minOrderAmt'},{label:'최소주문수량',key:'minOrderQty'},{label:'재고',key:'giftStock'},{label:'상태',key:'giftStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
-      '사은품목록.csv');
-
-    // ===== 탭 모드 (리스트/카드) ===========================================
-    const tabMode = Vue.toRef(uiState, 'tabMode');
-
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
-    // 기본 검색
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck', label: '검색대상',
-        options: [
-          { value: 'giftNm', label: '사은품명' },
-          { value: 'giftId', label: 'ID' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange', label: '시작일',
-        startKey: 'dateStart', endKey: 'dateEnd',
-        rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'giftNm',       label: '사은품명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'giftTypeCd',   label: '조건유형', badge: (row) => fnTypeBadge(row.giftTypeCd) },
-      { key: 'condVal',      label: '조건값',
-        fmt: (v, row) => row.giftTypeCd === '금액조건' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
-          : row.giftTypeCd === '수량조건' ? (row.minOrderQty || 0) + '개↑' : '-' },
-      { key: 'giftStock',    label: '재고', fmt: (v) => (v || 0).toLocaleString() + '개' },
-      { key: 'startDate',    label: '시작일', sortKey: 'reg' },
-      { key: 'endDate',      label: '종료일' },
-      { key: 'giftStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.giftStatusCd) },
-      { key: 'siteNm',       label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      gifts, uiState, codes, searchParam, pager, baseDetail,                        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
-      tabMode,                                                                       // toRef
-      fnTypeBadge, fnStatusBadge, sortIcon,                                          // 헬퍼
-      inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,               // 콜백 / 전역
-    };
   },
   // ===== 템플릿 ===========================================================
   template: /* html */`
@@ -314,7 +200,7 @@ window.PmGiftMng = {
         </span>
         사은품목록
         <span class="list-count">
-          {{ pager.pageTotalCount }}건
+          {{ baseGrid.pager.pageTotalCount }}건
         </span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -340,9 +226,9 @@ window.PmGiftMng = {
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="gifts" :pager="pager" row-key="giftId"
+      :columns="baseGridColumns" :rows="gifts" :pager="baseGrid.pager" row-key="giftId"
       :row-actions="true"
-      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :sort-state="{ sortKey: baseGrid.sortKey, sortDir: baseGrid.sortDir }"
       :row-style="(g) => baseDetail.selectedId===g.giftId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('gifts-sort', key)" @row-click="g => handleSelectAction('gifts-rowEdit', g.giftId)">
       <template #head-actions>
@@ -359,7 +245,7 @@ window.PmGiftMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
+    <bo-pager v-if="tabMode==='list' && baseGrid.pager.pageTotalCount > 0" :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
@@ -415,7 +301,7 @@ window.PmGiftMng = {
     </div>
     <!-- ===== □.□. 카드 뷰 ================================================== -->
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
+    <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->

@@ -14,7 +14,7 @@ window.OdDlivMng = {
 
     const dlivs = reactive([]);                                                 // 배송 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status' });
     const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], dliv_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -31,13 +31,13 @@ window.OdDlivMng = {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchData();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -95,14 +95,14 @@ window.OdDlivMng = {
       console.log(' ■■ OdDlivMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'dlivs-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'dlivs-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'dlivs-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 수정
       } else if (cmd === 'dlivs-rowEdit') {
@@ -141,23 +141,7 @@ window.OdDlivMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* 하단 상세 (인라인 Dtl) */
-    const baseDetail = coUtil.cofDetail();
-
-    /* 일괄선택 */
-    const checked = reactive(new Set());
-
-    const COURIER_OPTIONS = ['CJ대한통운','롯데택배','한진택배','우체국택배','로젠택배'];
-    const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
-
-    /* 변경작업 모달 (actionsModal) */
-    const bulkForm = reactive({
-      status:'', courier:'', trackingNo:'', apprAction:'', apprComment:'',
-      apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
-      reqTarget:'배송', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
-    });
+    const baseGrid = coUtil.cofGrid(() => handleSearchData(), { sortMap: SORT_MAP, pageSize: 5 });
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
@@ -186,31 +170,11 @@ window.OdDlivMng = {
     });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* getSortParam — 조회 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchData();
-    };
-
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'dlivId,orderId,memberNm,recvNm,outboundTrackingNo';
@@ -221,10 +185,9 @@ window.OdDlivMng = {
         ]);
         dlivs.splice(0, dlivs.length, ...(delivRes.data?.data?.pageList || delivRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
-        pager.pageTotalCount = delivRes.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, delivRes.data?.data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = delivRes.data?.data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, delivRes.data?.data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -241,7 +204,7 @@ window.OdDlivMng = {
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -255,15 +218,6 @@ window.OdDlivMng = {
     const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
     const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* 배송 fnStatusBadge — 공통코드 DLIV_STATUS 우선, 미매칭 시 로컬 fallback */
-    const _DLIV_STATUS_FB = {
-      '준비중': 'badge-orange', '출고완료': 'badge-blue', '배송중': 'badge-blue',
-      '배송완료': 'badge-green', '배송실패': 'badge-red',
-    };
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('DLIV_STATUS', s, _DLIV_STATUS_FB[s] || 'badge-gray');
 
@@ -535,13 +489,13 @@ window.OdDlivMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      dlivs, members, uiState, codes, searchParam, pager, baseDetail, checked, bulkForm, bulkOpen, memberPick,           // 상태 / 데이터
+      dlivs, members, uiState, codes, searchParam,  baseDetail, checked, bulkForm, bulkOpen, memberPick,           // 상태 / 데이터
       baseSearchColumns, listGridColumns, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns,           // 컬럼 정의
       bulkCourierFormColumns, bulkApprovalFormColumns,                                                                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm,                    // computed
       selectedId: computed(() => baseDetail.selectedId),                                                                 // template 직접 참조
-      isChecked, fnGridRowStyle, sortIcon, fnStatusBadge,                                                                 // 헬퍼
+      isChecked, fnGridRowStyle,  fnStatusBadge,                                                                 // 헬퍼
       inlineNavigate,                                                                                                     // Dtl 콜백 (closure 필요)
     };
   },
@@ -566,7 +520,7 @@ window.OdDlivMng = {
         </span>
         배송목록
         <span class="list-count">
-          {{ pager.pageTotalCount }}건
+          {{ baseGrid.pager.pageTotalCount }}건
         </span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">
           선택 {{ checked.size }}건
@@ -587,8 +541,8 @@ window.OdDlivMng = {
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare selectable :columns="listGridColumns" :rows="dlivs" :pager="pager" row-key="dlivId"
-        :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
+      <bo-grid bare selectable :columns="listGridColumns" :rows="dlivs" :pager="baseGrid.pager" row-key="dlivId"
+        :sort-state="baseGrid" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleSelectAction('dlivs-sort', key)"
         @toggle-check="id => handleSelectAction('dlivs-rowToggleCheck', id)"
@@ -610,7 +564,7 @@ window.OdDlivMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('dlivs-pager-setPage', n)"
+      <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('dlivs-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('dlivs-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>

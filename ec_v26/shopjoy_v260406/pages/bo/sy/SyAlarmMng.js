@@ -14,7 +14,7 @@ window.SyAlarmMng = {
     const alarms = reactive([]);                   // 알림 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
-      selectedPath: null, sortKey: '', sortDir: 'asc',
+      selectedPath: null,
     });
     const codes = reactive({ alarm_type: [], alarm_status: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'alarmTitle asc', desc: 'alarmTitle desc' }, reg: { asc: 'alarmSendDate asc', desc: 'alarmSendDate desc' } };
@@ -28,13 +28,13 @@ window.SyAlarmMng = {
       console.log(' ■■ SyAlarmMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -61,13 +61,13 @@ window.SyAlarmMng = {
       console.log(' ■■ SyAlarmMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'alarms-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'alarms-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'alarms-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 그리드 행 수정 버튼 → 편집 패널 열기
       } else if (cmd === 'alarms-rowEdit') {
         return handleLoadDetail(param);
@@ -77,7 +77,7 @@ window.SyAlarmMng = {
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList();
       // 표시경로 picker 열기 (행 단위)
       } else if (cmd === 'pathModal-open') {
@@ -98,18 +98,7 @@ window.SyAlarmMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* ===== 표시경로 선택 모달 (sy_path) ===== */
-    const pathPickModal = reactive({ show: false, row: null });
-
-    /* ===== 상세 인라인 패널 ===== */
-    const detailModal = reactive({
-      show: false,
-      dtlId: null,
-      dtlMode: 'view',      // 'view' | 'edit'
-      reloadTrigger: 0,     // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
-    });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -129,30 +118,13 @@ window.SyAlarmMng = {
     });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...getSortParam(),
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          ...baseGrid.sortParam(),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
@@ -163,10 +135,9 @@ window.SyAlarmMng = {
         const res = await boApiSvc.syAlarm.getPage(params, '알람관리', '목록조회');
         const data = res.data?.data;
         alarms.splice(0, alarms.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || alarms.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || alarms.length;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -201,7 +172,7 @@ window.SyAlarmMng = {
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 (토글) */
@@ -243,32 +214,6 @@ window.SyAlarmMng = {
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-
-    /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (a) => {
-      const ok = await showConfirm('삭제', `[${a.alarmTitle}]을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = alarms.findIndex(x => x.alarmId === a.alarmId);
-      if (idx !== -1) { alarms.splice(idx, 1); }
-      if (detailModal.dtlId === a.alarmId) { detailModal.show = false; detailModal.dtlId = null; }
-      try {
-        const res = await boApiSvc.syAlarm.remove(a.alarmId, '알람관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(alarms, [
       { label: 'ID', key: 'alarmId' }, { label: '유형', key: 'alarmTypeCd' },
@@ -276,13 +221,6 @@ window.SyAlarmMng = {
       { label: '메시지', key: 'alarmMsg' }, { label: '상태', key: 'alarmStatusCd' },
       { label: '발송일', key: 'alarmSendDate' },
     ], '알림목록.csv');
-
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 알람 fnStatusBadge */
     const _ALARM_STATUS_FB = { '발송완료': 'badge-green', '예약': 'badge-blue', '실패': 'badge-red', '임시': 'badge-gray' };
@@ -341,7 +279,7 @@ window.SyAlarmMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      alarms, uiState, codes, searchParam, pager, detailModal, pathPickModal,         // 상태 / 데이터
+      alarms, uiState, codes, searchParam,  detailModal, pathPickModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
@@ -369,9 +307,9 @@ window.SyAlarmMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="baseGridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
-        list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
-        :sort-state="uiState" :row-style="fnRowStyle"
+        :columns="baseGridColumns" :rows="alarms" :pager="baseGrid.pager" row-key="alarmId"
+        list-title="알림목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
+        :sort-state="baseGrid" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('alarms-sort', key)"
         @set-page="n => handleSelectAction('alarms-pager-setPage', n)"
         @size-change="handleSelectAction('alarms-pager-sizeChange')"

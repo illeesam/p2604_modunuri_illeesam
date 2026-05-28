@@ -12,7 +12,7 @@ window.SyTemplateMng = {
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const templates = reactive([]);                // 템플릿 목록 (그리드 데이터)
-    const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
+    const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null });
     const codes     = reactive({ template_type: [], use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'templateNm asc', desc: 'templateNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -25,14 +25,14 @@ window.SyTemplateMng = {
       console.log(' ■■ SyTemplateMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = '';
-        uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = '';
+        baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -68,19 +68,19 @@ window.SyTemplateMng = {
       // 좌측 경로 트리 노드 선택 → 그리드 필터링 + 상세 패널 닫기
       if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         baseDetail.selectedId = null;
         return handleSearchList();
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'templates-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'templates-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'templates-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 그리드 행 클릭 / 수정 버튼 → 편집 패널 열기
       } else if (cmd === 'templates-rowEdit') {
@@ -112,63 +112,14 @@ window.SyTemplateMng = {
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* -- 표시경로 선택 모달 (sy_path) -- */
-    const pathPickModal = reactive({ show: false, row: null }); // 표시경로 선택 모달 상태
-
-    /* -- 상세 인라인 패널 -- */
-    const baseDetail = coUtil.cofDetail(); // 상세 인라인 패널 상태
-
-    /* -- 미리보기 / 발송 모달 -- */
-    const previewModal = reactive({ show: false, template: null }); // 미리보기 모달
-    const sendModal    = reactive({ show: false, template: null }); // 발송하기 모달
-
-    const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId  = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
-    const cfIsViewMode    = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
-    const cfDetailKey     = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.template_type = codeStore.sgGetGrpCodes('TEMPLATE_TYPE');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(),
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         if (params.searchValue && !params.searchType) {
@@ -177,10 +128,9 @@ window.SyTemplateMng = {
         const res = await boApiSvc.syTemplate.getPage(params, '템플릿관리', '목록조회');
         const data = res.data?.data;
         templates.splice(0, templates.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || templates.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || templates.length;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -214,7 +164,7 @@ window.SyTemplateMng = {
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
@@ -241,14 +191,6 @@ window.SyTemplateMng = {
 
     /* openSend — 발송 모달 열기 */
     const openSend = (t) => { sendModal.template = t; sendModal.show = true; };
-
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-
     /* handleDelete — 삭제 */
     const handleDelete = async (t) => {
       const ok = await showConfirm('삭제', `[${t.templateNm}] 템플릿을 삭제하시겠습니까?`);
@@ -326,7 +268,7 @@ window.SyTemplateMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      templates, uiState, codes, searchParam, pager, baseDetail, pathPickModal, previewModal, sendModal, // 상태 / 데이터
+      templates, uiState, codes, searchParam,  baseDetail, pathPickModal, previewModal, sendModal, // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
@@ -355,9 +297,9 @@ window.SyTemplateMng = {
     <div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
-        :columns="baseGridColumns" :rows="templates" :pager="pager" row-key="templateId"
-        list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
-        :sort-state="uiState" :row-style="fnRowStyle"
+        :columns="baseGridColumns" :rows="templates" :pager="baseGrid.pager" row-key="templateId"
+        list-title="템플릿목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
+        :sort-state="baseGrid" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('templates-sort', key)"
         @set-page="n => handleSelectAction('templates-pager-setPage', n)"
         @size-change="handleSelectAction('templates-pager-sizeChange')"

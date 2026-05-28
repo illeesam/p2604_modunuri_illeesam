@@ -14,7 +14,6 @@ window.CmChattMng = {
     const chatts = reactive([]);                   // 채팅 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
-      sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ chatt_message_types: [], chatt_statuses: [], date_range_opts: [] });
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -28,13 +27,13 @@ window.CmChattMng = {
       console.log(' ■■ CmChattMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -58,13 +57,13 @@ window.CmChattMng = {
       console.log(' ■■ CmChattMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'chatts-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'chatts-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'chatts-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'chatts-rowEdit') {
         return handleLoadDetail(param);
@@ -86,8 +85,8 @@ window.CmChattMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    /* baseGrid — pager + 정렬 + 페이지 액션 (coUtil.cofGrid) */
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
 
     /* ===== 상세 인라인 패널 ===== */
     const baseDetail = coUtil.cofDetail(); // 인라인 Dtl 패널 상태
@@ -113,36 +112,15 @@ window.CmChattMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
-
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...getSortParam(),
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          ...baseGrid.sortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -152,10 +130,9 @@ window.CmChattMng = {
         const res = await boApiSvc.cmChatt.getPage(params, '채팅관리', '목록조회');
         const data = res.data?.data;
         chatts.splice(0, chatts.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -183,94 +160,8 @@ window.CmChattMng = {
       if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-
-    /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (c) => {
-      const ok = await showConfirm('삭제', `[${c.subject}] 채팅을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = chatts.findIndex(x => x.chattRoomId === c.chattRoomId);
-      if (idx !== -1) { chatts.splice(idx, 1); }
-      if (baseDetail.selectedId === c.chattRoomId) { baseDetail.selectedId = null; }
-      try {
-        const res = await boApiSvc.cmChatt.remove(c.chattRoomId, '채팅관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(chatts, [{label:'채팅ID',key:'chattRoomId'},{label:'회원명',key:'memberNm'},{label:'상태',key:'chattStatusCd'},{label:'마지막메시지일시',key:'lastMsgDate'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
-
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
-    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
-
-    /* fnStatusBadge — 상태 배지 */
-    const _CHATT_STATUS_FB = { '진행중': 'badge-green', '종료': 'badge-gray' };
-    const fnStatusBadge = s => coUtil.cofCodeBadge('CHATT_STATUS', s, _CHATT_STATUS_FB[s] || 'badge-gray');
-
-    /* fnGridRowClass — 그리드 행 클래스 */
-    const fnGridRowClass = (row) => (baseDetail.selectedId === row.chattRoomId ? 'active' : '');
-
-    // 기본 검색
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck', label: '검색대상',
-        options: [
-          { value: 'memberNm', label: '회원명' },
-          { value: 'subject',  label: '제목' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.chatt_statuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
-        rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
-      { key: 'subject',     label: '제목', link: true,
-        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'lastMsgDate', label: '마지막 메시지',
-        cellStyle: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888',
-        fmt: (v) => v || '-' },
-      { key: 'msgCnt',      label: '메시지수',  style: 'width:80px;',
-        fmt: (v, row) => (row.adminUnreadCnt || 0) + (row.memberUnreadCnt || 0) + '개' },
-      { key: 'unread',      label: '미읽음',    style: 'width:80px;',
-        badge: (row) => row.memberUnreadCnt > 0 ? 'badge-red' : 'badge-gray',
-        fmt: (v, row) => row.memberUnreadCnt > 0 ? row.memberUnreadCnt : 0 },
-      { key: 'chattStatusCd', label: '상태',    style: 'width:90px;',
-        badge: (row) => fnStatusBadge(row.chattStatusCd) },
-      { key: 'regDate',     label: '일시',      style: 'width:140px;', sortKey: 'reg' },
-      { key: 'siteNm',      label: '사이트명',  style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      chatts, uiState, codes, searchParam, pager, baseDetail,                         // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
-      sortIcon, fnStatusBadge, fnGridRowClass,                                         // 헬퍼
-      inlineNavigate, showToast, showConfirm, setApiRes, showRefModal, handleSearchList, // Dtl 콜백 / 모달 함수
-    };
   },
   template: /* html */`
 <div>
@@ -285,9 +176,9 @@ window.CmChattMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="chatts" :pager="pager" row-key="chattRoomId"
-    :sort-state="uiState" list-title="채팅목록"
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
+  <bo-grid :columns="baseGridColumns" :rows="chatts" :pager="baseGrid.pager" row-key="chattRoomId"
+    :sort-state="baseGrid" list-title="채팅목록"
+    :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="key => handleSelectAction('chatts-sort', key)"
     @set-page="n => handleSelectAction('chatts-pager-setPage', n)"

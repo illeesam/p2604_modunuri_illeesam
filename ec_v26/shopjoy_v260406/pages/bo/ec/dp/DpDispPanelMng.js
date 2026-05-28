@@ -12,7 +12,7 @@ window.DpDispPanelMng = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const panels = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null, sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null });
     const displays = reactive([]);
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -59,13 +59,13 @@ window.DpDispPanelMng = {
       console.log(' ■■ DpDispPanelMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'panels-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'panels-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'panels-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 그리드 행 클릭 → 상세 보기
       } else if (cmd === 'panels-rowView') {
         return loadView(param);
@@ -129,33 +129,12 @@ window.DpDispPanelMng = {
     // 코드 주입
 
     const SORT_MAP = { nm: { asc: 'panelNm asc', desc: 'panelNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    /* getSortParam — 조회 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchData(buildSearchParams?.() || {});
-    };
-
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     /* handleSearchData — 처리 */
     const handleSearchData = async (uiParams = {}) => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000, ...getSortParam(), ...uiParams };
+        const params = { pageNo: 1, pageSize: 10000, ...baseGrid.sortParam(), ...uiParams };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'panelNm,areaCd';
@@ -187,11 +166,11 @@ window.DpDispPanelMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGrid = coUtil.cofGrid(() => handleSearchData(), { sortMap: SORT_MAP, pageSize: 5 });
 /* 하단 상세
  * 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
@@ -210,7 +189,7 @@ window.DpDispPanelMng = {
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchData(); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -284,16 +263,7 @@ window.DpDispPanelMng = {
     const cfAreaSelectOptions = computed(() =>
       cfAreas.value.map(a => ({ value: a.codeValue, label: `${a.codeValue} ${a.codeLabel}` }))
     );
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFiltered.value.length;
-      pager.pageTotalPage  = Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize));
-      const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4);
-      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
-      pager.pageList = cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize);
-    };
-    watch(cfFiltered, () => { fnBuildPagerNums(); });
+    watch(cfFiltered, () => { });
 
     /* fnStatusBadge */
     const _DISP_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray' };
@@ -366,41 +336,15 @@ window.DpDispPanelMng = {
     });
 
     /* onSearch — 조회 */
-    const onSearch = async () => { pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
+    const onSearch = async () => { baseGrid.pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
 
     /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
-      uiState.sortKey = ''; uiState.sortDir = 'asc';
-      pager.pageNo = 1;
+      baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+      baseGrid.pager.pageNo = 1;
       handleSearchData({});
     };
-
-    /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; fnBuildPagerNums(); };
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (d) => {
-      const ok = await showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = displays.findIndex(x => x.dispId === d.dispId);
-      if (idx !== -1) { displays.splice(idx, 1); }
-      if (uiStateDetail.selectedId === d.dispId) { uiStateDetail.selectedId = null; }
-      try {
-        const res = await boApiSvc.dpPanel.remove(d.dispId, '전시패널관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(cfFiltered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
 
@@ -465,8 +409,8 @@ window.DpDispPanelMng = {
       e.preventDefault(); uiState.panelDragOverIdx = -1;
       const src = uiState.panelDragSrc;
       if (src === null || src === pageIdx) { uiState.panelDragSrc = null; return; }
-      const srcId = pager.pageList?.[src]?.dispId;
-      const tgtId = pager.pageList?.[pageIdx]?.dispId;
+      const srcId = baseGrid.pager.pageList?.[src]?.dispId;
+      const tgtId = baseGrid.pager.pageList?.[pageIdx]?.dispId;
       if (!srcId || !tgtId) { uiState.panelDragSrc = null; return; }
       const arr = displays;
       const si = arr.findIndex(x => x.dispId === srcId);
@@ -518,7 +462,7 @@ window.DpDispPanelMng = {
     const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
     /* selectPathNode — 선택 */
-    const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(buildSearchParams()); };
+    const selectPathNode = (id) => { uiState.selectedPath = id; baseGrid.pager.pageNo = 1; handleSearchData(buildSearchParams()); };
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
@@ -536,7 +480,7 @@ window.DpDispPanelMng = {
     const isTreeOpen = (k) => treeOpen.has(k);
 
     /* selectTree — 선택 */
-    const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; pager.pageNo = 1; };
+    const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; baseGrid.pager.pageNo = 1; };
 
     /* expandAll — 펼치기 전체 */
     const expandAll  = () => {
@@ -583,13 +527,13 @@ window.DpDispPanelMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiStateDetail, panels, uiState, displays, codes, searchParam, pager,            // 상태 / 데이터
+      uiStateDetail, panels, uiState, displays, codes, searchParam,             // 상태 / 데이터
       baseSearchColumns, moreSearchColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFiltered, cfAreas, cfAreaSelectOptions, cfDetailEditId, cfIsViewMode,          // computed
       cfDetailKey, cfSiteNm, cfPanelTree, selectedId: computed(() => uiStateDetail.selectedId), // computed
       fnPathLabel, fnStatusBadge, fnTypeBadge, fnTypeLabel, fnDispSummary,             // 헬퍼
-      fnAreaLabel, fnWLabel, sortIcon, isExpanded, isTreeOpen,                         // 헬퍼
+      fnAreaLabel, fnWLabel,  isExpanded, isTreeOpen,                         // 헬퍼
       inlineNavigate, handleSearchData,                                                // Dtl 콜백 (closure 필요)
       previewDisp, setDispNow,                                                         // 헬퍼 (외부 호출용)
       onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, // 드래그 핸들러
@@ -683,8 +627,8 @@ window.DpDispPanelMng = {
               </th>
               <th @click="handleSelectAction('panels-sort', 'nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">
                 패널 정보
-                <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">
-                  {{ sortIcon('nm') }}
+                <span :style="baseGrid.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">
+                  {{ baseGrid.sortIcon('nm') }}
                 </span>
               </th>
               <th style="width:240px;text-align:right;">
@@ -693,12 +637,12 @@ window.DpDispPanelMng = {
             </tr>
           </thead>
           <tbody>
-            <tr v-if="!pager.pageList?.length">
+            <tr v-if="!baseGrid.pager.pageList?.length">
               <td colspan="6" style="text-align:center;color:#999;padding:30px;">
                 데이터가 없습니다.
               </td>
             </tr>
-            <template v-else v-for="(d, pageIdx) in pager.pageList" :key="d?.dispId">
+            <template v-else v-for="(d, pageIdx) in baseGrid.pager.pageList" :key="d?.dispId">
               <tr draggable="true"
                 @dragstart="onPanelDragStart($event, pageIdx)"
                 @dragover="onPanelDragOver($event, pageIdx)"
@@ -707,7 +651,7 @@ window.DpDispPanelMng = {
                 @dragend="onPanelDragEnd"
                 :style="(uiStateDetail.selectedId===d.dispId?'background:#fff8f9;':'') + (uiState.panelDragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
                 <td style="text-align:center;font-size:11px;color:#999;">
-                  {{ (pager.pageNo - 1) * pager.pageSize + pageIdx + 1 }}
+                  {{ (baseGrid.pager.pageNo - 1) * baseGrid.pager.pageSize + pageIdx + 1 }}
                 </td>
                 <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">
                   ⠿
@@ -921,7 +865,7 @@ window.DpDispPanelMng = {
           </template>
         </tbody>
       </table>
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
+      <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
     </div>
   </div>
   <!-- ===== /우측 목록 ===================================================== -->

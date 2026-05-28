@@ -14,7 +14,7 @@ window.OdCartMng = {
 
     /* ── 목록 상태 ── */
     const carts = reactive([]);                                                // 장바구니 목록 (메인 그리드 데이터)
-    const pager  = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
     const uiState = reactive({ loading: false, selectedIds: [] });
     const codes = reactive({ sites: [], cart_date_types: [] });
 
@@ -30,12 +30,12 @@ window.OdCartMng = {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList();
       // 회원 선택 모달 열기
       } else if (cmd === 'memberPickModal-open') {
@@ -62,11 +62,11 @@ window.OdCartMng = {
       console.log(' ■■ OdCartMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭
       if (cmd === 'carts-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList(); }
+        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList(); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'carts-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList();
       // 행 체크 토글
       } else if (cmd === 'carts-rowToggleCheck') {
@@ -118,7 +118,7 @@ window.OdCartMng = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
           ...(searchParam.siteId    && { siteId:    searchParam.siteId }),
           ...(searchParam.memberId  && { memberId:  searchParam.memberId }),
           ...(searchParam.searchType && { searchType: searchParam.searchType }),
@@ -134,13 +134,13 @@ window.OdCartMng = {
         const res = await boApiSvc.odCart.getPage(params, '장바구니관리', '조회');
         const d = res.data?.data || {};
         carts.splice(0, carts.length, ...(d.pageList || []));
-        pager.pageTotalCount = d.pageTotalCount || 0;
-        pager.pageTotalPage  = d.pageTotalPage  || 1;
-        const tp = pager.pageTotalPage;
-        const cur = pager.pageNo;
+        baseGrid.pager.pageTotalCount = d.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage  = d.pageTotalPage  || 1;
+        const tp = baseGrid.pager.pageTotalPage;
+        const cur = baseGrid.pager.pageNo;
         const from = Math.max(1, cur - 4);
         const to = Math.min(tp, from + 9);
-        pager.pageNums = Array.from({ length: to - from + 1 }, (_, i) => from + i);
+        baseGrid.pager.pageNums = Array.from({ length: to - from + 1 }, (_, i) => from + i);
       } catch (err) {
         showToast(err.response?.data?.message || '조회 중 오류가 발생했습니다.', 'error', 0);
       } finally {
@@ -248,7 +248,8 @@ window.OdCartMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      carts, pager, searchParam, uiState, codes, memberPick,                   // 상태 / 데이터
+      baseGrid,
+      carts,  searchParam, uiState, codes, memberPick,                   // 상태 / 데이터
       baseSearchColumns, listGridColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfAllChecked,                                                            // computed
@@ -279,7 +280,7 @@ window.OdCartMng = {
         장바구니 목록
       </span>
       <span class="list-count">
-        총 {{ pager.pageTotalCount.toLocaleString() }}건
+        총 {{ baseGrid.pager.pageTotalCount.toLocaleString() }}건
       </span>
       <div style="margin-left:auto;">
         <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBtnAction('carts-bulkDelete')">
@@ -294,7 +295,7 @@ window.OdCartMng = {
       조회 중...
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="carts" :pager="pager" row-key="cartId"
+    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="carts" :pager="baseGrid.pager" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
       @toggle-check="id => handleSelectAction('carts-rowToggleCheck', id)"
@@ -305,7 +306,7 @@ window.OdCartMng = {
         </button>
       </template>
     </bo-grid>
-    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
+    <bo-pager v-if="baseGrid.pager.pageTotalCount > 0" :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->

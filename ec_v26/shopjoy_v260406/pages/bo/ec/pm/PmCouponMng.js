@@ -12,7 +12,7 @@ window.PmCouponMng = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const coupons = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list' });
     const codes = reactive({
       coupon_types: [],
       coupon_statuses: [],
@@ -27,13 +27,13 @@ window.PmCouponMng = {
       console.log(' ■■ PmCouponMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -61,13 +61,13 @@ window.PmCouponMng = {
       console.log(' ■■ PmCouponMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'coupons-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'coupons-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'coupons-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 행 클릭 → 상세 편집
       } else if (cmd === 'coupons-rowEdit') {
         return handleLoadDetail(param);
@@ -95,7 +95,7 @@ window.PmCouponMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
 
@@ -110,37 +110,16 @@ window.PmCouponMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'couponNm asc', desc: 'couponNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    /* getSortParam — 조회 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'couponNm,couponCd';
@@ -148,10 +127,9 @@ window.PmCouponMng = {
         const res = await boApiSvc.pmCoupon.getPage(params, '쿠폰관리', '목록조회');
         const data = res.data?.data;
         coupons.splice(0, coupons.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -186,58 +164,13 @@ window.PmCouponMng = {
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* discountLabel — 할인 라벨 */
-    const discountLabel = c => c.discountRate ? (c.discountRate||0) + '%' : (c.discountAmt||0).toLocaleString() + '원';
-
-    /* 쿠폰 fnStatusBadge */
-    const _COUPON_STATUS_FB = { '활성': 'badge-green', '만료': 'badge-red', '비활성': 'badge-gray' };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _COUPON_STATUS_FB[s] || 'badge-gray');
-
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchList('DEFAULT');
-    };
-
     /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
-      uiState.sortKey = ''; uiState.sortDir = 'asc';
-      pager.pageNo = 1;
+      baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+      baseGrid.pager.pageNo = 1;
       await handleSearchList();
     };
-
-    /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (c) => {
-      const ok = await showConfirm('삭제', `[${c.couponNm}]을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      if (!Array.isArray(coupons)) { return; }
-      const idx = coupons.findIndex(x => x.couponId === c.couponId);
-      if (idx !== -1) { coupons.splice(idx, 1); }
-      if (uiStateDetail.selectedId === c.couponId) { uiStateDetail.selectedId = null; }
-      try {
-        const res = await boApiSvc.pmCoupon.remove(c.couponId, '쿠폰관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(coupons, [{label:'ID',key:'couponId'},{label:'쿠폰명',key:'couponNm'},{label:'코드',key:'couponCd'},{label:'유형',key:'couponTypeCdNm'},{label:'할인율',key:'discountRate'},{label:'할인액',key:'discountAmt'},{label:'최소금액',key:'minOrderAmt'},{label:'상태',key:'couponStatusCdNm'},{label:'유효기간(시작)',key:'validFrom'},{label:'유효기간(종료)',key:'validTo'}], '쿠폰목록.csv');
 
@@ -280,11 +213,11 @@ window.PmCouponMng = {
     ];
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      coupons, uiState, codes, searchParam, pager, uiStateDetail,                  // 상태 / 데이터
+      coupons, uiState, codes, searchParam,  uiStateDetail,                  // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
-      discountLabel, fnStatusBadge, sortIcon,                                      // 헬퍼
+      discountLabel, fnStatusBadge,                                       // 헬퍼
       inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,             // 콜백 / 전역
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; }
@@ -311,7 +244,7 @@ window.PmCouponMng = {
         </span>
         쿠폰목록
         <span class="list-count">
-          {{ pager.pageTotalCount }}건
+          {{ baseGrid.pager.pageTotalCount }}건
         </span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -335,9 +268,9 @@ window.PmCouponMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="coupons" :pager="pager" row-key="couponId"
+      :columns="baseGridColumns" :rows="coupons" :pager="baseGrid.pager" row-key="couponId"
       :row-actions="true"
-      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :sort-state="{ sortKey: baseGrid.sortKey, sortDir: baseGrid.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('coupons-sort', key)" @row-click="c => handleSelectAction('coupons-rowEdit', c.couponId)">
       <template #head-actions>
@@ -354,7 +287,7 @@ window.PmCouponMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
+    <bo-pager v-if="tabMode==='list' && baseGrid.pager.pageTotalCount > 0" :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
@@ -404,7 +337,7 @@ window.PmCouponMng = {
         </div>
       </div>
     </div>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
+    <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->

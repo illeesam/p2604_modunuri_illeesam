@@ -12,14 +12,14 @@ window.PmEventMng = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const events = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list' });
     const codes = reactive({
       event_statuses: [],
       date_range_opts: [],
     });
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
     /* 하단 상세 */
     const baseDetail = coUtil.cofDetail();
 
@@ -31,13 +31,13 @@ window.PmEventMng = {
       console.log(' ■■ PmEventMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -65,13 +65,13 @@ window.PmEventMng = {
       console.log(' ■■ PmEventMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬
       if (cmd === 'events-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'events-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'events-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 행 클릭 → 상세 편집
       } else if (cmd === 'events-rowEdit') {
         return handleLoadDetail(param);
@@ -105,40 +105,18 @@ window.PmEventMng = {
 
     // onMounted에서 API 로드
     const SORT_MAP = { nm: { asc: 'eventNm asc', desc: 'eventNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    /* getSortParam — 조회 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
     /* 이벤트 onSort */
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmEvent.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '이벤트관리', '목록조회');
+        const res = await boApiSvc.pmEvent.getPage({ pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '이벤트관리', '목록조회');
         const data = res.data?.data;
         events.splice(0, events.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -157,7 +135,7 @@ window.PmEventMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     /* loadView — 뷰 로드 */
@@ -181,83 +159,6 @@ window.PmEventMng = {
     const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
     const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* 이벤트 fnStatusBadge */
-    const _EVENT_STATUS_FB = { '진행중': 'badge-green', '예정': 'badge-blue', '종료': 'badge-gray' };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('EVENT_STATUS_KR', s, _EVENT_STATUS_FB[s] || 'badge-gray');
-
-    /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (e) => {
-      const ok = await showConfirm('삭제', `[${e.eventTitle}]을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      if (!Array.isArray(events)) { return; }
-      const idx = events.findIndex(x => x.eventId === e.eventId);
-      if (idx !== -1) { events.splice(idx, 1); }
-      if (baseDetail.selectedId === e.eventId) { baseDetail.selectedId = null; }
-      try {
-        const res = await boApiSvc.pmEvent.remove(e.eventId, '이벤트관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(events, [{label:'ID',key:'eventId'},{label:'이벤트명',key:'eventNm'},{label:'제목',key:'eventTitle'},{label:'유형',key:'eventTypeCd'},{label:'상태',key:'eventStatusCd'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'},{label:'등록일',key:'regDate'}], '이벤트목록.csv');
-
-    const tabMode = Vue.toRef(uiState, 'tabMode');
-
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // --- [컬럼 정의] ---
-    const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', label: '이벤트 제목', placeholder: '이벤트 제목 검색' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
-        rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'eventTitle',     label: '이벤트 제목', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'targetProducts', label: '대상상품',
-        fmt: (v) => (v || []).length + '개 상품' },
-      { key: 'authRequired',   label: '인증필요',
-        badge: (row) => row.authRequired ? 'badge-orange' : 'badge-gray',
-        fmt: (v) => v ? '필요' : '불필요' },
-      { key: 'startDate',      label: '시작일' },
-      { key: 'endDate',        label: '종료일' },
-      { key: 'eventStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.eventStatusCd) },
-      { key: 'regDate',        label: '등록일', sortKey: 'reg' },
-      { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      events, uiState, codes, searchParam, pager, baseDetail,                       // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
-      tabMode,                                                                       // toRef
-      fnStatusBadge, sortIcon,                                                       // 헬퍼
-      inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,               // 콜백 / 전역
-    };
   },
   template: /* html */`
 <div>
@@ -280,7 +181,7 @@ window.PmEventMng = {
         </span>
         이벤트목록
         <span class="list-count">
-          {{ pager.pageTotalCount }}건
+          {{ baseGrid.pager.pageTotalCount }}건
         </span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -304,9 +205,9 @@ window.PmEventMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="events" :pager="pager" row-key="eventId"
+      :columns="baseGridColumns" :rows="events" :pager="baseGrid.pager" row-key="eventId"
       :row-actions="true"
-      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :sort-state="{ sortKey: baseGrid.sortKey, sortDir: baseGrid.sortDir }"
       :row-style="(e) => baseDetail.selectedId===e.eventId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('events-sort', key)" @row-click="e => handleSelectAction('events-rowEdit', e.eventId)">
       <template #head-actions>
@@ -326,7 +227,7 @@ window.PmEventMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
+    <bo-pager v-if="tabMode==='list' && baseGrid.pager.pageTotalCount > 0" :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
     <!-- ===== □.□. 리스트 뷰 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
@@ -382,7 +283,7 @@ window.PmEventMng = {
         </div>
       </div>
     </div>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
+    <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->

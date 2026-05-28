@@ -12,7 +12,7 @@ window.PdDlivTmpltMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const dlivTmplts = reactive([]);              // 배송템플릿 목록 (메인 그리드)
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false, sortKey: '', sortDir: 'asc', isNew: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false, isNew: false });
     const codes = reactive({
       dliv_template_types: [],
       use_yn: [],
@@ -34,13 +34,13 @@ window.PdDlivTmpltMng = {
       console.log(' ■■ PdDlivTmpltMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList();
       // 신규 등록 패널 열기
       } else if (cmd === 'dlivTmplts-add') {
@@ -72,14 +72,14 @@ window.PdDlivTmpltMng = {
         return openDetail(param);
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'dlivTmplts-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 변경
       } else if (cmd === 'dlivTmplts-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'dlivTmplts-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -90,56 +90,19 @@ window.PdDlivTmpltMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.dliv_template_types = codeStore.sgGetGrpCodes('DLIV_TEMPLATE_TYPE');
-        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 10 });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
     /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '배송템플릿관리', '목록조회');
+        const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '배송템플릿관리', '목록조회');
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -198,75 +161,6 @@ window.PdDlivTmpltMng = {
     };
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* fnYnBadge — 사용여부 배지 */
-    const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
-
-    /* fnMethodBadge — 배송방법 배지 (sy_code DLIV_METHOD code_opt1 우선) */
-    const _DLIV_METHOD_FB = { COURIER:'badge-blue', DIRECT:'badge-orange', PICKUP:'badge-green' };
-    const fnMethodBadge = v => coUtil.cofCodeBadge('DLIV_METHOD', v, _DLIV_METHOD_FB[v] || 'badge-gray');
-    const cfSelectedRow = computed(() => dlivTmplts.find(t => t.dlivTmpltId === uiState.selectedId) || null);
-
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // 기본 검색
-    const baseSearchColumns = [
-      { key: 'searchValue', label: '템플릿명', type: 'text', placeholder: '템플릿명 검색' },
-      { key: 'method', label: '배송방법', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
-      { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'dlivTmpltNm',   label: '템플릿명', sortKey: 'nm', link: true },
-      { key: 'dlivMethodCd',  label: '배송방법',   style: 'width:90px;', badge: (row) => fnMethodBadge(row.dlivMethodCd) },
-      { key: 'dlivPayTypeCd', label: '결제유형',   style: 'width:80px;', badge: () => 'badge-gray' },
-      { key: 'dlivCost',      label: '기본배송비', style: 'width:100px;text-align:right;', align: 'right',
-        fmt: (v) => ((v || 0).toLocaleString() + '원') },
-      { key: 'freeDlivMinAmt',label: '무료배송조건',style: 'width:120px;text-align:right;', align: 'right',
-        fmt: (v) => (v ? v.toLocaleString() + '원 이상' : '무조건 유료') },
-      { key: 'returnCost',    label: '반품배송비', style: 'width:100px;text-align:right;', align: 'right',
-        fmt: (v) => ((v || 0).toLocaleString() + '원') },
-      { key: 'baseDlivYn',    label: '기본',       style: 'width:70px;text-align:center;', align: 'center',
-        badge: (row) => (row.baseDlivYn === 'Y' ? 'badge-orange' : 'badge-gray') },
-      { key: 'useYn',         label: '사용',       style: 'width:60px;text-align:center;', align: 'center',
-        badge: (row) => fnYnBadge(row.useYn) },
-    ];
-
-    // 기본 폼
-    const baseFormColumns = [
-      { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true },
-      { key: 'dlivMethodCd',     label: '배송방법', type: 'select', nullable: false,
-        options: () => codes.dliv_methods },
-      { key: 'dlivPayTypeCd',    label: '배송비 결제유형', type: 'select', nullable: false,
-        options: () => codes.dliv_pay_types },
-      { key: 'dlivCourierCd',    label: '배송 택배사', type: 'select', nullLabel: '없음',
-        options: () => codes.couriers },
-      { key: 'dlivCost',         label: '기본 배송비 (원)', type: 'number' },
-      { key: 'freeDlivMinAmt',   label: '무료배송 최소금액 (원)', type: 'number' },
-      { key: 'islandExtraCost',  label: '도서산간 추가배송비 (원)', type: 'number' },
-      { key: 'returnCost',       label: '반품배송비 편도 (원)', type: 'number' },
-      { key: 'exchangeCost',     label: '교환배송비 왕복 (원)', type: 'number' },
-      { key: 'returnCourierCd',  label: '반품 택배사', type: 'select', nullLabel: '없음',
-        options: () => codes.couriers },
-      { key: 'returnAddrZip',    label: '반품지 우편번호', type: 'text' },
-      { key: 'returnTelNo',      label: '반품지 전화번호', type: 'text' },
-      { type: 'rowBreak' },
-      { key: 'returnAddr',       label: '반품지 주소', type: 'text', colSpan: 2 },
-      { type: 'rowBreak' },
-      { key: 'returnAddrDetail', label: '반품지 상세주소', type: 'text', colSpan: 2 },
-      { type: 'rowBreak' },
-      { key: 'baseDlivYn',       label: '기본 배송지', type: 'select', options: () => codes.use_yn },
-      { key: 'useYn',            label: '사용여부', type: 'select', options: () => codes.use_yn },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      uiState, codes, searchParam, pager, dlivTmplts, baseForm,                            // 상태 / 데이터
-      baseSearchColumns, baseGridColumns, baseFormColumns,                              // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                              // dispatch
-      fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS,                              // 헬퍼
-    };
   },
   template: `
 <div>
@@ -319,7 +213,7 @@ window.PdDlivTmpltMng = {
         배송템플릿 목록
       </span>
       <span class="list-count">
-        총 {{ pager.pageTotalCount }}건
+        총 {{ baseGrid.pager.pageTotalCount }}건
       </span>
       <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="handleBtnAction('dlivTmplts-add')">
         + 신규
@@ -327,9 +221,9 @@ window.PdDlivTmpltMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="dlivTmplts" :pager="pager" row-key="dlivTmpltId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'"
-      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :columns="baseGridColumns" :rows="dlivTmplts" :pager="baseGrid.pager" row-key="dlivTmpltId"
+      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
+      :sort-state="{ sortKey: baseGrid.sortKey, sortDir: baseGrid.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
       @sort="key => handleSelectAction('dlivTmplts-sort', key)" @row-click="row => handleSelectAction('dlivTmplts-rowOpen', row)" @set-page="n => handleSelectAction('dlivTmplts-pager-setPage', n)" @size-change="handleSelectAction('dlivTmplts-pager-sizeChange')">
     </bo-grid>

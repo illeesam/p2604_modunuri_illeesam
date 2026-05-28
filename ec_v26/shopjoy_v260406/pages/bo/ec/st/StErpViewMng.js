@@ -24,12 +24,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       console.log(' ■■ StErpViewMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -51,11 +51,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return doResend(param);
       // 페이지 번호 변경
       } else if (cmd === 'slips-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'slips-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -90,22 +90,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
-      try {
-        slips.splice(0, slips.length);
-        pager.pageTotalCount = 0;
-        pager.pageTotalPage = 1;
-        fnBuildPagerNums();
-      } catch (_) { console.error('[catch-info]', _); }
-    };
-
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); });
 
@@ -140,59 +125,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
     /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
-
-    /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-        /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-        // --- [컬럼 정의] ---
-
-        const baseSearchColumns = [
-      { key: 'dateRange', label: '전표일', type: 'dateRange', paramObj: uiState,
-        startKey: 'dateStart', endKey: 'dateEnd',
-        rangeOptions: () => codes.date_range_opts,
-        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
-        onRangeChange: () => handleDateRangeChange() },
-      { key: 'type', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
-      { key: 'status', label: '상태', type: 'select', options: () => codes.erp_voucher_statuses, nullLabel: '상태 전체' },
-      { key: 'searchType', label: '검색대상', type: 'multiCheck',
-        options: [
-          { value: 'slipId', label: '전표ID' },
-          { value: 'summary', label: '적요' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
-      { key: 'slipDate',   label: '전표일자' },
-      { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
-      { key: 'debit',      label: '차변계정' },
-      { key: 'credit',     label: '대변계정' },
-      { key: 'debitAmt',   label: '금액', fmt: fmtW, cellStyle: 'font-weight:700' },
-      { key: 'description',label: '적요',
-        cellStyle: 'color:#555;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
-      { key: 'erpRef',     label: 'ERP전표번호', cellStyle: 'font-size:11px;color:#888',
-        fmt: (v) => v || '-' },
-      { key: 'sendStatus', label: '전송상태', badge: (row) => fnStatusBadge(row.sendStatus) },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      uiState, codes, pager, slips, searchParam,                                     // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                            // dispatch
-      fnStatusBadge, fnTypeBadge, fmtW,                                               // 헬퍼
-    };
   },
   template: /* html */`
 <div>
@@ -223,8 +159,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-top:12px">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="slips" :pager="pager" row-key="slipId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      :columns="baseGridColumns" :rows="slips" :pager="baseGrid.pager" row-key="slipId"
+      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('slips-pager-setPage', n)" @size-change="handleSelectAction('slips-pager-sizeChange')">
       <template #head-actions>
         액션

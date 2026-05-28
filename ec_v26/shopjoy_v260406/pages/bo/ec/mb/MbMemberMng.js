@@ -13,7 +13,6 @@ window.MbMemberMng = {
     const members = reactive([]);                  // 회원 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
-      sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ member_statuses: [], member_grades: [] }); // 공통코드
     const SORT_MAP = { nm: { asc: 'memberNm asc', desc: 'memberNm desc' }, reg: { asc: 'joinDate asc', desc: 'joinDate desc' } };
@@ -27,13 +26,13 @@ window.MbMemberMng = {
       console.log(' ■■ MbMemberMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 회원 신규 등록 (인라인 패널)
       } else if (cmd === 'members-add') {
@@ -57,13 +56,13 @@ window.MbMemberMng = {
       console.log(' ■■ MbMemberMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'members-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'members-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'members-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'members-rowEdit') {
         return openDetail(param);
@@ -75,8 +74,8 @@ window.MbMemberMng = {
     const _initSearchParam = () => ({ searchType: '', searchValue: '', grade: '', status: '' });
     const searchParam = reactive(_initSearchParam());
 
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    /* baseGrid — pager + 정렬 + 페이지 액션 (coUtil.cofGrid) */
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
 
     /* ===== 상세 인라인 패널 ===== */
     const baseDetail = reactive({                 // 인라인 Dtl 패널 상태
@@ -99,33 +98,13 @@ window.MbMemberMng = {
     });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...getSortParam(),
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          ...baseGrid.sortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -135,10 +114,9 @@ window.MbMemberMng = {
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
         members.splice(0, members.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -253,67 +231,6 @@ window.MbMemberMng = {
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
-
-    /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfSelectedRow = computed(() => members.find(m => m.memberId === baseDetail.dtlId) || null);
-
-    /* fnFmtDate — 날짜 포맷 */
-    const fnFmtDate = v => v ? String(v).slice(0, 10) : '';
-
-    /* fnGradeBadge — 등급 배지 */
-    const _MEMBER_GRADE_FB = { 'VIP': 'badge-purple', '우수': 'badge-blue', '일반': 'badge-gray' };
-    const fnGradeBadge = g => coUtil.cofCodeBadge('MEMBER_GRADE', g, _MEMBER_GRADE_FB[g] || 'badge-gray');
-
-    /* fnStatusBadge — 상태 배지 */
-    const _MEMBER_STATUS_FB = { '활성': 'badge-green', '정지': 'badge-red' };
-    const fnStatusBadge = s => coUtil.cofCodeBadge('MEMBER_STATUS', s, _MEMBER_STATUS_FB[s] || 'badge-gray');
-
-    /* fnGridRowClass — 그리드 행 클래스 */
-    const fnGridRowClass = (row) => (baseDetail.dtlId === row.memberId ? 'active' : '');
-
-    // 기본 검색
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck', label: '검색대상',
-        options: [
-          { value: 'memberNm', label: '이름' },
-          { value: 'loginId',  label: '이메일' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'grade', type: 'select', label: '등급', options: () => codes.member_grades, nullLabel: '전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.member_statuses, nullLabel: '전체' },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'memberNm',         label: '이름',     sortKey: 'nm',
-        fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
-      { key: 'loginId',          label: '이메일' },
-      { key: 'memberPhone',      label: '연락처' },
-      { key: 'gradeCd',          label: '등급',     align: 'center', badge: (row) => fnGradeBadge(row.gradeCd) },
-      { key: 'memberStatusCd',   label: '상태',     align: 'center', badge: (row) => fnStatusBadge(row.memberStatusCd) },
-      { key: 'joinDate',         label: '가입일',   sortKey: 'reg', fmt: (v) => fnFmtDate(v) },
-      { key: 'orderCount',       label: '주문수',   style: 'width:80px;text-align:right', align: 'right', fmt: (v) => (v || 0) + '건' },
-      { key: 'totalPurchaseAmt', label: '총구매액', style: 'width:100px;text-align:right', align: 'right', fmt: (v) => (v || 0).toLocaleString() + '원' },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      members, uiState, codes, searchParam, pager, baseDetail,                        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedRow,                                                                   // computed
-      sortIcon, fnGradeBadge, fnStatusBadge, fnFmtDate, fnGridRowClass,                // 헬퍼
-      handleSave, handleDelete, closeDetail, handleSearchList,                         // Dtl 콜백 (자식 컴포넌트로 전달)
-    };
   },
   template: /* html */`
 <div>
@@ -328,9 +245,9 @@ window.MbMemberMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="members" :pager="pager" row-key="memberId"
-    :sort-state="uiState" list-title="회원목록" row-clickable
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
+  <bo-grid :columns="baseGridColumns" :rows="members" :pager="baseGrid.pager" row-key="memberId"
+    :sort-state="baseGrid" list-title="회원목록" row-clickable
+    :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="key => handleSelectAction('members-sort', key)"
     @set-page="n => handleSelectAction('members-pager-setPage', n)"

@@ -14,7 +14,6 @@ window.PdProdMng = {
     const products = reactive([]);                 // 상품 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
       descOpen: false, loading: false, error: null, isPageCodeLoad: false,
-      sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -32,13 +31,13 @@ window.PdProdMng = {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -80,13 +79,13 @@ window.PdProdMng = {
       console.log(' ■■ PdProdMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'prods-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'prods-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'prods-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'prods-rowEdit') {
         return handleLoadDetail(param);
@@ -111,8 +110,8 @@ window.PdProdMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    /* baseGrid — + 정렬 + 페이지 액션 (coUtil.cofGrid) */
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
 
     /* ===== 카테고리 선택 모달 ===== */
     const catModal = reactive({ show: false });    // 카테고리 선택 모달 상태
@@ -144,31 +143,11 @@ window.PdProdMng = {
     });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'prodId,prodNm,prodCode';
@@ -176,10 +155,9 @@ window.PdProdMng = {
         const res = await boApiSvc.pdProd.getPage(params, '상품관리', '목록조회');
         const data = res.data?.data;
         products.splice(0, products.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -196,7 +174,7 @@ window.PdProdMng = {
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
@@ -217,32 +195,6 @@ window.PdProdMng = {
       if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-
-    /* setPage — 페이지 번호 변경 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (p) => {
-      const ok = await showConfirm('삭제', `[${p.prodNm}]을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = products.findIndex(x => x.prodId === p.prodId);
-      if (idx !== -1) { products.splice(idx, 1); }
-      if (baseDetail.selectedId === p.prodId) { baseDetail.selectedId = null; }
-      try {
-        const res = await boApiSvc.pdProd.remove(p.prodId, '상품관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
     /* previewProduct — 미리보기 (새창) */
     const previewProduct = (prodId) => {
       window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
@@ -263,13 +215,6 @@ window.PdProdMng = {
       { label:'가격', key:'listPrice' }, { label:'재고', key:'prodStock' }, { label:'브랜드', key:'brandNm' },
       { label:'상태', key:'prodStatusCdNm' }, { label:'등록일', key:'regDate' },
     ], '상품목록.csv');
-
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => {
-      const c=pager.pageNo, l=pager.pageTotalPage, s=Math.max(1, c-2), e=Math.min(l, s+4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-
     /* 상품 상태 배지 */
     const _PROD_STATUS_FB = { 'ON_SALE': 'badge-green', 'SOLD_OUT': 'badge-red', 'SUSPENDED': 'badge-gray', 'DRAFT': 'badge-blue', 'REVIEW': 'badge-orange', '판매중': 'badge-green', '품절': 'badge-red', '판매중지': 'badge-gray' };
 
@@ -318,11 +263,11 @@ window.PdProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      products, uiState, codes, searchParam, pager, baseDetail, catModal,        // 상태 / 데이터
+      products, uiState, codes, searchParam,  baseDetail, catModal,        // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
-      fnStatusBadge, sortIcon,                                                     // 헬퍼
+      fnStatusBadge,                                                      // 헬퍼
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
       showRefModal, showToast, showConfirm, setApiRes, handleSearchList,           // Dtl 임베드 전달용
     };
@@ -371,7 +316,7 @@ window.PdProdMng = {
         <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
         상품목록
         <span class="list-count">
-          {{ pager.pageTotalCount }}건
+          {{ baseGrid.pager.pageTotalCount }}건
         </span>
       </span>
       <div style="display:flex;gap:6px;">
@@ -385,9 +330,9 @@ window.PdProdMng = {
     </div>
     <!-- ===== ■.■. 목록 그리드 ================================================ -->
     <bo-grid
-      :columns="baseGridColumns" :rows="products" :pager="pager" row-key="prodId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :columns="baseGridColumns" :rows="products" :pager="baseGrid.pager" row-key="prodId"
+      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'" :row-actions="true"
+      :sort-state="{ sortKey: baseGrid.sortKey, sortDir: baseGrid.sortDir }"
       :row-style="(p) => baseDetail.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('prods-sort', key)"
       @set-page="n => handleSelectAction('prods-pager-setPage', n)"

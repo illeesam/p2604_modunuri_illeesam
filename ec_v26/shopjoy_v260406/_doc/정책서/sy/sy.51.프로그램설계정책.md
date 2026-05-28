@@ -847,10 +847,24 @@ const baseTree = coUtil.cofTree(allCats, {
 
 **Phase E — [03] 초기 함수 섹션 분리**: `fnLoadCodes`/`isAppReady`/`onMounted`/`watch(reloadTrigger)` 블록을 [04] 안에서 분리하여 [03] 마커 신설. **63개 BO 파일 자동 이동** (이미 [03] 있던 46개 + 이번 63개 = 109개 모두 표준 6섹션 구조 완성)
 
-**Phase C — cofGrid 캡슐화는 자동화 한계로 보류**:
-- 표준 후보 44개 중 23개가 비표준 (정렬 함수 일부 누락, dispatch cmd 영역명 다름, `handleSearchList(arg)` 시그니처 차이 등)
-- pager + SORT_MAP + onSort/setPage/onSizeChange/sortIcon/getSortParam/fnBuildPagerNums 7개 함수 일제 제거 + baseGrid 1줄 통합 + 모든 사용처(JS/템플릿) 치환 = 구조 재설계
-- **화면별 수동 작업 필요** (CmNoticeMng 모델 참조). 신규 화면은 처음부터 `coUtil.cofGrid()` 사용 권장
+**Phase C — cofGrid 캡슐화 (수동 화면별 진행)**:
+- 표준 후보 44개 중 21개가 표준 구조(SORT_MAP + 7개 함수 모두 있음), 23개가 비표준
+- 자동 도구 시도 결과 정규식 한계로 인한 회귀 발생 → **수동 화면별 작업으로 결정**
+- **2026-05-28 진행** (수동):
+  - ✅ CmNoticeMng (332→215, -35%) — 표준 모델
+  - ✅ SyContactMng (341→260, -24%)
+  - ✅ PmCacheMng  (388→305, -21%)
+- **잔여 19개 표준 + 23개 비표준 + Phase D 미적용 3개**는 후속 세션에서 도메인별 수동 작업
+- 신규 화면은 처음부터 `coUtil.cofGrid()` 사용 (CmNoticeMng 참조)
+- 수동 변환 패턴 (CmNoticeMng → SyContactMng → PmCacheMng 검증됨):
+  1. `uiState`에서 `sortKey/sortDir` 제거
+  2. `const pager = reactive({...})` → `const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: N });`
+  3. 7개 함수 정의 제거 (`getSortParam`/`onSort`/`setPage`/`onSizeChange`/`sortIcon`/`fnBuildPagerNums`)
+  4. dispatch 안의 `onSort/setPage/onSizeChange` 호출 → `baseGrid.*`
+  5. `handleSearchList` 안: `pager.xxx` → `baseGrid.pager.xxx`, `getSortParam()` → `baseGrid.sortParam()`, `fnBuildPagerNums()` 호출 제거 → `baseGrid.applyPage(d)` 사용 (pageList 반환)
+  6. template: `:pager="pager"` → `:pager="baseGrid.pager"`, `:sort-state="uiState"` → `:sort-state="baseGrid"`, `pager.pageTotalCount` → `baseGrid.pager.pageTotalCount`
+  7. return: `pager`/`sortIcon` 제거, `baseGrid` 추가
+  8. cfDetailKey/cfDetailEditId/cfIsViewMode 같은 computed가 baseDetail.panelKey/editId/dtlMode와 중복 → 가능하면 후자 사용
 
 ---
 

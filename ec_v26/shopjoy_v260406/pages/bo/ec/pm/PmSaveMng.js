@@ -14,13 +14,13 @@ window.PmSaveMng = {
       console.log(' ■■ PmSaveMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
+        baseGrid.pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -48,13 +48,13 @@ window.PmSaveMng = {
       console.log(' ■■ PmSaveMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬
       if (cmd === 'saves-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'saves-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'saves-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 행 클릭 → 상세 편집
       } else if (cmd === 'saves-rowEdit') {
         return handleLoadDetail(param);
@@ -75,7 +75,7 @@ window.PmSaveMng = {
 
     // ===== 상태(reactive) 선언 =============================================
     const saves = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, saveList: [], tabMode: 'list', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, saveList: [], tabMode: 'list' });
     const codes = reactive({
       save_statuses: [],
       save_issue_types: [],
@@ -83,7 +83,7 @@ window.PmSaveMng = {
       date_range_opts: [],
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
     const baseDetail = coUtil.cofDetail();
 
     /* _initSearchParam — 초기화 */
@@ -112,45 +112,23 @@ window.PmSaveMng = {
 
     // ===== 정렬 처리 =======================================================
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-
-    /* getSortParam — 조회 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
     /* 적립금 onSort */
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
-      handleSearchList();
-    };
-
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
     // ===== 목록 조회 API ===================================================
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'saveNm,saveId';
         }
         const res = await boApiSvc.pmSave.getPage(params, '적립금관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         saves.splice(0, saves.length, ...list);
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
+        baseGrid.pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, res.data?.data?.pageCond || baseGrid.pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -171,7 +149,7 @@ window.PmSaveMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
@@ -198,98 +176,6 @@ window.PmSaveMng = {
     const cfDetailKey    = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     // ===== 페이저 번호 빌더 ================================================
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    // ===== 배지(badge) 헬퍼 ================================================
-    /* 적립금 fnTypeBadge — sy_code SAVE_TYPE_KR code_opt1 우선, 없으면 FB */
-    const _SAVE_TYPE_FB = { '구매적립': 'badge-green', '회원가입': 'badge-blue', '리뷰적립': 'badge-orange', '출석체크': 'badge-purple' };
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge   = t => coUtil.cofCodeBadge('SAVE_TYPE_KR', t, _SAVE_TYPE_FB[t] || 'badge-gray');
-
-    /* 적립금 fnStatusBadge */
-    const _SAVE_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _SAVE_STATUS_FB[s] || 'badge-gray');
-
-    /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    // ===== 삭제 / 엑셀 다운로드 ============================================
-    /* handleDelete — 삭제 */
-    const handleDelete = async (s) => {
-      const ok = await showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = (saves || []).findIndex(x => x.saveId === s.saveId);
-      if (idx !== -1) { saves.splice(idx, 1); }
-      if (baseDetail.selectedId === s.saveId) { baseDetail.selectedId = null; }
-      try {
-        const res = await boApiSvc.pmSave.remove(s.saveId, '적립금관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
-
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(saves,
-      [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
-      '마일리지목록.csv');
-
-    // ===== 탭 모드 (리스트/카드) ===========================================
-    const tabMode = Vue.toRef(uiState, 'tabMode');
-
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
-    // 기본 검색
-    const baseSearchColumns = [
-      { key: 'searchType', type: 'multiCheck', label: '검색대상',
-        options: [
-          { value: 'saveNm', label: '마일리지명' },
-          { value: 'saveId', label: 'ID' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.save_issue_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.promo_statuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange', label: '시작일',
-        startKey: 'dateStart', endKey: 'dateEnd',
-        rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleBtnAction('searchParam-dateRange') },
-    ];
-
-    // 기본 그리드
-    const baseGridColumns = [
-      { key: 'saveNm',     label: '마일리지명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
-      { key: 'saveType',   label: '유형', badge: (row) => fnTypeBadge(row.saveType) },
-      { key: 'saveVal',    label: '적립값', fmt: (v) => (v || 0).toLocaleString() },
-      { key: 'saveUnit',   label: '단위', cellStyle: 'color:#555', fmt: (v) => v || '원' },
-      { key: 'expireDay',  label: '유효기간', cellStyle: 'color:#555',
-        fmt: (v) => (v || 365) + '일' },
-      { key: 'startDate',  label: '시작일', sortKey: 'reg' },
-      { key: 'endDate',    label: '종료일' },
-      { key: 'saveStatus', label: '상태', badge: (row) => fnStatusBadge(row.saveStatus) },
-      { key: 'siteNm',     label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
-    ];
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-    return {
-      saves, uiState, codes, searchParam, pager, baseDetail,                        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
-      tabMode,                                                                       // toRef
-      fnTypeBadge, fnStatusBadge, sortIcon,                                          // 헬퍼
-      inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,               // 콜백 / 전역
-    };
   },
   // ===== 템플릿 ===========================================================
   template: /* html */`
@@ -316,7 +202,7 @@ window.PmSaveMng = {
         </span>
         마일리지목록
         <span class="list-count">
-          {{ pager.pageTotalCount }}건
+          {{ baseGrid.pager.pageTotalCount }}건
         </span>
       </span>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -342,9 +228,9 @@ window.PmSaveMng = {
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="saves" :pager="pager" row-key="saveId"
+      :columns="baseGridColumns" :rows="saves" :pager="baseGrid.pager" row-key="saveId"
       :row-actions="true"
-      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :sort-state="{ sortKey: baseGrid.sortKey, sortDir: baseGrid.sortDir }"
       :row-style="(s) => baseDetail.selectedId===s.saveId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('saves-sort', key)" @row-click="s => handleSelectAction('saves-rowEdit', s.saveId)">
       <template #head-actions>
@@ -361,7 +247,7 @@ window.PmSaveMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('saves-pager-setPage', n)" :on-size-change="() => handleSelectAction('saves-pager-sizeChange')" />
+    <bo-pager v-if="tabMode==='list' && baseGrid.pager.pageTotalCount > 0" :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('saves-pager-setPage', n)" :on-size-change="() => handleSelectAction('saves-pager-sizeChange')" />
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
@@ -416,7 +302,7 @@ window.PmSaveMng = {
     </div>
     <!-- ===== □.□. 카드 뷰 ================================================== -->
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('saves-pager-setPage', n)" :on-size-change="() => handleSelectAction('saves-pager-sizeChange')" />
+    <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('saves-pager-setPage', n)" :on-size-change="() => handleSelectAction('saves-pager-sizeChange')" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmSaveDtl 인라인 임베드 ============================== -->

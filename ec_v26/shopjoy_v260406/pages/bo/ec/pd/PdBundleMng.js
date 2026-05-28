@@ -44,7 +44,7 @@ window.PdBundleMng = {
         return closeDtl();
       // 페이지 크기 변경
       } else if (cmd === 'bundles-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 설명 토글
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -84,7 +84,7 @@ window.PdBundleMng = {
         return handleDelete(param);
       // 페이지 번호 클릭
       } else if (cmd === 'bundles-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 카테고리 행 삭제
       } else if (cmd === 'baseDetail-categoryRemove') {
         return removeCategory(param);
@@ -147,7 +147,7 @@ window.PdBundleMng = {
       uiState.loading = true;
       try {
         const bundleParams = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
           ...(searchParam.nm ? { nm: searchParam.nm.trim() } : {}),
         };
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
@@ -157,10 +157,8 @@ window.PdBundleMng = {
         ]);
         const dBundles = bundlesRes.data?.data;
         bundles.splice(0, bundles.length, ...(dBundles?.pageList || dBundles?.list || []));
-        pager.pageTotalCount = dBundles?.pageTotalCount || 0;
-        pager.pageTotalPage  = dBundles?.pageTotalPage  || 1;
-        fnBuildPagerNums();
-        products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
+        baseGrid.pager.pageTotalCount = dBundles?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage  = dBundles?.pageTotalPage  || 1;        products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
         uiState.error = null;
       } catch (err) {
@@ -181,16 +179,7 @@ window.PdBundleMng = {
       handleSearchData('DEFAULT');
     });
 
-const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-
-    // 'edit' 시 bundleId는 uiState.editBundleId 사용
-
-    /* -- 신규등록 폼 (pd_prod 기본정보) -- */
-    const newForm = reactive({
-      prodNm: '', brandId: '', vendorId: '',
-      listPrice: 0, salePrice: 0,
-      prodStatusCd: 'DRAFT',
-    });
+const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
     const newErrors = reactive({});
 
     /* -- 카테고리 N개 (pd_category_prod) — 신규/편집 공통 -- */
@@ -302,38 +291,15 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 
     watch(bundles, updateBundleList);
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      pager.pageNo = 1;
-      await handleSearchData('DEFAULT');
-    };
-
+    /* — 유틸 */
     /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
       await handleSearchData();
     };
 
-    /* setPage — 설정 */
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchData(); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
-
-    /* openNew — 신규 열기 */
-    const openNew = () => {
-      uiState.dtlMode = 'new';
-      uiState.editBundleId = null;
-      Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, prodStatusCd: 'DRAFT' });
-      Object.keys(newErrors).forEach(k => delete newErrors[k]);
-      dtlCategories.length = 0;
-      dtlItems.length = 0;
-    };
-
+    /* — 설정 */
     /* openDtl — 열기 */
     const openDtl = bundleProdId => {
       uiState.dtlMode = 'edit';
@@ -608,7 +574,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      codes, uiState, bundles, bundleList, searchParam, pager,                                   // 상태 / 데이터
+      codes, uiState, bundles, bundleList, searchParam,                                    // 상태 / 데이터
       categories, products, brands, categoryProds, dtlCategories, dtlItems, newForm, newErrors,  // 상태 / 데이터
       pickerResults, pickerPager,                                                                // 상태 / 데이터 (피커 페이저)
       baseSearchColumns, bundleGridColumns, newBundleFormColumns, pickerGridColumns,             // 컬럼 정의
@@ -665,7 +631,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
   <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList"
-    :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
+    :pager="baseGrid.pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
     empty-text="데이터가 없습니다." :row-actions="true"
     @set-page="n => handleSelectAction('bundles-pager-setPage', n)" @size-change="handleBtnAction('bundles-pager-sizeChange')">
     <template #toolbar-actions>

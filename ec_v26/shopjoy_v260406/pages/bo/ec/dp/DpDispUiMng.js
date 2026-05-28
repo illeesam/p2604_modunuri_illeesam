@@ -10,12 +10,14 @@ window.DpDispUiMng = {
     /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uis = reactive([]);                      // UI 목록
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null });
     const codes = reactive({ disp_ui_types: [], use_yn: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'uiNm asc', desc: 'uiNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* ===== 상세 인라인 패널 ===== */
+    /* baseGrid — pager + 정렬 + 페이지 액션 */
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
+
+    /* 상세 인라인 패널 */
     const baseDetail = coUtil.cofDetail();
 
     /* ===== 검색조건 ===== */
@@ -27,14 +29,13 @@ window.DpDispUiMng = {
       console.log(' ■■ DpDispUiMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
-        return handleSearchList('SEARCH');
+        baseGrid.pager.pageNo = 1;
+        return handleSearchList();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
-        return handleSearchList('SEARCH');
+        baseGrid.reset();
+        return handleSearchList();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
@@ -47,8 +48,8 @@ window.DpDispUiMng = {
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
         uiState.selectedPath = null;
-        pager.pageNo = 1;
-        return handleSearchList('DEFAULT');
+        baseGrid.pager.pageNo = 1;
+        return handleSearchList();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -59,13 +60,13 @@ window.DpDispUiMng = {
       console.log(' ■■ DpDispUiMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'uis-sort') {
-        return onSort(param);
+        return baseGrid.onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'uis-pager-setPage') {
-        return setPage(param);
+        return baseGrid.setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'uis-pager-sizeChange') {
-        return onSizeChange();
+        return baseGrid.onSizeChange();
       // 그리드 행 클릭 → 상세 보기
       } else if (cmd === 'uis-rowView') {
         return loadView(param);
@@ -97,66 +98,42 @@ window.DpDispUiMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleSearchList();
-    };
+    });
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 
     /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async () => {
       uiState.loading = true;
       try {
         const { type, searchValue, ...restParam } = searchParam;
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...getSortParam(),
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          ...baseGrid.sortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
-          ...(type     ? { deviceTypeCd: type }  : {}),
+          ...(type ? { deviceTypeCd: type } : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
-        const res = await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회');
-        const d = res.data?.data;
-        uis.splice(0, uis.length, ...(d?.pageList || d?.list || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        fnBuildPagerNums();
+        const d = (await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회')).data?.data;
+        const list = baseGrid.applyPage(d);
+        uis.splice(0, uis.length, ...list);
         uiState.error = null;
       } catch (err) {
-        console.error('[catch-info]', err);
         uiState.error = err.message;
       } finally {
         uiState.loading = false;
       }
     };
 
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
     /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; baseDetail.selectedId = null; handleSearchList('DEFAULT'); };
+    const selectNode = (id) => { uiState.selectedPath = id; baseGrid.pager.pageNo = 1; baseDetail.close(); handleSearchList(); };
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -167,33 +144,17 @@ window.DpDispUiMng = {
       }
     };
 
-    /* loadView — 뷰 로드 */
-    const loadView         = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
+    /* loadView */         const loadView         = (id) => baseDetail.openView(id);
+    /* handleLoadDetail */ const handleLoadDetail = (id) => baseDetail.openEdit(id);
+    /* openNew */          const openNew     = () => baseDetail.openNew();
+    /* closeDetail */      const closeDetail = () => baseDetail.close();
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
-
-    /* openNew — 신규 열기 */
-    const openNew     = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
-
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { baseDetail.selectedId = null; };
-
-    /* inlineNavigate — 인라인 이동 */
+    /* inlineNavigate */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispUiMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
+      if (pg === 'dpDispUiMng')      { baseDetail.close(); if (opts.reload) handleSearchList(); return; }
+      if (pg === '__switchToEdit__') return baseDetail.switchToEdit();
       props.navigate(pg, opts);
     };
-
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* setPage — 페이지 번호 변경 */
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
@@ -217,12 +178,12 @@ window.DpDispUiMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uis, uiState, codes, searchParam, pager, baseDetail,                           // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId,                                                                 // computed
-      pathLabel, sortIcon,                                                            // 헬퍼
-      inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
+      uis, uiState, codes, searchParam, baseGrid, baseDetail,
+      baseSearchColumns, baseGridColumns,
+      handleBtnAction, handleSelectAction,
+      cfDetailEditId,
+      pathLabel,
+      inlineNavigate,
     };
   },
   template: /* html */`
@@ -256,9 +217,9 @@ window.DpDispUiMng = {
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="baseGridColumns" :rows="uis" :pager="pager" row-key="uiId"
-      :sort-state="uiState" list-title="전시 UI 목록"
-      :count-text="'총 ' + pager.pageTotalCount + '건'"
+    <bo-grid :columns="baseGridColumns" :rows="uis" :pager="baseGrid.pager" row-key="uiId"
+      :sort-state="baseGrid" list-title="전시 UI 목록"
+      :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="key => handleSelectAction('uis-sort', key)"
       @set-page="n => handleSelectAction('uis-pager-setPage', n)"
