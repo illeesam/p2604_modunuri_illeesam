@@ -36,7 +36,7 @@ window.DpDispWidgetMng = {
       } else if (cmd === 'widgets-add') {
         return openNew();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
@@ -89,8 +89,9 @@ window.DpDispWidgetMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    const baseDetail = coUtil.cofDetail();
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -100,6 +101,7 @@ window.DpDispWidgetMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
@@ -194,26 +196,26 @@ window.DpDispWidgetMng = {
 
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = (id) => {
-      detailPanel.selectedId = id;
-      detailPanel.openMode = 'edit';
-      detailPanel.reloadTrigger++;
+      baseDetail.selectedId = id;
+      baseDetail.openMode = 'edit';
+      baseDetail.reloadTrigger++;
     };
 
     /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispWidgetMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'dpDispWidgetMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
     /* key 는 'open' / 'closed' 두 값만 사용 — id 가 바뀌어도 컴포넌트 remount 하지 않고 props.dtlId / reloadTrigger watch 로 내용만 교체 */
-    const cfDetailKey = computed(() => detailPanel.selectedId === null ? 'closed' : 'open');
+    const cfDetailKey = computed(() => baseDetail.selectedId === null ? 'closed' : 'open');
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -231,7 +233,7 @@ window.DpDispWidgetMng = {
     const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
 
     /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (row) => (detailPanel.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;cursor:pointer;';
+    const fnRowStyle = (row) => (baseDetail.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;cursor:pointer;';
 
     /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
@@ -240,7 +242,7 @@ window.DpDispWidgetMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchData(); };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; baseDetail.selectedId = null; handleSearchData(); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
@@ -266,11 +268,11 @@ window.DpDispWidgetMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      widgets, widgetLibs, uiState, codes, searchParam, applied, pager, detailPanel, // 상태 / 데이터
+      widgets, widgetLibs, uiState, codes, searchParam, applied, pager, baseDetail, // 상태 / 데이터
       listGridColumns,                                                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter,               // computed
-      selectedId: computed(() => detailPanel.selectedId),                             // computed
+      selectedId: computed(() => baseDetail.selectedId),                             // computed
       pathLabel, wTypeLabel, wIcon, sortIcon,                                         // 헬퍼
       fnStatusCls, fnStatusLabel, contentSummary, fnRowStyle,                         // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
@@ -508,9 +510,9 @@ window.DpDispWidgetMng = {
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger"
-      @close="handleBtnAction('detailPanel-close')"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="baseDetail.reloadTrigger"
+      @close="handleBtnAction('baseDetail-close')"
       />
   </div>
 </div>

@@ -30,7 +30,7 @@ window.OdOrderDtl = {
 
     const ORDER_STEPS = ['입금대기', '결제완료', '상품준비중', '배송중', '배송완료', '구매확정'];
 
-    const form = reactive({
+    const baseForm = reactive({
       orderId: '', memberId: '', memberNm: '', orderDate: '', prodNm: '',
       totalAmt: 0, payMethodCd: '무통장입금', orderStatusCd: '입금대기',
       payStatusCd: '결제완료', payDate: '', apprNo: '', payIssuer: '',
@@ -50,20 +50,20 @@ window.OdOrderDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OdOrderDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('odOrderMng');
       // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd === 'baseForm-edit') {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 목록으로 이동
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.navigate('odOrderMng');
       // 회원 참조 모달 열기
       } else if (cmd === 'form-memberRef') {
-        return showRefModal('member', form.memberId);
+        return showRefModal('member', baseForm.memberId);
       // 판매업체 참조 모달 열기
       } else if (cmd === 'form-vendorRef') {
         return showRefModal('vendor', param);
@@ -101,6 +101,19 @@ window.OdOrderDtl = {
       }
     };
 
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
+      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+      codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
+      codes.pay_statuses = codeStore.sgGetGrpCodes('PAY_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchDetail — 처리 */
     const handleSearchDetail = async () => {
@@ -114,17 +127,17 @@ window.OdOrderDtl = {
           boApiSvc.odClaim.getPage({ pageNo: 1, pageSize: 10000 }, '주문관리', '조회'),
         ]);
         const o = orderRes.data?.data || orderRes.data || {};
-        Object.assign(form, { ...o });
-        if (!form.orderId) { form.orderId = props.dtlId; }
-        if (o.orderStatusCd) { form.orderStatusCd = o.orderStatusCd; }
-        if (o.payMethodCd) { form.payMethodCd = o.payMethodCd; }
-        if (o.payStatus) { form.payStatusCd = o.payStatus; }
-        else if (['취소','자동취소'].includes(o.orderStatusCd)) { form.payStatusCd = '환불완료'; }
-        else if (['입금대기'].includes(o.orderStatusCd)) { form.payStatusCd = '미결제'; }
-        else { form.payStatusCd = '결제완료'; }
-        if (!form.payDate) { form.payDate = o.orderDate || ''; }
-        if (!form.apprNo) { form.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01'; }
-        if (!form.payIssuer) { form.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[form.payMethodCd] || '-'); }
+        Object.assign(baseForm, { ...o });
+        if (!baseForm.orderId) { baseForm.orderId = props.dtlId; }
+        if (o.orderStatusCd) { baseForm.orderStatusCd = o.orderStatusCd; }
+        if (o.payMethodCd) { baseForm.payMethodCd = o.payMethodCd; }
+        if (o.payStatus) { baseForm.payStatusCd = o.payStatus; }
+        else if (['취소','자동취소'].includes(o.orderStatusCd)) { baseForm.payStatusCd = '환불완료'; }
+        else if (['입금대기'].includes(o.orderStatusCd)) { baseForm.payStatusCd = '미결제'; }
+        else { baseForm.payStatusCd = '결제완료'; }
+        if (!baseForm.payDate) { baseForm.payDate = o.orderDate || ''; }
+        if (!baseForm.apprNo) { baseForm.apprNo  = 'APR-' + String(o.orderId||'').slice(-6) + '01'; }
+        if (!baseForm.payIssuer) { baseForm.payIssuer = ({'토스페이먼츠':'토스','카카오페이':'카카오','네이버페이':'네이버','무통장입금':'은행','가상계좌':'은행'}[baseForm.payMethodCd] || '-'); }
         vendors.splice(0, vendors.length, ...(vendorsRes.data?.data?.pageList || vendorsRes.data?.data?.list || []));
         deliveries.splice(0, deliveries.length, ...(deliveriesRes.data?.data?.pageList || deliveriesRes.data?.data?.list || []));
         claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
@@ -157,18 +170,6 @@ window.OdOrderDtl = {
         uiState.loading = false;
       }
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.claim_statuses = codeStore.sgGetGrpCodes('CLAIM_STATUS');
-      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
-      codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
-      codes.pay_statuses = codeStore.sgGetGrpCodes('PAY_STATUS');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
     const PAY_STATUS_FALLBACK = ['미결제','부분결제','결제완료','결제실패','환불중','부분환불','환불완료'];
 
     /* 주문 fnPayStatusBadge — 공통코드 PAY_STATUS 우선, 미매칭 시 로컬 fallback */
@@ -180,17 +181,17 @@ window.OdOrderDtl = {
     const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, _PAY_STATUS_FB[s] || 'badge-gray');
 
     const cfCurrentStepIdx = computed(() => {
-      const idx = ORDER_STEPS.indexOf(form.orderStatusCd);
+      const idx = ORDER_STEPS.indexOf(baseForm.orderStatusCd);
       return idx !== -1 ? idx : -1;
     });
 
-    const cfIsCanceled = computed(() => form.orderStatusCd === '취소됨');
+    const cfIsCanceled = computed(() => baseForm.orderStatusCd === '취소됨');
 
     /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
-        await schema.validate(form, { abortEarly: false });
+        await schema.validate(baseForm, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
@@ -202,8 +203,8 @@ window.OdOrderDtl = {
       if (!ok) { return; }
       try {
         const res = await (isNewOrder
-          ? boApiSvc.odOrder.create({ ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '등록')
-          : boApiSvc.odOrder.update(form.orderId, { ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '저장'));
+          ? boApiSvc.odOrder.create({ ...baseForm, totalAmt: Number(baseForm.totalAmt) }, '주문관리', '등록')
+          : boApiSvc.odOrder.update(baseForm.orderId, { ...baseForm, totalAmt: Number(baseForm.totalAmt) }, '주문관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('odOrderMng', { reload: true }); }
@@ -235,8 +236,8 @@ window.OdOrderDtl = {
 
     /* 판매업체 */
     const cfRelatedVendor = computed(() => {
-      if (!form.vendorId) { return null; }
-      return vendors.find(v => v.vendorId === form.vendorId) || null;
+      if (!baseForm.vendorId) { return null; }
+      return vendors.find(v => v.vendorId === baseForm.vendorId) || null;
     });
 
     /* 배송 정보 (이 주문의 택배사 등) */
@@ -280,21 +281,21 @@ window.OdOrderDtl = {
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
 
-    const cfPaymentList = computed(() => payments.length ? payments : (form.totalAmt ? [{
-      payMethod: form.payMethodCd || '-',
-      payStatus: form.payStatusCd || '-',
-      amount: form.totalAmt, payDate: form.payDate || form.orderDate || '-',
-      apprNo: form.apprNo || '-', issuer: form.payIssuer || '-',
+    const cfPaymentList = computed(() => payments.length ? payments : (baseForm.totalAmt ? [{
+      payMethod: baseForm.payMethodCd || '-',
+      payStatus: baseForm.payStatusCd || '-',
+      amount: baseForm.totalAmt, payDate: baseForm.payDate || baseForm.orderDate || '-',
+      apprNo: baseForm.apprNo || '-', issuer: baseForm.payIssuer || '-',
     }] : []));
     const cfStatusHistList = computed(() => {
-      if (!form.orderId) { return []; }
-      const d = String(form.orderDate || '').slice(0,10) || '-';
+      if (!baseForm.orderId) { return []; }
+      const d = String(baseForm.orderDate || '').slice(0,10) || '-';
       const rows = [
         { date: d+' 09:00', user:'시스템', from:'-', to:'입금대기', memo:'주문 접수' },
         { date: d+' 10:15', user:'bo', from:'입금대기', to:'결제완료', memo:'결제 승인' },
       ];
-      if (form.orderStatusCd && !['입금대기','결제완료'].includes(form.orderStatusCd)) {
-        rows.push({ date: d+' 14:30', user:'bo', from:'결제완료', to: form.orderStatusCd, memo:'상태 변경' });
+      if (baseForm.orderStatusCd && !['입금대기','결제완료'].includes(baseForm.orderStatusCd)) {
+        rows.push({ date: d+' 14:30', user:'bo', from:'결제완료', to: baseForm.orderStatusCd, memo:'상태 변경' });
       }
       return rows;
     });
@@ -327,9 +328,9 @@ window.OdOrderDtl = {
         trackingNo: cfRelatedClaim.value.exchangeTrackingNo,
       };
     };
-    const cfEditHistList = computed(() => form.orderId ? [
-      { date: String(form.orderDate||'').slice(0,10)+' 11:02', user:'bo', field:'수령인 연락처', before:'010-0000-0000', after: form.phone || '010-1234-5678' },
-      { date: String(form.orderDate||'').slice(0,10)+' 13:45', user:'bo', field:'메모',          before:'-',              after:'(수정됨)' },
+    const cfEditHistList = computed(() => baseForm.orderId ? [
+      { date: String(baseForm.orderDate||'').slice(0,10)+' 11:02', user:'bo', field:'수령인 연락처', before:'010-0000-0000', after: baseForm.phone || '010-1234-5678' },
+      { date: String(baseForm.orderDate||'').slice(0,10)+' 13:45', user:'bo', field:'메모',          before:'-',              after:'(수정됨)' },
     ] : []);
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
     const tabs = reactive([
@@ -380,7 +381,7 @@ window.OdOrderDtl = {
       { key: 'price',       label: '결제금액',   style: 'width:100px;text-align:right;',
         align: 'right', fmt: (v) => fmt(v), cellStyle: 'font-weight:700;color:#1a1a1a;' },
       { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;', align: 'center',
-        fmt: () => form.orderStatusCd || '-',
+        fmt: () => baseForm.orderStatusCd || '-',
         cellInnerStyle: 'font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;' },
       { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;', align: 'center',
         fmt: () => cfRelatedClaim.value ? `${cfRelatedClaim.value.type} · ${cfRelatedClaim.value.status}` : '-',
@@ -435,7 +436,7 @@ window.OdOrderDtl = {
     ];
 
     return {
-      form, errors, codes, orderItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
+      baseForm, errors, codes, orderItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
       baseFormColumns, paymentGridColumns, editHistGridColumns, orderItemGridColumns, itemExpandColumns,  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfCurrentStepIdx, cfIsCanceled, cfRelatedVendor, cfRelatedDelivery,             // computed
@@ -451,7 +452,7 @@ window.OdOrderDtl = {
   <div class="page-title">
     {{ cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.orderId }}
+      #{{ baseForm.orderId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -473,10 +474,10 @@ window.OdOrderDtl = {
           주문
         </span>
         <span style="font-size:13px;font-weight:700;color:#222;">
-          {{ form.orderId }}
+          {{ baseForm.orderId }}
         </span>
-        <span v-if="form.orderDate" style="font-size:11px;color:#888;">
-          {{ form.orderDate }}
+        <span v-if="baseForm.orderDate" style="font-size:11px;color:#888;">
+          {{ baseForm.orderDate }}
         </span>
       </div>
       <div v-if="cfIsCanceled" style="text-align:center;padding:8px 0;">
@@ -568,17 +569,17 @@ window.OdOrderDtl = {
 </div>
 <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
 <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+<bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
         :readonly="cfDtlMode" :cols="3"
-        @save="handleBtnAction('form-save')"
-        @cancel="handleBtnAction('form-cancel')"
-        @edit="handleBtnAction('form-edit')"
-        @close="handleBtnAction('form-close')">
+        @save="handleBtnAction('baseForm-save')"
+        @cancel="handleBtnAction('baseForm-cancel')"
+        @edit="handleBtnAction('baseForm-edit')"
+        @close="handleBtnAction('baseForm-close')">
   <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
   <template #memberId>
     <div style="display:flex;gap:8px;align-items:center;">
-      <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
-      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
+      <input class="form-control" v-model="baseForm.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+      <span v-if="baseForm.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
         보기
       </span>
     </div>
@@ -605,9 +606,9 @@ window.OdOrderDtl = {
   </template>
   <!-- ===== ■.■.■.■. 메모: Quill 또는 view 모드 HTML ========================= -->
   <template #memo>
-    <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.memo || '<span style=color:#bbb>-</span>'">
+    <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="baseForm.memo || '<span style=color:#bbb>-</span>'">
     </div>
-    <base-html-editor v-else v-model="form.memo" height="180px" />
+    <base-html-editor v-else v-model="baseForm.memo" height="180px" />
   </template>
 </bo-form-area>
 </div>
@@ -696,7 +697,7 @@ window.OdOrderDtl = {
     {{ cfStatusHistList.length }}
   </span>
 </div>
-<od-order-hist :order-id="form.orderId" :navigate="navigate" />
+<od-order-hist :order-id="baseForm.orderId" :navigate="navigate" />
 </div>
 <!-- ===== □.□. 상태변경이력 탭 ============================================== -->
 <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->

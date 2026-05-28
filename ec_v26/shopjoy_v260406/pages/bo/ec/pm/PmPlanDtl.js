@@ -42,7 +42,7 @@ window.PmPlanDtl = {
       { value: 'EXECUTIVE', label: '임직원' },
     ];
 
-    const form = reactive({
+    const baseForm = reactive({
       planNm: '', category: '패션', theme: '', status: '활성',
       startDate: DEFAULT_START, endDate: DEFAULT_END,
       productIds: [], visibilityTargets: '^PUBLIC^',
@@ -57,7 +57,7 @@ window.PmPlanDtl = {
     });
 
     const cfIsNew = computed(() => !props.dtlId);
-    const cfCurId       = computed(() => props.dtlId || form.planId || null);
+    const cfCurId       = computed(() => props.dtlId || baseForm.planId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 신규 등록은 info 탭에서만 가능. 그 외 탭(banner/content/products/preview)은 ID 없으면 비활성 */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
@@ -67,10 +67,10 @@ window.PmPlanDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmPlanDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 취소 (목록으로)
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('pmPlanMng');
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -104,8 +104,8 @@ window.PmPlanDtl = {
         return;
       // 판매업체 초기화
       } else if (cmd === 'form-vendorClear') {
-        form.vendorId = '';
-        form.chargeStaff = '';
+        baseForm.vendorId = '';
+        baseForm.chargeStaff = '';
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -149,8 +149,8 @@ window.PmPlanDtl = {
         if (!cfIsNew.value) {
           const p = results[0].data?.data || results[0].data;
           if (p) {
-            Object.assign(form, { ...p, productIds: [...(p.productIds || [])] });
-            if (!form.visibilityTargets) { form.visibilityTargets = '^PUBLIC^'; }
+            Object.assign(baseForm, { ...p, productIds: [...(p.productIds || [])] });
+            if (!baseForm.visibilityTargets) { baseForm.visibilityTargets = '^PUBLIC^'; }
           }
           products.splice(0, products.length, ...(results[1].data?.data?.list || []));
         } else {
@@ -215,46 +215,46 @@ window.PmPlanDtl = {
 
     /* toggleProduct — 토글 */
     const toggleProduct = (pid) => {
-      const idx = form.productIds.indexOf(pid);
-      if (idx === -1) { form.productIds.push(pid); }
-      else { form.productIds.splice(idx, 1); }
+      const idx = baseForm.productIds.indexOf(pid);
+      if (idx === -1) { baseForm.productIds.push(pid); }
+      else { baseForm.productIds.splice(idx, 1); }
     };
 
     /* isSelected — 여부 확인 */
-    const isSelected = (pid) => form.productIds.includes(pid);
+    const isSelected = (pid) => baseForm.productIds.includes(pid);
     const cfSelectedProducts = computed(() =>
-      form.productIds.map(pid => products.find(p => p.productId === pid)).filter(Boolean)
+      baseForm.productIds.map(pid => products.find(p => p.productId === pid)).filter(Boolean)
     );
 
     /* removeProduct — 제거 */
     const removeProduct = (pid) => {
-      const idx = form.productIds.indexOf(pid);
-      if (idx !== -1) { form.productIds.splice(idx, 1); }
+      const idx = baseForm.productIds.indexOf(pid);
+      if (idx !== -1) { baseForm.productIds.splice(idx, 1); }
     };
 
     /* hasVisibility — 여부 확인 */
     const hasVisibility = (code) => {
-      return (form.visibilityTargets || '').includes('^' + code + '^');
+      return (baseForm.visibilityTargets || '').includes('^' + code + '^');
     };
 
     /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
-      const targets = (form.visibilityTargets || '').split('^').filter(Boolean);
+      const targets = (baseForm.visibilityTargets || '').split('^').filter(Boolean);
       const idx = targets.indexOf(code);
       if (idx === -1) { targets.push(code); }
       else { targets.splice(idx, 1); }
-      form.visibilityTargets = '^' + targets.join('^') + '^';
+      baseForm.visibilityTargets = '^' + targets.join('^') + '^';
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) { return '소속업체 선택'; }
-      const v = vendors.find(x => x.vendorId === form.vendorId);
+      if (!baseForm.vendorId) { return '소속업체 선택'; }
+      const v = vendors.find(x => x.vendorId === baseForm.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
 
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
-      form.vendorId = vendorId;
+      baseForm.vendorId = vendorId;
       uiState.showVendorModal = false;
     };
 
@@ -283,20 +283,20 @@ window.PmPlanDtl = {
 
       if (tabId === 'info') {
         Object.keys(errors).forEach(k => delete errors[k]);
-        try { await schema.validate(form, { abortEarly: false }); }
+        try { await schema.validate(baseForm, { abortEarly: false }); }
         catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
-          const payload = { ...form };
+          const payload = { ...baseForm };
           const res = isCreate
             ? await boApiSvc.pmPlan.create(payload, '요금제관리', '등록')
             : await boApiSvc.pmPlan.update(cfCurId.value, payload, '요금제관리', '기본정보저장');
           if (isCreate) {
             const newId = res.data?.data?.planId || res.data?.planId || null;
-            if (newId) { form.planId = newId; }
+            if (newId) { baseForm.planId = newId; }
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -309,9 +309,9 @@ window.PmPlanDtl = {
       const TAB_LABEL = { banner: '배너이미지', content: '내용입력', products: '대상상품' };
       let payload = null;
       switch (tabId) {
-        case 'banner':   payload = { bannerImage: form.bannerImage }; break;
-        case 'content':  payload = { content1: form.content1, content2: form.content2, content3: form.content3 }; break;
-        case 'products': payload = { productIds: form.productIds, visibilityTargets: form.visibilityTargets }; break;
+        case 'banner':   payload = { bannerImage: baseForm.bannerImage }; break;
+        case 'content':  payload = { content1: baseForm.content1, content2: baseForm.content2, content3: baseForm.content3 }; break;
+        case 'products': payload = { productIds: baseForm.productIds, visibilityTargets: baseForm.visibilityTargets }; break;
         default:         payload = {}; break;
       }
       try {
@@ -352,7 +352,7 @@ window.PmPlanDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, products, uiState, codes, form, errors, VISIBILITY_OPTIONS,           // 상태 / 데이터
+      vendors, products, uiState, codes, baseForm, errors, VISIBILITY_OPTIONS,           // 상태 / 데이터
       infoFormColumns, vendorFormColumns,                                            // 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfFilteredProds, cfSelectedProducts, cfSelectedVendorNm, // computed
@@ -366,7 +366,7 @@ window.PmPlanDtl = {
   <div class="page-title">
     {{ cfIsNew ? '기획전 등록' : '기획전 상세' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.planId }}
+      #{{ baseForm.planId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -386,13 +386,13 @@ window.PmPlanDtl = {
         <div style="font-size:12px;color:#888;margin-bottom:6px;">
           💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.
         </div>
-        <base-html-editor v-model="form.bannerImage" height="320px" />
+        <base-html-editor v-model="baseForm.bannerImage" height="320px" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           💾 저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -405,7 +405,7 @@ window.PmPlanDtl = {
       </div>
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="infoFormColumns" :form="baseForm" :errors="errors"
         :readonly="false" :cols="3" :show-actions="false">
         <!-- ===== ■.■.■.■. 공개대상 체크박스 그리드 ===================================== -->
         <template #visibility>
@@ -422,7 +422,7 @@ window.PmPlanDtl = {
       <!-- ===== ■.■.■. 판매업체/판매담당자 (BoFormArea 자동 렌더) ======================= -->
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="vendorFormColumns" :form="baseForm" :errors="errors"
           :cols="3" :show-actions="false">
           <template #vendor>
             <div style="display:flex;gap:8px;align-items:center;">
@@ -434,7 +434,7 @@ window.PmPlanDtl = {
                   ▼
                 </span>
               </div>
-              <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+              <button v-if="baseForm.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
                 초기화
               </button>
             </div>
@@ -442,13 +442,13 @@ window.PmPlanDtl = {
         </bo-form-area>
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="baseForm.vendorId"
         @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           💾 저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -469,19 +469,19 @@ window.PmPlanDtl = {
         </div>
       </div>
       <template v-if="activeContentTab===1">
-        <base-html-editor v-model="form.content1" height="420px" />
+        <base-html-editor v-model="baseForm.content1" height="420px" />
       </template>
       <template v-if="activeContentTab===2">
-        <base-html-editor v-model="form.content2" height="420px" />
+        <base-html-editor v-model="baseForm.content2" height="420px" />
       </template>
       <template v-if="activeContentTab===3">
-        <base-html-editor v-model="form.content3" height="420px" />
+        <base-html-editor v-model="baseForm.content3" height="420px" />
       </template>
       <div class="form-actions" v-if="!cfDtlMode" style="margin-top:12px;">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           💾 저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -521,10 +521,10 @@ window.PmPlanDtl = {
         선택된 상품이 없습니다.
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           💾 저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -537,53 +537,53 @@ window.PmPlanDtl = {
       </div>
       <div style="background:#f9f9f9;border-radius:6px;padding:20px;">
         <!-- ===== ■.■.■.■. 배너 미리보기 =========================================== -->
-        <div v-if="form.bannerImage" style="margin-bottom:20px;padding:16px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage">
+        <div v-if="baseForm.bannerImage" style="margin-bottom:20px;padding:16px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="baseForm.bannerImage">
         </div>
         <div style="background:#fff;border-radius:6px;padding:20px;border:1px solid #e0e0e0;">
           <div style="font-size:18px;font-weight:700;color:#222;margin-bottom:12px;">
-            {{ form.planNm }}
+            {{ baseForm.planNm }}
           </div>
           <div style="display:flex;gap:8px;margin-bottom:12px;">
             <span style="display:inline-block;font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:4px 8px;font-weight:600;">
-              {{ form.category }}
+              {{ baseForm.category }}
             </span>
             <span style="display:inline-block;font-size:11px;background:#fff3e0;color:#f57c00;border-radius:4px;padding:4px 8px;font-weight:600;">
-              {{ form.theme }}
+              {{ baseForm.theme }}
             </span>
             <span style="display:inline-block;font-size:11px;background:#e8f5e9;color:#2e7d32;border-radius:4px;padding:4px 8px;font-weight:600;">
-              {{ form.status }}
+              {{ baseForm.status }}
             </span>
           </div>
           <div style="color:#666;font-size:12px;line-height:1.6;margin-bottom:16px;">
             <div>
-              📅 기간: {{ form.startDate }} ~ {{ form.endDate }}
+              📅 기간: {{ baseForm.startDate }} ~ {{ baseForm.endDate }}
             </div>
             <div style="margin-top:4px;">
-              {{ form.desc }}
+              {{ baseForm.desc }}
             </div>
           </div>
           <!-- ===== ■.■.■.■.■. 컨텐츠 미리보기 ======================================== -->
-          <template v-if="form.content1 || form.content2 || form.content3">
+          <template v-if="baseForm.content1 || baseForm.content2 || baseForm.content3">
             <div style="border-top:1px solid #e0e0e0;padding-top:16px;margin-top:16px;">
-              <div v-if="form.content1" style="margin-bottom:20px;">
+              <div v-if="baseForm.content1" style="margin-bottom:20px;">
                 <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">
                   🎯 주요내용
                 </div>
-                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="form.content1">
+                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="baseForm.content1">
                 </div>
               </div>
-              <div v-if="form.content2" style="margin-bottom:20px;">
+              <div v-if="baseForm.content2" style="margin-bottom:20px;">
                 <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">
                   ✨ 특징
                 </div>
-                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="form.content2">
+                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="baseForm.content2">
                 </div>
               </div>
-              <div v-if="form.content3">
+              <div v-if="baseForm.content3">
                 <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">
                   🎁 혜택
                 </div>
-                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="form.content3">
+                <div style="font-size:12px;line-height:1.8;color:#555;" v-html="baseForm.content3">
                 </div>
               </div>
             </div>
@@ -610,10 +610,10 @@ window.PmPlanDtl = {
         </div>
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           💾 저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -623,7 +623,7 @@ window.PmPlanDtl = {
 <!-- ===== □.□. 미리보기 ================================================== -->
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
 <!-- ===== ■. 상품선택 모달 ================================================= -->
-<simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.productIds"
+<simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="baseForm.productIds"
   title="상품선택" @toggle="pid => handleSelectAction('prodPickModal-toggle', pid)" @close="handleBtnAction('prodPickModal-close')" />
 <!-- ===== □. 상품선택 모달 ================================================= -->
 `

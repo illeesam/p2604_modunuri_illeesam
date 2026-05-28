@@ -34,7 +34,7 @@ window.DpDispUiDtl = {
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
 
-    const form = reactive({
+    const baseForm = reactive({
       codeId: null, codeGrp: 'DISP_UI',
       codeValue: '', codeLabel: '',
       uiType: 'FO',
@@ -70,10 +70,10 @@ window.DpDispUiDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispUiDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('dpDispUiMng');
       // 헤더 영역 펼치기/접기 토글
       } else if (cmd === 'form-toggleExpand') {
@@ -144,7 +144,8 @@ window.DpDispUiDtl = {
       }
     };
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -154,6 +155,7 @@ window.DpDispUiDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadData — UI/영역 로드 */
     const handleLoadData = async () => {
       uiState.loading = true;
@@ -180,7 +182,7 @@ window.DpDispUiDtl = {
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
 
     /* onPathPicked — 경로 선택 이벤트 */
-    const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
+    const onPathPicked = (pathId) => { if (pathPickModal.target === 'baseForm') baseForm.pathId = pathId; };
 
     /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -191,26 +193,26 @@ window.DpDispUiDtl = {
         const findInUis = () => uis.find(d => String(d.uiId || d.dispId || d.codeId) === String(props.dtlId));
         let u = findInUis();
         if (u) {
-          Object.assign(form, { ...u });
-          /* DpUiDto.Item → form 별칭 매핑 (Entity 기준) */
-          form.codeId       = u.uiId         ?? form.codeId;
-          form.codeValue    = u.uiCd         ?? form.codeValue;
-          form.codeLabel    = u.uiNm         ?? form.codeLabel;
-          form.uiType       = u.deviceTypeCd ?? form.uiType;
-          form.remark       = u.uiDesc       ?? form.remark;
-          form.sortOrd      = u.sortOrd      ?? form.sortOrd;
-          form.useYn        = u.useYn        ?? form.useYn;
-          form.useStartDate = u.useStartDate ?? form.useStartDate;
-          form.useEndDate   = u.useEndDate   ?? form.useEndDate;
-          form.pathId       = u.pathId       ?? form.pathId;
+          Object.assign(baseForm, { ...u });
+          /* DpUiDto.Item → baseForm 별칭 매핑 (Entity 기준) */
+          baseForm.codeId       = u.uiId         ?? baseForm.codeId;
+          baseForm.codeValue    = u.uiCd         ?? baseForm.codeValue;
+          baseForm.codeLabel    = u.uiNm         ?? baseForm.codeLabel;
+          baseForm.uiType       = u.deviceTypeCd ?? baseForm.uiType;
+          baseForm.remark       = u.uiDesc       ?? baseForm.remark;
+          baseForm.sortOrd      = u.sortOrd      ?? baseForm.sortOrd;
+          baseForm.useYn        = u.useYn        ?? baseForm.useYn;
+          baseForm.useStartDate = u.useStartDate ?? baseForm.useStartDate;
+          baseForm.useEndDate   = u.useEndDate   ?? baseForm.useEndDate;
+          baseForm.pathId       = u.pathId       ?? baseForm.pathId;
         }
       } else {
-        form.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;
+        baseForm.sortOrd = uis.length ? Math.max(...uis.map(c => c.sortOrd || 0)) + 1 : 1;
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
-        form.regDate = `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`;
+        baseForm.regDate = `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`;
         /* 자동 코드: DU_YYMMDD_HHMMSS */
-        form.codeValue = `DU_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
+        baseForm.codeValue = `DU_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
     };
 
@@ -230,7 +232,7 @@ window.DpDispUiDtl = {
     });
 
     const cfRelatedAreas = computed(() =>
-      areas.filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === form.codeValue)
+      areas.filter(c => c.codeGrp === 'DISP_AREA' && c.uiCode === baseForm.codeValue)
            .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
     );
 
@@ -279,7 +281,7 @@ window.DpDispUiDtl = {
       const all = areas.filter(c => c.codeGrp === 'DISP_AREA');
       const searchVal  = uiState.pickSearchValue.trim().toLowerCase();
       return window.safeArrayUtils.safeFilter(all, a => {
-        if (a.uiCode === form.codeValue) { return false; }
+        if (a.uiCode === baseForm.codeValue) { return false; }
         if (searchVal && !(a.codeLabel||'').toLowerCase().includes(searchVal) && !(a.codeValue||'').toLowerCase().includes(searchVal)) { return false; }
         return true;
       }).sort((a, b) => (a.codeLabel||'').localeCompare(b.codeLabel||''));
@@ -290,8 +292,8 @@ window.DpDispUiDtl = {
 
     /* onAreaPicked — 영역 선택 */
     const onAreaPicked = (a) => {
-      if (!form.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
-      a.uiCode = form.codeValue;
+      if (!baseForm.codeValue) { showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); return; }
+      a.uiCode = baseForm.codeValue;
       showToast && showToast(`[${a.codeLabel}] 영역을 추가했습니다.`, 'info');
       uiState.pickOpen = false;
     };
@@ -366,7 +368,7 @@ window.DpDispUiDtl = {
 
     /* openUiPreview — UI 미리보기 새 창 */
     const openUiPreview = () => {
-      if (!form.codeValue) { return showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); }
+      if (!baseForm.codeValue) { return showToast && showToast('UI코드를 먼저 입력하세요.', 'error'); }
       window.open(`${window.pageUrl('index.html')}`, '_blank', 'width=1280,height=900');
     };
 
@@ -374,22 +376,22 @@ window.DpDispUiDtl = {
     const openAreaPreview = (scope) => {
       if (!cfActiveArea.value) { return showToast && showToast('미리볼 영역을 선택하세요.', 'error'); }
       const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
-      window.open(`${window.pageUrl(file)}?areas=${cfActiveArea.value.codeValue}&date=${form.regDate}&time=00:00`,
+      window.open(`${window.pageUrl(file)}?areas=${cfActiveArea.value.codeValue}&date=${baseForm.regDate}&time=00:00`,
         '_blank', 'width=1280,height=900');
     };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
-      form.codeValue = (form.codeValue || '').toUpperCase();
+      baseForm.codeValue = (baseForm.codeValue || '').toUpperCase();
       try {
-        await schema.validate(form, { abortEarly: false });
+        await schema.validate(baseForm, { abortEarly: false });
       } catch (err) {
         (err.inner || []).forEach(e => { errors[e.path] = e.message; });
         showToast && showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (!/^[A-Z0-9_]+$/.test(form.codeValue || '')) {
+      if (!/^[A-Z0-9_]+$/.test(baseForm.codeValue || '')) {
         errors.codeValue = '영문 대문자·숫자·_ 만 가능합니다.';
         showToast && showToast('입력 내용을 확인해주세요.', 'error');
         return;
@@ -397,18 +399,18 @@ window.DpDispUiDtl = {
       const isNewUi = cfIsNew.value;
       const ok = await showConfirm('저장', isNewUi ? '신규 UI를 등록하시겠습니까?' : 'UI 정보를 수정하시겠습니까?');
       if (!ok) { return; }
-      /* form 별칭 → DpUi Entity 필드 매핑 */
-      const body = { ...form };
-      body.uiId         = form.codeId    || form.uiId || null;
-      body.uiCd         = form.codeValue || form.uiCd;
-      body.uiNm         = form.codeLabel || form.uiNm;
-      body.deviceTypeCd = form.uiType    || form.deviceTypeCd;
-      body.uiDesc       = form.remark    || form.uiDesc;
-      body.sortOrd      = form.sortOrd;
-      body.useYn        = form.useYn;
-      body.useStartDate = form.useStartDate;
-      body.useEndDate   = form.useEndDate;
-      body.pathId       = form.pathId;
+      /* baseForm 별칭 → DpUi Entity 필드 매핑 */
+      const body = { ...baseForm };
+      body.uiId         = baseForm.codeId    || baseForm.uiId || null;
+      body.uiCd         = baseForm.codeValue || baseForm.uiCd;
+      body.uiNm         = baseForm.codeLabel || baseForm.uiNm;
+      body.deviceTypeCd = baseForm.uiType    || baseForm.deviceTypeCd;
+      body.uiDesc       = baseForm.remark    || baseForm.uiDesc;
+      body.sortOrd      = baseForm.sortOrd;
+      body.useYn        = baseForm.useYn;
+      body.useStartDate = baseForm.useStartDate;
+      body.useEndDate   = baseForm.useEndDate;
+      body.pathId       = baseForm.pathId;
       try {
         const res = await (isNewUi ? boApiSvc.dpUi.create(body, '전시UI관리', '등록') : boApiSvc.dpUi.update(body.uiId, body, '전시UI관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -446,7 +448,7 @@ window.DpDispUiDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      codes, uis, areas, uiState, pathPickModal, form, errors,                       // 상태 / 데이터
+      codes, uis, areas, uiState, pathPickModal, baseForm, errors,                       // 상태 / 데이터
       baseUiFormColumns, settingUiFormColumns, pathPickFormColumns,                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth,                    // computed
@@ -469,7 +471,7 @@ window.DpDispUiDtl = {
       </span>
       {{ cfIsNew ? '등록' : '수정' }}
       <span v-if="!cfIsNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">
-        #{{ form.codeId }}
+        #{{ baseForm.codeId }}
       </span>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
@@ -497,7 +499,7 @@ window.DpDispUiDtl = {
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggleExpand')">
         {{ expanded ? '📥 접기' : '📤 펼치기' }}
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('baseForm-save')" style="font-weight:700;">
         💾 저장
       </button>
     </div>
@@ -595,17 +597,17 @@ window.DpDispUiDtl = {
             설정
           </div>
           <!-- ===== ■.■.■.■.■. UI코드/UI명/UI유형 (BoFormArea 자동 렌더) ================ -->
-          <bo-form-area :columns="baseUiFormColumns" :form="form" :errors="errors"
+          <bo-form-area :columns="baseUiFormColumns" :form="baseForm" :errors="errors"
             :readonly="false" :cols="3" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 표시경로 (BoFormArea 자동 렌더) ========================= -->
-          <bo-form-area :columns="pathPickFormColumns" :form="form" :errors="{}"
+          <bo-form-area :columns="pathPickFormColumns" :form="baseForm" :errors="{}"
             :cols="3" :show-actions="false">
             <template #pathPick>
-              <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+              <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:baseForm.pathId!=null?'#374151':'#9ca3af',fontWeight:baseForm.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                 <span style="flex:1;">
-                  {{ pathLabel(form.pathId) || '경로 선택...' }}
+                  {{ pathLabel(baseForm.pathId) || '경로 선택...' }}
                 </span>
-                <button type="button" @click="handleBtnAction('pathModal-open', 'form')" title="표시경로 선택"
+                <button type="button" @click="handleBtnAction('pathModal-open', 'baseForm')" title="표시경로 선택"
                   :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                   @mouseover="$event.currentTarget.style.background='#eef2ff'"
                   @mouseout="$event.currentTarget.style.background='#fff'">
@@ -615,17 +617,17 @@ window.DpDispUiDtl = {
             </template>
           </bo-form-area>
           <!-- ===== ■.■.■.■.■. 정렬순서/사용여부/설명 (BoFormArea 자동 렌더) ================= -->
-          <bo-form-area :columns="settingUiFormColumns" :form="form" :errors="errors"
+          <bo-form-area :columns="settingUiFormColumns" :form="baseForm" :errors="errors"
             :readonly="false" :cols="4" :show-actions="false" />
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
             📅 사용기간
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" />
+            <input type="date" class="form-control" v-model="baseForm.useStartDate" style="width:150px;margin:0;" />
             <span style="color:#aaa;font-size:13px;padding:0 4px;">
               ~
             </span>
-            <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" />
+            <input type="date" class="form-control" v-model="baseForm.useEndDate" style="width:150px;margin:0;" />
           </div>
         </div>
         <!-- ===== ■.■.■.■. 제목 ================================================ -->
@@ -639,20 +641,20 @@ window.DpDispUiDtl = {
                 타이틀 표시
               </span>
               <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                <input type="radio" v-model="form.titleYn" value="Y" />
+                <input type="radio" v-model="baseForm.titleYn" value="Y" />
                 표시
               </label>
               <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                <input type="radio" v-model="form.titleYn" value="N" />
+                <input type="radio" v-model="baseForm.titleYn" value="N" />
                 미표시
               </label>
             </span>
           </div>
-          <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+          <div v-if="baseForm.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
             <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">
               타이틀
             </label>
-            <input class="form-control" v-model="form.title" placeholder="타이틀 텍스트" style="margin:0;flex:1;" />
+            <input class="form-control" v-model="baseForm.title" placeholder="타이틀 텍스트" style="margin:0;flex:1;" />
           </div>
         </div>
         <!-- ===== /제목 ======================================================== -->
@@ -666,7 +668,7 @@ window.DpDispUiDtl = {
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
             📝 UI코멘트
           </div>
-          <base-html-editor v-model="form.htmlDesc" height="280px" />
+          <base-html-editor v-model="baseForm.htmlDesc" height="280px" />
         </div>
         <!-- ===== /내용 ======================================================== -->
       </div>
@@ -901,7 +903,7 @@ window.DpDispUiDtl = {
                 </div>
                 <div style="border:1px solid #222;border-top:none;border-radius:0 0 6px 6px;padding:4px;background:#fafafa;">
                   <disp-x02-area
-                :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
+                :params="{ date: baseForm.regDate || '', time: '00:00', status: '활성' }"
                 :disp-opt="{ layout:'auto', showHeader:false, showBadges:false, mode:'area_detail', showDesc:false }"
                 :area-item="{ code: a.codeValue, label: a.codeLabel, info: a, panels: panelsOfArea(a.codeValue) }" />
                 </div>
@@ -910,7 +912,7 @@ window.DpDispUiDtl = {
             <!-- ===== ■.■.■.■. 영역 탭: 선택 영역만 렌더 =================================== -->
             <div v-else-if="cfActiveArea" style="max-height:560px;overflow-y:auto;">
               <disp-x02-area
-            :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
+            :params="{ date: baseForm.regDate || '', time: '00:00', status: '활성' }"
             :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
             :area-item="{ code: cfActiveArea.codeValue, label: cfActiveArea.codeLabel, info: cfActiveArea, panels: panelsOfArea(cfActiveArea.codeValue) }" />
             </div>
@@ -921,14 +923,14 @@ window.DpDispUiDtl = {
       <!-- ===== □. 본문 ====================================================== -->
       <!-- ===== ■. 영역 선택 팝업 ================================================ -->
       <area-pick-modal v-if="pickOpen"
-    :title="'전시영역 추가 [' + form.codeValue + ']'"
+    :title="'전시영역 추가 [' + baseForm.codeValue + ']'"
     :areas="cfAvailableAreas"
-    :exclude-ui="form.codeValue"
+    :exclude-ui="baseForm.codeValue"
     @close="handleBtnAction('pickModal-close')"
     @pick="a => handleSelectAction('pickModal-select', a)" />
       <!-- ===== □. 영역 선택 팝업 ================================================ -->
       <!-- ===== ■. 조건부 영역 ================================================== -->
-      <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_ui" :value="form.pathId" title="UI 표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+      <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_ui" :value="baseForm.pathId" title="UI 표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
       <!-- ===== □. 조건부 영역 ================================================== -->
     </div>
 `,

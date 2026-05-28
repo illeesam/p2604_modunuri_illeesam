@@ -35,7 +35,7 @@ window.DpDispWidgetLibMng = {
       } else if (cmd === 'widgetLibs-add') {
         return openNew();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
@@ -88,8 +88,9 @@ window.DpDispWidgetLibMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    const baseDetail = coUtil.cofDetail();
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -99,6 +100,7 @@ window.DpDispWidgetLibMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 조회 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
@@ -185,28 +187,28 @@ window.DpDispWidgetLibMng = {
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchList('DEFAULT'); };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; baseDetail.selectedId = null; handleSearchList('DEFAULT'); };
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew     = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispWidgetLibMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'dpDispWidgetLibMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
     /* key 는 'open' / 'closed' 두 값만 — id 가 바뀌어도 컴포넌트 remount 안 함 */
-    const cfDetailKey = computed(() => detailPanel.selectedId === null ? 'closed' : 'open');
+    const cfDetailKey = computed(() => baseDetail.selectedId === null ? 'closed' : 'open');
 
     /* setPage — 설정 */
     const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
@@ -229,7 +231,7 @@ window.DpDispWidgetLibMng = {
       if (!ok) { return; }
       const idx = widgetLibs.findIndex(x => x.widgetLibId === lib.widgetLibId);
       if (idx !== -1) { widgetLibs.splice(idx, 1); }
-      if (detailPanel.selectedId === lib.widgetLibId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === lib.widgetLibId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.dpWidgetLib.remove(lib.widgetLibId, '전시위젯라이브러리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -268,7 +270,7 @@ window.DpDispWidgetLibMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      widgetLibs, uiState, codes, searchParam, applied, pager, detailPanel,           // 상태 / 데이터
+      widgetLibs, uiState, codes, searchParam, applied, pager, baseDetail,           // 상태 / 데이터
       baseSearchColumns, listGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter,                          // computed
@@ -372,9 +374,9 @@ window.DpDispWidgetLibMng = {
     </div>
     <!-- ===== □. 본문 영역 =================================================== -->
     <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-    <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+    <div v-if="baseDetail.selectedId" style="margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
           ✕ 닫기
         </button>
       </div>
@@ -383,8 +385,8 @@ window.DpDispWidgetLibMng = {
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
       />
     </div>

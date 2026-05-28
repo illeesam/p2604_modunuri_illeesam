@@ -146,7 +146,8 @@ window.SyPathMng = {
     });
 
     const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U'));
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -158,6 +159,7 @@ window.SyPathMng = {
       }
     };
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage;

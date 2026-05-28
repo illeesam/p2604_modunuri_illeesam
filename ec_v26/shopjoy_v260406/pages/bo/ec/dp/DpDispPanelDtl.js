@@ -26,13 +26,13 @@ window.DpDispPanelDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispPanelDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 편집 모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd === 'baseForm-edit') {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 목록으로
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.navigate('dpDispPanelMng');
       // 전체 펼치기/탭 보기 토글
       } else if (cmd === 'form-toggleViewAll') {
@@ -155,16 +155,16 @@ window.DpDispPanelDtl = {
         const res = await boApiSvc.dpPanel.getById(props.dtlId, '전시패널관리', '상세조회');
         const data = res.data?.data;
         if (data) {
-          Object.assign(form, data);
-          /* DpPanelDto.Item → form 별칭 매핑 (Entity 기준) */
-          form.dispId                 = data.panelId            ?? form.dispId;
-          form.name                   = data.panelNm            ?? form.name;
-          form.layoutType             = data.panelTypeCd        ?? form.layoutType;
-          form.status                 = data.dispPanelStatusCd  ?? form.status;
-          form.panelVisibilityTargets = data.visibilityTargets  ?? form.panelVisibilityTargets;
-          form.useStartDate           = data.useStartDate       ?? form.useStartDate;
-          form.useEndDate             = data.useEndDate         ?? form.useEndDate;
-          form.pathId                 = data.pathId             ?? form.pathId;
+          Object.assign(baseForm, data);
+          /* DpPanelDto.Item → baseForm 별칭 매핑 (Entity 기준) */
+          baseForm.dispId                 = data.panelId            ?? baseForm.dispId;
+          baseForm.name                   = data.panelNm            ?? baseForm.name;
+          baseForm.layoutType             = data.panelTypeCd        ?? baseForm.layoutType;
+          baseForm.status                 = data.dispPanelStatusCd  ?? baseForm.status;
+          baseForm.panelVisibilityTargets = data.visibilityTargets  ?? baseForm.panelVisibilityTargets;
+          baseForm.useStartDate           = data.useStartDate       ?? baseForm.useStartDate;
+          baseForm.useEndDate             = data.useEndDate         ?? baseForm.useEndDate;
+          baseForm.pathId                 = data.pathId             ?? baseForm.pathId;
           /* 위젯 목록: 임베드된 panelItems 가 있으면 우선 사용, 없으면 content_json 파싱 폴백 */
           if (Array.isArray(data.panelItems) && data.panelItems.length) {
             /* DpPanelItemDto.Item → row 별칭 매핑 (Entity 기준) */
@@ -225,7 +225,7 @@ window.DpDispPanelDtl = {
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
 
     /* onPathPicked — 이벤트 */
-    const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
+    const onPathPicked = (pathId) => { if (pathPickModal.target === 'baseForm') baseForm.pathId = pathId; };
 
     /* fnPathLabel — 유틸 */
     const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -276,7 +276,7 @@ window.DpDispPanelDtl = {
     const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
 
-    const form = reactive({
+    const baseForm = reactive({
       dispId: null, dispCode: '', area: 'HOME_BANNER', name: '', status: '활성',
       layoutType: 'grid', gridCols: 1,
       titleYn: 'N', title: '',
@@ -559,7 +559,7 @@ window.DpDispPanelDtl = {
         /* 신규: 패널코드 자동 생성 DP_YYMMDD_HHMMSS */
         const t = new Date();
         const p = n => String(n).padStart(2, '0');
-        form.dispCode = `DP_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
+        baseForm.dispCode = `DP_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
       }
     };
 
@@ -580,22 +580,22 @@ window.DpDispPanelDtl = {
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!form.name || !form.area || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
+      if (!baseForm.name || !baseForm.area || !baseForm.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
       const isNewPanel = cfIsNew.value;
       const ok = await showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        /* form 별칭 → DpPanel Entity 필드 매핑 (위젯 목록은 content_json 직렬화) */
+        /* baseForm 별칭 → DpPanel Entity 필드 매핑 (위젯 목록은 content_json 직렬화) */
         const _rows = rows.map(r => ({ ...r }));
-        const body = { ...form, rows: _rows };
-        body.panelId            = form.dispId || form.panelId || null;
-        body.panelNm            = form.name || form.panelNm;
-        body.panelTypeCd        = form.layoutType || form.panelTypeCd;
-        body.dispPanelStatusCd  = form.status || form.dispPanelStatusCd;
-        body.visibilityTargets  = form.panelVisibilityTargets || form.visibilityTargets;
-        body.useStartDate       = form.useStartDate;
-        body.useEndDate         = form.useEndDate;
-        body.pathId             = form.pathId;
+        const body = { ...baseForm, rows: _rows };
+        body.panelId            = baseForm.dispId || baseForm.panelId || null;
+        body.panelNm            = baseForm.name || baseForm.panelNm;
+        body.panelTypeCd        = baseForm.layoutType || baseForm.panelTypeCd;
+        body.dispPanelStatusCd  = baseForm.status || baseForm.dispPanelStatusCd;
+        body.visibilityTargets  = baseForm.panelVisibilityTargets || baseForm.visibilityTargets;
+        body.useStartDate       = baseForm.useStartDate;
+        body.useEndDate         = baseForm.useEndDate;
+        body.pathId             = baseForm.pathId;
         body.contentJson        = JSON.stringify({ rows: _rows });
         const res = await (isNewPanel ? boApiSvc.dpPanel.create(body, '전시패널관리', '등록') : boApiSvc.dpPanel.update(body.panelId, body, '전시패널관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -618,7 +618,7 @@ window.DpDispPanelDtl = {
     /* closePreview — 미리보기 닫기 */
     const closePreview = () => { preview.show = false; };
     const cfPreviewWidget = computed(() => ({
-      ...form, ...(cfActiveRow.value ? { ...cfActiveRow.value } : {}), status: '활성',
+      ...baseForm, ...(cfActiveRow.value ? { ...cfActiveRow.value } : {}), status: '활성',
     }));
 
     /* -- 패널미리보기 (카드) -- */
@@ -630,8 +630,8 @@ window.DpDispPanelDtl = {
     /* closeCardPreview — 닫기 */
     const closeCardPreview = () => { cardPreview.show = false; };
     const cfCurrentAreaLabel = computed(() => {
-      const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
-      return found ? found.codeLabel : form.area;
+      const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === baseForm.area);
+      return found ? found.codeLabel : baseForm.area;
     });
 
     /* fnWLabel — 유틸 */
@@ -777,27 +777,27 @@ window.DpDispPanelDtl = {
     };
 
     /* hasPanelDispEnv — 여부 확인 */
-    const hasPanelDispEnv = (code) => form.panelDispEnv.includes('^' + code + '^');
+    const hasPanelDispEnv = (code) => baseForm.panelDispEnv.includes('^' + code + '^');
 
     /* togglePanelDispEnv — 패널 토글 */
     const togglePanelDispEnv = (code) => {
-      const envList = form.panelDispEnv.split('^').filter(e => e && e !== 'NONE');
+      const envList = baseForm.panelDispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);
-      form.panelDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+      baseForm.panelDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
     /* hasPanelVisibility — 여부 확인 */
-    const hasPanelVisibility = (code) => window.visibilityUtil.has(form.panelVisibilityTargets, code);
+    const hasPanelVisibility = (code) => window.visibilityUtil.has(baseForm.panelVisibilityTargets, code);
 
     /* togglePanelVisibility — 패널 토글 */
     const togglePanelVisibility = (code) => {
-      const list = window.visibilityUtil.parse(form.panelVisibilityTargets);
+      const list = window.visibilityUtil.parse(baseForm.panelVisibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
-      if (code === 'PUBLIC' && i < 0) { form.panelVisibilityTargets = '^PUBLIC^'; return; }
+      if (code === 'PUBLIC' && i < 0) { baseForm.panelVisibilityTargets = '^PUBLIC^'; return; }
       const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
-      form.panelVisibilityTargets = window.visibilityUtil.serialize(filtered);
+      baseForm.panelVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
     /* onRowCopy — 이벤트 */
@@ -897,7 +897,7 @@ window.DpDispPanelDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, pathPickModal, form, rows, codes, preview, cardPreview,              // 상태 / 데이터
+      uiState, pathPickModal, baseForm, rows, codes, preview, cardPreview,              // 상태 / 데이터
       basePanelFormColumns, pathAreaFormColumns, widgetRowFormColumns,                // 컬럼 정의
       sectionInfoFormColumns, fileListGridColumns,                                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
@@ -929,7 +929,7 @@ window.DpDispPanelDtl = {
     <span>
       {{ cfIsNew ? '전시패널 등록' : (cfDtlMode ? '전시패널 상세' : '전시패널 수정') }}
       <span v-if="!cfIsNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">
-        #{{ form.dispId }}
+        #{{ baseForm.dispId }}
       </span>
     </span>
     <div style="display:flex;align-items:center;gap:6px;">
@@ -948,7 +948,7 @@ window.DpDispPanelDtl = {
         @click="handleBtnAction('rowCopyModal-open')">
         📄 전시항목 복사
       </button>
-      <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
+      <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('baseForm-save')" style="font-weight:700;">
         💾 저장
       </button>
     </div>
@@ -1045,18 +1045,18 @@ window.DpDispPanelDtl = {
             </div>
             <!-- ===== ■.■.■.■.■.■.■.■. 패널코드/패널명/상태 (BoFormArea 자동 렌더) ============ -->
             <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
-            <bo-form-area :columns="basePanelFormColumns" :form="form" :errors="{}"
+            <bo-form-area :columns="basePanelFormColumns" :form="baseForm" :errors="{}"
                   :readonly="cfDtlMode" :cols="3" :show-actions="false" />
             <!-- ===== ■.■.■.■.■.■.■.■. 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) ======== -->
             <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
-            <bo-form-area :columns="pathAreaFormColumns" :form="form" :errors="{}"
+            <bo-form-area :columns="pathAreaFormColumns" :form="baseForm" :errors="{}"
                   :readonly="cfDtlMode" :cols="3" :show-actions="false">
               <template #pathPick>
-                <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+                <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:baseForm.pathId!=null?'#374151':'#9ca3af',fontWeight:baseForm.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                   <span style="flex:1;">
-                    {{ fnPathLabel(form.pathId) || '경로 선택...' }}
+                    {{ fnPathLabel(baseForm.pathId) || '경로 선택...' }}
                   </span>
-                  <button type="button" @click="handleBtnAction('pathModal-open', 'form')" title="표시경로 선택"
+                  <button type="button" @click="handleBtnAction('pathModal-open', 'baseForm')" title="표시경로 선택"
                         :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                         @mouseover="$event.currentTarget.style.background='#eef2ff'"
                         @mouseout="$event.currentTarget.style.background='#fff'">
@@ -1066,8 +1066,8 @@ window.DpDispPanelDtl = {
               </template>
               <template #areaDisp>
                 <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-                  <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
-                    <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
+                  <span v-if="baseForm.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
+                    <code style="font-size:10px;background:transparent;">{{ baseForm.area }}</code>
                       &nbsp;{{ cfCurrentAreaLabel }}
                     </span>
                     <span v-else style="font-size:11px;color:#bbb;">
@@ -1086,16 +1086,16 @@ window.DpDispPanelDtl = {
                   </label>
                   <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
                     <button v-for="o in codes.layout_types" :key="o?.codeValue"
-                        @click="!cfDtlMode ? (form.layoutType = o.codeValue) : null"
+                        @click="!cfDtlMode ? (baseForm.layoutType = o.codeValue) : null"
                         type="button"
                         style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                        :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
+                        :style="[o.codeValue==='grid'?'border-left:none;':'', baseForm.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
                       {{ o.codeValue==='grid' ? '🔲 ' : '🧩 ' }}{{ o.codeLabel }}
                     </button>
                   </div>
                 </div>
                 <!-- ===== ■.■.■.■.■.■.■.■.■. 조건부 영역 ================================== -->
-                <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
+                <div class="form-group" style="flex:0 0 auto;" v-if="baseForm.layoutType==='grid'">
                   <label class="form-label">
                     열수
                     <span style="font-size:10px;color:#aaa;">
@@ -1105,13 +1105,13 @@ window.DpDispPanelDtl = {
                   <div style="display:flex;align-items:center;gap:6px;">
                     <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
                       <button v-for="n in [1,2,3,4]" :key="Math.random()" type="button"
-                          @click="!cfDtlMode ? (form.gridCols = n) : null"
+                          @click="!cfDtlMode ? (baseForm.gridCols = n) : null"
                           style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
-                          :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
+                          :style="[n===1?'border-left:none;':'', baseForm.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
                         {{ n }}
                       </button>
                     </div>
-                    <input type="number" v-model.number="form.gridCols" min="1" max="32"
+                    <input type="number" v-model.number="baseForm.gridCols" min="1" max="32"
                         :readonly="cfDtlMode"
                         style="width:64px;font-size:13px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
                     <span style="font-size:12px;color:#aaa;">
@@ -1133,11 +1133,11 @@ window.DpDispPanelDtl = {
                 📅 사용기간
               </div>
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" :readonly="cfDtlMode" />
+                <input type="date" class="form-control" v-model="baseForm.useStartDate" style="width:150px;margin:0;" :readonly="cfDtlMode" />
                 <span style="color:#aaa;font-size:13px;padding:0 4px;">
                   ~
                 </span>
-                <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" :readonly="cfDtlMode" />
+                <input type="date" class="form-control" v-model="baseForm.useEndDate" style="width:150px;margin:0;" :readonly="cfDtlMode" />
               </div>
             </div>
             <!-- ===== /설정 ======================================================== -->
@@ -1152,20 +1152,20 @@ window.DpDispPanelDtl = {
                     타이틀 표시
                   </span>
                   <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                    <input type="radio" v-model="form.titleYn" value="Y" :disabled="cfDtlMode" />
+                    <input type="radio" v-model="baseForm.titleYn" value="Y" :disabled="cfDtlMode" />
                     표시
                   </label>
                   <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                    <input type="radio" v-model="form.titleYn" value="N" :disabled="cfDtlMode" />
+                    <input type="radio" v-model="baseForm.titleYn" value="N" :disabled="cfDtlMode" />
                     미표시
                   </label>
                 </span>
               </div>
-              <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+              <div v-if="baseForm.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
                 <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">
                   타이틀
                 </label>
-                <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
+                <input v-model="baseForm.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
                     style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
               </div>
             </div>
@@ -1182,26 +1182,26 @@ window.DpDispPanelDtl = {
               </div>
               <div v-if="cfDtlMode"
                   style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;">
-                <span v-if="form.htmlDesc" v-html="form.htmlDesc">
+                <span v-if="baseForm.htmlDesc" v-html="baseForm.htmlDesc">
                 </span>
                 <span v-else style="color:#bbb;">
                   내용 없음
                 </span>
               </div>
-              <base-html-editor v-else v-model="form.htmlDesc" height="280px" />
+              <base-html-editor v-else v-model="baseForm.htmlDesc" height="280px" />
             </div>
             <!-- ===== /내용 ======================================================== -->
             <div class="form-actions" v-if="!cfDtlMode">
               <template v-if="cfDtlMode">
-                <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                <button class="btn btn-primary" @click="handleBtnAction('baseForm-edit')">
                   수정
                 </button>
-                <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                   닫기
                 </button>
               </template>
               <template v-else>
-                <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                   취소
                 </button>
               </template>
@@ -1630,15 +1630,15 @@ window.DpDispPanelDtl = {
                           <!-- ===== /내용 영역 ===================================================== -->
                           <div class="form-actions" v-if="!cfDtlMode">
                             <template v-if="cfDtlMode">
-                              <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                              <button class="btn btn-primary" @click="handleBtnAction('baseForm-edit')">
                                 수정
                               </button>
-                              <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                              <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                                 닫기
                               </button>
                             </template>
                             <template v-else>
-                              <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                              <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                                 취소
                               </button>
                             </template>
@@ -1700,7 +1700,7 @@ window.DpDispPanelDtl = {
                               <disp-x03-panel
                     :params="{ }"
                     :disp-opt="{ layout:'vertical', showBadges:true }"
-                    :panel-item="{...form, rows: rows, status:'활성', condition: form.condition||'항상 표시'}"
+                    :panel-item="{...baseForm, rows: rows, status:'활성', condition: baseForm.condition||'항상 표시'}"
                     :show-header="true"
                     />
                             </template>
@@ -1774,14 +1774,14 @@ window.DpDispPanelDtl = {
                     <div v-if="t.key === 'info'">
                       <!-- ===== ■.■.■.■.■.■. 패널코드/패널명/표시경로/포함영역 (BoFormArea 자동 렌더) ========= -->
                       <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
-                      <bo-form-area :columns="sectionInfoFormColumns" :form="form" :errors="{}"
+                      <bo-form-area :columns="sectionInfoFormColumns" :form="baseForm" :errors="{}"
               :readonly="cfDtlMode" :cols="4" :show-actions="false">
                         <template #pathPick2>
-                          <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+                          <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:baseForm.pathId!=null?'#374151':'#9ca3af',fontWeight:baseForm.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                             <span style="flex:1;">
-                              {{ fnPathLabel(form.pathId) || '경로 선택...' }}
+                              {{ fnPathLabel(baseForm.pathId) || '경로 선택...' }}
                             </span>
-                            <button type="button" v-if="!cfDtlMode" @click="openPathPick('form')" title="표시경로 선택"
+                            <button type="button" v-if="!cfDtlMode" @click="openPathPick('baseForm')" title="표시경로 선택"
                     :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
                     @mouseover="$event.currentTarget.style.background='#eef2ff'"
                     @mouseout="$event.currentTarget.style.background='#fff'">
@@ -1791,8 +1791,8 @@ window.DpDispPanelDtl = {
                         </template>
                         <template #areaDisp2>
                           <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-                            <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
-                              <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
+                            <span v-if="baseForm.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
+                              <code style="font-size:10px;background:transparent;">{{ baseForm.area }}</code>
                                 &nbsp;{{ cfCurrentAreaLabel }}
                               </span>
                               <span v-else style="font-size:11px;color:#bbb;">
@@ -1805,7 +1805,7 @@ window.DpDispPanelDtl = {
                           <label class="form-label">
                             상태
                           </label>
-                          <select class="form-control" style="max-width:200px;" v-model="form.status" :disabled="cfDtlMode">
+                          <select class="form-control" style="max-width:200px;" v-model="baseForm.status" :disabled="cfDtlMode">
                             <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">
                               {{ c.codeLabel }}
                             </option>
@@ -1820,44 +1820,44 @@ window.DpDispPanelDtl = {
                             타이틀 표시
                           </label>
                           <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-                            <input type="radio" v-model="form.titleYn" value="Y" :disabled="cfDtlMode" />
+                            <input type="radio" v-model="baseForm.titleYn" value="Y" :disabled="cfDtlMode" />
                             표시
                           </label>
                           <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;">
-                            <input type="radio" v-model="form.titleYn" value="N" :disabled="cfDtlMode" />
+                            <input type="radio" v-model="baseForm.titleYn" value="N" :disabled="cfDtlMode" />
                             미표시
                           </label>
                         </div>
-                        <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                        <div v-if="baseForm.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                           <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">
                             타이틀
                           </label>
-                          <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
+                          <input v-model="baseForm.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
                 style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
                         </div>
                         <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
                           📝 HTML 설명
                         </div>
                         <div v-if="cfDtlMode" style="padding:12px 14px;background:#f9f9f9;border:1px solid #e8e8e8;border-radius:6px;font-size:13px;line-height:1.7;min-height:80px;margin-bottom:16px;">
-                          <span v-if="form.htmlDesc" v-html="form.htmlDesc">
+                          <span v-if="baseForm.htmlDesc" v-html="baseForm.htmlDesc">
                           </span>
                           <span v-else style="color:#bbb;">
                             내용 없음
                           </span>
                         </div>
-                        <div v-else v-model="form.htmlDesc" is="base-html-editor" height="280px" style="margin-bottom:16px;">
+                        <div v-else v-model="baseForm.htmlDesc" is="base-html-editor" height="280px" style="margin-bottom:16px;">
                         </div>
                         <div class="form-actions" v-if="!cfDtlMode">
                           <template v-if="cfDtlMode">
-                            <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                            <button class="btn btn-primary" @click="handleBtnAction('baseForm-edit')">
                               수정
                             </button>
-                            <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                            <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                               닫기
                             </button>
                           </template>
                           <template v-else>
-                            <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                            <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                               취소
                             </button>
                           </template>
@@ -2096,15 +2096,15 @@ window.DpDispPanelDtl = {
                                   </table>
                                   <div class="form-actions" v-if="!cfDtlMode">
                                     <template v-if="cfDtlMode">
-                                      <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                                      <button class="btn btn-primary" @click="handleBtnAction('baseForm-edit')">
                                         수정
                                       </button>
-                                      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                                      <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                                         닫기
                                       </button>
                                     </template>
                                     <template v-else>
-                                      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+                                      <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
                                         취소
                                       </button>
                                     </template>
@@ -2130,7 +2130,7 @@ window.DpDispPanelDtl = {
     :show="preview.show"
     mode="single"
     :tab-label="preview.tabLabel"
-    :area="form.area"
+    :area="baseForm.area"
     :widgets="[]"
     :widget="cfPreviewWidget"
     @close="closePreview"
@@ -2153,18 +2153,18 @@ window.DpDispPanelDtl = {
                           <!-- ===== ■.■.■.■. 영역 + 상태 배지 ======================================== -->
                           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
                             <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">
-            {{ form.area }}
+            {{ baseForm.area }}
           </code>
                               <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">
                                 {{ cfCurrentAreaLabel }}
                               </span>
-                              <span class="badge" :class="form.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">
-                                {{ form.status }}
+                              <span class="badge" :class="baseForm.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">
+                                {{ baseForm.status }}
                               </span>
                             </div>
                             <!-- ===== ■.■.■.■. 패널명 =============================================== -->
                             <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">
-                              {{ form.name || '(패널명 없음)' }}
+                              {{ baseForm.name || '(패널명 없음)' }}
                             </div>
                             <!-- ===== ■.■.■.■. 위젯 구성 ============================================= -->
                             <div style="border-top:1px solid #f0f0f0;padding-top:14px;">
@@ -2205,15 +2205,15 @@ window.DpDispPanelDtl = {
                     <!-- ===== □. 전시위젯Lib 선택 팝업 =========================================== -->
                     <!-- ===== ■. 전시항목 복사 팝업 ============================================== -->
                     <row-pick-modal v-if="rowCopyOpen"
-    :title="'전시항목 복사 [' + (form.name || '현재 패널') + ']'"
+    :title="'전시항목 복사 [' + (baseForm.name || '현재 패널') + ']'"
     :displays="[] || []"
     :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"
-    :exclude-panel-id="form.dispId"
+    :exclude-panel-id="baseForm.dispId"
     @close="uiState.rowCopyOpen=false"
     @pick-multi="rs => handleSelectAction('rowCopyModal-copy', rs)" />
                     <!-- ===== □. 전시항목 복사 팝업 ============================================== -->
                     <!-- ===== ■. 조건부 영역 ================================================== -->
-                    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel" :value="form.pathId" title="표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="pathPickModal.show=false" />
+                    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel" :value="baseForm.pathId" title="표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="pathPickModal.show=false" />
                   </div>
                   <!-- ===== □. 조건부 영역 ================================================== -->
 `,

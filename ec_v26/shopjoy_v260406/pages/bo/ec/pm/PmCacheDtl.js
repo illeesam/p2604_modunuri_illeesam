@@ -18,16 +18,16 @@ window.PmCacheDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmCacheDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 취소 (목록으로)
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('pmCacheMng');
       // 폼 닫기 (목록으로)
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.navigate('pmCacheMng');
       // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd === 'baseForm-edit') {
         return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -47,15 +47,15 @@ window.PmCacheDtl = {
         return;
       // 판매업체 초기화
       } else if (cmd === 'form-vendorClear') {
-        form.vendorId = '';
-        form.chargeStaff = '';
+        baseForm.vendorId = '';
+        baseForm.chargeStaff = '';
         return;
       // 회원ID 변경
       } else if (cmd === 'form-memberChange') {
         return onUserIdChange();
       // 회원 참조 모달 열기
       } else if (cmd === 'form-memberRef') {
-        return showRefModal('member', Number(form.memberId));
+        return showRefModal('member', Number(baseForm.memberId));
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -104,7 +104,7 @@ window.PmCacheDtl = {
       try {
         const res = await boApiSvc.pmCache.getById(props.dtlId, '캐시관리', '상세조회');
         const c = res.data?.data || res.data;
-        if (c) { Object.assign(form, { ...c }); }
+        if (c) { Object.assign(baseForm, { ...c }); }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -140,7 +140,7 @@ window.PmCacheDtl = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ===== 폼 / 에러 / Yup 스키마 ==========================================
-    const form = reactive({
+    const baseForm = reactive({
       cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '충전', cacheAmt: 0, balanceAmt: 0, cacheDesc: '',
       refId: '', procUserId: '',
     });
@@ -164,9 +164,9 @@ window.PmCacheDtl = {
 
     // ===== 파생 computed (회원 캐쉬 내역 / 잔액) ============================
     /* 같은 회원의 캐쉬 내역 */
-    const cfMemberCacheHistory = computed(() => form.memberCacheHistory || []);
+    const cfMemberCacheHistory = computed(() => baseForm.memberCacheHistory || []);
 
-    const cfTotalBalance = computed(() => form.balanceAmt || 0);
+    const cfTotalBalance = computed(() => baseForm.balanceAmt || 0);
 
     // ===== 저장 (등록/수정) ================================================
     /* 캐시(충전금) 저장 */
@@ -175,7 +175,7 @@ window.PmCacheDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
-        await schema.validate(form, { abortEarly: false });
+        await schema.validate(baseForm, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
@@ -185,7 +185,7 @@ window.PmCacheDtl = {
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await (cfIsNew.value ? boApiSvc.pmCache.create({ ...form }, '캐시관리', '등록') : boApiSvc.pmCache.update(form.cacheId, { ...form }, '캐시관리', '저장'));
+        const res = await (cfIsNew.value ? boApiSvc.pmCache.create({ ...baseForm }, '캐시관리', '등록') : boApiSvc.pmCache.update(baseForm.cacheId, { ...baseForm }, '캐시관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('pmCacheMng', { reload: true }); }
@@ -200,19 +200,19 @@ window.PmCacheDtl = {
     // ===== 회원/업체 선택 핸들러 ===========================================
     /* onUserIdChange — 이벤트 */
     const onUserIdChange = () => {
-      const m = getMember.value(Number(form.memberId));
-      if (m) { form.memberNm = m.memberNm; }
+      const m = getMember.value(Number(baseForm.memberId));
+      if (m) { baseForm.memberNm = m.memberNm; }
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) { return '소속업체 선택'; }
-      const v = vendors.find(x => x.vendorId === form.vendorId);
+      if (!baseForm.vendorId) { return '소속업체 선택'; }
+      const v = vendors.find(x => x.vendorId === baseForm.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
 
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
-      form.vendorId = vendorId;
+      baseForm.vendorId = vendorId;
       uiState.showVendorModal = false;
     };
 
@@ -260,7 +260,7 @@ window.PmCacheDtl = {
     // ===== setup() return =================================================
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
+      vendors, uiState, codes, baseForm, errors,                                        // 상태 / 데이터
       baseFormColumns, cacheHistGridColumns,                                         // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
@@ -276,7 +276,7 @@ window.PmCacheDtl = {
   <div class="page-title">
     {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.cacheId }}
+      #{{ baseForm.cacheId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -295,13 +295,13 @@ window.PmCacheDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
         :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-memberChange')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
-            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
+            <input class="form-control" v-model="baseForm.memberId" placeholder="회원 ID" @change="handleBtnAction('form-memberChange')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+            <span v-if="baseForm.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
               보기
             </span>
           </div>
@@ -317,30 +317,30 @@ window.PmCacheDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            <button v-if="baseForm.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="baseForm.vendorId"
         @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
       <!-- ===== ■.■.■. 폼 액션 버튼 (수정/저장/취소/닫기) =============================== -->
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+          <button class="btn btn-primary" @click="handleBtnAction('baseForm-edit')">
             수정
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
             닫기
           </button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+          <button class="btn btn-primary" @click="handleBtnAction('baseForm-save')">
             저장
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
             취소
           </button>
         </template>
@@ -359,7 +359,7 @@ window.PmCacheDtl = {
       <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:13px;color:#555;">
           <span class="ref-link" @click="handleBtnAction('form-memberRef')">
-            {{ form.memberNm }}
+            {{ baseForm.memberNm }}
           </span>
           현재 잔액
         </span>

@@ -110,6 +110,24 @@ window.SyMenuMng = {
 
     /* ===== 상위메뉴 선택 모달 ===== */
     const parentModal = reactive({ show: false, targetRow: null });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
+      codes.menu_status = codeStore.sgGetGrpCodes('MENU_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -128,23 +146,6 @@ window.SyMenuMng = {
         uiState.loading = false;
       }
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.menu_type = codeStore.sgGetGrpCodes('MENU_TYPE');
-      codes.menu_status = codeStore.sgGetGrpCodes('MENU_STATUS');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
     /* buildTreeRows — 그리드용 트리 행 빌드 */
     const buildTreeRows = (items) => {
       const map = {};

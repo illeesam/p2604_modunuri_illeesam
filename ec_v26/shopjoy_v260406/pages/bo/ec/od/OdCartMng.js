@@ -96,6 +96,10 @@ window.OdCartMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });                              // 회원 선택 모달 상태
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    onMounted(() => { loadCodes(); handleSearchList(); });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnCheckedBadgeCls — 선택 여부 배지 클래스 */
     const fnCheckedBadgeCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
@@ -193,9 +197,6 @@ window.OdCartMng = {
         codes.cart_date_types = codeStore.sgGetGrpCodes('CART_DATE_TYPE');
       } catch (_) {}
     };
-
-    onMounted(() => { loadCodes(); handleSearchList(); });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
     const baseSearchColumns = [

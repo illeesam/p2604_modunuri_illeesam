@@ -35,23 +35,23 @@ window.SyContactDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyContactDtl.js : handleBtnAction -> ', cmd, param);
       // 활성 탭 폼 저장 (content 탭은 handleSave, answer 탭은 saveAnswer 위임)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 답변 탭 별도 저장 액션
       } else if (cmd === 'form-saveAnswer') {
         return saveAnswer();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('syContactMng');
       // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd === 'baseForm-edit') {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 목록으로 이동
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.navigate('syContactMng');
       // 회원 참조 모달 열기
       } else if (cmd === 'member-ref') {
-        return showRefModal('member', Number(form.memberId));
+        return showRefModal('member', Number(baseForm.memberId));
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -78,7 +78,7 @@ window.SyContactDtl = {
 
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
-    const form = reactive({
+    const baseForm = reactive({
       contactId: null, memberId: '', memberNm: '', contactDate: '', categoryCd: '배송 문의',
       contactTitle: '', contactContent: '', contactStatusCd: '요청', contactAnswer: '',
       contentAttachGrpId: null,  // 문의내용 첨부그룹 ID
@@ -86,8 +86,8 @@ window.SyContactDtl = {
     });
 
     /* cfContentAttachRefId / cfAnswerAttachRefId — 첨부 ref ID (contactId) */
-    const cfContentAttachRefId = computed(() => form.contactId);
-    const cfAnswerAttachRefId  = computed(() => form.contactId);
+    const cfContentAttachRefId = computed(() => baseForm.contactId);
+    const cfAnswerAttachRefId  = computed(() => baseForm.contactId);
     const errors = reactive({});
 
     const schema = yup.object({
@@ -95,7 +95,7 @@ window.SyContactDtl = {
       contactContent: yup.string().required('문의 내용을 입력해주세요.'),
     });
 
-    const cfCurId       = computed(() => props.dtlId || form.contactId || null);
+    const cfCurId       = computed(() => props.dtlId || baseForm.contactId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 첫 탭 = content. answer/history 탭은 ID 없으면 비활성. */
     const cfSaveDisabled = computed(() => uiState.tab !== 'content' && !cfHasId.value);
@@ -105,7 +105,8 @@ window.SyContactDtl = {
       { id: 'content', label: '문의 내용', icon: '📋' },
       { id: 'answer',  label: '답변',      icon: '💬' },
     ]);
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -115,6 +116,7 @@ window.SyContactDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -123,7 +125,7 @@ window.SyContactDtl = {
         const res = await boApiSvc.syContact.getById(props.dtlId, '문의관리', '상세조회');
         const data = res.data?.data;
         if (data) {
-          Object.assign(form, data);
+          Object.assign(baseForm, data);
         }
         uiState.error = null;
       } catch (err) {
@@ -148,8 +150,8 @@ window.SyContactDtl = {
 
     /* onUserIdChange — 이벤트 */
     const onUserIdChange = () => {
-      const m = getMember.value(Number(form.memberId));
-      if (m) { form.memberNm = m.memberNm; }
+      const m = getMember.value(Number(baseForm.memberId));
+      if (m) { baseForm.memberNm = m.memberNm; }
     };
 
     /* 문의 fnStatusBadge */
@@ -184,20 +186,20 @@ window.SyContactDtl = {
 
       if (tabId === 'content') {
         Object.keys(errors).forEach(k => delete errors[k]);
-        try { await schema.validate(form, { abortEarly: false }); }
+        try { await schema.validate(baseForm, { abortEarly: false }); }
         catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
-          const payload = { ...form };
+          const payload = { ...baseForm };
           const res = isCreate
             ? await boApiSvc.syContact.create(payload, '문의관리', '등록')
             : await boApiSvc.syContact.update(cfCurId.value, payload, '문의관리', '문의내용저장');
           if (isCreate) {
             const newId = res.data?.data?.contactId || res.data?.contactId || null;
-            if (newId) { form.contactId = newId; }
+            if (newId) { baseForm.contactId = newId; }
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 답변 탭에서 답변을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -217,7 +219,7 @@ window.SyContactDtl = {
       const ok = await showConfirm('답변 저장', '답변을 저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await boApiSvc.syContact.update(cfCurId.value, { contactAnswer: form.contactAnswer, contactStatusCd: form.contactStatusCd }, '문의관리', '답변저장');
+        const res = await boApiSvc.syContact.update(cfCurId.value, { contactAnswer: baseForm.contactAnswer, contactStatusCd: baseForm.contactStatusCd }, '문의관리', '답변저장');
         _afterApiOk(res, '답변이 저장되었습니다.');
       } catch (err) { _afterApiErr(err); }
     };
@@ -239,7 +241,7 @@ window.SyContactDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, form, errors, tab, tabMode2,                  // 상태 / 데이터
+      uiState, codes, baseForm, errors, tab, tabMode2,                  // 상태 / 데이터
       contentFormColumns, siteFormColumns,                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfSiteNm, cfDtlMode, tabs,  // computed / reactive(tabs)
@@ -252,7 +254,7 @@ window.SyContactDtl = {
   <div class="page-title">
     {{ cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.contactId }}
+      #{{ baseForm.contactId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -260,7 +262,7 @@ window.SyContactDtl = {
   <div class="card">
     <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
+    <bo-form-area :columns="siteFormColumns" :form="baseForm" :errors="{}"
       :cols="4" :show-actions="false" />
     <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleSelectAction('tabs-select', id)"
@@ -272,22 +274,22 @@ window.SyContactDtl = {
         📋 문의 내용
       </div>
       <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-      <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="contentFormColumns" :form="baseForm" :errors="errors"
           :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberIdChange')" :readonly="cfDtlMode" />
-            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('member-ref')">
+            <input class="form-control" v-model="baseForm.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberIdChange')" :readonly="cfDtlMode" />
+            <span v-if="baseForm.memberId" class="ref-link" @click="handleBtnAction('member-ref')">
               보기
             </span>
           </div>
         </template>
         <!-- ===== ■.■.■.■.■. 문의 내용: Quill 또는 view 모드 HTML ==================== -->
         <template #contactContent>
-          <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.contactContent || '<span style=color:#bbb>-</span>'">
+          <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="baseForm.contactContent || '<span style=color:#bbb>-</span>'">
           </div>
-          <base-html-editor v-else v-model="form.contactContent" height="220px" />
+          <base-html-editor v-else v-model="baseForm.contactContent" height="220px" />
           <span v-if="errors.contactContent" class="field-error">
             {{ errors.contactContent }}
           </span>
@@ -298,8 +300,8 @@ window.SyContactDtl = {
         <label class="form-label">
           첨부파일
         </label>
-        <base-attach-grp :model-value="form.contentAttachGrpId"
-          @update:model-value="form.contentAttachGrpId = $event"
+        <base-attach-grp :model-value="baseForm.contentAttachGrpId"
+          @update:model-value="baseForm.contentAttachGrpId = $event"
           :ref-id="cfContentAttachRefId"
           :show-toast="showToast"
           grp-code="CONTACT_CONTENT_ATTACH"
@@ -310,18 +312,18 @@ window.SyContactDtl = {
       </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+          <button class="btn btn-primary" @click="handleBtnAction('baseForm-edit')">
             수정
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
             닫기
           </button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
             저장
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
             취소
           </button>
         </template>
@@ -334,33 +336,33 @@ window.SyContactDtl = {
       </div>
       <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
         <div style="font-size:12px;color:#888;margin-bottom:6px;">
-          {{ form.categoryCd }} · {{ form.contactDate }}
+          {{ baseForm.categoryCd }} · {{ baseForm.contactDate }}
         </div>
         <div style="font-size:14px;font-weight:600;margin-bottom:8px;">
-          {{ form.contactTitle }}
+          {{ baseForm.contactTitle }}
         </div>
         <div style="font-size:13px;color:#555;white-space:pre-line;">
-          {{ form.contactContent }}
+          {{ baseForm.contactContent }}
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">
           답변 내용
-          <span v-if="!form.contactAnswer" class="badge badge-orange" style="margin-left:4px;">
+          <span v-if="!baseForm.contactAnswer" class="badge badge-orange" style="margin-left:4px;">
             미답변
           </span>
         </label>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.contactAnswer || '<span style=color:#bbb>-</span>'">
+        <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="baseForm.contactAnswer || '<span style=color:#bbb>-</span>'">
         </div>
-        <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
+        <base-html-editor v-else v-model="baseForm.contactAnswer" height="240px" />
       </div>
       <!-- ===== ■.■.■.■. 답변 첨부 ========================================== -->
       <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
         <label class="form-label">
           첨부파일
         </label>
-        <base-attach-grp :model-value="form.answerAttachGrpId"
-          @update:model-value="form.answerAttachGrpId = $event"
+        <base-attach-grp :model-value="baseForm.answerAttachGrpId"
+          @update:model-value="baseForm.answerAttachGrpId = $event"
           :ref-id="cfAnswerAttachRefId"
           :show-toast="showToast"
           grp-code="CONTACT_ANSWER_ATTACH"
@@ -371,10 +373,10 @@ window.SyContactDtl = {
       </div>
       <div class="form-actions">
         <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+          <button class="btn btn-primary" @click="handleBtnAction('baseForm-edit')">
             수정
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">
             닫기
           </button>
         </template>
@@ -382,7 +384,7 @@ window.SyContactDtl = {
           <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
             답변 저장
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
             취소
           </button>
         </template>

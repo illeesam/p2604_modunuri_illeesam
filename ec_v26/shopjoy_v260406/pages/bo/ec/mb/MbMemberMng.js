@@ -39,13 +39,13 @@ window.MbMemberMng = {
       } else if (cmd === 'members-add') {
         return openNew();
       // 상세 인라인 패널 저장
-      } else if (cmd === 'detailPanel-save') {
+      } else if (cmd === 'baseDetail-save') {
         return handleSave();
       // 상세 인라인 패널 삭제
-      } else if (cmd === 'detailPanel-delete') {
+      } else if (cmd === 'baseDetail-delete') {
         return handleDelete();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -79,10 +79,25 @@ window.MbMemberMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({                 // 인라인 Dtl 패널 상태
+    const baseDetail = reactive({                 // 인라인 Dtl 패널 상태
       show: false, isNew: false, dtlId: null, reloadTrigger: 0,
       form: { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' }
     });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+      codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // ★ onMounted — 진입 시 목록 초기 조회
+    onMounted(() => {
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -135,7 +150,7 @@ window.MbMemberMng = {
 
     /* fnApplyForm — 폼 데이터 적용 */
     const fnApplyForm = (d) => {
-      Object.assign(detailPanel.form, {
+      Object.assign(baseDetail.form, {
         memberId: d.memberId, loginId: d.loginId || '', memberNm: d.memberNm || '',
         memberPhone: d.memberPhone || '', gradeCd: d.gradeCd || '', memberStatusCd: d.memberStatusCd || '',
         joinDate: fnFmtDate(d.joinDate), memberMemo: d.memberMemo || ''
@@ -144,10 +159,10 @@ window.MbMemberMng = {
 
     /* openDetail — 인라인 패널 편집 모드로 열기 */
     const openDetail = async (row) => {
-      detailPanel.dtlId = row.memberId;
-      detailPanel.isNew = false;
-      detailPanel.show = true;
-      detailPanel.reloadTrigger++;
+      baseDetail.dtlId = row.memberId;
+      baseDetail.isNew = false;
+      baseDetail.show = true;
+      baseDetail.reloadTrigger++;
       fnApplyForm(row); // 목록 row 데이터로 먼저 표시
       try {
         const res = await boApiSvc.mbMember.getById(row.memberId, '회원관리', '상세조회');
@@ -160,36 +175,36 @@ window.MbMemberMng = {
 
     /* openNew — 신규 등록 */
     const openNew = () => {
-      Object.assign(detailPanel.form, { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memberMemo: '' });
-      detailPanel.dtlId = '__new__';
-      detailPanel.isNew = true;
-      detailPanel.show = true;
-      detailPanel.reloadTrigger++;
+      Object.assign(baseDetail.form, { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memberMemo: '' });
+      baseDetail.dtlId = '__new__';
+      baseDetail.isNew = true;
+      baseDetail.show = true;
+      baseDetail.reloadTrigger++;
     };
 
     /* closeDetail — 상세 닫기 */
     const closeDetail = () => {
-      detailPanel.show = false;
-      detailPanel.dtlId = null;
+      baseDetail.show = false;
+      baseDetail.dtlId = null;
     };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!detailPanel.form.loginId) { showToast('이메일은 필수입니다.', 'error'); return; }
-      if (!detailPanel.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
-      const isNewMember = detailPanel.isNew;
+      if (!baseDetail.form.loginId) { showToast('이메일은 필수입니다.', 'error'); return; }
+      if (!baseDetail.form.memberNm) { showToast('이름은 필수입니다.', 'error'); return; }
+      const isNewMember = baseDetail.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
       if (isNewMember) {
-        detailPanel.form.memberId = 'MB' + String(Date.now()).slice(-6);
-        detailPanel.form.orderCount = 0;
-        detailPanel.form.totalPurchaseAmt = 0;
-        members.unshift({ ...detailPanel.form });
-        detailPanel.dtlId = detailPanel.form.memberId;
-        detailPanel.isNew = false;
+        baseDetail.form.memberId = 'MB' + String(Date.now()).slice(-6);
+        baseDetail.form.orderCount = 0;
+        baseDetail.form.totalPurchaseAmt = 0;
+        members.unshift({ ...baseDetail.form });
+        baseDetail.dtlId = baseDetail.form.memberId;
+        baseDetail.isNew = false;
       } else {
-        const si = members.findIndex(m => m.memberId === detailPanel.form.memberId);
-        if (si !== -1) { Object.assign(members[si], detailPanel.form); }
+        const si = members.findIndex(m => m.memberId === baseDetail.form.memberId);
+        if (si !== -1) { Object.assign(members[si], baseDetail.form); }
       }
       try {
         /* DB join_date 컬럼은 TIMESTAMP — LocalDateTime 매핑이라 'YYYY-MM-DDTHH:mm:ss' 형식 필요 */
@@ -198,8 +213,8 @@ window.MbMemberMng = {
           return /^\d{4}-\d{2}-\d{2}$/.test(s) ? `${s}T00:00:00` : s;
         };
         const payload = {
-          ...detailPanel.form,
-          joinDate: fnToDateTime(detailPanel.form.joinDate),
+          ...baseDetail.form,
+          joinDate: fnToDateTime(baseDetail.form.joinDate),
         };
         if (isNewMember && !payload.loginPwdHash) {
           /* 신규 등록 시 임시 비밀번호 = 'init1234' 의 sha256 (회원에게 별도 안내 후 변경 유도) */
@@ -207,7 +222,7 @@ window.MbMemberMng = {
         }
         const res = await (isNewMember
           ? boApiSvc.mbMember.create(payload, '회원관리', '등록')
-          : boApiSvc.mbMember.update(detailPanel.form.memberId, payload, '회원관리', '저장'));
+          : boApiSvc.mbMember.update(baseDetail.form.memberId, payload, '회원관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
@@ -247,22 +262,8 @@ window.MbMemberMng = {
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
-      codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
-      uiState.isPageCodeLoad = true;
-    };
-
-    // ★ onMounted — 진입 시 목록 초기 조회
-    onMounted(() => {
-      handleSearchList('DEFAULT');
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfSelectedRow = computed(() => members.find(m => m.memberId === detailPanel.dtlId) || null);
+    const cfSelectedRow = computed(() => members.find(m => m.memberId === baseDetail.dtlId) || null);
 
     /* fnFmtDate — 날짜 포맷 */
     const fnFmtDate = v => v ? String(v).slice(0, 10) : '';
@@ -276,7 +277,7 @@ window.MbMemberMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('MEMBER_STATUS', s, _MEMBER_STATUS_FB[s] || 'badge-gray');
 
     /* fnGridRowClass — 그리드 행 클래스 */
-    const fnGridRowClass = (row) => (detailPanel.dtlId === row.memberId ? 'active' : '');
+    const fnGridRowClass = (row) => (baseDetail.dtlId === row.memberId ? 'active' : '');
 
     // 기본 검색
     const baseSearchColumns = [
@@ -306,7 +307,7 @@ window.MbMemberMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      members, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
+      members, uiState, codes, searchParam, pager, baseDetail,                        // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
@@ -348,8 +349,8 @@ window.MbMemberMng = {
   </bo-grid>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <mb-member-dtl :detail-modal="detailPanel" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
-    :reload-trigger="detailPanel.reloadTrigger"
+  <mb-member-dtl :detail-modal="baseDetail" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
+    :reload-trigger="baseDetail.reloadTrigger"
     :on-list-reload="handleSearchList"
     />
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->

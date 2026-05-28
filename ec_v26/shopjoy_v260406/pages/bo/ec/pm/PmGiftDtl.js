@@ -27,7 +27,7 @@ window.PmGiftDtl = {
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
 
-    const form = reactive({
+    const baseForm = reactive({
       giftId: null, giftNm: '', giftTypeCd: '구매조건', condVal: 0,
       giftStatusCd: '활성', giftStock: 0, startDate: DEFAULT_START, endDate: DEFAULT_END,
       prodId: null, giftDesc: '', minOrderAmt: 0, minOrderQty: 0,
@@ -42,8 +42,8 @@ window.PmGiftDtl = {
     });
 
     const cfIsNew = computed(() => !props.dtlId);
-    /* ── 현재 작업중인 giftId: props.dtlId 우선, 없으면 신규등록 직후 form.giftId ── */
-    const cfCurId       = computed(() => props.dtlId || form.giftId || null);
+    /* ── 현재 작업중인 giftId: props.dtlId 우선, 없으면 신규등록 직후 baseForm.giftId ── */
+    const cfCurId       = computed(() => props.dtlId || baseForm.giftId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     /* info 외 탭의 [저장] 버튼은 ID 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
@@ -53,10 +53,10 @@ window.PmGiftDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmGiftDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 취소 (목록으로)
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('pmGiftMng');
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -79,8 +79,8 @@ window.PmGiftDtl = {
         return;
       // 판매업체 초기화
       } else if (cmd === 'form-vendorClear') {
-        form.vendorId = '';
-        form.chargeStaff = '';
+        baseForm.vendorId = '';
+        baseForm.chargeStaff = '';
         return;
       // 미리보기 사은품 확인 토스트
       } else if (cmd === 'preview-confirm') {
@@ -119,11 +119,11 @@ window.PmGiftDtl = {
       try {
         const res = await boApiSvc.pmGift.getById(props.dtlId, '선물관리', '상세조회');
         const g = res.data?.data || res.data;
-        if (g) { Object.assign(form, g); }
+        if (g) { Object.assign(baseForm, g); }
         // Entity minOrderAmt/minOrderQty → UI 단일 condVal 매핑
         if (g) {
-          if (g.giftTypeCd === '수량조건') { form.condVal = Number(g.minOrderQty) || 0; }
-          else { form.condVal = Number(g.minOrderAmt) || 0; }
+          if (g.giftTypeCd === '수량조건') { baseForm.condVal = Number(g.minOrderQty) || 0; }
+          else { baseForm.condVal = Number(g.minOrderAmt) || 0; }
         }
         uiState.error = null;
       } catch (err) {
@@ -172,32 +172,32 @@ window.PmGiftDtl = {
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
     /* hasVisibility — 여부 확인 */
-    const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
+    const hasVisibility = (code) => window.visibilityUtil.has(baseForm.visibilityTargets, code);
 
     /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
-      const list = window.visibilityUtil.parse(form.visibilityTargets);
+      const list = window.visibilityUtil.parse(baseForm.visibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
-      form.visibilityTargets = window.visibilityUtil.serialize(list);
+      baseForm.visibilityTargets = window.visibilityUtil.serialize(list);
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!form.vendorId) { return '소속업체 선택'; }
-      const v = vendors.find(x => x.vendorId === form.vendorId);
+      if (!baseForm.vendorId) { return '소속업체 선택'; }
+      const v = vendors.find(x => x.vendorId === baseForm.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
 
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
-      form.vendorId = vendorId;
+      baseForm.vendorId = vendorId;
       uiState.showVendorModal = false;
     };
 
     const cfCondValLabel = computed(() => {
-      if (form.giftTypeCd === '금액조건') { return '기준금액 (원 이상)'; }
-      if (form.giftTypeCd === '수량조건') { return '기준수량 (개 이상)'; }
-      if (form.giftTypeCd === '구매조건') { return '기준금액 (원 이상)'; }
+      if (baseForm.giftTypeCd === '금액조건') { return '기준금액 (원 이상)'; }
+      if (baseForm.giftTypeCd === '수량조건') { return '기준수량 (개 이상)'; }
+      if (baseForm.giftTypeCd === '구매조건') { return '기준금액 (원 이상)'; }
       return '조건값';
     });
 
@@ -228,23 +228,23 @@ window.PmGiftDtl = {
 
       if (tabId === 'info') {
         Object.keys(errors).forEach(k => delete errors[k]);
-        try { await schema.validate(form, { abortEarly: false }); }
+        try { await schema.validate(baseForm, { abortEarly: false }); }
         catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
-          const payload = { ...form };
+          const payload = { ...baseForm };
           // UI 단일 condVal → Entity minOrderQty / minOrderAmt 매핑
-          if (form.giftTypeCd === '수량조건') { payload.minOrderQty = form.condVal; }
-          else { payload.minOrderAmt = form.condVal; }
+          if (baseForm.giftTypeCd === '수량조건') { payload.minOrderQty = baseForm.condVal; }
+          else { payload.minOrderAmt = baseForm.condVal; }
           const res = isCreate
             ? await boApiSvc.pmGift.create(payload, '선물관리', '등록')
             : await boApiSvc.pmGift.update(cfCurId.value, payload, '선물관리', '기본정보저장');
           if (isCreate) {
             const newId = res.data?.data?.giftId || res.data?.giftId || null;
-            if (newId) { form.giftId = newId; }
+            if (newId) { baseForm.giftId = newId; }
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -255,7 +255,7 @@ window.PmGiftDtl = {
       if (!ok) { return; }
       let payload = null;
       switch (tabId) {
-        case 'visibility': payload = { visibilityTargets: form.visibilityTargets }; break;
+        case 'visibility': payload = { visibilityTargets: baseForm.visibilityTargets }; break;
         default:           payload = {}; break;
       }
       try {
@@ -290,7 +290,7 @@ window.PmGiftDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
+      vendors, uiState, codes, baseForm, errors,                                          // 상태 / 데이터
       infoFormColumns,                                                                // 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfCondValLabel, cfSelectedVendorNm, // computed
@@ -304,7 +304,7 @@ window.PmGiftDtl = {
   <div class="page-title">
     {{ cfIsNew ? '사은품 등록' : '사은품 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.giftId }}
+      #{{ baseForm.giftId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -321,7 +321,7 @@ window.PmGiftDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="infoFormColumns" :form="baseForm" :errors="errors"
         :readonly="cfIsView" :cols="3" :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
@@ -334,20 +334,20 @@ window.PmGiftDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            <button v-if="baseForm.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="baseForm.vendorId"
         @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
       <div class="form-actions" v-if="!cfIsView">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -369,10 +369,10 @@ window.PmGiftDtl = {
         </label>
       </div>
       <div class="form-actions" v-if="!cfIsView">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -385,34 +385,34 @@ window.PmGiftDtl = {
       </div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">
-          🎁 {{ form.giftNm || '사은품명' }}
+          🎁 {{ baseForm.giftNm || '사은품명' }}
         </div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">
-          {{ form.startDate }} ~ {{ form.endDate }}
+          {{ baseForm.startDate }} ~ {{ baseForm.endDate }}
         </div>
         <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #f59e0b;">
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
             조건:
             <span style="font-weight:700;color:#f59e0b;">
-              {{ form.giftTypeCd }}
+              {{ baseForm.giftTypeCd }}
             </span>
           </div>
-          <div v-if="form.giftTypeCd !== '무조건'" style="font-size:13px;color:#666;margin-bottom:4px;">
+          <div v-if="baseForm.giftTypeCd !== '무조건'" style="font-size:13px;color:#666;margin-bottom:4px;">
             조건값:
             <span style="font-weight:700;">
-              {{ form.giftTypeCd === '금액조건' ? (form.condVal||0).toLocaleString() + '원↑' : form.giftTypeCd === '수량조건' ? (form.condVal||0) + '개↑' : form.condVal||0 }}
+              {{ baseForm.giftTypeCd === '금액조건' ? (baseForm.condVal||0).toLocaleString() + '원↑' : baseForm.giftTypeCd === '수량조건' ? (baseForm.condVal||0) + '개↑' : baseForm.condVal||0 }}
             </span>
           </div>
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
             재고:
             <span style="font-weight:700;">
-              {{ (form.giftStock||0).toLocaleString() }}개
+              {{ (baseForm.giftStock||0).toLocaleString() }}개
             </span>
           </div>
           <div style="font-size:13px;color:#666;">
             상태:
             <span style="font-weight:700;">
-              {{ form.giftStatusCd }}
+              {{ baseForm.giftStatusCd }}
             </span>
           </div>
         </div>

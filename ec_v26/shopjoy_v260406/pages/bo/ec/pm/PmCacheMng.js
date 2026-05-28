@@ -19,7 +19,7 @@ window.PmCacheMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const baseDetail = coUtil.cofDetail();
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
@@ -55,7 +55,7 @@ window.PmCacheMng = {
         uiState.tabMode = param;
         return;
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -93,7 +93,8 @@ window.PmCacheMng = {
       return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '' };
     };
     const searchParam = reactive(_initSearchParam());
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -108,6 +109,7 @@ window.PmCacheMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
@@ -165,21 +167,21 @@ window.PmCacheMng = {
     });
 
     /* loadView — 뷰 로드 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmCacheMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchList('RELOAD'); } return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'pmCacheMng') { baseDetail.selectedId = null; if (opts.reload) { handleSearchList('RELOAD'); } return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
 
@@ -202,7 +204,7 @@ window.PmCacheMng = {
       if (!ok) { return; }
       const idx = caches.findIndex(x => x.cacheId === c.cacheId);
       if (idx !== -1) { caches.splice(idx, 1); }
-      if (detailPanel.selectedId === c.cacheId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === c.cacheId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pmCache.remove(c.cacheId, '캐시관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -219,9 +221,9 @@ window.PmCacheMng = {
     const exportExcel = () => coUtil.cofExportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'memberNm'},{label:'유형',key:'cacheTypeCd'},{label:'금액',key:'cacheAmt'},{label:'잔액',key:'balanceAmt'},{label:'설명',key:'cacheDesc'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -250,13 +252,13 @@ window.PmCacheMng = {
         cellStyle: (v) => (v || 0) > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600' },
       { key: 'balanceAmt',  label: '잔액', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'cacheDesc',   label: '내용', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'siteNm',      label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      caches, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      caches, uiState, codes, searchParam, pager, baseDetail,                       // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
@@ -309,7 +311,7 @@ window.PmCacheMng = {
       :columns="baseGridColumns" :rows="caches" :pager="pager" row-key="cacheId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
+      :row-style="(c) => baseDetail.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('caches-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('caches-ref', {type, id})"
       @row-click="c => handleSelectAction('caches-rowEdit', c.cacheId)">
@@ -334,13 +336,13 @@ window.PmCacheMng = {
         데이터가 없습니다.
       </div>
       <div v-for="c in caches" :key="c?.cacheId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
-        :style="detailPanel.selectedId===c.cacheId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
+        :style="baseDetail.selectedId===c.cacheId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('caches-rowEdit', c.cacheId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">캐시 #{{ c.cacheId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('caches-rowEdit', c.cacheId)" :style="detailPanel.selectedId===c.cacheId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('caches-rowEdit', c.cacheId)" :style="baseDetail.selectedId===c.cacheId?{color:'#e8587a'}:{}">
             {{ c.cacheDesc }}
-            <span v-if="detailPanel.selectedId===c.cacheId" style="font-size:10px;margin-left:4px;">▼</span>
+            <span v-if="baseDetail.selectedId===c.cacheId" style="font-size:10px;margin-left:4px;">▼</span>
           </div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
             <span class="badge" :class="fnTypeBadge(c.cacheTypeCd)" style="font-size:11px;">{{ c.cacheTypeCd }}</span>
@@ -367,9 +369,9 @@ window.PmCacheMng = {
   </div>
   <!-- ===== □. 목록 영역 ================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
@@ -377,8 +379,8 @@ window.PmCacheMng = {
       :key="cfDetailKey"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger" />
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="baseDetail.reloadTrigger" />
   </div>
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
 </div>

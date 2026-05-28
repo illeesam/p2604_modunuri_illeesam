@@ -103,7 +103,8 @@ window.SyApiLogMng = {
       }
     };
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -114,6 +115,7 @@ window.SyApiLogMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {

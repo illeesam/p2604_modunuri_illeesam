@@ -25,7 +25,7 @@ window.OdClaimDtl = {
 
     const cfIsNew = computed(() => !props.dtlId);
 
-    const form = reactive({
+    const baseForm = reactive({
       claimId: '', memberId: '', memberNm: '', orderId: '', prodNm: '',
       claimTypeCd: '취소', claimStatusCd: '신청', reasonCd: '', reasonDetail: '',
       refundAmt: 0, refundMethodCd: '계좌환불', requestDate: '', memo: '',
@@ -42,23 +42,23 @@ window.OdClaimDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OdClaimDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('odClaimMng');
       // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd === 'baseForm-edit') {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 목록으로 이동
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.navigate('odClaimMng');
       // 주문 참조 모달 열기
       } else if (cmd === 'form-orderRef') {
-        return showRefModal('order', form.orderId);
+        return showRefModal('order', baseForm.orderId);
       // 회원 참조 모달 열기
       } else if (cmd === 'form-memberRef') {
-        return showRefModal('member', form.memberId);
+        return showRefModal('member', baseForm.memberId);
       // 탭 전환
       } else if (cmd === 'tab-change') {
         if (uiState.tabMode2 === 'tab') { uiState.activeTab = param; }
@@ -111,11 +111,11 @@ window.OdClaimDtl = {
         .sort((a, b) => a.sortOrd - b.sortOrd)
     );
     const cfClaimSteps = computed(() => cfClaimStatusCodes.value
-      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[form.claimTypeCd] || form.claimTypeCd) + '^'))
+      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[baseForm.claimTypeCd] || baseForm.claimTypeCd) + '^'))
       .map(c => c.codeLabel)
       .filter(l => !['거부','철회'].includes(l)));
 
-    const cfCurrentStepIdx = computed(() => cfClaimSteps.value.indexOf(form.claimStatusCd));
+    const cfCurrentStepIdx = computed(() => cfClaimSteps.value.indexOf(baseForm.claimStatusCd));
     const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
@@ -126,8 +126,8 @@ window.OdClaimDtl = {
       try {
         const res = await boApiSvc.odClaim.getById(props.dtlId, '클레임관리', '상세조회');
         const c = res.data?.data || res.data || {};
-        Object.assign(form, { ...c });
-        if (!form.claimId) { form.claimId = props.dtlId; }
+        Object.assign(baseForm, { ...c });
+        if (!baseForm.claimId) { baseForm.claimId = props.dtlId; }
         // getById 응답에 임베드된 클레임항목(claimItems) 사용
         claimItems.splice(0, claimItems.length, ...((c.claimItems || []).map(x => ({
           ...x,
@@ -166,7 +166,7 @@ window.OdClaimDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
-        await schema.validate(form, { abortEarly: false });
+        await schema.validate(baseForm, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
@@ -178,8 +178,8 @@ window.OdClaimDtl = {
       if (!ok) { return; }
       try {
         const res = await (isNewClaim
-          ? boApiSvc.odClaim.create({ ...form, refundAmt: Number(form.refundAmt) }, '클레임관리', '등록')
-          : boApiSvc.odClaim.update(form.claimId, { ...form, refundAmt: Number(form.refundAmt) }, '클레임관리', '저장'));
+          ? boApiSvc.odClaim.create({ ...baseForm, refundAmt: Number(baseForm.refundAmt) }, '클레임관리', '등록')
+          : boApiSvc.odClaim.update(baseForm.claimId, { ...baseForm, refundAmt: Number(baseForm.refundAmt) }, '클레임관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewClaim ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('odClaimMng', { reload: true }); }
@@ -205,22 +205,22 @@ window.OdClaimDtl = {
     /* isExpanded — 여부 확인 */
     const isExpanded = (i) => expandedItems.has(i);
     /* fnItemExpanded — 유틸 */
-    const fnItemExpanded = (row, i) => isExpanded(i) && form.claimTypeCd === '교환';
+    const fnItemExpanded = (row, i) => isExpanded(i) && baseForm.claimTypeCd === '교환';
     const cfAllExpanded = computed(() => claimItems.length > 0 && window.safeArrayUtils.safeEvery(claimItems, (_,i) => expandedItems.has(i)));
 
     watch(claimItems, (list) => { expandedItems.clear(); list.forEach((_,i) => expandedItems.add(i)); });
 
     /* getExchangedItem — 조회 */
     const getExchangedItem = (it) => {
-      if (form.claimTypeCd !== '교환') { return null; }
+      if (baseForm.claimTypeCd !== '교환') { return null; }
       const swapColor = { '블랙':'네이비','네이비':'차콜','화이트':'아이보리','차콜':'블랙' };
 
       return {
         prodNm: it.prodNm + ' (교환품)',
         color: swapColor[it.color] || '네이비',
         size: it.size, qty: it.qty, price: it.price,
-        courier: form.exchangeCourierCd,
-        trackingNo: form.exchangeTrackingNo,
+        courier: baseForm.exchangeCourierCd,
+        trackingNo: baseForm.exchangeTrackingNo,
       };
     };
 
@@ -241,23 +241,23 @@ window.OdClaimDtl = {
       if (!url) { showToast && showToast('운송장 정보가 없습니다.', 'error'); return; }
       window.open(url, 'dlivTrack', 'width=900,height=760,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes');
     };
-    const cfPaymentList = computed(() => form.refundAmt || form.claimId ? [{
-      method: form.refundMethodCd || '-', status: form.claimStatusCd || '-',
-      amount: form.refundAmt || 0, payDate: form.requestDate || '-',
-      account: form.refundAccount || '-', apprNo: form.apprNo || '-',
+    const cfPaymentList = computed(() => baseForm.refundAmt || baseForm.claimId ? [{
+      method: baseForm.refundMethodCd || '-', status: baseForm.claimStatusCd || '-',
+      amount: baseForm.refundAmt || 0, payDate: baseForm.requestDate || '-',
+      account: baseForm.refundAccount || '-', apprNo: baseForm.apprNo || '-',
     }] : []);
     const cfStatusHistList = computed(() => {
-      if (!form.claimId) { return []; }
-      const d = String(form.requestDate || '').slice(0,10) || '-';
+      if (!baseForm.claimId) { return []; }
+      const d = String(baseForm.requestDate || '').slice(0,10) || '-';
       return [
-        { date: d+' 09:10', user:'회원',   from:'-',           to: form.claimTypeCd+'요청', memo: form.claimTypeCd+' 접수' },
-        { date: d+' 11:30', user:'bo',  from: form.claimTypeCd+'요청', to:'처리중',        memo:'검토 후 처리 시작' },
-        { date: d+' 15:00', user:'bo',  from:'처리중',      to: form.claimStatusCd,  memo:'상태 갱신' },
+        { date: d+' 09:10', user:'회원',   from:'-',           to: baseForm.claimTypeCd+'요청', memo: baseForm.claimTypeCd+' 접수' },
+        { date: d+' 11:30', user:'bo',  from: baseForm.claimTypeCd+'요청', to:'처리중',        memo:'검토 후 처리 시작' },
+        { date: d+' 15:00', user:'bo',  from:'처리중',      to: baseForm.claimStatusCd,  memo:'상태 갱신' },
       ];
     });
-    const cfEditHistList = computed(() => form.claimId ? [
-      { date: String(form.requestDate||'').slice(0,10)+' 10:00', user:'bo', field:'사유',      before:'-', after: form.reasonCd || '-' },
-      { date: String(form.requestDate||'').slice(0,10)+' 12:20', user:'bo', field:'환불금액',  before:'0', after: (form.refundAmt||0).toLocaleString() },
+    const cfEditHistList = computed(() => baseForm.claimId ? [
+      { date: String(baseForm.requestDate||'').slice(0,10)+' 10:00', user:'bo', field:'사유',      before:'-', after: baseForm.reasonCd || '-' },
+      { date: String(baseForm.requestDate||'').slice(0,10)+' 12:20', user:'bo', field:'환불금액',  before:'0', after: (baseForm.refundAmt||0).toLocaleString() },
     ] : []);
     /* tabs — 탭 정의 (BoTabBar 데이터, reactive) */
     const tabs = reactive([
@@ -309,18 +309,18 @@ window.OdClaimDtl = {
       { key: 'price',       label: '결제금액',   style: 'width:100px;text-align:right;',
         align: 'right', fmt: (v) => fmt(v || 0), cellStyle: 'font-weight:700;color:#1a1a1a;' },
       { key: 'orderStatus', label: '주문상태',   style: 'width:90px;text-align:center;', align: 'center',
-        fmt: () => form.orderStatusCd || '-',
-        cellInnerStyle: () => form.orderStatusCd
+        fmt: () => baseForm.orderStatusCd || '-',
+        cellInnerStyle: () => baseForm.orderStatusCd
           ? 'font-size:10.5px;padding:2px 7px;border-radius:8px;background:#eef4ff;color:#1e40af;font-weight:600;'
           : 'color:#ccc;' },
       { key: 'claimStatus', label: '클레임상태', style: 'width:110px;text-align:center;', align: 'center',
-        fmt: () => `${form.claimTypeCd || ''} · ${form.claimStatusCd || ''}`,
-        cellInnerStyle: () => `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af'};` },
+        fmt: () => `${baseForm.claimTypeCd || ''} · ${baseForm.claimStatusCd || ''}`,
+        cellInnerStyle: () => `font-size:10px;padding:2px 8px;border-radius:8px;color:#fff;font-weight:700;background:${CLAIM_TYPE_COLOR[baseForm.claimTypeCd]||'#9ca3af'};` },
       { key: 'exchInfo',    label: '교환정보',   style: 'width:140px;', cellStyle: 'font-size:12px;',
         trackBoxes: {
-          items: () => form.claimTypeCd !== '교환' ? [] : [
-            ...(form.exchangeCourierCd ? [{ label: '발송', courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo, colorVariant: 'blue' }] : []),
-            ...(form.returnCourierCd   ? [{ label: '수거', courier: form.returnCourierCd,   trackingNo: form.returnTrackingNo,   colorVariant: 'orange' }] : []),
+          items: () => baseForm.claimTypeCd !== '교환' ? [] : [
+            ...(baseForm.exchangeCourierCd ? [{ label: '발송', courier: baseForm.exchangeCourierCd, trackingNo: baseForm.exchangeTrackingNo, colorVariant: 'blue' }] : []),
+            ...(baseForm.returnCourierCd   ? [{ label: '수거', courier: baseForm.returnCourierCd,   trackingNo: baseForm.returnTrackingNo,   colorVariant: 'orange' }] : []),
           ],
           onTrack: openTracking,
         } },
@@ -358,7 +358,7 @@ window.OdClaimDtl = {
     ];
 
     return {
-      form, errors, codes, claimItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
+      baseForm, errors, codes, claimItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
       baseFormColumns, paymentGridColumns, editHistGridColumns, claimItemGridColumns, itemExpandColumns,  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, tabs, cfEditHistList,        // computed
@@ -374,7 +374,7 @@ window.OdClaimDtl = {
   <div class="page-title">
     {{ cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.claimId }}
+      #{{ baseForm.claimId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -394,18 +394,18 @@ window.OdClaimDtl = {
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
         <span :style="{
             fontSize:'11px',padding:'3px 10px',borderRadius:'10px',color:'#fff',fontWeight:800,
-            background: CLAIM_TYPE_COLOR[form.claimTypeCd] || '#9ca3af',
+            background: CLAIM_TYPE_COLOR[baseForm.claimTypeCd] || '#9ca3af',
             }">
-          ↩ {{ form.claimTypeCd }}
+          ↩ {{ baseForm.claimTypeCd }}
         </span>
         <span style="font-size:13px;font-weight:700;color:#222;">
-          {{ form.claimId }}
+          {{ baseForm.claimId }}
         </span>
-        <span v-if="form.requestDate" style="font-size:11px;color:#888;">
-          신청일: {{ form.requestDate }}
+        <span v-if="baseForm.requestDate" style="font-size:11px;color:#888;">
+          신청일: {{ baseForm.requestDate }}
         </span>
-        <span v-if="form.reasonDetail" style="font-size:11px;color:#888;margin-left:auto;">
-          사유: {{ form.reasonDetail }}
+        <span v-if="baseForm.reasonDetail" style="font-size:11px;color:#888;margin-left:auto;">
+          사유: {{ baseForm.reasonDetail }}
         </span>
       </div>
       <div style="display:flex;align-items:flex-start;overflow-x:auto;">
@@ -415,44 +415,44 @@ window.OdClaimDtl = {
                 width: idx === cfCurrentStepIdx ? '14px' : '10px',
                 height: idx === cfCurrentStepIdx ? '14px' : '10px',
                 borderRadius:'50%', marginBottom:'6px', flexShrink:0, transition:'all .15s',
-                boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px '+(CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af')+'40' : 'none',
-                background: idx <= cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : '#bbb',
+                boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px '+(CLAIM_TYPE_COLOR[baseForm.claimTypeCd]||'#9ca3af')+'40' : 'none',
+                background: idx <= cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[baseForm.claimTypeCd]||'#9ca3af') : '#bbb',
                 }">
             </div>
             <div :style="{
                 fontSize:'11.5px', fontWeight: idx === cfCurrentStepIdx ? 800 : 600,
-                color: idx === cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
+                color: idx === cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[baseForm.claimTypeCd]||'#9ca3af') : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
                 whiteSpace:'nowrap', textAlign:'center',
                 }">
               {{ step }}
             </div>
-            <span v-if="step==='수거중' && form.returnTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.returnCourierCd, trackingNo: form.returnTrackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-            {{ (form.returnCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
+            <span v-if="step==='수거중' && baseForm.returnTrackingNo" @click="handleBtnAction('tracking-open', { courier: baseForm.returnCourierCd, trackingNo: baseForm.returnTrackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+            {{ (baseForm.returnCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
           </span>
-          <span v-if="step==='완료' && form.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
-          {{ (form.exchangeCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
+          <span v-if="step==='완료' && baseForm.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: baseForm.exchangeCourierCd, trackingNo: baseForm.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+          {{ (baseForm.exchangeCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
         </span>
       </div>
       <div v-if="idx < cfClaimSteps.length - 1"
               :style="{flex:'1', height:'2px', minWidth:'12px', marginTop:'6px',
-              background: idx < cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : '#bbb'}">
+              background: idx < cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[baseForm.claimTypeCd]||'#9ca3af') : '#bbb'}">
       </div>
     </template>
   </div>
 </div>
 <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
 <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+<bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
         :readonly="cfDtlMode" :cols="3"
-        @save="handleBtnAction('form-save')"
-        @cancel="handleBtnAction('form-cancel')"
-        @edit="handleBtnAction('form-edit')"
-        @close="handleBtnAction('form-close')">
+        @save="handleBtnAction('baseForm-save')"
+        @cancel="handleBtnAction('baseForm-cancel')"
+        @edit="handleBtnAction('baseForm-edit')"
+        @close="handleBtnAction('baseForm-close')">
   <!-- ===== ■.■.■.■. 주문ID + 보기 버튼 ====================================== -->
   <template #orderId>
     <div style="display:flex;gap:8px;align-items:center;">
-      <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
-      <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">
+      <input class="form-control" v-model="baseForm.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
+      <span v-if="baseForm.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">
         보기
       </span>
     </div>
@@ -463,8 +463,8 @@ window.OdClaimDtl = {
   <!-- ===== ■.■.■.■. 회원ID + 보기 버튼 ====================================== -->
   <template #memberId>
     <div style="display:flex;gap:8px;align-items:center;">
-      <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" />
-      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
+      <input class="form-control" v-model="baseForm.memberId" placeholder="회원 ID" :readonly="cfDtlMode" />
+      <span v-if="baseForm.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
         보기
       </span>
     </div>
@@ -479,7 +479,7 @@ window.OdClaimDtl = {
     {{ claimItems.length }}
   </span>
 </div>
-<div v-if="form.claimTypeCd==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+<div v-if="baseForm.claimTypeCd==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
   <button class="btn btn-secondary btn-sm" @click="handleBtnAction('claimItems-toggleExpandAll')">
     {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
   </button>
@@ -490,7 +490,7 @@ window.OdClaimDtl = {
         empty-text="클레임 항목 정보가 없습니다.">
   <template #cell-prodNm="{ row, idx }">
     <td style="font-size:12px;">
-      <span v-if="form.claimTypeCd==='교환'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+      <span v-if="baseForm.claimTypeCd==='교환'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
         {{ isExpanded(idx) ? '▼' : '▶' }}
       </span>
       {{ row.prodNm }}
@@ -553,7 +553,7 @@ window.OdClaimDtl = {
     {{ cfStatusHistList.length }}
   </span>
 </div>
-<od-claim-hist :claim-id="form.claimId" :navigate="navigate" />
+<od-claim-hist :claim-id="baseForm.claimId" :navigate="navigate" />
 </div>
 <!-- ===== □.□. 상태변경이력 탭 ============================================== -->
 <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->

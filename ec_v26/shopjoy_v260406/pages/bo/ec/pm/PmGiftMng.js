@@ -36,7 +36,7 @@ window.PmGiftMng = {
         uiState.tabMode = param;
         return;
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -83,7 +83,7 @@ window.PmGiftMng = {
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const baseDetail = coUtil.cofDetail();
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
@@ -174,26 +174,26 @@ window.PmGiftMng = {
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* loadView — 뷰 로드 */
-    const loadView   = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView   = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmGiftMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'pmGiftMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode   = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey    = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode   = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey    = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     // ===== 페이저 번호 빌더 ================================================
     /* fnBuildPagerNums — 유틸 */
@@ -223,7 +223,7 @@ window.PmGiftMng = {
       if (!ok) { return; }
       const idx = (gifts || []).findIndex(x => x.giftId === g.giftId);
       if (idx !== -1) { gifts.splice(idx, 1); }
-      if (detailPanel.selectedId === g.giftId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === g.giftId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pmGift.remove(g.giftId, '사은품관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -266,7 +266,7 @@ window.PmGiftMng = {
     // 기본 그리드
     const baseGridColumns = [
       { key: 'giftNm',       label: '사은품명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'giftTypeCd',   label: '조건유형', badge: (row) => fnTypeBadge(row.giftTypeCd) },
       { key: 'condVal',      label: '조건값',
         fmt: (v, row) => row.giftTypeCd === '금액조건' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
@@ -280,7 +280,7 @@ window.PmGiftMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      gifts, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
+      gifts, uiState, codes, searchParam, pager, baseDetail,                        // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
@@ -343,7 +343,7 @@ window.PmGiftMng = {
       :columns="baseGridColumns" :rows="gifts" :pager="pager" row-key="giftId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''"
+      :row-style="(g) => baseDetail.selectedId===g.giftId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('gifts-sort', key)" @row-click="g => handleSelectAction('gifts-rowEdit', g.giftId)">
       <template #head-actions>
         관리
@@ -367,15 +367,15 @@ window.PmGiftMng = {
         데이터가 없습니다.
       </div>
       <div v-for="g in gifts" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
-        :style="detailPanel.selectedId===g.giftId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
+        :style="baseDetail.selectedId===g.giftId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('gifts-rowEdit', g.giftId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             사은품 #{{ g.giftId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('gifts-rowEdit', g.giftId)" :style="detailPanel.selectedId===g.giftId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('gifts-rowEdit', g.giftId)" :style="baseDetail.selectedId===g.giftId?{color:'#e8587a'}:{}">
             {{ g.giftNm }}
-            <span v-if="detailPanel.selectedId===g.giftId" style="font-size:10px;margin-left:4px;">
+            <span v-if="baseDetail.selectedId===g.giftId" style="font-size:10px;margin-left:4px;">
               ▼
             </span>
           </div>
@@ -420,9 +420,9 @@ window.PmGiftMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
@@ -433,9 +433,9 @@ window.PmGiftMng = {
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
 
-      :reload-trigger="detailPanel.reloadTrigger"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
   </div>

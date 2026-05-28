@@ -64,7 +64,7 @@ window.SyBbsMng = {
       } else if (cmd === 'bbsList-excel') {
         return exportExcel();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -363,7 +363,7 @@ window.SyBbsMng = {
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>

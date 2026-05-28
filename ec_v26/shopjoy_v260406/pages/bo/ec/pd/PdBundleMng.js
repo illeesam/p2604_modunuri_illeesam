@@ -37,10 +37,10 @@ window.PdBundleMng = {
       } else if (cmd === 'bundles-add') {
         return openNew();
       // 묶음상품 Dtl 저장
-      } else if (cmd === 'detailPanel-save') {
+      } else if (cmd === 'baseDetail-save') {
         return handleSave();
       // 묶음상품 Dtl 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDtl();
       // 페이지 크기 변경
       } else if (cmd === 'bundles-pager-sizeChange') {
@@ -86,24 +86,24 @@ window.PdBundleMng = {
       } else if (cmd === 'bundles-pager-setPage') {
         return setPage(param);
       // 카테고리 행 삭제
-      } else if (cmd === 'detailPanel-categoryRemove') {
+      } else if (cmd === 'baseDetail-categoryRemove') {
         return removeCategory(param);
       // 카테고리 행 드래그
-      } else if (cmd === 'detailPanel-categoryDragStart') {
+      } else if (cmd === 'baseDetail-categoryDragStart') {
         return onCatDragStart(param);
-      } else if (cmd === 'detailPanel-categoryDragOver') {
+      } else if (cmd === 'baseDetail-categoryDragOver') {
         return onCatDragOver(param);
-      } else if (cmd === 'detailPanel-categoryDrop') {
+      } else if (cmd === 'baseDetail-categoryDrop') {
         return onCatDrop();
       // 구성품 행 삭제
-      } else if (cmd === 'detailPanel-itemRemove') {
+      } else if (cmd === 'baseDetail-itemRemove') {
         return removeItem(param);
       // 구성품 행 드래그
-      } else if (cmd === 'detailPanel-itemDragStart') {
+      } else if (cmd === 'baseDetail-itemDragStart') {
         return onDragStart(param);
-      } else if (cmd === 'detailPanel-itemDragOver') {
+      } else if (cmd === 'baseDetail-itemDragOver') {
         return onDragOver(param);
-      } else if (cmd === 'detailPanel-itemDrop') {
+      } else if (cmd === 'baseDetail-itemDrop') {
         return onDrop();
       // 카테고리 모달에서 선택
       } else if (cmd === 'categoryModal-select') {
@@ -735,10 +735,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
           ✓
         </span>
       </span>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         닫기
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('detailPanel-save')">
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('baseDetail-save')">
         {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
       </button>
     </div>
@@ -789,7 +789,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">
         카테고리를 추가해주세요
       </div>
-      <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)" draggable="true" @dragstart="handleSelectAction('detailPanel-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-categoryDragOver', idx)" @drop.prevent="handleSelectAction('detailPanel-categoryDrop')" :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''" style="display:flex;align-items:center;gap:4px;padding:2px 0;">
+      <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)" draggable="true" @dragstart="handleSelectAction('baseDetail-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('baseDetail-categoryDragOver', idx)" @drop.prevent="handleSelectAction('baseDetail-categoryDrop')" :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''" style="display:flex;align-items:center;gap:4px;padding:2px 0;">
       <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0;">
         ≡
       </span>
@@ -802,7 +802,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       <span style="font-size:13px;flex:1;">
         {{ cat.categoryNm }}
       </span>
-      <button type="button" @click="handleSelectAction('detailPanel-categoryRemove', idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">
+      <button type="button" @click="handleSelectAction('baseDetail-categoryRemove', idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">
         ✕
       </button>
     </div>
@@ -852,7 +852,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     </tr>
   </thead>
   <tbody>
-    <tr v-for="(item, idx) in dtlItems" :key="(item && item._id)" draggable="true" @dragstart="handleSelectAction('detailPanel-itemDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-itemDragOver', idx)" @drop="handleSelectAction('detailPanel-itemDrop')" :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : ''">
+    <tr v-for="(item, idx) in dtlItems" :key="(item && item._id)" draggable="true" @dragstart="handleSelectAction('baseDetail-itemDragStart', idx)" @dragover.prevent="handleSelectAction('baseDetail-itemDragOver', idx)" @drop="handleSelectAction('baseDetail-itemDrop')" :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : ''">
     <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">
       ≡
     </td>
@@ -900,7 +900,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       </select>
     </td>
     <td style="text-align:center">
-      <button class="btn btn-danger btn-xs" @click="handleSelectAction('detailPanel-itemRemove', idx)">
+      <button class="btn btn-danger btn-xs" @click="handleSelectAction('baseDetail-itemRemove', idx)">
         ✕
       </button>
     </td>

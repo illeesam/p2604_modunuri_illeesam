@@ -21,7 +21,7 @@ window.PmVoucherMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* 하단 상세 */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const baseDetail = coUtil.cofDetail();
 
     /* _initSearchParam — 초기화 */
 
@@ -53,7 +53,7 @@ window.PmVoucherMng = {
         uiState.tabMode = param;
         return;
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -166,26 +166,26 @@ window.PmVoucherMng = {
     };
 
     /* loadView — 뷰 로드 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmVoucherMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'pmVoucherMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -207,7 +207,7 @@ window.PmVoucherMng = {
       if (!ok) { return; }
       const idx = (vouchers || []).findIndex(x => x.voucherId === v.voucherId);
       if (idx !== -1) { vouchers.splice(idx, 1); }
-      if (detailPanel.selectedId === v.voucherId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === v.voucherId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pmVoucher.remove(v.voucherId, '바우처관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -245,7 +245,7 @@ window.PmVoucherMng = {
     // 기본 그리드
     const baseGridColumns = [
       { key: 'voucherNm',       label: '상품권명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'voucherValue',    label: '액면가', align: 'right',
         fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'salePrice',       label: '판매가', align: 'right',
@@ -264,7 +264,7 @@ window.PmVoucherMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vouchers, uiState, codes, searchParam, pager, detailPanel,                     // 상태 / 데이터
+      vouchers, uiState, codes, searchParam, pager, baseDetail,                     // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
@@ -321,7 +321,7 @@ window.PmVoucherMng = {
       :columns="baseGridColumns" :rows="vouchers" :pager="pager" row-key="voucherId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''"
+      :row-style="(v) => baseDetail.selectedId===v.voucherId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('vouchers-sort', key)" @row-click="v => handleSelectAction('vouchers-rowEdit', v.voucherId)">
       <template #head-actions>
         관리
@@ -345,15 +345,15 @@ window.PmVoucherMng = {
         데이터가 없습니다.
       </div>
       <div v-for="v in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
-        :style="detailPanel.selectedId===v.voucherId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
+        :style="baseDetail.selectedId===v.voucherId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('vouchers-rowEdit', v.voucherId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             상품권 #{{ v.voucherId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)" :style="baseDetail.selectedId===v.voucherId?{color:'#e8587a'}:{}">
             {{ v.voucherNm }}
-            <span v-if="detailPanel.selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">
+            <span v-if="baseDetail.selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">
               ▼
             </span>
           </div>
@@ -392,9 +392,9 @@ window.PmVoucherMng = {
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: VoucherDtl 임베드 =================================== -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
@@ -405,9 +405,9 @@ window.PmVoucherMng = {
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
 
-      :reload-trigger="detailPanel.reloadTrigger"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
   </div>

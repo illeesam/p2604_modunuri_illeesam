@@ -34,9 +34,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return handleDateRangeChange();
       } else if (cmd === 'settleAdjs-add') {
         return openNew();
-      } else if (cmd === 'form-save') {
+      } else if (cmd === 'baseForm-save') {
         return handleSave();
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return closeForm();
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -133,7 +133,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-        const form = reactive({});
+        const baseForm = reactive({});
     const errors = reactive({});
     const isNew  = ref(false);
 
@@ -150,13 +150,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* openNew — 신규 열기 */
     const openNew = () => {
-      Object.assign(form, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '매출조정', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
+      Object.assign(baseForm, { adjId: null, adjDate: new Date().toISOString().slice(0,10), vendorId: '', vendorNm: '', adjType: '매출조정', adjAmt: 0, reason: '', aprvStatusCd: '대기', regUserNm: '관리자' });
       uiState.selectedId = '__new__'; uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
     };
 
     /* openEdit — 열기 */
-    const openEdit = (r) => { Object.assign(form, {...r}); uiState.selectedId = r.adjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
+    const openEdit = (r) => { Object.assign(baseForm, {...r}); uiState.selectedId = r.adjId; uiState.isNew = false; Object.keys(errors).forEach(k => delete errors[k]); };
 
     /* closeForm — 닫기 */
     const closeForm = () => { uiState.selectedId = null; };
@@ -166,18 +166,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
-      try { await schema.validate(form, { abortEarly: false }); }
+      try { await schema.validate(baseForm, { abortEarly: false }); }
       catch (err) {
       console.error('[catch-info]', err); err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
-      const v = cfVendors.value.find(x => x.vendorId === Number(form.vendorId));
-      if (v) { form.vendorNm = v.vendorNm; }
+      const v = cfVendors.value.find(x => x.vendorId === Number(baseForm.vendorId));
+      if (v) { baseForm.vendorNm = v.vendorNm; }
       const ok = await showConfirm('저장', '정산조정을 저장하시겠습니까?');
       if (!ok) { return; }
-      if (uiState.isNew) { form.adjId = 'ADJ-' + Date.now(); adjs.unshift({ ...form }); }
-      else { const idx = adjs.findIndex(x => x.adjId === form.adjId); if (idx !== -1) Object.assign(adjs[idx], { ...form }); }
+      if (uiState.isNew) { baseForm.adjId = 'ADJ-' + Date.now(); adjs.unshift({ ...baseForm }); }
+      else { const idx = adjs.findIndex(x => x.adjId === baseForm.adjId); if (idx !== -1) Object.assign(adjs[idx], { ...baseForm }); }
       closeForm();
       try {
-        const res = await (uiState.isNew ? boApiSvc.stSettleAdj.create({ ...form }, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(form.adjId, { ...form }, '정산조정관리', '저장'));
+        const res = await (uiState.isNew ? boApiSvc.stSettleAdj.create({ ...baseForm }, '정산조정관리', '등록') : boApiSvc.stSettleAdj.update(baseForm.adjId, { ...baseForm }, '정산조정관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
@@ -297,7 +297,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, pager, adjs, searchParam, form, errors,
+      uiState, codes, pager, adjs, searchParam, baseForm, errors,
       baseSearchColumns, baseGridColumns, baseFormColumns,
       handleBtnAction, handleSelectAction,
       cfVendors,
@@ -372,9 +372,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       {{ uiState.isNew ? '조정 추가' : '조정 수정' }}
     </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
       :cols="4"
-      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
+      @save="handleBtnAction('baseForm-save')" @cancel="handleBtnAction('baseForm-cancel')" />
   </div>
 </div>
 <!-- ===== □.□. 폼 영역 ================================================== -->

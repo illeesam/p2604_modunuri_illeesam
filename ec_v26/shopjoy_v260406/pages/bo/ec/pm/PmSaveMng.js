@@ -36,7 +36,7 @@ window.PmSaveMng = {
         uiState.tabMode = param;
         return;
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -84,7 +84,7 @@ window.PmSaveMng = {
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const baseDetail = coUtil.cofDetail();
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
@@ -176,26 +176,26 @@ window.PmSaveMng = {
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* loadView — 뷰 로드 */
-    const loadView   = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView   = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmSaveMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'pmSaveMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode   = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey    = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode   = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey    = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     // ===== 페이저 번호 빌더 ================================================
     /* fnBuildPagerNums — 유틸 */
@@ -225,7 +225,7 @@ window.PmSaveMng = {
       if (!ok) { return; }
       const idx = (saves || []).findIndex(x => x.saveId === s.saveId);
       if (idx !== -1) { saves.splice(idx, 1); }
-      if (detailPanel.selectedId === s.saveId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === s.saveId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pmSave.remove(s.saveId, '적립금관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -268,7 +268,7 @@ window.PmSaveMng = {
     // 기본 그리드
     const baseGridColumns = [
       { key: 'saveNm',     label: '마일리지명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'saveType',   label: '유형', badge: (row) => fnTypeBadge(row.saveType) },
       { key: 'saveVal',    label: '적립값', fmt: (v) => (v || 0).toLocaleString() },
       { key: 'saveUnit',   label: '단위', cellStyle: 'color:#555', fmt: (v) => v || '원' },
@@ -282,7 +282,7 @@ window.PmSaveMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      saves, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
+      saves, uiState, codes, searchParam, pager, baseDetail,                        // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
@@ -345,7 +345,7 @@ window.PmSaveMng = {
       :columns="baseGridColumns" :rows="saves" :pager="pager" row-key="saveId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(s) => detailPanel.selectedId===s.saveId ? 'background:#fff8f9;' : ''"
+      :row-style="(s) => baseDetail.selectedId===s.saveId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('saves-sort', key)" @row-click="s => handleSelectAction('saves-rowEdit', s.saveId)">
       <template #head-actions>
         관리
@@ -369,15 +369,15 @@ window.PmSaveMng = {
         데이터가 없습니다.
       </div>
       <div v-for="s in saves" :key="s?.saveId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
-        :style="detailPanel.selectedId===s.saveId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
+        :style="baseDetail.selectedId===s.saveId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('saves-rowEdit', s.saveId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             마일리지 #{{ s.saveId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('saves-rowEdit', s.saveId)" :style="detailPanel.selectedId===s.saveId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('saves-rowEdit', s.saveId)" :style="baseDetail.selectedId===s.saveId?{color:'#e8587a'}:{}">
             {{ s.saveNm }}
-            <span v-if="detailPanel.selectedId===s.saveId" style="font-size:10px;margin-left:4px;">
+            <span v-if="baseDetail.selectedId===s.saveId" style="font-size:10px;margin-left:4px;">
               ▼
             </span>
           </div>
@@ -421,9 +421,9 @@ window.PmSaveMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmSaveDtl 인라인 임베드 ============================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
@@ -434,9 +434,9 @@ window.PmSaveMng = {
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
 
-      :reload-trigger="detailPanel.reloadTrigger"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
   </div>

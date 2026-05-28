@@ -68,7 +68,7 @@ window.PdProdMng = {
         uiState.descOpen = !uiState.descOpen;
         return;
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -118,11 +118,31 @@ window.PdProdMng = {
     const catModal = reactive({ show: false });    // 카테고리 선택 모달 상태
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({                 // 인라인 Dtl 패널 상태
+    const baseDetail = reactive({                 // 인라인 Dtl 패널 상태
       selectedId: null,
       openMode: 'view',                            // 'view' | 'edit'
       reloadTrigger: 0,
     });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+      codes.option_types = codeStore.sgGetGrpCodes('OPTION_TYPE');
+      codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
+      codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -180,21 +200,21 @@ window.PdProdMng = {
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 등록 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pdProdMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'pdProdMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
 
@@ -210,7 +230,7 @@ window.PdProdMng = {
       if (!ok) { return; }
       const idx = products.findIndex(x => x.prodId === p.prodId);
       if (idx !== -1) { products.splice(idx, 1); }
-      if (detailPanel.selectedId === p.prodId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === p.prodId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pdProd.remove(p.prodId, '상품관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -255,30 +275,11 @@ window.PdProdMng = {
 
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('PRODUCT_STATUS', s, _PROD_STATUS_FB[s] || 'badge-gray');
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
-      codes.option_types = codeStore.sgGetGrpCodes('OPTION_TYPE');
-      codes.category_depths = codeStore.sgGetGrpCodes('CATEGORY_DEPTH');
-      codes.prod_date_types = codeStore.sgGetGrpCodes('PROD_DATE_TYPE');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -305,7 +306,7 @@ window.PdProdMng = {
     // 기본 그리드
     const baseGridColumns = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'cateNm',       label: '카테고리' },
       { key: 'listPrice',    label: '가격', fmt: (v) => ((v || 0).toLocaleString() + '원') },
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
@@ -317,7 +318,7 @@ window.PdProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      products, uiState, codes, searchParam, pager, detailPanel, catModal,        // 상태 / 데이터
+      products, uiState, codes, searchParam, pager, baseDetail, catModal,        // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
@@ -387,7 +388,7 @@ window.PdProdMng = {
       :columns="baseGridColumns" :rows="products" :pager="pager" row-key="prodId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
+      :row-style="(p) => baseDetail.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('prods-sort', key)"
       @set-page="n => handleSelectAction('prods-pager-setPage', n)"
       @size-change="handleSelectAction('prods-pager-sizeChange')"
@@ -420,22 +421,22 @@ window.PdProdMng = {
     @close="handleBtnAction('catModal-close')" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 ====================================== -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
     <pd-prod-dtl
-      :key="detailPanel.selectedId"
+      :key="baseDetail.selectedId"
       :navigate="inlineNavigate"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
       />
   </div>

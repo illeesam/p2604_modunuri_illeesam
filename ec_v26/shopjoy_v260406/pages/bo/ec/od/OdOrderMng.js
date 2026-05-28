@@ -45,7 +45,7 @@ window.OdOrderMng = {
         return handleDateRangeChange();
       // 신규 주문 등록 (인라인 Dtl)
       } else if (cmd === 'orders-add') {
-        detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
+        baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++;
         return;
       // 엑셀 내보내기
       } else if (cmd === 'orders-excel') {
@@ -71,8 +71,8 @@ window.OdOrderMng = {
       } else if (cmd === 'actionsModal-reqTargetChange') {
         return onReqTargetChange();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
-        detailPanel.selectedId = null;
+      } else if (cmd === 'baseDetail-close') {
+        baseDetail.selectedId = null;
         return;
       // 회원 선택 모달 열기
       } else if (cmd === 'memberPickModal-open') {
@@ -107,11 +107,11 @@ window.OdOrderMng = {
         return handleSearchData('DEFAULT');
       // 그리드 행 클릭 → 편집 인라인 패널 열기
       } else if (cmd === 'orders-rowEdit') {
-        detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
+        baseDetail.selectedId = param; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++;
         return;
       // 그리드 행 보기
       } else if (cmd === 'orders-rowView') {
-        detailPanel.selectedId = param; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++;
+        baseDetail.selectedId = param; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++;
         return;
       // 그리드 행 삭제
       } else if (cmd === 'orders-rowDelete') {
@@ -149,7 +149,7 @@ window.OdOrderMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 하단 상세 (인라인 Dtl) */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const baseDetail = coUtil.cofDetail();
 
     /* 일괄선택 */
     const checked = reactive(new Set());
@@ -165,6 +165,28 @@ window.OdOrderMng = {
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
+      codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
+      codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
+      codes.order_date_types = codeStore.sgGetGrpCodes('ORDER_DATE_TYPE');
+      codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
+      codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchData('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -229,36 +251,15 @@ window.OdOrderMng = {
     };
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.order_statuses = codeStore.sgGetGrpCodes('ORDER_STATUS');
-      codes.payment_methods = codeStore.sgGetGrpCodes('PAYMENT_METHOD');
-      codes.dliv_statuses = codeStore.sgGetGrpCodes('DLIV_STATUS');
-      codes.order_date_types = codeStore.sgGetGrpCodes('ORDER_DATE_TYPE');
-      codes.approval_actions = codeStore.sgGetGrpCodes('APPROVAL_ACTION');
-      codes.req_targets = codeStore.sgGetGrpCodes('REQ_TARGET');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData('DEFAULT');
-    });
-
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odOrderMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchData('RELOAD'); } return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'odOrderMng') { baseDetail.selectedId = null; if (opts.reload) { handleSearchData('RELOAD'); } return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -287,7 +288,7 @@ window.OdOrderMng = {
       if (!Array.isArray(orders)) { return; }
       const idx = orders.findIndex(x => x.orderId === o.orderId);
       if (idx !== -1) { orders.splice(idx, 1); }
-      if (detailPanel.selectedId === o.orderId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === o.orderId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.odOrder.remove(o.orderId, '주문관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -458,7 +459,7 @@ window.OdOrderMng = {
     // 목록 그리드
     const listGridColumns = [
       { key: 'orderId',       label: '주문ID', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'orderDate',     label: '주문일시', sortKey: 'reg', style: 'white-space:nowrap;' },
@@ -490,7 +491,7 @@ window.OdOrderMng = {
     ];
     /* fnGridRowStyle — 유틸 */
     const fnGridRowStyle = (o) =>
-      (detailPanel.selectedId === o.orderId ? 'background:#fff8f9;' : '')
+      (baseDetail.selectedId === o.orderId ? 'background:#fff8f9;' : '')
       + (isChecked(o.orderId) ? 'background:#eef6fd;' : '');
 
     /* 회원선택 그리드 컬럼은 OdMemberPickModal 내장 */
@@ -525,11 +526,11 @@ window.OdOrderMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      orders, members, claims, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,  // 상태 / 데이터
+      orders, members, claims, uiState, codes, searchParam, pager, baseDetail, checked, bulkForm, bulkOpen, memberPick,  // 상태 / 데이터
       baseSearchColumns, listGridColumns, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns, bulkApprovalFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm,                    // computed
-      selectedId: computed(() => detailPanel.selectedId),                                                                  // template 직접 참조
+      selectedId: computed(() => baseDetail.selectedId),                                                                  // template 직접 참조
       isChecked, fnGridRowStyle, sortIcon, fnStatusBadge, fnPayStatusBadge,                                                // 헬퍼
       inlineNavigate,                                                                                                      // Dtl 콜백 (closure 필요)
     };
@@ -611,7 +612,7 @@ window.OdOrderMng = {
   <!-- ===== ■. 하단 상세: OrderDtl 임베드 ===================================== -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
@@ -619,8 +620,8 @@ window.OdOrderMng = {
       :key="selectedId"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="baseDetail.reloadTrigger"
       />
   </div>
   <!-- ===== □. 하단 상세: OrderDtl 임베드 ===================================== -->

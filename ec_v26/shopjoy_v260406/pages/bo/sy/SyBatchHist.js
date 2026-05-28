@@ -57,6 +57,26 @@ window.SyBatchHist = {
       }
     };
 
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        codes.batch_run_statuses = codeStore.sgGetGrpCodes('BATCH_RUN_STATUS');
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchData().then(() => { onExpandAll(); });
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchData — 목록 조회 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -117,25 +137,6 @@ window.SyBatchHist = {
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore();
-        codes.batch_run_statuses = codeStore.sgGetGrpCodes('BATCH_RUN_STATUS');
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData().then(() => { onExpandAll(); });
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 배치 fnRunBadge — sy_code BATCH_RUN_STATUS code_opt1 우선, 없으면 FB */
     const _BATCH_RUN_STATUS_FB = { '성공': 'badge-green', '실패': 'badge-red', '실행중': 'badge-blue', '대기': 'badge-gray' };

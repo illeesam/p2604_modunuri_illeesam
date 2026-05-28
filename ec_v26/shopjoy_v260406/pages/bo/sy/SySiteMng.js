@@ -53,7 +53,7 @@ window.SySiteMng = {
         pager.pageNo = 1;
         return handleSearchList();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       // 표시경로 선택 모달 닫기
       } else if (cmd === 'pathModal-close') {
@@ -115,6 +115,23 @@ window.SySiteMng = {
       dtlMode: 'view',               // 'view' | 'edit'
       reloadTrigger: 0,
     });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.site_oper_statuses = codeStore.sgGetGrpCodes('SITE_OPER_STATUS');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -283,22 +300,6 @@ window.SySiteMng = {
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
     const fnRowStyle = (s) => detailModal.dtlId === s.siteId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.site_oper_statuses = codeStore.sgGetGrpCodes('SITE_OPER_STATUS');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd))].sort());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
@@ -410,7 +411,7 @@ window.SySiteMng = {
     <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭) ===================== -->
     <div v-if="detailModal.show" style="grid-column:1/-1;margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
           ✕ 닫기
         </button>
       </div>

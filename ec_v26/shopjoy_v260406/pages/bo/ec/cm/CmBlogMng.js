@@ -43,13 +43,13 @@ window.CmBlogMng = {
       } else if (cmd === 'blogs-add') {
         return openNew();
       // 상세 인라인 패널 저장
-      } else if (cmd === 'detailPanel-save') {
+      } else if (cmd === 'baseDetail-save') {
         return handleSave();
       // 상세 인라인 패널 삭제
-      } else if (cmd === 'detailPanel-delete') {
+      } else if (cmd === 'baseDetail-delete') {
         return handleDelete();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -88,7 +88,23 @@ window.CmBlogMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ show: false, isNew: false, dtlId: null, form: {} }); // 인라인 Dtl 패널 상태
+    const baseDetail = reactive({ show: false, isNew: false, dtlId: null, form: {} }); // 인라인 Dtl 패널 상태
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.blog_display_statuses = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -150,39 +166,39 @@ window.CmBlogMng = {
 
     /* openDetail — 인라인 패널 열기 (토글) */
     const openDetail = (row) => {
-      if (detailPanel.dtlId === row.blogId) { detailPanel.show = false; detailPanel.dtlId = null; return; }
-      Object.assign(detailPanel.form, { ...row });
-      detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true;
+      if (baseDetail.dtlId === row.blogId) { baseDetail.show = false; baseDetail.dtlId = null; return; }
+      Object.assign(baseDetail.form, { ...row });
+      baseDetail.dtlId = row.blogId; baseDetail.isNew = false; baseDetail.show = true;
     };
 
     /* openNew — 신규 등록 */
     const openNew = () => {
-      Object.assign(detailPanel.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
-      detailPanel.dtlId = '__new__'; detailPanel.isNew = true; detailPanel.show = true;
+      Object.assign(baseDetail.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
+      baseDetail.dtlId = '__new__'; baseDetail.isNew = true; baseDetail.show = true;
     };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.show = false; detailPanel.dtlId = null; };
+    const closeDetail = () => { baseDetail.show = false; baseDetail.dtlId = null; };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!detailPanel.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
-      const isNewPost = detailPanel.isNew;
+      if (!baseDetail.form.blogTitle) { showToast('제목은 필수입니다.', 'error'); return; }
+      const isNewPost = baseDetail.isNew;
       const ok = await showConfirm('저장', '저장하시겠습니까?');
       if (!ok) { return; }
       if (isNewPost) {
-        detailPanel.form.blogId = 'BL' + String(Date.now()).slice(-6);
-        detailPanel.form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
-        blogs.unshift({ ...detailPanel.form });
-        detailPanel.dtlId = detailPanel.form.blogId; detailPanel.isNew = false;
+        baseDetail.form.blogId = 'BL' + String(Date.now()).slice(-6);
+        baseDetail.form.regDate = new Date().toLocaleString('sv').replace('T', ' ');
+        blogs.unshift({ ...baseDetail.form });
+        baseDetail.dtlId = baseDetail.form.blogId; baseDetail.isNew = false;
       } else {
-        const si = blogs.findIndex(p => p.blogId === detailPanel.form.blogId);
-        if (si !== -1) { Object.assign(blogs[si], detailPanel.form); }
+        const si = blogs.findIndex(p => p.blogId === baseDetail.form.blogId);
+        if (si !== -1) { Object.assign(blogs[si], baseDetail.form); }
       }
       try {
         const res = await (isNewPost
-          ? boApiSvc.cmBlog.create({ ...detailPanel.form }, '블로그관리', '등록')
-          : boApiSvc.cmBlog.update(detailPanel.form.blogId, { ...detailPanel.form }, '블로그관리', '저장'));
+          ? boApiSvc.cmBlog.create({ ...baseDetail.form }, '블로그관리', '등록')
+          : boApiSvc.cmBlog.update(baseDetail.form.blogId, { ...baseDetail.form }, '블로그관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
       } catch (err) {
@@ -219,7 +235,7 @@ window.CmBlogMng = {
       const ok = await showConfirm('공개설정', `[${row.blogTitle}]을 ${newYn === 'Y' ? '공개' : '비공개'} 처리하시겠습니까?`);
       if (!ok) { return; }
       row.useYn = newYn;
-      if (detailPanel.form.blogId === row.blogId) { detailPanel.form.useYn = newYn; }
+      if (baseDetail.form.blogId === row.blogId) { baseDetail.form.useYn = newYn; }
       try {
         const res = await boApiSvc.cmBlog.setUse(row.blogId, { useYn: newYn }, '블로그관리', '상태변경');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -231,29 +247,14 @@ window.CmBlogMng = {
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.blog_display_statuses = codeStore.sgGetGrpCodes('BLOG_DISPLAY_STATUS');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailPanel.dtlId) || null);
+    const cfSelectedRow = computed(() => blogs.find(p => p.blogId === baseDetail.dtlId) || null);
 
     /* fnYnBadge — Y/N 배지 클래스 */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* fnGridRowClass — 그리드 행 클래스 (선택 행 강조) */
-    const fnGridRowClass = (row) => (detailPanel.dtlId === row.blogId ? 'active' : '');
+    const fnGridRowClass = (row) => (baseDetail.dtlId === row.blogId ? 'active' : '');
 
     // 기본 검색
     const baseSearchColumns = [
@@ -299,7 +300,7 @@ window.CmBlogMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      blogs, uiState, codes, searchParam, pager, detailPanel,                          // 상태 / 데이터
+      blogs, uiState, codes, searchParam, pager, baseDetail,                          // 상태 / 데이터
       baseSearchColumns, baseGridColumns, blogFormColumns,                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
@@ -340,19 +341,19 @@ window.CmBlogMng = {
   </bo-grid>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 =================================================== -->
-  <div class="card" v-if="detailPanel.show">
+  <div class="card" v-if="baseDetail.show">
     <div class="toolbar">
       <span class="list-title">
-        {{ detailPanel.isNew ? '신규 등록' : '상세 / 수정' }}
+        {{ baseDetail.isNew ? '신규 등록' : '상세 / 수정' }}
       </span>
       <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('detailPanel-save')">
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('baseDetail-save')">
           저장
         </button>
-        <button v-if="!detailPanel.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('detailPanel-delete')">
+        <button v-if="!baseDetail.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('baseDetail-delete')">
           삭제
         </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
           닫기
         </button>
       </div>
@@ -360,10 +361,10 @@ window.CmBlogMng = {
     <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="blogFormColumns" :form="detailPanel.form" :errors="{}"
+      <bo-form-area :columns="blogFormColumns" :form="baseDetail.form" :errors="{}"
         :cols="2" :show-actions="false">
         <template #blogContent>
-          <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />
+          <base-html-editor v-model="baseDetail.form.blogContent" height="320px" />
         </template>
       </bo-form-area>
     </div>

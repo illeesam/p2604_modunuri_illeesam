@@ -4,7 +4,7 @@ window.MbMemberDtl = {
   props: {
     navigate:      { type: Function, required: true },        // 페이지 이동
     dtlId:         { type: String, default: null },           // 수정 대상 ID
-    detailModal:   { type: Object, default: () => ({}) },     // 부모 Mng 의 detailPanel 객체
+    detailModal:   { type: Object, default: () => ({}) },     // 부모 Mng 의 baseDetail 객체
     handleSave:    { type: Function, default: () => {} },     // 저장 콜백
     handleDelete:  { type: Function, default: () => {} },     // 삭제 콜백
     closeDetail:   { type: Function, default: () => {} },     // 닫기 콜백
@@ -22,24 +22,20 @@ window.MbMemberDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MbMemberDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (부모 콜백)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return props.handleSave();
       // 폼 삭제 (부모 콜백)
-      } else if (cmd === 'form-delete') {
+      } else if (cmd === 'baseForm-delete') {
         return props.handleDelete();
       // 폼 닫기 (부모 콜백)
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* watch — dtlId 변경 시 currentId 갱신 */
-    watch(() => props.detailModal.dtlId, (newId) => {
-      if (newId) { currentId.value = newId; }
-    }, { immediate: true });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     // ★ onMounted — 진입 시 공통코드 로드
     onMounted(() => {
@@ -48,6 +44,11 @@ window.MbMemberDtl = {
       codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
     });
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* watch — dtlId 변경 시 currentId 갱신 */
+    watch(() => props.detailModal.dtlId, (newId) => {
+      if (newId) { currentId.value = newId; }
+    }, { immediate: true });
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 detailModal.form 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
@@ -90,13 +91,13 @@ window.MbMemberDtl = {
         {{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}
       </span>
       <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('baseForm-save')">
           저장
         </button>
-        <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">
+        <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('baseForm-delete')">
           삭제
         </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseForm-close')">
           닫기
         </button>
       </div>

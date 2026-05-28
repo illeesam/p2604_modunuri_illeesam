@@ -114,6 +114,25 @@ window.SyVendorUserMng = {
       }
     };
 
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleLoadData();
+      expandAll();
+      handleLoadDetail();
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadData — 처리 */
     const handleLoadData = async () => {
@@ -201,24 +220,6 @@ window.SyVendorUserMng = {
         uiState.loading = false;
       }
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
-      uiState.isPageCodeLoad = true;
-    };
-
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleLoadData();
-      expandAll();
-      handleLoadDetail();
-    });
-
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
 
     /* fnVendorNm — 유틸 */

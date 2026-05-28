@@ -30,7 +30,7 @@ window.PmPlanMng = {
     ];
 
     /* 하단 상세 */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const baseDetail = coUtil.cofDetail();
 
     /* _initSearchParam — 초기화 */
 
@@ -63,7 +63,7 @@ window.PmPlanMng = {
         uiState.tabMode = param;
         return;
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -172,26 +172,26 @@ window.PmPlanMng = {
     };
 
     /* loadView — 뷰 로드 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmPlanMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'pmPlanMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -213,7 +213,7 @@ window.PmPlanMng = {
       if (!ok) { return; }
       const idx = plans.findIndex(x => x.planId === p.planId);
       if (idx !== -1) { plans.splice(idx, 1); }
-      if (detailPanel.selectedId === p.planId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === p.planId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.pmPlan.remove(p.planId, '기획전관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -246,7 +246,7 @@ window.PmPlanMng = {
     // 기본 그리드
     const baseGridColumns = [
       { key: 'planNm',       label: '기획전명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'category',     label: '카테고리',
         cellInnerStyle: 'font-size:11px;background:#e8f0fe;color:#1577db;border-radius:4px;padding:2px 8px;' },
       { key: 'theme',        label: '테마' },
@@ -262,7 +262,7 @@ window.PmPlanMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      plans, uiState, codes, searchParam, pager, detailPanel, CATEGORIES,            // 상태 / 데이터
+      plans, uiState, codes, searchParam, pager, baseDetail, CATEGORIES,            // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
@@ -319,7 +319,7 @@ window.PmPlanMng = {
       :columns="baseGridColumns" :rows="plans" :pager="pager" row-key="planId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''"
+      :row-style="(p) => baseDetail.selectedId===p.planId ? 'background:#fff8f9;' : ''"
       @sort="key => handleSelectAction('plans-sort', key)" @row-click="p => handleSelectAction('plans-rowEdit', p.planId)">
       <template #head-actions>
         관리
@@ -346,7 +346,7 @@ window.PmPlanMng = {
         데이터가 없습니다.
       </div>
       <div v-for="p in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
-        :style="detailPanel.selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
+        :style="baseDetail.selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('plans-rowEdit', p.planId)">
         <!-- ===== ■.■.■.■. 배너 이미지 ============================================ -->
         <div v-if="p.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="p.bannerImage">
@@ -355,9 +355,9 @@ window.PmPlanMng = {
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             기획전 #{{ p.planId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('plans-rowEdit', p.planId)" :style="detailPanel.selectedId===p.planId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('plans-rowEdit', p.planId)" :style="baseDetail.selectedId===p.planId?{color:'#e8587a'}:{}">
             {{ p.planNm }}
-            <span v-if="detailPanel.selectedId===p.planId" style="font-size:10px;margin-left:4px;">
+            <span v-if="baseDetail.selectedId===p.planId" style="font-size:10px;margin-left:4px;">
               ▼
             </span>
           </div>
@@ -402,22 +402,22 @@ window.PmPlanMng = {
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: PlanDtl 임베드 ====================================== -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
     <pm-plan-dtl
-      :key="detailPanel.selectedId"
+      :key="baseDetail.selectedId"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
 
-      :reload-trigger="detailPanel.reloadTrigger"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
   </div>

@@ -1,4 +1,16 @@
-/* ShopJoy Admin - 공지사항관리 상세/등록 */
+/* ShopJoy Admin - 공지사항관리 상세/등록
+ * ★ BO Dtl 표준 참조 모델 (2026-05-28) — 신규 Dtl 작성 시 이 파일 구조를 따른다.
+ *   - 폼 reactive: `const baseForm = reactive({...})` (변수명 `form` 단독 금지)
+ *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
+ *   - cmd 라우팅: 'baseForm-save' / 'baseForm-cancel' / 'baseForm-edit' / 'baseForm-close'
+ *   - 폼: <bo-form-area :columns="baseFormColumns" :form="baseForm" :readonly="cfReadonly" :cols="3">
+ *     (※ bo-form-area 의 prop명 `form` 은 컴포넌트 표준이라 그대로 유지)
+ *   - readonly 판정: `const cfReadonly = computed(() => props.dtlMode === 'view')`
+ *   - 신규 판정:    `const cfIsNew    = computed(() => props.dtlId == null)`
+ *   - 첨부:         `cfAttachRefId = computed(() => props.dtlId ? ('XXX-' + props.dtlId) : '')`
+ *   - reloadTrigger watch 로 상위 Mng 신호 수신 → 상세 재조회
+ *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.7~§4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
+ */
 window.CmNoticeDtl = {
   name: 'CmNoticeDtl',
   props: {

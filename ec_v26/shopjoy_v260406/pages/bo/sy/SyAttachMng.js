@@ -116,6 +116,27 @@ window.SyAttachMng = {
       }
     };
 
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
+      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
+      codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(async () => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      await handleLoadGrps();
+      handleSearchData();
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnBuildPageNums — 유틸 */
     const fnBuildPageNums = () => {
@@ -196,26 +217,6 @@ window.SyAttachMng = {
         uiState.loading = false;
       }
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-      codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
-      codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      await handleLoadGrps();
-      handleSearchData();
-    });
-
     /* onSearch — 조회 */
     const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
 

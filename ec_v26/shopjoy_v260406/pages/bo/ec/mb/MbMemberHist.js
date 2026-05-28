@@ -49,15 +49,7 @@ window.MbMemberHist = {
       }
     };
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* watch — memberId 변경 (computed 자동 갱신 - 별도 로드 불필요) */
-    watch(() => props.memberId, () => {
-      // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)
-    });
-
-    /* watch — 탭/뷰모드 변경 시 window 영속화 */
-    watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
-    watch(() => uiState.tabMode2, v => { window._ecMemberHistState.tabMode = v; });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -68,6 +60,15 @@ window.MbMemberHist = {
     // ★ onMounted — 진입 시 코드 로드
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* watch — memberId 변경 (computed 자동 갱신 - 별도 로드 불필요) */
+    watch(() => props.memberId, () => {
+      // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)
+    });
+
+    /* watch — 탭/뷰모드 변경 시 window 영속화 */
+    watch(() => uiState.tab, v => { window._ecMemberHistState.tab = v; });
+    watch(() => uiState.tabMode2, v => { window._ecMemberHistState.tabMode = v; });
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* showTab — 탭 표시 여부 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;

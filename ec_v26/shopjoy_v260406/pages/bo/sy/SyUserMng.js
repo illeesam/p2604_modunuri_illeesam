@@ -61,7 +61,7 @@ window.SyUserMng = {
         if (expanded.has(param)) { expanded.delete(param); } else { expanded.add(param); }
         return;
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -90,7 +90,7 @@ window.SyUserMng = {
       } else if (cmd === 'deptTree-select') {
         uiState.selectedDeptId = param;
         pager.pageNo = 1;
-        detailPanel.selectedId = null;
+        baseDetail.selectedId = null;
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -111,10 +111,31 @@ window.SyUserMng = {
     const expanded = reactive(new Set([null]));
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 인라인 Dtl 패널 상태
+    const baseDetail = coUtil.cofDetail(); // 인라인 Dtl 패널 상태
 
     /* ===== 엑셀 업로드 모달 (컬럼은 다운로드 파일의 3행 헤더에서 자동 추출) ===== */
     const excelUploadModal = reactive({ show: false, reloadTrigger: 0 });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
+      codes.user_roles = codeStore.sgGetGrpCodes('USER_ROLE');
+      codes.user_date_types = codeStore.sgGetGrpCodes('USER_DATE_TYPE');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted — 진입 시 코드 로드 + 트리 + 목록 조회
+    onMounted(async () => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      await handleSearchTree();
+      expanded.add(null);
+      await handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -210,21 +231,21 @@ window.SyUserMng = {
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 등록 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syUserMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'syUserMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
 
@@ -240,7 +261,7 @@ window.SyUserMng = {
       if (!ok) { return; }
       const idx = users.findIndex(x => x.userId === u.userId);
       if (idx !== -1) { users.splice(idx, 1); }
-      if (detailPanel.selectedId === u.userId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === u.userId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.syUser.remove(u.userId, '사용자관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -265,31 +286,11 @@ window.SyUserMng = {
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.user_status = codeStore.sgGetGrpCodes('USER_STATUS');
-      codes.user_roles = codeStore.sgGetGrpCodes('USER_ROLE');
-      codes.user_date_types = codeStore.sgGetGrpCodes('USER_DATE_TYPE');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted — 진입 시 코드 로드 + 트리 + 목록 조회
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      await handleSearchTree();
-      expanded.add(null);
-      await handleSearchList('DEFAULT');
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     /* fnRoleBadge — 권한 배지 */
     const _USER_ROLE_FB = { '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' };
@@ -300,7 +301,7 @@ window.SyUserMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('USER_STATUS', s, _USER_STATUS_FB[s] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (u) => detailPanel.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (u) => baseDetail.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // 기본 검색
     const baseSearchColumns = [
@@ -327,7 +328,7 @@ window.SyUserMng = {
       { key: 'loginId',      label: '로그인ID',
         cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:monospace;' },
       { key: 'userNm',       label: '이름', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'userEmail',    label: '이메일' },
       { key: 'userPhone',    label: '연락처' },
       { key: 'roleNm',       label: '권한', badge: (row) => fnRoleBadge(row.roleNm) },
@@ -340,7 +341,7 @@ window.SyUserMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      users, uiState, codes, searchParam, pager, detailPanel, expanded,  // 상태 / 데이터
+      users, uiState, codes, searchParam, pager, baseDetail, expanded,  // 상태 / 데이터
       excelUploadModal,                                                  // 엑셀 업로드 모달
       baseSearchColumns, baseGridColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
@@ -431,15 +432,15 @@ window.SyUserMng = {
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>
     <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleSearchList" />
   </div>
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->

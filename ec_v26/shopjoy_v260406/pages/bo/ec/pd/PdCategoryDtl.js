@@ -17,7 +17,7 @@ window.PdCategoryDtl = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ category_statuses: [] });
 
-    const form = reactive({                       // 카테고리 폼 데이터
+    const baseForm = reactive({                       // 카테고리 폼 데이터
       categoryId: null, parentCategoryId: null, categoryNm: '', categoryDepth: 1, sortOrd: 1, categoryStatusCd: 'ACTIVE', categoryDesc: '', imgUrl: '',
     });
     const errors = reactive({});                  // 폼 검증 에러
@@ -35,21 +35,38 @@ window.PdCategoryDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PdCategoryDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('pdCategoryMng');
       // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd === 'baseForm-edit') {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 목록으로 이동
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.navigate('pdCategoryMng');
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
+
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchDetail();
+      handleSearchList('DEFAULT');
+    });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchList — 카테고리 목록 조회 (상위 옵션용) */
@@ -73,7 +90,7 @@ window.PdCategoryDtl = {
       try {
         const res = await boApiSvc.pdCategory.getById(props.dtlId, '카테고리상세', '상세조회');
         const c = res.data?.data || res.data;
-        if (c) { Object.assign(form, { ...c }); }
+        if (c) { Object.assign(baseForm, { ...c }); }
       } catch (err) {
         console.error('[catch-info]', err);
       }
@@ -81,11 +98,11 @@ window.PdCategoryDtl = {
 
     /* onParentChange — 상위카테고리 변경 시 depth 자동 산정 */
     const onParentChange = () => {
-      if (form.parentCategoryId === null || form.parentCategoryId === '') {
-        form.categoryDepth = 1;
+      if (baseForm.parentCategoryId === null || baseForm.parentCategoryId === '') {
+        baseForm.categoryDepth = 1;
       } else {
-        const parent = window.safeArrayUtils.safeFind(categories, c => c.categoryId === form.parentCategoryId);
-        form.categoryDepth = parent ? (parent.categoryDepth || 0) + 1 : 1;
+        const parent = window.safeArrayUtils.safeFind(categories, c => c.categoryId === baseForm.parentCategoryId);
+        baseForm.categoryDepth = parent ? (parent.categoryDepth || 0) + 1 : 1;
       }
     };
 
@@ -93,7 +110,7 @@ window.PdCategoryDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
-        await schema.validate(form, { abortEarly: false });
+        await schema.validate(baseForm, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
@@ -103,7 +120,7 @@ window.PdCategoryDtl = {
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await (cfIsNew.value ? boApiSvc.pdCategory.create({ ...form }, '카테고리관리', '등록') : boApiSvc.pdCategory.update(form.categoryId, { ...form }, '카테고리관리', '저장'));
+        const res = await (cfIsNew.value ? boApiSvc.pdCategory.create({ ...baseForm }, '카테고리관리', '등록') : boApiSvc.pdCategory.update(baseForm.categoryId, { ...baseForm }, '카테고리관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('pdCategoryMng', { reload: true }); }
@@ -114,22 +131,6 @@ window.PdCategoryDtl = {
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.category_statuses = codeStore.sgGetGrpCodes('CATEGORY_STATUS');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchDetail();
-      handleSearchList('DEFAULT');
-    });
-
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
@@ -166,7 +167,7 @@ window.PdCategoryDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      form, errors, codes,                                       // 상태 / 데이터
+      baseForm, errors, codes,                                       // 상태 / 데이터
       baseFormColumns,                                           // 컬럼 정의
       handleBtnAction,                                           // dispatch
       cfIsNew, cfDtlMode, cfParentOptions,                       // computed
@@ -178,19 +179,19 @@ window.PdCategoryDtl = {
   <div class="page-title">
     {{ cfIsNew ? '카테고리 등록' : '카테고리 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.categoryId }}
+      #{{ baseForm.categoryId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
       :readonly="cfDtlMode" :cols="3"
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')" />
+      @save="handleBtnAction('baseForm-save')"
+      @cancel="handleBtnAction('baseForm-cancel')"
+      @edit="handleBtnAction('baseForm-edit')"
+      @close="handleBtnAction('baseForm-close')" />
   </div>
   <!-- ===== □. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
 </div>

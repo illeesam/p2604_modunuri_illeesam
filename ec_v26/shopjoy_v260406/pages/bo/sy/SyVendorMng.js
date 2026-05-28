@@ -48,7 +48,7 @@ window.SyVendorMng = {
       } else if (cmd === 'vendors-reload') {
         return handleSearchList('RELOAD');
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -77,7 +77,7 @@ window.SyVendorMng = {
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         pager.pageNo = 1;
-        detailPanel.selectedId = null;
+        baseDetail.selectedId = null;
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -95,7 +95,25 @@ window.SyVendorMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 인라인 Dtl 패널 상태
+    const baseDetail = coUtil.cofDetail(); // 인라인 Dtl 패널 상태
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.vendor_status = codeStore.sgGetGrpCodes('VENDOR_STATUS');
+      codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -148,21 +166,21 @@ window.SyVendorMng = {
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 등록 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syVendorMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'syVendorMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
 
@@ -178,7 +196,7 @@ window.SyVendorMng = {
       if (!ok) { return; }
       const idx = vendors.findIndex(x => x.vendorId === v.vendorId);
       if (idx !== -1) { vendors.splice(idx, 1); }
-      if (detailPanel.selectedId === v.vendorId) { detailPanel.selectedId = null; }
+      if (baseDetail.selectedId === v.vendorId) { baseDetail.selectedId = null; }
       try {
         const res = await boApiSvc.syVendor.remove(v.vendorId, '판매자관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -196,28 +214,11 @@ window.SyVendorMng = {
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.vendor_status = codeStore.sgGetGrpCodes('VENDOR_STATUS');
-      codes.vendor_type_kr = codeStore.sgGetGrpCodes('VENDOR_TYPE_KR');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
+    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
 
     /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
@@ -226,7 +227,7 @@ window.SyVendorMng = {
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (v) => detailPanel.selectedId === v.vendorId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (v) => baseDetail.selectedId === v.vendorId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // 기본 검색
     const baseSearchColumns = [
@@ -252,7 +253,7 @@ window.SyVendorMng = {
       { key: 'vendorId',      label: 'ID' },
       { key: 'vendorType',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorType) },
       { key: 'vendorNm',      label: '업체명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'ceoNm',         label: '대표자' },
       { key: 'vendorNo',      label: '사업자번호' },
       { key: 'vendorPhone',   label: '전화번호' },
@@ -264,7 +265,7 @@ window.SyVendorMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      vendors, uiState, codes, searchParam, pager, baseDetail,                       // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                      // computed
@@ -331,15 +332,15 @@ window.SyVendorMng = {
       </bo-grid>
     </div>
     <!-- ===== ■.■. 상세 패널 (전체 폭, grid 직접 자식) ============================ -->
-    <div v-if="detailPanel.selectedId" style="grid-column:1/-1;margin-top:4px;">
+    <div v-if="baseDetail.selectedId" style="grid-column:1/-1;margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
           ✕ 닫기
         </button>
       </div>
       <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-        :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        :reload-trigger="detailPanel.reloadTrigger"
+        :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        :reload-trigger="baseDetail.reloadTrigger"
         :on-list-reload="handleSearchList" />
     </div>
   </div>

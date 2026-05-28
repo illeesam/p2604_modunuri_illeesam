@@ -35,7 +35,7 @@ window.PdReviewMng = {
       } else if (cmd === 'reviews-pager-sizeChange') {
         return onSizeChange();
       // 상세 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         selectedId.value = null;
         return;
       // 상품별 리뷰 목록 닫기 (선택 해제)
@@ -475,7 +475,7 @@ window.PdReviewMng = {
             {{ s.label }}
           </option>
         </select>
-        <button class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('detailPanel-close')">
+        <button class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('baseDetail-close')">
           ✕ 닫기
         </button>
       </span>

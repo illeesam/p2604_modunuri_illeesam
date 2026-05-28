@@ -192,6 +192,27 @@ window.SyRoleMng = {
     const depthColor  = (d) => DEPTH_COLORS[d % 5];
 
     // onMounted에서 API 로드
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.role_status = codeStore.sgGetGrpCodes('ROLE_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      fnLoadMenusAndUsers();
+      const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
+      expanded.clear(); initSet.forEach(v => expanded.add(v));
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -279,26 +300,6 @@ window.SyRoleMng = {
     /* collapseAll — 접기 전체 */
     const collapseAll = () => { expanded.clear(); expanded.add(''); };
     /* _expand3: 기본 3레벨 펼침 */
-
-    /* fnLoadCodes — 공통코드 로드 */
-
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.role_status = codeStore.sgGetGrpCodes('ROLE_STATUS');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      fnLoadMenusAndUsers();
-      const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
-      expanded.clear(); initSet.forEach(v => expanded.add(v));
-      handleSearchList('DEFAULT');
-    });
-
     const cfSiteNm  = computed(() => boUtil.bofGetSiteNm());
     const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const ROLE_CAT_COLOR = { ADMIN:'#7c3aed', SITE:'#2563eb', SALES:'#16a34a', DLIV:'#f59e0b' };

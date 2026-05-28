@@ -835,10 +835,42 @@ const baseTree = coUtil.cofTree(allCats, {
 - cmd 라우팅 키도 일치 (`baseDetail-close`, `noticeGrid-sort`)
 - 상세: [`sy.54.네이밍규칙.md`](sy.54.네이밍규칙.md) §coUtil 표준 캡슐 변수 명명
 
-#### 4.8.5 적용 사례
+#### 4.8.5-1 전수 적용 진행 현황 (2026-05-28)
 
-- `pages/bo/ec/cm/CmNoticeMng.js` — cofGrid + cofDetail 적용 (332줄 → 215줄)
-- `pages/bo/ec/cm/CmNoticeDtl.js` — dispatch 단순화
+**Phase A — 폼 변수명 표준화**: `const form = reactive(...)` → `const baseForm = reactive(...)` + cmd 키 `'form-*'` → `'baseForm-*'`. **BO Dtl 34개 전수 완료**
+
+**Phase B — 인라인 Dtl 패널 변수명 표준화**: `const detailPanel = reactive(...)` → `const baseDetail = reactive(...)` + cmd 키 `'detailPanel-*'` → `'baseDetail-*'`. **BO Mng 33개 전수 완료** (총 648곳)
+
+**Phase D — baseDetail → cofDetail() 캡슐화**: 한 줄 표준 `reactive({ selectedId, openMode, reloadTrigger })` 17개 화면을 `coUtil.cofDetail()` 호출로 1:1 교체. **17개 화면 적용**
+- 적용: CmChattMng, DpDispAreaMng/UiMng/WidgetMng/WidgetLibMng, OdClaimMng/DlivMng/OrderMng, PmCacheMng/EventMng/GiftMng/PlanMng/SaveMng/VoucherMng, SyTemplateMng/UserMng/VendorMng
+- 미적용 (비표준): CmBlogMng(detailModal), MbMemberMng(다중줄), PdProdMng(다중줄)
+
+**Phase E — [03] 초기 함수 섹션 분리**: `fnLoadCodes`/`isAppReady`/`onMounted`/`watch(reloadTrigger)` 블록을 [04] 안에서 분리하여 [03] 마커 신설. **63개 BO 파일 자동 이동** (이미 [03] 있던 46개 + 이번 63개 = 109개 모두 표준 6섹션 구조 완성)
+
+**Phase C — cofGrid 캡슐화는 자동화 한계로 보류**:
+- 표준 후보 44개 중 23개가 비표준 (정렬 함수 일부 누락, dispatch cmd 영역명 다름, `handleSearchList(arg)` 시그니처 차이 등)
+- pager + SORT_MAP + onSort/setPage/onSizeChange/sortIcon/getSortParam/fnBuildPagerNums 7개 함수 일제 제거 + baseGrid 1줄 통합 + 모든 사용처(JS/템플릿) 치환 = 구조 재설계
+- **화면별 수동 작업 필요** (CmNoticeMng 모델 참조). 신규 화면은 처음부터 `coUtil.cofGrid()` 사용 권장
+
+---
+
+#### 4.8.5 적용 사례 / 표준 참조 모델 ⭐
+
+**표준 참조 모델 (신규 화면 작성 시 그대로 따를 것)**:
+- [`pages/bo/ec/cm/CmNoticeMng.js`](../../../pages/bo/ec/cm/CmNoticeMng.js) — **BO Mng 표준 모델**
+  - `baseGrid` (cofGrid) + `baseDetail` (cofDetail) 캡슐 사용
+  - 6섹션 [01]~[06] 마커 + dispatch=[02] / init=[03]
+  - cmd 라우팅: `baseDetail-close` / `baseGrid-sort` / `notices-rowEdit` 등
+  - `<bo-search-area :columns="baseSearchColumns">` + `<bo-grid :columns="baseGridColumns">`
+- [`pages/bo/ec/cm/CmNoticeDtl.js`](../../../pages/bo/ec/cm/CmNoticeDtl.js) — **BO Dtl 표준 모델**
+  - 폼 reactive 변수명 `baseForm` (변수명 `form` 단독 금지)
+  - cmd 라우팅: `baseForm-save` / `baseForm-cancel` / `baseForm-edit` / `baseForm-close`
+  - `<bo-form-area :columns="baseFormColumns" :form="baseForm" :readonly="cfReadonly" :cols="3">`
+  - 표준 computed: `cfIsNew` / `cfReadonly` / `cfAttachRefId`
+  - `reloadTrigger` watch 로 상위 Mng 신호 수신 → 상세 재조회
+- 두 파일 모두 상단 헤더 주석에 "★ 표준 참조 모델" 마크 + 정책서 위치 명시
+
+**효과**: CmNoticeMng 332줄 → 215줄 (-35%), CmNoticeDtl 208줄 → 167줄 (-20%)
 
 #### 4.8.6 적용 대상 / 적용 제외
 

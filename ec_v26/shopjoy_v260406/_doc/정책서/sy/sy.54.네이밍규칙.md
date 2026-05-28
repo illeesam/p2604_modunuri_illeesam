@@ -771,6 +771,8 @@ grep -r "const selected\w* = ref(" pages/bo/**/*.js
 
 `coUtil.cofGrid()` / `coUtil.cofDetail()` / `coUtil.cofTree()` 로 생성한 표준 캡슐 객체는 한 파일 안에서 여러 개를 둘 수 있으므로 **첫 번째는 `base*`, 두 번째부터는 도메인 prefix** 로 명명.
 
+**표준 참조 모델**: [`pages/bo/ec/cm/CmNoticeMng.js`](../../../pages/bo/ec/cm/CmNoticeMng.js) (BO Mng), [`pages/bo/ec/cm/CmNoticeDtl.js`](../../../pages/bo/ec/cm/CmNoticeDtl.js) (BO Dtl) — 신규 화면 작성 시 이 두 파일 구조를 따른다.
+
 ### 표준 형식
 
 | 캡슐/폼 종류 | 첫 번째 (1개만 있을 때) | 두 번째부터 (도메인 prefix) |

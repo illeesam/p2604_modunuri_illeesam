@@ -19,7 +19,7 @@ window.SyAlarmDtl = {
       alarm_types: [], alarm_statuses: [], alarm_target_types: [],
     });
 
-    const form = reactive({                        // 알림 폼 데이터
+    const baseForm = reactive({                        // 알림 폼 데이터
       alarmId: null, alarmTitle: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
       alarmMsg: '', alarmSendDate: '', alarmStatusCd: '임시',
     });
@@ -39,67 +39,23 @@ window.SyAlarmDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyAlarmDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('syAlarmMng');
       // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'form-edit') {
+      } else if (cmd === 'baseForm-edit') {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 목록으로 이동
-      } else if (cmd === 'form-close') {
+      } else if (cmd === 'baseForm-close') {
         return props.navigate('syAlarmMng');
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = async () => {
-      if (cfIsNew.value) { return; }
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syAlarm.getById(props.dtlId, '알람관리', '상세조회');
-        const data = res.data?.data;
-        if (data) { Object.assign(form, data); }
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
-
-    /* handleSave — 저장 (신규 등록 / 수정) */
-    const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try {
-        await schema.validate(form, { abortEarly: false });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
-        return;
-      }
-      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) { return; }
-      try {
-        const res = await (cfIsNew.value
-          ? boApiSvc.syAlarm.create({ ...form }, '알람관리', '등록')
-          : boApiSvc.syAlarm.update(form.alarmId, { ...form }, '알람관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
-        if (props.navigate) { props.navigate('syAlarmMng', { reload: true }); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -121,6 +77,51 @@ window.SyAlarmDtl = {
       if (!cfIsNew.value) { await handleLoadDetail(); }
     });
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* handleLoadDetail — 상세 조회 */
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) { return; }
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syAlarm.getById(props.dtlId, '알람관리', '상세조회');
+        const data = res.data?.data;
+        if (data) { Object.assign(baseForm, data); }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* handleSave — 저장 (신규 등록 / 수정) */
+    const handleSave = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(baseForm, { abortEarly: false });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
+      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        const res = await (cfIsNew.value
+          ? boApiSvc.syAlarm.create({ ...baseForm }, '알람관리', '등록')
+          : boApiSvc.syAlarm.update(baseForm.alarmId, { ...baseForm }, '알람관리', '저장'));
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('syAlarmMng', { reload: true }); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
@@ -144,7 +145,7 @@ window.SyAlarmDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, form, errors,            // 상태 / 데이터
+      uiState, codes, baseForm, errors,            // 상태 / 데이터
       baseFormColumns,                          // 컬럼 정의
       handleBtnAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode,             // computed
@@ -156,22 +157,22 @@ window.SyAlarmDtl = {
   <div class="page-title">
     {{ cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.alarmId }}
+      #{{ baseForm.alarmId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
       :readonly="cfDtlMode" :cols="3"
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')">
+      @save="handleBtnAction('baseForm-save')"
+      @cancel="handleBtnAction('baseForm-cancel')"
+      @edit="handleBtnAction('baseForm-edit')"
+      @close="handleBtnAction('baseForm-close')">
       <!-- ===== ■.■.■. 발송일시 (DateTimePicker) ================================= -->
       <template #sendDate>
-        <bo-date-time-picker v-model="form.alarmSendDate" :readonly="cfDtlMode" />
+        <bo-date-time-picker v-model="baseForm.alarmSendDate" :readonly="cfDtlMode" />
       </template>
     </bo-form-area>
   </div>

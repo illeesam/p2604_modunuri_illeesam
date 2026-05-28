@@ -14,7 +14,7 @@ window.DpDispAreaMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const baseDetail = coUtil.cofDetail();
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
@@ -40,7 +40,7 @@ window.DpDispAreaMng = {
       } else if (cmd === 'areas-add') {
         return openNew();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
@@ -83,7 +83,8 @@ window.DpDispAreaMng = {
       return { searchType: '', searchValue: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
     };
     const searchParam = reactive(_initSearchParam());
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -94,6 +95,7 @@ window.DpDispAreaMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
@@ -150,7 +152,7 @@ window.DpDispAreaMng = {
     const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* selectNode — 노드 선택 (상세 패널 닫기) */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchData('DEFAULT'); };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; baseDetail.selectedId = null; handleSearchData('DEFAULT'); };
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -162,20 +164,20 @@ window.DpDispAreaMng = {
     };
 
     /* loadView — 뷰 로드 */
-    const loadView         = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView         = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew     = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
 
     /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    const closeDetail = () => { baseDetail.selectedId = null; };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispAreaMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
+      if (pg === 'dpDispAreaMng') { baseDetail.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
       props.navigate(pg, opts);
     };
 
@@ -189,7 +191,7 @@ window.DpDispAreaMng = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -217,7 +219,7 @@ window.DpDispAreaMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      areas, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      areas, uiState, codes, searchParam, pager, baseDetail,                       // 상태 / 데이터
       baseSearchColumns, listGridColumns,                                           // 컬럼 정의
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId,                                                               // computed
@@ -284,15 +286,15 @@ window.DpDispAreaMng = {
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 =================================================== -->
-  <div v-if="detailPanel.selectedId" class="card" style="margin-top:10px;">
+  <div v-if="baseDetail.selectedId" class="card" style="margin-top:10px;">
     <dp-disp-area-dtl
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :tab-mode="detailPanel.openMode"
-      :reload-trigger="detailPanel.reloadTrigger"
+      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :tab-mode="baseDetail.openMode"
+      :reload-trigger="baseDetail.reloadTrigger"
       :on-list-reload="handleSearchData"
-      @close="handleBtnAction('detailPanel-close')"
+      @close="handleBtnAction('baseDetail-close')"
       />
   </div>
   <!-- ===== □. 상세 패널 =================================================== -->

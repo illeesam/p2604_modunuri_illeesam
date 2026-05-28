@@ -75,7 +75,7 @@ window.SyCodeMng = {
         uiState.activeCodeTab = param;
         return;
       // 상세 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -156,7 +156,8 @@ window.SyCodeMng = {
       codeGrp: { asc: 'codeGrp asc', desc: 'codeGrp desc' },
       grpNm:   { asc: 'grpNm asc',   desc: 'grpNm desc'   },
     };
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -165,6 +166,7 @@ window.SyCodeMng = {
       uiState.isPageCodeLoad = true;
     };
 
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* checkAndLoadCodes — 코드 로드 가능 여부 확인 */
     const checkAndLoadCodes = () => {
       const initStore = window.useBoAppInitStore?.();
@@ -821,7 +823,7 @@ window.SyCodeMng = {
     <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">
       코드 상세
     </h3>
-    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
       ✕ 닫기
     </button>
   </div>

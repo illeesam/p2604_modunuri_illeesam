@@ -280,6 +280,10 @@ reactive 값이 변할 때 자동으로 반응해야 하는가?
 
 `setup()` 함수 안은 **6개 메인 섹션** 형식으로 구역을 구분한다. 각 마커에 **번호 [01]~[06]** 부여. 기준 파일: [`pages/bo/sy/SyRoleMng.js`](../../../pages/bo/sy/SyRoleMng.js), [`pages/fo/xs/Sample05.js`](../../../pages/fo/xs/Sample05.js).
 
+**최신 표준 참조 모델 (2026-05-28)** — coUtil 캡슐(`baseGrid`/`baseDetail`/`baseForm`) 포함 최신 구조:
+- [`pages/bo/ec/cm/CmNoticeMng.js`](../../../pages/bo/ec/cm/CmNoticeMng.js) — BO Mng 표준
+- [`pages/bo/ec/cm/CmNoticeDtl.js`](../../../pages/bo/ec/cm/CmNoticeDtl.js) — BO Dtl 표준
+
 ### 6섹션 표준 (필수)
 
 ```js

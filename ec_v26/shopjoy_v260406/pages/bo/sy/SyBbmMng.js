@@ -40,7 +40,7 @@ window.SyBbmMng = {
       } else if (cmd === 'bbms-excel') {
         return exportExcel();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
+      } else if (cmd === 'baseDetail-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -87,6 +87,24 @@ window.SyBbmMng = {
       dtlMode: 'view',     // 'view' | 'edit'
       reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
     });
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.bbm_type = codeStore.sgGetGrpCodes('BBM_TYPE');
+      codes.bbm_status = codeStore.sgGetGrpCodes('BBM_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -191,23 +209,6 @@ window.SyBbmMng = {
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.bbm_type = codeStore.sgGetGrpCodes('BBM_TYPE');
-      codes.bbm_status = codeStore.sgGetGrpCodes('BBM_STATUS');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 게시판 마스터 fnTypeBadge */
     const _BBM_TYPE_FB = { '일반': 'badge-gray', '공지': 'badge-blue', '갤러리': 'badge-orange', 'FAQ': 'badge-green', 'QnA': 'badge-red' };
@@ -342,7 +343,7 @@ window.SyBbmMng = {
   <!-- ===== ■. 상세 인라인 패널 (전체 폭) ====================================== -->
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
         ✕ 닫기
       </button>
     </div>

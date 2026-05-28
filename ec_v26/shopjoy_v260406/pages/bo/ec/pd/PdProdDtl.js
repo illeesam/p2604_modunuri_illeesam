@@ -36,10 +36,10 @@ window.PdProdDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PdProdDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (현재 탭)
-      if (cmd === 'form-save') {
+      if (cmd === 'baseForm-save') {
         return handleSave();
       // 폼 취소 (목록으로)
-      } else if (cmd === 'form-cancel') {
+      } else if (cmd === 'baseForm-cancel') {
         return props.navigate('pdProdMng');
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -268,8 +268,8 @@ window.PdProdDtl = {
       { id: 'related', label: '연관상품',        icon: '🔗', get count() { return tabData.rels.length; } },
     ]);
 
-    // -- form: pd_prod 전체 필드
-    const form = reactive({
+    // -- baseForm: pd_prod 전체 필드
+    const baseForm = reactive({
       prodId: null,
       prodNm: '', prodCode: '',
       categoryId: '', brandId: '', vendorId: '',
@@ -714,36 +714,36 @@ window.PdProdDtl = {
 
     // -- 계산값
     const cfMarginRateCalc = computed(() => {
-      if (!form.salePrice || !form.purchasePrice) { return null; }
-      return ((form.salePrice - form.purchasePrice) / form.salePrice * 100).toFixed(2);
+      if (!baseForm.salePrice || !baseForm.purchasePrice) { return null; }
+      return ((baseForm.salePrice - baseForm.purchasePrice) / baseForm.salePrice * 100).toFixed(2);
     });
     const cfDiscountRate = computed(() => {
-      if (!form.listPrice || form.listPrice <= 0) { return 0; }
-      return Math.round((1 - form.salePrice / form.listPrice) * 100);
+      if (!baseForm.listPrice || baseForm.listPrice <= 0) { return 0; }
+      return Math.round((1 - baseForm.salePrice / baseForm.listPrice) * 100);
     });
     // 플랫폼수수료: amount 우선 — amount 가 비어 있으면 rate × salePrice 로 환산
     const cfPlatformFee = computed(() => {
-      const sale = Number(form.salePrice || 0);
-      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') {
-        return Math.round(Number(form.platformFeeAmount) || 0);
+      const sale = Number(baseForm.salePrice || 0);
+      if (baseForm.platformFeeAmount != null && baseForm.platformFeeAmount !== '') {
+        return Math.round(Number(baseForm.platformFeeAmount) || 0);
       }
-      if (form.platformFeeRate != null && form.platformFeeRate !== '') {
-        return Math.round(sale * (Number(form.platformFeeRate) || 0) / 100);
+      if (baseForm.platformFeeRate != null && baseForm.platformFeeRate !== '') {
+        return Math.round(sale * (Number(baseForm.platformFeeRate) || 0) / 100);
       }
       return 0;
     });
     const cfPlatformFeeDisp = computed(() => {
       const fee = cfPlatformFee.value;
       if (!fee) { return '-'; }
-      if (form.platformFeeAmount != null && form.platformFeeAmount !== '') { return fee.toLocaleString() + '원'; }
-      if (form.platformFeeRate   != null && form.platformFeeRate   !== '') { return fee.toLocaleString() + '원 (' + form.platformFeeRate + '%)'; }
+      if (baseForm.platformFeeAmount != null && baseForm.platformFeeAmount !== '') { return fee.toLocaleString() + '원'; }
+      if (baseForm.platformFeeRate   != null && baseForm.platformFeeRate   !== '') { return fee.toLocaleString() + '원 (' + baseForm.platformFeeRate + '%)'; }
       return '-';
     });
     // 예상 순수익 = 판매가 - 매입가 - 플랫폼수수료
     const cfNetRevenueDisp = computed(() => {
-      const sale = Number(form.salePrice || 0);
+      const sale = Number(baseForm.salePrice || 0);
       if (!sale) { return '-'; }
-      const cost = Number(form.purchasePrice || 0);
+      const cost = Number(baseForm.purchasePrice || 0);
       const fee  = cfPlatformFee.value;
       const net  = sale - cost - fee;
       return net.toLocaleString() + '원';
@@ -864,7 +864,7 @@ window.PdProdDtl = {
     });
 
     /* addPlanRow — 추가 */
-    const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: form.listPrice || 0, salePrice: form.salePrice || 0, purchasePrice: form.purchasePrice || 0 });
+    const addPlanRow = () => salePlans.unshift({ _id: planIdSeq++, _row_status: 'I', _checked: false, startDate: '', startTime: '00:00', endDate: '', endTime: '23:59', planStatus: '준비중', listPrice: baseForm.listPrice || 0, salePrice: baseForm.salePrice || 0, purchasePrice: baseForm.purchasePrice || 0 });
 
     /* onPlanChange — 이벤트 */
     const onPlanChange = row => { if (row._row_status === 'N') row._row_status = 'U'; };
@@ -893,7 +893,7 @@ window.PdProdDtl = {
       });
     });
     const cfMdSelectedNm = computed(() => {
-      const u = cfMdUserList.value.find(u => u.userId === form.mdUserId);
+      const u = cfMdUserList.value.find(u => u.userId === baseForm.mdUserId);
       return u ? `${u.userNm} (${u.deptId||''})` : '';
     });
 
@@ -901,53 +901,53 @@ window.PdProdDtl = {
     const openMdModal  = () => { uiState.mdSearch = ''; uiState.mdModalOpen = true; };
 
     /* selectMdUser — 선택 */
-    const selectMdUser = (u) => { form.mdUserId = u.userId; uiState.mdModalOpen = false; };
+    const selectMdUser = (u) => { baseForm.mdUserId = u.userId; uiState.mdModalOpen = false; };
 
     /* handleInitForm — 처리 */
     const handleInitForm = async () => {
       if (cfIsNew.value) {
-        form.mdUserId = cfMdUserList.value[0]?.userId || '';
+        baseForm.mdUserId = cfMdUserList.value[0]?.userId || '';
       }
       if (!cfIsNew.value) {
         const p = products[0] || null;
         if (p) {
-          form.prodId         = p.prodId;
-          form.prodNm         = p.prodNm || '';
-          form.prodCode       = p.prodCode || '';
-          form.categoryId     = p.categoryId || '';
-          form.brandId        = p.brandId || '';
-          form.vendorId       = p.vendorId || '';
-          form.mdUserId       = p.mdUserId || '';
-          form.prodTypeCd     = p.prodTypeCd || 'SINGLE';
-          form.prodStatusCd   = p.prodStatusCd || 'DRAFT';
-          form.unsaleMsg      = p.unsaleMsg || '';
-          form.dlivTmpltId    = p.dlivTmpltId || '';
-          form.listPrice      = p.listPrice || 0;
-          form.salePrice      = p.salePrice || 0;
-          form.purchasePrice  = p.purchasePrice || null;
-          form.platformFeeRate   = p.platformFeeRate   != null ? p.platformFeeRate   : null;
-          form.platformFeeAmount = p.platformFeeAmount != null ? p.platformFeeAmount : null;
-          form.prodStock      = p.prodStock || 0;
-          form.saleStartDate  = p.saleStartDate || '';
-          form.saleEndDate    = p.saleEndDate || '';
-          form.minBuyQty      = p.minBuyQty || 1;
-          form.maxBuyQty      = p.maxBuyQty || null;
-          form.dayMaxBuyQty   = p.dayMaxBuyQty || null;
-          form.idMaxBuyQty    = p.idMaxBuyQty || null;
-          form.adltYn         = p.adltYn || 'N';
-          form.sameDayDlivYn  = p.sameDayDlivYn || 'N';
-          form.soldOutYn      = p.soldOutYn || 'N';
-          form.couponUseYn    = p.couponUseYn || 'Y';
-          form.saveUseYn      = p.saveUseYn || 'Y';
-          form.discntUseYn    = p.discntUseYn || 'Y';
-          form.advrtStmt      = p.advrtStmt || '';
-          form.advrtStartDate = p.advrtStartDate || '';
-          form.advrtEndDate   = p.advrtEndDate || '';
-          form.weight         = p.weight || null;
-          form.sizeInfoCd     = p.sizeInfoCd || '';
-          form.isNew          = p.isNew || 'N';
-          form.isBest         = p.isBest || 'N';
-          form.contentHtml    = p.contentHtml || p.description || '';
+          baseForm.prodId         = p.prodId;
+          baseForm.prodNm         = p.prodNm || '';
+          baseForm.prodCode       = p.prodCode || '';
+          baseForm.categoryId     = p.categoryId || '';
+          baseForm.brandId        = p.brandId || '';
+          baseForm.vendorId       = p.vendorId || '';
+          baseForm.mdUserId       = p.mdUserId || '';
+          baseForm.prodTypeCd     = p.prodTypeCd || 'SINGLE';
+          baseForm.prodStatusCd   = p.prodStatusCd || 'DRAFT';
+          baseForm.unsaleMsg      = p.unsaleMsg || '';
+          baseForm.dlivTmpltId    = p.dlivTmpltId || '';
+          baseForm.listPrice      = p.listPrice || 0;
+          baseForm.salePrice      = p.salePrice || 0;
+          baseForm.purchasePrice  = p.purchasePrice || null;
+          baseForm.platformFeeRate   = p.platformFeeRate   != null ? p.platformFeeRate   : null;
+          baseForm.platformFeeAmount = p.platformFeeAmount != null ? p.platformFeeAmount : null;
+          baseForm.prodStock      = p.prodStock || 0;
+          baseForm.saleStartDate  = p.saleStartDate || '';
+          baseForm.saleEndDate    = p.saleEndDate || '';
+          baseForm.minBuyQty      = p.minBuyQty || 1;
+          baseForm.maxBuyQty      = p.maxBuyQty || null;
+          baseForm.dayMaxBuyQty   = p.dayMaxBuyQty || null;
+          baseForm.idMaxBuyQty    = p.idMaxBuyQty || null;
+          baseForm.adltYn         = p.adltYn || 'N';
+          baseForm.sameDayDlivYn  = p.sameDayDlivYn || 'N';
+          baseForm.soldOutYn      = p.soldOutYn || 'N';
+          baseForm.couponUseYn    = p.couponUseYn || 'Y';
+          baseForm.saveUseYn      = p.saveUseYn || 'Y';
+          baseForm.discntUseYn    = p.discntUseYn || 'Y';
+          baseForm.advrtStmt      = p.advrtStmt || '';
+          baseForm.advrtStartDate = p.advrtStartDate || '';
+          baseForm.advrtEndDate   = p.advrtEndDate || '';
+          baseForm.weight         = p.weight || null;
+          baseForm.sizeInfoCd     = p.sizeInfoCd || '';
+          baseForm.isNew          = p.isNew || 'N';
+          baseForm.isBest         = p.isBest || 'N';
+          baseForm.contentHtml    = p.contentHtml || p.description || '';
           // 이미지 — tabData에서 채움 (handleLoadData에서 이미 로드)
           if (tabData.images.length) {
             images.splice(0, images.length, ...tabData.images);
@@ -973,8 +973,8 @@ window.PdProdDtl = {
               fileName: c.fileName || '',
               prodContentId: c.prodContentId,
             })));
-          } else if (form.contentHtml) {
-            contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: form.contentHtml, fileName: '' });
+          } else if (baseForm.contentHtml) {
+            contentBlocks.splice(0, contentBlocks.length, { _id: _blockSeq++, type: 'html', content: baseForm.contentHtml, fileName: '' });
           }
 
           // 연관상품 — tabData.rels에서 채움
@@ -1046,8 +1046,8 @@ window.PdProdDtl = {
     });
 
     // -- 저장
-    /* ── 현재 작업중인 prodId: props.dtlId 우선, 없으면 신규등록 직후 form.prodId ── */
-    const cfCurProdId   = computed(() => props.dtlId || form.prodId || null);
+    /* ── 현재 작업중인 prodId: props.dtlId 우선, 없으면 신규등록 직후 baseForm.prodId ── */
+    const cfCurProdId   = computed(() => props.dtlId || baseForm.prodId || null);
     const cfHasProdId   = computed(() => !!cfCurProdId.value);
     /* info 외 탭의 [저장] 버튼은 prodId 없으면 비활성화 (info 탭은 신규등록 위해 항상 활성) */
     const cfSaveDisabled = computed(() => topTab.value !== 'info' && !cfHasProdId.value);
@@ -1066,8 +1066,8 @@ window.PdProdDtl = {
       if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
-    /* ── 탭별 저장: topTab 값으로 분기. info/detail 은 form 전체 저장(같은 form 공유).
-     *   info 탭의 신규 모드만 create() 호출 — 응답에서 prodId 받아 form.prodId 에 주입하면
+    /* ── 탭별 저장: topTab 값으로 분기. info/detail 은 baseForm 전체 저장(같은 baseForm 공유).
+     *   info 탭의 신규 모드만 create() 호출 — 응답에서 prodId 받아 baseForm.prodId 에 주입하면
      *   cfCurProdId 가 true 가 되어 다른 탭의 [저장] 버튼이 활성화된다. */
     /* handleSave — 저장 */
     const handleSave = async () => {
@@ -1079,24 +1079,24 @@ window.PdProdDtl = {
         return;
       }
 
-      /* info / detail 탭: pd_prod 본체 전체 저장 (둘은 form 공유) */
+      /* info / detail 탭: pd_prod 본체 전체 저장 (둘은 baseForm 공유) */
       if (tabId === 'info' || tabId === 'detail') {
         Object.keys(errors).forEach(k => delete errors[k]);
-        try { await schema.validate(form, { abortEarly: false }); }
+        try { await schema.validate(baseForm, { abortEarly: false }); }
         catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
         const isCreate = !cfHasProdId.value; // info 신규
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
-          const payload = { ...form };
+          const payload = { ...baseForm };
           const res = isCreate
             ? await boApiSvc.pdProd.create(payload, '상품관리', '등록')
             : await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', tabId === 'info' ? '기본정보저장' : '상세설정저장');
-          /* 신규 등록 응답에서 prodId 추출하여 form.prodId 에 주입 → 다른 탭 활성화 */
+          /* 신규 등록 응답에서 prodId 추출하여 baseForm.prodId 에 주입 → 다른 탭 활성화 */
           if (isCreate) {
             const newId = res.data?.data?.prodId || res.data?.prodId || null;
-            if (newId) { form.prodId = newId; }
+            if (newId) { baseForm.prodId = newId; }
           }
           /* UX-admin §18: 저장 후 재조회 — 본 탭 + 첫 탭(info)이면 상위 Mng 도 */
           await handleLoadData();
@@ -1201,13 +1201,13 @@ window.PdProdDtl = {
     // 담당 MD 그리드
     const mdUserGridColumns = [
       { key: 'userNm', label: '이름',
-        fmt: (v, row) => form.mdUserId === row.userId ? `✔ ${row.userNm || ''}` : (row.userNm || ''),
-        cellStyle: (v, row) => form.mdUserId === row.userId ? 'color:#e8587a;' : '' },
+        fmt: (v, row) => baseForm.mdUserId === row.userId ? `✔ ${row.userNm || ''}` : (row.userNm || ''),
+        cellStyle: (v, row) => baseForm.mdUserId === row.userId ? 'color:#e8587a;' : '' },
       { key: 'deptId', label: '부서' },
       { key: 'roleId', label: '역할', badge: () => 'badge-gray', cellStyle: 'font-size:11px;' },
     ];
     /* fnMdRowStyle — 유틸 */
-    const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
+    const fnMdRowStyle = (u) => 'cursor:pointer;' + (baseForm.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
     // 상품 선택 모달 그리드
     const prodPickerGridColumns = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
@@ -1348,7 +1348,7 @@ window.PdProdDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return { handleBtnAction, handleSelectAction,                                  // dispatch (상위 레벨 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
+      cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, baseForm, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypeRef, prodPickerSearchType,
       clearOpt, optGroups, skus, cfTotalStock, generateSkus, moveSku,
@@ -1387,7 +1387,7 @@ window.PdProdDtl = {
     <span>
       {{ cfIsNew ? '상품 등록' : '상품 수정' }}
       <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-        #{{ form.prodId }}
+        #{{ baseForm.prodId }}
       </span>
     </span>
     <button v-if="!cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
@@ -1411,7 +1411,7 @@ window.PdProdDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 기본정보 통합 폼 (BoFormArea 자동 렌더, cols=3 한 줄 3필드) ======== -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="infoFormColumns" :form="baseForm" :errors="errors"
         :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <template #categories>
           <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
@@ -1447,7 +1447,7 @@ window.PdProdDtl = {
           </div>
         </template>
         <template #brand>
-          <select class="form-control" v-model="form.brandId">
+          <select class="form-control" v-model="baseForm.brandId">
             <option value="">
               -- 선택 --
             </option>
@@ -1457,7 +1457,7 @@ window.PdProdDtl = {
           </select>
         </template>
         <template #vendor>
-          <select class="form-control" v-model="form.vendorId">
+          <select class="form-control" v-model="baseForm.vendorId">
             <option value="">
               -- 선택 --
             </option>
@@ -1473,13 +1473,13 @@ window.PdProdDtl = {
             <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;">
               선택
             </button>
-            <button v-if="form.mdUserId" class="btn btn-xs btn-danger" type="button" @click="form.mdUserId=''" style="flex-shrink:0;" title="초기화">
+            <button v-if="baseForm.mdUserId" class="btn btn-xs btn-danger" type="button" @click="baseForm.mdUserId=''" style="flex-shrink:0;" title="초기화">
               ✕
             </button>
           </div>
         </template>
         <template #dlivTmplt>
-          <select class="form-control" v-model="form.dlivTmpltId">
+          <select class="form-control" v-model="baseForm.dlivTmpltId">
             <option value="">
               -- 선택 --
             </option>
@@ -1489,10 +1489,10 @@ window.PdProdDtl = {
           </select>
         </template>
         <template #saleStart>
-          <bo-date-time-picker v-model="form.saleStartDate" placeholder-date="즉시" />
+          <bo-date-time-picker v-model="baseForm.saleStartDate" placeholder-date="즉시" />
         </template>
         <template #saleEnd>
-          <bo-date-time-picker v-model="form.saleEndDate" placeholder-date="무기한" />
+          <bo-date-time-picker v-model="baseForm.saleEndDate" placeholder-date="무기한" />
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
@@ -1546,33 +1546,33 @@ window.PdProdDtl = {
       <!-- ===== ■.■.■. 체크박스 그룹 ============================================= -->
       <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />
+          <input type="checkbox" :checked="baseForm.isNew==='Y'" @change="baseForm.isNew=$event.target.checked?'Y':'N'" />
           신상품
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="checkbox" :checked="form.isBest==='Y'" @change="form.isBest=$event.target.checked?'Y':'N'" />
+          <input type="checkbox" :checked="baseForm.isBest==='Y'" @change="baseForm.isBest=$event.target.checked?'Y':'N'" />
           베스트
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="checkbox" :checked="form.adltYn==='Y'" @change="form.adltYn=$event.target.checked?'Y':'N'" />
+          <input type="checkbox" :checked="baseForm.adltYn==='Y'" @change="baseForm.adltYn=$event.target.checked?'Y':'N'" />
           성인상품
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="checkbox" :checked="form.sameDayDlivYn==='Y'" @change="form.sameDayDlivYn=$event.target.checked?'Y':'N'" />
+          <input type="checkbox" :checked="baseForm.sameDayDlivYn==='Y'" @change="baseForm.sameDayDlivYn=$event.target.checked?'Y':'N'" />
           당일배송
         </label>
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
-          <input type="checkbox" :checked="form.soldOutYn==='Y'" @change="form.soldOutYn=$event.target.checked?'Y':'N'" style="accent-color:#e8587a;" />
+          <input type="checkbox" :checked="baseForm.soldOutYn==='Y'" @change="baseForm.soldOutYn=$event.target.checked?'Y':'N'" style="accent-color:#e8587a;" />
           <span style="color:#e8587a;">
             강제품절
           </span>
         </label>
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
           취소
         </button>
       </div>
@@ -1851,10 +1851,10 @@ window.PdProdDtl = {
   탭에서 관리합니다.
 </div>
 <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
-  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
     저장
   </button>
-  <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+  <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
     취소
   </button>
 </div>
@@ -1995,10 +1995,10 @@ window.PdProdDtl = {
   </div>
 </div>
 <div class="form-actions" v-if="!cfDtlMode" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
-  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
     저장
   </button>
-  <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+  <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
     취소
   </button>
 </div>
@@ -2015,19 +2015,19 @@ window.PdProdDtl = {
     홍보문구 (advrt_stmt)
   </div>
   <div class="form-group">
-    <input class="form-control" v-model="form.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
+    <input class="form-control" v-model="baseForm.advrtStmt" placeholder="예: 이번 주 한정 20% 할인!" maxlength="500" />
     <div style="font-size:11px;color:#aaa;text-align:right;margin-top:2px;">
-      {{ (form.advrtStmt||'').length }} / 500
+      {{ (baseForm.advrtStmt||'').length }} / 500
     </div>
   </div>
   <!-- ===== ■.■.■. 상세설정 통합 폼 (광고 노출 + 구매 제한, cols=3 한 줄 3필드) ===== -->
-  <bo-form-area :columns="detailFormColumns" :form="form" :errors="errors"
+  <bo-form-area :columns="detailFormColumns" :form="baseForm" :errors="errors"
         :readonly="cfDtlMode" :cols="3" :show-actions="false">
     <template #advrtStart>
-      <bo-date-time-picker v-model="form.advrtStartDate" />
+      <bo-date-time-picker v-model="baseForm.advrtStartDate" />
     </template>
     <template #advrtEnd>
-      <bo-date-time-picker v-model="form.advrtEndDate" />
+      <bo-date-time-picker v-model="baseForm.advrtEndDate" />
     </template>
   </bo-form-area>
   <!-- ===== ■.■.■. 혜택 적용 여부 ============================================ -->
@@ -2036,23 +2036,23 @@ window.PdProdDtl = {
   </div>
   <div style="display:flex;gap:24px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;">
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
-      <input type="checkbox" :checked="form.couponUseYn==='Y'" @change="form.couponUseYn=$event.target.checked?'Y':'N'" />
+      <input type="checkbox" :checked="baseForm.couponUseYn==='Y'" @change="baseForm.couponUseYn=$event.target.checked?'Y':'N'" />
       쿠폰 사용 가능 (coupon_use_yn)
     </label>
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
-      <input type="checkbox" :checked="form.saveUseYn==='Y'" @change="form.saveUseYn=$event.target.checked?'Y':'N'" />
+      <input type="checkbox" :checked="baseForm.saveUseYn==='Y'" @change="baseForm.saveUseYn=$event.target.checked?'Y':'N'" />
       적립금 사용 가능 (save_use_yn)
     </label>
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
-      <input type="checkbox" :checked="form.discntUseYn==='Y'" @change="form.discntUseYn=$event.target.checked?'Y':'N'" />
+      <input type="checkbox" :checked="baseForm.discntUseYn==='Y'" @change="baseForm.discntUseYn=$event.target.checked?'Y':'N'" />
       할인 적용 가능 (discnt_use_yn)
     </label>
   </div>
   <div class="form-actions" v-if="!cfDtlMode" style="margin-top:20px;">
-    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
       저장
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+    <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
       취소
     </button>
   </div>
@@ -2168,10 +2168,10 @@ window.PdProdDtl = {
 </div>
 <!-- ===== ■.■.■. /이미지 스크롤 컨테이너 ======================================= -->
 <div class="form-actions" v-if="!cfDtlMode">
-  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
     저장
   </button>
-  <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+  <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
     취소
   </button>
 </div>
@@ -2251,10 +2251,10 @@ window.PdProdDtl = {
     </bo-grid>
   </div>
   <div class="form-actions" v-if="!cfDtlMode">
-    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
       저장
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+    <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
       취소
     </button>
   </div>
@@ -2319,7 +2319,7 @@ window.PdProdDtl = {
     </span>
   </div>
   <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-  <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
+  <bo-form-area :columns="basePriceFormColumns" :form="baseForm" :errors="errors"
         :readonly="cfDtlMode" :cols="3" :show-actions="false">
     <!-- ===== ■.■.■.■. 마진율 (purchasePrice 입력 시 자동 계산) ==================== -->
     <template #marginRate>
@@ -2333,7 +2333,7 @@ window.PdProdDtl = {
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;text-align:center;align-items:center;">
       <div>
         <div style="font-size:14px;font-weight:700;">
-          {{ (form.listPrice||0).toLocaleString() }}원
+          {{ (baseForm.listPrice||0).toLocaleString() }}원
         </div>
         <div style="font-size:10px;color:#888;">
           정가
@@ -2341,7 +2341,7 @@ window.PdProdDtl = {
       </div>
       <div>
         <div style="font-size:14px;font-weight:700;color:#e8587a;">
-          {{ (form.salePrice||0).toLocaleString() }}원
+          {{ (baseForm.salePrice||0).toLocaleString() }}원
         </div>
         <div style="font-size:10px;color:#888;">
           판매가
@@ -2579,7 +2579,7 @@ window.PdProdDtl = {
             </td>
             <td style="padding:2px 4px;">
               <div style="width:100%;font-size:12px;background:#f5f5f5;color:#555;border:1px solid #eee;border-radius:4px;padding:2px 6px;height:24px;line-height:20px;text-align:right;">
-                {{ ((form.salePrice||0) + (sku.addPrice||0)).toLocaleString() }}원
+                {{ ((baseForm.salePrice||0) + (sku.addPrice||0)).toLocaleString() }}원
               </div>
             </td>
             <td style="padding:2px 4px;">
@@ -2658,7 +2658,7 @@ window.PdProdDtl = {
     </div>
     <!-- ===== ■.■.■.■. 재고수량 (BoFormArea 자동 렌더) =========================== -->
     <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-    <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="singleStockFormColumns" :form="baseForm" :errors="errors"
           :readonly="cfDtlMode" :cols="3" :show-actions="false" />
     <template v-if="tabData.skus.length">
       <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
@@ -2701,10 +2701,10 @@ window.PdProdDtl = {
   </template>
   <!-- ===== ■.■.■. 저장/취소 버튼 (맨 아래) ===================================== -->
   <div class="form-actions" v-if="!cfDtlMode" style="margin-top:24px;">
-    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
       저장
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+    <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
       취소
     </button>
   </div>
