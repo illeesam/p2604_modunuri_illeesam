@@ -653,6 +653,168 @@
     return `M${first[0]},${h - pad} L${pts.replace(/ /g, ' L')} L${last[0]},${h - pad} Z`;
   }
 
+  /* ─────────────────────────────────────────────────────────────────────
+   * cofGrid — BoGrid/FoGrid 표준 reactive 그리드 캡슐 (FO/BO 공통)
+   *  - pager + 정렬 + setPage/onSizeChange/onSort/sortIcon 일괄 제공
+   *  - onSearch(): 화면의 목록 조회 함수. setPage/onSizeChange/onSort 시 자동 호출
+   *  - opts.sortMap: { 정렬키: { asc:'col asc', desc:'col desc' } }
+   *  - opts.pageSize / opts.pageSizes / opts.pageType
+   *
+   * 사용법:
+   *   const baseGrid = coUtil.cofGrid(() => handleSearchList(), {
+   *     sortMap: { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' } },
+   *     pageSize: 5,
+   *   });
+   *   // 사용: baseGrid.pager / baseGrid.setPage / baseGrid.onSizeChange
+   *   //       baseGrid.sortIcon('nm') / baseGrid.onSort('nm') / baseGrid.sortParam()
+   *   //       baseGrid.applyPage(res.data?.data)  ← API 응답으로 pager 채우기
+   * ─────────────────────────────────────────────────────────────────── */
+  function cofGrid(onSearch, opts = {}) {
+    const { reactive } = Vue;
+    const sortMap = opts.sortMap || {};
+    const g = reactive({
+      pager: {
+        pageType: opts.pageType || 'PAGE',
+        pageNo: 1,
+        pageSize: opts.pageSize || 10,
+        pageTotalCount: 0, pageTotalPage: 1,
+        pageSizes: opts.pageSizes || [5, 10, 20, 30, 50, 100, 200, 500],
+        pageNums: [], pageCond: {},
+      },
+      sortKey: '', sortDir: 'asc',
+      sortIcon: (k) => g.sortKey !== k ? '⇅' : g.sortDir === 'asc' ? '↑' : '↓',
+      sortParam: () => {
+        const m = sortMap[g.sortKey];
+        return m ? { sort: m[g.sortDir] } : {};
+      },
+      onSort: (k) => {
+        if (g.sortKey === k) {
+          if (g.sortDir === 'asc') g.sortDir = 'desc';
+          else { g.sortKey = ''; g.sortDir = 'asc'; }
+        } else { g.sortKey = k; g.sortDir = 'asc'; }
+        g.pager.pageNo = 1;
+        onSearch && onSearch();
+      },
+      setPage: (n) => {
+        if (n >= 1 && n <= g.pager.pageTotalPage) { g.pager.pageNo = n; onSearch && onSearch(); }
+      },
+      onSizeChange: () => { g.pager.pageNo = 1; onSearch && onSearch(); },
+      buildPagerNums: () => {
+        const c = g.pager.pageNo, l = g.pager.pageTotalPage;
+        const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+        g.pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+      },
+      /* applyPage — API 응답 PageResult.data 를 받아 pager 갱신 + pageNums 빌드 */
+      applyPage: (d) => {
+        d = d || {};
+        g.pager.pageTotalCount = d.pageTotalCount || 0;
+        g.pager.pageTotalPage  = d.pageTotalPage  || Math.ceil(g.pager.pageTotalCount / g.pager.pageSize) || 1;
+        g.buildPagerNums();
+        Object.assign(g.pager.pageCond, d.pageCond || {});
+        return d.pageList || [];
+      },
+      /* reset — 검색 초기화 시 sort/page 리셋 */
+      reset: () => { g.sortKey = ''; g.sortDir = 'asc'; g.pager.pageNo = 1; },
+    });
+    return g;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * cofDetail — Mng 인라인 Dtl 패널 표준 캡슐 (FO/BO 공통)
+   *  - selectedId / openMode('view'|'edit') / reloadTrigger 관리
+   *  - openView(id) / openEdit(id) / openNew() / close() / reload()
+   *  - editId computed: selectedId === '__new__' 면 null (신규)
+   *  - panelKey computed: Dtl <key> 바인딩용 (id_mode 조합)
+   *
+   * 사용법:
+   *   const detailPanel = coUtil.cofDetail();
+   *   // template: detailPanel.selectedId / detailPanel.editId / detailPanel.panelKey
+   *   //           detailPanel.openMode / detailPanel.reloadTrigger
+   *   //           detailPanel.openEdit(id) / detailPanel.openNew() / detailPanel.close()
+   * ─────────────────────────────────────────────────────────────────── */
+  function cofDetail() {
+    const { reactive, computed } = Vue;
+    const d = reactive({
+      selectedId: null,
+      openMode: 'view',
+      reloadTrigger: 0,
+      openView: (id) => { d.selectedId = id; d.openMode = 'view'; d.reloadTrigger++; },
+      openEdit: (id) => { d.selectedId = id; d.openMode = 'edit'; d.reloadTrigger++; },
+      openNew:  ()   => { d.selectedId = '__new__'; d.openMode = 'edit'; d.reloadTrigger++; },
+      close:    ()   => { d.selectedId = null; },
+      reload:   ()   => { d.reloadTrigger++; },
+      switchToEdit: () => { d.openMode = 'edit'; },
+    });
+    d.editId   = computed(() => d.selectedId === '__new__' ? null : d.selectedId);
+    d.panelKey = computed(() => `${d.selectedId}_${d.openMode}`);
+    d.dtlMode  = computed(() => d.openMode === 'edit' ? (d.editId.value ? 'edit' : 'new') : 'view');
+    return d;
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────
+   * cofTree — 좌측 트리 + 선택/펼침 표준 캡슐 (FO/BO 공통)
+   *  - 평탄 배열(items) 에서 계층 트리 빌드 + selectedId / expanded(Set) 관리
+   *  - opts.idKey       (default 'id')
+   *  - opts.parentKey   (default 'parentId')
+   *  - opts.labelKey    (default 'label')
+   *  - opts.sortKey     (default 'sortOrd')
+   *  - opts.rootLabel   (default '전체')
+   *  - opts.onSelect(id): 선택 변경 시 콜백 (목록 재조회 등)
+   *
+   *  사용:
+   *    const allPaths = reactive([]);
+   *    const tree = coUtil.cofTree(allPaths, {
+   *      idKey: 'pathId', parentKey: 'parentPathId', labelKey: 'pathLabel',
+   *      onSelect: () => handleSearchList(),
+   *    });
+   *    // template: tree.root / tree.expanded / tree.selectedId
+   *    //           tree.select(id) / tree.toggle(id) / tree.expandAll() / tree.collapseAll()
+   * ─────────────────────────────────────────────────────────────────── */
+  function cofTree(items, opts = {}) {
+    const { reactive, computed } = Vue;
+    const idKey     = opts.idKey     || 'id';
+    const parentKey = opts.parentKey || 'parentId';
+    const labelKey  = opts.labelKey  || 'label';
+    const sortKey   = opts.sortKey   || 'sortOrd';
+    const rootLabel = opts.rootLabel || '전체';
+
+    const t = reactive({
+      expanded: new Set([null]),
+      selectedId: null,
+      select: (id) => {
+        t.selectedId = (t.selectedId === id) ? null : id;
+        opts.onSelect && opts.onSelect(t.selectedId);
+      },
+      toggle: (id) => { if (t.expanded.has(id)) t.expanded.delete(id); else t.expanded.add(id); },
+      expand:   (id) => { t.expanded.add(id); },
+      collapse: (id) => { t.expanded.delete(id); },
+      expandAll:   () => { items.forEach(r => t.expanded.add(r[idKey])); t.expanded.add(null); },
+      collapseAll: () => { t.expanded.clear(); t.expanded.add(null); },
+      expandToDepth: (depth) => {
+        const tree = t.root;
+        const walk = (n, d) => { if (d < depth) { t.expanded.add(n[idKey] ?? null); (n.children || []).forEach(c => walk(c, d + 1)); } };
+        walk(tree, 0);
+      },
+    });
+
+    t.root = computed(() => {
+      const map = {};
+      items.forEach(r => { map[r[idKey]] = { ...r, children: [] }; });
+      const roots = [];
+      items.forEach(r => {
+        const pid = r[parentKey];
+        if (pid != null && map[pid]) map[pid].children.push(map[r[idKey]]);
+        else roots.push(map[r[idKey]]);
+      });
+      const sort = (arr) => arr.sort((a, b) => (a[sortKey] || 0) - (b[sortKey] || 0));
+      const sortDeep = (nodes) => { sort(nodes).forEach(n => sortDeep(n.children)); return nodes; };
+      sortDeep(roots);
+      return { [idKey]: null, [labelKey]: rootLabel, children: roots, count: items.length };
+    });
+
+    return t;
+  }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
@@ -692,4 +854,8 @@
   global.coUtil.cofMaxOf = global.coUtil.cofMaxOf || cofMaxOf;
   global.coUtil.cofLinePoints = global.coUtil.cofLinePoints || cofLinePoints;
   global.coUtil.cofAreaPath = global.coUtil.cofAreaPath || cofAreaPath;
+  // Mng 표준 캡슐 (그리드/상세패널/트리)
+  global.coUtil.cofGrid = global.coUtil.cofGrid || cofGrid;
+  global.coUtil.cofDetail = global.coUtil.cofDetail || cofDetail;
+  global.coUtil.cofTree = global.coUtil.cofTree || cofTree;
 })(typeof window !== 'undefined' ? window : this);

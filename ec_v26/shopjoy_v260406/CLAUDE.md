@@ -1269,6 +1269,16 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 - 금지: `xxxCols`, `xxxColumns` (GridColumns 미포함). `Cols` 약어는 가독성 떨어짐
 - computed 컬럼도 동일: `cfXxxGridColumns` (예: `cfCatProdGridColumns`)
 
+**coUtil 표준 캡슐 변수 명명 규칙** ⭐ (2026-05-28):
+- 한 파일(setup) 안에서 같은 종류의 캡슐/폼을 여러 개 쓸 때 **첫 번째는 `base*`**, **두 번째부터는 도메인 prefix** 사용
+- `coUtil.cofGrid()` → 첫 번째 `baseGrid` / 추가는 `noticeGrid`, `userGrid`, `claimGrid` 등
+- `coUtil.cofDetail()` → 첫 번째 `baseDetail` / 추가는 `noticeDetail`, `userDetail` 등 (변수명 `detailPanel` 사용 금지)
+- `coUtil.cofTree()` → 첫 번째 `baseTree` / 추가는 `catTree`, `deptTree`, `pathTree` 등
+- **Dtl 폼 reactive** (`const form = reactive({...})`) → 첫 번째 `baseForm` / 추가는 `noticeForm`, `userForm`, `addrForm` 등 (변수명 `form` 단독 사용 금지)
+- cmd 라우팅 키도 변수명과 일치시킴: `baseDetail-close`, `baseForm-save`, `noticeGrid-sort` 등 (이전 `detailPanel-close` / `form-save` X)
+- **예외**: `bo-form-area` 컴포넌트의 `:form="baseForm"` prop명, `form-group`/`form-label`/`form-control`/`form-actions` CSS 클래스는 전역 표준이라 그대로 유지
+- 이유: 한 파일에 그리드/Dtl/트리/폼이 늘어났을 때 충돌 없이 확장 가능 + 첫 번째가 `base` 이면 화면 주연이 즉시 식별됨
+
 **BoSearchArea `:columns` 자동 렌더** ⭐ (2026-05-20):
 - `<bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="..." @search @reset />` 패턴
 - 슬롯 직접 작성 대신 `baseSearchColumns` 배열 정의 → 자동 렌더

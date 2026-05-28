@@ -767,6 +767,83 @@ grep -r "const selected\w* = ref(" pages/bo/**/*.js
 
 ---
 
+## coUtil 표준 캡슐 변수 명명 (2026-05-28 ⭐)
+
+`coUtil.cofGrid()` / `coUtil.cofDetail()` / `coUtil.cofTree()` 로 생성한 표준 캡슐 객체는 한 파일 안에서 여러 개를 둘 수 있으므로 **첫 번째는 `base*`, 두 번째부터는 도메인 prefix** 로 명명.
+
+### 표준 형식
+
+| 캡슐/폼 종류 | 첫 번째 (1개만 있을 때) | 두 번째부터 (도메인 prefix) |
+|---|---|---|
+| `coUtil.cofGrid()`   | `baseGrid`   | `noticeGrid`, `userGrid`, `claimGrid`, `histGrid` 등 |
+| `coUtil.cofDetail()` | `baseDetail` | `noticeDetail`, `userDetail`, `orderDetail` 등 |
+| `coUtil.cofTree()`   | `baseTree`   | `catTree`, `deptTree`, `pathTree`, `menuTree` 등 |
+| Dtl 폼 `reactive({...})` | `baseForm`   | `noticeForm`, `addrForm`, `optionForm` 등 |
+
+### 사용 예시
+
+```js
+// 단일 그리드/Dtl 화면 (대부분)
+const baseGrid   = coUtil.cofGrid(() => handleSearchList(), { sortMap, pageSize: 5 });
+const baseDetail = coUtil.cofDetail();
+
+// 다중 그리드 화면 (예: 회원종합정보 — 주문/클레임/배송 영역)
+const baseGrid   = coUtil.cofGrid(() => fnLoadOrders(),  { sortMap: ORDER_SORT_MAP });
+const claimGrid  = coUtil.cofGrid(() => fnLoadClaims(),  { sortMap: CLAIM_SORT_MAP });
+const dlivGrid   = coUtil.cofGrid(() => fnLoadDlivs(),   { sortMap: DLIV_SORT_MAP });
+
+// 트리 + 그리드 (예: 카테고리관리)
+const catTree    = coUtil.cofTree(allCats, { idKey: 'catId', parentKey: 'parentCatId', onSelect: () => baseGrid.setPage(1) });
+const baseGrid   = coUtil.cofGrid(() => handleSearchList());
+const baseDetail = coUtil.cofDetail();
+
+// Dtl 폼 (단일 폼 → baseForm)
+const baseForm = reactive({ noticeTitle: '', noticeTypeCd: '', ... });
+const schema   = yup.object({ noticeTitle: yup.string().required('제목 입력') });
+
+// 다중 폼 (예: 회원수정 — 기본정보 + 추가주소)
+const baseForm = reactive({ memberNm: '', email: '', ... });        // 기본정보
+const addrForm = reactive({ zipCode: '', address1: '', ... });      // 추가주소
+```
+
+### cmd 라우팅 키도 변수명과 일치
+
+```js
+// ✅ 변수명 = cmd 영역명
+if (cmd === 'baseDetail-close')   return baseDetail.close();
+if (cmd === 'baseForm-save')      return handleSave();
+if (cmd === 'baseForm-cancel')    return props.navigate('xxxMng');
+if (cmd === 'noticeGrid-sort')    return noticeGrid.onSort(param);
+if (cmd === 'addrForm-save')      return handleSaveAddr();
+
+// ❌ 금지 (구 형식)
+if (cmd === 'detailPanel-close')  return detailPanel.close();
+if (cmd === 'form-save')          return handleSave();
+```
+
+### 금지 형식
+
+| 패턴 | 사유 |
+|---|---|
+| `detailPanel` / `panel` | 의미는 같지만 명명 표준에서 벗어남. `baseDetail` 사용 |
+| `gridState` / `pager` 단독 | `cofGrid` 캡슐은 pager 외 정렬·setPage 도 포함 → `baseGrid` 로 통합 표현 |
+| `treeState` / `tree` 단독 | `baseTree` (선택/펼침/루트 컴퓨티드 모두 포함) |
+| `form` 단독 | Dtl 폼 reactive 는 `baseForm` 사용. 다중 폼은 `addrForm` 등 도메인 prefix |
+
+### 예외 (그대로 유지)
+
+- **`<bo-form-area :form="baseForm">` 의 prop명 `form`** — 컴포넌트 측 prop 표준이므로 그대로
+- **CSS 클래스 `form-group` / `form-label` / `form-control` / `form-actions` / `form-row`** — 전역 스타일 표준
+- **컴포넌트 태그 `<bo-form-area>` / `<bo-search-area>`** — kebab-case 컴포넌트명 표준
+
+### 이유
+
+- **첫 번째가 `base` 이면 화면의 주연이 즉시 식별** — 다중 영역 화면(`MbCustInfoMng` 같은 종합 화면)으로 확장 시 자연스럽게 두 번째 영역에 도메인 이름 부여
+- **cmd 라우팅과 변수명이 일치** → dispatch 함수 안에서 cmd → 호출 대상 매핑이 직관적
+- **검색·리팩터링 용이** — `baseGrid` / `baseDetail` 만 grep 해도 모든 단일 그리드/Dtl 화면 식별 가능
+
+---
+
 ## BoGrid/FoGrid 컬럼 변수 명명 (2026-05-20 ⭐)
 
 `<bo-grid :columns="..."> / <fo-grid :columns="...">` 에 전달하는 컬럼 배열 변수는 **`xxxGridColumns`** 접미사로 통일.

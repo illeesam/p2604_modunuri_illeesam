@@ -774,6 +774,86 @@ select `options` 는 함수형 + 다양한 배열 형식 지원:
 
 ---
 
+### 4.8 coUtil 표준 캡슐 — cofGrid / cofDetail / cofTree (2026-05-28 ⭐)
+
+**목적**: Mng 화면의 반복되는 보일러플레이트(pager/정렬/페이지 액션, 인라인 Dtl 패널, 좌측 트리 선택/펼침)를 `coUtil` 캡슐로 통합. setup() 50~80줄 감소 + 화면 간 일관성 보장.
+
+#### 4.8.1 cofGrid — pager + 정렬 + 페이지 액션
+
+```js
+const baseGrid = coUtil.cofGrid(() => handleSearchList(), {
+  sortMap: { nm:  { asc: 'noticeTitle asc', desc: 'noticeTitle desc' },
+             reg: { asc: 'regDate asc',     desc: 'regDate desc' } },
+  pageSize: 5,
+});
+```
+
+**제공 멤버**: `pager`(reactive: pageNo/pageSize/pageTotalCount/pageTotalPage/pageSizes/pageNums/pageCond), `sortKey`/`sortDir`, `sortIcon(k)`, `sortParam()`, `onSort(k)`, `setPage(n)`, `onSizeChange()`, `buildPagerNums()`, `applyPage(d)`, `reset()`.
+
+**API 응답 적용**:
+```js
+const d = (await boApiSvc.cmNotice.getPage(params, '공지사항관리', '조회')).data?.data;
+const list = baseGrid.applyPage(d);          // pager 자동 갱신 + pageList 반환
+notices.splice(0, notices.length, ...list);
+```
+
+**BoGrid 바인딩**: `<bo-grid :pager="baseGrid.pager" :sort-state="baseGrid" @sort="baseGrid.onSort" @set-page="baseGrid.setPage" @size-change="baseGrid.onSizeChange" />` — `baseGrid` 가 `sortKey`/`sortDir` 필드를 그대로 노출하므로 `sort-state` 에 캡슐 자체를 전달.
+
+#### 4.8.2 cofDetail — 인라인 Dtl 패널
+
+```js
+const baseDetail = coUtil.cofDetail();
+```
+
+**제공 멤버**: `selectedId`, `openMode`('view'|'edit'), `reloadTrigger`, `editId`(computed: '__new__' → null), `panelKey`(computed: `${id}_${mode}`), `dtlMode`(computed: 'view'|'edit'|'new'), `openView(id)`/`openEdit(id)`/`openNew()`, `close()`, `reload()`, `switchToEdit()`.
+
+**Dtl 바인딩**:
+```html
+<div v-if="baseDetail.selectedId">
+  <cm-notice-dtl :key="baseDetail.panelKey" :navigate="inlineNavigate"
+    :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
+    :reload-trigger="baseDetail.reloadTrigger" />
+</div>
+```
+
+#### 4.8.3 cofTree — 좌측 트리 선택/펼침
+
+```js
+const allCats = reactive([]);
+const baseTree = coUtil.cofTree(allCats, {
+  idKey: 'catId', parentKey: 'parentCatId', labelKey: 'catNm', sortKey: 'sortOrd',
+  onSelect: (id) => { baseGrid.pager.pageNo = 1; handleSearchList(); },
+});
+```
+
+**제공 멤버**: `root`(computed 가상 루트 `{ [idKey]:null, [labelKey]:'전체', children, count }`), `expanded`(Set), `selectedId`, `select(id)`(토글), `toggle(id)`, `expand(id)`, `collapse(id)`, `expandAll()`, `collapseAll()`, `expandToDepth(depth)`.
+
+#### 4.8.4 변수 명명 표준
+
+- **첫 번째는 `base*`** (`baseGrid` / `baseDetail` / `baseTree`)
+- **두 번째부터 도메인 prefix** (`noticeGrid`, `claimGrid`, `catTree` 등)
+- cmd 라우팅 키도 일치 (`baseDetail-close`, `noticeGrid-sort`)
+- 상세: [`sy.54.네이밍규칙.md`](sy.54.네이밍규칙.md) §coUtil 표준 캡슐 변수 명명
+
+#### 4.8.5 적용 사례
+
+- `pages/bo/ec/cm/CmNoticeMng.js` — cofGrid + cofDetail 적용 (332줄 → 215줄)
+- `pages/bo/ec/cm/CmNoticeDtl.js` — dispatch 단순화
+
+#### 4.8.6 적용 대상 / 적용 제외
+
+**적용 대상**:
+- 단일 Mng (검색 + 목록 + 인라인 Dtl) — cofGrid + cofDetail
+- 트리 + 그리드 (`SyPathMng`, `PdCategoryMng` 등) — cofTree + cofGrid + cofDetail
+- 다중 그리드 화면 (`MbCustInfoMng`) — `baseGrid` + `claimGrid` + `dlivGrid` ... 다수 cofGrid 인스턴스
+
+**적용 제외**:
+- Hist 전용 화면 (Mng/Dtl 임베드형) — 자체 pager 보유
+- CRUD 인라인 그리드 (페이저 없는 SyRoleMng/SyBrandMng 등) — pager 자체가 없음
+- 모달 내부 picker — 별도 모달 컴포넌트 책임
+
+---
+
 ## 5. 상세화면 ID 표시 정책
 
 ### 5.1 목적

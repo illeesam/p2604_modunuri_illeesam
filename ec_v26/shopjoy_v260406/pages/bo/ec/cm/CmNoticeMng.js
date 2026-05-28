@@ -1,148 +1,108 @@
-/* ShopJoy Admin - 공지사항관리 */
+/* ShopJoy Admin - 공지사항관리
+ * ★ BO Mng 표준 참조 모델 (2026-05-28) — 신규 Mng 작성 시 이 파일 구조를 따른다.
+ *   - coUtil.cofGrid(baseGrid) / coUtil.cofDetail(baseDetail) 캡슐 사용
+ *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
+ *   - cmd 라우팅: '{영역명}-{기능명}' (baseDetail-close, baseGrid-sort, notices-rowEdit)
+ *   - 검색: <bo-search-area :columns="baseSearchColumns">
+ *   - 목록: <bo-grid :columns="baseGridColumns" :pager="baseGrid.pager" :sort-state="baseGrid">
+ *   - 인라인 Dtl: baseDetail.panelKey / editId / dtlMode 바인딩
+ *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
+ */
 window.CmNoticeMng = {
   name: 'CmNoticeMng',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
+    navigate: { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
-    const { ref, reactive, computed, watch, onMounted } = Vue;
-    const showToast    = window.boApp.showToast;   // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
-    const notices = reactive([]);                  // 공지사항 목록 (메인 그리드 데이터)
-    const uiState = reactive({                     // UI 상태
-      loading: false, error: null, isPageCodeLoad: false,
-      sortKey: '', sortDir: 'asc',
-    });
-    const codes = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] }); // 공통코드
-    const SORT_MAP = { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    /* ===== 검색조건 ===== */
-    /* _initSearchParam — 초기화 */
-
-    /* ##### [02] 액션 모음 (dispatch) ############################################## */
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ CmNoticeMng.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 조회
-      if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
-        return handleSearchList('SEARCH');
-      // 검색조건 초기화 + 재조회
-      } else if (cmd === 'searchParam-reset') {
-        Object.assign(searchParam, _initSearchParam());
-        uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
-        return handleSearchList('SEARCH');
-      // 기간 옵션 변경
-      } else if (cmd === 'searchParam-dateRange') {
-        return onDateRangeChange();
-      // 공지사항 신규 등록 (인라인 패널)
-      } else if (cmd === 'notices-add') {
-        return openNew();
-      // 공지사항 목록 엑셀 내보내기
-      } else if (cmd === 'notices-excel') {
-        return exportExcel();
-      // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
-        return closeDetail();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ CmNoticeMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'notices-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'notices-pager-setPage') {
-        return setPage(param);
-      // 페이지 크기 변경
-      } else if (cmd === 'notices-pager-sizeChange') {
-        return onSizeChange();
-      // 그리드 행 클릭 → 편집 패널 열기
-      } else if (cmd === 'notices-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'notices-rowDelete') {
-        return handleDelete(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
+    const { reactive, onMounted } = Vue;
+    const { showToast, showConfirm, setApiRes } = window.boApp;
+    const notices = reactive([]);
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });
 
     const _initSearchParam = () => {
-      const today = new Date();
-      const thisYear = today.getFullYear();
-      return { searchValue: '', type: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      const y = new Date().getFullYear();
+      return { searchValue: '', type: '', status: '', dateRange: '', dateStart: `${y - 3}-01-01`, dateEnd: `${y}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* ===== 페이지네이션 ===== */
-    const pager = reactive({
-      pageType: 'PAGE', pageNo: 1, pageSize: 5,
-      pageTotalCount: 0, pageTotalPage: 1,
-      pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {}
+    /* baseGrid — pager + 정렬 + 페이지 액션 (coUtil.cofGrid) */
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), {
+      pageSize: 5,
+      sortMap: { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' },
+                 reg: { asc: 'regDate asc',    desc: 'regDate desc' } },
     });
 
-    /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 인라인 Dtl 패널 상태
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* onDateRangeChange — 기간 옵션 변경 */
-    const onDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = boUtil.bofGetDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd   = r ? r.to   : '';
+    /* baseDetail — 인라인 Dtl 패널 (coUtil.cofDetail) */
+    const baseDetail = coUtil.cofDetail();
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd) => {
+      if (cmd === 'searchParam-list')  { baseGrid.pager.pageNo = 1; return handleSearchList(); }
+      if (cmd === 'searchParam-reset') { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); return handleSearchList(); }
+      if (cmd === 'searchParam-dateRange') {
+        if (searchParam.dateRange) {
+          const r = boUtil.bofGetDateRange(searchParam.dateRange);
+          searchParam.dateStart = r ? r.from : '';
+          searchParam.dateEnd   = r ? r.to   : '';
+        }
+        baseGrid.pager.pageNo = 1;
+        return;
       }
-      pager.pageNo = 1;
+      if (cmd === 'notices-add')       return baseDetail.openNew();
+      if (cmd === 'notices-excel')     return coUtil.cofExportCsv(notices,
+        [{ label: 'ID', key: 'noticeId' }, { label: '제목', key: 'noticeTitle' }, { label: '유형', key: 'noticeTypeCd' },
+         { label: '상태', key: 'noticeStatusCd' }, { label: '조회수', key: 'viewCount' }, { label: '등록일', key: 'regDate' }],
+        '공지목록.csv');
+      if (cmd === 'baseDetail-close') return baseDetail.close();
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
-
-    /* setPage — 페이지 번호 변경 */
-    const setPage = (n) => {
-      if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); }
+    /* handleSelectAction — 그리드 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd, param) => {
+      if (cmd === 'notices-sort')             return baseGrid.onSort(param);
+      if (cmd === 'notices-pager-setPage')    return baseGrid.setPage(param);
+      if (cmd === 'notices-pager-sizeChange') return baseGrid.onSizeChange();
+      if (cmd === 'notices-rowEdit')          return baseDetail.openEdit(param);
+      if (cmd === 'notices-rowDelete')        return handleDelete(param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
-    /* getSortParam — 정렬 파라미터 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const s = window.sfGetBoCodeStore();
+      codes.noticeTypes     = s.sgGetGrpCodes('NOTICE_TYPE');
+      codes.noticeStatuses  = s.sgGetGrpCodes('NOTICE_STATUS');
+      codes.date_range_opts = s.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
       handleSearchList();
-    };
+    });
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 
     /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.cmNotice.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) }, '공지사항관리', '조회');
-        notices.splice(0, notices.length, ...(res.data?.data?.pageList || []));
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage  = res.data?.data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
-        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(),
+                         ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
+        const d = (await boApiSvc.cmNotice.getPage(params, '공지사항관리', '조회')).data?.data;
+        const list = baseGrid.applyPage(d);
+        notices.splice(0, notices.length, ...list);
         uiState.error = null;
       } catch (err) {
-        console.error('[catch-info]', err);
         uiState.error = err.message;
       } finally {
         uiState.loading = false;
@@ -151,128 +111,65 @@ window.CmNoticeMng = {
 
     /* handleDelete — 삭제 */
     const handleDelete = async (n) => {
-      const ok = await showConfirm('삭제', `[${n.noticeTitle}]을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = notices.findIndex(x => x.noticeId === n.noticeId);
-      if (idx !== -1) { notices.splice(idx, 1); }
-      if (detailPanel.selectedId === n.noticeId) { detailPanel.selectedId = null; }
+      if (!(await showConfirm('삭제', `[${n.noticeTitle}]을 삭제하시겠습니까?`))) return;
       try {
         const res = await boApiSvc.cmNotice.remove(n.noticeId, '공지사항관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
+        setApiRes({ ok: true, status: res.status, data: res.data });
+        showToast('삭제되었습니다.', 'success');
+        if (baseDetail.selectedId === n.noticeId) baseDetail.close();
         await handleSearchList();
       } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
+        setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 
-    /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
-
-    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
-
-    /* openNew — 신규 등록 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
-
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
-
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      console.log('[inlineNavigate]', pg, opts);
-      if (pg === 'cmNoticeMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
-      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
+      if (pg === 'cmNoticeMng')      { baseDetail.close(); if (opts.reload) handleSearchList(); return; }
+      if (pg === '__switchToEdit__') return baseDetail.switchToEdit();
       props.navigate(pg, opts);
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(
-      notices,
-      [{ label: 'ID', key: 'noticeId' }, { label: '제목', key: 'noticeTitle' }, { label: '유형', key: 'noticeTypeCd' },
-       { label: '상태', key: 'noticeStatusCd' }, { label: '조회수', key: 'viewCount' }, { label: '등록일', key: 'regDate' }],
-      '공지목록.csv'
-    );
+    /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const _STATUS_FB = { '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' };
+    const _TYPE_FB   = { '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.noticeTypes    = codeStore.sgGetGrpCodes('NOTICE_TYPE');
-      codes.noticeStatuses = codeStore.sgGetGrpCodes('NOTICE_STATUS');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfSiteNm       = computed(() => boUtil.bofGetSiteNm());
-    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode   = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey    = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
-
-    /* fnStatusBadge — 상태 배지 */
-    const _NOTICE_STATUS_FB = { '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' };
-    const fnStatusBadge = s => coUtil.cofCodeBadge('NOTICE_STATUS', s, _NOTICE_STATUS_FB[s] || 'badge-gray');
-
-    /* fnTypeBadge — 유형 배지 */
-    const _NOTICE_TYPE_FB = { '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' };
-    const fnTypeBadge   = t => coUtil.cofCodeBadge('NOTICE_TYPE', t, _NOTICE_TYPE_FB[t] || 'badge-gray');
-
-    /* fnGridRowClass — 그리드 행 클래스 */
-    const fnGridRowClass = (row) => (detailPanel.selectedId === row.noticeId ? 'active' : '');
-
-    // 기본 검색
     const baseSearchColumns = [
       { key: 'searchValue', label: '제목', type: 'text', placeholder: '제목 검색' },
-      { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '유형 전체' },
+      { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes,    nullLabel: '유형 전체' },
       { key: 'status',      label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
       { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange',
-        startKey: 'dateStart', endKey: 'dateEnd',
+      { key: 'dateRange', type: 'dateRange', startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
-    // 기본 그리드
     const baseGridColumns = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
-        badge: (row) => fnTypeBadge(row.noticeTypeCd) },
+        badge: (row) => coUtil.cofCodeBadge('NOTICE_TYPE', row.noticeTypeCd, _TYPE_FB[row.noticeTypeCd] || 'badge-gray') },
       { key: 'noticeTitle',    label: '제목',     sortKey: 'nm', link: true,
         fmt: (v, row) => row.isFixed === 'Y' ? `📌 ${row.noticeTitle || ''}` : (row.noticeTitle || ''),
-        cellInnerStyle: (v, row) => detailPanel.selectedId === row.noticeId ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v, row) => baseDetail.selectedId === row.noticeId ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'isFixed',        label: '고정',     style: 'width:70px;',
         badge: (row) => row.isFixed === 'Y' ? 'badge-red' : 'badge-gray',
         fmt: (v) => v === 'Y' ? '고정' : '-' },
-      { key: 'startDate',      label: '시작일',   style: 'width:120px;',
-        fmt: (v) => v || '-' },
-      { key: 'endDate',        label: '종료일',   style: 'width:120px;',
-        fmt: (v) => v || '-' },
+      { key: 'startDate',      label: '시작일',   style: 'width:120px;', fmt: (v) => v || '-' },
+      { key: 'endDate',        label: '종료일',   style: 'width:120px;', fmt: (v) => v || '-' },
       { key: 'noticeStatusCd', label: '상태',     style: 'width:80px;',
-        badge: (row) => fnStatusBadge(row.noticeStatusCd) },
-      { key: 'siteNm',         label: '사이트명', style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
+        badge: (row) => coUtil.cofCodeBadge('NOTICE_STATUS', row.noticeStatusCd, _STATUS_FB[row.noticeStatusCd] || 'badge-gray') },
+      { key: 'siteNm',         label: '사이트명', style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => boUtil.bofGetSiteNm() },
       { key: 'regDate',        label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
-      notices, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
-      sortIcon, fnStatusBadge, fnTypeBadge, fnGridRowClass,                            // 헬퍼
-      inlineNavigate, showToast, showConfirm, setApiRes, handleSearchList,             // Dtl 콜백
+      notices, uiState, codes, searchParam, baseGrid, baseDetail,
+      baseSearchColumns, baseGridColumns,
+      handleBtnAction, handleSelectAction,
+      inlineNavigate,
     };
   },
   template: /* html */`
@@ -283,50 +180,38 @@ window.CmNoticeMng = {
   </div>
   <!-- ===== ■. 검색 영역 =================================================== -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam"
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
-  <!-- ===== □. 검색 영역 =================================================== -->
-  <!-- ===== ■. 목록 영역 (BoGrid) ========================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="notices" :pager="pager" row-key="noticeId"
-    :sort-state="uiState" list-title="공지사항목록"
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
-    :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+  <!-- ===== ■. 목록 영역 ===================================================== -->
+  <bo-grid :columns="baseGridColumns" :rows="notices" :pager="baseGrid.pager" row-key="noticeId"
+    :sort-state="baseGrid" list-title="공지사항목록"
+    :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
+    :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
     @sort="key => handleSelectAction('notices-sort', key)"
     @set-page="n => handleSelectAction('notices-pager-setPage', n)"
     @size-change="handleSelectAction('notices-pager-sizeChange')"
     @row-click="row => handleSelectAction('notices-rowEdit', row.noticeId)" row-actions>
     <template #toolbar-actions>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">
-        📥 엑셀
-      </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">
-        + 신규
-      </button>
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>
     </template>
     <template #row-actions="{ row }">
       <div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleSelectAction('notices-rowEdit', row.noticeId)">
-          수정
-        </button>
-        <button class="btn btn-danger btn-sm" @click="handleSelectAction('notices-rowDelete', row)">
-          삭제
-        </button>
+        <button class="btn btn-blue btn-sm" @click="handleSelectAction('notices-rowEdit', row.noticeId)">수정</button>
+        <button class="btn btn-danger btn-sm" @click="handleSelectAction('notices-rowDelete', row)">삭제</button>
       </div>
     </template>
   </bo-grid>
-  <!-- ===== □. 목록 영역 (BoGrid) ========================================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
+  <!-- ===== ■. 상세 패널 (인라인 임베드) ===================================== -->
+  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
     </div>
-    <cm-notice-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="detailPanel.reloadTrigger" />
+    <cm-notice-dtl :key="baseDetail.panelKey" :navigate="inlineNavigate"
+      :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
+      :reload-trigger="baseDetail.reloadTrigger" />
   </div>
-  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
 </div>
 `,
 };
