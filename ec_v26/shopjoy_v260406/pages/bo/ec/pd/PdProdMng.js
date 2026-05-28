@@ -116,12 +116,8 @@ window.PdProdMng = {
     /* ===== 카테고리 선택 모달 ===== */
     const catModal = reactive({ show: false });    // 카테고리 선택 모달 상태
 
-    /* ===== 상세 인라인 패널 ===== */
-    const baseDetail = reactive({                 // 인라인 Dtl 패널 상태
-      selectedId: null,
-      openMode: 'view',                            // 'view' | 'edit'
-      reloadTrigger: 0,
-    });
+    /* ===== 상세 인라인 패널 (coUtil.cofDetail) ===== */
+    const baseDetail = coUtil.cofDetail();
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */

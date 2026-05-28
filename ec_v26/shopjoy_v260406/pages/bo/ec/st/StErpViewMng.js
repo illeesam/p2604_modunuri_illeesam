@@ -91,6 +91,20 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
     const searchParam = reactive(_initSearchParam());
     const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
+
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* handleSearchList — 목록 조회 */
+    const handleSearchList = async (searchType = 'DEFAULT') => {
+      try {
+        slips.splice(0, slips.length);
+        baseGrid.pager.pageTotalCount = 0;
+        baseGrid.pager.pageTotalPage = 1;
+      } catch (_) { console.error('[catch-info]', _); }
+    };
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); });
 
@@ -129,6 +143,56 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* setPage — 설정 */
+    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+        /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+        // --- [컬럼 정의] ---
+
+        const baseSearchColumns = [
+      { key: 'dateRange', label: '전표일', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'type', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'status', label: '상태', type: 'select', options: () => codes.erp_voucher_statuses, nullLabel: '상태 전체' },
+      { key: 'searchType', label: '검색대상', type: 'multiCheck',
+        options: [
+          { value: 'slipId', label: '전표ID' },
+          { value: 'summary', label: '적요' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
+    ];
+
+    // 기본 그리드
+    const baseGridColumns = [
+      { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
+      { key: 'slipDate',   label: '전표일자' },
+      { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
+      { key: 'debit',      label: '차변계정' },
+      { key: 'credit',     label: '대변계정' },
+      { key: 'debitAmt',   label: '금액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'description',label: '적요',
+        cellStyle: 'color:#555;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
+      { key: 'erpRef',     label: 'ERP전표번호', cellStyle: 'font-size:11px;color:#888',
+        fmt: (v) => v || '-' },
+      { key: 'sendStatus', label: '전송상태', badge: (row) => fnStatusBadge(row.sendStatus) },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      baseGrid,
+      uiState, codes,  slips, searchParam,                                     // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                            // dispatch
+      fnStatusBadge, fnTypeBadge, fmtW,                                               // 헬퍼
+    };
   },
   template: /* html */`
 <div>

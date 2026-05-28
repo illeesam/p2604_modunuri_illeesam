@@ -129,11 +129,11 @@ window.PdCategoryProdMng = {
     const handleReloadByCategory = async () => {
       const catId = cfSelectedCatId.value;
       if (!catId) { categoryProds.splice(0, categoryProds.length); return; }
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
       searchParam.categoryId = '';
       searchParam.categoryIdsCsv = fnCatIdsWithChildren(catId).join(',');
       searchParam.typeCd = uiState.activeTypeCd;
-      await handleSearchList('DEFAULT');
+      await handleSearchList();
     };
 
     watch(() => cfSelectedCatId.value, handleReloadByCategory);
@@ -187,7 +187,7 @@ window.PdCategoryProdMng = {
     const defaultDispStartDate = () => new Date().toISOString().slice(0, 10);
 
     /* -- 검색 -- */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ prodNm: '', categoryId: '', categoryIdsCsv: '', typeCd: '' });
@@ -196,19 +196,17 @@ window.PdCategoryProdMng = {
     /* 카테고리-상품 매핑 목록조회 */
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    const handleSearchList = async () => {
       try {
         const { prodNm, ...restParam } = searchParam;
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(prodNm ? { prodNm: prodNm.trim() } : {}),
         };
-        const res = await boApiSvc.pdCategory.getProds(params, '카테고리상품관리', '목록조회');
-        const data = res.data?.data;
-        categoryProds.splice(0, categoryProds.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        const d = (await boApiSvc.pdCategory.getProds(params, '카테고리상품관리', '목록조회')).data?.data;
+        const list = baseGrid.applyPage(d);
+        categoryProds.splice(0, categoryProds.length, ...list);
       } catch (err) {
         console.error('[handleSearchList]', err);
         categoryProds.splice(0, categoryProds.length);
@@ -217,9 +215,9 @@ window.PdCategoryProdMng = {
 
     /* onSearch — 조회 */
     const onSearch = () => {
-      pager.pageNo = 1;
-      Object.assign(pager.pageCond, searchParam);
-      handleSearchList('DEFAULT');
+      baseGrid.pager.pageNo = 1;
+      Object.assign(baseGrid.pager.pageCond, searchParam);
+      handleSearchList();
     };
 
     /* onReset — 초기화 */
@@ -479,7 +477,7 @@ window.PdCategoryProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      codes, uiState, categories, categoryProds, searchParam, pager, pickerResults, pickerPager, // 상태 / 데이터
+      codes, uiState, categories, categoryProds, searchParam, baseGrid, pickerResults, pickerPager, // 상태 / 데이터
       baseSearchColumns, cfCatProdGridColumns, catProdPickerGridColumns,                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs,                    // computed / reactive(tabs)

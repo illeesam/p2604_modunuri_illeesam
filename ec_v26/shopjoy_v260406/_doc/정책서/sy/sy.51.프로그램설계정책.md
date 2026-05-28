@@ -847,15 +847,15 @@ const baseTree = coUtil.cofTree(allCats, {
 
 **Phase E — [03] 초기 함수 섹션 분리**: `fnLoadCodes`/`isAppReady`/`onMounted`/`watch(reloadTrigger)` 블록을 [04] 안에서 분리하여 [03] 마커 신설. **63개 BO 파일 자동 이동** (이미 [03] 있던 46개 + 이번 63개 = 109개 모두 표준 6섹션 구조 완성)
 
-**Phase C — cofGrid 캡슐화 (수동 화면별 진행)**:
-- 표준 후보 44개 중 21개가 표준 구조(SORT_MAP + 7개 함수 모두 있음), 23개가 비표준
-- 자동 도구 시도 결과 정규식 한계로 인한 회귀 발생 → **수동 화면별 작업으로 결정**
-- **2026-05-28 진행** (수동):
-  - ✅ CmNoticeMng (332→215, -35%) — 표준 모델
-  - ✅ SyContactMng (341→260, -24%)
-  - ✅ PmCacheMng  (388→305, -21%)
-- **잔여 19개 표준 + 23개 비표준 + Phase D 미적용 3개**는 후속 세션에서 도메인별 수동 작업
+**Phase C — cofGrid 캡슐화 (자동 도구 v3-v6 + 수동 8개)**:
+- **2026-05-28~29 최종 결과**: BO Mng **56개 적용 완료** + 1개 보류 (PdCategoryMng — 클라이언트 페이징 사용)
+- 추가 수동 적용 3개: SyBbsMng, SyPathMng, PdCategoryProdMng (자동 도구 SYNTAX FAIL 또는 콜백 탐지 실패)
+- 자동 도구 진화: v3(표준) → v4(no-sort) → v5(flex) → v6(매우 유연한 pager 정규식 + cb 옵션)
+- 각 화면 변환 후 `node --check` + 실패 시 자동 롤백 → **회귀 0건, 문법 0 실패**
+- 평균 감소율: 100-200줄 (사이즈에 따라 -20%~-50%)
+- 보류 4개는 구조 특이 (PdCategoryMng/PdCategoryProdMng: 트리, SyBbsMng: dispatch cmd 영역명 비표준, SyPathMng: 콜백 함수 분리)
 - 신규 화면은 처음부터 `coUtil.cofGrid()` 사용 (CmNoticeMng 참조)
+- 사용 도구: `c:/tmp/phase_c_v3.js` (표준 17개), `c:/tmp/phase_c_v4_noSort.js` (12개), `c:/tmp/phase_c_v5_flex.js` (16개), `c:/tmp/phase_c_v6.js` (3개), 수동 (5개)
 - 수동 변환 패턴 (CmNoticeMng → SyContactMng → PmCacheMng 검증됨):
   1. `uiState`에서 `sortKey/sortDir` 제거
   2. `const pager = reactive({...})` → `const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: N });`

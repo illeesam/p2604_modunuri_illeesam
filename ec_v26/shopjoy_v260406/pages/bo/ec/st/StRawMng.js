@@ -87,6 +87,248 @@ window.StRawMng = {
   (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { searchParam.dateStart = r.from; searchParam.dateEnd = r.to; } })();
 
     const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
+const raws = reactive([]);
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* handleSearchList — 목록 조회 */
+    const handleSearchList = async (searchType = 'DEFAULT') => {
+      try {
+        uiState.loading = true;
+        const params = {
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'searchMoreOpen' && v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'rawId,srcId,vendorNm,prodNm,brandNm';
+        }
+        const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
+        const data = res.data?.data;
+        raws.splice(0, raws.length, ...(data?.pageList || data?.list || []));
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || raws.length;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+      } catch (err) {
+        console.error('[handleSearchList]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) {
+        fnLoadCodes();
+        handleSearchList('DEFAULT');
+      }
+    });
+
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    const cfSummary = computed(() => ({
+      totalAmt:   raws.reduce((s, r) => s + (r.settleTargetAmt || 0), 0),
+      collectCnt: raws.filter(r => r.rawStatusCd === 'COLLECTED').length,
+      settleAmt:  raws.reduce((s, r) => s + (r.settleAmt || 0), 0),
+      feeAmt:     raws.reduce((s, r) => s + (r.settleFeeAmt || 0), 0),
+      closeCnt:   raws.filter(r => r.closeYn === 'Y').length,
+      erpCnt:     raws.filter(r => r.erpSendYn === 'Y').length,
+      confirmCnt: raws.filter(r => r.buyConfirmYn === 'Y').length,
+    }));
+
+    /* setPage — 설정 */
+    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* onSearch — 조회 */
+    const onSearch = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* onReset — 초기화 */
+    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    const expandedRows = reactive(new Set());
+
+    /* toggleRow — 토글 */
+    const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+
+    /* isExpanded — 여부 확인 */
+    const isExpanded = id => expandedRows.has(id);
+
+    /* fnStatusBadge — 상태 배지 */
+    const fnStatusBadge = s => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-purple', 'PENDING':'badge-blue' }[s] || 'badge-gray');
+
+    /* rawStatusLabel — 원본 상태 라벨 */
+    const rawStatusLabel = s => ({ 'COLLECTED':'수집완료', 'EXCLUDED':'제외', 'SETTLED':'정산완료', 'PENDING':'대기' }[s] || s || '-');
+
+    /* fnRawStatusBadge — 유틸 */
+    const fnRawStatusBadge = s => fnStatusBadge(s);
+
+    /* vendorTypeLabel — 업체 유형 라벨 */
+    const vendorTypeLabel = s => ({ 'SALE':'판매업체', 'DLIV':'배송업체', 'EXTERNAL':'외부업체' }[s] || s || '-');
+
+    /* orderStatusLabel — 주문 상태 라벨 */
+    const orderStatusLabel = s => ({ 'ORDERED':'주문완료', 'PAID':'결제완료', 'PREPARING':'준비중', 'SHIPPING':'배송중', 'DELIVERED':'배송완료', 'CONFIRMED':'구매확정', 'CANCELLED':'취소' }[s] || s || '-');
+
+    /* fmtW — 포맷 W */
+    const fmtW = n => (Number(n || 0) >= 0 ? '' : '-') + Math.abs(Number(n || 0)).toLocaleString() + '원';
+
+    /* fmtPct — 포맷 퍼센트 */
+    const fmtPct = n => Number(n || 0).toLocaleString() + '%';
+
+    /* rawGridColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
+    const rawGridColumns = [
+      { key: 'expand',         label: '',         style: 'width:30px',
+        align: 'center',
+        cellStyle: 'color:#aaa;font-size:11px;user-select:none;',
+        fmt: (v, row) => isExpanded(row.settleRawId) ? '▲' : '▼' },
+      { key: 'settleRawId',    label: '원장ID',
+        cellStyle: 'font-size:12px;color:#555;' },
+      { key: 'orderDate',      label: '거래일자' },
+      { key: 'rawTypeCd',      label: '유형',
+        badge: (row) => row.rawTypeCd === 'ORDER' ? 'badge-blue' : 'badge-orange' },
+      { key: 'orderId',        label: '소스ID', cellStyle: 'color:#555' },
+      { key: 'vendorNm',       label: '업체',
+        fmt: (v, row) => `${row.vendorNm || ''} / ${vendorTypeLabel(row.vendorTypeCd) || ''}` },
+      { key: 'prodNm',         label: '상품명',
+        cellStyle: 'max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
+        fmt: (v, row) => row.brandNm ? `${row.prodNm || ''} / ${row.brandNm}` : (row.prodNm || ''),
+        cellTitle: true },
+      { key: 'orderQty',       label: '수량',         style: 'text-align:right',
+        align: 'right', fmt: (v) => (v || 0).toLocaleString() },
+      { key: 'settleTargetAmt', label: '정산대상금액', style: 'text-align:right',
+        align: 'right', fmt: fmtW,
+        cellStyle: (v) => 'font-weight:600;' + (v < 0 ? 'color:#e74c3c' : '') },
+      { key: 'settleFeeAmt',   label: '수수료',       style: 'text-align:right',
+        align: 'right', fmt: fmtW, cellStyle: 'color:#e74c3c' },
+      { key: 'settleAmt',      label: '정산금액',     style: 'text-align:right',
+        align: 'right', fmt: fmtW,
+        cellStyle: (v) => 'font-weight:700;' + (v < 0 ? 'color:#e74c3c' : 'color:#2980b9') },
+      { key: 'rawStatusCd',    label: '수집상태',
+        badge: (row) => fnRawStatusBadge(row.rawStatusCd), fmt: (v) => rawStatusLabel(v) },
+      { key: 'closeYn',        label: '마감',
+        badge: (row) => row.closeYn === 'Y' ? 'badge-purple' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '마감' : '미마감' },
+      { key: 'erpSendYn',      label: 'ERP',
+        badge: (row) => row.erpSendYn === 'Y' ? 'badge-green' : 'badge-gray',
+        fmt: (v) => v === 'Y' ? '전송' : '미전송' },
+    ];
+
+    /* doCollect — 실행 */
+    const doCollect = async () => {
+      const ok = await showConfirm('재수집', '해당 기간 정산 데이터를 재수집하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        const res = await boApiSvc.stSettleRaw.collect({ dateStart: searchParam.dateStart, dateEnd: searchParam.dateEnd }, '원장관리', '저장');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('재수집이 완료되었습니다.', 'success'); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        if (showToast) { showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0); }
+      }
+    };
+
+    /* summaryFormColumns — 집계 카드 (BoFormArea readonly, cols=7, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_totalCnt',  label: '수집건수',    type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${baseGrid.pager.pageTotalCount.toLocaleString()}건</b>` },
+      { key: '_collectCnt',label: '정산대상',    type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${cfSummary.value.collectCnt.toLocaleString()}건</b>` },
+      { key: '_confirmCnt',label: '구매확정',    type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${cfSummary.value.confirmCnt.toLocaleString()}건</b>` },
+      { key: '_closeCnt',  label: '마감완료',    type: 'readonly', html: true, fmt: () => `<b style="color:#8e44ad;font-size:15px;">${cfSummary.value.closeCnt.toLocaleString()}건</b>` },
+      { key: '_totalAmt',  label: '수집금액 합계',type: 'readonly', html: true, fmt: () => `<b style="color:${cfSummary.value.totalAmt>=0?'#333':'#e74c3c'};font-size:14px;">${fmtW(cfSummary.value.totalAmt)}</b>` },
+      { key: '_feeAmt',    label: '수수료 합계',  type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:14px;">${fmtW(cfSummary.value.feeAmt)}</b>` },
+      { key: '_settleAmt', label: '정산금액 합계',type: 'readonly', html: true, fmt: () => `<b style="color:#2980b9;font-size:14px;">${fmtW(cfSummary.value.settleAmt)}</b>` },
+    ];
+
+    /* baseSearchColumns — 검색 영역 컬럼 (1+2행 평면화) */
+    const baseSearchColumns = [
+      { key: 'dateRange', type: 'dateRange', label: '기간',
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'type',       type: 'select', label: '유형',
+        options: () => codes.raw_types, nullLabel: '유형 전체', width: '100px' },
+      { key: 'status',     type: 'select', label: '수집상태',
+        options: () => codes.raw_collect_statuses, nullLabel: '수집상태 전체', width: '110px' },
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
+        options: [
+          { value: 'rawId',    label: '원장ID' },
+          { value: 'srcId',    label: '소스ID' },
+          { value: 'vendorNm', label: '업체명' },
+          { value: 'prodNm',   label: '상품명' },
+          { value: 'brandNm',  label: '브랜드' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '230px' },
+      { key: 'vendorType', type: 'select', label: '업체구분',
+        options: () => codes.raw_vendor_divs, nullLabel: '업체구분 전체', width: '110px' },
+      { key: 'payMethod',  type: 'select', label: '결제수단',
+        options: () => codes.pay_methods, nullLabel: '결제수단 전체', width: '120px' },
+      { key: 'buyConfirm', type: 'select', label: '구매확정',
+        options: () => codes.confirm_yn_opts, nullLabel: '구매확정 전체', width: '110px' },
+      { key: 'closeYn',    type: 'select', label: '마감여부',
+        options: () => codes.close_yn_opts, nullLabel: '마감여부 전체', width: '110px' },
+      { key: 'erpSend',    type: 'select', label: 'ERP전송',
+        options: () => codes.send_yn_opts, nullLabel: 'ERP전송 전체', width: '110px' },
+      { key: 'period',     type: 'text',   label: '정산기간', placeholder: '정산기간(YYYY-MM)', width: '150px' },
+    ];
+
+    /* moreSearchColumns — 펼침 영역(searchMoreOpen=true) 두번째 검색바 */
+    const moreSearchColumns = [
+      { key: 'orderStatus', type: 'select', label: '주문상태',
+        options: () => codes.order_statuses_kr, nullLabel: '주문상태 전체', width: '120px' },
+      { key: 'amtFrom',     type: 'text',   label: '수집금액(최소)', placeholder: '최솟값(원)', width: '120px' },
+      { key: 'amtTo',       type: 'text',   label: '수집금액(최대)', placeholder: '최댓값(원)', width: '120px' },
+    ];
+
+    /* rawExpandColumns — 정산원장 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    const rawExpandColumns = [
+      { key: '_orderId',      label: '주문ID',     type: 'readonly', fmt: (v, row) => row.orderId || '-' },
+      { key: '_orderDate',    label: '거래일자',   type: 'readonly', fmt: (v, row) => row.orderDate || '-' },
+      { key: '_orderStatus',  label: '주문상태',   type: 'readonly', fmt: (v, row) => orderStatusLabel(row.orderItemStatusCd) },
+      { key: '_payMethod',    label: '결제수단',   type: 'readonly', fmt: (v, row) => row.payMethodCd || '-' },
+      { key: '_buyConfirm',   label: '구매확정',   type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${row.buyConfirmYn==='Y'?'badge-green':'badge-gray'}">${row.buyConfirmYn==='Y'?'확정':'미확정'}</span>` + (row.buyConfirmDate ? `<span style="color:#888;margin-left:4px;font-size:11px;">${row.buyConfirmDate}</span>` : '') },
+      { key: '_settlePeriod', label: '정산기간',   type: 'readonly', colSpan: 3, fmt: (v, row) => row.settlePeriod || '-' },
+
+      { key: '_prodNm',       label: '상품명',     type: 'readonly', colSpan: 2, fmt: (v, row) => row.prodNm || '-' },
+      { key: '_brandNm',      label: '브랜드',     type: 'readonly', fmt: (v, row) => row.brandNm || '-' },
+      { key: '_skuId',        label: 'SKU ID',     type: 'readonly', mono: true, fmt: (v, row) => row.skuId || '-' },
+      { key: '_normalPrice',  label: '정상가',     type: 'readonly', fmt: (v, row) => fmtW(row.normalPrice) },
+      { key: '_unitPrice',    label: '단가',       type: 'readonly', fmt: (v, row) => fmtW(row.unitPrice) },
+      { key: '_orderQty',     label: '수량',       type: 'readonly', fmt: (v, row) => (row.orderQty || 0).toLocaleString() + '개' },
+      { key: '_itemPrice',    label: '소계',       type: 'readonly', html: true, fmt: (v, row) => `<b>${fmtW(row.itemPrice)}</b>` },
+
+      { key: '_discntAmt',    label: '직접할인',   type: 'readonly', html: true, fmt: (v, row) => row.discntAmt ? `<span style="color:#e74c3c;">- ${fmtW(row.discntAmt)}</span>` : '-' },
+      { key: '_couponDiscnt', label: '쿠폰할인',   type: 'readonly', html: true, fmt: (v, row) => row.couponDiscntAmt ? `<span style="color:#e74c3c;">- ${fmtW(row.couponDiscntAmt)}</span>` : '-' },
+      { key: '_promoDiscnt',  label: '프로모션할인',type: 'readonly', html: true, fmt: (v, row) => row.promoDiscntAmt ? `<span style="color:#e74c3c;">- ${fmtW(row.promoDiscntAmt)}</span>` : '-' },
+      { key: '_cacheUse',     label: '캐쉬사용',   type: 'readonly', html: true, fmt: (v, row) => row.cacheUseAmt ? `<span style="color:#e74c3c;">- ${fmtW(row.cacheUseAmt)}</span>` : '-' },
+      { key: '_mileageUse',   label: '마일리지',   type: 'readonly', html: true, fmt: (v, row) => row.mileageUseAmt ? `<span style="color:#e74c3c;">- ${fmtW(row.mileageUseAmt)}</span>` : '-' },
+      { key: '_voucherUse',   label: '상품권',     type: 'readonly', html: true, fmt: (v, row) => row.voucherUseAmt ? `<span style="color:#e74c3c;">- ${fmtW(row.voucherUseAmt)}</span>` : '-' },
+      { key: '_giftAmt',      label: '사은품원가', type: 'readonly', html: true, fmt: (v, row) => row.giftAmt ? `<span style="color:#e74c3c;">- ${fmtW(row.giftAmt)}</span>` : '-' },
+      { key: '_saveSchd',     label: '적립예정',   type: 'readonly', html: true, fmt: (v, row) => row.saveSchdAmt ? `<span style="color:#27ae60;">${fmtW(row.saveSchdAmt)}</span>` : '-' },
+
+      { key: '_settleTarget', label: '정산대상금액',type: 'readonly', html: true, fmt: (v, row) => `<b>${fmtW(row.settleTargetAmt)}</b>` },
+      { key: '_feeRate',      label: '수수료율',   type: 'readonly', fmt: (v, row) => fmtPct(row.settleFeeRate) },
+      { key: '_feeAmt',       label: '수수료금액', type: 'readonly', html: true, fmt: (v, row) => `<span style="color:#e74c3c;">${fmtW(row.settleFeeAmt)}</span>` },
+      { key: '_settleAmt',    label: '정산금액',   type: 'readonly', html: true, fmt: (v, row) => `<b style="color:#2980b9;">${fmtW(row.settleAmt)}</b>` },
+      { key: '_closeYn',      label: '마감여부',   type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${row.closeYn==='Y'?'badge-purple':'badge-gray'}">${row.closeYn==='Y'?'마감완료':'미마감'}</span>` + (row.closeDate ? `<span style="color:#888;font-size:11px;margin-left:4px;">${row.closeDate}</span>` : '') },
+      { key: '_erpSend',      label: 'ERP전송',    type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${row.erpSendYn==='Y'?'badge-green':'badge-gray'}">${row.erpSendYn==='Y'?'전송완료':'미전송'}</span>` },
+      { key: '_remark',       label: '비고',       type: 'readonly', colSpan: 2, visible: (row) => !!row.remark, fmt: (v, row) => row.remark || '-' },
+    ];
+
+  /* ##### [06] return (템플릿 노출) ############################################## */
+  return {
+      baseGrid,
+      uiState, handleDateRangeChange,
+      searchParam,
+       raws, cfSummary,
+      handleBtnAction, handleSelectAction,
+      expandedRows, toggleRow, isExpanded,
+      fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
+      fmtW, fmtPct, doCollect, codes, rawGridColumns, rawExpandColumns, baseSearchColumns, moreSearchColumns, summaryFormColumns,
+    };
   },
   template: /* html */`
 <div>

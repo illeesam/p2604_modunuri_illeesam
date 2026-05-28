@@ -77,6 +77,33 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const _initSearchParam = () => ({ diff: '' });
     const searchParam = reactive(_initSearchParam());
     const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
+
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const cfSummary = computed(() => ({
+      match: rows.filter(r=>r.diffStatus==='일치').length,
+      over:  rows.filter(r=>r.diffStatus==='시스템과다').length,
+      under: rows.filter(r=>r.diffStatus==='업체과다').length,
+    }));
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* handleSearchList — 목록 조회 */
+    const handleSearchList = async (searchType = 'DEFAULT') => {
+      try {
+        const res = await boApiSvc.stRecon.getPage({
+            pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, typeCd: 'VENDOR',
+            ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          }, '업체-정산 대사', '목록조회');
+        const data = res.data?.data;
+        rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || rows.length;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+      } catch (_) {
+        console.error('[catch-info]', _);
+      }
+    };
+
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
@@ -94,6 +121,52 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* setPage — 설정 */
+    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+        /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+        // --- [컬럼 정의] ---
+
+        const baseSearchColumns = [
+      { key: 'dateRange', label: '정산일', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'diff', label: '대사결과', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
+    ];
+
+    // 기본 그리드
+    const baseGridColumns = [
+      { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
+      { key: 'orderCnt',   label: '주문건수', fmt: (v) => v + '건' },
+      { key: 'sysAmt',     label: '시스템 정산액', fmt: fmtW },
+      { key: 'vendorAmt',  label: '업체 청구액', fmt: fmtW },
+      { key: 'diff',       label: '차이금액',
+        fmt: (v) => v !== 0 ? (v > 0 ? '+' : '') + Number(v).toLocaleString() + '원' : '-',
+        cellStyle: (v) => Math.abs(v) > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
+    ];
+
+    /* summaryFormColumns — 집계 카드 (BoFormArea, cols=3, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_match', label: '일치',     type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
+      { key: '_over',  label: '시스템과다',type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.over}건</b>` },
+      { key: '_under', label: '업체과다', type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.under}건</b>` },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      baseGrid,
+      uiState, codes,  rows, searchParam,
+      baseSearchColumns, baseGridColumns, summaryFormColumns,
+      handleBtnAction, handleSelectAction,
+      cfSummary, fnDiffBadge, fmtW,
+    };
   },
   template: /* html */`
 <div>

@@ -30,11 +30,8 @@ window.XsSample01 = {
     let   _tempId    = -1;                         // 신규 행 임시 ID
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({
-      pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
-      pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {},
-    });
-
+    /* baseGrid — FO 클라이언트 페이징 (cofGrid 사용, fnBuildPagerNums 가 직접 갱신) */
+    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 20 });
     /* ===== 토스트 ===== */
     const toast = reactive({ show: false, msg: '', type: 'success' });
     let _tId = null;
@@ -68,19 +65,19 @@ window.XsSample01 = {
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => {
-      pager.pageTotalCount = gridRows.filter(r => r._row_status !== 'D').length;
-      pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize));
-      const c = pager.pageNo, l = pager.pageTotalPage;
+      baseGrid.pager.pageTotalCount = gridRows.filter(r => r._row_status !== 'D').length;
+      baseGrid.pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / baseGrid.pager.pageSize));
+      const c = baseGrid.pager.pageNo, l = baseGrid.pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-      pager.pageList = gridRows.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize);
+      baseGrid.pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+      baseGrid.pager.pageList = gridRows.slice((baseGrid.pager.pageNo - 1) * baseGrid.pager.pageSize, baseGrid.pager.pageNo * baseGrid.pager.pageSize);
     };
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; fnBuildPagerNums(); } };
 
     /* getRealIdx — 표시 인덱스 → 원본 인덱스 */
-    const getRealIdx = i => (pager.pageNo - 1) * pager.pageSize + i;
+    const getRealIdx = i => (baseGrid.pager.pageNo - 1) * baseGrid.pager.pageSize + i;
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -154,7 +151,7 @@ window.XsSample01 = {
         const list = res?.data?.data ?? res?.data ?? [];
         allDatas.splice(0, allDatas.length, ...list.map(toRow));
       } catch (e) { showToast('데이터 로드 실패: ' + (e.message || e), 'error'); }
-      gridRows.splice(0); uiState.focusedIdx = null; pager.pageNo = 1;
+      gridRows.splice(0); uiState.focusedIdx = null; baseGrid.pager.pageNo = 1;
       allDatas.filter(d => {
         const searchVal = searchParam.searchValue.toLowerCase();
         if (searchVal) {
@@ -173,10 +170,10 @@ window.XsSample01 = {
     };
 
     /* onSearch — 조회 */
-    const onSearch = async () => { pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onSearch = async () => { baseGrid.pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
-    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
+    const onReset  = async () => { Object.assign(searchParam, searchParamOrg); baseGrid.pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
     /* setFocused — 포커스 설정 */
     const setFocused = idx => { uiState.focusedIdx = idx; };
@@ -192,7 +189,7 @@ window.XsSample01 = {
       const at = uiState.focusedIdx !== null ? uiState.focusedIdx + 1 : gridRows.length;
       gridRows.splice(at, 0, { memberId: _tempId--, memberNm: '', email: '', phone: '', grade: '일반', status: '활성', regDate: '', _row_status: 'I', _row_check: false, _row_org: null });
       uiState.focusedIdx = at;
-      pager.pageNo = Math.ceil((at + 1) / pager.pageSize);
+      baseGrid.pager.pageNo = Math.ceil((at + 1) / baseGrid.pager.pageSize);
     };
 
     /* deleteRow — 행 삭제 */
@@ -340,7 +337,7 @@ window.XsSample01 = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, toast, searchParam, gridRows, pager,    // 상태 / 데이터
+      uiState, codes, toast, searchParam, gridRows,     // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                     // 컬럼 정의
       handleBtnAction, handleSelectAction,                    // dispatch
     };

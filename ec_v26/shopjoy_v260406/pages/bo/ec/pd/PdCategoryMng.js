@@ -167,9 +167,9 @@ window.PdCategoryMng = {
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);
         buildTreeRows(list).forEach(c => gridRows.push(makeRow(c)));
-        pager.pageNo          = 1;
-        pager.pageTotalCount  = gridRows.length;
-        pager.pageTotalPage   = Math.max(1, Math.ceil(gridRows.length / pager.pageSize));
+        baseGrid.pager.pageNo          = 1;
+        baseGrid.pager.pageTotalCount  = gridRows.length;
+        baseGrid.pager.pageTotalPage   = Math.max(1, Math.ceil(gridRows.length / baseGrid.pager.pageSize));
         fnBuildPagerNums();
       } catch (e) {
         console.error('[handleGridSearch]', e);
@@ -203,7 +203,8 @@ window.PdCategoryMng = {
     /* -- 그리드 -- */
     const gridRows   = reactive([]);
     let   _tempId    = -1;
-        const pager      = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    /* baseGrid — 클라이언트 페이징 (setPage/onSizeChange/fnBuildPagerNums 가 직접 갱신) */
+    const baseGrid   = coUtil.cofGrid(() => handleGridSearch(), { pageSize: 10 });
 const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc', 'categoryStatusCd'];
 
     /* buildTreeRows — 빌드 */
@@ -233,20 +234,20 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     });
 
     /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); pager.pageList=gridRows.slice((c-1)*pager.pageSize,c*pager.pageSize); };
+    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); baseGrid.pager.pageList=gridRows.slice((c-1)*baseGrid.pager.pageSize,c*baseGrid.pager.pageSize); };
 
     /* setPage — 설정 */
-    const setPage       = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+    const setPage       = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; fnBuildPagerNums(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange  = () => { pager.pageNo = 1; pager.pageTotalCount = gridRows.length; pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / pager.pageSize)); fnBuildPagerNums(); };
+    const onSizeChange  = () => { baseGrid.pager.pageNo = 1; baseGrid.pager.pageTotalCount = gridRows.length; baseGrid.pager.pageTotalPage = Math.max(1, Math.ceil(gridRows.length / baseGrid.pager.pageSize)); fnBuildPagerNums(); };
 
     /* getRealIdx — 조회 */
-    const getRealIdx    = localIdx => (pager.pageNo - 1) * pager.pageSize + localIdx;
+    const getRealIdx    = localIdx => (baseGrid.pager.pageNo - 1) * baseGrid.pager.pageSize + localIdx;
 
     /* onSearch — 조회 */
     const onSearch = async () => {
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
       await handleGridSearch();
     };
 
@@ -386,7 +387,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         _row_status: 'N',
         _row_check: false,
       });
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     /* addChildRow — 추가 */
@@ -512,7 +513,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      codes, uiState, sites, searchParam, gridRows, pager, catPickerModal,           // 상태 / 데이터
+      codes, uiState, sites, searchParam, gridRows, baseGrid,  catPickerModal, // 상태 / 데이터
       baseSearchColumns,                                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatPickerList,                                                               // computed
@@ -669,7 +670,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-else v-for="(row, idx) in pager.pageList" :key="(row && row.categoryId)" :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]" draggable="true" @dragstart="handleSelectAction('categories-rowDragStart', getRealIdx(idx))" @dragover.prevent="handleSelectAction('categories-rowDragOver', getRealIdx(idx))" @drop="handleSelectAction('categories-rowDrop')" :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''" @click="handleSelectAction('categories-rowFocus', getRealIdx(idx))">
+          <tr v-else v-for="(row, idx) in baseGrid.pager.pageList" :key="(row && row.categoryId)" :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]" draggable="true" @dragstart="handleSelectAction('categories-rowDragStart', getRealIdx(idx))" @dragover.prevent="handleSelectAction('categories-rowDragOver', getRealIdx(idx))" @drop="handleSelectAction('categories-rowDrop')" :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''" @click="handleSelectAction('categories-rowFocus', getRealIdx(idx))">
           <!-- ===== ■.■.■.■.■.■. 번호 ============================================ -->
           <td style="text-align:center;font-size:11px;color:#999;">
             {{ getRealIdx(idx) + 1 }}
@@ -756,7 +757,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </tbody>
   </table>
   <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
-  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('categories-pager-setPage', n)" :on-size-change="() => handleBtnAction('categories-pager-sizeChange')" />
+  <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('categories-pager-setPage', n)" :on-size-change="() => handleBtnAction('categories-pager-sizeChange')" />
 </div>
 </div>
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->

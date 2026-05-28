@@ -28,7 +28,8 @@ window.SyVendorUserMng = {
     const roleMenus = reactive([]);
     const vendors = reactive([]);
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    /* baseGrid — 사용자 그리드 pager (클라이언트 페이징, fnBuildPagerNums 가 직접 갱신) */
+    const baseGrid = coUtil.cofGrid(() => loadVendorUsers(uiState.searchVendorId), { pageSize: 5 });
 
     /* -- 인라인 폼 (사용자 등록/수정) -- */
     const formData = reactive({});
@@ -267,7 +268,7 @@ window.SyVendorUserMng = {
       uiState.treeRoleCat = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
                               PARTNER:'SITE', INTERNAL:'SITE' })[v.vendorTypeCd] || '';
       loadVendorUsers(v.vendorId);
-      pager.pageNo = 1;
+      baseGrid.pager.pageNo = 1;
     };
 
     /* onSearch — 조회 */
@@ -312,13 +313,13 @@ window.SyVendorUserMng = {
     });
 
     /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { pager.pageTotalCount=vendorUsers.length; pager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/pager.pageSize)); pager.pageList=vendorUsers.slice((pager.pageNo-1)*pager.pageSize,pager.pageNo*pager.pageSize); const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const fnBuildPagerNums = () => { baseGrid.pager.pageTotalCount=vendorUsers.length; baseGrid.pager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/baseGrid.pager.pageSize)); baseGrid.pager.pageList=vendorUsers.slice((baseGrid.pager.pageNo-1)*baseGrid.pager.pageSize,baseGrid.pager.pageNo*baseGrid.pager.pageSize); const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* setPage — 설정 */
-    const setPage    = n => { if(n>=1&&n<=pager.pageTotalPage) { pager.pageNo=n; fnBuildPagerNums(); } };
+    const setPage    = n => { if(n>=1&&n<=baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo=n; fnBuildPagerNums(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo=1; fnBuildPagerNums(); };
+    const onSizeChange = () => { baseGrid.pager.pageNo=1; fnBuildPagerNums(); };
 
     /* blank — 빈 폼 데이터 생성 */
     const blank = () => ({
@@ -617,7 +618,7 @@ window.SyVendorUserMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, vendorUsers, vendors, bizPager, pager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터
+      uiState, codes, vendorUsers, vendors, bizPager, baseGrid,  formData, userRoles, roleTreeExpanded,  // 상태 / 데이터
       baseSearchColumns, vendorGridColumns, userGridColumns, userRoleGridColumns, baseVendorUserFormColumns,   // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfVendorMap, cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                // computed
@@ -658,7 +659,7 @@ window.SyVendorUserMng = {
     <!-- ===== □.□. 업체 목록 =============================================== -->
     <!-- ===== ■.■. 사용자 목록 ============================================= -->
     <bo-grid v-if="uiState.searchVendorId != null"
-      :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
+      :columns="userGridColumns" :rows="baseGrid.pager.pageList||[]" :pager="baseGrid.pager" row-key="vendorUserId"
       list-title="사용자목록" :count-text="vendorUsers.length + '건'"
       :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
       @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"

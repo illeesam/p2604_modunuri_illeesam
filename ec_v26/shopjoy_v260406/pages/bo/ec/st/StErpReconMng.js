@@ -91,6 +91,33 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const _initSearchParam = () => ({ diff: '', type: '' });
     const searchParam = reactive(_initSearchParam());
     const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
+
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const cfSummary = computed(() => ({
+      match:     recons.filter(r=>r.diffStatus==='일치').length,
+      diff:      recons.filter(r=>r.diffStatus==='차이').length,
+      noReflect: recons.filter(r=>r.diffStatus==='미반영').length,
+      diffAmt:   recons.reduce((s,r)=>s+Math.abs(r.diff||0),0),
+    }));
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* handleSearchList — 목록 조회 */
+    const handleSearchList = async (searchType = 'DEFAULT') => {
+      try {
+        const res = await boApiSvc.stErp.getReconPage({
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          dateStart: uiState.dateStart, dateEnd: uiState.dateEnd,
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        }, 'ERP전표대사', '목록조회');
+        const data = res.data?.data;
+        recons.splice(0, recons.length, ...(data?.pageList || data?.list || []));
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || {});
+      } catch (_) { console.error('[catch-info]', _); }
+    };
+
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); });
 
@@ -125,6 +152,58 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* setPage — 설정 */
+    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+        /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+        // --- [컬럼 정의] ---
+
+        const baseSearchColumns = [
+      { key: 'dateRange', label: '대사일', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'type', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'diff', label: '대사결과', type: 'select', options: () => codes.erp_recon_results, nullLabel: '결과 전체' },
+    ];
+
+    // 기본 그리드
+    const baseGridColumns = [
+      { key: 'reconId',    label: '대사ID' },
+      { key: 'reconDate',  label: '대사일자' },
+      { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
+      { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
+      { key: 'sysAmt',     label: '시스템금액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'erpAmt',     label: 'ERP금액', fmt: (v) => v > 0 ? fmtW(v) : '-' },
+      { key: 'diff',       label: '차이금액', fmt: (v) => v > 0 ? fmtW(v) : '-',
+        cellStyle: (v) => v > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
+      { key: 'remark',     label: '비고',
+        cellStyle: 'font-size:11px;color:#888;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' },
+    ];
+
+    /* summaryFormColumns — 집계 카드 (BoFormArea, cols=4, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_match',     label: '일치',          type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
+      { key: '_diff',      label: '금액 차이',     type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.diff}건</b>` },
+      { key: '_noReflect', label: '미반영',        type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.noReflect}건</b>` },
+      { key: '_diffAmt',   label: '차이금액 합계', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSummary.value.diffAmt)}</b>` },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      baseGrid,
+      uiState, codes,  recons, searchParam,                                  // 상태 / 데이터
+      baseSearchColumns, baseGridColumns, summaryFormColumns,                          // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch
+      cfSummary,                                                                       // computed
+      fnDiffBadge, fnTypeBadge, fmtW,                                                  // 헬퍼
+    };
   },
   template: /* html */`
 <div>

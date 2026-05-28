@@ -78,6 +78,45 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const searchParam = reactive(_initSearchParam());
     const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
 
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    const cfSummary = computed(() => ({
+      match:   rows.filter(r => r.diffStatus==='일치').length,
+      over:    rows.filter(r => r.diffStatus==='정산과다').length,
+      under:   rows.filter(r => r.diffStatus==='정산부족').length,
+      diffAmt: rows.reduce((s, r) => s + Math.abs(r.diff||0), 0),
+    }));
+
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* handleSearchList — 목록 조회 */
+    const handleSearchList = async (searchType = 'DEFAULT') => {
+      try {
+        const params = {
+          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, typeCd: 'ORDER',
+          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+        };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'orderId,custNm';
+        }
+        const res = await boApiSvc.stRecon.getPage(params, '주문-정산 대사', '목록조회');
+        const data = res.data?.data;
+        rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
+        baseGrid.pager.pageTotalCount = data?.pageTotalCount || rows.length;
+        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+      } catch (_) {
+        console.error('[catch-info]', _);
+      }
+    };
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* fnDiffBadge — 유틸 */
     const fnDiffBadge = s => ({ '일치':'badge-green', '정산과다':'badge-red', '정산부족':'badge-orange' }[s] || 'badge-gray');
 
@@ -89,6 +128,61 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* setPage — 설정 */
+    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+    // --- [컬럼 정의] ---
+
+    const baseSearchColumns = [
+      { key: 'dateRange', label: '주문일', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px',
+        sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'diff', label: '대사결과', type: 'select', options: () => codes.recon_results, nullLabel: '대사결과 전체' },
+      { key: 'searchType', label: '검색대상', type: 'multiCheck',
+        options: [{ value: 'orderId', label: '주문ID' }, { value: 'custNm', label: '고객명' }],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
+    ];
+
+    // 기본 그리드
+    const baseGridColumns = [
+      { key: 'orderId',    label: '주문ID' },
+      { key: 'orderDate',  label: '주문일' },
+      { key: 'vendorNm',   label: '업체' },
+      { key: 'orderAmt',   label: '주문금액', fmt: fmtW },
+      { key: 'settleAmt',  label: '정산기준액', fmt: fmtW },
+      { key: 'reconAmt',   label: '실정산액', fmt: fmtW },
+      { key: 'diff',       label: '차이금액',
+        fmt: (v) => v !== 0 ? (v > 0 ? '+' : '') + Number(v).toLocaleString() + '원' : '-',
+        cellStyle: (v) => Math.abs(v) > 0 ? 'color:#e74c3c;font-weight:700' : '' },
+      { key: 'diffStatus', label: '대사결과', badge: (row) => fnDiffBadge(row.diffStatus) },
+    ];
+
+    /* summaryFormColumns — 집계 카드 (BoFormArea, cols=4, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_match',   label: '일치',         type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
+      { key: '_over',    label: '정산과다',     type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.over}건</b>` },
+      { key: '_under',   label: '정산부족',     type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.under}건</b>` },
+      { key: '_diffAmt', label: '차이금액 합계', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSummary.value.diffAmt)}</b>` },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      baseGrid,
+      uiState, codes,  rows, searchParam,                                       // 상태 / 데이터
+      baseSearchColumns, baseGridColumns, summaryFormColumns,                          // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                             // dispatch
+      cfSummary,                                                                       // computed
+      fnDiffBadge, fmtW,                                                               // 헬퍼
+    };
   },
   template: /* html */`
 <div>
