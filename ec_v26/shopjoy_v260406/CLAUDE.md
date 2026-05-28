@@ -664,7 +664,19 @@ const baseFormColumns = [
   const onSizeChange = (which)    => { pager.pageNo = 1; fnLoadHist(which); };
   watch(() => uiState.customer?.userId, async () => { await Promise.all(Object.keys(HIST_META).map(fnLoadHist)); });
   ```
-- 예외: 모달 picker(고객 검색 등)는 전체 회원 한 번에 받아 키워드 즉시 필터링이 UX 상 합리적 → 모달 내부에 한해 클라이언트 슬라이싱 허용 (modalPager + cfPageModalList)
+- ❌ 모달 내부 그리드도 서버사이드 페이징 필수 (2026-05-28 정책 강화)
+  - 이전: "모달 picker는 UX 상 클라이언트 슬라이싱 허용" → **폐기**. 데이터 1000건+ 모달도 동일 정책 적용
+  - ✅ 모달 내부에 `pager.pageNo`/`pager.pageSize` reactive + 검색·조회 시 API 호출 + 응답의 `pageList/pageTotalCount` 사용
+  - ✅ `<bo-pagination>` 컴포넌트 모달 풋터에 배치
+  - **예외**: 트리형 모달(MenuTreeModal, DeptTreeModal, RoleTreeModal, CategoryTreeModal, PathPickModal, BoCodeGrpModal 등 — 계층 구조 일괄 표시가 본질) 은 페이징 없음
+
+**BO 모달 루트는 `<bo-modal>` 필수** ⭐⭐ (2026-05-28):
+- 모든 BO 모달의 template 루트는 반드시 `<bo-modal :show="..." @close="...">` 로 시작
+- ❌ 금지: `<teleport to="body"><div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);...">` 같은 인라인 오버레이 직접 작성
+- ❌ 금지: `<div class="modal-overlay">` + `<div class="modal-box">` 수기 마크업 (기존 디자인 CSS 적용 안 되고 ESC 닫기·z-index 충돌 다수)
+- ✅ 헤더 커스터마이즈가 필요하면 `body-pad="0" box-pad="0"` 로 bo-modal 기본 헤더를 비우고 슬롯 내부에 자체 헤더 그리는 패턴(예: AuthUserPickModal) 허용
+- ✅ 페이지 컴포넌트(Mng/Dtl) 안에 인라인 모달이 필요한 경우도 동일 — `<bo-modal>` 로 감싸기
+- 점검: `grep -rn "position:\s*fixed.*z-index" pages/bo` 결과의 인라인 오버레이 13개 (2026-05-28 기준) 는 점진적 변환 대상
 
 **Dtl BoFormArea cols=3 강제 + 통합 폼 정책** ⭐⭐ (2026-05-27):
 - **모든 Dtl 의 `<bo-form-area>` 호출은 `:cols="3"` 으로 통일**. `:cols="2"` 사용 금지

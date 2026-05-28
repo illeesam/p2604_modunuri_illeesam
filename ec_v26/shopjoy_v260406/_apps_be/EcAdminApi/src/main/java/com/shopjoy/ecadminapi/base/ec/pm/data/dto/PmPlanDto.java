@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PmPlanDto {
@@ -28,8 +29,8 @@ public class PmPlanDto {
         private String planDesc;
         private String thumbnailUrl;
         private String bannerUrl;
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private String planStatusCd;
         private String planStatusCdBefore;
         private Integer sortOrd;

@@ -117,7 +117,7 @@ window.SiteSelectModal = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 10;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
@@ -177,6 +177,11 @@ window.SiteSelectModal = {
     /* onSetPage */
     const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
 
+    /* onSizeChange — 페이지사이즈 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchListWrap(); };
+    /* pageSizes 보강 (BoPager 가 요구) */
+    if (!pager.pageSizes) pager.pageSizes = [5, 10, 20, 30, 50];
+
     /* baseSearchColumns — 검색 영역 컬럼 */
     const baseSearchColumns = [
       { key: 'searchType', type: 'multiCheck',
@@ -200,7 +205,7 @@ window.SiteSelectModal = {
     return {
       cfSiteNm, searchParam, list, loading, pager,                          // 데이터
       baseSearchColumns, listGridColumns,                                    // 컬럼 정의
-      onSetPage,                                                             // BoPager 콜백
+      onSetPage, onSizeChange,                                               // BoPager 콜백
       handleBtnAction, handleSelectAction,                                  // dispatch
     };
   },
@@ -223,11 +228,11 @@ window.SiteSelectModal = {
   </div>
   <bo-search-area :columns="baseSearchColumns" :param="searchParam"
     @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="siteId"
+  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="siteId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)"
-    @set-page="onSetPage">
+    @set-page="onSetPage" @size-change="onSizeChange">
     <template #row-actions="{ row }">
       <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -247,7 +252,7 @@ window.VendorSelectModal = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
@@ -344,11 +349,11 @@ window.VendorSelectModal = {
   </div>
   <bo-search-area :columns="baseSearchColumns" :param="searchParam"
     @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="vendorId"
+  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="vendorId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)"
-    @set-page="onSetPage">
+    @set-page="onSetPage" @size-change="() => onSetPage(1)">
     <template #row-actions="{ row }">
       <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -371,7 +376,7 @@ window.BoUserSelectModal = {
     const depts = reactive([]);
     const uiState = reactive({ loading: false, deptSearchValue: '', selectedDeptId: null });
     const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [] });
+    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50]});
     const userList = reactive([]);
     const selectedIds = reactive(new Set());
     const selectedUsers = reactive([]);
@@ -664,11 +669,11 @@ window.BoUserSelectModal = {
         </div>
         <!-- 목록 + 페이저 (BoGrid 내장) -->
         <div style="flex:1;overflow-y:auto;">
-          <bo-grid bare :columns="userGridColumns" :rows="userList" :pager="pager" row-key="userId"
+          <bo-grid :columns="userGridColumns" :rows="userList" :pager="pager" row-key="userId"
             row-clickable :row-style="fnRowStyle"
             :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
             @row-click="row => handleSelectAction('users-toggle', row)"
-            @set-page="setPage"
+            @set-page="setPage" @size-change="() => setPage(1)"
             @size-change="onSizeChange" />
         </div>
       </div>
@@ -705,7 +710,7 @@ window.MemberSelectModal = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
@@ -804,11 +809,11 @@ window.MemberSelectModal = {
   </div>
   <bo-search-area :columns="baseSearchColumns" :param="searchParam"
     @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="memberId"
+  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="memberId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)"
-    @set-page="onSetPage">
+    @set-page="onSetPage" @size-change="() => onSetPage(1)">
     <template #row-actions="{ row }">
       <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -828,7 +833,7 @@ window.OrderSelectModal = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
@@ -927,11 +932,11 @@ window.OrderSelectModal = {
   </div>
   <bo-search-area :columns="baseSearchColumns" :param="searchParam"
     @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="orderId"
+  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="orderId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)"
-    @set-page="onSetPage">
+    @set-page="onSetPage" @size-change="() => onSetPage(1)">
     <template #row-actions="{ row }">
       <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -951,7 +956,7 @@ window.BbmSelectModal = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 6;
-    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1 });
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const list = reactive([]);
     const loading = ref(false);
@@ -1059,11 +1064,11 @@ window.BbmSelectModal = {
   </div>
   <bo-search-area :columns="baseSearchColumns" :param="searchParam"
     @search="handleBtnAction('pager-set', 1)" />
-  <bo-grid bare :columns="listGridColumns" :rows="list" :pager="pager" row-key="bbmId"
+  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="bbmId"
     :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)"
-    @set-page="onSetPage">
+    @set-page="onSetPage" @size-change="() => onSetPage(1)">
     <template #row-actions="{ row }">
       <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
         선택
@@ -1768,7 +1773,7 @@ window.RoleTreeModal = {
         </div>
       </div>
       <!-- 트리 (BoGrid) -->
-      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="roleId" row-clickable
+      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="roleId" row-clickable
         :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.'"
         @row-click="row => handleSelectAction('rolesTree-select', row)" />
     </div>
@@ -1932,7 +1937,7 @@ window.MenuTreeModal = {
         </div>
       </div>
       <!-- 트리 (BoGrid) -->
-      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="menuId" row-clickable
+      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="menuId" row-clickable
         :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.'"
         @row-click="row => handleSelectAction('menuTree-select', row)" />
     </div>
@@ -2104,7 +2109,7 @@ window.DeptTreeModal = {
         </div>
       </div>
       <!-- 트리 (BoGrid) -->
-      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="deptId" row-clickable
+      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="deptId" row-clickable
         :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.'"
         @row-click="row => handleSelectAction('deptTree-select', row)" />
     </div>
@@ -2263,7 +2268,7 @@ window.CategoryTreeModal = {
         </div>
       </div>
       <!-- 트리 (BoGrid) -->
-      <bo-grid bare :columns="listGridColumns" :rows="cfFlatTree" row-key="categoryId" row-clickable
+      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="categoryId" row-clickable
         :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.'"
         @row-click="row => handleSelectAction('categoryTree-select', row)" />
     </div>
@@ -2709,7 +2714,7 @@ window.CategorySelectModal = {
     </div>
     <!-- 목록 + 페이저 (BoGrid 내장) -->
     <div style="flex:1;overflow-y:auto;">
-      <bo-grid bare :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="categoryId"
+      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="categoryId"
         row-clickable :row-style="fnRowStyle"
         empty-text="검색 결과가 없습니다."
         @row-click="row => handleSelectAction('category-toggle-row', row)"
@@ -4791,7 +4796,7 @@ window.BizPickModal = {
       </div>
       <!-- 우측 사업자 목록 -->
       <div style="overflow:auto;">
-        <bo-grid bare :columns="bizGridColumns" :rows="cfFiltered" row-key="bizId"
+        <bo-grid :columns="bizGridColumns" :rows="cfFiltered" row-key="bizId"
           empty-text="검색 결과가 없습니다." row-clickable :row-actions="true"
           @row-click="row => handleSelectAction('list-pick', row)">
           <template #row-actions="{ row }">
@@ -4932,7 +4937,7 @@ window.SimpleUserPickModal = {
       </div>
     </div>
     <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
-      <bo-grid bare :columns="userGridColumns" :rows="cfFiltered" row-key="boUserId"
+      <bo-grid :columns="userGridColumns" :rows="cfFiltered" row-key="boUserId"
         empty-text="결과가 없습니다." row-clickable :row-actions="true"
         @row-click="row => handleSelectAction('list-pick', row)">
         <template #row-actions="{ row }">
@@ -5034,7 +5039,7 @@ window.OdMemberPickModal = {
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const state = reactive({ loading: false });
     const rows = reactive([]);
-    const pager = reactive({ pageNo: 1, pageSize: props.pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [] });
+    const pager = reactive({ pageNo: 1, pageSize: props.pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50]});
 
     /* fnBuildPagerNums */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -5149,7 +5154,7 @@ window.OdMemberPickModal = {
       명
     </div>
     <div style="flex:1;overflow-y:auto;">
-      <bo-grid bare row-clickable :columns="memberPickGridColumns" :rows="rows" :pager="pager" row-key="memberId"
+      <bo-grid row-clickable :columns="memberPickGridColumns" :rows="rows" :pager="pager" row-key="memberId"
         :row-style="() => 'cursor:pointer;'"
         :empty-text="state.loading ? '조회 중...' : '조회 결과가 없습니다.'"
         @row-click="(row) => handleSelectAction('members-pick', row)"
@@ -5683,8 +5688,7 @@ window.BoCodeGrpModal = {
         </div>
         <!-- ── 일반 코드목록 ── -->
         <template v-else-if="tab==='list'">
-          <bo-grid bare
-            :columns="codeGridColumns" :rows="cfPageCodes" :pager="pager"
+          <bo-grid :columns="codeGridColumns" :rows="cfPageCodes" :pager="pager"
             row-key="codeId" row-clickable
             empty-text="검색 결과가 없습니다."
             @row-click="row => handleSelectAction('codes-pick', row)"
@@ -6021,12 +6025,12 @@ window.AuthUserPickModal = {
       </div>
       <!-- 테이블 + 페이저 (BoGrid 내장) -->
       <div style="overflow-x:auto;border-radius:8px;border:1px solid #f0e0e8;">
-        <bo-grid bare :columns="userGridColumns" :rows="modal.loading ? [] : rows" :pager="cfPager" row-key="loginId"
+        <bo-grid :columns="userGridColumns" :rows="modal.loading ? [] : rows" :pager="cfPager" row-key="loginId"
           :empty-text="modal.loading ? '⏳ 조회 중...' : '🔍 검색 결과가 없습니다.'"
           row-clickable :row-actions="true"
           :row-style="row => loginId===(row.loginId||row.userId) ? 'background:#fff0f4;' : ''"
           @row-click="row => handleSelectAction('users-pick', row)"
-          @set-page="n => handleBtnAction('pager-set', n)">
+          @set-page="n => handleBtnAction('pager-set', n)" @size-change="() => handleBtnAction('pager-set', 1)">
           <template #row-actions="{ row }">
             <button @click.stop="handleSelectAction('users-pick', row)" style="background:linear-gradient(135deg,#f9a8c9,#e8587a);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;">
               선택

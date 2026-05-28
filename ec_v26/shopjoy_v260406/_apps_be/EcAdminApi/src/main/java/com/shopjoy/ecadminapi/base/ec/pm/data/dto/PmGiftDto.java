@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PmGiftDto {
@@ -28,8 +29,8 @@ public class PmGiftDto {
         private String prodId;
         private Integer giftStock;
         private String giftDesc;
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private String giftStatusCd;
         private String giftStatusCdBefore;
         private String memGradeCd;

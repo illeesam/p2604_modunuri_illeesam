@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PmDiscntDto {
@@ -30,8 +31,8 @@ public class PmDiscntDto {
         private Long minOrderAmt;
         private Integer minOrderQty;
         private Long maxDiscntAmt;
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private String discntStatusCd;
         private String discntStatusCdBefore;
         private String discntDesc;

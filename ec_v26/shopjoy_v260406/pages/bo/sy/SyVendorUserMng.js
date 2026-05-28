@@ -28,7 +28,7 @@ window.SyVendorUserMng = {
     const roleMenus = reactive([]);
     const vendors = reactive([]);
     const bizPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* -- 인라인 폼 (사용자 등록/수정) -- */
     const formData = reactive({});
@@ -256,8 +256,12 @@ window.SyVendorUserMng = {
     /* fnStatusLabel — 유틸 */
     const fnStatusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
 
-    /* pickVendorRow — 선택 업체 행 */
+    /* pickVendorRow — 선택 업체 행. 다른 업체로 전환 시 하단 사용자 수정 폼 초기화 */
     const pickVendorRow = (v) => {
+      /* 다른 업체로 전환 시 편집 중이던 사용자 폼 닫기 (이전 업체의 사용자 정보가 남는 것 방지) */
+      if (uiState.searchVendorId !== v.vendorId) {
+        closeForm();
+      }
       uiState.searchVendorId = v.vendorId;
       uiState.treeRoleCat = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
                               PARTNER:'SITE', INTERNAL:'SITE' })[v.vendorTypeCd] || '';
@@ -635,44 +639,47 @@ window.SyVendorUserMng = {
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 업체 검색 =================================================== -->
-  <!-- ===== ■. 업체 목록 =================================================== -->
-  <bo-grid
-    :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
-    list-title="업체목록" :count-text="vendors.length + '건'"
-    :row-style="fnVendorRowStyle" row-clickable
-    @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
-    @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>
-    <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
-        {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
-      </button>
-    </template>
-  </bo-grid>
-  <!-- ===== □. 업체 목록 =================================================== -->
-  <!-- ===== ■. 사용자 목록 ================================================== -->
-  <bo-grid v-if="uiState.searchVendorId != null" style="margin-top:16px;"
-    :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
-    list-title="사용자목록" :count-text="vendorUsers.length + '건'"
-    :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
-    @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
-    @size-change="handleSelectAction('vendorUsers-pager-sizeChange')"
-    @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
-    <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
-        + 신규등록
-      </button>
-    </template>
-    <template #row-actions="{ row }">
-      <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">
-        삭제
-      </button>
-    </template>
-  </bo-grid>
-  <!-- ===== □. 사용자 목록 ================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">
-    상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
+  <!-- ===== ■. 좌(업체목록) + 우(사용자목록) 2열 그리드 ====================== -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+    <!-- ===== ■.■. 업체 목록 =============================================== -->
+    <bo-grid
+      :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
+      list-title="업체목록" :count-text="vendors.length + '건'"
+      :row-style="fnVendorRowStyle" row-clickable
+      @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
+      @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
+          {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
+        </button>
+      </template>
+    </bo-grid>
+    <!-- ===== □.□. 업체 목록 =============================================== -->
+    <!-- ===== ■.■. 사용자 목록 ============================================= -->
+    <bo-grid v-if="uiState.searchVendorId != null"
+      :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
+      list-title="사용자목록" :count-text="vendorUsers.length + '건'"
+      :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
+      @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
+      @size-change="handleSelectAction('vendorUsers-pager-sizeChange')"
+      @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
+      <template #toolbar-actions>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
+          + 신규등록
+        </button>
+      </template>
+      <template #row-actions="{ row }">
+        <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">
+          삭제
+        </button>
+      </template>
+    </bo-grid>
+    <!-- ===== □.□. 사용자 목록 ============================================= -->
+    <div v-else class="card" style="text-align:center;padding:30px;color:#aaa;">
+      좌측 업체 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
+    </div>
   </div>
+  <!-- ===== □. 좌(업체목록) + 우(사용자목록) 2열 그리드 ====================== -->
   <!-- ===== ■. 인라인 폼 =================================================== -->
   <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
     <div class="toolbar">

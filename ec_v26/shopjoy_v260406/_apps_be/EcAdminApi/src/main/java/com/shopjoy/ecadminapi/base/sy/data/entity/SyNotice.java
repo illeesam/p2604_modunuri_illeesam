@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
@@ -50,11 +51,11 @@ public class SyNotice extends BaseEntity {
 
     @Comment("노출시작일")
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     @Comment("노출종료일")
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     @Comment("상태 (ACTIVE/INACTIVE)")
     @Column(name = "notice_status_cd", length = 20)

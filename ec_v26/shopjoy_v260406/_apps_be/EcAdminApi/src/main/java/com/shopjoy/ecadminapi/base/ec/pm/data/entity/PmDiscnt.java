@@ -8,6 +8,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
@@ -59,11 +60,11 @@ public class PmDiscnt extends BaseEntity {
 
     @Comment("할인 시작일시")
     @Column(name = "start_date")
-    private LocalDateTime startDate;
+    private LocalDate startDate;
 
     @Comment("할인 종료일시")
     @Column(name = "end_date")
-    private LocalDateTime endDate;
+    private LocalDate endDate;
 
     @Comment("상태 (코드: DISCNT_STATUS)")
     @Column(name = "discnt_status_cd", length = 20)
