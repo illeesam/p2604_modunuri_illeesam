@@ -14,7 +14,7 @@ window.OdClaimMng = {
 
     const claims = reactive([]);                                                // 클레임 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status' });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], claim_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -31,20 +31,20 @@ window.OdClaimMng = {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
-        baseGrid.pager.pageNo = 1;
+        uiState.sortKey = ''; uiState.sortDir = 'asc';
+        pager.pageNo = 1;
         return handleSearchData();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       // 신규 클레임 등록 (인라인 Dtl)
       } else if (cmd === 'claims-add') {
-        baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++;
+        detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
         return;
       // 엑셀 내보내기
       } else if (cmd === 'claims-excel') {
@@ -70,8 +70,8 @@ window.OdClaimMng = {
       } else if (cmd === 'actionsModal-reqTargetChange') {
         return onReqTargetChange();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'baseDetail-close') {
-        baseDetail.selectedId = null;
+      } else if (cmd === 'detailPanel-close') {
+        detailPanel.selectedId = null;
         return;
       // 회원 선택 모달 열기
       } else if (cmd === 'memberPickModal-open') {
@@ -95,18 +95,18 @@ window.OdClaimMng = {
       console.log(' ■■ OdClaimMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'claims-sort') {
-        return baseGrid.onSort(param);
+        return onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'claims-pager-setPage') {
-        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'claims-pager-sizeChange') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 수정
       } else if (cmd === 'claims-rowEdit') {
-        baseDetail.selectedId = param; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++;
+        detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
         return;
       // 그리드 행 삭제
       } else if (cmd === 'claims-rowDelete') {
@@ -141,11 +141,88 @@ window.OdClaimMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    const baseGrid = coUtil.cofGrid(() => handleSearchData(), { sortMap: SORT_MAP, pageSize: 5 });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* 하단 상세 (인라인 Dtl) */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+
+    /* 일괄선택 */
+    const checked = reactive(new Set());
+
+    const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
+
+    /* 변경작업 모달 (actionsModal) */
+    const bulkForm = reactive({
+      statusByType: { '취소':'', '반품':'', '교환':'' }, type: '',
+      apprAction:'', apprComment:'',
+      apprToUserId:'', apprToNm:'', apprToPhone:'', apprToEmail:'',
+      reqTarget:'추가결재', reqTargetNm:'', reqAmount:0, reqReason:'', tmplMsg: DEFAULT_TMPL,
+    });
 
     /* ── 회원 선택 팝업 (OdMemberPickModal 사용) ── */
     const memberPick = reactive({ open: false });
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* getSortParam — 조회 */
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+
+    /* onSort — 정렬 */
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchData();
+    };
+
+    /* sortIcon — 정렬 */
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
+    /* handleSearchData — 처리 */
+    const handleSearchData = async (searchType = 'DEFAULT') => {
+      uiState.loading = true;
+      try {
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'claimId,orderId,memberNm,prodNm';
+        }
+        const [claimsRes, membersRes] = await Promise.all([
+          boApiSvc.odClaim.getPage(params, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
+          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [] } } }))
+        ]);
+        claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
+        pager.pageTotalCount = claimsRes.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, claimsRes.data?.data?.pageCond || pager.pageCond);
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+        claims.splice(0, claims.length);
+        members.splice(0, members.length);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* handleDateRangeChange — 기간 변경 */
+    const handleDateRangeChange = () => {
+      if (searchParam.dateRange) {
+        const r = boUtil.bofGetDateRange(searchParam.dateRange);
+        searchParam.dateStart = r ? r.from : '';
+        searchParam.dateEnd = r ? r.to : '';
+      }
+      pager.pageNo = 1;
+    };
+
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -169,56 +246,33 @@ window.OdClaimMng = {
       handleSearchData('DEFAULT');
     });
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* handleSearchData — 처리 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
-      uiState.loading = true;
-      try {
-        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'claimId,orderId,memberNm,prodNm';
-        }
-        const [claimsRes, membersRes] = await Promise.all([
-          boApiSvc.odClaim.getPage(params, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [], pageTotalCount: 0 } } })),
-          boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '클레임관리', '조회').catch(() => ({ data: { data: { pageList: [] } } }))
-        ]);
-        claims.splice(0, claims.length, ...(claimsRes.data?.data?.pageList || claimsRes.data?.data?.list || []));
-        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
-        baseGrid.pager.pageTotalCount = claimsRes.data?.data?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
-        Object.assign(baseGrid.pager.pageCond, claimsRes.data?.data?.pageCond || baseGrid.pager.pageCond);
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-        claims.splice(0, claims.length);
-        members.splice(0, members.length);
-      } finally {
-        uiState.loading = false;
-      }
-    };
-
-    /* handleDateRangeChange — 기간 변경 */
-    const handleDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = boUtil.bofGetDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd = r ? r.to : '';
-      }
-      baseGrid.pager.pageNo = 1;
-    };
-
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odClaimMng') { baseDetail.selectedId = null; if (opts.reload) { handleSearchData('RELOAD'); } return; }
-      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
+      if (pg === 'odClaimMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchData('RELOAD'); } return; }
+      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
-    const cfDetailEditId = computed(() => baseDetail.selectedId === '__new__' ? null : baseDetail.selectedId);
-    const cfIsViewMode = computed(() => baseDetail.openMode === 'view' && baseDetail.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${baseDetail.selectedId}_${baseDetail.openMode}`);
+    const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* 클레임(취소/반품/교환) fnTypeBadge — 공통코드 CLAIM_TYPE_KR 우선, 미매칭 시 로컬 fallback */
+    const _CLAIM_TYPE_FB = { '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' };
+    /* fnTypeBadge — 유형 배지 */
+    const fnTypeBadge = t => coUtil.cofCodeBadge('CLAIM_TYPE_KR', t, _CLAIM_TYPE_FB[t] || 'badge-gray');
+
+    /* fnClaimTypeColor — 유틸 */
+    const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
+
+    /* 클레임(취소/반품/교환) fnStatusBadge — 공통코드 CLAIM_STATUS_KR 우선, 미매칭 시 로컬 fallback */
+    const _CLAIM_STATUS_FB = {
+      '신청': 'badge-orange', '승인': 'badge-blue', '수거중': 'badge-blue',
+      '처리중': 'badge-purple', '환불대기': 'badge-orange',
+      '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
+    };
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('CLAIM_STATUS_KR', s, _CLAIM_STATUS_FB[s] || 'badge-gray');
 
@@ -229,7 +283,7 @@ window.OdClaimMng = {
       if (!Array.isArray(claims)) { return; }
       const idx = claims.findIndex(x => x.claimId === c.claimId);
       if (idx !== -1) { claims.splice(idx, 1); }
-      if (baseDetail.selectedId === c.claimId) { baseDetail.selectedId = null; }
+      if (detailPanel.selectedId === c.claimId) { detailPanel.selectedId = null; }
       try {
         const res = await boApiSvc.odClaim.remove(c.claimId, '클레임관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -443,7 +497,7 @@ window.OdClaimMng = {
     // 목록 그리드
     const listGridColumns = [
       { key: 'claimId',       label: '클레임ID', link: true,
-        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'orderId',       label: '주문ID', refLink: 'order' },
@@ -460,7 +514,7 @@ window.OdClaimMng = {
     ];
     /* fnGridRowStyle — 유틸 */
     const fnGridRowStyle = (c) =>
-      (baseDetail.selectedId === c.claimId ? 'background:#fff8f9;' : '')
+      (detailPanel.selectedId === c.claimId ? 'background:#fff8f9;' : '')
       + (isChecked(c.claimId) ? 'background:#eef6fd;' : '');
 
     // 결재 문의 폼
@@ -494,14 +548,14 @@ window.OdClaimMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      claims, members, uiState, codes, searchParam,  baseDetail, checked, bulkForm, bulkOpen, memberPick,         // 상태 / 데이터
+      claims, members, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,         // 상태 / 데이터
       baseSearchColumns, listGridColumns, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns,           // 컬럼 정의
       bulkApprovalFormColumns,                                                                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm, cfCheckedByType,   // computed
-      selectedId: computed(() => baseDetail.selectedId),                                                                 // template 직접 참조
+      selectedId: computed(() => detailPanel.selectedId),                                                                 // template 직접 참조
       CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS,                                                                           // 상수
-      isChecked, fnGridRowStyle,  fnTypeBadge, fnStatusBadge,                                                    // 헬퍼
+      isChecked, fnGridRowStyle, sortIcon, fnTypeBadge, fnStatusBadge,                                                    // 헬퍼
       inlineNavigate,                                                                                                     // Dtl 콜백 (closure 필요)
     };
   },
@@ -526,7 +580,7 @@ window.OdClaimMng = {
         </span>
         클레임목록
         <span class="list-count">
-          {{ baseGrid.pager.pageTotalCount }}건
+          {{ pager.pageTotalCount }}건
         </span>
         <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">
           선택 {{ checked.size }}건
@@ -547,8 +601,8 @@ window.OdClaimMng = {
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare selectable :columns="listGridColumns" :rows="claims" :pager="baseGrid.pager" row-key="claimId"
-        :sort-state="baseGrid" :is-checked="isChecked" :all-checked="cfAllChecked"
+      <bo-grid bare selectable :columns="listGridColumns" :rows="claims" :pager="pager" row-key="claimId"
+        :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleSelectAction('claims-sort', key)"
         @toggle-check="id => handleSelectAction('claims-rowToggleCheck', id)"
@@ -570,7 +624,7 @@ window.OdClaimMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('claims-pager-setPage', n)"
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('claims-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('claims-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
@@ -580,7 +634,7 @@ window.OdClaimMng = {
   <!-- ===== ■. 하단 상세: ClaimDtl 임베드 ===================================== -->
   <div v-if="selectedId" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
@@ -588,8 +642,8 @@ window.OdClaimMng = {
       :key="selectedId"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
-      :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :reload-trigger="baseDetail.reloadTrigger"
+      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :reload-trigger="detailPanel.reloadTrigger"
       />
   </div>
   <!-- ===== □. 하단 상세: ClaimDtl 임베드 ===================================== -->

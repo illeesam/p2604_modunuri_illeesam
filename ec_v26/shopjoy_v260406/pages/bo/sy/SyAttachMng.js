@@ -15,7 +15,10 @@ window.SyAttachMng = {
     const codes = reactive({ attach_type: [], active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
     const grpSearchParam = reactive({ searchType: '', searchValue: '' });
 
-    const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 10 });
+    const pager = reactive({
+      pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
+      pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500],
+    });
     /* 첨부그룹 페이저 (좌측 영역 페이징) */
     const grpPager = reactive({
       pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
@@ -104,42 +107,21 @@ window.SyAttachMng = {
         return handleDeleteFile(param);
       // 첨부파일 페이지 번호 클릭
       } else if (cmd === 'attaches-pager-setPage') {
-        return baseGrid.setPage(param);
+        return setPage(param);
       // 첨부파일 페이지 크기 변경
       } else if (cmd === 'attaches-pager-sizeChange') {
-        return baseGrid.onSizeChange();
+        return onSizeChange();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-      codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
-      codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      await handleLoadGrps();
-      handleSearchData();
-    });
-
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnBuildPageNums — 유틸 */
     const fnBuildPageNums = () => {
-      const c = baseGrid.pager.pageNo, l = baseGrid.pager.pageTotalPage;
+      const c = pager.pageNo, l = pager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      baseGrid.pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
     /* fnBuildGrpPageNums — 유틸 */
     const fnBuildGrpPageNums = () => {
@@ -189,8 +171,8 @@ window.SyAttachMng = {
       uiState.loading = true;
       try {
         const p = {
-          pageNo: baseGrid.pager.pageNo,
-          pageSize: baseGrid.pager.pageSize,
+          pageNo: pager.pageNo,
+          pageSize: pager.pageSize,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
         };
         // 좌측 그룹 클릭 선택이 우선, 없으면 검색 조건 attachGrpId 사용
@@ -203,8 +185,8 @@ window.SyAttachMng = {
         const data = attachRes.data?.data;
         const list = data?.pageList || data?.list || [];
         attaches.splice(0, attaches.length, ...list);
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
-        baseGrid.pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        pager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
+        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPageNums();
         uiState.error = null;
       } catch (err) {
@@ -214,18 +196,53 @@ window.SyAttachMng = {
         uiState.loading = false;
       }
     };
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.attach_type = codeStore.sgGetGrpCodes('ATTACH_TYPE');
+      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      codes.use_yns = codeStore.sgGetGrpCodes('USE_YN');
+      codes.storage_types = codeStore.sgGetGrpCodes('STORAGE_TYPE');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(async () => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      await handleLoadGrps();
+      handleSearchData();
+    });
+
     /* onSearch — 조회 */
-    const onSearch = async () => { baseGrid.pager.pageNo = 1; await handleSearchData(); };
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
 
     /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, { attachGrpId: '', dateStart: '', dateEnd: '', dateRange: '' });
       uiState.selectedGrpId = null;
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
       handleSearchData();
     };
 
     /* setPage — 설정 */
+    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
+
+    /* selectGrp — 선택 */
+    const selectGrp = (id) => {
+      uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id;
+      searchParam.attachGrpId = '';
+      uiState.grpEditMode = false;
+      pager.pageNo = 1;
+      pager.pageTotalCount = 0; pager.pageTotalPage = 1;
+      handleSearchData();
+    };
+
     /* openGrpNew — 열기 */
     const openGrpNew = () => {
       uiState.grpEditId = null; uiState.grpEditMode = true;
@@ -262,7 +279,7 @@ window.SyAttachMng = {
       if (!ok) { return; }
       try {
         await boApi.delete(`/bo/sy/attach-grp/${g.attachGrpId}`, coUtil.cofApiHdr('첨부파일관리', '그룹삭제'));
-        if (uiState.selectedGrpId === g.attachGrpId) { uiState.selectedGrpId = null; attaches.splice(0, attaches.length); baseGrid.pager.totalCount = 0; }
+        if (uiState.selectedGrpId === g.attachGrpId) { uiState.selectedGrpId = null; attaches.splice(0, attaches.length); pager.totalCount = 0; }
         showToast('삭제되었습니다.', 'success');
         await handleLoadGrps();
       } catch (err) {
@@ -299,7 +316,7 @@ window.SyAttachMng = {
           showToast('저장되었습니다.', 'success');
         }
         uiState.fileEditMode = false;
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         await handleSearchData();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
@@ -417,8 +434,7 @@ window.SyAttachMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      baseGrid,
-      attaches, attachGrps, uiState, codes, searchParam,  grpPager, grpSearchParam, grpForm, fileForm, // 상태 / 데이터
+      attaches, attachGrps, uiState, codes, searchParam, pager, grpPager, grpSearchParam, grpForm, fileForm, // 상태 / 데이터
       fileGridColumns, grpFormColumns, fileFormColumns, grpSearchColumns, fileSearchColumns,                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm,                                                                                                             // computed
@@ -561,7 +577,7 @@ window.SyAttachMng = {
           </span>
           첨부파일목록
           <span class="list-count">
-            {{ baseGrid.pager.pageTotalCount }}건
+            {{ pager.pageTotalCount }}건
           </span>
         </span>
         <!-- ===== ■.■.■.■. 파일 폼 ============================================== -->
@@ -593,7 +609,7 @@ window.SyAttachMng = {
             bare
             :columns="fileGridColumns"
             :rows="attaches"
-            :pager="baseGrid.pager"
+            :pager="pager"
             row-key="attachId"
             :loading="uiState.loading"
             :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
@@ -614,7 +630,7 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. /파일 그리드 스크롤 컨테이너 ================================== -->
         <!-- ===== ■.■.■.■. 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) ===== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-          <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
+          <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>

@@ -22,13 +22,13 @@ window.SyPathMng = {
       console.log(' ■■ SyPathMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleGridSearch();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.selectedPathId = null;
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleGridSearch();
       // 경로 그리드 행 추가
       } else if (cmd === 'paths-add') {
@@ -70,7 +70,7 @@ window.SyPathMng = {
       // 좌측 트리 노드 선택 → 그리드 필터링
       if (cmd === 'pathTree-select') {
         uiState.selectedPathId = (uiState.selectedPathId === param) ? null : param;
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleGridSearch();
       // 그리드 셀 변경 감지
       } else if (cmd === 'paths-cellChange') {
@@ -86,10 +86,12 @@ window.SyPathMng = {
         return openParentModal(param);
       // 페이지 번호 클릭
       } else if (cmd === 'paths-pager-setPage') {
-        return baseGrid.setPage(param);
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleGridSearch(); }
+        return;
       // 페이지 크기 변경
       } else if (cmd === 'paths-pager-sizeChange') {
-        return baseGrid.onSizeChange();
+        pager.pageNo = 1;
+        return handleGridSearch();
       // 부모경로 모달에서 노드 선택 → 행 parentPathId 갱신
       } else if (cmd === 'parentModal-select') {
         return selectParent(param);
@@ -108,7 +110,7 @@ window.SyPathMng = {
     const uiState   = reactive({ selectedPathId: null }); // UI 상태
 
     const gridRows  = reactive([]);                   // 그리드 행
-    const baseGrid  = coUtil.cofGrid(() => handleGridSearch(), { pageSize: 10 });
+    const pager     = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     let _newId      = -1;                             // 신규 행 임시 ID
 
     /* -- 부모경로 선택 모달 -- */
@@ -144,8 +146,7 @@ window.SyPathMng = {
     });
 
     const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U'));
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -157,7 +158,12 @@ window.SyPathMng = {
       }
     };
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
 
     /* handleSearchTree — 트리 조회 */
     const handleSearchTree = async () => {
@@ -173,12 +179,18 @@ window.SyPathMng = {
     /* handleGridSearch — 그리드 조회 */
     const handleGridSearch = async () => {
       try {
-        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...searchParam };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...searchParam };
         if (uiState.selectedPathId != null) { params.parentPathId = uiState.selectedPathId; }
-        if (params.searchValue && !params.searchType) params.searchType = 'pathLabel,pathRemark';
-        const d = (await boApiSvc.syPath.getPage(params, '경로관리', '목록조회')).data?.data;
-        const list = baseGrid.applyPage(d);
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'pathLabel,pathRemark';
+        }
+        const res = await boApiSvc.syPath.getPage(params, '경로관리', '목록조회');
+        const data = res.data?.data || {};
+        const list = data.pageList || data.list || [];
         gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _row_org: { ...r } })));
+        pager.pageTotalCount = data.pageTotalCount ?? data.totalCount ?? list.length;
+        pager.pageTotalPage  = data.pageTotalPage  ?? Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+        fnBuildPagerNums();
       } catch (e) { console.error('[handleGridSearch]', e); }
     };
 
@@ -321,7 +333,7 @@ window.SyPathMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, searchParam, codes, expanded, gridRows, baseGrid, parentModal,      // 상태 / 데이터
+      uiState, searchParam, codes, expanded, gridRows, pager, parentModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfParentTree, cfDirtyRows,                                           // computed
@@ -350,8 +362,8 @@ window.SyPathMng = {
     <!-- ===== □.□. 트리 ==================================================== -->
     <!-- ===== ■.■. 그리드 =================================================== -->
     <bo-grid
-      :columns="baseGridColumns" :rows="gridRows" :pager="baseGrid.pager" row-key="pathId"
-      list-title="경로 목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
+      :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="pathId"
+      list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass" :show-save="true" :row-actions="true"
       @save="handleBtnAction('paths-save')"
       @set-page="n => handleSelectAction('paths-pager-setPage', n)"

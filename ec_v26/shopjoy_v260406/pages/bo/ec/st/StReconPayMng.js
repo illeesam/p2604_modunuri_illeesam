@@ -20,11 +20,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StReconPayMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
@@ -40,10 +40,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconPayMng.js : handleSelectAction -> ', cmd, param);
       if (cmd === 'reconPays-pager-setPage') {
-        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else if (cmd === 'reconPays-pager-sizeChange') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -78,10 +78,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ diff: '' });
     const searchParam = reactive(_initSearchParam());
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const cfSummary = computed(() => ({
       match:   rows.filter(r=>r.diffStatus==='일치').length,
       over:    rows.filter(r=>r.diffStatus==='결제과다').length,
@@ -94,14 +94,15 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.stRecon.getPage({
-            pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, typeCd: 'PAY',
+            pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'PAY',
             ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
           }, '결제-정산 대사', '목록조회');
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || rows.length;
-        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
-        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+        pager.pageTotalCount = data?.pageTotalCount || rows.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -123,16 +124,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
     /* onSearch — 조회 */
-    const onSearch = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
@@ -170,8 +171,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     return {
-      baseGrid,
-      uiState, codes,  rows, searchParam,
+      uiState, codes, pager, rows, searchParam,
       baseSearchColumns, baseGridColumns, summaryFormColumns,
       handleBtnAction, handleSelectAction,
       cfSummary,
@@ -209,8 +209,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="rows" :pager="baseGrid.pager" row-key="orderId"
-      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
+      :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="orderId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'"
       @set-page="n => handleSelectAction('reconPays-pager-setPage', n)" @size-change="handleSelectAction('reconPays-pager-sizeChange')">
     </bo-grid>
   </div>

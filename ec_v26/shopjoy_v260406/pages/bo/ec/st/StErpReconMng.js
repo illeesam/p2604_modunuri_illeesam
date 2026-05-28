@@ -24,12 +24,12 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       console.log(' ■■ StErpReconMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -51,11 +51,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return doFix(param);
       // 페이지 번호 변경
       } else if (cmd === 'recons-pager-setPage') {
-        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'recons-pager-sizeChange') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -90,10 +90,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ diff: '', type: '' });
     const searchParam = reactive(_initSearchParam());
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=baseGrid.pager.pageNo,l=baseGrid.pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); baseGrid.pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const cfSummary = computed(() => ({
       match:     recons.filter(r=>r.diffStatus==='일치').length,
       diff:      recons.filter(r=>r.diffStatus==='차이').length,
@@ -106,15 +106,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.stErp.getReconPage({
-          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           dateStart: uiState.dateStart, dateEnd: uiState.dateEnd,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         }, 'ERP전표대사', '목록조회');
         const data = res.data?.data;
         recons.splice(0, recons.length, ...(data?.pageList || data?.list || []));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage = data?.pageTotalPage || 1;
-        Object.assign(baseGrid.pager.pageCond, data?.pageCond || {});
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, data?.pageCond || {});
       } catch (_) { console.error('[catch-info]', _); }
     };
 
@@ -148,16 +149,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fmtW = n => Number(n||0).toLocaleString() + '원';
 
     /* onSearch — 조회 */
-    const onSearch = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
@@ -197,8 +198,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      baseGrid,
-      uiState, codes,  recons, searchParam,                                  // 상태 / 데이터
+      uiState, codes, pager, recons, searchParam,                                  // 상태 / 데이터
       baseSearchColumns, baseGridColumns, summaryFormColumns,                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch
       cfSummary,                                                                       // computed
@@ -236,8 +236,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="recons" :pager="baseGrid.pager" row-key="reconId"
-      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'" :row-actions="true"
+      :columns="baseGridColumns" :rows="recons" :pager="pager" row-key="reconId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('recons-pager-setPage', n)" @size-change="handleSelectAction('recons-pager-sizeChange')">
       <template #head-actions>
         액션

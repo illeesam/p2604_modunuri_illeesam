@@ -24,12 +24,12 @@ window.SyI18nMng = {
       console.log(' ■■ SyI18nMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchData();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchData();
       // 번역 메시지 저장
       } else if (cmd === 'msgForm-save') {
@@ -51,11 +51,11 @@ window.SyI18nMng = {
         return openDetail(param);
       // 페이지 번호 클릭
       } else if (cmd === 'i18ns-pager-setPage') {
-        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchData(); }
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData(); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'i18ns-pager-sizeChange') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchData();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -66,26 +66,35 @@ window.SyI18nMng = {
       return { searchType: '', searchValue: '', scope: '', use: '' };
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
-    const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 10 });
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+    const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.lang_code = codeStore.sgGetGrpCodes('LANG_CODE');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    const LANGS       = ['ko','en','ja','in']; // 지원 언어
+    const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
 
+    const msgForm = reactive({});              // 번역 입력 폼
+
+    const cfSelectedKey = computed(() => (i18ns||[]).find(k => k.i18nId === uiState.selectedId) || null);
+    const cfSelectedMsgs = computed(() => {
+      if (!cfSelectedKey.value) { return {}; }
+      const msgs = {};
+      LANGS.forEach(lang => { msgs[lang] = ''; });
+      (i18nMsgs||[]).filter(m => m.i18nId === uiState.selectedId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
+      return msgs;
+    });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* — 페이지 번호 배열 빌드 */
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+
     /* handleSearchData — 목록 조회 */
     const handleSearchData = async () => {
       try {
         const { searchType, searchValue, scope, use } = searchParam;
         const params = {
-          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(searchType ? { searchType }      : {}),
           ...(scope ? { i18nScopeCd: scope }     : {}),
@@ -97,12 +106,24 @@ window.SyI18nMng = {
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const d = res.data?.data;
         i18ns.splice(0, i18ns.length, ...(d?.pageList || []));
-        baseGrid.pager.pageTotalCount = d?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage  = d?.pageTotalPage  || 1;      } catch (err) {
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage  = d?.pageTotalPage  || 1;
+        fnBuildPagerNums();
+      } catch (err) {
         console.error('[handleSearchData]', err);
         i18ns.splice(0, i18ns.length);
       }
     };
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.lang_code = codeStore.sgGetGrpCodes('LANG_CODE');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
     /* openDetail — 번역 편집 패널 열기 (토글) */
     const openDetail = (key) => {
       if (uiState.selectedId === key.i18nId) { uiState.selectedId = null; return; }
@@ -193,7 +214,7 @@ window.SyI18nMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, searchParam,  i18ns, msgForm,                         // 상태 / 데이터
+      uiState, codes, searchParam, pager, i18ns, msgForm,                         // 상태 / 데이터
       baseSearchColumns, baseGridColumns, msgFormColumns,                        // 컬럼 정의
       handleBtnAction, handleSelectAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedKey,                                                             // computed
@@ -214,8 +235,8 @@ window.SyI18nMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="i18ns" :pager="baseGrid.pager" row-key="i18nId"
-    list-title="다국어 키 목록" :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
+    :columns="baseGridColumns" :rows="i18ns" :pager="pager" row-key="i18nId"
+    list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
     @set-page="n => handleSelectAction('i18ns-pager-setPage', n)"
     @size-change="handleSelectAction('i18ns-pager-sizeChange')"

@@ -12,7 +12,7 @@ window.PdReviewMng = {
     const products = reactive([]);
     const members = reactive([]);
     const reviews = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({
       review_statuses: [],
       review_rating_opts: [{value:'5',label:'5점'},{value:'4',label:'4점대'},{value:'3',label:'3점대'},{value:'2',label:'2점대'},{value:'1',label:'1점대'}],
@@ -33,9 +33,9 @@ window.PdReviewMng = {
         return onReset();
       // 페이지 크기 변경
       } else if (cmd === 'reviews-pager-sizeChange') {
-        return baseGrid.onSizeChange();
+        return onSizeChange();
       // 상세 패널 닫기
-      } else if (cmd === 'baseDetail-close') {
+      } else if (cmd === 'detailPanel-close') {
         selectedId.value = null;
         return;
       // 상품별 리뷰 목록 닫기 (선택 해제)
@@ -60,10 +60,10 @@ window.PdReviewMng = {
       console.log(' ■■ PdReviewMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'reviews-sort') {
-        return baseGrid.onSort(param);
+        return onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'reviews-pager-setPage') {
-        return baseGrid.setPage(param);
+        return setPage(param);
       // 그리드 행 클릭 (상세 토글)
       } else if (cmd === 'reviews-rowEdit') {
         return openDetail(param);
@@ -104,19 +104,38 @@ window.PdReviewMng = {
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
     /* getSortParam — 조회 */
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+
     /* 상품 리뷰 onSort */
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onSort — 정렬 */
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+
     /* sortIcon — 정렬 */
+    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdReview.getPage({ pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품리뷰관리', '목록조회');
+        const res = await boApiSvc.pdReview.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품리뷰관리', '목록조회');
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.pageList || []));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -131,7 +150,99 @@ window.PdReviewMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
+    const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const selectedId   = ref(null);
+
+    /* _initSearchParam — 초기화 */
+    const _initSearchParam = () => ({ status: '', rating: '' });
+    const searchParam = reactive(_initSearchParam());
+
+    const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
+
+    /* 상품 리뷰 fnStatusBadge — sy_code REVIEW_STATUS code_opt1 우선, 없으면 FB */
+    const _REVIEW_STATUS_FB = { ACTIVE:'badge-green', HIDDEN:'badge-orange', DELETED:'badge-red' };
+    /* fnStatusBadge — 상태 배지 */
+    const fnStatusBadge  = s => coUtil.cofCodeBadge('REVIEW_STATUS', s, _REVIEW_STATUS_FB[s] || 'badge-gray');
+
+    /* getProdNm — 조회 */
+    const getProdNm = id => { const p = (products||[]).find(p => p.productId === id || p.prodId === id); return p ? (p.prodNm || p.productName) : ''; };
+
+    /* getMemNm — 조회 */
+    const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id || m.memberId === id); return m ? (m.memberNm || m.name) : id; };
+
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* 상단/하단 리뷰 목록 모두에서 선택된 리뷰를 찾는다 */
+    const cfSelectedRow = computed(() =>
+      reviews.find(r => r.reviewId === selectedId.value) ||
+      prodReviews.find(r => r.reviewId === selectedId.value) ||
+      null
+    );
+
+    /* openDetail — 열기 */
+    const openDetail = (row) => { selectedId.value = selectedId.value === row.reviewId ? null : row.reviewId; };
+
+    /* previewProduct — 미리보기 상품 */
+    const previewProduct = (prodId) => {
+      if (!prodId) { return; }
+      window.open(`${window.pageUrl('index.html')}#page=prodView&prodid=${prodId}`, '_blank', 'width=1200,height=800,scrollbars=yes');
+    };
+
+    /* ── 상품ID 클릭 → 하단에 해당 상품의 리뷰 페이징 목록 ─── */
+    const prodReviews = reactive([]);
+    const prodReviewPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 50], pageCond: {}, pageNums: [1] });
+    const selectedProdId = ref(null);
+
+    /* fnBuildProdReviewPagerNums — 유틸 */
+    const fnBuildProdReviewPagerNums = () => { const c=prodReviewPager.pageNo,l=prodReviewPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); prodReviewPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* handleSearchProdReviews — 처리 */
+    const handleSearchProdReviews = async () => {
+      if (!selectedProdId.value) { prodReviews.splice(0); return; }
+      try {
+        const res = await boApiSvc.pdReview.getPage({ pageNo: prodReviewPager.pageNo, pageSize: prodReviewPager.pageSize, prodId: selectedProdId.value }, '상품리뷰관리', '상품별리뷰조회');
+        const data = res.data?.data;
+        prodReviews.splice(0, prodReviews.length, ...(data?.pageList || []));
+        prodReviewPager.pageTotalCount = data?.pageTotalCount || 0;
+        prodReviewPager.pageTotalPage = data?.pageTotalPage || 1;
+        fnBuildProdReviewPagerNums();
+      } catch (err) {
+        console.error('[handleSearchProdReviews]', err);
+      }
+    };
+
+    /* onProdIdClick — 이벤트 */
+    const onProdIdClick = async (prodId) => {
+      if (!prodId) { return; }
+      if (selectedProdId.value === prodId) {
+        selectedProdId.value = null;
+        prodReviews.splice(0);
+        return;
+      }
+      selectedProdId.value = prodId;
+      prodReviewPager.pageNo = 1;
+      await handleSearchProdReviews();
+    };
+
+    /* setProdReviewPage — 설정 */
+    const setProdReviewPage = async (n) => {
+      if (n >= 1 && n <= prodReviewPager.pageTotalPage) {
+        prodReviewPager.pageNo = n;
+        await handleSearchProdReviews();
+      }
+    };
+
+    /* onProdReviewSizeChange — 이벤트 */
+    const onProdReviewSizeChange = () => { prodReviewPager.pageNo = 1; handleSearchProdReviews(); };
+
+    /* ── 상태변경 사유 입력 모달 ───────────────────────── */
+    const statusModal = reactive({
+      show: false,
+      row: null,
+      newStatus: '',
+      reason: '',
+    });
 
     /* openStatusModal — 열기 */
     const openStatusModal = (row, newStatus) => {
@@ -198,19 +309,91 @@ window.PdReviewMng = {
 
     /* onSearch — 조회 */
     const onSearch = async () => {
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
     /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
-      baseGrid.sortKey = ''; baseGrid.sortDir = 'asc';
-      baseGrid.pager.pageNo = 1;
+      uiState.sortKey = ''; uiState.sortDir = 'asc';
+      pager.pageNo = 1;
       await handleSearchList();
     };
 
     /* setPage — 설정 */
+    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+    /* starStr — 별점 문자열 */
+    const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+        // --- [컬럼 정의] ---
+        const baseSearchColumns = [
+      { key: 'searchValue', label: '리뷰제목', type: 'text', placeholder: '리뷰 제목 검색' },
+      { key: 'status', label: '상태', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
+      { key: 'rating', label: '평점', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
+    ];
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+    // 목록 그리드
+    const listGridColumns = [
+      { key: 'reviewTitle',     label: '리뷰 제목', cellInnerClass: 'title-link' },
+      { key: 'prodId',          label: '상품ID',   style: 'width:110px', cellStyle: 'font-size:12px;',
+        linkToggle: {
+          active: (row) => selectedProdId.value === row.prodId,
+          activeStyle: 'color:#e8587a;font-weight:700;cursor:pointer;',
+          baseStyle: 'color:#1e88e5;font-weight:500;cursor:pointer;',
+          title: '해당 상품의 리뷰만 하단에 표시',
+          onClick: (row) => handleSelectAction('reviews-rowProdClick', row.prodId),
+        } },
+      { key: 'prodNm',          label: '상품명',   cellStyle: 'color:#444;',
+        fmt: (v, row) => (getProdNm(row.prodId) || row.prodNm || '') },
+      { key: 'memberId',        label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
+      { key: 'rating',          label: '평점',     style: 'width:90px;text-align:center', align: 'center',
+        cellStyle: 'color:#f59e0b;font-size:13px', fmt: (v, row) => (Number(row.rating || 0).toFixed(1) + ' ★') },
+      { key: 'helpfulCnt',      label: '도움',     style: 'width:60px;text-align:right', align: 'right' },
+      { key: 'reviewStatusCd',  label: '상태',     style: 'width:80px;text-align:center', align: 'center',
+        badge: (row) => fnStatusBadge(row.reviewStatusCd),
+        fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
+      { key: 'reviewDate',      label: '작성일',   style: 'width:140px', sortKey: 'reg' },
+      { key: '_statusChg',      label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
+        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
+          onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
+    ];
+    /* fnGridRowClass — 유틸 */
+    const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
+
+    /* 상품별 리뷰 목록 BoGrid 컬럼 */
+    const prodReviewGridColumns = [
+      { key: 'reviewTitle',    label: '리뷰 제목', cellInnerClass: 'title-link' },
+      { key: 'memberId',       label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
+      { key: 'rating',         label: '평점',     style: 'width:90px;text-align:center', align: 'center',
+        cellStyle: 'color:#f59e0b;font-size:13px', fmt: (v, row) => (Number(row.rating || 0).toFixed(1) + ' ★') },
+      { key: 'helpfulCnt',     label: '도움',     style: 'width:60px;text-align:right', align: 'right' },
+      { key: 'reviewStatusCd', label: '상태',     style: 'width:80px;text-align:center', align: 'center',
+        badge: (row) => fnStatusBadge(row.reviewStatusCd),
+        fmt: (v, row) => (STATUS_LABEL[row.reviewStatusCd] || row.reviewStatusCd) },
+      { key: 'reviewDate',     label: '작성일',   style: 'width:140px' },
+      { key: '_statusChg',     label: '상태변경', style: 'width:90px;text-align:center', align: 'center',
+        selectIntercept: { valueKey: 'reviewStatusCd', options: () => codes.review_status_list,
+          onChange: (row, newVal, $event) => handleSelectAction('reviews-rowStatusChange', { row, evt: $event }) } },
+    ];
+    /* fnProdReviewRowClass — 유틸 */
+    const fnProdReviewRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      reviews, uiState, searchParam, pager, codes,                                            // 상태 / 데이터
+      prodReviews, prodReviewPager, statusModal,                                              // 상태 / 데이터
+      baseSearchColumns, listGridColumns, prodReviewGridColumns,                              // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                                    // dispatch (모든 이벤트 / 액션 라우팅)
+      cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd,                           // computed
+      fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, sortIcon,                    // 헬퍼
+      fnGridRowClass, fnProdReviewRowClass,                                                   // 그리드 row 헬퍼
+      selectedId, selectedProdId,                                                             // ref
+    };
   },
   template: `
 <div>
@@ -225,9 +408,9 @@ window.PdReviewMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="listGridColumns" :rows="reviews" :pager="baseGrid.pager" row-key="reviewId"
-    :sort-state="baseGrid" list-title="상품리뷰 목록"
-    :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
+  <bo-grid :columns="listGridColumns" :rows="reviews" :pager="pager" row-key="reviewId"
+    :sort-state="uiState" list-title="상품리뷰 목록"
+    :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
     @sort="key => handleSelectAction('reviews-sort', key)" @set-page="n => handleSelectAction('reviews-pager-setPage', n)" @size-change="handleBtnAction('reviews-pager-sizeChange')" @row-click="r => handleSelectAction('reviews-rowEdit', r)">
     <template #row-actions="{ row }">
@@ -292,7 +475,7 @@ window.PdReviewMng = {
             {{ s.label }}
           </option>
         </select>
-        <button class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('baseDetail-close')">
+        <button class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기
         </button>
       </span>

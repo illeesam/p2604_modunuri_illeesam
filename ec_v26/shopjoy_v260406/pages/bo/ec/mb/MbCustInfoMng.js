@@ -174,29 +174,6 @@
         }
       };
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-      /* fnLoadCodes — 공통코드 로드 */
-      const fnLoadCodes = () => {
-        const codeStore = window.sfGetBoCodeStore();
-        try {
-          codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
-          codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
-          uiState.isPageCodeLoad = true;
-        } catch (err) {
-          console.error('[fnLoadCodes]', err);
-        }
-      };
-      const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-      // ★ onMounted — 진입 시 코드 로드 + 회원 목록 (picker 용)
-      onMounted(async () => {
-        if (isAppReady.value) { fnLoadCodes(); }
-        Object.assign(searchParamOrg, searchParam);
-        // 진입 시 회원 목록만 로드 (고객 선택 모달 picker 용). 9개 영역은 고객 선택 후 조회.
-        await loadMembersForModal();
-      });
-
       /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
       /* ===== 영역별 메타 정의 (api / dateType / pager / rows / dateField) ===== */
@@ -319,6 +296,28 @@
         memberModal.show = false;
         uiState.searchInput = '';
       };
+
+      /* fnLoadCodes — 공통코드 로드 */
+      const fnLoadCodes = () => {
+        const codeStore = window.sfGetBoCodeStore();
+        try {
+          codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
+          codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
+          uiState.isPageCodeLoad = true;
+        } catch (err) {
+          console.error('[fnLoadCodes]', err);
+        }
+      };
+      const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+      // ★ onMounted — 진입 시 코드 로드 + 회원 목록 (picker 용)
+      onMounted(async () => {
+        if (isAppReady.value) { fnLoadCodes(); }
+        Object.assign(searchParamOrg, searchParam);
+        // 진입 시 회원 목록만 로드 (고객 선택 모달 picker 용). 9개 영역은 고객 선택 후 조회.
+        await loadMembersForModal();
+      });
+
       /* watch — 고객 선택 시 9개 영역 서버 조회 */
       watch(() => uiState.customer?.userId, async (uid) => {
         if (uid) { await handleSearchData(); }

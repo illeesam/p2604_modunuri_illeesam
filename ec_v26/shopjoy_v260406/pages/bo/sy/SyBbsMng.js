@@ -15,10 +15,10 @@ window.SyBbsMng = {
     const bbms = reactive([]);                     // 게시판 마스터 (select 옵션용)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
+      sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ bbs_status: [], bbs_post_statuses: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'authorNm asc', desc: 'authorNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-    const baseGrid = coUtil.cofGrid(() => handleSearchBbs(), { sortMap: SORT_MAP, pageSize: 5 });
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
@@ -28,6 +28,9 @@ window.SyBbsMng = {
       return { searchType: '', searchValue: '', bbmId: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
+
+    /* ===== 페이지네이션 ===== */
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     const detailModal = reactive({
@@ -43,13 +46,14 @@ window.SyBbsMng = {
       console.log(' ■■ SyBbsMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
-        return handleSearchBbs();
+        pager.pageNo = 1;
+        return handleSearchBbs('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.reset();
-        return handleSearchBbs();
+        uiState.sortKey = ''; uiState.sortDir = 'asc';
+        pager.pageNo = 1;
+        return handleSearchBbs('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
@@ -60,7 +64,7 @@ window.SyBbsMng = {
       } else if (cmd === 'bbsList-excel') {
         return exportExcel();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'baseDetail-close') {
+      } else if (cmd === 'detailPanel-close') {
         return closeDetail();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -72,13 +76,13 @@ window.SyBbsMng = {
       console.log(' ■■ SyBbsMng.js : handleSelectAction -> ', cmd, param);
       // 그리드 정렬 헤더 클릭
       if (cmd === 'bbsList-sort') {
-        return baseGrid.onSort(param);
+        return onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'bbsList-pager-setPage') {
-        return baseGrid.setPage(param);
+        return setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'bbsList-pager-sizeChange') {
-        return baseGrid.onSizeChange();
+        return onSizeChange();
       // 그리드 행 수정 버튼 → 편집 패널 열기
       } else if (cmd === 'bbsList-rowEdit') {
         return handleLoadDetail(param);
@@ -91,19 +95,43 @@ window.SyBbsMng = {
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* getSortParam — 정렬 파라미터 */
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+
+    /* onSort — 정렬 */
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchBbs();
+    };
 
     /* handleSearchBbs — 게시글 목록 조회 */
-    const handleSearchBbs = async () => {
+    const handleSearchBbs = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(),
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
-        if (params.searchValue && !params.searchType) params.searchType = 'bbsTitle,authorNm';
-        const d = (await boApiSvc.syBbs.getPage(params, '게시판관리', '목록조회')).data?.data;
-        const list = baseGrid.applyPage(d);
-        bbsList.splice(0, bbsList.length, ...list);
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'bbsTitle,authorNm';
+        }
+        const res = await boApiSvc.syBbs.getPage(params, '게시판관리', '목록조회');
+        const data = res.data?.data;
+        bbsList.splice(0, bbsList.length, ...(data?.pageList || []));
+        pager.pageTotalCount = data?.pageTotalCount || bbsList.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
+        console.error('[catch-info]', err);
         uiState.error = err.message;
       } finally {
         uiState.loading = false;
@@ -123,7 +151,7 @@ window.SyBbsMng = {
     /* handleDateRangeChange — 기간 옵션 변경 */
     const handleDateRangeChange = () => {
       if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 (토글) */
@@ -159,12 +187,18 @@ window.SyBbsMng = {
       if (pg === 'syBbsMng') {
         detailModal.show = false;
         detailModal.dtlId = null;
-        if (opts.reload) handleSearchBbs();
+        if (opts.reload) { handleSearchBbs('RELOAD'); }
         return;
       }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
+
+    /* setPage — 페이지 번호 변경 */
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchBbs('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchBbs('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (b) => {
@@ -191,6 +225,13 @@ window.SyBbsMng = {
       { label: '작성자', key: 'authorNm' }, { label: '조회수', key: 'viewCount' },
       { label: '상태', key: 'bbsStatusCd' }, { label: '등록일', key: 'regDate' },
     ], '게시글목록.csv');
+
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
@@ -261,7 +302,7 @@ window.SyBbsMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      bbsList, uiState, codes, searchParam, baseGrid, detailModal,                       // 상태 / 데이터
+      bbsList, uiState, codes, searchParam, pager, detailModal,                          // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                               // computed
@@ -283,9 +324,9 @@ window.SyBbsMng = {
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="bbsList" :pager="baseGrid.pager" row-key="bbsId"
-    list-title="게시글목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
-    :sort-state="baseGrid" :row-style="fnRowStyle"
+    :columns="baseGridColumns" :rows="bbsList" :pager="pager" row-key="bbsId"
+    list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
+    :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('bbsList-sort', key)"
     @set-page="n => handleSelectAction('bbsList-pager-setPage', n)"
     @size-change="handleSelectAction('bbsList-pager-sizeChange')"
@@ -322,7 +363,7 @@ window.SyBbsMng = {
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="detailModal.show" style="margin-top:4px;">
     <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

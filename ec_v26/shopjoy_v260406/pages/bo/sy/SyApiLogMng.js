@@ -31,7 +31,10 @@ window.SyApiLogMng = {
 
     const codes = reactive({ date_range_opts: [], http_methods: [], app_types: [] });
 
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 20 });
+    const pager = reactive({
+      pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
+      pageSizes: [10, 20, 30, 50, 100], pageCond: {},
+    });
 
     const accessLogs = reactive([]);
     const errorLogs  = reactive([]);
@@ -88,10 +91,10 @@ window.SyApiLogMng = {
         return onTabChange(param);
       // 페이지 번호 클릭
       } else if (cmd === 'apiLogs-pager-setPage') {
-        return baseGrid.setPage(param);
+        return setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'apiLogs-pager-sizeChange') {
-        return baseGrid.onSizeChange();
+        return onSizeChange();
       // 행 클릭 → 상세정보 펼침 토글
       } else if (cmd === 'apiLogs-rowToggle') {
         return toggleRow(param);
@@ -100,8 +103,7 @@ window.SyApiLogMng = {
       }
     };
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -112,7 +114,6 @@ window.SyApiLogMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (uiState.dateRange) {
@@ -120,7 +121,7 @@ window.SyApiLogMng = {
         uiState.dateStart = r ? r.from : '';
         uiState.dateEnd   = r ? r.to   : '';
       }
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
     };
 
     /* toggleRow — 토글 */
@@ -137,11 +138,17 @@ window.SyApiLogMng = {
     };
 
     /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => {
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+
     /* buildSearchParams — 빌드 */
     const buildSearchParams = () => {
       const p = {
-        pageNo:      baseGrid.pager.pageNo,
-        pageSize:    baseGrid.pager.pageSize,
+        pageNo:      pager.pageNo,
+        pageSize:    pager.pageSize,
         dateStart:   uiState.dateStart       || undefined,
         dateEnd:     uiState.dateEnd         || undefined,
         searchType: uiState.searchType      || undefined,
@@ -166,9 +173,11 @@ window.SyApiLogMng = {
         const res = await boApiSvc.syAccessLog.getPage(buildSearchParams(), 'API로그조회', '요청로그조회');
         const data = res.data?.data;
         accessLogs.splice(0, accessLogs.length, ...(data?.pageList || []));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
-        tabCounts.access = baseGrid.pager.pageTotalCount;        expandedRows.clear();
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        tabCounts.access = pager.pageTotalCount;
+        fnBuildPagerNums();
+        expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchAccessLog]', err);
         if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
@@ -181,9 +190,11 @@ window.SyApiLogMng = {
         const res = await boApiSvc.syAccessErrorLog.getPage(buildSearchParams(), 'API로그조회', '오류로그조회');
         const data = res.data?.data;
         errorLogs.splice(0, errorLogs.length, ...(data?.pageList || []));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
-        tabCounts.error = baseGrid.pager.pageTotalCount;        expandedRows.clear();
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        tabCounts.error = pager.pageTotalCount;
+        fnBuildPagerNums();
+        expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchErrorLog]', err);
         if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
@@ -203,7 +214,7 @@ window.SyApiLogMng = {
     });
 
     /* onTabChange — 탭 변경 */
-    const onTabChange   = (tab) => { uiState.activeTab = tab; baseGrid.pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
+    const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
 
     /* handleClearLog — 로그 비우기 */
     const handleClearLog = async () => {
@@ -216,7 +227,7 @@ window.SyApiLogMng = {
         if (showToast) { showToast(`${tabNm} 전체 삭제 완료`, 'success'); }
         if (uiState.activeTab === 'access') { accessLogs.splice(0); tabCounts.access = 0; }
         else                                { errorLogs.splice(0);  tabCounts.error  = 0; }
-        baseGrid.pager.pageTotalCount = 0; baseGrid.pager.pageTotalPage = 1;
+        pager.pageTotalCount = 0; pager.pageTotalPage = 1;
         expandedRows.clear(); allExpanded.value = false;
       } catch (err) {
         if (showToast) { showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0); }
@@ -224,7 +235,7 @@ window.SyApiLogMng = {
     };
 
     /* onSearch — 조회 */
-    const onSearch     = () => { baseGrid.pager.pageNo = 1; handleSearchList(); };
+    const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
 
     /* onReset — 초기화 */
     const onReset      = () => {
@@ -235,11 +246,33 @@ window.SyApiLogMng = {
       });
       const r = boUtil.bofGetDateRange('1week');
       uiState.dateStart = r.from; uiState.dateEnd = r.to;
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
       handleSearchList();
     };
 
     /* setPage — 설정 */
+    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+    /* fnMethodBadge — sy_code HTTP_METHOD code_opt1 우선, 없으면 FB */
+    const _HTTP_METHOD_FB = { GET: 'badge-blue', POST: 'badge-green', PUT: 'badge-orange', PATCH: 'badge-purple', DELETE: 'badge-red' };
+    /* fnMethodBadge — 유틸 */
+    const fnMethodBadge = m => coUtil.cofCodeBadge('HTTP_METHOD', m, _HTTP_METHOD_FB[m] || 'badge-gray');
+
+    /* fnStatusBadge — 상태 배지 */
+    const fnStatusBadge = s => {
+      if (!s) { return 'badge-gray'; }
+      const n = Number(s);
+      if (n >= 500) { return 'badge-red'; }
+      if (n >= 400) { return 'badge-orange'; }
+      if (n >= 300) { return 'badge-blue'; }
+      if (n >= 200) { return 'badge-green'; }
+      return 'badge-gray';
+    };
+
     const cfCurrentList = computed(() => uiState.activeTab === 'access' ? accessLogs : errorLogs);
 
     /* fnDecode — 유틸 */
@@ -357,8 +390,7 @@ window.SyApiLogMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      baseGrid,
-      uiState, codes,  tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
+      uiState, codes, pager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
       baseSearchColumns, moreSearchColumns, accessGridColumns, errorGridColumns,            // 컬럼 정의
       accessExpandColumns, errorExpandColumns,                                              // 행 펼침 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
@@ -422,8 +454,8 @@ window.SyApiLogMng = {
   <!-- ===== □. 탭 + 목록 ================================================== -->
   <!-- ===== ■. API요청로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='access'"
-    :columns="accessGridColumns" :rows="cfCurrentList" :pager="baseGrid.pager" row-key="logId"
-    list-title="API요청로그" :count-text="baseGrid.pager.pageTotalCount + '건'"
+    :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
     @size-change="handleSelectAction('apiLogs-pager-sizeChange')"
@@ -450,8 +482,8 @@ window.SyApiLogMng = {
   <!-- ===== □. API요청로그 탭 =============================================== -->
   <!-- ===== ■. API오류로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='error'"
-    :columns="errorGridColumns" :rows="cfCurrentList" :pager="baseGrid.pager" row-key="logId"
-    list-title="API오류로그" :count-text="baseGrid.pager.pageTotalCount + '건'"
+    :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
     @size-change="handleSelectAction('apiLogs-pager-sizeChange')"

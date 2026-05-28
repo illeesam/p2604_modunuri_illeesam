@@ -27,7 +27,7 @@ window.SyUserLoginHist = {
     const codes = reactive({ login_results: [], token_actions: [], date_range_opts: [] });
 
     /* ===== 페이지네이션 ===== */
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 20 });
+    const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond:{} });
 
     /* ===== 목록 데이터 ===== */
     const logs   = reactive([]);                  // 로그인 로그
@@ -44,13 +44,13 @@ window.SyUserLoginHist = {
       console.log(' ■■ SyUserLoginHist.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, { searchType:'', searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
         onDateRangeChange();
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -80,15 +80,15 @@ window.SyUserLoginHist = {
       // 탭 변경 (log / token)
       if (cmd === 'searchParam-tabChange') {
         searchParam.activeTab = param;
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         allExpanded.value = false;
         return handleSearchList();
       // 페이지 번호 클릭
       } else if (cmd === 'histList-pager-setPage') {
-        return baseGrid.setPage(param);
+        return setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'histList-pager-sizeChange') {
-        return baseGrid.onSizeChange();
+        return onSizeChange();
       // 행 클릭 → 펼침 토글
       } else if (cmd === 'histList-rowToggle') {
         return toggleRow(param);
@@ -97,7 +97,11 @@ window.SyUserLoginHist = {
       }
     };
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* onDateRangeChange — 기간 옵션 변경 */
+    const onDateRangeChange = () => {
+      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+    };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -109,12 +113,13 @@ window.SyUserLoginHist = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(searchParam, fnLoadCodes);
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* onDateRangeChange — 기간 옵션 변경 */
-    const onDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
-    };
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1,c-2), e = Math.min(l,s+4);
+      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+    };
+
     /* toggleRow — 행 펼침 토글 */
     const toggleRow       = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
 
@@ -131,7 +136,7 @@ window.SyUserLoginHist = {
     /* buildParams — 검색 파라미터 빌드 */
     const buildParams = () => {
       const p = {
-        pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+        pageNo: pager.pageNo, pageSize: pager.pageSize,
         dateStart:  searchParam.dateStart    || undefined,
         dateEnd:    searchParam.dateEnd      || undefined,
         resultCd:   searchParam.searchResultCd || undefined,
@@ -153,8 +158,9 @@ window.SyUserLoginHist = {
         const res = await boApiSvc.syUserLoginLog.getPage(buildParams(), '사용자로그인이력', '로그인로그조회');
         const d = res.data?.data;
         logs.splice(0, logs.length, ...(d?.pageList || []));
-        baseGrid.pager.pageTotalCount = d?.pageTotalCount || 0;
-        tabCounts.log = baseGrid.pager.pageTotalCount; expandedRows.clear();
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        tabCounts.log = pager.pageTotalCount;
+        fnBuildPagerNums(); expandedRows.clear();
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
       }
@@ -166,8 +172,9 @@ window.SyUserLoginHist = {
         const res = await boApiSvc.syUserTokenLog.getPage(buildParams(), '사용자로그인이력', '토큰이력조회');
         const d = res.data?.data;
         tokens.splice(0, tokens.length, ...(d?.pageList || []));
-        baseGrid.pager.pageTotalCount = d?.pageTotalCount || 0;
-        tabCounts.token = baseGrid.pager.pageTotalCount; expandedRows.clear();
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        tabCounts.token = pager.pageTotalCount;
+        fnBuildPagerNums(); expandedRows.clear();
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
       }
@@ -182,6 +189,28 @@ window.SyUserLoginHist = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList(); });
 
     /* setPage — 페이지 번호 변경 */
+    const setPage      = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo=n; handleSearchList(); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo=1; handleSearchList(); };
+
+    /* handleClearLog — 로그 전체 삭제 */
+    const handleClearLog = async () => {
+      const tabNm = searchParam.activeTab==='log' ? '사용자로그인 로그' : '사용자토큰 이력';
+      const ok = await props.showConfirm('로그 비우기', `[${tabNm}] 테이블의 모든 데이터를 삭제합니다.\n이 작업은 되돌릴 수 없습니다.`);
+      if (!ok) { return; }
+      try {
+        if (searchParam.activeTab==='log') { await window.boApi.delete('/bo/sy/user-login-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기')); }
+        else { await window.boApi.delete('/bo/sy/user-token-log/all', coUtil.cofApiHdr('사용자로그인이력', '로그비우기')); }
+        props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
+        if (searchParam.activeTab==='log') { logs.splice(0); tabCounts.log=0; }
+        else                           { tokens.splice(0); tabCounts.token=0; }
+        pager.pageTotalCount=0; pager.pageTotalPage=1; expandedRows.clear(); allExpanded.value=false;
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
+      }
+    };
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfCurrentList = computed(() => searchParam.activeTab==='log' ? logs : tokens);
 
@@ -307,8 +336,7 @@ window.SyUserLoginHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      baseGrid,
-      searchParam, codes,  tabCounts, cfCurrentList, allExpanded,                                // 상태 / 데이터
+      searchParam, codes, pager, tabCounts, cfCurrentList, allExpanded,                                // 상태 / 데이터
       baseSearchColumns, moreSearchColumns, logGridColumns, tokenGridColumns,                          // 컬럼 정의
       logExpandColumns, tokenExpandColumns,                                                             // 행 펼침 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
@@ -372,8 +400,8 @@ window.SyUserLoginHist = {
   <!-- ===== □. 탭 ======================================================== -->
   <!-- ===== ■. 로그인 로그 탭 ================================================ -->
   <bo-grid v-if="searchParam.activeTab==='log'"
-    :columns="logGridColumns" :rows="cfCurrentList" :pager="baseGrid.pager" row-key="logId"
-    list-title="로그인 로그" :count-text="baseGrid.pager.pageTotalCount + '건'"
+    :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('histList-pager-setPage', n)"
     @size-change="handleSelectAction('histList-pager-sizeChange')"
@@ -400,8 +428,8 @@ window.SyUserLoginHist = {
   <!-- ===== □. 로그인 로그 탭 ================================================ -->
   <!-- ===== ■. 토큰 이력 탭 ================================================= -->
   <bo-grid v-if="searchParam.activeTab==='token'"
-    :columns="tokenGridColumns" :rows="cfCurrentList" :pager="baseGrid.pager" row-key="logId"
-    list-title="토큰 이력" :count-text="baseGrid.pager.pageTotalCount + '건'"
+    :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('histList-pager-setPage', n)"
     @size-change="handleSelectAction('histList-pager-sizeChange')"

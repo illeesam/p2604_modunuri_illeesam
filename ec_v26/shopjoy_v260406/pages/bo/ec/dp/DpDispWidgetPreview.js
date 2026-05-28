@@ -10,78 +10,15 @@ const _WP_DispWidgetPreview = {
   name: 'WidgetPreview',
   props: { lib: Object, compact: { type: Boolean, default: false } },
   setup(props) {
-    /* ##### [01] 초기 변수 정의 ################################################## */
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed } = Vue;
     const codes = reactive({ disp_widget_types: [] });
     const uiState = reactive({ isPageCodeLoad: false });
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
 
-    /* ##### [02] 액션 모음 (dispatch) ############################################## */
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispWidgetPreview.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 필터링
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expandAll') {
-        return expandAll();
-      // 트리 전체 닫기
-      } else if (cmd === 'pathTree-collapseAll') {
-        return collapseAll();
-      // 실제컨텐츠 토글
-      } else if (cmd === 'preview-toggleReal') {
-        gridState.showRealContent = !gridState.showRealContent;
-        return;
-      // 현재 그리드 / 대시보드 초기화
-      } else if (cmd === 'preview-reset') {
-        return resetCurrent();
-      // span 팝업 닫기
-      } else if (cmd === 'spanPopup-close') {
-        return closeSpanPopup();
-      // 슬롯 제거 (param: idx)
-      } else if (cmd === 'slot-remove') {
-        return removeSlot(param);
-      // 대시보드 항목 제거 (param: id)
-      } else if (cmd === 'dashItem-remove') {
-        return removeDashItem(param);
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
+    // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispWidgetPreview.js : handleSelectAction -> ', cmd, param);
-      // 트리 노드 토글 (param: key)
-      if (cmd === 'pathTree-toggle') {
-        return toggleNode(param);
-      // 트리에서 위젯 선택 (param: lib)
-      } else if (cmd === 'pathTree-select') {
-        return onTreeSelect(param);
-      // 그리드 탭 전환 (param: tabId)
-      } else if (cmd === 'preview-tab') {
-        gridState.previewGrid = param;
-        return;
-      // 뷰포트 모드 변경 (param: key)
-      } else if (cmd === 'preview-viewport') {
-        gridState.viewportMode = param;
-        return;
-      // span 설정 (param: { idx, axis, delta })
-      } else if (cmd === 'slot-spanSet') {
-        return setSpan(param.idx, param.axis, param.delta);
-      // span 팝업 토글 (param: { e, idx })
-      } else if (cmd === 'slot-spanPopup') {
-        return toggleSpanPopup(param.e, param.idx);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore?.();
@@ -180,7 +117,8 @@ const _WP_DispWidgetPreview = {
       return 'conic-gradient(' + segs.map(s => `${s.color} ${s.start}deg ${s.end}deg`).join(',') + ')';
     });
 
-    /* ##### [06] return (템플릿 노출) ############################################## */
+    // ===== return (템플릿 노출) ===============================================
+
     return { cfType, cfName, cfDesc, cfContent, cfConfig, cfImg, cfChartBars, cfPie, cfPieGradient };
   },
   template: /* html */`
@@ -465,7 +403,8 @@ window.DpDispWidgetPreview = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
-    /* ##### [01] 초기 변수 정의 ################################################## */
+    // ===== 초기 변수 정의 =====================================================
+
     const { reactive, computed, ref, watch, onMounted, nextTick, watchEffect } = Vue;
     const codes = reactive({ disp_widget_types: [], active_statuses: [], disp_envs: [], visibility_opts: [
       { value: '', label: '전체' },
@@ -480,7 +419,73 @@ window.DpDispWidgetPreview = {
     ] });
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null });
     const widgetLibs = reactive([]);
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
+    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetPreview.js : handleBtnAction -> ', cmd, param);
+      // 검색조건으로 목록 필터링
+      if (cmd === 'searchParam-list') {
+        return onSearch();
+      // 검색조건 초기화
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      // 트리 전체 펼치기
+      } else if (cmd === 'pathTree-expand-all') {
+        return expandAll();
+      // 트리 전체 닫기
+      } else if (cmd === 'pathTree-collapse-all') {
+        return collapseAll();
+      // 실제컨텐츠 토글
+      } else if (cmd === 'preview-toggle-real') {
+        gridState.showRealContent = !gridState.showRealContent;
+        return;
+      // 현재 그리드 / 대시보드 초기화
+      } else if (cmd === 'preview-reset') {
+        return resetCurrent();
+      // span 팝업 닫기
+      } else if (cmd === 'spanPopup-close') {
+        return closeSpanPopup();
+      // 슬롯 제거 (param: idx)
+      } else if (cmd === 'slot-remove') {
+        return removeSlot(param);
+      // 대시보드 항목 제거 (param: id)
+      } else if (cmd === 'dashItem-remove') {
+        return removeDashItem(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ DpDispWidgetPreview.js : handleSelectAction -> ', cmd, param);
+      // 트리 노드 토글 (param: key)
+      if (cmd === 'pathTree-toggle') {
+        return toggleNode(param);
+      // 트리에서 위젯 선택 (param: lib)
+      } else if (cmd === 'pathTree-select') {
+        return onTreeSelect(param);
+      // 그리드 탭 전환 (param: tabId)
+      } else if (cmd === 'preview-tab') {
+        gridState.previewGrid = param;
+        return;
+      // 뷰포트 모드 변경 (param: key)
+      } else if (cmd === 'preview-viewport') {
+        gridState.viewportMode = param;
+        return;
+      // span 설정 (param: { idx, axis, delta })
+      } else if (cmd === 'slot-span-set') {
+        return setSpan(param.idx, param.axis, param.delta);
+      // span 팝업 토글 (param: { e, idx })
+      } else if (cmd === 'slot-span-popup') {
+        return toggleSpanPopup(param.e, param.idx);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -925,7 +930,8 @@ window.DpDispWidgetPreview = {
       }
     };
 
-    /* ##### [06] return (템플릿 노출) ############################################## */
+    // ===== return (템플릿 노출) ===============================================
+
     return {
       uiState, codes, searchParam, applied, gridState, dragState,                    // 상태 / 데이터
       tabSlots, dashItems,                                                            // 상태 (그리드/대시보드)
@@ -1021,11 +1027,11 @@ window.DpDispWidgetPreview = {
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
       <div style="padding:6px 12px;display:flex;gap:4px;border-bottom:1px solid #f0f0f0;background:#fff;flex-shrink:0;">
-        <button @click="handleBtnAction('pathTree-expandAll')"
+        <button @click="handleBtnAction('pathTree-expand-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▼ 전체펼치기
         </button>
-        <button @click="handleBtnAction('pathTree-collapseAll')"
+        <button @click="handleBtnAction('pathTree-collapse-all')"
           style="flex:1;padding:4px 6px;font-size:10px;border:1px solid #d0d7de;border-radius:4px;background:#fff;cursor:pointer;color:#555;">
           ▶ 전체닫기
         </button>
@@ -1110,7 +1116,7 @@ window.DpDispWidgetPreview = {
         </div>
         <!-- ===== ■.■.■.■. 실제컨텐츠 + 뷰포트 토글 (dashboard 제외) ===================== -->
         <div v-if="gridState.previewGrid!=='dashboard'" style="display:flex;align-items:center;gap:4px;padding:6px 0 6px 12px;border-left:1px solid #e5e7eb;margin-left:8px;">
-          <button @click="handleBtnAction('preview-toggleReal')"
+          <button @click="handleBtnAction('preview-toggle-real')"
             style="font-size:11px;padding:3px 9px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;margin-right:4px;"
             :style="gridState.showRealContent?'background:#059669;color:#fff;border-color:#059669;':'background:#fff;color:#6b7280;'">
             {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
@@ -1194,7 +1200,7 @@ window.DpDispWidgetPreview = {
                     <span style="font-size:10px;background:#f0f4ff;color:#1d4ed8;border:1px solid #dbeafe;border-radius:4px;padding:0 5px;white-space:nowrap;">{{ wTypeLabel(slot.widgetTypeCd || slot.widgetType) }}</span>
                     <span style="font-size:11px;font-weight:600;color:#333;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ slot.widgetNm || slot.name }}</span>
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. span 설정 아이콘 =========================== -->
-                    <button @click="handleSelectAction('slot-spanPopup', { e: $event, idx })"
+                    <button @click="handleSelectAction('slot-span-popup', { e: $event, idx })"
                       :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
                       style="flex-shrink:0;width:22px;height:22px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                       :style="gridState.spanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">⚙</button>
@@ -1213,11 +1219,11 @@ window.DpDispWidgetPreview = {
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 열(colspan) ============================ -->
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
                       <span style="font-size:11px;color:#6b7280;width:36px;">열 span</span>
-                      <button @click="handleSelectAction('slot-spanSet', { idx, axis:'col', delta:-1 })" :disabled="(slot.colSpan||1)<=1"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'col', delta:-1 })" :disabled="(slot.colSpan||1)<=1"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.colSpan||1 }}</span>
-                      <button @click="handleSelectAction('slot-spanSet', { idx, axis:'col', delta:+1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'col', delta:+1 })" :disabled="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.colSpan||1)>=(GRID_COLS[gridState.previewGrid]||1)?'opacity:.3;cursor:default;':''">+</button>
                       <span style="font-size:10px;color:#9ca3af;">/ {{ GRID_COLS[gridState.previewGrid]||1 }}</span>
@@ -1225,11 +1231,11 @@ window.DpDispWidgetPreview = {
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■. 행(rowspan) ============================ -->
                     <div style="display:flex;align-items:center;gap:6px;">
                       <span style="font-size:11px;color:#6b7280;width:36px;">행 span</span>
-                      <button @click="handleSelectAction('slot-spanSet', { idx, axis:'row', delta:-1 })" :disabled="(slot.rowSpan||1)<=1"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'row', delta:-1 })" :disabled="(slot.rowSpan||1)<=1"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">−</button>
                       <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">{{ slot.rowSpan||1 }}</span>
-                      <button @click="handleSelectAction('slot-spanSet', { idx, axis:'row', delta:+1 })" :disabled="(slot.rowSpan||1)>=4"
+                      <button @click="handleSelectAction('slot-span-set', { idx, axis:'row', delta:+1 })" :disabled="(slot.rowSpan||1)>=4"
                         style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                         :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">+</button>
                       <span style="font-size:10px;color:#9ca3af;">/ 4</span>

@@ -29,12 +29,12 @@ window.PdRestockNotiMng = {
       console.log(' ■■ PdRestockNotiMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList();
       // 선택된 항목 알림 발송
       } else if (cmd === 'restockNotis-send') {
@@ -58,11 +58,11 @@ window.PdRestockNotiMng = {
         return;
       // 페이지 번호 변경
       } else if (cmd === 'restockNotis-pager-setPage') {
-        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'restockNotis-pager-sizeChange') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -73,37 +73,19 @@ window.PdRestockNotiMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
-    });
-
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdRestockNoti.getPage({ pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '재입고알림관리', '목록조회');
+        const res = await boApiSvc.pdRestockNoti.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '재입고알림관리', '목록조회');
         const data = res.data?.data;
         restockNotis.splice(0, restockNotis.length, ...(data?.pageList || []));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -139,6 +121,61 @@ window.PdRestockNotiMng = {
     const getMemNm = id => { const m = (members||[]).find(m => m.userId === id); return m ? m.name : ('회원#'+id); };
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* fnIsChecked — 체크 여부 */
+    const fnIsChecked = id => checkedIds.has(id);
+
+    /* fnYnBadge — 사용여부 배지 */
+    const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
+    const allChecked = computed(() => restockNotis.length > 0 && restockNotis.every(r => checkedIds.has(r.restockNotiId)));
+    const checkedCount = computed(() => checkedIds.size);
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      try {
+        codes.product_statuses = codeStore.sgGetGrpCodes('PRODUCT_STATUS');
+        uiState.isPageCodeLoad = true;
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+    // 기본 검색
+    const baseSearchColumns = [
+      { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
+      { key: 'noti', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
+    ];
+
+    // 기본 그리드
+    const baseGridColumns = [
+      { key: 'prodId',   label: '상품명', fmt: (v, row) => getProdNm(row.prodId) },
+      { key: 'skuId',    label: 'SKU',    style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
+      { key: 'memberId', label: '신청회원', style: 'width:100px', fmt: (v, row) => getMemNm(row.memberId) },
+      { key: 'notiYn',   label: '발송여부', style: 'width:80px;text-align:center', align: 'center',
+        badge: (row) => fnYnBadge(row.notiYn), fmt: (v, row) => row.notiYn === 'Y' ? '발송완료' : '미발송' },
+      { key: 'notiDate', label: '발송일시', style: 'width:140px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
+      { key: 'regDate',  label: '신청일',  style: 'width:140px' },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      restockNotis, uiState, codes, searchParam, pager,                                 // 상태 / 데이터
+      baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
+      handleBtnAction, handleSelectAction,                                               // dispatch
+      checkedCount, allChecked,                                                          // computed
+      fnIsChecked, fnYnBadge,                                                            // 헬퍼
+    };
   },
   template: `
 <div>
@@ -159,7 +196,7 @@ window.PdRestockNotiMng = {
         재입고알림 목록
       </span>
       <span class="list-count">
-        총 {{ baseGrid.pager.pageTotalCount }}건
+        총 {{ pager.pageTotalCount }}건
       </span>
       <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleBtnAction('restockNotis-send')">
         📣 알림발송 ({{ checkedCount }}건)
@@ -167,8 +204,8 @@ window.PdRestockNotiMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="restockNotis" :pager="baseGrid.pager" row-key="restockNotiId"
-      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
+      :columns="baseGridColumns" :rows="restockNotis" :pager="pager" row-key="restockNotiId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
       @set-page="n => handleSelectAction('restockNotis-pager-setPage', n)" @size-change="handleSelectAction('restockNotis-pager-sizeChange')"
       @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggleAll')">

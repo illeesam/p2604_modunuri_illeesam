@@ -47,8 +47,7 @@ window.SyDashboardMng = {
       }
     };
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -64,7 +63,6 @@ window.SyDashboardMng = {
       if (isAppReady.value) { fnLoadCodes(); }
     });
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfStats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,

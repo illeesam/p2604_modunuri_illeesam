@@ -84,6 +84,7 @@ window.DpDispRelationMng = {
       const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
       const res = await boApiSvc.dpResource.getPage(params, '전시연관관리', '조회');
       // TODO: Update items array based on response
+      pager.pageNo = 1;
       await handleSearchData();
     } catch (err) {
       console.error('[catch-info]', err);

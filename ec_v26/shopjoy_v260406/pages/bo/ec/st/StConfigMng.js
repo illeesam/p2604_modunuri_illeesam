@@ -19,9 +19,9 @@ window.StConfigMng = {
       console.log(' ■■ StConfigMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'configs-add') {
         return openNew();
-      } else if (cmd === 'baseForm-save') {
+      } else if (cmd === 'form-save') {
         return handleSave();
-      } else if (cmd === 'baseForm-cancel') {
+      } else if (cmd === 'form-cancel') {
         return closeForm();
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -42,23 +42,6 @@ window.StConfigMng = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
-
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      try {
-        const codeStore = window.sfGetBoCodeStore();
-        codes.settle_cycles = codeStore.sgGetGrpCodes('SETTLE_CYCLE');
-        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
-    };
-
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadList — 목록 조회 */
@@ -83,7 +66,7 @@ window.StConfigMng = {
       handleLoadList();
     });
 
-        const baseForm = reactive({});
+        const form = reactive({});
     const errors = reactive({});
 
     /* fnMapUiToApi — 유틸 */
@@ -120,7 +103,7 @@ window.StConfigMng = {
 
     /* openEdit — 열기 */
     const openEdit = (c) => {
-      Object.assign(baseForm, fnMapApiToUi(c));
+      Object.assign(form, fnMapApiToUi(c));
       uiState.selectedId = c.settleConfigId;
       uiState.isNew = false;
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -128,7 +111,7 @@ window.StConfigMng = {
 
     /* openNew — 신규 열기 */
     const openNew = () => {
-      Object.assign(baseForm, { settleConfigId: null, siteId: '01', siteNm: 'ShopJoy 01', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
+      Object.assign(form, { settleConfigId: null, siteId: '01', siteNm: 'ShopJoy 01', settleCycleCd: 'MONTHLY', settleDay: 10, commissionRate: 10, minSettleAmt: 10000, useYn: 'Y', settleConfigRemark: '' });
       uiState.selectedId = '__new__';
       uiState.isNew = true;
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -140,9 +123,9 @@ window.StConfigMng = {
     /* validate — 검증 */
     const validate = () => {
       Object.keys(errors).forEach(k => delete errors[k]);
-      if (!baseForm.settleCycleCd) { errors.settleCycleCd = '정산주기를 선택하세요.'; }
-      if (baseForm.commissionRate === '' || baseForm.commissionRate === null) { errors.commissionRate = '수수료율을 입력하세요.'; }
-      if (!baseForm.settleDay) { errors.settleDay = '정산일을 입력하세요.'; }
+      if (!form.settleCycleCd) { errors.settleCycleCd = '정산주기를 선택하세요.'; }
+      if (form.commissionRate === '' || form.commissionRate === null) { errors.commissionRate = '수수료율을 입력하세요.'; }
+      if (!form.settleDay) { errors.settleDay = '정산일을 입력하세요.'; }
       return Object.keys(errors).length === 0;
     };
 
@@ -152,9 +135,9 @@ window.StConfigMng = {
       const ok = await showConfirm('저장', '정산기준을 저장하시겠습니까?');
       if (!ok) { return; }
       closeForm();
-      const apiData = fnMapUiToApi(baseForm);
+      const apiData = fnMapUiToApi(form);
       try {
-        const res = await (uiState.isNew ? boApiSvc.stSettleConfig.create(apiData, '정산설정관리', '등록') : boApiSvc.stSettleConfig.update(baseForm.settleConfigId, apiData, '정산설정관리', '저장'));
+        const res = await (uiState.isNew ? boApiSvc.stSettleConfig.create(apiData, '정산설정관리', '등록') : boApiSvc.stSettleConfig.update(form.settleConfigId, apiData, '정산설정관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         await handleLoadList();
@@ -193,6 +176,21 @@ window.StConfigMng = {
 
     // -- 공통코드 -------------------------------------------------------------
     const codes = reactive({ settle_cycles: [], use_yn: [] });
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      try {
+        const codeStore = window.sfGetBoCodeStore();
+        codes.settle_cycles = codeStore.sgGetGrpCodes('SETTLE_CYCLE');
+        codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      } catch (err) {
+        console.error('[fnLoadCodes]', err);
+      }
+    };
+
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
     // --- [컬럼 정의] ---
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 그리드
@@ -229,7 +227,7 @@ window.StConfigMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, configs, baseForm, errors,
+      uiState, codes, configs, form, errors,
       baseGridColumns, baseFormColumns,
       handleBtnAction, handleSelectAction,
       fnCycleBadge, fnCycleCdToLabel,
@@ -296,9 +294,9 @@ window.StConfigMng = {
       {{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}
     </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :cols="4"
-      @save="handleBtnAction('baseForm-save')" @cancel="handleBtnAction('baseForm-cancel')" />
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </div>
 </div>
 <!-- ===== □.□. 폼 영역 ================================================== -->

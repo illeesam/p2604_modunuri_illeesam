@@ -123,23 +123,6 @@ window.SyDeptMng = {
 
     /* ===== 상위부서 선택 모달 ===== */
     const parentModal = reactive({ show: false, targetRow: null });
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.dept_status = codeStore.sgGetGrpCodes('DEPT_STATUS');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
-    };
-
-    // ★ onMounted — 진입 시 트리 + 그리드 조회
-    onMounted(async () => {
-      await handleSearchTree();
-      expanded.add(null);
-      await handleGridSearch();
-    });
-
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchTree — 부서 트리 조회 */
     const handleSearchTree = async () => {
@@ -208,6 +191,22 @@ window.SyDeptMng = {
 
     /* collapseAll — 트리 전체 접기 */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.dept_status = codeStore.sgGetGrpCodes('DEPT_STATUS');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      uiState.isPageCodeLoad = true;
+    };
+
+    // ★ onMounted — 진입 시 트리 + 그리드 조회
+    onMounted(async () => {
+      await handleSearchTree();
+      expanded.add(null);
+      await handleGridSearch();
+    });
+
     /* buildTreeRows — 그리드용 트리 행 빌드 */
     const buildTreeRows = (items) => {
       const map = {};

@@ -36,14 +36,14 @@ window.PdSetMng = {
       } else if (cmd === 'sets-add') {
         return openNew();
       // 세트상품 Dtl 저장
-      } else if (cmd === 'baseDetail-save') {
+      } else if (cmd === 'detailPanel-save') {
         return handleSave();
       // 세트상품 Dtl 닫기
-      } else if (cmd === 'baseDetail-close') {
+      } else if (cmd === 'detailPanel-close') {
         return closeDtl();
       // 페이지 크기 변경
       } else if (cmd === 'sets-pager-sizeChange') {
-        return baseGrid.onSizeChange();
+        return onSizeChange();
       // 설명 토글
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -63,12 +63,11 @@ window.PdSetMng = {
       } else if (cmd === 'prodPickModal-close') {
         uiState.pickerOpen = false;
         return;
-      // 상품 피커 검색 (페이저 1페이지로 리셋)
+      // 상품 피커 검색
       } else if (cmd === 'prodPickModal-search') {
-        pickerPager.pageNo = 1;
         return onPickerSearch();
       // 비상품 구성품 추가
-      } else if (cmd === 'baseDetail-itemAddBlank') {
+      } else if (cmd === 'detailPanel-itemAddBlank') {
         return addItemBlank();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -86,22 +85,22 @@ window.PdSetMng = {
         return handleDelete(param);
       // 페이지 번호 클릭
       } else if (cmd === 'sets-pager-setPage') {
-        return baseGrid.setPage(param);
+        return setPage(param);
       // 카테고리 행 삭제
-      } else if (cmd === 'baseDetail-categoryRemove') {
+      } else if (cmd === 'detailPanel-categoryRemove') {
         return removeCategory(param);
       // 카테고리 행 드래그
-      } else if (cmd === 'baseDetail-categoryDragStart') {
+      } else if (cmd === 'detailPanel-categoryDragStart') {
         return onCatDragStart(param);
-      } else if (cmd === 'baseDetail-categoryDragOver') {
+      } else if (cmd === 'detailPanel-categoryDragOver') {
         return onCatDragOver(param);
-      } else if (cmd === 'baseDetail-categoryDrop') {
+      } else if (cmd === 'detailPanel-categoryDrop') {
         return onCatDrop();
       // 구성품 행 삭제
-      } else if (cmd === 'baseDetail-itemRemove') {
+      } else if (cmd === 'detailPanel-itemRemove') {
         return removeItem(param);
       // 구성품 행 연결해제
-      } else if (cmd === 'baseDetail-itemUnlink') {
+      } else if (cmd === 'detailPanel-itemUnlink') {
         param.itemProdId = null;
         return;
       // 카테고리 모달에서 선택
@@ -110,14 +109,6 @@ window.PdSetMng = {
       // 구성품 피커 모달에서 선택
       } else if (cmd === 'prodPickModal-add') {
         return addItemFromProd(param);
-      // 구성품 피커 페이지 이동
-      } else if (cmd === 'prodPickModal-page') {
-        pickerPager.pageNo = param;
-        return onPickerSearch();
-      // 구성품 피커 페이지사이즈 변경
-      } else if (cmd === 'prodPickModal-size') {
-        pickerPager.pageNo = 1;
-        return onPickerSearch();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -172,7 +163,14 @@ window.PdSetMng = {
       handleSearchData('DEFAULT');
     });
 
-const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
+const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* -- 신규등록 폼 -- */
+    const newForm = reactive({
+      prodNm: '', brandId: '', vendorId: '',
+      listPrice: 0, salePrice: 0, stock: 0,
+      prodStatusCd: 'DRAFT',
+    });
     const newErrors = reactive({});
 
     /* -- 카테고리 N개 -- */
@@ -241,49 +239,31 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
       window.safeArrayUtils.safeForEach(dtlItems, (item, i) => { item.sortOrd = i + 1; });
     };
 
-    /* -- 상품 피커 (서버사이드 페이징) -- */
-    const pickerPager = reactive({
-      pageNo: 1, pageSize: 10,
-      pageTotalCount: 0, pageTotalPage: 1,
-      pageNums: [1], pageSizes: [5, 10, 20, 30, 50],
-    });
+    /* -- 상품 피커 -- */
+    /* 피커 상품 서버검색 — 검색어/검색대상을 pdProd.getPage 에 전달(상위 50건).
+       이미 담긴 항목·자기자신은 서버결과에서 클라이언트 제외(소량). 모달열기/Enter/[조회] 시점에만 호출. */
     const pickerResults = reactive([]);
-    /* fnBuildPickerPagerNums — 피커 페이저 페이지 번호 배열 갱신 */
-    const fnBuildPickerPagerNums = () => {
-      pickerPager.pageTotalPage = Math.max(1, Math.ceil(pickerPager.pageTotalCount / pickerPager.pageSize));
-      const c = pickerPager.pageNo, l = pickerPager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pickerPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
-    /* onPickerSearch — 서버 페이징 호출 */
+    /* onPickerSearch — 이벤트 */
     const onPickerSearch = async () => {
       try {
-        const params = { pageNo: pickerPager.pageNo, pageSize: pickerPager.pageSize };
+        const params = { pageNo: 1, pageSize: 50 };
         const sv = (uiState.pickerSearch || '').trim();
         if (sv) {
           params.searchValue = sv;
           if (uiState.pickerSearchType) { params.searchType = uiState.pickerSearchType; }
         }
         const res = await boApiSvc.pdProd.getPage(params, '상품세트관리', '상품검색');
-        const d = res.data?.data || {};
-        const list = (d.pageList || d.list || [])
+        const list = (res.data?.data?.pageList || res.data?.data?.list || [])
           .map(p => ({ ...p, productId: p.prodId ?? p.productId }));
         pickerResults.splice(0, pickerResults.length, ...list);
-        pickerPager.pageTotalCount = d.pageTotalCount || 0;
-        fnBuildPickerPagerNums();
       } catch (e) {
         console.error('[onPickerSearch]', e);
         pickerResults.splice(0, pickerResults.length);
-        pickerPager.pageTotalCount = 0;
-        fnBuildPickerPagerNums();
       }
     };
-    /* openPicker — 열기 (페이저 초기화) */
+    /* openPicker — 열기 */
     const openPicker = () => {
-      uiState.pickerOpen = true;
-      uiState.pickerSearchType = '';
-      uiState.pickerSearch = '';
-      pickerPager.pageNo = 1;
+      uiState.pickerOpen = true; uiState.pickerSearchType = ''; uiState.pickerSearch = '';
       onPickerSearch();
     };
     /* 서버결과에서 이미 담긴 항목·자기자신 제외 */
@@ -317,18 +297,43 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
         })
         .filter(g => !searchVal || g.prodNm.toLowerCase().includes(searchVal));
       setList.splice(0, setList.length, ...result);
-      baseGrid.pager.pageTotalCount = setList.length;
-      baseGrid.pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / baseGrid.pager.pageSize));    };
+      pager.pageTotalCount = setList.length;
+      pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / pager.pageSize));
+      fnBuildPagerNums();
+    };
 
-    /* — 유틸 */
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* onSearch — 조회 */
+    const onSearch = async () => {
+      pager.pageNo = 1;
+      await handleSearchData('DEFAULT');
+    };
+
     /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
       await handleSearchData();
     };
 
-    /* — 설정 */
+    /* setPage — 설정 */
+    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; };
+
+    /* openNew — 신규 열기 */
+    const openNew = () => {
+      uiState.dtlMode = 'new';
+      uiState.editSetId = null;
+      Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, stock: 0, prodStatusCd: 'DRAFT' });
+      Object.keys(newErrors).forEach(k => delete newErrors[k]);
+      dtlCategories.length = 0;
+      dtlItems.length = 0;
+    };
+
     /* openDtl — 열기 */
     const openDtl = setProdId => {
       uiState.dtlMode = 'edit';
@@ -484,7 +489,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
       }
     };
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
-    const cfSetPageRows = computed(() => setList.slice((baseGrid.pager.pageNo - 1) * baseGrid.pager.pageSize, baseGrid.pager.pageNo * baseGrid.pager.pageSize));
+    const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
         // --- [컬럼 정의] ---
         const baseSearchColumns = [
       { key: 'nm', label: '세트상품명', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
@@ -542,8 +547,8 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      codes, uiState, setList, searchParam,                                           // 상태 / 데이터
-      dtlCategories, dtlItems, newForm, newErrors, pickerResults, pickerPager,              // 상태 / 데이터
+      codes, uiState, setList, searchParam, pager,                                          // 상태 / 데이터
+      dtlCategories, dtlItems, newForm, newErrors, pickerResults,                           // 상태 / 데이터
       baseSearchColumns, setGridColumns, setItemGridColumns, pickerGridColumns, newSetFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList,                            // computed
@@ -608,7 +613,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
         세트상품 목록
       </span>
       <span class="list-count">
-        총 {{ baseGrid.pager.pageTotalCount }}건
+        총 {{ pager.pageTotalCount }}건
       </span>
       <div class="pager-right">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('sets-add')">
@@ -619,7 +624,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="baseGrid.pager"
+      <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows" :pager="pager"
         row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
         <template #cell-prodNm="{ row }">
           <td>
@@ -661,7 +666,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleSelectAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>
@@ -687,10 +692,10 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
         <span style="font-size:12px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:3px 10px">
           🔒 세트 전체 단위로만 클레임 가능
         </span>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
           닫기
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('baseDetail-save')">
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('detailPanel-save')">
           {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
         </button>
       </div>
@@ -740,7 +745,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
       <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px">
         카테고리를 추가해주세요
       </div>
-      <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)" draggable="true" @dragstart="handleSelectAction('baseDetail-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('baseDetail-categoryDragOver', idx)" @drop.prevent="handleSelectAction('baseDetail-categoryDrop')" :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''" style="display:flex;align-items:center;gap:4px;padding:2px 0">
+      <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)" draggable="true" @dragstart="handleSelectAction('detailPanel-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-categoryDragOver', idx)" @drop.prevent="handleSelectAction('detailPanel-categoryDrop')" :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''" style="display:flex;align-items:center;gap:4px;padding:2px 0">
       <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0">
         ≡
       </span>
@@ -753,7 +758,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
       <span style="font-size:13px;flex:1">
         {{ cat.categoryNm }}
       </span>
-      <button type="button" @click="handleSelectAction('baseDetail-categoryRemove', idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">
+      <button type="button" @click="handleSelectAction('detailPanel-categoryRemove', idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">
         ✕
       </button>
     </div>
@@ -789,7 +794,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
         <span style="font-size:13px;color:#333">
           {{ getProdNm(row.itemProdId) }}
         </span>
-        <button type="button" @click="handleSelectAction('baseDetail-itemUnlink', row)"
+        <button type="button" @click="handleSelectAction('detailPanel-itemUnlink', row)"
               style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 2px">
           ✕ 연결해제
         </button>
@@ -806,7 +811,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
   </template>
   <template #row-actions="{ idx }">
     <td style="text-align:center">
-      <button class="btn btn-danger btn-xs" @click="handleSelectAction('baseDetail-itemRemove', idx)">
+      <button class="btn btn-danger btn-xs" @click="handleSelectAction('detailPanel-itemRemove', idx)">
         ✕
       </button>
     </td>
@@ -818,7 +823,7 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
   <button class="btn btn-secondary btn-sm" @click="handleBtnAction('prodPickModal-open')">
     + 상품 구성품 추가
   </button>
-  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-itemAddBlank')">
+  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-itemAddBlank')">
     + 비상품 구성품 추가
     <span style="font-size:11px;color:#aaa">
       (박스·엽서 등)
@@ -828,42 +833,50 @@ const baseGrid = coUtil.cofGrid(() => handleSearchData(), { pageSize: 5 });
 </div>
 <!-- ===== □.□. 구성품 추가 버튼 ============================================= -->
 <!-- ===== □. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
-<!-- ===== ■. 상품 피커 모달 (bo-modal + bo-grid 서버사이드 페이징) ========== -->
-<bo-modal :show="uiState.pickerOpen" title="구성품 상품 선택" width="720px"
-    @close="handleBtnAction('prodPickModal-close')">
-  <!-- ===== ■.■. 검색 영역 ================================================= -->
-  <bo-multi-check-select
-      v-model="uiState.pickerSearchType"
-      :options="[
-      { value: 'prodNm', label: '상품명' },
-      { value: 'prodId', label: 'ID' },
-      ]"
-      placeholder="검색대상 전체"
-      all-label="전체 선택"
-      min-width="100%" />
-  <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
-    <input class="form-control" v-model="uiState.pickerSearch"
-        placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
-        @keyup.enter="handleBtnAction('prodPickModal-search')">
-    <button class="btn btn-primary btn-sm" @click="handleBtnAction('prodPickModal-search')">
-      조회
-    </button>
+<!-- ===== ■. 상품 피커 모달 ================================================ -->
+<teleport to="body" v-if="uiState.pickerOpen">
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
+      @click.self="handleBtnAction('prodPickModal-close')">
+    <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <strong style="font-size:15px">
+          구성품 상품 선택
+        </strong>
+        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('prodPickModal-close')">
+          닫기
+        </button>
+      </div>
+      <bo-multi-check-select
+          v-model="uiState.pickerSearchType"
+          :options="[
+          { value: 'prodNm', label: '상품명' },
+          { value: 'prodId', label: 'ID' },
+          ]"
+          placeholder="검색대상 전체"
+          all-label="전체 선택"
+          min-width="100%" />
+      <div style="display:flex;gap:6px;margin:8px 0 12px 0;">
+        <input class="form-control" v-model="uiState.pickerSearch"
+            placeholder="검색어 입력 후 Enter" style="flex:1;margin:0;"
+            @keyup.enter="handleBtnAction('prodPickModal-search')">
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('prodPickModal-search')">
+          조회
+        </button>
+      </div>
+      <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
+        <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
+        <bo-grid bare :columns="pickerGridColumns" :rows="cfPickerList" row-key="productId"
+            empty-text="검색 결과가 없습니다." row-actions>
+          <template #row-actions="{ row }">
+            <button class="btn btn-blue btn-xs" @click="handleSelectAction('prodPickModal-add', row)">
+              선택
+            </button>
+          </template>
+        </bo-grid>
+      </div>
+    </div>
   </div>
-  <!-- ===== □.□. 검색 영역 ================================================= -->
-  <!-- ===== ■.■. 그리드 (행 클릭 시 추가) ================================== -->
-  <bo-grid :columns="pickerGridColumns" :rows="cfPickerList" :pager="pickerPager"
-      list-title="상품 목록" :count-text="pickerPager.pageTotalCount + '건'"
-      row-key="productId" row-clickable empty-text="검색 결과가 없습니다."
-      @row-click="row => handleSelectAction('prodPickModal-add', row)"
-      @set-page="n => handleSelectAction('prodPickModal-page', n)"
-      @size-change="handleSelectAction('prodPickModal-size')" />
-  <!-- ===== □.□. 그리드 =================================================== -->
-  <template #footer>
-    <button class="btn btn-secondary" @click="handleBtnAction('prodPickModal-close')">
-      닫기
-    </button>
-  </template>
-</bo-modal>
+</teleport>
 <!-- ===== □. 상품 피커 모달 ================================================ -->
 <!-- ===== ■. 카테고리 피커 모달 ============================================== -->
 <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"

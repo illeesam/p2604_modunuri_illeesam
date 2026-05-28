@@ -23,11 +23,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StSettlePayMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
@@ -45,10 +45,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       if (cmd === 'settlePays-rowPay') {
         return doPay(param);
       } else if (cmd === 'settlePays-pager-setPage') {
-        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else if (cmd === 'settlePays-pager-sizeChange') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -74,7 +74,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = {
-          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -84,9 +84,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const res = await boApiSvc.stSettlePay.getPage(params, '정산지급관리', '목록조회');
         const data = res.data?.data;
         pays.splice(0, pays.length, ...(data?.pageList || data?.list || []));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || pays.length;
-        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
-        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+        pager.pageTotalCount = data?.pageTotalCount || pays.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -111,7 +112,34 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   /* 정산 지급 _initSearchParam */
   const _initSearchParam = () => ({ searchType: '', searchValue: '', status: '' });
   const searchParam = reactive(_initSearchParam());
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageSize: 10 });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+
+    /* fnBuildPagerNums — 유틸 */
+    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    const cfSummary = computed(() => ({
+      total:   pays.reduce((s, r) => s + r.settleAmt, 0),
+      paid:    pays.filter(r => r.payStatus === '지급완료').reduce((s, r) => s + r.payAmt, 0),
+      pending: pays.filter(r => r.payStatus === '지급대기').reduce((s, r) => s + r.settleAmt, 0),
+    }));
+
+    /* doPay — 실행 */
+    const doPay = async (r) => {
+      const ok = await showConfirm('지급처리', `[${r.vendorNm}]에게 ${Number(r.settleAmt).toLocaleString()}원을 지급하시겠습니까?`);
+      if (!ok) { return; }
+      r.payStatus = '지급완료'; r.payAmt = r.settleAmt; r.payDate = new Date().toISOString().slice(0,10);
+      try {
+        const res = await boApiSvc.stSettlePay.pay(r.settlePayId || r.payId, { payAmt: r.payAmt ?? r.settleAmt }, '정산지급관리', '저장');
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast('지급처리가 완료되었습니다.', 'success'); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
+
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
 
@@ -119,10 +147,67 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const fmtW = n => Number(n || 0).toLocaleString() + '원';
 
     /* onSearch — 조회 */
-    const onSearch = () => { baseGrid.pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+    /* setPage — 설정 */
+    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
+        /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+        // --- [컬럼 정의] ---
+
+        const baseSearchColumns = [
+      { key: 'dateRange', label: '지급일', type: 'dateRange', paramObj: uiState,
+        startKey: 'dateStart', endKey: 'dateEnd',
+        rangeOptions: () => codes.date_range_opts,
+        rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
+        onRangeChange: () => handleDateRangeChange() },
+      { key: 'status', label: '상태', type: 'select', options: () => codes.settle_pay_statuses, nullLabel: '상태 전체' },
+      { key: 'searchType', label: '검색대상', type: 'multiCheck',
+        options: [
+          { value: 'payId',    label: '지급ID' },
+          { value: 'vendorNm', label: '업체명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },
+    ];
+
+    // 기본 그리드
+    const baseGridColumns = [
+      { key: 'payId',      label: '지급ID' },
+      { key: 'payDate',    label: '지급일' },
+      { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
+      { key: 'closeMon',   label: '정산월' },
+      { key: 'settleAmt',  label: '정산액', fmt: fmtW, cellStyle: 'font-weight:700' },
+      { key: 'payAmt',     label: '지급액',
+        fmt: (v) => v > 0 ? fmtW(v) : '-',
+        cellStyle: (v) => v > 0 ? 'color:#27ae60;font-weight:700' : 'color:#999' },
+      { key: 'bankNm',     label: '은행' },
+      { key: 'bankAccount',label: '계좌번호', cellStyle: 'color:#666' },
+      { key: 'bankHolder', label: '예금주' },
+      { key: 'payStatus',  label: '상태', badge: (row) => fnStatusBadge(row.payStatus) },
+      { key: 'regUserNm',  label: '담당자' },
+    ];
+
+    /* summaryFormColumns — 집계 카드 (BoFormArea, cols=3, labelLeft) */
+    const summaryFormColumns = [
+      { key: '_total',   label: '총 정산액', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSummary.value.total)}</b>` },
+      { key: '_paid',    label: '지급완료',  type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${fmtW(cfSummary.value.paid)}</b>` },
+      { key: '_pending', label: '지급대기',  type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${fmtW(cfSummary.value.pending)}</b>` },
+    ];
+
+    /* ##### [06] return (템플릿 노출) ############################################## */
+    return {
+      uiState, codes, pager, pays, searchParam,
+      baseSearchColumns, baseGridColumns, summaryFormColumns,
+      handleBtnAction, handleSelectAction,
+      cfSummary, fnStatusBadge, fmtW,
+    };
   },
   template: /* html */`
 <div>
@@ -155,8 +240,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="pays" :pager="baseGrid.pager" row-key="payId"
-      list-title="목록" :count-text="baseGrid.pager.pageTotalCount + '건'" :row-actions="true"
+      :columns="baseGridColumns" :rows="pays" :pager="pager" row-key="payId"
+      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('settlePays-pager-setPage', n)" @size-change="handleSelectAction('settlePays-pager-sizeChange')">
       <template #head-actions>
         액션

@@ -12,7 +12,7 @@ window.SyTemplateMng = {
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const templates = reactive([]);                // 템플릿 목록 (그리드 데이터)
-    const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null });
+    const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes     = reactive({ template_type: [], use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'], date_range_opts: [] });
 
     const SORT_MAP = { nm: { asc: 'templateNm asc', desc: 'templateNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -25,14 +25,14 @@ window.SyTemplateMng = {
       console.log(' ■■ SyTemplateMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        baseGrid.sortKey = '';
-        baseGrid.sortDir = 'asc';
-        baseGrid.pager.pageNo = 1;
+        uiState.sortKey = '';
+        uiState.sortDir = 'asc';
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -44,7 +44,7 @@ window.SyTemplateMng = {
       } else if (cmd === 'templates-excel') {
         return exportExcel();
       // 상세 인라인 패널 닫기
-      } else if (cmd === 'baseDetail-close') {
+      } else if (cmd === 'detailPanel-close') {
         return closeDetail();
       // 표시경로 선택 모달 닫기
       } else if (cmd === 'pathModal-close') {
@@ -68,19 +68,19 @@ window.SyTemplateMng = {
       // 좌측 경로 트리 노드 선택 → 그리드 필터링 + 상세 패널 닫기
       if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
-        baseGrid.pager.pageNo = 1;
-        baseDetail.selectedId = null;
+        pager.pageNo = 1;
+        detailPanel.selectedId = null;
         return handleSearchList();
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'templates-sort') {
-        return baseGrid.onSort(param);
+        return onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'templates-pager-setPage') {
-        if (param >= 1 && param <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'templates-pager-sizeChange') {
-        baseGrid.pager.pageNo = 1;
+        pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 그리드 행 클릭 / 수정 버튼 → 편집 패널 열기
       } else if (cmd === 'templates-rowEdit') {
@@ -112,14 +112,45 @@ window.SyTemplateMng = {
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
 
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { sortMap: SORT_MAP, pageSize: 5 });
+    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
+    /* -- 표시경로 선택 모달 (sy_path) -- */
+    const pathPickModal = reactive({ show: false, row: null }); // 표시경로 선택 모달 상태
+
+    /* -- 상세 인라인 패널 -- */
+    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 상세 인라인 패널 상태
+
+    /* -- 미리보기 / 발송 모달 -- */
+    const previewModal = reactive({ show: false, template: null }); // 미리보기 모달
+    const sendModal    = reactive({ show: false, template: null }); // 발송하기 모달
+
+    const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
+    const cfDetailEditId  = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfIsViewMode    = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+    const cfDetailKey     = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* getSortParam — 정렬 파라미터 */
+    const getSortParam = () => {
+      const { sortKey, sortDir } = uiState;
+      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
+      return { sort: SORT_MAP[sortKey][sortDir] };
+    };
+
+    /* onSort — 정렬 */
+    const onSort = (key) => {
+      if (uiState.sortKey === key) {
+        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
+        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
+      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
+      pager.pageNo = 1;
+      handleSearchList();
+    };
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(),
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
         if (params.searchValue && !params.searchType) {
@@ -128,9 +159,10 @@ window.SyTemplateMng = {
         const res = await boApiSvc.syTemplate.getPage(params, '템플릿관리', '목록조회');
         const data = res.data?.data;
         templates.splice(0, templates.length, ...(data?.pageList || []));
-        baseGrid.pager.pageTotalCount = data?.pageTotalCount || templates.length;
-        baseGrid.pager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
-        Object.assign(baseGrid.pager.pageCond, data?.pageCond || baseGrid.pager.pageCond);
+        pager.pageTotalCount = data?.pageTotalCount || templates.length;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fnBuildPagerNums();
+        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -157,6 +189,23 @@ window.SyTemplateMng = {
 
     /* pathLabel — 경로 라벨 변환 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.template_type = codeStore.sgGetGrpCodes('TEMPLATE_TYPE');
+      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchList('DEFAULT');
+    });
+
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       if (searchParam.dateRange) {
@@ -164,25 +213,25 @@ window.SyTemplateMng = {
         searchParam.dateStart = r ? r.from : '';
         searchParam.dateEnd = r ? r.to : '';
       }
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'view'; baseDetail.reloadTrigger++; };
+    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
 
     /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { baseDetail.selectedId = id; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
     /* openNew — 신규 등록 */
-    const openNew = () => { baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit'; baseDetail.reloadTrigger++; };
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
 
     /* closeDetail — 상세 패널 닫기 */
-    const closeDetail = () => { baseDetail.selectedId = null; };
+    const closeDetail = () => { detailPanel.selectedId = null; };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syTemplateMng') { baseDetail.selectedId = null; if (opts.reload) { handleSearchList('RELOAD'); } return; }
-      if (pg === '__switchToEdit__') { baseDetail.openMode = 'edit'; return; }
+      if (pg === 'syTemplateMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchList('RELOAD'); } return; }
+      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
 
@@ -191,13 +240,21 @@ window.SyTemplateMng = {
 
     /* openSend — 발송 모달 열기 */
     const openSend = (t) => { sendModal.template = t; sendModal.show = true; };
+
+    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
+    const fnBuildPagerNums = () => {
+      const c = pager.pageNo, l = pager.pageTotalPage;
+      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+
     /* handleDelete — 삭제 */
     const handleDelete = async (t) => {
       const ok = await showConfirm('삭제', `[${t.templateNm}] 템플릿을 삭제하시겠습니까?`);
       if (!ok) { return; }
       const idx = templates.findIndex(x => x.templateId === t.templateId);
       if (idx !== -1) { templates.splice(idx, 1); }
-      if (baseDetail.selectedId === t.templateId) { baseDetail.selectedId = null; }
+      if (detailPanel.selectedId === t.templateId) { detailPanel.selectedId = null; }
       try {
         const res = await boApiSvc.syTemplate.remove(t.templateId, '템플릿관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -231,7 +288,7 @@ window.SyTemplateMng = {
     const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (t) => baseDetail.selectedId === t.templateId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (t) => detailPanel.selectedId === t.templateId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // 기본 검색
     const baseSearchColumns = [
@@ -259,7 +316,7 @@ window.SyTemplateMng = {
       { key: 'templateCode',   label: '템플릿코드',
         cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:11px;color:#555;font-family:monospace;' },
       { key: 'templateNm',     label: '템플릿명', sortKey: 'nm', link: true,
-        cellInnerStyle: (v) => baseDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'templateSubject', label: '제목(Subject)', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: 'useYn',          label: '사용여부', badge: (row) => fnUseYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'regDate',        label: '등록일', sortKey: 'reg' },
@@ -268,7 +325,7 @@ window.SyTemplateMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      templates, uiState, codes, searchParam,  baseDetail, pathPickModal, previewModal, sendModal, // 상태 / 데이터
+      templates, uiState, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
@@ -297,9 +354,9 @@ window.SyTemplateMng = {
     <div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
-        :columns="baseGridColumns" :rows="templates" :pager="baseGrid.pager" row-key="templateId"
-        list-title="템플릿목록" :count-text="baseGrid.pager.pageTotalCount + '건'"
-        :sort-state="baseGrid" :row-style="fnRowStyle"
+        :columns="baseGridColumns" :rows="templates" :pager="pager" row-key="templateId"
+        list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
+        :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('templates-sort', key)"
         @set-page="n => handleSelectAction('templates-pager-setPage', n)"
         @size-change="handleSelectAction('templates-pager-sizeChange')"
@@ -344,15 +401,15 @@ window.SyTemplateMng = {
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
-    <div v-if="baseDetail.selectedId" style="grid-column:1/-1;margin-top:4px;">
+    <div v-if="detailPanel.selectedId" style="grid-column:1/-1;margin-top:4px;">
       <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기
         </button>
       </div>
       <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-        :dtl-mode="baseDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        :reload-trigger="baseDetail.reloadTrigger"
+        :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        :reload-trigger="detailPanel.reloadTrigger"
         :on-list-reload="handleSearchList" />
     </div>
     <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" @select="pid => handleSelectAction('pathModal-pick', pid)" @close="handleBtnAction('pathModal-close')" />
