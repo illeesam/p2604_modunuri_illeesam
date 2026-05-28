@@ -23,13 +23,13 @@ window.DpDispWidgetDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispWidgetDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장
-      if (cmd === 'baseForm-save') {
+      if (cmd === 'form-save') {
         return handleSave();
       // 폼 삭제
       } else if (cmd === 'form-delete') {
         return handleDelete();
       // 패널 닫기
-      } else if (cmd === 'baseForm-close') {
+      } else if (cmd === 'form-close') {
         return emit('close');
       // 위젯Lib 선택 팝업 열기 (param: 'copy' 또는 'ref')
       } else if (cmd === 'libPickModal-open') {
@@ -46,11 +46,11 @@ window.DpDispWidgetDtl = {
         return closePathPick();
       // 표시경로 초기화
       } else if (cmd === 'form-pathClear') {
-        baseForm.pathId = null;
+        form.pathId = null;
         return;
       // 참조 해제
       } else if (cmd === 'form-refClear') {
-        baseForm.refLibId = null; baseForm.refLibCode = ''; baseForm.refLibName = '';
+        form.refLibId = null; form.refLibCode = ''; form.refLibName = '';
         return;
       // 파일목록 - 항목 추가
       } else if (cmd === 'fileList-add') {
@@ -112,7 +112,7 @@ window.DpDispWidgetDtl = {
     const closePathPick = () => { pathPickModal.show = false; };
 
     /* onPathPicked — 이벤트 */
-    const onPathPicked = (pathId) => { baseForm.pathId = pathId; };
+    const onPathPicked = (pathId) => { form.pathId = pathId; };
 
     /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -180,7 +180,7 @@ window.DpDispWidgetDtl = {
       condSite: '', condUser: '', condCategory: '', condBrand: '', condSort: 'newest', condLimit: 8,
     });
 
-    const baseForm = reactive(makeForm());
+    const form   = reactive(makeForm());
     const errors = reactive({});
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
@@ -192,19 +192,19 @@ window.DpDispWidgetDtl = {
         const res = await boApiSvc.dpWidget.getById(props.dtlId, '전시위젯관리', '상세조회');
         const data = res.data?.data;
         if (data) {
-          /* 1) baseForm 초기화 후 백엔드 데이터 적용 (이전 행의 잔여값 제거) */
-          Object.assign(baseForm, makeForm(), data);
+          /* 1) form 초기화 후 백엔드 데이터 적용 (이전 행의 잔여값 제거) */
+          Object.assign(form, makeForm(), data);
 
           /* 2) 백엔드 DTO 필드 → 폼 UI 별칭 동기화 (dp_widget 기준)
            * dp_widget: widgetId(PK) / widgetLibId(라이브러리 참조 FK) / widgetNm / widgetTypeCd /
            *           widgetTitle / widgetDesc / widgetContent / widgetConfigJson / titleShowYn / useYn */
-          baseForm.libId       = data.widgetId      ?? baseForm.libId;     /* UI 호환: PK 는 widgetId */
-          baseForm.name        = data.widgetNm      ?? baseForm.name;
-          baseForm.widgetType  = data.widgetTypeCd  ?? baseForm.widgetType;
-          baseForm.desc        = data.widgetDesc    ?? baseForm.desc;
-          baseForm.title       = data.widgetTitle   ?? baseForm.title;
-          baseForm.titleYn     = data.titleShowYn   ?? baseForm.titleYn;
-          baseForm.status      = data.useYn === 'Y' ? '활성' : (data.useYn === 'N' ? '비활성' : baseForm.status);
+          form.libId       = data.widgetId      ?? form.libId;     /* UI 호환: PK 는 widgetId */
+          form.name        = data.widgetNm      ?? form.name;
+          form.widgetType  = data.widgetTypeCd  ?? form.widgetType;
+          form.desc        = data.widgetDesc    ?? form.desc;
+          form.title       = data.widgetTitle   ?? form.title;
+          form.titleYn     = data.titleShowYn   ?? form.titleYn;
+          form.status      = data.useYn === 'Y' ? '활성' : (data.useYn === 'N' ? '비활성' : form.status);
 
           /* 3) widgetConfigJson 의 값 → 폼 콘텐츠 필드 채우기 (dp_widget 의 실데이터) */
           let cfg = null;
@@ -212,7 +212,7 @@ window.DpDispWidgetDtl = {
           catch (_) { cfg = {}; }
           if (cfg) {
             const pick = (k1, k2) => cfg[k1] != null ? cfg[k1] : (k2 != null ? cfg[k2] : undefined);
-            const setVal = (key, val) => { if (val !== undefined) baseForm[key] = val; };
+            const setVal = (key, val) => { if (val !== undefined) form[key] = val; };
             setVal('imageUrl',        pick('img_url', 'imageUrl'));
             setVal('linkUrl',         pick('link_url', 'linkUrl'));
             setVal('altText',         pick('alt'));
@@ -239,10 +239,10 @@ window.DpDispWidgetDtl = {
           }
           /* 4) html_editor 콘텐츠: dp_widget 의 widget_content 컬럼이 저장처
            * 폴백 우선순위: widgetContent(인스턴스 직접 작성) > config.html(설정 default) */
-          if (baseForm.widgetType === 'html_editor') {
+          if (form.widgetType === 'html_editor') {
             const wContent  = data.widgetContent || '';
             const cfgHtml   = (cfg && typeof cfg.html === 'string') ? cfg.html : '';
-            baseForm.htmlContent = wContent || cfgHtml || baseForm.htmlContent || '';
+            form.htmlContent = wContent || cfgHtml || form.htmlContent || '';
           }
         }
         uiState.error = null;
@@ -266,7 +266,7 @@ window.DpDispWidgetDtl = {
     /* handleInitNewForm — 처리 */
     const handleInitNewForm = () => {
       if (!cfIsNew.value) { return; }
-      baseForm.libCode = fnGenWidgetCode();
+      form.libCode = fnGenWidgetCode();
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
@@ -277,49 +277,49 @@ window.DpDispWidgetDtl = {
     });
 
     /* 정책: 수정 클릭 시 항상 상세 API 호출.
-     * 부모 Mng 가 reloadTrigger 를 ++ 하면 (같은 id 재클릭 / 다른 id 클릭 모두 포함) baseForm 초기화 후 새 데이터 로드 */
+     * 부모 Mng 가 reloadTrigger 를 ++ 하면 (같은 id 재클릭 / 다른 id 클릭 모두 포함) form 초기화 후 새 데이터 로드 */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
       Object.keys(errors).forEach(k => delete errors[k]);
-      Object.assign(baseForm, makeForm());
+      Object.assign(form, makeForm());
       await handleLoadDetail();
       handleInitNewForm();
     });
 
     /* -- 위젯 유형별 표시 여부 -- */
-    const cfIsImage       = computed(() => baseForm.widgetType === 'image_banner');
-    const cfIsProduct     = computed(() => ['product_slider', 'product'].includes(baseForm.widgetType));
-    const cfIsCondProduct = computed(() => baseForm.widgetType === 'cond_product');
-    const cfIsChart       = computed(() => baseForm.widgetType.startsWith('chart_'));
-    const cfIsText        = computed(() => baseForm.widgetType === 'text_banner');
-    const cfIsInfo        = computed(() => baseForm.widgetType === 'info_card');
-    const cfIsPopup       = computed(() => baseForm.widgetType === 'popup');
-    const cfIsFile        = computed(() => baseForm.widgetType === 'file');
-    const cfIsFileList    = computed(() => baseForm.widgetType === 'file_list');
-    const cfIsCoupon      = computed(() => baseForm.widgetType === 'coupon');
-    const cfIsHtmlEditor  = computed(() => baseForm.widgetType === 'html_editor');
-    const cfIsTextarea    = computed(() => baseForm.widgetType === 'textarea');
-    const cfIsMarkdown    = computed(() => baseForm.widgetType === 'markdown');
-    const cfIsBarcode     = computed(() => baseForm.widgetType === 'barcode');
-    const cfIsQrcode      = computed(() => baseForm.widgetType === 'qrcode');
-    const cfIsBarcodeQr   = computed(() => baseForm.widgetType === 'barcode_qrcode');
+    const cfIsImage       = computed(() => form.widgetType === 'image_banner');
+    const cfIsProduct     = computed(() => ['product_slider', 'product'].includes(form.widgetType));
+    const cfIsCondProduct = computed(() => form.widgetType === 'cond_product');
+    const cfIsChart       = computed(() => form.widgetType.startsWith('chart_'));
+    const cfIsText        = computed(() => form.widgetType === 'text_banner');
+    const cfIsInfo        = computed(() => form.widgetType === 'info_card');
+    const cfIsPopup       = computed(() => form.widgetType === 'popup');
+    const cfIsFile        = computed(() => form.widgetType === 'file');
+    const cfIsFileList    = computed(() => form.widgetType === 'file_list');
+    const cfIsCoupon      = computed(() => form.widgetType === 'coupon');
+    const cfIsHtmlEditor  = computed(() => form.widgetType === 'html_editor');
+    const cfIsTextarea    = computed(() => form.widgetType === 'textarea');
+    const cfIsMarkdown    = computed(() => form.widgetType === 'markdown');
+    const cfIsBarcode     = computed(() => form.widgetType === 'barcode');
+    const cfIsQrcode      = computed(() => form.widgetType === 'qrcode');
+    const cfIsBarcodeQr   = computed(() => form.widgetType === 'barcode_qrcode');
     const cfIsCodeWidget  = computed(() => cfIsBarcode.value || cfIsQrcode.value || cfIsBarcodeQr.value);
-    const cfIsVideoPlayer = computed(() => baseForm.widgetType === 'video_player');
-    const cfIsCountdown   = computed(() => baseForm.widgetType === 'countdown');
-    const cfIsPayment     = computed(() => baseForm.widgetType === 'payment_widget');
-    const cfIsApproval    = computed(() => baseForm.widgetType === 'approval_widget');
-    const cfIsMapWidget   = computed(() => baseForm.widgetType === 'map_widget');
-    const cfIsEvent       = computed(() => baseForm.widgetType === 'event_banner');
-    const cfIsCache       = computed(() => baseForm.widgetType === 'cache_banner');
-    const cfIsEmbed       = computed(() => baseForm.widgetType === 'widget_embed');
+    const cfIsVideoPlayer = computed(() => form.widgetType === 'video_player');
+    const cfIsCountdown   = computed(() => form.widgetType === 'countdown');
+    const cfIsPayment     = computed(() => form.widgetType === 'payment_widget');
+    const cfIsApproval    = computed(() => form.widgetType === 'approval_widget');
+    const cfIsMapWidget   = computed(() => form.widgetType === 'map_widget');
+    const cfIsEvent       = computed(() => form.widgetType === 'event_banner');
+    const cfIsCache       = computed(() => form.widgetType === 'cache_banner');
+    const cfIsEmbed       = computed(() => form.widgetType === 'widget_embed');
 
     /* -- 파일목록 헬퍼 -- */
     const cfFileListItems = computed(() => {
-      try { return JSON.parse(baseForm.fileListJson || '[]'); } catch { return []; }
+      try { return JSON.parse(form.fileListJson || '[]'); } catch { return []; }
     });
 
     /* saveFileList — 저장 */
-    const saveFileList   = (items) => { baseForm.fileListJson = JSON.stringify(items); };
+    const saveFileList   = (items) => { form.fileListJson = JSON.stringify(items); };
 
     /* addFileItem — 추가 */
     const addFileItem    = () => saveFileList([...cfFileListItems.value, { name: '', url: '' }]);
@@ -449,7 +449,7 @@ window.DpDispWidgetDtl = {
 
     /* -- 샘플 JSON -- */
     const cfSampleJson = computed(() => {
-      const obj = { ...baseForm };
+      const obj = { ...form };
       // 유형과 무관한 빈 필드 제거 (가독성)
       Object.keys(obj).forEach(k => {
         if (obj[k] === '' || obj[k] === null) { delete obj[k]; }
@@ -504,9 +504,9 @@ window.DpDispWidgetDtl = {
 
     /* -- 위젯미리보기용 위젯 객체 -- */
     const cfPreviewWidget = computed(() => ({
-      ...baseForm,
-      dispId: baseForm.widgetLibId || 0,
-      name: baseForm.name || '미리보기',
+      ...form,
+      dispId: form.widgetLibId || 0,
+      name: form.name || '미리보기',
       area: 'PREVIEW',
       status: '활성',
       useYn: 'Y',
@@ -525,22 +525,22 @@ window.DpDispWidgetDtl = {
       widgetType: window.yup.string().required('위젯 유형을 선택하세요.'),
     });
 
-    /* baseForm (UI 별칭 포함) → 백엔드 DTO 필드 매핑 */
+    /* form (UI 별칭 포함) → 백엔드 DTO 필드 매핑 */
 
     /* _toApiBody — → API 본문 */
     const _toApiBody = () => {
-      const body = { ...baseForm };
-      body.widgetId     = baseForm.widgetId    || baseForm.libId;   /* dp_widget PK */
-      body.widgetLibId  = baseForm.widgetLibId || null;          /* 라이브러리 참조 (선택) */
-      body.widgetNm     = baseForm.widgetNm    || baseForm.name;
-      body.widgetTypeCd = baseForm.widgetTypeCd || baseForm.widgetType;
-      body.widgetDesc   = baseForm.widgetDesc  || baseForm.desc;
-      body.widgetTitle  = baseForm.widgetTitle || baseForm.title;
-      body.titleShowYn  = baseForm.titleShowYn || baseForm.titleYn || 'N';
-      body.useYn        = baseForm.status === '활성' ? 'Y' : (baseForm.status === '비활성' ? 'N' : (baseForm.useYn || 'Y'));
+      const body = { ...form };
+      body.widgetId     = form.widgetId    || form.libId;   /* dp_widget PK */
+      body.widgetLibId  = form.widgetLibId || null;          /* 라이브러리 참조 (선택) */
+      body.widgetNm     = form.widgetNm    || form.name;
+      body.widgetTypeCd = form.widgetTypeCd || form.widgetType;
+      body.widgetDesc   = form.widgetDesc  || form.desc;
+      body.widgetTitle  = form.widgetTitle || form.title;
+      body.titleShowYn  = form.titleShowYn || form.titleYn || 'N';
+      body.useYn        = form.status === '활성' ? 'Y' : (form.status === '비활성' ? 'N' : (form.useYn || 'Y'));
       /* html_editor 콘텐츠는 dp_widget 의 widget_content 컬럼에 저장 */
-      if (baseForm.widgetType === 'html_editor' || baseForm.widgetTypeCd === 'html_editor') {
-        body.widgetContent = baseForm.htmlContent || '';
+      if (form.widgetType === 'html_editor' || form.widgetTypeCd === 'html_editor') {
+        body.widgetContent = form.htmlContent || '';
       }
       return body;
     };
@@ -549,10 +549,10 @@ window.DpDispWidgetDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       /* 위젯코드 비어있거나 placeholder 그대로면 자동 생성 (검증 전) */
-      if (!baseForm.libCode || baseForm.libCode.trim() === '' || baseForm.libCode === 'DW_YYMMDD_HHMMSS') {
-        baseForm.libCode = fnGenWidgetCode();
+      if (!form.libCode || form.libCode.trim() === '' || form.libCode === 'DW_YYMMDD_HHMMSS') {
+        form.libCode = fnGenWidgetCode();
       }
-      try { await schema.validate(baseForm, { abortEarly: false }); }
+      try { await schema.validate(form, { abortEarly: false }); }
       catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
       const isNewWidget = cfIsNew.value;
@@ -581,7 +581,7 @@ window.DpDispWidgetDtl = {
       const ok = await showConfirm('삭제', '이 위젯를 삭제하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await boApiSvc.dpWidget.remove(baseForm.widgetId || baseForm.libId, '전시위젯관리', '삭제');
+        const res = await boApiSvc.dpWidget.remove(form.widgetId || form.libId, '전시위젯관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
@@ -602,13 +602,13 @@ window.DpDispWidgetDtl = {
     const onLibPicked = (lib) => {
       uiState.libPickOpen = false;
       if (uiState.libPickMode === 'copy') {
-        const preserve = { libId: baseForm.widgetLibId, libCode: baseForm.libCode, regDate: baseForm.regDate };
-        Object.assign(baseForm, { ...lib, ...preserve });
+        const preserve = { libId: form.widgetLibId, libCode: form.libCode, regDate: form.regDate };
+        Object.assign(form, { ...lib, ...preserve });
         showToast && showToast(`[${lib.name}] 내용을 복사했습니다.`, 'info');
       } else {
-        baseForm.refLibId = lib.libId;
-        baseForm.refLibCode = lib.libCode || '';
-        baseForm.refLibName = lib.name || '';
+        form.refLibId = lib.libId;
+        form.refLibCode = lib.libCode || '';
+        form.refLibName = lib.name || '';
         showToast && showToast(`[${lib.name}] 참조로 설정되었습니다.`, 'info');
       }
     };
@@ -623,15 +623,15 @@ window.DpDispWidgetDtl = {
 
     /* hasDispEnv — 여부 확인 */
     const hasDispEnv = (code) => {
-      return baseForm.dispEnv.includes('^' + code + '^');
+      return form.dispEnv.includes('^' + code + '^');
     };
 
     /* toggleDispEnv — 토글 */
     const toggleDispEnv = (code) => {
-      const envList = baseForm.dispEnv.split('^').filter(e => e && e !== 'NONE');
+      const envList = form.dispEnv.split('^').filter(e => e && e !== 'NONE');
       const i = envList.indexOf(code);
       if (i >= 0) envList.splice(i, 1); else envList.push(code);
-      baseForm.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
+      form.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
     const libPickMode = Vue.toRef(uiState, 'libPickMode');
@@ -663,7 +663,7 @@ window.DpDispWidgetDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      pathPickModal, uiState, codes, baseForm, errors,                                   // 상태 / 데이터
+      pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터
       baseWidgetFormColumns, clickActionFormColumns,                                 // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems,                            // computed
@@ -686,7 +686,7 @@ window.DpDispWidgetDtl = {
         {{ cfIsNew ? '위젯 신규등록' : '위젯 수정' }}
       </span>
       <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">
-        #{{ String(baseForm.widgetLibId).padStart(4,'0') }}
+        #{{ String(form.widgetLibId).padStart(4,'0') }}
       </span>
     </div>
     <div class="form-actions" v-if="!cfDtlMode" style="margin:0;gap:8px;">
@@ -696,13 +696,13 @@ window.DpDispWidgetDtl = {
       <button @click="handleBtnAction('libPickModal-open', 'ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">
         🔗 전시위젯Lib 참조
       </button>
-      <button @click="handleBtnAction('baseForm-save')"   class="btn btn-primary" style="font-size:13px;">
+      <button @click="handleBtnAction('form-save')"   class="btn btn-primary" style="font-size:13px;">
         저장
       </button>
       <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
         삭제
       </button>
-      <button @click="handleBtnAction('baseForm-close')" class="btn btn-outline" style="font-size:13px;">
+      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">
         닫기
       </button>
     </div>
@@ -719,7 +719,7 @@ window.DpDispWidgetDtl = {
     <!-- ===== ■.■. 왼쪽: 폼 ================================================= -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
       <!-- ===== ■.■.■. 🔗 참조 정보 ============================================ -->
-      <div v-if="baseForm.refLibId"
+      <div v-if="form.refLibId"
         style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <span style="font-size:12px;font-weight:700;color:#6a1b9a;">
@@ -739,12 +739,12 @@ window.DpDispWidgetDtl = {
               위젯Lib
             </span>
           </span>
-          <span v-if="baseForm.refLibCode">
+          <span v-if="form.refLibCode">
             <b style="color:#888;">
               참조항목Code:
             </b>
             <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">
-              {{ baseForm.refLibCode }}
+              {{ form.refLibCode }}
             </code>
             </span>
             <span>
@@ -752,14 +752,14 @@ window.DpDispWidgetDtl = {
                 참조항목ID:
               </b>
               <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">
-              #{{ String(baseForm.refLibId).padStart(4,'0') }}
+              #{{ String(form.refLibId).padStart(4,'0') }}
             </code>
               </span>
-              <span v-if="baseForm.refLibName">
+              <span v-if="form.refLibName">
                 <b style="color:#888;">
                   참조명:
                 </b>
-                {{ baseForm.refLibName }}
+                {{ form.refLibName }}
               </span>
             </div>
             <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
@@ -769,7 +769,7 @@ window.DpDispWidgetDtl = {
               <disp-x04-widget
             :params="{ }"
             :disp-opt="{ showBadges: true }"
-            :widget-item="([]||[]).find(l => l.libId===baseForm.refLibId) || {}" />
+            :widget-item="([]||[]).find(l => l.libId===form.refLibId) || {}" />
             </div>
           </div>
           <!-- ===== ■.■.■. 설정 ================================================== -->
@@ -781,7 +781,7 @@ window.DpDispWidgetDtl = {
             </div>
             <!-- ===== ■.■.■.■. 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) =========== -->
             <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-            <bo-form-area :columns="baseWidgetFormColumns" :form="baseForm" :errors="errors"
+            <bo-form-area :columns="baseWidgetFormColumns" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" :show-actions="false" />
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
               🌍 전시환경
@@ -808,9 +808,9 @@ window.DpDispWidgetDtl = {
                 이 위젯이 노출되는 경로
               </span>
             </div>
-            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:baseForm.pathId!=null?'#374151':'#9ca3af',fontWeight:baseForm.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
               <span style="flex:1;">
-                {{ pathLabel(baseForm.pathId) || '경로 선택...' }}
+                {{ pathLabel(form.pathId) || '경로 선택...' }}
               </span>
               <button type="button" @click="handleBtnAction('pathModal-open')" title="표시경로 선택"
             :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
@@ -818,7 +818,7 @@ window.DpDispWidgetDtl = {
             @mouseout="$event.currentTarget.style.background='#fff'">
                 🔍
               </button>
-              <button v-if="baseForm.pathId != null" type="button" @click="handleBtnAction('form-pathClear')"
+              <button v-if="form.pathId != null" type="button" @click="handleBtnAction('form-pathClear')"
             style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:11px;">
                 ✕
               </button>
@@ -836,20 +836,20 @@ window.DpDispWidgetDtl = {
                   타이틀 표시
                 </span>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="baseForm.titleYn" value="Y" />
+                  <input type="radio" v-model="form.titleYn" value="Y" />
                   표시
                 </label>
                 <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
-                  <input type="radio" v-model="baseForm.titleYn" value="N" />
+                  <input type="radio" v-model="form.titleYn" value="N" />
                   미표시
                 </label>
               </span>
             </div>
-            <div v-if="baseForm.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+            <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
               <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">
                 타이틀
               </label>
-              <input v-model="baseForm.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
+              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
             </div>
           </div>
           <!-- ===== /제목 ======================================================== -->
@@ -863,7 +863,7 @@ window.DpDispWidgetDtl = {
                 <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">
                   위젯유형
                 </span>
-                <select v-model="baseForm.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
+                <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
               style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
                   <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">
                     {{ t.codeLabel }}
@@ -880,7 +880,7 @@ window.DpDispWidgetDtl = {
               👆 클릭동작
             </div>
             <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-            <bo-form-area :columns="clickActionFormColumns" :form="baseForm" :errors="errors"
+            <bo-form-area :columns="clickActionFormColumns" :form="form" :errors="errors"
             :readonly="cfDtlMode" :cols="3" :show-actions="false" />
           </div>
           <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->
@@ -889,12 +889,12 @@ window.DpDispWidgetDtl = {
               <label class="form-label">
                 {{ row.label }}
               </label>
-              <input  v-if="row.type==='input'"    v-model="baseForm[row.key]" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
-              <input  v-else-if="row.type==='number'"  v-model.number="baseForm[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
-              <input  v-else-if="row.type==='color'"   v-model="baseForm[row.key]" type="color" class="form-control" style="margin:0;height:36px;padding:2px 6px;" />
-              <textarea v-else-if="row.type==='textarea'" v-model="baseForm[row.key]" class="form-control" :placeholder="row.ph||''" rows="3" style="margin:0;"></textarea>
-                <textarea v-else-if="row.type==='code'" v-model="baseForm[row.key]" class="form-control" :placeholder="row.ph||''" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;"></textarea>
-                  <select v-else-if="row.type==='select'" v-model="baseForm[row.key]" class="form-control" style="margin:0;">
+              <input  v-if="row.type==='input'"    v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
+              <input  v-else-if="row.type==='number'"  v-model.number="form[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
+              <input  v-else-if="row.type==='color'"   v-model="form[row.key]" type="color" class="form-control" style="margin:0;height:36px;padding:2px 6px;" />
+              <textarea v-else-if="row.type==='textarea'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="3" style="margin:0;"></textarea>
+                <textarea v-else-if="row.type==='code'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;"></textarea>
+                  <select v-else-if="row.type==='select'" v-model="form[row.key]" class="form-control" style="margin:0;">
                     <option v-for="o in row.options" :key="o?.v" :value="o.v">
                       {{ o.l }}
                     </option>
@@ -903,7 +903,7 @@ window.DpDispWidgetDtl = {
               </div>
               <!-- ===== ■.■.■.■. HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ===== -->
               <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
-                <base-html-editor v-model="baseForm.htmlContent" height="320px" />
+                <base-html-editor v-model="form.htmlContent" height="320px" />
               </div>
               <!-- ===== ■.■.■.■. 파일목록 ============================================== -->
               <div v-else-if="cfIsFileList">
@@ -971,14 +971,14 @@ window.DpDispWidgetDtl = {
               <div>
                 유형:
                 <b>
-                  {{ baseForm.widgetType }}
+                  {{ form.widgetType }}
                 </b>
               </div>
-              <div v-if="baseForm.tags">
-                태그: {{ baseForm.tags }}
+              <div v-if="form.tags">
+                태그: {{ form.tags }}
               </div>
               <div v-if="!cfIsNew">
-                ID: #{{ String(baseForm.widgetLibId).padStart(4,'0') }}
+                ID: #{{ String(form.widgetLibId).padStart(4,'0') }}
               </div>
             </div>
             <!-- ===== ■.■.■. 샘플 JSON ============================================= -->
@@ -1000,7 +1000,7 @@ window.DpDispWidgetDtl = {
           <!-- ===== □.□. 오른쪽: 위젯미리보기 =========================================== -->
           <!-- ===== □. 본문 영역 =================================================== -->
           <!-- ===== ■. 조건부 영역 ================================================== -->
-          <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget" :value="baseForm.pathId" title="위젯 표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+          <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget" :value="form.pathId" title="위젯 표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
         </div>
         <!-- ===== □. 조건부 영역 ================================================== -->
 `

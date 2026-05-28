@@ -23,7 +23,7 @@ window.SyBbmDtl = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view'이면 읽기전용
 
-    const baseForm = reactive({
+    const form = reactive({
       bbmId: null, bbmCode: '', bbmNm: '', bbmTypeCd: '일반',
       allowComment: '불가', allowAttach: '불가', allowLike: 'N',
       contentTypeCd: 'textarea', scopeTypeCd: '공개',
@@ -44,16 +44,16 @@ window.SyBbmDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbmDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'baseForm-save') {
+      if (cmd === 'form-save') {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'baseForm-cancel') {
+      } else if (cmd === 'form-cancel') {
         return props.navigate('syBbmMng');
       // 상세 보기 → 편집 모드 전환
-      } else if (cmd === 'baseForm-edit') {
+      } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
       // 폼 닫기 → 목록으로 이동
-      } else if (cmd === 'baseForm-close') {
+      } else if (cmd === 'form-close') {
         return props.navigate('syBbmMng');
       // 표시경로 picker 열기
       } else if (cmd === 'pathModal-open') {
@@ -71,9 +71,9 @@ window.SyBbmDtl = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbmDtl.js : handleSelectAction -> ', cmd, param);
-      // 표시경로 모달에서 경로 선택 → baseForm.pathId 갱신
+      // 표시경로 모달에서 경로 선택 → form.pathId 갱신
       if (cmd === 'pathModal-pick') {
-        baseForm.pathId = param;
+        form.pathId = param;
         pathPickModal.show = false;
         return;
       } else {
@@ -81,7 +81,9 @@ window.SyBbmDtl = {
       }
     };
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* pathLabel — 경로 라벨 */
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -101,9 +103,6 @@ window.SyBbmDtl = {
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* pathLabel — 경로 라벨 */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -111,7 +110,7 @@ window.SyBbmDtl = {
       try {
         const res = await boApiSvc.syBbm.getById(props.dtlId, '게시판모드관리', '상세조회');
         const data = res.data?.data;
-        if (data) { Object.assign(baseForm, data); }
+        if (data) { Object.assign(form, data); }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -137,7 +136,7 @@ window.SyBbmDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
-        await schema.validate(baseForm, { abortEarly: false });
+        await schema.validate(form, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
@@ -147,7 +146,7 @@ window.SyBbmDtl = {
       const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await (cfIsNew.value ? boApiSvc.syBbm.create({ ...baseForm }, '게시판모드관리', '등록') : boApiSvc.syBbm.update(baseForm.bbmId, { ...baseForm }, '게시판모드관리', '저장'));
+        const res = await (cfIsNew.value ? boApiSvc.syBbm.create({ ...form }, '게시판모드관리', '등록') : boApiSvc.syBbm.update(form.bbmId, { ...form }, '게시판모드관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syBbmMng', { reload: true }); }
@@ -181,7 +180,7 @@ window.SyBbmDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, baseForm, errors, pathPickModal,         // 상태 / 데이터
+      uiState, codes, form, errors, pathPickModal,         // 상태 / 데이터
       baseFormColumns,                                     // 컬럼 정의
       handleBtnAction, handleSelectAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode,                        // computed
@@ -193,7 +192,7 @@ window.SyBbmDtl = {
   <div class="page-title">
     {{ cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ baseForm.bbmId }}
+      #{{ form.bbmId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -201,19 +200,19 @@ window.SyBbmDtl = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3"
-      @save="handleBtnAction('baseForm-save')"
-      @cancel="handleBtnAction('baseForm-cancel')"
-      @edit="handleBtnAction('baseForm-edit')"
-      @close="handleBtnAction('baseForm-close')" />
+      @save="handleBtnAction('form-save')"
+      @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')"
+      @close="handleBtnAction('form-close')" />
   </div>
   <!-- ===== □.□. 폼 영역 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
-    :value="baseForm.pathId"
+    :value="form.pathId"
     title="게시판 표시경로 선택"
     @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
 </div>

@@ -20,7 +20,7 @@ window.SyBbsDtl = {
     });
     const codes = reactive({ bbs_post_statuses: [] });
 
-    const baseForm = reactive({                        // 게시글 폼 데이터
+    const form = reactive({                        // 게시글 폼 데이터
       bbsId: null, bbmId: null, bbsTitle: '', authorNm: '', bbsStatusCd: 'PUBLISH',
       attachGrpId: null, contentHtml: '', viewCount: 0, commentCount: 0,
     });
@@ -50,10 +50,10 @@ window.SyBbsDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbsDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'baseForm-save') {
+      if (cmd === 'form-save') {
         return handleSave();
       // 폼 편집 취소 → 목록으로 이동
-      } else if (cmd === 'baseForm-cancel') {
+      } else if (cmd === 'form-cancel') {
         return props.navigate('syBbsMng');
       // 게시판 선택 모달 열기
       } else if (cmd === 'bbmModal-open') {
@@ -87,7 +87,68 @@ window.SyBbsDtl = {
       }
     };
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+    /* onBbmSelect — 게시판 선택 결과 적용 */
+    const onBbmSelect = (b) => {
+      showBbmModal.value = false;
+      if (uiState.selectedBbm && uiState.selectedBbm.bbmId === b.bbmId) { return; }
+      uiState.selectedBbm = b;
+      form.bbmId = b.bbmId;
+      // 게시판 변경 시 레이아웃 초기화
+      form.bbsTitle    = '';
+      form.authorNm    = '';
+      form.bbsStatusCd = 'PUBLISH';
+      form.attachGrpId = null;
+      form.contentHtml = '';
+    };
+
+    /* handleLoadDetail — 상세 조회 */
+    const handleLoadDetail = async () => {
+      if (cfIsNew.value) { return; }
+      uiState.loading = true;
+      try {
+        const res = await boApiSvc.syBbs.getById(props.dtlId, '게시판관리', '상세조회');
+        const data = res.data?.data;
+        if (data) {
+          Object.assign(form, data);
+          uiState.selectedBbm = null;
+        }
+        uiState.error = null;
+      } catch (err) {
+        console.error('[catch-info]', err);
+        uiState.error = err.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* handleSave — 저장 (신규 등록 / 수정) */
+    const handleSave = async () => {
+      Object.keys(errors).forEach(k => delete errors[k]);
+      try {
+        await schema.validate(form, { abortEarly: false });
+      } catch (err) {
+        console.error('[catch-info]', err);
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        showToast('입력 내용을 확인해주세요.', 'error');
+        return;
+      }
+      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        const res = await (cfIsNew.value
+          ? boApiSvc.syBbs.create({ ...form }, '게시판관리', '등록')
+          : boApiSvc.syBbs.update(form.bbsId, { ...form }, '게시판관리', '저장'));
+        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        if (props.navigate) { props.navigate('syBbsMng', { reload: true }); }
+      } catch (err) {
+        console.error('[catch-info]', err);
+        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
+        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
+        if (showToast) { showToast(errMsg, 'error', 0); }
+      }
+    };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -107,68 +168,6 @@ window.SyBbsDtl = {
       if (!cfIsNew.value) { await handleLoadDetail(); }
     });
 
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* onBbmSelect — 게시판 선택 결과 적용 */
-    const onBbmSelect = (b) => {
-      showBbmModal.value = false;
-      if (uiState.selectedBbm && uiState.selectedBbm.bbmId === b.bbmId) { return; }
-      uiState.selectedBbm = b;
-      baseForm.bbmId = b.bbmId;
-      // 게시판 변경 시 레이아웃 초기화
-      baseForm.bbsTitle    = '';
-      baseForm.authorNm    = '';
-      baseForm.bbsStatusCd = 'PUBLISH';
-      baseForm.attachGrpId = null;
-      baseForm.contentHtml = '';
-    };
-
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = async () => {
-      if (cfIsNew.value) { return; }
-      uiState.loading = true;
-      try {
-        const res = await boApiSvc.syBbs.getById(props.dtlId, '게시판관리', '상세조회');
-        const data = res.data?.data;
-        if (data) {
-          Object.assign(baseForm, data);
-          uiState.selectedBbm = null;
-        }
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
-
-    /* handleSave — 저장 (신규 등록 / 수정) */
-    const handleSave = async () => {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      try {
-        await schema.validate(baseForm, { abortEarly: false });
-      } catch (err) {
-        console.error('[catch-info]', err);
-        err.inner.forEach(e => { errors[e.path] = e.message; });
-        showToast('입력 내용을 확인해주세요.', 'error');
-        return;
-      }
-      const ok = await showConfirm(cfIsNew.value ? '등록' : '저장', cfIsNew.value ? '등록하시겠습니까?' : '저장하시겠습니까?');
-      if (!ok) { return; }
-      try {
-        const res = await (cfIsNew.value
-          ? boApiSvc.syBbs.create({ ...baseForm }, '게시판관리', '등록')
-          : boApiSvc.syBbs.update(baseForm.bbsId, { ...baseForm }, '게시판관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
-        if (props.navigate) { props.navigate('syBbsMng', { reload: true }); }
-      } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        if (showToast) { showToast(errMsg, 'error', 0); }
-      }
-    };
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
@@ -221,7 +220,7 @@ window.SyBbsDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, baseForm, errors, showBbmModal, dtlId,                            // 상태 / 데이터
+      uiState, codes, form, errors, showBbmModal, dtlId,                            // 상태 / 데이터
       baseFormColumns, siteFormColumns, bbmDetailColumns, contentFormColumns,        // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode, cfContentType, cfAllowAttach, cfAttachMaxCount,  // computed
@@ -235,14 +234,14 @@ window.SyBbsDtl = {
   <div class="page-title">
     {{ cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정') }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ baseForm.bbsId }}
+      #{{ form.bbsId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
-    <bo-form-area :columns="siteFormColumns" :form="baseForm" :errors="{}"
+    <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
       :cols="4" :show-actions="false" />
     <!-- ===== ■.■. 게시판 선택 ================================================ -->
     <div class="form-group">
@@ -293,10 +292,10 @@ window.SyBbsDtl = {
     </div>
     <!-- ===== □.□. 게시판 선택 ================================================ -->
     <!-- ===== ■.■. 기본 정보 (BoFormArea 자동 렌더) ============================== -->
-    <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="4" :show-actions="false" />
     <!-- ===== ■.■. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
-    <bo-form-area :columns="contentFormColumns" :form="baseForm" :errors="errors"
+    <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="4" :show-actions="false">
       <template #contentNoBbm>
         <div style="color:#bbb;font-size:13px;padding:12px 0;">
@@ -311,8 +310,8 @@ window.SyBbsDtl = {
       <template #contentHtmlEditor>
         <div v-if="cfDtlMode" class="form-control"
             style="min-height:300px;line-height:1.6;"
-            v-html="baseForm.contentHtml || '<span style=color:#bbb>-</span>'"></div>
-        <base-html-editor v-else v-model="baseForm.contentHtml" height="320px" />
+            v-html="form.contentHtml || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.contentHtml" height="320px" />
       </template>
     </bo-form-area>
     <!-- ===== □.□. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
@@ -323,13 +322,13 @@ window.SyBbsDtl = {
         <span style="font-size:11px;font-weight:400;color:#bbb;margin-left:4px;">
           ({{ cfAllowAttach }})
         </span>
-        <span v-if="baseForm.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">
-          첨부그룹ID: {{ baseForm.attachGrpId }}
+        <span v-if="form.attachGrpId" style="font-size:11px;font-weight:400;color:#aaa;margin-left:6px;">
+          첨부그룹ID: {{ form.attachGrpId }}
         </span>
       </label>
       <base-attach-grp
-        :model-value="baseForm.attachGrpId"
-        @update:model-value="baseForm.attachGrpId = $event" :ref-id="dtlId ? 'BBS-'+dtlId : ''"
+        :model-value="form.attachGrpId"
+        @update:model-value="form.attachGrpId = $event" :ref-id="dtlId ? 'BBS-'+dtlId : ''"
         :show-toast="showToast"
         grp-code="BBS_ATTACH"
         grp-nm="게시글 첨부파일"
@@ -348,10 +347,10 @@ window.SyBbsDtl = {
   <!-- ===== □.□. 첨부파일 ================================================== -->
   <!-- ===== ■.■. 폼 액션 ================================================== -->
   <div class="form-actions" v-if="!cfDtlMode">
-    <button class="btn btn-primary" @click="handleBtnAction('baseForm-save')">
+    <button class="btn btn-primary" @click="handleBtnAction('form-save')">
       저장
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
+    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
       취소
     </button>
   </div>

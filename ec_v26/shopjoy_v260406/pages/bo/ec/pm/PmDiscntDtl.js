@@ -27,7 +27,7 @@ window.PmDiscntDtl = {
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
 
-    const baseForm = reactive({
+    const form = reactive({
       discntId: null, discntNm: '', discntTypeCd: '정률', discntValue: 0,
       discntStatusCd: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
       discntTargetCd: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0, discntDesc: '',
@@ -42,7 +42,7 @@ window.PmDiscntDtl = {
     });
 
     const cfIsNew = computed(() => !props.dtlId);
-    const cfCurId       = computed(() => props.dtlId || baseForm.discntId || null);
+    const cfCurId       = computed(() => props.dtlId || form.discntId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     const cfSaveDisabled = computed(() => uiState.tab !== 'info' && !cfHasId.value);
 
@@ -51,10 +51,10 @@ window.PmDiscntDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmDiscntDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장
-      if (cmd === 'baseForm-save') {
+      if (cmd === 'form-save') {
         return handleSave();
       // 폼 취소 (목록으로)
-      } else if (cmd === 'baseForm-cancel') {
+      } else if (cmd === 'form-cancel') {
         return props.navigate('pmDiscntMng');
       // 탭 전환
       } else if (cmd === 'tab-select') {
@@ -77,8 +77,8 @@ window.PmDiscntDtl = {
         return;
       // 판매업체 초기화
       } else if (cmd === 'form-vendorClear') {
-        baseForm.vendorId = '';
-        baseForm.chargeStaff = '';
+        form.vendorId = '';
+        form.chargeStaff = '';
         return;
       // 미리보기 토스트 (할인 확인)
       } else if (cmd === 'preview-confirm') {
@@ -117,7 +117,7 @@ window.PmDiscntDtl = {
       try {
         const res = await boApiSvc.pmDiscnt.getById(props.dtlId, '할인관리', '상세조회');
         const d = res.data?.data || res.data;
-        if (d) { Object.assign(baseForm, d); }
+        if (d) { Object.assign(form, d); }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -167,14 +167,14 @@ window.PmDiscntDtl = {
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
     /* hasVisibility — 여부 확인 */
-    const hasVisibility = (code) => window.visibilityUtil.has(baseForm.visibilityTargets, code);
+    const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
 
     /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
-      const list = window.visibilityUtil.parse(baseForm.visibilityTargets);
+      const list = window.visibilityUtil.parse(form.visibilityTargets);
       const i = list.indexOf(code);
       if (i >= 0) list.splice(i, 1); else list.push(code);
-      baseForm.visibilityTargets = window.visibilityUtil.serialize(list);
+      form.visibilityTargets = window.visibilityUtil.serialize(list);
     };
 
     /* _afterApiOk — 후 API 성공 */
@@ -191,7 +191,7 @@ window.PmDiscntDtl = {
       if (showToast) { showToast(errMsg, 'error', 0); }
     };
 
-    /* ── 탭별 저장: info/detail 은 baseForm 전체, target 은 적용대상/공개대상만 부분 PUT ── */
+    /* ── 탭별 저장: info/detail 은 form 전체, target 은 적용대상/공개대상만 부분 PUT ── */
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSave — 저장 */
     const handleSave = async () => {
@@ -204,20 +204,20 @@ window.PmDiscntDtl = {
 
       if (tabId === 'info' || tabId === 'detail') {
         Object.keys(errors).forEach(k => delete errors[k]);
-        try { await schema.validate(baseForm, { abortEarly: false }); }
+        try { await schema.validate(form, { abortEarly: false }); }
         catch (err) { err.inner.forEach(e => { errors[e.path] = e.message; }); showToast('입력 내용을 확인해주세요.', 'error'); return; }
 
         const isCreate = !cfHasId.value;
         const ok = await showConfirm(isCreate ? '등록' : '저장', isCreate ? '등록하시겠습니까?' : '저장하시겠습니까?');
         if (!ok) { return; }
         try {
-          const payload = { ...baseForm };
+          const payload = { ...form };
           const res = isCreate
             ? await boApiSvc.pmDiscnt.create(payload, '할인관리', '등록')
             : await boApiSvc.pmDiscnt.update(cfCurId.value, payload, '할인관리', tabId === 'info' ? '기본정보저장' : '상세정보저장');
           if (isCreate) {
             const newId = res.data?.data?.discntId || res.data?.discntId || null;
-            if (newId) { baseForm.discntId = newId; }
+            if (newId) { form.discntId = newId; }
           }
           _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
         } catch (err) { _afterApiErr(err); }
@@ -228,7 +228,7 @@ window.PmDiscntDtl = {
       if (!ok) { return; }
       let payload = null;
       switch (tabId) {
-        case 'target':  payload = { discntTargetCd: baseForm.discntTargetCd, visibilityTargets: baseForm.visibilityTargets }; break;
+        case 'target':  payload = { discntTargetCd: form.discntTargetCd, visibilityTargets: form.visibilityTargets }; break;
         default:        payload = {}; break;
       }
       try {
@@ -238,14 +238,14 @@ window.PmDiscntDtl = {
     };
 
     const cfSelectedVendorNm = computed(() => {
-      if (!baseForm.vendorId) { return '소속업체 선택'; }
-      const v = vendors.find(x => x.vendorId === baseForm.vendorId);
+      if (!form.vendorId) { return '소속업체 선택'; }
+      const v = vendors.find(x => x.vendorId === form.vendorId);
       return v ? v.vendorNm : '소속업체 선택';
     });
 
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
-      baseForm.vendorId = vendorId;
+      form.vendorId = vendorId;
       uiState.showVendorModal = false;
     };
 
@@ -285,7 +285,7 @@ window.PmDiscntDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, uiState, codes, baseForm, errors,                                          // 상태 / 데이터
+      vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
       infoFormColumns, discntApplyFormColumns, discntPeriodFormColumns, discntStatusFormColumns, // 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm, // computed
@@ -299,7 +299,7 @@ window.PmDiscntDtl = {
   <div class="page-title">
     {{ cfIsNew ? '할인 등록' : '할인 수정' }}
     <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ baseForm.discntId }}
+      #{{ form.discntId }}
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -316,7 +316,7 @@ window.PmDiscntDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="baseForm" :errors="errors"
+      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
@@ -329,20 +329,20 @@ window.PmDiscntDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="baseForm.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="baseForm.vendorId"
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
         @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
           취소
         </button>
       </div>
@@ -375,7 +375,7 @@ window.PmDiscntDtl = {
           💰 할인적용
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="discntApplyFormColumns" :form="baseForm" :errors="errors"
+        <bo-form-area :columns="discntApplyFormColumns" :form="form" :errors="errors"
           :cols="3" :show-actions="false" />
       </div>
       <!-- ===== ■.■.■. 기간설정 (BoFormArea 자동 렌더) ============================= -->
@@ -384,7 +384,7 @@ window.PmDiscntDtl = {
           📅 기간설정
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="discntPeriodFormColumns" :form="baseForm" :errors="errors"
+        <bo-form-area :columns="discntPeriodFormColumns" :form="form" :errors="errors"
           :cols="3" :show-actions="false" />
       </div>
       <!-- ===== ■.■.■. 상태 및 비고 (BoFormArea 자동 렌더) ========================== -->
@@ -393,14 +393,14 @@ window.PmDiscntDtl = {
           ⚙️ 상태 및 비고
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="discntStatusFormColumns" :form="baseForm" :errors="errors"
+        <bo-form-area :columns="discntStatusFormColumns" :form="form" :errors="errors"
           :cols="3" :show-actions="false" />
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
           취소
         </button>
       </div>
@@ -415,7 +415,7 @@ window.PmDiscntDtl = {
         <label class="form-label">
           적용 대상 선택
         </label>
-        <select class="form-control" v-model="baseForm.discntTargetCd">
+        <select class="form-control" v-model="form.discntTargetCd">
           <option v-for="c in codes.discnt_apply_targets" :key="c.codeValue" :value="c.codeValue">
             {{ c.codeLabel }}
           </option>
@@ -425,17 +425,17 @@ window.PmDiscntDtl = {
         <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">
           선택된 대상:
           <span style="color:#e8587a;">
-            {{ baseForm.discntTargetCd }}
+            {{ form.discntTargetCd }}
           </span>
         </div>
         <div style="font-size:13px;color:#888;">
-          <template v-if="baseForm.discntTargetCd==='전체상품'">
+          <template v-if="form.discntTargetCd==='전체상품'">
             모든 상품에 이 할인을 적용합니다.
           </template>
-          <template v-else-if="baseForm.discntTargetCd==='선택상품'">
+          <template v-else-if="form.discntTargetCd==='선택상품'">
             선택한 상품에만 이 할인을 적용합니다. 아래에서 상품을 추가하세요.
           </template>
-          <template v-else-if="baseForm.discntTargetCd==='카테고리'">
+          <template v-else-if="form.discntTargetCd==='카테고리'">
             선택한 카테고리의 상품에만 이 할인을 적용합니다. 아래에서 카테고리를 선택하세요.
           </template>
         </div>
@@ -444,12 +444,12 @@ window.PmDiscntDtl = {
         <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
           📦 상품목록
         </h3>
-        <div v-if="baseForm.discntTargetCd==='선택상품'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
+        <div v-if="form.discntTargetCd==='선택상품'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
           <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
             선택된 상품이 없습니다. 상품 추가 버튼을 클릭하여 상품을 선택하세요.
           </div>
         </div>
-        <div v-else-if="baseForm.discntTargetCd==='카테고리'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
+        <div v-else-if="form.discntTargetCd==='카테고리'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
           <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
             선택된 카테고리가 없습니다. 카테고리 선택 버튼을 클릭하여 카테고리를 선택하세요.
           </div>
@@ -461,10 +461,10 @@ window.PmDiscntDtl = {
         </div>
       </div>
       <div class="form-actions" v-if="!cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('baseForm-save')">
+        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
           취소
         </button>
       </div>
@@ -477,33 +477,33 @@ window.PmDiscntDtl = {
       </div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
         <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">
-          {{ baseForm.discntNm || '할인명' }}
+          {{ form.discntNm || '할인명' }}
         </div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">
-          {{ baseForm.startDate }} ~ {{ baseForm.endDate }}
+          {{ form.startDate }} ~ {{ form.endDate }}
         </div>
         <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #e8587a;">
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
             할인유형:
             <span style="font-weight:700;color:#e8587a;">
-              {{ baseForm.discntTypeCd }}
+              {{ form.discntTypeCd }}
             </span>
           </div>
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
             할인값:
             <span style="font-weight:700;color:#e8587a;">
-              {{ baseForm.discntTypeCd === '정률' ? (baseForm.discntValue + '%') : (baseForm.discntValue||0).toLocaleString() + '원' }}
+              {{ form.discntTypeCd === '정률' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
             </span>
           </div>
           <div style="font-size:13px;color:#666;">
             최소주문금액:
             <span style="font-weight:700;">
-              {{ (baseForm.minOrderAmt||0).toLocaleString() }}원
+              {{ (form.minOrderAmt||0).toLocaleString() }}원
             </span>
           </div>
         </div>
-        <div v-if="baseForm.maxDiscntAmt > 0" style="font-size:12px;color:#888;padding:8px;background:#fff7e6;border-radius:6px;margin-bottom:12px;">
-          ⚠️ 최대할인금액: {{ (baseForm.maxDiscntAmt||0).toLocaleString() }}원
+        <div v-if="form.maxDiscntAmt > 0" style="font-size:12px;color:#888;padding:8px;background:#fff7e6;border-radius:6px;margin-bottom:12px;">
+          ⚠️ 최대할인금액: {{ (form.maxDiscntAmt||0).toLocaleString() }}원
         </div>
         <button class="btn btn-primary" @click="handleBtnAction('preview-confirm')">
           할인 확인

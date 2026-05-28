@@ -23,7 +23,7 @@ window.CmChattDtl = {
     });
     const codes = reactive({ chatt_statuses: [] }); // 공통코드
 
-    const baseForm = reactive({                        // 신규 채팅 폼
+    const form = reactive({                        // 신규 채팅 폼
       chattRoomId: null, memberId: '', memberNm: '', subject: '', chattStatusCd: '',
     });
     const errors = reactive({});                   // 폼 검증 에러
@@ -45,10 +45,10 @@ window.CmChattDtl = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CmChattDtl.js : handleBtnAction -> ', cmd, param);
       // 폼 저장 (신규 등록)
-      if (cmd === 'baseForm-save') {
+      if (cmd === 'form-save') {
         return handleSave();
       // 신규 등록 취소 → 목록으로
-      } else if (cmd === 'baseForm-cancel') {
+      } else if (cmd === 'form-cancel') {
         return props.navigate('cmChattMng');
       // 채팅 답변 전송
       } else if (cmd === 'chat-sendReply') {
@@ -94,27 +94,6 @@ window.CmChattDtl = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
-
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.chatt_statuses = codeStore.sgGetGrpCodes('CHATT_STATUS');
-      uiState.isPageCodeLoad = true;
-    };
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-
-    // ★ onMounted — 진입 시 코드 로드 + 상세 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      if (!cfIsNew.value) {
-        handleSearchDetail();
-        uiState.tab = 'chat';
-      } else {
-        uiState.tab = 'new';
-      }
-    });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchDetail — 상세 조회 */
@@ -190,7 +169,7 @@ window.CmChattDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
-        await schema.validate(baseForm, { abortEarly: false });
+        await schema.validate(form, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
@@ -201,8 +180,8 @@ window.CmChattDtl = {
       if (!ok) { return; }
       try {
         const payload = {
-          memberId: baseForm.memberId, memberNm: baseForm.memberNm,
-          subject: baseForm.subject, chattStatusCd: baseForm.chattStatusCd,
+          memberId: form.memberId, memberNm: form.memberNm,
+          subject: form.subject, chattStatusCd: form.chattStatusCd,
         };
         const res = await boApiSvc.cmChatt.create(payload, '채팅관리', '등록');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -215,6 +194,26 @@ window.CmChattDtl = {
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
+
+    /* fnLoadCodes — 공통코드 로드 */
+    const fnLoadCodes = () => {
+      const codeStore = window.sfGetBoCodeStore();
+      codes.chatt_statuses = codeStore.sgGetGrpCodes('CHATT_STATUS');
+      uiState.isPageCodeLoad = true;
+    };
+    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+
+    // ★ onMounted — 진입 시 코드 로드 + 상세 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      if (!cfIsNew.value) {
+        handleSearchDetail();
+        uiState.tab = 'chat';
+      } else {
+        uiState.tab = 'new';
+      }
+    });
+
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
@@ -277,7 +276,7 @@ window.CmChattDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, baseForm, errors, refModal, msgBoxRef, cfUserChats,                  // 상태 / 데이터
+      uiState, codes, form, errors, refModal, msgBoxRef, cfUserChats,                  // 상태 / 데이터
       memberChatGridColumns, userChatGridColumns, newFormColumns,                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfMemberChats, tabs, newTabs,                                // computed / reactive(tabs)
@@ -400,23 +399,23 @@ window.CmChattDtl = {
       <!-- ===== ■.■.■. 신규 등록 탭 (BoFormArea 자동 렌더) ========================== -->
       <div v-show="uiState.tab==='new'">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="newFormColumns" :form="baseForm" :errors="errors"
+        <bo-form-area :columns="newFormColumns" :form="form" :errors="errors"
           :readonly="false" :cols="3" :show-actions="false">
           <!-- ===== ■.■.■.■.■. 회원ID + 보기 ======================================= -->
           <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-control" v-model="baseForm.memberId" placeholder="회원 ID" :class="errors.memberId ? 'is-invalid' : ''" />
-              <span v-if="baseForm.memberId" class="ref-link" @click="handleSelectAction('chat-ref', { type:'member', id: baseForm.memberId })">
+              <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :class="errors.memberId ? 'is-invalid' : ''" />
+              <span v-if="form.memberId" class="ref-link" @click="handleSelectAction('chat-ref', { type:'member', id: form.memberId })">
                 보기
               </span>
             </div>
           </template>
         </bo-form-area>
         <div class="form-actions" v-if="!cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('baseForm-save')">
+          <button class="btn btn-primary" @click="handleBtnAction('form-save')">
             등록
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">
+          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
             취소
           </button>
         </div>
