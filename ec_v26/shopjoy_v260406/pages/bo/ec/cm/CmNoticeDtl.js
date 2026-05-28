@@ -120,7 +120,7 @@ window.CmNoticeDtl = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼
     const baseFormColumns = [
-      { key: 'noticeTitle',    label: '제목', type: 'text', required: true, placeholder: '공지 제목', colSpan: 2 },
+      { key: 'noticeTitle',    label: '제목', type: 'text', required: true, placeholder: '공지 제목' },
       { key: 'noticeTypeCd',   label: '유형', type: 'select', options: () => codes.noticeTypes, nullLabel: '선택' },
       { key: 'noticeStatusCd', label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '선택' },
       { key: 'startDate',      label: '시작일', type: 'date' },
@@ -153,7 +153,7 @@ window.CmNoticeDtl = {
   <div class="card">
     <!-- ===== ■.■. 기본정보 (BoFormArea 자동 렌더) ============================= -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="4" :show-actions="false" />
+      :readonly="cfDtlMode" :cols="3" :show-actions="false" />
     <!-- ===== ■.■. 내용 (HtmlEditor 또는 view 모드 HTML) ======================== -->
     <div class="form-group" style="margin-top:12px;">
       <label class="form-label">
