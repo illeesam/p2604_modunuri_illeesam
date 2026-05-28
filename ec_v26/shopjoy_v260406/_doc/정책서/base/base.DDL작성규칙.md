@@ -60,6 +60,21 @@ upd_by      VARCHAR(16),     -- 수정 기능 있는 테이블만
 upd_date    TIMESTAMP,       -- 수정 기능 있는 테이블만
 ```
 
+## 날짜 컬럼 타입 — DATE vs TIMESTAMP ⭐ (2026-05-28)
+
+**프론트의 입력 방식** 기준으로 DATE / TIMESTAMP 를 결정한다. 자세한 판단 기준은
+[`sy.52.ddl단어사전규칙.md §13-4 LocalDate vs LocalDateTime`](../sy/sy.52.ddl단어사전규칙.md) 참조.
+
+| 입력 방식 | DDL | Entity |
+|---|---|---|
+| `<input type="date">` (일자만) | `DATE` | `LocalDate` |
+| `<input type="datetime-local">` 또는 시스템 자동 기록 | `TIMESTAMP` | `LocalDateTime` |
+
+**❌ 금지**: `TIMESTAMP` + Entity `LocalDateTime` + 프론트 `type="date"` 조합 →
+`Jackson` 역직렬화 실패 (`Text '2026-04-29' could not be parsed at index 10`).
+
+**컬럼 코멘트도 정합성 유지**: DATE 컬럼은 "...일", TIMESTAMP 컬럼은 "...일시" 로 명시.
+
 ## COMMENT 필수
 - `COMMENT ON TABLE` + 모든 컬럼 `COMMENT ON COLUMN` 작성
 

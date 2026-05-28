@@ -165,6 +165,44 @@ JPA 스키마 검증(`sy.56`) 통과 기준. 신규 DDL 작성 시 반드시 따
 > **❌ 금지**: `CHAR(1)` 사용 금지. PostgreSQL 의 `CHAR` 는 `bpchar` 로 저장되어 Hibernate `VARCHAR` 매핑과 타입 불일치 발생.  
 > **✅ 권장**: `use_yn`, `is_fixed` 등 1글자 컬럼도 `VARCHAR(1)` 사용.
 
+##### LocalDate vs LocalDateTime 판단 기준 ⭐ (2026-05-28)
+
+`*_date` / `*_dt` 컬럼 추가·변경 시 **프론트의 입력 방식**을 기준으로 타입을 정한다.
+
+| 프론트 입력 | Entity 타입 | DDL 타입 | 예시 |
+|---|---|---|---|
+| `<input type="date">` (날짜만) | `LocalDate` | `DATE` | 노출시작일, 할인 시작일, 이벤트 종료일 |
+| `<input type="datetime-local">` 또는 자동 기록 (시각 의미) | `LocalDateTime` | `TIMESTAMP` | 등록일시, 결제일시, 발송일시, 로그인 시각 |
+
+**Why** — 프론트가 `type="date"` 로 `"2026-04-29"` 만 보내는데 Entity 가 `LocalDateTime` 이면 Jackson 역직렬화 실패:
+```
+JSON parse error: Cannot deserialize value of type `java.time.LocalDateTime`
+from String "2026-04-29": Text could not be parsed at index 10
+```
+
+**판단 절차**:
+1. 화면에서 시·분 입력이 필요한가? → **YES** : `LocalDateTime` / `TIMESTAMP`
+2. "노출 일자", "유효기간 시작일" 처럼 일자만 의미하는가? → `LocalDate` / `DATE`
+3. 시스템 자동 기록(등록일시, 수정일시, 로그) → `LocalDateTime` / `TIMESTAMP`
+4. **DDL 코멘트가 "...일시"여도 실제 입력이 일자뿐이면 `LocalDate` 가 정답** — 코멘트도 "...일자" 로 정정
+
+**❌ 금지 패턴**:
+- DDL `TIMESTAMP` + Entity `LocalDateTime` + 프론트 `type="date"` 조합 (역직렬화 에러 유발)
+- LocalDate 컬럼에 `regDate`/`updDate` 같이 시각이 의미 있는 컬럼을 변환하는 것 (시각 손실)
+
+**적용 사례 (2026-05-28)**:
+| 컬럼 | 변경 전 | 변경 후 | 이유 |
+|---|---|---|---|
+| sy_notice.start_date / end_date | TIMESTAMP / LocalDateTime | DATE / LocalDate | 노출 일자만 입력 |
+| pm_plan.start_date / end_date | TIMESTAMP / LocalDateTime | DATE / LocalDate | 기획전 운영 일자 |
+| pm_gift.start_date / end_date | TIMESTAMP / LocalDateTime | DATE / LocalDate | 사은품 운영 일자 |
+| pm_discnt.start_date / end_date | TIMESTAMP / LocalDateTime | DATE / LocalDate | 할인 운영 일자 |
+| 모든 `reg_date`, `upd_date`, `send_date`, `run_date` | TIMESTAMP | (유지) | 시각 의미 |
+
+**마이그레이션 SQL**: [`migration_date_columns_timestamp_to_date.sql`](../../ddl_pgsql/migration_date_columns_timestamp_to_date.sql)
+- LocalDate ↔ TIMESTAMP 는 JPA 가 자동 변환하므로 DB 칼럼은 점진적으로 적용해도 무방
+- 그러나 의미 명확화 / 인덱스 효율 / SQL 가독성을 위해 운영 시 적용 권장
+
 #### 13-5. 상태/유형/구분 컬럼은 반드시 `_cd` ⭐
 
 **`sy_code_grp` / `sy_code` 와 연관되는 모든 컬럼은 `_cd` 접미어 필수.** (§6 참조)
