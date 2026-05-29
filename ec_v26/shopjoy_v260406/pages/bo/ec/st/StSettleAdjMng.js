@@ -373,7 +373,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :cols="4"
+      :cols="3"
       @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </div>
 </div>

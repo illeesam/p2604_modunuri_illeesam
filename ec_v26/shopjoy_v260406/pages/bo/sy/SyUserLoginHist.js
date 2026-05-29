@@ -421,7 +421,7 @@ window.SyUserLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="logExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="logExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -449,7 +449,7 @@ window.SyUserLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="tokenExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="tokenExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
         <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
           ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log
         </div>

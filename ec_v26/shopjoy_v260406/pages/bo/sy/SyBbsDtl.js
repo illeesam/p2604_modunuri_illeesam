@@ -242,7 +242,7 @@ window.SyBbsDtl = {
   <div class="card">
     <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
-      :cols="4" :show-actions="false" />
+      :cols="3" :show-actions="false" />
     <!-- ===== ■.■. 게시판 선택 ================================================ -->
     <div class="form-group">
       <label class="form-label">
@@ -293,10 +293,10 @@ window.SyBbsDtl = {
     <!-- ===== □.□. 게시판 선택 ================================================ -->
     <!-- ===== ■.■. 기본 정보 (BoFormArea 자동 렌더) ============================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="4" :show-actions="false" />
+      :readonly="cfDtlMode" :cols="3" :show-actions="false" />
     <!-- ===== ■.■. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
     <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="4" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" :show-actions="false">
       <template #contentNoBbm>
         <div style="color:#bbb;font-size:13px;padding:12px 0;">
           게시판을 먼저 선택하세요.

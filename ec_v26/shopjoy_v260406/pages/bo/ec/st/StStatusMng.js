@@ -588,7 +588,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. ══ 1. 업체별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
     <!-- ===== ■.■. 요약 카드 ================================================= -->
-    <bo-form-area :columns="vendorSummaryColumns" :form="{}" :cols="4" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="vendorSummaryColumns" :form="{}" :cols="3" readonly label-left :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== □.□. 요약 카드 ================================================= -->
     <!-- ===== ■.■. 검색 ==================================================== -->
@@ -613,7 +613,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 2. 주문별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="orderSummaryColumns" :form="{}" :cols="4" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="orderSummaryColumns" :form="{}" :cols="3" readonly label-left :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
@@ -638,7 +638,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 3. 클레임별현황 ══ ========================================= -->
   <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="claimSummaryColumns" :form="{}" :cols="4" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="claimSummaryColumns" :form="{}" :cols="3" readonly label-left :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
@@ -686,7 +686,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
   <!-- ===== ■. ══ 5. 정산별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="settleSummaryColumns" :form="{}" :cols="4" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="settleSummaryColumns" :form="{}" :cols="3" readonly label-left :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"

@@ -475,7 +475,7 @@ window.SyApiLogMng = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
-        <bo-form-area :columns="accessExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="accessExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -503,7 +503,7 @@ window.SyApiLogMng = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
-        <bo-form-area :columns="errorExpandColumns" :form="row" :cols="4" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="errorExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
         <div style="margin-top:12px;">
           <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
             📋 스택트레이스

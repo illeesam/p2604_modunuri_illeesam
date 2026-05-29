@@ -591,7 +591,7 @@ window.SyAttachMng = {
           <!-- ===== ■.■.■.■.■. 파일 폼 (BoFormArea 자동 렌더, 4컬럼) ==================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="fileFormColumns" :form="fileForm" :errors="{}"
-            :cols="4" :show-actions="false" />
+            :cols="3" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
           <div style="display:flex;gap:8px;justify-content:center;">
             <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-save')">

@@ -12,7 +12,7 @@ window.SyVendorUserMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const vendorUsers = reactive([]);
-    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null});
+    const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null, userSearchType: '', userSearchValue: '', userStatusFlt: ''});
     const codes = reactive({
       user_status: [],
       bool_opts: [{codeValue:'Y',codeLabel:'예'},{codeValue:'N',codeLabel:'아니오'}],
@@ -45,6 +45,12 @@ window.SyVendorUserMng = {
       // 검색조건 초기화
       } else if (cmd === 'searchParam-reset') {
         return onReset();
+      // 사용자 검색조건으로 목록 조회
+      } else if (cmd === 'userSearchParam-list') {
+        return onUserSearch();
+      // 사용자 검색조건 초기화
+      } else if (cmd === 'userSearchParam-reset') {
+        return onUserReset();
       // 사용자 인라인 폼: 신규 등록
       } else if (cmd === 'vendorUsers-add') {
         return openNew();
@@ -278,14 +284,39 @@ window.SyVendorUserMng = {
       handleLoadDetail();
     };
 
+    /* onUserSearch — 사용자 검색 (선택된 업체 내에서) */
+    const onUserSearch = () => {
+      if (!uiState.searchVendorId) { showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
+      pager.pageNo = 1;
+      loadVendorUsers(uiState.searchVendorId);
+    };
+
+    /* onUserReset — 사용자 검색 초기화 */
+    const onUserReset = () => {
+      uiState.userSearchType = '';
+      uiState.userSearchValue = '';
+      uiState.userStatusFlt = '';
+      pager.pageNo = 1;
+      if (uiState.searchVendorId) { loadVendorUsers(uiState.searchVendorId); }
+    };
+
     /* onVendorPicked — 이벤트 */
     const onVendorPicked = (v) => { uiState.vendorPickOpen=false; pickVendorRow(v); };
 
-    /* loadVendorUsers — 로드 */
+    /* loadVendorUsers — 로드 (사용자 검색조건 적용) */
     const loadVendorUsers = async (vendorId) => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syVendorUser.getList({ vendorId, pageSize: 10000 }, '사업자사용자관리', '조회');
+        const params = {
+          vendorId, pageSize: 10000,
+          ...(uiState.userSearchValue ? { searchValue: uiState.userSearchValue.trim() } : {}),
+          ...(uiState.userSearchType  ? { searchType: uiState.userSearchType }         : {}),
+          ...(uiState.userStatusFlt   ? { statusCd: uiState.userStatusFlt }            : {}),
+        };
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'memberNm,vendorUserEmail,vendorUserMobile';
+        }
+        const res = await boApiSvc.syVendorUser.getList(params, '사업자사용자관리', '조회');
         const list = res.data?.data || [];
         vendorUsers.splice(0, vendorUsers.length, ...list);
         fnBuildPagerNums();
@@ -539,24 +570,34 @@ window.SyVendorUserMng = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // 기본 검색
-    const baseSearchColumns = [
-      { key: 'searchVendorId', type: 'pick', label: '업체',
-        display: (p) => p.searchVendorId != null ? fnVendorSummary(p.searchVendorId) : '',
-        placeholder: '업체 선택...', width: '300px',
-        onOpen: () => { uiState.vendorPickOpen = true; },
-        onClear: () => { uiState.searchVendorId = null; vendorUsers.splice(0); } },
+    // 업체 검색 (좌측 업체목록 상단)
+    const vendorSearchColumns = [
       { key: 'bizSearchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'vendorNm', label: '업체명' },
           { value: 'corpNo',   label: '사업자번호' },
           { value: 'vendorId', label: '업체ID' },
         ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'bizSearchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '200px' },
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
+      { key: 'bizSearchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
       { key: 'bizVendorFlt', type: 'select', label: '업체유형',
         options: () => codes.vendor_types.map(v => ({ value: v[0], label: v[1] })),
         nullLabel: '업체유형 전체' },
+    ];
+
+    // 사용자 검색 (우측 사용자목록 상단)
+    const userSearchColumns = [
+      { key: 'userSearchType', type: 'multiCheck', label: '검색대상',
+        options: [
+          { value: 'memberNm',          label: '이름' },
+          { value: 'vendorUserEmail',   label: '이메일' },
+          { value: 'vendorUserMobile',  label: '휴대전화' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '140px' },
+      { key: 'userSearchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'userStatusFlt', type: 'select', label: '상태',
+        options: () => (codes.user_employ_status || []).map(s => ({ value: s[0], label: s[1] })),
+        nullLabel: '상태 전체' },
     ];
 
     // 판매업체 그리드
@@ -613,7 +654,7 @@ window.SyVendorUserMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, vendorUsers, vendors, bizPager, pager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터
-      baseSearchColumns, vendorGridColumns, userGridColumns, userRoleGridColumns, baseVendorUserFormColumns,   // 컬럼 정의
+      vendorSearchColumns, userSearchColumns, vendorGridColumns, userGridColumns, userRoleGridColumns, baseVendorUserFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfVendorMap, cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                // computed
       fnVendorNm, fnVendorTypeCd, fnVendorSummary, fnVendorStatusBadge, fnVendorStatusLabel,                   // 헬퍼
@@ -627,18 +668,16 @@ window.SyVendorUserMng = {
   <div class="page-title">
     업체사용자
   </div>
-  <!-- ===== ■. 업체 검색 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :columns="baseSearchColumns" :param="uiState"
-      :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <!-- ===== □.□. 검색 영역 ================================================= -->
-  <!-- ===== □. 업체 검색 =================================================== -->
   <!-- ===== ■. 업체 목록 (좌) + 사용자 목록 (우) — 2단 그리드 ==================== -->
   <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:flex-start;">
-    <!-- ===== ■.■. 업체 목록 (좌) ============================================= -->
+    <!-- ===== ■.■. 좌: 업체 검색 + 목록 ===================================== -->
     <div>
+      <!-- ===== ■.■.■. 업체 검색 영역 ========================================= -->
+      <div class="card" style="margin-bottom:12px;">
+        <bo-search-area :columns="vendorSearchColumns" :param="uiState" :loading="uiState.loading"
+          @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+      </div>
+      <!-- ===== ■.■.■. 업체 목록 ============================================= -->
       <bo-grid
         :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
         list-title="업체목록" :count-text="vendors.length + '건'"
@@ -652,9 +691,15 @@ window.SyVendorUserMng = {
         </template>
       </bo-grid>
     </div>
-    <!-- ===== □.□. 업체 목록 (좌) ============================================= -->
-    <!-- ===== ■.■. 사용자 목록 (우) =========================================== -->
+    <!-- ===== □.□. 좌: 업체 검색 + 목록 ===================================== -->
+    <!-- ===== ■.■. 우: 사용자 검색 + 목록 =================================== -->
     <div>
+      <!-- ===== ■.■.■. 사용자 검색 영역 ======================================= -->
+      <div class="card" style="margin-bottom:12px;">
+        <bo-search-area :columns="userSearchColumns" :param="uiState" :loading="uiState.loading"
+          @search="handleBtnAction('userSearchParam-list')" @reset="handleBtnAction('userSearchParam-reset')" />
+      </div>
+      <!-- ===== ■.■.■. 사용자 목록 =========================================== -->
       <bo-grid v-if="uiState.searchVendorId != null"
         :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
         list-title="사용자목록" :count-text="vendorUsers.length + '건'"
@@ -678,7 +723,7 @@ window.SyVendorUserMng = {
         좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
       </div>
     </div>
-    <!-- ===== □.□. 사용자 목록 (우) =========================================== -->
+    <!-- ===== □.□. 우: 사용자 검색 + 목록 =================================== -->
   </div>
   <!-- ===== □. 업체 목록 (좌) + 사용자 목록 (우) =================================== -->
   <!-- ===== ■. 인라인 폼 =================================================== -->

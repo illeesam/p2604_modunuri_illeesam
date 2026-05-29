@@ -336,7 +336,7 @@ window.SyDeptMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd))].sort());
+    const cfTypeOptions = computed(() => [...new Set(depts.map(d => d.deptTypeCd).filter(v => v != null && v !== ''))].sort());
 
     /* parentNm — 상위 부서명 */
     const parentNm = (parentDeptId) => {

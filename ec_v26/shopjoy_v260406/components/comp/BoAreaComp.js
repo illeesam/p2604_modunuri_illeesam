@@ -299,7 +299,7 @@ window._boAreaCompUtil = {
   normOptions(opts) {
     // 함수형 options 지원 (codes 지연 로드 대응) — 호출해 배열 획득
     const arr = (typeof opts === 'function') ? opts() : opts;
-    return (arr || []).map(o => {
+    return (arr || []).filter(o => o != null).map(o => {
       // 문자열 배열도 지원 — ['A','B'] → [{value:'A',label:'A'}, ...]
       if (typeof o === 'string' || typeof o === 'number') return { value: o, label: String(o) };
       return {

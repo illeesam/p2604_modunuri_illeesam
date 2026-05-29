@@ -1775,7 +1775,7 @@ window.DpDispPanelDtl = {
                       <!-- ===== ■.■.■.■.■.■. 패널코드/패널명/표시경로/포함영역 (BoFormArea 자동 렌더) ========= -->
                       <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
                       <bo-form-area :columns="sectionInfoFormColumns" :form="form" :errors="{}"
-              :readonly="cfDtlMode" :cols="4" :show-actions="false">
+              :readonly="cfDtlMode" :cols="3" :show-actions="false">
                         <template #pathPick2>
                           <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                             <span style="flex:1;">

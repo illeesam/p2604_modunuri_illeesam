@@ -261,7 +261,7 @@ window.SyContactDtl = {
     <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
-      :cols="4" :show-actions="false" />
+      :cols="3" :show-actions="false" />
     <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleSelectAction('tabs-select', id)"
       @mode-select="m => handleSelectAction('tabMode-select', m)" />

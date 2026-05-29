@@ -300,7 +300,7 @@ window.SySiteMng = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd))].sort());
+    const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd).filter(v => v != null && v !== ''))].sort());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);

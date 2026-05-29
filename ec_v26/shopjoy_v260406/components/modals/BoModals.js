@@ -1638,9 +1638,10 @@ window.RoleTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '' });
+    const { reactive, computed, onMounted, watch } = Vue;
+    const searchParam = reactive({ searchValue: '' });
     const allRoles = reactive([]);
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
 
     /* 목록조회 */
     const handleSearchList = async () => {
@@ -1665,6 +1666,7 @@ window.RoleTreeModal = {
       nodes.forEach(n => { result.push(n); fnFlatten(n._kids, result); });
       return result;
     };
+
     const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
@@ -1672,10 +1674,32 @@ window.RoleTreeModal = {
         mark(props.excludeId);
       }
       const base = allRoles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
-      const kwVal = uiState.searchValue.trim().toLowerCase();
-      const list  = kwVal ? base.filter(r => r.roleNm.toLowerCase().includes(kwVal) || r.roleCode.toLowerCase().includes(kwVal)) : base;
+      const kwVal = searchParam.searchValue.trim().toLowerCase();
+      const list  = kwVal ? base.filter(r => (r.roleNm || '').toLowerCase().includes(kwVal) || (r.roleCode || '').toLowerCase().includes(kwVal)) : base;
       return fnFlatten(fnBuildTree(list, null, 0));
     });
+
+    /* fnBuildPagerNums + cfPageRows (클라이언트 페이징) */
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = cfFlatTree.value.length;
+      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+    const cfPageRows = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFlatTree.value.slice(start, start + pager.pageSize);
+    });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
+
+    /* onSearch / onReset */
+    const onSearch    = () => { pager.pageNo = 1; };
+    const onReset     = () => { searchParam.searchValue = ''; pager.pageNo = 1; };
+
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = ()  => { pager.pageNo = 1; };
 
     /* onSelect */
     const onSelect = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
@@ -1687,9 +1711,12 @@ window.RoleTreeModal = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ RoleTreeModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+      } else if (cmd === 'searchParam-search') {
+        return onSearch();
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -1698,16 +1725,15 @@ window.RoleTreeModal = {
     /* handleSelectAction — 행/선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ RoleTreeModal : handleSelectAction -> ', cmd, param);
-      // 역할 선택
       if (cmd === 'rolesTree-select') {
         return onSelect(param);
-      // 상위없음 선택
       } else if (cmd === 'rolesTree-select-none') {
         return onSelectNone();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+
     /* baseSearchColumns — 검색 영역 컬럼 */
     const baseSearchColumns = [
       { key: 'searchValue', type: 'text', placeholder: '역할명 또는 역할코드 검색' },
@@ -1729,13 +1755,14 @@ window.RoleTreeModal = {
     ];
 
     return {
-      cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
       baseSearchColumns, listGridColumns,                                      // 컬럼 정의
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
@@ -1753,29 +1780,33 @@ window.RoleTreeModal = {
         ✕
       </span>
     </div>
+    <!-- 검색 영역 -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
+      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
     </div>
-    <div style="flex:1;overflow-y:auto;">
-      <!-- 상위없음 옵션 (고정 행) -->
-      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
-        @click="handleSelectAction('rolesTree-select-none')">
-        <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
-          ●
+    <!-- 상위없음 옵션 (고정 행) -->
+    <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
+      @click="handleSelectAction('rolesTree-select-none')">
+      <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
+        ●
+      </span>
+      <div style="flex:1;">
+        <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
+          상위없음
         </span>
-        <div style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
-            상위없음
-          </span>
-          <span style="font-size:11px;color:#aaa;margin-left:6px;">
-            최상위 권한으로 등록
-          </span>
-        </div>
+        <span style="font-size:11px;color:#aaa;margin-left:6px;">
+          최상위 권한으로 등록
+        </span>
       </div>
-      <!-- 트리 (BoGrid) -->
-      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="roleId" row-clickable
-        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.'"
-        @row-click="row => handleSelectAction('rolesTree-select', row)" />
+    </div>
+    <!-- 목록 + 페이저 (BoGrid 내장) -->
+    <div style="flex:1;overflow-y:auto;">
+      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="roleId" row-clickable
+        :list-title="'총 ' + pager.pageTotalCount + '건'"
+        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 권한이 없습니다.'"
+        @row-click="row => handleSelectAction('rolesTree-select', row)"
+        @set-page="onSetPage" @size-change="onSizeChange" />
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
       <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
@@ -1792,9 +1823,10 @@ window.MenuTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '' });
+    const { reactive, computed, onMounted, watch } = Vue;
+    const searchParam = reactive({ searchValue: '' });
     const allMenus = reactive([]);
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
 
     /* 목록조회 */
     const handleSearchList = async () => {
@@ -1830,12 +1862,30 @@ window.MenuTreeModal = {
         markExclude(props.excludeId);
       }
       const base = allMenus.filter(m => !excSet.has(m.menuId) && m.useYn === 'Y');
-      const kwVal = uiState.searchValue.trim().toLowerCase();
+      const kwVal = searchParam.searchValue.trim().toLowerCase();
       const list  = kwVal
-        ? base.filter(m => m.menuNm.toLowerCase().includes(kwVal) || m.menuCode.toLowerCase().includes(kwVal))
+        ? base.filter(m => (m.menuNm || '').toLowerCase().includes(kwVal) || (m.menuCode || '').toLowerCase().includes(kwVal))
         : base;
       return fnFlatten(fnBuildTree(list, null, 0));
     });
+
+    /* fnBuildPagerNums + cfPageRows */
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = cfFlatTree.value.length;
+      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+    const cfPageRows = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFlatTree.value.slice(start, start + pager.pageSize);
+    });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
+
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = ()  => { pager.pageNo = 1; };
 
     /* onSelect */
     const onSelect = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
@@ -1847,9 +1897,12 @@ window.MenuTreeModal = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MenuTreeModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+      } else if (cmd === 'searchParam-search') {
+        pager.pageNo = 1;
+      } else if (cmd === 'searchParam-reset') {
+        searchParam.searchValue = ''; pager.pageNo = 1;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -1858,10 +1911,8 @@ window.MenuTreeModal = {
     /* handleSelectAction — 행/선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MenuTreeModal : handleSelectAction -> ', cmd, param);
-      // 메뉴 선택
       if (cmd === 'menuTree-select') {
         return onSelect(param);
-      // 상위없음 선택
       } else if (cmd === 'menuTree-select-none') {
         return onSelectNone();
       } else {
@@ -1890,13 +1941,14 @@ window.MenuTreeModal = {
     ];
 
     return {
-      cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
       baseSearchColumns, listGridColumns,                                      // 컬럼 정의
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
@@ -1917,29 +1969,31 @@ window.MenuTreeModal = {
     </div>
     <!-- ── 검색 ── -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
+      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
     </div>
-    <!-- ── 트리 목록 ── -->
-    <div style="flex:1;overflow-y:auto;">
-      <!-- 상위없음 옵션 (고정 행) -->
-      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
-        @click="handleSelectAction('menuTree-select-none')">
-        <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
-          ●
+    <!-- ── 상위없음 옵션 (고정 행) ── -->
+    <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
+      @click="handleSelectAction('menuTree-select-none')">
+      <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
+        ●
+      </span>
+      <div style="flex:1;">
+        <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
+          상위없음
         </span>
-        <div style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
-            상위없음
-          </span>
-          <span style="font-size:11px;color:#aaa;margin-left:6px;">
-            최상위 메뉴로 등록
-          </span>
-        </div>
+        <span style="font-size:11px;color:#aaa;margin-left:6px;">
+          최상위 메뉴로 등록
+        </span>
       </div>
-      <!-- 트리 (BoGrid) -->
-      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="menuId" row-clickable
-        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.'"
-        @row-click="row => handleSelectAction('menuTree-select', row)" />
+    </div>
+    <!-- ── 목록 + 페이저 ── -->
+    <div style="flex:1;overflow-y:auto;">
+      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="menuId" row-clickable
+        :list-title="'총 ' + pager.pageTotalCount + '건'"
+        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 메뉴가 없습니다.'"
+        @row-click="row => handleSelectAction('menuTree-select', row)"
+        @set-page="onSetPage" @size-change="onSizeChange" />
     </div>
     <!-- ── 푸터 ── -->
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
@@ -1957,9 +2011,10 @@ window.DeptTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '' });
+    const { reactive, computed, onMounted, watch } = Vue;
+    const searchParam = reactive({ searchValue: '' });
     const allDepts = reactive([]);
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
 
     /* 목록조회 */
     const handleSearchList = async () => {
@@ -1995,12 +2050,30 @@ window.DeptTreeModal = {
         markExclude(props.excludeId);
       }
       const base = allDepts.filter(d => !excSet.has(d.deptId) && d.useYn === 'Y');
-      const kwVal = uiState.searchValue.trim().toLowerCase();
+      const kwVal = searchParam.searchValue.trim().toLowerCase();
       const list  = kwVal
-        ? base.filter(d => d.deptNm.toLowerCase().includes(kwVal) || d.deptCode.toLowerCase().includes(kwVal))
+        ? base.filter(d => (d.deptNm || '').toLowerCase().includes(kwVal) || (d.deptCode || '').toLowerCase().includes(kwVal))
         : base;
       return flatten(buildTree(list, null, 0));
     });
+
+    /* fnBuildPagerNums + cfPageRows */
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = cfFlatTree.value.length;
+      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+    const cfPageRows = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFlatTree.value.slice(start, start + pager.pageSize);
+    });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
+
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = ()  => { pager.pageNo = 1; };
 
     /* select */
     const select = (dept) => emit('select', { deptId: dept.deptId, deptNm: dept.deptNm });
@@ -2012,9 +2085,12 @@ window.DeptTreeModal = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DeptTreeModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+      } else if (cmd === 'searchParam-search') {
+        pager.pageNo = 1;
+      } else if (cmd === 'searchParam-reset') {
+        searchParam.searchValue = ''; pager.pageNo = 1;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -2023,10 +2099,8 @@ window.DeptTreeModal = {
     /* handleSelectAction — 행/선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ DeptTreeModal : handleSelectAction -> ', cmd, param);
-      // 부서 선택
       if (cmd === 'deptTree-select') {
         return select(param);
-      // 상위없음 선택
       } else if (cmd === 'deptTree-select-none') {
         return selectNone();
       } else {
@@ -2055,13 +2129,14 @@ window.DeptTreeModal = {
     ];
 
     return {
-      cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
       baseSearchColumns, listGridColumns,                                      // 컬럼 정의
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ── 헤더 ── -->
     <div class="tree-modal-header">
@@ -2087,31 +2162,33 @@ window.DeptTreeModal = {
     </div>
     <!-- ── 검색 ── -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
+      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
     </div>
-    <!-- ── 트리 목록 ── -->
-    <div style="flex:1;overflow-y:auto;">
-      <!-- 상위없음 옵션 (고정 행) -->
-      <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
-        @click="handleSelectAction('deptTree-select-none')">
-        <div style="width:4px;align-self:stretch;border-radius:3px;background:#e8587a;flex-shrink:0;opacity:0.7;">
+    <!-- ── 상위없음 옵션 (고정 행) ── -->
+    <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
+      @click="handleSelectAction('deptTree-select-none')">
+      <div style="width:4px;align-self:stretch;border-radius:3px;background:#e8587a;flex-shrink:0;opacity:0.7;">
+      </div>
+      <span style="font-size:20px;flex-shrink:0;line-height:1;">
+        🏢
+      </span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:700;color:#1a1a2e;">
+          상위없음
         </div>
-        <span style="font-size:20px;flex-shrink:0;line-height:1;">
-          🏢
-        </span>
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:#1a1a2e;">
-            상위없음
-          </div>
-          <div style="font-size:11px;color:#aaa;margin-top:2px;">
-            최상위 부서로 등록
-          </div>
+        <div style="font-size:11px;color:#aaa;margin-top:2px;">
+          최상위 부서로 등록
         </div>
       </div>
-      <!-- 트리 (BoGrid) -->
-      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="deptId" row-clickable
-        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.'"
-        @row-click="row => handleSelectAction('deptTree-select', row)" />
+    </div>
+    <!-- ── 목록 + 페이저 ── -->
+    <div style="flex:1;overflow-y:auto;">
+      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="deptId" row-clickable
+        :list-title="'총 ' + pager.pageTotalCount + '건'"
+        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 부서가 없습니다.'"
+        @row-click="row => handleSelectAction('deptTree-select', row)"
+        @set-page="onSetPage" @size-change="onSizeChange" />
     </div>
     <!-- ── 푸터 ── -->
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
@@ -2132,9 +2209,10 @@ window.CategoryTreeModal = {
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const uiState = reactive({ searchValue: '' });
+    const { reactive, computed, onMounted, watch } = Vue;
+    const searchParam = reactive({ searchValue: '' });
     const allCategories = reactive([]);
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
 
     /* 목록조회 */
     const handleSearchList = async () => {
@@ -2167,10 +2245,28 @@ window.CategoryTreeModal = {
         mark(props.excludeId);
       }
       const base   = allCategories.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
-      const kwVal  = uiState.searchValue.trim().toLowerCase();
-      const list   = kwVal ? base.filter(c => c.categoryNm.toLowerCase().includes(kwVal)) : base;
+      const kwVal  = searchParam.searchValue.trim().toLowerCase();
+      const list   = kwVal ? base.filter(c => (c.categoryNm || '').toLowerCase().includes(kwVal)) : base;
       return flatten(buildTree(list, null, 0));
     });
+
+    /* fnBuildPagerNums + cfPageRows */
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = cfFlatTree.value.length;
+      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+    const cfPageRows = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFlatTree.value.slice(start, start + pager.pageSize);
+    });
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
+
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = ()  => { pager.pageNo = 1; };
 
     /* select */
     const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
@@ -2182,9 +2278,12 @@ window.CategoryTreeModal = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CategoryTreeModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+      } else if (cmd === 'searchParam-search') {
+        pager.pageNo = 1;
+      } else if (cmd === 'searchParam-reset') {
+        searchParam.searchValue = ''; pager.pageNo = 1;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -2193,16 +2292,15 @@ window.CategoryTreeModal = {
     /* handleSelectAction — 행/선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ CategoryTreeModal : handleSelectAction -> ', cmd, param);
-      // 카테고리 선택
       if (cmd === 'categoryTree-select') {
         return select(param);
-      // 상위없음 선택
       } else if (cmd === 'categoryTree-select-none') {
         return selectNone();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+
     /* baseSearchColumns — 검색 영역 컬럼 */
     const baseSearchColumns = [
       { key: 'searchValue', type: 'text', placeholder: '카테고리명 검색' },
@@ -2224,13 +2322,14 @@ window.CategoryTreeModal = {
     ];
 
     return {
-      cfSiteNm, uiState, cfFlatTree,                                          // 데이터
+      cfSiteNm, searchParam, cfPageRows, pager,                               // 데이터
       baseSearchColumns, listGridColumns,                                      // 컬럼 정의
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="520px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="true" max-width="560px" max-height="80vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
   <div style="height:100%;display:flex;flex-direction:column;overflow:hidden;">
     <div class="tree-modal-header">
       <div>
@@ -2248,29 +2347,33 @@ window.CategoryTreeModal = {
         ✕
       </span>
     </div>
+    <!-- ── 검색 ── -->
     <div style="padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <bo-search-area :columns="baseSearchColumns" :param="uiState" :show-actions="false" />
+      <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
     </div>
-    <div style="flex:1;overflow-y:auto;">
-      <!-- 상위없음 옵션 (고정 행) -->
-      <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;"
-        @click="handleSelectAction('categoryTree-select-none')">
-        <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
-          ●
+    <!-- ── 상위없음 옵션 (고정 행) ── -->
+    <div style="display:flex;align-items:center;gap:0;padding:11px 16px;cursor:pointer;border-bottom:2px solid #f0f0f0;background:#fafafa;flex-shrink:0;"
+      @click="handleSelectAction('categoryTree-select-none')">
+      <span style="font-size:7px;font-weight:700;color:#e8587a;margin-right:8px;flex-shrink:0;">
+        ●
+      </span>
+      <div style="flex:1;">
+        <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
+          상위없음
         </span>
-        <div style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:#1a1a2e;">
-            상위없음
-          </span>
-          <span style="font-size:11px;color:#aaa;margin-left:6px;">
-            최상위 카테고리로 등록
-          </span>
-        </div>
+        <span style="font-size:11px;color:#aaa;margin-left:6px;">
+          최상위 카테고리로 등록
+        </span>
       </div>
-      <!-- 트리 (BoGrid) -->
-      <bo-grid :columns="listGridColumns" :rows="cfFlatTree" row-key="categoryId" row-clickable
-        :empty-text="uiState.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.'"
-        @row-click="row => handleSelectAction('categoryTree-select', row)" />
+    </div>
+    <!-- ── 목록 + 페이저 ── -->
+    <div style="flex:1;overflow-y:auto;">
+      <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="categoryId" row-clickable
+        :list-title="'총 ' + pager.pageTotalCount + '건'"
+        :empty-text="searchParam.searchValue ? '검색 결과가 없습니다.' : '선택 가능한 카테고리가 없습니다.'"
+        @row-click="row => handleSelectAction('categoryTree-select', row)"
+        @set-page="onSetPage" @size-change="onSizeChange" />
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
       <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
