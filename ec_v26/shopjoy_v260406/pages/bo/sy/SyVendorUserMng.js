@@ -607,7 +607,7 @@ window.SyVendorUserMng = {
         options: () => (codes.user_employ_status || []).map(s => ({ value: s[0], label: s[1] })) },
       { key: 'joinDate',          label: '등록일', type: 'date' },
       { key: 'leaveDate',         label: '퇴직일', type: 'date' },
-      { key: 'vendorUserRemark',  label: '비고', type: 'text', colSpan: 2 },
+      { key: 'vendorUserRemark',  label: '비고', type: 'text', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -635,44 +635,52 @@ window.SyVendorUserMng = {
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 업체 검색 =================================================== -->
-  <!-- ===== ■. 업체 목록 =================================================== -->
-  <bo-grid
-    :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
-    list-title="업체목록" :count-text="vendors.length + '건'"
-    :row-style="fnVendorRowStyle" row-clickable
-    @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
-    @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>
-    <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
-        {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
-      </button>
-    </template>
-  </bo-grid>
-  <!-- ===== □. 업체 목록 =================================================== -->
-  <!-- ===== ■. 사용자 목록 ================================================== -->
-  <bo-grid v-if="uiState.searchVendorId != null" style="margin-top:16px;"
-    :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
-    list-title="사용자목록" :count-text="vendorUsers.length + '건'"
-    :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
-    @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
-    @size-change="handleSelectAction('vendorUsers-pager-sizeChange')"
-    @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
-    <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
-        + 신규등록
-      </button>
-    </template>
-    <template #row-actions="{ row }">
-      <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">
-        삭제
-      </button>
-    </template>
-  </bo-grid>
-  <!-- ===== □. 사용자 목록 ================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div v-else class="card" style="margin-top:16px;text-align:center;padding:30px;color:#aaa;">
-    상단 목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
+  <!-- ===== ■. 업체 목록 (좌) + 사용자 목록 (우) — 2단 그리드 ==================== -->
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:flex-start;">
+    <!-- ===== ■.■. 업체 목록 (좌) ============================================= -->
+    <div>
+      <bo-grid
+        :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
+        list-title="업체목록" :count-text="vendors.length + '건'"
+        :row-style="fnVendorRowStyle" row-clickable
+        @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
+        @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>
+        <template #row-actions="{ row }">
+          <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
+            {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
+          </button>
+        </template>
+      </bo-grid>
+    </div>
+    <!-- ===== □.□. 업체 목록 (좌) ============================================= -->
+    <!-- ===== ■.■. 사용자 목록 (우) =========================================== -->
+    <div>
+      <bo-grid v-if="uiState.searchVendorId != null"
+        :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
+        list-title="사용자목록" :count-text="vendorUsers.length + '건'"
+        :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
+        @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
+        @size-change="handleSelectAction('vendorUsers-pager-sizeChange')"
+        @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
+        <template #toolbar-actions>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
+            + 신규등록
+          </button>
+        </template>
+        <template #row-actions="{ row }">
+          <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">
+            삭제
+          </button>
+        </template>
+      </bo-grid>
+      <!-- ===== ■.■.■. 카드 영역 (업체 미선택 안내) =========================== -->
+      <div v-else class="card" style="text-align:center;padding:30px;color:#aaa;">
+        좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
+      </div>
+    </div>
+    <!-- ===== □.□. 사용자 목록 (우) =========================================== -->
   </div>
+  <!-- ===== □. 업체 목록 (좌) + 사용자 목록 (우) =================================== -->
   <!-- ===== ■. 인라인 폼 =================================================== -->
   <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
     <div class="toolbar">
@@ -703,7 +711,7 @@ window.SyVendorUserMng = {
     <div style="padding:16px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
-        :cols="4" :show-actions="false" />
+        :cols="3" :show-actions="false" />
     </div>
     <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
     <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->

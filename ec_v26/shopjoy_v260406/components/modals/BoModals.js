@@ -4639,33 +4639,11 @@ window.BizPickModal = {
   props: ['value', 'title', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '', type: '' });
-    const searchParamOrg = reactive({ searchType: '', searchValue: '', type: '' });
     const bizs = reactive([]);
-
-    /* 목록조회 */
-    const handleSearchList = async () => {
-      try {
-        const res = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '판매자관리', '목록조회');
-        bizs.splice(0, bizs.length, ...(res.data?.data?.list || []));
-      } catch (_) {}
-    };
-
-    /* 목록조회 */
-    const onSearch = () => { handleSearchList(); };
-
-    /* onReset */
-    const onReset = () => { Object.assign(searchParam, searchParamOrg); handleSearchList(); };
-    Vue.onMounted(() => { handleSearchList(); });
-    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
-
-    /* vtLabel */
-    const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
-
-    /* vtBadge */
-    const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
+    const loading = ref(false);
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
 
     /* 좌측 표시경로 트리 (sy_biz) */
     const selectedPathId = ref(null);
@@ -4676,27 +4654,56 @@ window.BizPickModal = {
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
 
     /* selectNode */
-    const selectNode = (id) => { selectedPathId.value = id; };
-    Vue.onMounted(() => {
+    const selectNode = (id) => { selectedPathId.value = id; pager.pageNo = 1; handleSearchListWrap(); };
+
+    /* 목록조회 (서버사이드 페이징) */
+    const handleSearchList = async () => {
+      loading.value = true;
+      try {
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          searchValue: searchParam.searchValue || undefined,
+          searchType: searchParam.searchType || undefined,
+          type: searchParam.type || undefined,
+          pathId: selectedPathId.value || undefined,
+        };
+        if (params.searchValue && !params.searchType) { params.searchType = 'bizNo,bizNm,ceoNm'; }
+        const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
+        const data = res.data?.data;
+        bizs.splice(0, bizs.length, ...(data?.pageList || data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+      } catch (_) { bizs.splice(0, bizs.length); } finally { loading.value = false; }
+    };
+
+    /* fnBuildPagerNums */
+    const fnBuildPagerNums = () => { const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4); pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i); };
+
+    /* handleSearchListWrap */
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+
+    /* onSearch / onReset */
+    const onSearch = () => { pager.pageNo = 1; handleSearchListWrap(); };
+    const onReset  = () => { Object.assign(searchParam, { searchType: '', searchValue: '', type: '' }); pager.pageNo = 1; handleSearchListWrap(); };
+
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+    const onSizeChange = ()  => { pager.pageNo = 1; handleSearchListWrap(); };
+
+    onMounted(() => {
       const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
+      handleSearchListWrap();
     });
-    const cfAllowedPathIds = computed(() => selectedPathId.value == null ? null : boUtil.bofGetPathDescendants('sy_biz', selectedPathId.value));
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
 
-    const cfFiltered = computed(() => bizs.filter(b => {
-      const k = searchParam.searchValue.trim().toLowerCase();
-      if (k) {
-        const types = searchParam.searchType || 'bizNo,bizNm,ceoNm';
-        const hits = [];
-        if (types.includes('bizNo')) hits.push((b.bizNo || '').includes(k));
-        if (types.includes('bizNm')) hits.push((b.bizNm || '').toLowerCase().includes(k));
-        if (types.includes('ceoNm')) hits.push((b.ceoNm || '').toLowerCase().includes(k));
-        if (!hits.some(Boolean)) return false;
-      }
-      if (searchParam.type && b.vendorTypeCd !== searchParam.type) return false;
-      if (cfAllowedPathIds.value && !cfAllowedPathIds.value.has(b.pathId)) return false;
-      return true;
-    }));
+    const VENDOR_TYPES = [['SALES','판매업체'],['DELIVERY','배송업체'],['PARTNER','제휴사'],['INTERNAL','내부법인']];
+
+    /* vtLabel */
+    const vtLabel = (cd) => (VENDOR_TYPES.find(v=>v[0]===cd) || [,cd])[1];
+
+    /* vtBadge */
+    const vtBadge = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
 
     /* pickAndClose */
     const pickAndClose = (b) => { emit('select', b); emit('close'); };
@@ -4753,10 +4760,11 @@ window.BizPickModal = {
     ];
 
     return {
-      searchParam, VENDOR_TYPES, vtLabel, vtBadge, cfFiltered,                // 데이터
+      searchParam, VENDOR_TYPES, vtLabel, vtBadge, bizs, pager, loading,      // 데이터
       bizGridColumns, baseSearchColumns,                                       // 컬럼 정의
       selectedPathId, expanded, cfTree,                                       // 트리
       toggleNode, selectNode,                                                 // 트리 헬퍼 (자식 컴포넌트 props 전달용)
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
@@ -4781,11 +4789,11 @@ window.BizPickModal = {
         </span>
       </div>
       <div style="margin-top:12px;">
-        <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+        <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="loading"
           @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
       </div>
     </div>
-    <div style="background:#fafbfc;display:grid;grid-template-columns:200px 1fr;max-height:50vh;">
+    <div style="background:#fafbfc;display:grid;grid-template-columns:200px 1fr;max-height:55vh;">
       <!-- 좌측 표시경로 트리 -->
       <div style="border-right:1px solid #eef0f3;background:#fff;overflow:auto;padding:8px;">
         <div style="font-size:11px;font-weight:700;color:#666;margin-bottom:6px;padding:0 4px;">
@@ -4796,9 +4804,12 @@ window.BizPickModal = {
       </div>
       <!-- 우측 사업자 목록 -->
       <div style="overflow:auto;">
-        <bo-grid :columns="bizGridColumns" :rows="cfFiltered" row-key="bizId"
-          empty-text="검색 결과가 없습니다." row-clickable :row-actions="true"
-          @row-click="row => handleSelectAction('list-pick', row)">
+        <bo-grid :columns="bizGridColumns" :rows="bizs" :pager="pager" row-key="bizId"
+          :list-title="'총 ' + pager.pageTotalCount + '건'"
+          :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+          row-clickable :row-actions="true"
+          @row-click="row => handleSelectAction('list-pick', row)"
+          @set-page="onSetPage" @size-change="onSizeChange">
           <template #row-actions="{ row }">
             <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-pick', row)">
               선택
@@ -4825,39 +4836,50 @@ window.SimpleUserPickModal = {
   props: ['title', 'excludeIds', 'reloadTrigger'],
   emits: ['select', 'close'],
   setup(props, { emit }) {
-    const { ref, reactive, computed } = Vue;
+    const { ref, reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const boUsers = reactive([]);
+    const loading = ref(false);
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
 
-    /* 목록조회 */
+    /* 목록조회 (서버사이드 페이징) */
     const handleSearchList = async () => {
+      loading.value = true;
       try {
-        const res = await boApiSvc.syUser.getPage({ pageNo: 1, pageSize: 1000 }, '사용자관리', '목록조회');
-        boUsers.splice(0, boUsers.length, ...(res.data?.data?.list || []));
-      } catch (_) {}
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          searchValue: searchParam.searchValue || undefined,
+          searchType: searchParam.searchType || undefined,
+        };
+        if (params.searchValue && !params.searchType) { params.searchType = 'name,loginId,email'; }
+        const res = await boApiSvc.syUser.getPage(params, '사용자관리', '목록조회');
+        const data = res.data?.data;
+        let list = data?.pageList || data?.list || [];
+        // 제외 ID 적용 (클라이언트 측 필터링은 어쩔 수 없음 - 서버에 excludeIds 파라미터 없는 경우)
+        const excl = new Set(props.excludeIds || []);
+        if (excl.size > 0) { list = list.filter(u => !excl.has(u.boUserId) && !excl.has(u.userId)); }
+        boUsers.splice(0, boUsers.length, ...list);
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+      } catch (_) { boUsers.splice(0, boUsers.length); } finally { loading.value = false; }
     };
 
-    /* 목록조회 */
-    const onSearch = () => { handleSearchList(); };
+    /* fnBuildPagerNums */
+    const fnBuildPagerNums = () => { const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4); pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i); };
 
-    /* onReset */
-    const onReset = () => { searchParam.searchType = ''; searchParam.searchValue = ''; handleSearchList(); };
-    Vue.onMounted(() => { handleSearchList(); });
-    Vue.watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
-    const cfExcl = computed(() => new Set(props.excludeIds || []));
-    const cfFiltered = computed(() => boUsers.filter(u => {
-      if (cfExcl.value.has(u.boUserId)) return false;
-      const k = searchParam.searchValue.trim().toLowerCase();
-      if (k) {
-        const types = searchParam.searchType || 'nm,loginId,email';
-        const hits = [];
-        if (types.includes('nm'))      hits.push((u.name    || '').toLowerCase().includes(k));
-        if (types.includes('loginId')) hits.push((u.loginId || '').toLowerCase().includes(k));
-        if (types.includes('email'))   hits.push((u.email   || '').toLowerCase().includes(k));
-        if (!hits.some(Boolean)) return false;
-      }
-      return true;
-    }));
+    /* handleSearchListWrap */
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+
+    /* onSearch / onReset */
+    const onSearch = () => { pager.pageNo = 1; handleSearchListWrap(); };
+    const onReset = () => { searchParam.searchType = ''; searchParam.searchValue = ''; pager.pageNo = 1; handleSearchListWrap(); };
+
+    /* onSetPage / onSizeChange */
+    const onSetPage    = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+    const onSizeChange = ()  => { pager.pageNo = 1; handleSearchListWrap(); };
+
+    onMounted(() => { handleSearchListWrap(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
 
     /* pick */
     const pick = (u) => { emit('select', u); emit('close'); };
@@ -4906,8 +4928,9 @@ window.SimpleUserPickModal = {
     ];
 
     return {
-      searchParam, cfFiltered,                                                // 데이터
+      searchParam, boUsers, pager, loading,                                   // 데이터
       userGridColumns, baseSearchColumns,                                      // 컬럼 정의
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
@@ -4932,14 +4955,17 @@ window.SimpleUserPickModal = {
         </span>
       </div>
       <div style="margin-top:12px;">
-        <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+        <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="loading"
           @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
       </div>
     </div>
-    <div style="background:#fafbfc;max-height:50vh;overflow:auto;">
-      <bo-grid :columns="userGridColumns" :rows="cfFiltered" row-key="boUserId"
-        empty-text="결과가 없습니다." row-clickable :row-actions="true"
-        @row-click="row => handleSelectAction('list-pick', row)">
+    <div style="background:#fafbfc;max-height:55vh;overflow:auto;">
+      <bo-grid :columns="userGridColumns" :rows="boUsers" :pager="pager" row-key="boUserId"
+        :list-title="'총 ' + pager.pageTotalCount + '건'"
+        :empty-text="loading ? '로딩 중...' : '결과가 없습니다.'"
+        row-clickable :row-actions="true"
+        @row-click="row => handleSelectAction('list-pick', row)"
+        @set-page="onSetPage" @size-change="onSizeChange">
         <template #row-actions="{ row }">
           <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-pick', row)">
             선택
@@ -4966,10 +4992,41 @@ window.SimpleVendorPickModal = {
     vendors:    { type: Array,   default: () => [] },
     selectedId: { type: [String, Number], default: '' },
     title:      { type: String,  default: '판매업체 선택' },
-    width:      { type: String,  default: '400px' },
+    width:      { type: String,  default: '460px' },
   },
   emits: ['select', 'close'],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
+    const { reactive, computed, watch } = Vue;
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+
+    const cfFiltered = computed(() => {
+      const k = (searchParam.searchValue || '').trim().toLowerCase();
+      if (!k) return props.vendors || [];
+      return (props.vendors || []).filter(v => (v.vendorNm || '').toLowerCase().includes(k) || String(v.vendorId || '').toLowerCase().includes(k));
+    });
+
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = cfFiltered.value.length;
+      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+
+    const cfPageRows = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFiltered.value.slice(start, start + pager.pageSize);
+    });
+
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
+    watch(() => props.vendors, () => { pager.pageNo = 1; }, { deep: true });
+
+    const onSearch = () => { pager.pageNo = 1; };
+    const onReset = () => { searchParam.searchValue = ''; pager.pageNo = 1; };
+    const onSetPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
+
     const onPick = (v) => { emit('select', v); emit('close'); };
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -4977,6 +5034,10 @@ window.SimpleVendorPickModal = {
       console.log(' ■■ SimpleVendorPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+      } else if (cmd === 'searchParam-search') {
+        return onSearch();
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -4991,30 +5052,43 @@ window.SimpleVendorPickModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '판매업체명 검색' },
+    ];
+
+    const listGridColumns = [
+      { key: 'vendorNm', label: '판매업체명', cellStyle: 'font-weight:600;', fmt: (v) => v || '-' },
+      { key: 'vendorId', label: 'ID', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
+    ];
+
+    const fnRowStyle = (row) => props.selectedId === row.vendorId ? 'background:#f0f4ff;color:#1565c0;font-weight:700;cursor:pointer;' : 'cursor:pointer;';
+
     return {
+      searchParam, cfPageRows, pager,                                         // 데이터
+      baseSearchColumns, listGridColumns, fnRowStyle,                         // 컬럼 정의
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
 <bo-modal :show="show" :title="title" :width="width" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="max-height:400px;overflow-y:auto;">
-    <div v-for="v in vendors" :key="v && v.vendorId" style="padding:12px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" :style="selectedId===v.vendorId?{background:'#f0f4ff',color:'#1565c0'}:{}" @click="handleSelectAction('vendors-pick', v)">
-    <span style="font-weight:500;">
-      {{ v.vendorNm }}
-    </span>
-    <span v-if="selectedId===v.vendorId" style="color:#1565c0;font-weight:700;">
-      ✓
-    </span>
+  <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">
+    <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+      @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
-  <div v-if="!vendors.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">
-    판매업체가 없습니다.
+  <div style="max-height:55vh;overflow-y:auto;">
+    <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="vendorId"
+      :list-title="'총 ' + pager.pageTotalCount + '건'" :row-style="fnRowStyle"
+      empty-text="판매업체가 없습니다." row-clickable
+      @row-click="row => handleSelectAction('vendors-pick', row)"
+      @set-page="onSetPage" @size-change="onSizeChange" />
   </div>
-</div>
-<template #footer>
-  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('modal-close')">
-    닫기
-  </button>
-</template>
+  <template #footer>
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('modal-close')">
+      닫기
+    </button>
+  </template>
 </bo-modal>
 `,
 };
@@ -5185,13 +5259,37 @@ window.SimpleProdPickModal = {
   },
   emits: ['toggle', 'close'],
   setup(props, { emit }) {
-    const { ref, computed } = Vue;
-    const search = ref('');
+    const { reactive, computed, watch } = Vue;
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
+
     const cfFiltered = computed(() => {
-      const k = (search.value || '').trim().toLowerCase();
-      if (!k) return props.prods;
-      return props.prods.filter(p => (p.prodNm || '').toLowerCase().includes(k));
+      const k = (searchParam.searchValue || '').trim().toLowerCase();
+      if (!k) return props.prods || [];
+      return (props.prods || []).filter(p => (p.prodNm || '').toLowerCase().includes(k));
     });
+
+    const fnBuildPagerNums = () => {
+      pager.pageTotalCount = cfFiltered.value.length;
+      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
+      const s = Math.max(1, pager.pageNo - 2), e = Math.min(pager.pageTotalPage, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+
+    const cfPageRows = computed(() => {
+      fnBuildPagerNums();
+      const start = (pager.pageNo - 1) * pager.pageSize;
+      return cfFiltered.value.slice(start, start + pager.pageSize);
+    });
+
+    watch(() => searchParam.searchValue, () => { pager.pageNo = 1; });
+    watch(() => props.prods, () => { pager.pageNo = 1; }, { deep: true });
+
+    const onSearch = () => { pager.pageNo = 1; };
+    const onReset = () => { searchParam.searchValue = ''; pager.pageNo = 1; };
+    const onSetPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const onSizeChange = () => { pager.pageNo = 1; };
+
     const isSelected = (id) => (props.selectedIds || []).includes(id);
     const onToggle = (p) => emit('toggle', p.productId);
 
@@ -5200,6 +5298,10 @@ window.SimpleProdPickModal = {
       console.log(' ■■ SimpleProdPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+      } else if (cmd === 'searchParam-search') {
+        return onSearch();
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -5214,35 +5316,48 @@ window.SimpleProdPickModal = {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
+
+    const baseSearchColumns = [
+      { key: 'searchValue', type: 'text', placeholder: '상품명 검색' },
+    ];
+
+    const listGridColumns = [
+      { key: '_check', label: '', style: 'width:32px;text-align:center;', html: true, fmt: (v, row) => {
+        return isSelected(row.productId)
+          ? `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:#7e57c2;color:#fff;font-size:9px;line-height:14px;font-weight:700;">✓</span>`
+          : `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;border:1.5px solid #d1d5db;background:#fff;"></span>`;
+      } },
+      { key: 'prodNm', label: '상품명', cellStyle: 'font-weight:600;font-size:12px;color:#222;', fmt: (v) => v || '-' },
+      { key: 'price',  label: '가격', align: 'right', cellStyle: 'font-size:11px;color:#888;', fmt: (v) => (v || 0).toLocaleString() + '원' },
+    ];
+
+    const fnRowStyle = (row) => isSelected(row.productId) ? 'background:#ede7f6;cursor:pointer;' : 'cursor:pointer;';
+
     return {
-      search, cfFiltered, isSelected,                                         // 데이터
+      searchParam, cfPageRows, pager, isSelected,                             // 데이터
+      baseSearchColumns, listGridColumns, fnRowStyle,                         // 컬럼 정의
+      onSetPage, onSizeChange,                                                // 페이저 콜백
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
 <bo-modal :show="show" :title="title" :width="width" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="padding:12px;border-bottom:1px solid #f0f0f0;">
-    <input v-model="search" type="text" placeholder="상품명 검색" class="form-control" style="width:100%;" />
+  <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">
+    <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+      @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
-  <div style="max-height:50vh;overflow-y:auto;">
-    <div v-if="cfFiltered.length===0" style="text-align:center;color:#999;padding:40px;">
-      상품이 없습니다.
-    </div>
-    <label v-for="p in cfFiltered" :key="p && p.productId" style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid #f0f0f0;cursor:pointer;gap:10px;" :style="isSelected(p.productId)?'background:#ede7f6;':''">
-    <input type="checkbox" :checked="isSelected(p.productId)" @change="handleSelectAction('prods-toggle', p)" />
-    <span style="flex:1;font-weight:600;font-size:12px;color:#222;">
-      {{ p.prodNm }}
-    </span>
-    <span style="font-size:11px;color:#888;">
-      {{ (p.price||0).toLocaleString() }}원
-    </span>
-  </label>
-</div>
-<template #footer>
-  <button class="btn btn-primary" @click="handleBtnAction('modal-close')">
-    확인 ({{ (selectedIds||[]).length }}개)
-  </button>
-</template>
+  <div style="max-height:55vh;overflow-y:auto;">
+    <bo-grid :columns="listGridColumns" :rows="cfPageRows" :pager="pager" row-key="productId"
+      :list-title="'총 ' + pager.pageTotalCount + '건'" :row-style="fnRowStyle"
+      empty-text="상품이 없습니다." row-clickable
+      @row-click="row => handleSelectAction('prods-toggle', row)"
+      @set-page="onSetPage" @size-change="onSizeChange" />
+  </div>
+  <template #footer>
+    <button class="btn btn-primary" @click="handleBtnAction('modal-close')">
+      확인 ({{ (selectedIds||[]).length }}개)
+    </button>
+  </template>
 </bo-modal>
 `,
 };
