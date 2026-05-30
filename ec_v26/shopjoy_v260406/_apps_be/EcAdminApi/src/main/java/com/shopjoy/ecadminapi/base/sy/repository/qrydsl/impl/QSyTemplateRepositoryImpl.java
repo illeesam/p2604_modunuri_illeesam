@@ -48,6 +48,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyTemplateDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andTemplateId(search),
                 andTemplateTypeCd(search),
                 andUseYn(search),
@@ -74,6 +75,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
 
         JPAQuery<SyTemplateDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andTemplateId(search),
                 andTemplateTypeCd(search),
                 andUseYn(search),
@@ -84,6 +86,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
 
         Long total = queryFactory.select(t.count()).from(t).where(
                 andSiteId(search),
+                andPathId(search),
                 andTemplateId(search),
                 andTemplateTypeCd(search),
                 andUseYn(search),
@@ -118,6 +121,13 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private BooleanExpression andSiteId(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? t.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(SyTemplateDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? t.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* templateId 정확 일치 */

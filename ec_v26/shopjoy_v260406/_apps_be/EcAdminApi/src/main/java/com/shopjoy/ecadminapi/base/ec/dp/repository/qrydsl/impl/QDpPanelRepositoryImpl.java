@@ -49,6 +49,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpPanelDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andPanelId(search),
                 andDispPanelStatusCd(search),
                 andPanelTypeCd(search),
@@ -72,6 +73,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpPanelDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andPanelId(search),
                 andDispPanelStatusCd(search),
                 andPanelTypeCd(search),
@@ -83,6 +85,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         List<DpPanelDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
         Long total = queryFactory.select(p.count()).from(p).where(
                 andSiteId(search),
+                andPathId(search),
                 andPanelId(search),
                 andDispPanelStatusCd(search),
                 andPanelTypeCd(search),
@@ -115,6 +118,13 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     private BooleanExpression andSiteId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? p.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(DpPanelDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? p.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* panelId 정확 일치 */

@@ -42,6 +42,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andWidgetLibId(search),
                 andWidgetTypeCd(search),
                 andUseYn(search),
@@ -64,6 +65,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andWidgetLibId(search),
                 andWidgetTypeCd(search),
                 andUseYn(search),
@@ -74,6 +76,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         List<DpWidgetLibDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
         Long total = queryFactory.select(l.count()).from(l).where(
                 andSiteId(search),
+                andPathId(search),
                 andWidgetLibId(search),
                 andWidgetTypeCd(search),
                 andUseYn(search),
@@ -105,6 +108,13 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private BooleanExpression andSiteId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? l.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(DpWidgetLibDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? l.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* widgetLibId 정확 일치 */

@@ -54,6 +54,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
         JPAQuery<DpUiDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andUiId(search),
                 andDeviceTypeCd(search),
                 andDateRange(search),
@@ -82,6 +83,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
         JPAQuery<DpUiDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andUiId(search),
                 andDeviceTypeCd(search),
                 andDateRange(search),
@@ -94,6 +96,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
         Long total = queryFactory.select(u.count()).from(u).where(
                 andSiteId(search),
+                andPathId(search),
                 andUiId(search),
                 andDeviceTypeCd(search),
                 andDateRange(search),
@@ -127,6 +130,13 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     private BooleanExpression andSiteId(DpUiDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? u.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(DpUiDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? u.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* uiId 정확 일치 */

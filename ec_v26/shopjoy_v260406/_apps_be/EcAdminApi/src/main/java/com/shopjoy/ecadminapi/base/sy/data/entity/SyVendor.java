@@ -120,8 +120,8 @@ public class SyVendor extends BaseEntity {
     @Column(name = "path_id", length = 21)
     private String pathId;
 
-    @Comment("비고")
-    @Column(name = "vendor_remark", length = 500)
+    @Comment("비고 (HTML 에디터)")
+    @Column(name = "vendor_remark", columnDefinition = "TEXT")
     private String vendorRemark;
 
 }

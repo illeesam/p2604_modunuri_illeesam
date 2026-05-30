@@ -27,7 +27,7 @@ CREATE TABLE shopjoy_2604.sy_vendor (
     contract_date       DATE        ,
     vendor_status_cd    VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
     path_id             VARCHAR(21) ,
-    vendor_remark       VARCHAR(500),
+    vendor_remark       TEXT,
     reg_by              VARCHAR(30) ,
     reg_date            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by              VARCHAR(30) ,
@@ -60,7 +60,7 @@ COMMENT ON COLUMN shopjoy_2604.sy_vendor.open_date IS '개업일자';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.contract_date IS '계약일자';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_status_cd IS '상태 (코드: VENDOR_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.path_id IS '점(.) 구분 표시경로';
-COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_remark IS '비고';
+COMMENT ON COLUMN shopjoy_2604.sy_vendor.vendor_remark IS '비고 (HTML 에디터)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.reg_by IS '등록자 (sy_user.user_id, ec_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.reg_date IS '등록일';
 COMMENT ON COLUMN shopjoy_2604.sy_vendor.upd_by IS '수정자 (sy_user.user_id, ec_member.member_id)';

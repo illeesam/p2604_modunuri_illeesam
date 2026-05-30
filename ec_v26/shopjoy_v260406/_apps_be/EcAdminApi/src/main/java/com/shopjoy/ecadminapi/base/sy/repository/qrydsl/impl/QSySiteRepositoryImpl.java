@@ -67,6 +67,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SySiteDto.Item> query = buildBaseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andStatus(search),
                 andTypeCd(search),
                 andDateRange(search),
@@ -95,6 +96,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         JPAQuery<SySiteDto.Item> query = buildBaseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andStatus(search),
                 andTypeCd(search),
                 andDateRange(search),
@@ -107,6 +109,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         Long total = queryFactory.select(s.count()).from(s).where(
                 andSiteId(search),
+                andPathId(search),
                 andStatus(search),
                 andTypeCd(search),
                 andDateRange(search),
@@ -128,6 +131,13 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private BooleanExpression andSiteId(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? s.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(SySiteDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? s.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* siteStatusCd 정확 일치 */

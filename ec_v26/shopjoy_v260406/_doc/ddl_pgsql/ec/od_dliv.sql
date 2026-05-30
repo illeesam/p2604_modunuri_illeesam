@@ -25,7 +25,7 @@ CREATE TABLE shopjoy_2604.od_dliv (
     dliv_status_cd_before VARCHAR(20) ,
     dliv_ship_date        TIMESTAMP   ,
     dliv_date             TIMESTAMP   ,
-    dliv_memo             VARCHAR(300),
+    dliv_memo             TEXT,
     shipping_fee          BIGINT       DEFAULT 0,
     org_shipping_fee      BIGINT      ,
     shipping_discount_amt BIGINT       DEFAULT 0,
@@ -71,7 +71,7 @@ COMMENT ON COLUMN shopjoy_2604.od_dliv.dliv_status_cd IS '배송상태 (코드: 
 COMMENT ON COLUMN shopjoy_2604.od_dliv.dliv_status_cd_before IS '변경 전 배송상태 (코드: DLIV_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.dliv_ship_date IS '출고일시';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.dliv_date IS '배송완료일시';
-COMMENT ON COLUMN shopjoy_2604.od_dliv.dliv_memo IS '메모';
+COMMENT ON COLUMN shopjoy_2604.od_dliv.dliv_memo IS '메모 (HTML 에디터)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.shipping_fee IS '배송료 (현재값)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.org_shipping_fee IS '원 배송비 (할인 전 스냅샷)';
 COMMENT ON COLUMN shopjoy_2604.od_dliv.shipping_discount_amt IS '배송비 쿠폰할인금액';

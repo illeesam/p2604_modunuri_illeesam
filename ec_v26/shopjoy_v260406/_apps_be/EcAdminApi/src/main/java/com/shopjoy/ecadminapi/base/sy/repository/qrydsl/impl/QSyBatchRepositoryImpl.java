@@ -48,6 +48,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyBatchDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andBatchId(search),
                 andStatus(search),
                 andSearchValue(search)
@@ -73,6 +74,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
         JPAQuery<SyBatchDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andBatchId(search),
                 andStatus(search),
                 andSearchValue(search)
@@ -82,6 +84,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
         Long total = queryFactory.select(b.count()).from(b).where(
                 andSiteId(search),
+                andPathId(search),
                 andBatchId(search),
                 andStatus(search),
                 andSearchValue(search)
@@ -116,6 +119,13 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private BooleanExpression andSiteId(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? b.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(SyBatchDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? b.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* batchId 정확 일치 */

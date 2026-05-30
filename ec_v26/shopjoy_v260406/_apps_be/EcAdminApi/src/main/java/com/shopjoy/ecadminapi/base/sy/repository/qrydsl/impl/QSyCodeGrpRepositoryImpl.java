@@ -62,6 +62,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andCodeGrpId(search),
                 andCodeGrp(search),
                 andUseYn(search),
@@ -91,6 +92,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
         JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andCodeGrpId(search),
                 andCodeGrp(search),
                 andUseYn(search),
@@ -104,6 +106,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
         Long total = queryFactory.select(g.count()).from(g).where(
                 andSiteId(search),
+                andPathId(search),
                 andCodeGrpId(search),
                 andCodeGrp(search),
                 andUseYn(search),
@@ -126,6 +129,13 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     private BooleanExpression andSiteId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? g.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(SyCodeGrpDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? g.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* codeGrpId 정확 일치 */

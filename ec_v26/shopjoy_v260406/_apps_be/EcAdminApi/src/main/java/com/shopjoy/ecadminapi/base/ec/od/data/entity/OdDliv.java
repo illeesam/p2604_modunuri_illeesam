@@ -112,8 +112,8 @@ public class OdDliv extends BaseEntity {
     @Column(name = "dliv_date")
     private LocalDateTime dlivDate;
 
-    @Comment("메모")
-    @Column(name = "dliv_memo", length = 300)
+    @Comment("메모 (HTML 에디터)")
+    @Column(name = "dliv_memo", columnDefinition = "TEXT")
     private String dlivMemo;
 
     @Comment("배송료 (현재값)")

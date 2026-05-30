@@ -71,6 +71,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andVendorId(search),
                 andStatus(search),
                 andVendorClassCd(search),
@@ -100,6 +101,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
         JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andVendorId(search),
                 andStatus(search),
                 andVendorClassCd(search),
@@ -113,6 +115,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
         Long total = queryFactory.select(v.count()).from(v).where(
                 andSiteId(search),
+                andPathId(search),
                 andVendorId(search),
                 andStatus(search),
                 andVendorClassCd(search),
@@ -135,6 +138,13 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private BooleanExpression andSiteId(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? v.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(SyVendorDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? v.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* vendorId 정확 일치 */

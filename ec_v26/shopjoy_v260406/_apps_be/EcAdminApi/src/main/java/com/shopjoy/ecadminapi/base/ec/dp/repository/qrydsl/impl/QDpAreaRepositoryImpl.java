@@ -45,6 +45,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         JPAQuery<DpAreaDto.Item> query = baseQuery().where(
                 andUiIds(search),
                 andSiteId(search),
+                andPathId(search),
                 andUseYn(search),
                 andAreaId(search),
                 andUiId(search),
@@ -67,6 +68,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         JPAQuery<DpAreaDto.Item> query = baseQuery().where(
                 andUiIds(search),
                 andSiteId(search),
+                andPathId(search),
                 andUseYn(search),
                 andAreaId(search),
                 andUiId(search),
@@ -78,6 +80,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         Long total = queryFactory.select(a.count()).from(a).where(
                 andUiIds(search),
                 andSiteId(search),
+                andPathId(search),
                 andUseYn(search),
                 andAreaId(search),
                 andUiId(search),
@@ -114,6 +117,13 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     private BooleanExpression andSiteId(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? a.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(DpAreaDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* useYn 정확 일치 */

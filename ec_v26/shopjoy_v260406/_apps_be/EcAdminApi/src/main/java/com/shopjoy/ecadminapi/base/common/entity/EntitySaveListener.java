@@ -147,6 +147,9 @@ public class EntitySaveListener {
      * @param entity site_id 를 주입할 대상 엔티티
      */
     private void applySiteId(Object entity) {
+        /* SySite 는 siteId 자체가 PK 이므로 컨텍스트 값으로 덮어쓰면 PK 변경 →
+         *  Hibernate "identifier was altered" 예외 발생. 사이트 마스터 자체는 제외. */
+        if (entity.getClass().getSimpleName().equals("SySite")) return;
         Field f = resolveSiteIdField(entity.getClass());
         if (f == null) return;
         String ctxSiteId = SecurityUtil.getSiteId();

@@ -49,6 +49,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         JPAQuery<SyBbmDto.Item> query = baseQuery().where(
                 andSiteId(search),
                 andBbmId(search),
+                andPathId(search),
                 andTypeCd(search),
                 andSearchValue(search)
         );
@@ -74,6 +75,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         JPAQuery<SyBbmDto.Item> query = baseQuery().where(
                 andSiteId(search),
                 andBbmId(search),
+                andPathId(search),
                 andTypeCd(search),
                 andSearchValue(search)
         );
@@ -83,6 +85,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         Long total = queryFactory.select(b.count()).from(b).where(
                 andSiteId(search),
                 andBbmId(search),
+                andPathId(search),
                 andTypeCd(search),
                 andSearchValue(search)
         ).fetchOne();
@@ -122,6 +125,13 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     private BooleanExpression andBbmId(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbmId())
                 ? b.bbmId.eq(search.getBbmId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로의 게시판까지 포함 */
+    private BooleanExpression andPathId(SyBbmDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? b.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* bbmTypeCd 정확 일치 */

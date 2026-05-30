@@ -47,6 +47,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyPropDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andPropTypeCd(search),
                 andSearchValue(search)
         );
@@ -71,6 +72,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
         JPAQuery<SyPropDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andPropTypeCd(search),
                 andSearchValue(search)
         );
@@ -79,6 +81,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
         Long total = queryFactory.select(p.count()).from(p).where(
                 andSiteId(search),
+                andPathId(search),
                 andPropTypeCd(search),
                 andSearchValue(search)
         ).fetchOne();
@@ -111,6 +114,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private BooleanExpression andSiteId(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? p.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(SyPropDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? p.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* propTypeCd 정확 일치 */

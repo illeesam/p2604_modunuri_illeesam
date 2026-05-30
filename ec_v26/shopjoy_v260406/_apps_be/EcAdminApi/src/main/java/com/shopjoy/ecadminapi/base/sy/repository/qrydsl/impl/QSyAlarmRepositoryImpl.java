@@ -53,6 +53,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andAlarmId(search),
                 andStatus(search),
                 andTypeCd(search),
@@ -79,6 +80,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
         JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
                 andSiteId(search),
+                andPathId(search),
                 andAlarmId(search),
                 andStatus(search),
                 andTypeCd(search),
@@ -89,6 +91,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
         Long total = queryFactory.select(a.count()).from(a).where(
                 andSiteId(search),
+                andPathId(search),
                 andAlarmId(search),
                 andStatus(search),
                 andTypeCd(search),
@@ -130,6 +133,13 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private BooleanExpression andSiteId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? a.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    private BooleanExpression andPathId(SyAlarmDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPathId())
+                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                : null;
     }
 
     /* alarmId 정확 일치 */
