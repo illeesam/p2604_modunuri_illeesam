@@ -236,12 +236,13 @@ public class MvcLogAspect {
         if (args == null || args.length == 0) return "";
 
         if (args.length == 1) {
-            return String.valueOf(args[0]);
+            return AopFormatUtil.formatObject(args[0]);
         }
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < args.length; i++) {
-            sb.append("\n    args[").append(i).append("] ").append(args[i]);
+            /* AopFormatUtil 가 Entity/DTO 의 필드를 펼쳐 표시 (toString 의 @hex 회피) */
+            sb.append("\n    args[").append(i).append("] ").append(AopFormatUtil.formatObject(args[i]));
         }
 
         String result = sb.toString();

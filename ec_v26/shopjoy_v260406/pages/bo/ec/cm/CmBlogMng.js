@@ -344,28 +344,32 @@ window.CmBlogMng = {
     <div class="toolbar">
       <span class="list-title">
         {{ detailPanel.isNew ? '신규 등록' : '상세 / 수정' }}
+        <span v-if="!detailPanel.isNew && detailPanel.form.blogId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ detailPanel.form.blogId }}
+        </span>
       </span>
-      <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('detailPanel-save')">
-          저장
-        </button>
-        <button v-if="!detailPanel.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('detailPanel-delete')">
-          삭제
-        </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-          닫기
-        </button>
-      </div>
     </div>
     <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="blogFormColumns" :form="detailPanel.form" :errors="{}"
-        :cols="2" :show-actions="false">
+        :cols="3" :show-actions="false">
         <template #blogContent>
           <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />
         </template>
       </bo-form-area>
+      <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
+      <div class="form-actions">
+        <button class="btn btn-blue" @click="handleBtnAction('detailPanel-save')">
+          저장
+        </button>
+        <button v-if="!detailPanel.isNew" class="btn btn-danger" @click="handleBtnAction('detailPanel-delete')">
+          삭제
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('detailPanel-close')">
+          닫기
+        </button>
+      </div>
     </div>
     <!-- ===== □.■. 블로그 detail 폼 ========================================== -->
   </div>

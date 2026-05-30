@@ -232,31 +232,34 @@ window.PdDlivTmpltMng = {
         badge: (row) => fnYnBadge(row.useYn) },
     ];
 
-    // 기본 폼
+    // 기본 폼 — cols=3 기준 자연 배치
     const baseFormColumns = [
-      { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true },
+      /* 1행: 템플릿명(2) + 배송방법(1) */
+      { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true, colSpan: 2 },
       { key: 'dlivMethodCd',     label: '배송방법', type: 'select', nullable: false,
         options: () => codes.dliv_methods },
+      /* 2행: 결제유형 + 택배사 + 기본배송비 */
       { key: 'dlivPayTypeCd',    label: '배송비 결제유형', type: 'select', nullable: false,
         options: () => codes.dliv_pay_types },
       { key: 'dlivCourierCd',    label: '배송 택배사', type: 'select', nullLabel: '없음',
         options: () => codes.couriers },
       { key: 'dlivCost',         label: '기본 배송비 (원)', type: 'number' },
+      /* 3행: 무료배송 최소 + 도서산간 + 반품배송비 편도 */
       { key: 'freeDlivMinAmt',   label: '무료배송 최소금액 (원)', type: 'number' },
       { key: 'islandExtraCost',  label: '도서산간 추가배송비 (원)', type: 'number' },
       { key: 'returnCost',       label: '반품배송비 편도 (원)', type: 'number' },
+      /* 4행: 교환배송 왕복 + 반품 택배사 + 반품지 우편번호 */
       { key: 'exchangeCost',     label: '교환배송비 왕복 (원)', type: 'number' },
       { key: 'returnCourierCd',  label: '반품 택배사', type: 'select', nullLabel: '없음',
         options: () => codes.couriers },
       { key: 'returnAddrZip',    label: '반품지 우편번호', type: 'text' },
+      /* 5행: 반품지 전화번호 + 기본배송지 + 사용여부 */
       { key: 'returnTelNo',      label: '반품지 전화번호', type: 'text' },
-      { type: 'rowBreak' },
-      { key: 'returnAddr',       label: '반품지 주소', type: 'text', colSpan: 2 },
-      { type: 'rowBreak' },
-      { key: 'returnAddrDetail', label: '반품지 상세주소', type: 'text', colSpan: 2 },
-      { type: 'rowBreak' },
       { key: 'baseDlivYn',       label: '기본 배송지', type: 'select', options: () => codes.use_yn },
       { key: 'useYn',            label: '사용여부', type: 'select', options: () => codes.use_yn },
+      /* 6~7행: 반품지 주소/상세주소 (전체 폭) */
+      { key: 'returnAddr',       label: '반품지 주소', type: 'text', colSpan: 3 },
+      { key: 'returnAddrDetail', label: '반품지 상세주소', type: 'text', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -336,29 +339,33 @@ window.PdDlivTmpltMng = {
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (신규/수정 폼) ====================================== -->
   <div class="card" v-if="uiState.selectedId">
-    <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 ============================ -->
+    <!-- ===== ■.■. 상세 툴바: 제목만 (저장/삭제/닫기는 하단 form-actions) ======== -->
     <div class="toolbar">
       <span class="list-title">
         {{ uiState.isNew ? '배송템플릿 신규 등록' : '배송템플릿 상세 / 수정' }}
+        <span v-if="!uiState.isNew && form.dlivTmpltId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.dlivTmpltId }}
+        </span>
       </span>
-      <div style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button v-if="!uiState.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">
-          삭제
-        </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </div>
     </div>
     <!-- ===== □.□. 상세 툴바 ================================================ -->
     <!-- ===== ■.■. 상세 입력폼 (BoFormArea 자동 렌더) ======================== -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}"
-        :cols="2" :show-actions="false" />
+        :cols="3" :show-actions="false" />
+      <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
+      <div class="form-actions">
+        <button class="btn btn-blue" @click="handleBtnAction('form-save')">
+          저장
+        </button>
+        <button v-if="!uiState.isNew" class="btn btn-danger" @click="handleBtnAction('form-delete')">
+          삭제
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
+      </div>
     </div>
   </div>
   <!-- ===== □. 상세 패널 =================================================== -->

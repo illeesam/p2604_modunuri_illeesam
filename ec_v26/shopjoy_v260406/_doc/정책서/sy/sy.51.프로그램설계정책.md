@@ -697,17 +697,45 @@ select `options` 는 함수형 + 다양한 배열 형식 지원:
 #### 외부 툴바·picker 패턴 (`:show-actions=false`)
 
 상위에서 저장/삭제/닫기 버튼을 별도 렌더하거나, 부서/판매업체 picker 같은 외부 모달
-연동 필드가 있으면 액션 슬롯을 끄고 폼만 위임:
+연동 필드가 있으면 액션 슬롯을 끄고 폼만 위임. **2026-05-30 표준: 저장/삭제/닫기 버튼은
+하단 `.form-actions` 영역에 중앙 정렬 배치 (툴바 우상단 배치 금지)**:
 
 ```html
-<div class="toolbar"><button @click="handleSave">저장</button>...</div>
+<!-- ✅ 표준 (2026-05-30): 상단 툴바=제목+ID, 하단 form-actions=저장/삭제/닫기 -->
+<div class="toolbar">
+  <span class="list-title">
+    {{ isNew ? '신규 등록' : '상세 / 수정' }}
+    <span v-if="!isNew && form.xxxId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.xxxId }}
+    </span>
+  </span>
+</div>
 <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-  :cols="2" :show-actions="false">
+  :cols="3" :show-actions="false">
   <template #dept>
     <!-- 부서 picker 등 커스텀 슬롯 -->
   </template>
 </bo-form-area>
+<div class="form-actions">   <!-- .form-actions CSS 가 중앙 정렬 자동 -->
+  <button class="btn btn-blue" @click="handleSave">저장</button>
+  <button v-if="!isNew" class="btn btn-danger" @click="handleDelete">삭제</button>
+  <button class="btn btn-secondary" @click="handleClose">닫기</button>
+</div>
+
+<!-- ❌ 금지 (이전 방식): 툴바 우상단 버튼 배치 -->
+<div class="toolbar">
+  <span class="list-title">신규 등록</span>
+  <div style="margin-left:auto;display:flex;gap:6px;">
+    <button class="btn btn-blue btn-sm">저장</button> ...
+  </div>
+</div>
 ```
+
+**핵심 규칙**:
+- 상단 툴바: 제목 + (수정 시) `#xxxId` 만. 버튼 배치 금지
+- `:cols` 는 Mng 인라인 폼도 **3 표준** (좁은 모달 등 좁은 컨텍스트만 예외)
+- 하단 `.form-actions` 는 CSS 가 `justify-content:center` 자동 → 인라인 스타일 오버라이드 금지
+- 버튼 크기: `btn-sm` 아닌 **기본 크기** (하단 액션은 시각적 무게감)
 
 #### 미적용(KEEP) 패턴
 

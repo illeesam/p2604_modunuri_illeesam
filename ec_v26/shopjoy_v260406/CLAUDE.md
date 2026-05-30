@@ -606,9 +606,65 @@ Vue `app.component('EcOrderMng', window.EcOrderMng)` → 템플릿에서 `<ec-or
 **Dtl 기본 폼 컬럼 수 cols=3** ⭐ (2026-05-25):
 - BoFormArea의 `cols` 기본값은 3 (한 줄에 필드 3개)
 - 모든 Dtl의 메인 폼은 `:cols="3"` 기준
-- 좁은 영역(2열 그리드 카드, 모달 등)에서만 `:cols="2"` 또는 `:cols="1"` 명시
+- **Mng 안의 인라인 상세 패널** (목록 그리드 아래 등장하는 신규/수정 폼) 도 `:cols="3"` 표준 (2026-05-30 정책 확장)
+- 좁은 영역(2열 그리드 카드, **일괄 작업 모달**, 작은 사이드 패널)에서만 `:cols="2"` 또는 `:cols="1"` 명시
 - 넓은 영역(상세 폼 전체 폭, 펼침 정보 영역)은 `:cols="4"` 또는 `:cols="5"`/`:cols="6"` 사용 + `label-left` 모드
 - 이전에 `:cols="2"`로 명시되어 있던 24개 Dtl 파일을 2026-05-25 일괄 `:cols="3"`으로 변경 → 게시판 수정 화면처럼 한 줄에 3필드 표시
+- 2026-05-30 추가 변경: PdDlivTmpltMng / CmBlogMng / OdClaimHist (processForm) 등 Mng 인라인 상세 폼도 cols=3 으로 통일
+
+**Mng 인라인 상세 패널 표준 구조** ⭐ (2026-05-30):
+- **툴바 (상단)**: 제목 + `#{{ form.xxxId }}` ID 표시만. 저장/삭제/닫기 버튼 배치 금지
+- **폼 영역**: `<bo-form-area :cols="3" :show-actions="false" />`
+- **하단 액션 (form-actions)**: 저장/삭제/닫기 버튼은 **하단 `.form-actions` 영역에 중앙 정렬** 배치
+  - `.form-actions` CSS 클래스가 `display:flex;gap:8px;margin-top:20px;justify-content:center` 를 자동 적용 — 인라인 스타일 오버라이드 금지
+  - 버튼 순서: `[저장]` → `[삭제]`(수정시만) → `[닫기]`
+  - 버튼 크기는 `btn-sm` 이 아닌 **기본 크기** 사용 (하단 액션 영역은 시각적 무게감 있게)
+- ID 표시 패턴: 신규 등록 시 ID 미표시, 수정 시에만 `#{{ form.xxxId }}`
+  ```html
+  <span class="list-title">
+    {{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}
+    <span v-if="!uiState.isNew && form.xxxId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.xxxId }}
+    </span>
+  </span>
+  ```
+
+```html
+<!-- ✅ 표준 패턴 (2026-05-30) -->
+<div class="card" v-if="uiState.selectedId">
+  <div class="toolbar">
+    <span class="list-title">
+      {{ uiState.isNew ? '신규 등록' : '상세 / 수정' }}
+      <span v-if="!uiState.isNew && form.xxxId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.xxxId }}
+      </span>
+    </span>
+    <!-- 툴바에 버튼 배치 금지 -->
+  </div>
+  <div style="padding:12px">
+    <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}"
+      :cols="3" :show-actions="false" />
+    <!-- 하단 액션: form-actions 클래스가 중앙 정렬 자동 적용 -->
+    <div class="form-actions">
+      <button class="btn btn-blue" @click="handleBtnAction('form-save')">저장</button>
+      <button v-if="!uiState.isNew" class="btn btn-danger" @click="handleBtnAction('form-delete')">삭제</button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ❌ 금지 패턴 (이전 방식) -->
+<div class="toolbar">
+  <span class="list-title">신규 등록</span>
+  <div style="margin-left:auto;display:flex;gap:6px;">
+    <button class="btn btn-blue btn-sm">저장</button>
+    <button class="btn btn-danger btn-sm">삭제</button>
+    <button class="btn btn-secondary btn-sm">닫기</button>
+  </div>
+</div>
+```
+
+- 적용 현황 (2026-05-30): PdDlivTmpltMng, CmBlogMng, OdClaimHist (processForm — 이미 form-actions 패턴 사용 중, cols=3 로만 변경)
 
 **Dtl baseFormColumns 3열 빈칸 최소화 정책** ⭐ (2026-05-27):
 - cols=3 환경에서 인접 필드 colSpan 합계가 3이 되도록 배치하여 빈 칸 최소화

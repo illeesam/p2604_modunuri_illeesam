@@ -55,6 +55,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         JPAQuery<PdCategoryDto.Item> query = baseQuery().where(
                 andSiteId(search),
                 andCategoryId(search),
+                andParentCategoryId(search),
                 andStatus(search),
                 andSearchValue(search)
         );
@@ -82,6 +83,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         JPAQuery<PdCategoryDto.Item> query = baseQuery().where(
                 andSiteId(search),
                 andCategoryId(search),
+                andParentCategoryId(search),
                 andStatus(search),
                 andSearchValue(search)
         );
@@ -93,6 +95,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         Long total = queryFactory.select(c.count()).from(c).where(
                 andSiteId(search),
                 andCategoryId(search),
+                andParentCategoryId(search),
                 andStatus(search),
                 andSearchValue(search)
         ).fetchOne();
@@ -136,6 +139,13 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     private BooleanExpression andCategoryId(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getCategoryId())
                 ? c.categoryId.eq(search.getCategoryId()) : null;
+    }
+
+    /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
+    private BooleanExpression andParentCategoryId(PdCategoryDto.Request search) {
+        return search != null && StringUtils.hasText(search.getParentCategoryId())
+                ? c.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
+                : null;
     }
 
     /* categoryStatusCd 정확 일치 */

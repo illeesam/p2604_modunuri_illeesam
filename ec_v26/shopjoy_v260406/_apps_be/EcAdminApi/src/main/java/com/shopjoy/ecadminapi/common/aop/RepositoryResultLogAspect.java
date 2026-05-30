@@ -295,77 +295,11 @@ public class RepositoryResultLogAspect {
      *         (대용량 객체 toString 폭주 방지를 위한 의도적 축약)
      */
     private String formatParameterValue(Object obj) {
-        if (obj == null) return "null";
-        if (obj instanceof String) return "'" + obj + "'";
-        if (obj instanceof Number || obj instanceof Boolean) return obj.toString();
-        if (obj instanceof java.util.Map) return "{...}";
-        if (obj instanceof Collection<?> c) return "[" + c.size() + " items]";
-        return obj.getClass().getSimpleName() + "@" + Integer.toHexString(obj.hashCode());
+        return AopFormatUtil.formatObject(obj);
     }
 
-    /**
-     * 객체의 선언 필드를 리플렉션으로 순회해 {@code Class{f1=v1, f2=v2}} 형태로 덤프한다.
-     *
-     * <p>static/transient/이름에 'logger' 포함 필드는 제외한다(직렬화 불필요·노이즈 회피).
-     * 문자열·날짜 타입 값은 따옴표로 감싼다.</p>
-     *
-     * @param obj 대상 객체(null 이면 "null")
-     * @return 필드 덤프 문자열. 리플렉션 실패 시 {@code SimpleName@hex} 폴백(예외 흡수)
-     */
+    /** AopFormatUtil 위임 — 객체 필드 덤프 (호환성 유지용 래퍼) */
     private String formatObject(Object obj) {
-        if (obj == null) return "null";
-
-        /* 1) 스칼라 타입 — 값 직접 출력 (JDK 모듈 제약으로 reflection 실패 → @hex 폴백 회피).
-         *    String/Character 는 따옴표, Number/Boolean/temporal/enum 은 toString 그대로. */
-        if (obj instanceof String || obj instanceof Character) return "'" + obj + "'";
-        if (obj instanceof Number || obj instanceof Boolean) return obj.toString();
-        if (obj instanceof java.time.LocalDateTime ||
-            obj instanceof java.time.LocalDate ||
-            obj instanceof java.time.LocalTime ||
-            obj instanceof java.util.Date) return "'" + obj + "'";
-        if (obj instanceof Enum<?>) return obj.toString();
-
-        /* 2) DTO/Entity — 선언 필드 reflection 덤프 (상속 포함, 상위 → 하위 순). */
-        try {
-            Class<?> clazz = obj.getClass();
-            StringBuilder sb = new StringBuilder(clazz.getSimpleName()).append("{");
-            boolean first = true;
-            /* 상속 체인 수집 — Object 직전까지 */
-            java.util.List<Class<?>> chain = new java.util.ArrayList<>();
-            for (Class<?> c = clazz; c != null && c != Object.class; c = c.getSuperclass()) chain.add(0, c);
-            for (Class<?> c : chain) {
-                for (Field field : c.getDeclaredFields()) {
-                    if (java.lang.reflect.Modifier.isStatic(field.getModifiers()) ||
-                        java.lang.reflect.Modifier.isTransient(field.getModifiers()) ||
-                        field.getName().startsWith("$") ||
-                        field.getName().contains("logger")) continue;
-
-                    field.setAccessible(true);
-                    Object value = field.get(obj);
-                    if (!first) sb.append(", ");
-                    sb.append(field.getName()).append("=");
-                    if (value == null) {
-                        sb.append("null");
-                    } else if (value instanceof String ||
-                               value instanceof Character ||
-                               value instanceof java.time.LocalDateTime ||
-                               value instanceof java.time.LocalDate ||
-                               value instanceof java.time.LocalTime ||
-                               value instanceof java.util.Date) {
-                        sb.append("'").append(value).append("'");
-                    } else if (value instanceof Collection<?> col) {
-                        sb.append("[").append(col.size()).append(" items]");
-                    } else if (value instanceof java.util.Map<?,?> m) {
-                        sb.append("{").append(m.size()).append(" entries}");
-                    } else {
-                        sb.append(value);
-                    }
-                    first = false;
-                }
-            }
-            return sb.append("}").toString();
-        } catch (Exception e) {
-            return obj.getClass().getSimpleName() + "@" + Integer.toHexString(obj.hashCode());
-        }
+        return AopFormatUtil.formatObject(obj);
     }
 }

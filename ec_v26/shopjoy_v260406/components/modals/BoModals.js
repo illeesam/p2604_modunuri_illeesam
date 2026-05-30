@@ -1345,6 +1345,41 @@ window.TemplateSendModal = {
     /* fnGradeBadgeColor */
     const fnGradeBadgeColor = g => ({ 'VIP': '#f59e0b', '우수': '#2563eb', '일반': '#6b7280' }[g] || '#6b7280');
 
+    /* fnDisplayNm — 회원/관리자 공통 이름 (널 안전) */
+    const fnDisplayNm = (item) => (searchParam.type === 'member'
+      ? (item.memberNm || item.memberEmail || '')
+      : (item.userNm || item.loginId || '')) || '';
+
+    /* fnDisplayLogin — loginId 또는 email 보조 표기 */
+    const fnDisplayLogin = (item) => (searchParam.type === 'member'
+      ? (item.memberEmail || item.email || '')
+      : (item.loginId || item.userEmail || '')) || '';
+
+    /* fnDisplaySub — 두 번째 줄 보조 정보 */
+    const fnDisplaySub = (item) => {
+      if (searchParam.type === 'member') return item.memberEmail || item.email || item.memberPhone || '';
+      const dept = (allDepts.find(d => d.deptId === item.deptId) || {}).deptNm || '';
+      return [dept, item.userEmail || ''].filter(Boolean).join(' · ') || '-';
+    };
+
+    /* fnDisplayBadge — 우측 배지 텍스트 */
+    const fnDisplayBadge = (item) => searchParam.type === 'member'
+      ? (item.memberGrade || item.grade || '')
+      : (item.userStatusCd || '');
+
+    /* fnBadgeStyle — 배지 색상 */
+    const fnBadgeStyle = (item) => {
+      if (searchParam.type === 'user') {
+        return item.userStatusCd === 'ACTIVE'
+          ? 'background:#dcfce7;color:#16a34a;'
+          : 'background:#f3f4f6;color:#9ca3af;';
+      }
+      const g = item.memberGrade || item.grade;
+      return g === 'VIP' ? 'background:#fef3c7;color:#d97706;'
+        : g === '우수' ? 'background:#dbeafe;color:#1d4ed8;'
+        : 'background:#f3f4f6;color:#6b7280;';
+    };
+
     /* handleSend */
     const handleSend = async () => {
       if (!selected.length) { props.showToast('발송할 수신자를 선택하세요.', 'info'); return; }
@@ -1400,21 +1435,25 @@ window.TemplateSendModal = {
     return {
       cfSiteNm, searchParam, uiState, cfList, selected,                      // 데이터
       fnIsSelected, cfAllChecked, cfTypeBadge, fnGradeBadgeColor,            // 헬퍼/computed
+      fnDisplayNm, fnDisplayLogin, fnDisplaySub, fnDisplayBadge, fnBadgeStyle, getId, // list 렌더 헬퍼
       selectedDeptId, selectedGrade, cfFlatDeptTree, MEMBER_GRADES,          // computed/상수
       tmpl: computed(() => props.tmpl),                                      // 템플릿 객체
       handleBtnAction, handleSelectAction,                                   // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="800px" height="84vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+<bo-modal :show="true" max-width="800px" max-height="84vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+  <div style="background:#fff;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;">
     <!-- ── 헤더 ── -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:15px;font-weight:800;color:#1a1a2e;">
-          📨 발송하기
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+        <span style="font-size:15px;font-weight:800;color:#1a1a2e;flex-shrink:0;">
+          📨 {{ tmpl?.templateNm || '발송하기' }}
         </span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;">
+        <code v-if="tmpl?.templateCode" style="font-size:11px;color:#888;background:#efefef;padding:1px 8px;border-radius:4px;flex-shrink:0;">
+          {{ tmpl.templateCode }}
+        </code>
+        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;flex-shrink:0;">
           {{ cfSiteNm }}
         </span>
       </div>
@@ -1427,19 +1466,7 @@ window.TemplateSendModal = {
         </span>
       </div>
     </div>
-    <!-- ── 템플릿 정보 바 ── -->
-    <div style="display:flex;align-items:center;gap:8px;padding:9px 20px;background:#f8f9fa;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-      <span class="badge" :class="cfTypeBadge" style="flex-shrink:0;">
-        {{ tmpl?.templateType }}
-      </span>
-      <span style="font-weight:700;font-size:13px;color:#1a1a2e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-        {{ tmpl?.templateNm }}
-      </span>
-      <code v-if="tmpl?.templateCode" style="font-size:11px;color:#888;background:#efefef;padding:1px 8px;border-radius:4px;flex-shrink:0;">
-        {{ tmpl.templateCode }}
-      </code>
-      </div>
-      <!-- ── 탭 ── -->
+    <!-- ── 탭 ── -->
       <div style="display:flex;border-bottom:2px solid #f0f0f0;flex-shrink:0;background:#fff;">
         <button @click="handleBtnAction('searchParam-type', 'member')"
         style="padding:9px 24px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .12s;"
@@ -1453,7 +1480,7 @@ window.TemplateSendModal = {
         </button>
       </div>
       <!-- ── 바디: 좌(필터) + 우(목록) ── -->
-      <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
+      <div style="display:flex;min-height:420px;max-height:60vh;overflow:hidden;">
         <!-- 좌: 필터 패널 -->
         <div style="width:200px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#f8f9fb;">
           <!-- 관리자 탭: 부서 트리 -->
@@ -1562,7 +1589,7 @@ window.TemplateSendModal = {
               </div>
               검색 결과가 없습니다.
             </div>
-            <div v-for="item in cfList" :key="item.userId||item.boUserId"
+            <div v-for="item in cfList" :key="getId(item)"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .1s;"
             :style="fnIsSelected(item)?'background:#f0fff4;':''"
             @click="handleSelectAction('list-toggle', item)">
@@ -1570,29 +1597,22 @@ window.TemplateSendModal = {
               style="width:15px;height:15px;flex-shrink:0;accent-color:#52c41a;cursor:pointer;" />
               <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .1s;"
               :style="fnIsSelected(item)?'background:#52c41a;color:#fff;':'background:#f3f4f6;color:#6b7280;'">
-                {{ (searchParam.type==='member' ? item.memberNm : item.name).charAt(0) }}
+                {{ fnDisplayNm(item).charAt(0) || '·' }}
               </div>
               <div style="flex:1;min-width:0;">
                 <div style="font-size:13px;font-weight:600;color:#1a1a2e;display:flex;align-items:baseline;gap:5px;">
-                  {{ searchParam.type==='member' ? item.memberNm : item.name }}
+                  {{ fnDisplayNm(item) }}
                   <span style="font-size:11px;color:#9ca3af;font-weight:400;">
-                    {{ item.loginId || item.email }}
+                    {{ fnDisplayLogin(item) }}
                   </span>
                 </div>
                 <div style="font-size:11px;color:#b0b7c3;margin-top:2px;">
-                  <template v-if="searchParam.type==='user'">
-                    {{ item.dept || '-' }} · {{ item.role }}
-                  </template>
-                  <template v-else>
-                    {{ item.email }}
-                  </template>
+                  {{ fnDisplaySub(item) }}
                 </div>
               </div>
-              <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
-              :style="searchParam.type==='user'
-              ? (item.status==='활성'?'background:#dcfce7;color:#16a34a;':'background:#f3f4f6;color:#9ca3af;')
-              : (item.grade==='VIP'?'background:#fef3c7;color:#d97706;':item.grade==='우수'?'background:#dbeafe;color:#1d4ed8;':'background:#f3f4f6;color:#6b7280;')">
-                {{ searchParam.type==='user' ? item.status : item.grade }}
+              <span v-if="fnDisplayBadge(item)" style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0;"
+              :style="fnBadgeStyle(item)">
+                {{ fnDisplayBadge(item) }}
               </span>
             </div>
           </div>

@@ -304,7 +304,7 @@ window.OdClaimHist = {
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="processFormColumns" :form="processForm" :errors="{}"
-        :cols="2" :show-actions="false" />
+        :cols="3" :show-actions="false" />
       <div class="form-actions">
         <button class="btn btn-primary" @click="handleBtnAction('processForm-save')">
           저장
