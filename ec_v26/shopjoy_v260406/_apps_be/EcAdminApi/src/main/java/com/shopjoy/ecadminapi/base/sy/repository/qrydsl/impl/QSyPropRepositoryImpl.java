@@ -7,6 +7,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyProp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -25,6 +26,7 @@ import java.util.Optional;
 public class QSyPropRepositoryImpl implements QSyPropRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyProp p = QSyProp.syProp;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -91,7 +93,10 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         if (s == null) return w;
 
         if (StringUtils.hasText(s.getSiteId()))     w.and(p.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getPathId()))     w.and(p.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId())) {
+            /* 선택 노드 + 모든 자손 path 포함하여 IN 매칭 (조상 클릭 시 하위 데이터까지 조회) */
+            w.and(p.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
+        }
         if (StringUtils.hasText(s.getPropTypeCd())) w.and(p.propTypeCd.eq(s.getPropTypeCd()));
 
         if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {

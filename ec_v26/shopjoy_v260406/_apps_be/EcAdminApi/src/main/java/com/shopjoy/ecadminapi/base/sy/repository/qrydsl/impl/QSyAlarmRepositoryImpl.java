@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAlarm;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAlarm;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -26,6 +28,7 @@ import java.util.Optional;
 public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyAlarm a = QSyAlarm.syAlarm;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdAt = new QSyCode("cd_at");
@@ -104,7 +107,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
         if (StringUtils.hasText(s.getSiteId()))   w.and(a.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getAlarmId()))  w.and(a.alarmId.eq(s.getAlarmId()));
-        if (StringUtils.hasText(s.getPathId()))   w.and(a.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))   w.and(a.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getStatus()))   w.and(a.alarmStatusCd.eq(s.getStatus()));
         if (StringUtils.hasText(s.getTypeCd()))   w.and(a.alarmTypeCd.eq(s.getTypeCd()));
 

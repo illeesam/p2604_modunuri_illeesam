@@ -9,6 +9,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProd;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
@@ -36,6 +37,7 @@ import java.util.Optional;
 public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final PdCategoryRepository pdCategoryRepository;
     private static final QPdProd     p   = QPdProd.pdProd;
     private static final QPdCategory cat = QPdCategory.pdCategory;
     private static final QSyBrand    b   = QSyBrand.syBrand;
@@ -197,7 +199,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         if (StringUtils.hasText(s.getBrandId()))    w.and(p.brandId.eq(s.getBrandId()));
         if (StringUtils.hasText(s.getMdUserId()))   w.and(p.mdUserId.eq(s.getMdUserId()));
         if (StringUtils.hasText(s.getProdStatusCd())) w.and(p.prodStatusCd.eq(s.getProdStatusCd()));
-        if (StringUtils.hasText(s.getCategoryId())) w.and(p.categoryId.eq(s.getCategoryId()));
+        if (StringUtils.hasText(s.getCategoryId())) w.and(p.categoryId.in(pdCategoryRepository.findTreeCategoryIds(s.getCategoryId())));
         if (StringUtils.hasText(s.getVendorId()))   w.and(p.vendorId.eq(s.getVendorId()));
 
         // searchValue + searchType (prodId | prodNm | prodCode | brandNm)

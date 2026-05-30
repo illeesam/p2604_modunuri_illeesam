@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpPanel;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpPanelRepository;
@@ -26,6 +28,7 @@ import java.util.Optional;
 public class QDpPanelRepositoryImpl implements QDpPanelRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
 
     @PersistenceContext
     private EntityManager em;
@@ -98,7 +101,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 .setParameter(1, s.getPathId())
                 .getResultList();
             if (ids == null || ids.isEmpty()) {
-                w.and(p.pathId.eq(s.getPathId()));
+                w.and(p.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
             } else {
                 w.and(p.pathId.in(ids));
             }

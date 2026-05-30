@@ -7,6 +7,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyRoleRepository syRoleRepository;
     private static final QSyUserRole r = QSyUserRole.syUserRole;
     private static final QSyUser usr  = new QSyUser("usr");
     private static final QSyRole rol  = QSyRole.syRole;
@@ -104,7 +106,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         if (s == null) return w;
 
         if (StringUtils.hasText(s.getUserRoleId())) w.and(r.userRoleId.eq(s.getUserRoleId()));
-        if (StringUtils.hasText(s.getRoleId()))     w.and(r.roleId.eq(s.getRoleId()));
+        if (StringUtils.hasText(s.getRoleId()))     w.and(r.roleId.in(syRoleRepository.findTreeRoleIds(s.getRoleId())));
         if (StringUtils.hasText(s.getUserId()))     w.and(r.userId.eq(s.getUserId()));
 
         if (StringUtils.hasText(s.getDateType())

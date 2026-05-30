@@ -7,23 +7,30 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdCategoryRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 /** PdCategory QueryDSL Custom 구현체 */
-@RequiredArgsConstructor
 public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final PdCategoryRepository pdCategoryRepository;
     private static final QPdCategory c   = QPdCategory.pdCategory;
+
+    public QPdCategoryRepositoryImpl(JPAQueryFactory queryFactory, @Lazy PdCategoryRepository pdCategoryRepository) {
+        this.queryFactory = queryFactory;
+        this.pdCategoryRepository = pdCategoryRepository;
+    }
     private static final QPdCategory p1  = new QPdCategory("p1");
     private static final QPdCategory p2  = new QPdCategory("p2");
     private static final QSyCode     cdCs = new QSyCode("cd_cs");
@@ -104,7 +111,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         if (StringUtils.hasText(s.getSiteId()))           w.and(c.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getCategoryId()))       w.and(c.categoryId.eq(s.getCategoryId()));
         if (s.getDepth() != null)                         w.and(c.categoryDepth.eq(s.getDepth()));
-        if (StringUtils.hasText(s.getParentCategoryId())) w.and(c.parentCategoryId.eq(s.getParentCategoryId()));
+        if (StringUtils.hasText(s.getParentCategoryId())) w.and(c.categoryId.in(pdCategoryRepository.findTreeCategoryIds(s.getParentCategoryId())));
         if (StringUtils.hasText(s.getStatus()))           w.and(c.categoryStatusCd.eq(s.getStatus()));
 
         if (StringUtils.hasText(s.getSearchValue())) {

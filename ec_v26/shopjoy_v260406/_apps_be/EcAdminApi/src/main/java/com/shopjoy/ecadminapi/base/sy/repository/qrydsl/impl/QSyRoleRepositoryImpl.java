@@ -7,13 +7,17 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyRoleRepository;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -23,11 +27,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 /** SyRole QueryDSL Custom 구현체 */
-@RequiredArgsConstructor
 public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyRoleRepository syRoleRepository;
+    private final SyPathRepository syPathRepository;
     private static final QSyRole r = QSyRole.syRole;
+
+    public QSyRoleRepositoryImpl(JPAQueryFactory queryFactory, SyPathRepository syPathRepository, @Lazy SyRoleRepository syRoleRepository) {
+        this.queryFactory = queryFactory;
+        this.syPathRepository = syPathRepository;
+        this.syRoleRepository = syRoleRepository;
+    }
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdRt = new QSyCode("cd_rt");
 
@@ -109,10 +120,9 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
         if (StringUtils.hasText(s.getSiteId()))       w.and(r.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getRoleId()))       w.and(r.roleId.eq(s.getRoleId()));
-        // pathId 는 sy_path 재귀 조회가 필요한 조건이므로 단순 비교만 적용
-        if (StringUtils.hasText(s.getPathId()))       w.and(r.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))       w.and(r.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getRoleTypeCd()))   w.and(r.roleTypeCd.eq(s.getRoleTypeCd()));
-        if (StringUtils.hasText(s.getParentRoleId())) w.and(r.parentRoleId.eq(s.getParentRoleId()));
+        if (StringUtils.hasText(s.getParentRoleId())) w.and(r.roleId.in(syRoleRepository.findTreeRoleIds(s.getParentRoleId())));
         if (StringUtils.hasText(s.getUseYn()))        w.and(r.useYn.eq(s.getUseYn()));
 
         if (StringUtils.hasText(s.getSearchValue())) {

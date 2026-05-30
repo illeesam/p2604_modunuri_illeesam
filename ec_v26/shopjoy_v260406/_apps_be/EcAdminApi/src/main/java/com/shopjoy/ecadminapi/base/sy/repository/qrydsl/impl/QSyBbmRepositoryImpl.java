@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBbmDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbm;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBbm;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBbm;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class QSyBbmRepositoryImpl implements QSyBbmRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyBbm b = QSyBbm.syBbm;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -93,7 +96,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
 
         if (StringUtils.hasText(s.getSiteId())) w.and(b.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getBbmId()))  w.and(b.bbmId.eq(s.getBbmId()));
-        if (StringUtils.hasText(s.getPathId())) w.and(b.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId())) w.and(b.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getTypeCd())) w.and(b.bbmTypeCd.eq(s.getTypeCd()));
 
         if (StringUtils.hasText(s.getSearchValue())) {

@@ -7,6 +7,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyMenu;
@@ -14,6 +15,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyMenuRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -23,11 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 /** SyMenu QueryDSL Custom 구현체 */
-@RequiredArgsConstructor
 public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyMenuRepository syMenuRepository;
     private static final QSyMenu m = QSyMenu.syMenu;
+
+    public QSyMenuRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyMenuRepository syMenuRepository) {
+        this.queryFactory = queryFactory;
+        this.syMenuRepository = syMenuRepository;
+    }
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdMt = new QSyCode("cd_mt");
 
@@ -103,7 +110,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         if (StringUtils.hasText(s.getSiteId()))       w.and(m.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getMenuId()))       w.and(m.menuId.eq(s.getMenuId()));
         if (StringUtils.hasText(s.getMenuTypeCd()))   w.and(m.menuTypeCd.eq(s.getMenuTypeCd()));
-        if (StringUtils.hasText(s.getParentMenuId())) w.and(m.parentMenuId.eq(s.getParentMenuId()));
+        if (StringUtils.hasText(s.getParentMenuId())) w.and(m.menuId.in(syMenuRepository.findTreeMenuIds(s.getParentMenuId())));
         if (StringUtils.hasText(s.getUseYn()))        w.and(m.useYn.eq(s.getUseYn()));
 
         if (StringUtils.hasText(s.getSearchValue())) {

@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SySiteDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
@@ -26,6 +28,7 @@ import java.util.Optional;
 public class QSySiteRepositoryImpl implements QSySiteRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSySite s = QSySite.sySite;
     private static final QSyCode cdSt = new QSyCode("cd_st");
     private static final QSyCode cdSs = new QSyCode("cd_ss");
@@ -102,7 +105,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         if (q == null) return w;
 
         if (StringUtils.hasText(q.getSiteId())) w.and(s.siteId.eq(q.getSiteId()));
-        if (StringUtils.hasText(q.getPathId())) w.and(s.pathId.eq(q.getPathId()));
+        if (StringUtils.hasText(q.getPathId())) w.and(s.pathId.in(syPathRepository.findTreePathIds(q.getPathId())));
         if (StringUtils.hasText(q.getStatus())) w.and(s.siteStatusCd.eq(q.getStatus()));
         if (StringUtils.hasText(q.getTypeCd())) w.and(s.siteTypeCd.eq(q.getTypeCd()));
 

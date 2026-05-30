@@ -7,12 +7,11 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetLibDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpWidgetLib;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpWidgetLibRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -26,10 +25,7 @@ import java.util.Optional;
 public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
 
     private final JPAQueryFactory queryFactory;
-
-    @PersistenceContext
-    private EntityManager em;
-
+    private final SyPathRepository syPathRepository;
     private static final QDpWidgetLib l = QDpWidgetLib.dpWidgetLib;
 
     /* 전시 위젯 라이브러리 키조회 */
@@ -86,22 +82,8 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         if (StringUtils.hasText(s.getWidgetTypeCd())) w.and(l.widgetTypeCd.eq(s.getWidgetTypeCd()));
         if (StringUtils.hasText(s.getUseYn()))        w.and(l.useYn.eq(s.getUseYn()));
 
-        if (StringUtils.hasText(s.getPathId())) {
-            @SuppressWarnings("unchecked")
-            List<String> ids = em.createNativeQuery(
-                    "WITH RECURSIVE sub AS ("
-                  + "  SELECT path_id FROM shopjoy_2604.sy_path WHERE path_id = ?1 "
-                  + "  UNION ALL "
-                  + "  SELECT pp.path_id FROM shopjoy_2604.sy_path pp JOIN sub s ON pp.parent_path_id = s.path_id"
-                  + ") SELECT path_id FROM sub")
-                .setParameter(1, s.getPathId())
-                .getResultList();
-            if (ids == null || ids.isEmpty()) {
-                w.and(l.pathId.eq(s.getPathId()));
-            } else {
-                w.and(l.pathId.in(ids));
-            }
-        }
+        if (StringUtils.hasText(s.getPathId()))
+                w.and(l.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
 
         if (StringUtils.hasText(s.getSearchValue())) {
             String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";

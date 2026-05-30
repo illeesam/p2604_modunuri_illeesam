@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyTemplateDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyTemplate;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyTemplate;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyTemplate t = QSyTemplate.syTemplate;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -92,7 +95,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
 
         if (StringUtils.hasText(s.getSiteId()))         w.and(t.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getTemplateId()))     w.and(t.templateId.eq(s.getTemplateId()));
-        if (StringUtils.hasText(s.getPathId()))         w.and(t.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))         w.and(t.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getTemplateTypeCd())) w.and(t.templateTypeCd.eq(s.getTemplateTypeCd()));
         if (StringUtils.hasText(s.getUseYn()))          w.and(t.useYn.eq(s.getUseYn()));
 

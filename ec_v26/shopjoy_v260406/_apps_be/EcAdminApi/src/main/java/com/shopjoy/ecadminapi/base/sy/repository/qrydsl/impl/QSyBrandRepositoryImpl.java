@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBrandDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBrand;
@@ -26,6 +28,7 @@ import java.util.Optional;
 public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyBrand b = QSyBrand.syBrand;
     private static final QSySite ste = QSySite.sySite;
 
@@ -99,8 +102,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
         if (StringUtils.hasText(s.getSiteId()))   w.and(b.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getBrandId()))  w.and(b.brandId.eq(s.getBrandId()));
-        // pathId 는 sy_path 재귀 조회가 필요한 조건이므로 단순 비교만 적용
-        if (StringUtils.hasText(s.getPathId()))   w.and(b.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))   w.and(b.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getVendorId())) w.and(b.vendorId.eq(s.getVendorId()));
 
         if (StringUtils.hasText(s.getSearchValue())) {

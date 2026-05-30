@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpAreaRepository;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QDpArea a = QDpArea.dpArea;
 
     /* 전시 영역 키조회 */
@@ -75,7 +78,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         BooleanBuilder w = new BooleanBuilder();
         if (s == null) return w;
         if (StringUtils.hasText(s.getSiteId()))     w.and(a.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getPathId()))     w.and(a.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))     w.and(a.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getUseYn()))      w.and(a.useYn.eq(s.getUseYn()));
         if (StringUtils.hasText(s.getAreaId()))     w.and(a.areaId.eq(s.getAreaId()));
         if (!CollectionUtils.isEmpty(s.getUiIds())) w.and(a.uiId.in(s.getUiIds()));

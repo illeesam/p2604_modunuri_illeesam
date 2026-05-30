@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBatch;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBatch;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyBatch;
@@ -25,6 +27,7 @@ import java.util.Optional;
 public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyBatch b = QSyBatch.syBatch;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -93,7 +96,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
         if (StringUtils.hasText(s.getSiteId()))  w.and(b.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getBatchId())) w.and(b.batchId.eq(s.getBatchId()));
-        if (StringUtils.hasText(s.getPathId()))  w.and(b.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))  w.and(b.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getStatus()))  w.and(b.batchStatusCd.eq(s.getStatus()));
 
         if (StringUtils.hasText(s.getSearchValue())) {

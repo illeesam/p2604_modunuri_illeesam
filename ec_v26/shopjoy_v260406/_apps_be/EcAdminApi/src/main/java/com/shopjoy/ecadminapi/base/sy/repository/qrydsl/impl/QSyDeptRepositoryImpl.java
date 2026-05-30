@@ -7,6 +7,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
@@ -15,6 +16,7 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyDeptRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
@@ -24,11 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 /** SyDept QueryDSL Custom 구현체 */
-@RequiredArgsConstructor
 public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyDeptRepository syDeptRepository;
     private static final QSyDept d = QSyDept.syDept;
+
+    public QSyDeptRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyDeptRepository syDeptRepository) {
+        this.queryFactory = queryFactory;
+        this.syDeptRepository = syDeptRepository;
+    }
     private static final QSySite ste = QSySite.sySite;
     private static final QSyUser usr = QSyUser.syUser;
     private static final QSyCode cdDt = new QSyCode("cd_dt");
@@ -103,7 +110,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         if (s == null) return w;
 
         if (StringUtils.hasText(s.getSiteId()))       w.and(d.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getParentDeptId())) w.and(d.parentDeptId.eq(s.getParentDeptId()));
+        if (StringUtils.hasText(s.getParentDeptId())) w.and(d.deptId.in(syDeptRepository.findTreeDeptIds(s.getParentDeptId())));
         if (StringUtils.hasText(s.getTypeCd()))       w.and(d.deptTypeCd.eq(s.getTypeCd()));
         if (StringUtils.hasText(s.getUseYn()))        w.and(d.useYn.eq(s.getUseYn()));
 

@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCodeGrp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
@@ -26,6 +28,7 @@ import java.util.Optional;
 public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyCodeGrp g = QSyCodeGrp.syCodeGrp;
     private static final QSySite ste = QSySite.sySite;
 
@@ -98,8 +101,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
         if (StringUtils.hasText(s.getSiteId()))    w.and(g.siteId.eq(s.getSiteId()));
         if (StringUtils.hasText(s.getCodeGrpId())) w.and(g.codeGrpId.eq(s.getCodeGrpId()));
-        // pathId 는 sy_path 재귀 조회가 필요한 조건이므로 단순 비교만 적용
-        if (StringUtils.hasText(s.getPathId()))    w.and(g.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))    w.and(g.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getCodeGrp()))   w.and(g.codeGrp.eq(s.getCodeGrp()));
         if (StringUtils.hasText(s.getUseYn()))     w.and(g.useYn.eq(s.getUseYn()));
 

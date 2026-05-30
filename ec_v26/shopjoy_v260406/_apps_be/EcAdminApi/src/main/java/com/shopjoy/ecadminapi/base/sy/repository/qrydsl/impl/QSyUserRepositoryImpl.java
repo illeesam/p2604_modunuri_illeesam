@@ -8,6 +8,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
@@ -31,6 +32,7 @@ import java.util.Optional;
 public class QSyUserRepositoryImpl implements QSyUserRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyDeptRepository syDeptRepository;
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyDept syDept = QSyDept.syDept;
@@ -151,7 +153,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         if (s == null) return b;
 
         if (StringUtils.hasText(s.getSiteId())) b.and(syUser.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getDeptId())) b.and(syUser.deptId.eq(s.getDeptId()));
+        if (StringUtils.hasText(s.getDeptId())) b.and(syUser.deptId.in(syDeptRepository.findTreeDeptIds(s.getDeptId())));
         if (StringUtils.hasText(s.getStatus())) b.and(syUser.userStatusCd.eq(s.getStatus()));
 
         /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

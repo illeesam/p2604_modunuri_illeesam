@@ -7,7 +7,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
@@ -27,6 +29,7 @@ import java.util.Optional;
 public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final SyPathRepository syPathRepository;
     private static final QSyVendor v = QSyVendor.syVendor;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdVc = new QSyCode("cd_vc");
@@ -106,8 +109,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         if (s == null) return w;
 
         if (StringUtils.hasText(s.getSiteId()))        w.and(v.siteId.eq(s.getSiteId()));
-        // pathId 는 sy_path 재귀 조회가 필요한 조건이므로 단순 비교만 적용
-        if (StringUtils.hasText(s.getPathId()))        w.and(v.pathId.eq(s.getPathId()));
+        if (StringUtils.hasText(s.getPathId()))        w.and(v.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
         if (StringUtils.hasText(s.getVendorId()))      w.and(v.vendorId.eq(s.getVendorId()));
         if (StringUtils.hasText(s.getStatus()))        w.and(v.vendorStatusCd.eq(s.getStatus()));
         if (StringUtils.hasText(s.getVendorClassCd())) w.and(v.vendorClassCd.eq(s.getVendorClassCd()));
