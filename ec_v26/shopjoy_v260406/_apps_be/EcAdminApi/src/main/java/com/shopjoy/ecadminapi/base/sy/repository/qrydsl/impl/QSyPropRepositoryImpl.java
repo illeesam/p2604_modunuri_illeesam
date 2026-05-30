@@ -49,6 +49,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 andSiteId(search),
                 andPathId(search),
                 andPropTypeCd(search),
+                andUseYn(search),
                 andSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -74,6 +75,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 andSiteId(search),
                 andPathId(search),
                 andPropTypeCd(search),
+                andUseYn(search),
                 andSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -83,6 +85,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 andSiteId(search),
                 andPathId(search),
                 andPropTypeCd(search),
+                andUseYn(search),
                 andSearchValue(search)
         ).fetchOne();
 
@@ -127,6 +130,12 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private BooleanExpression andPropTypeCd(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPropTypeCd())
                 ? p.propTypeCd.eq(search.getPropTypeCd()) : null;
+    }
+
+    /* useYn 정확 일치 */
+    private BooleanExpression andUseYn(SyPropDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? p.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
