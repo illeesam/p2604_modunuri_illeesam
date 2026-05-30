@@ -98,16 +98,16 @@ window.SyBrandMng = {
     let   _tempId     = -1;                        // 신규 행 임시 ID
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'brandRemark'];
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
-    const handleLoadPathCounts = async () => {
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathTreeNodeCounts = async () => {
       try {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.syBrand.getPathCounts(params, '경로별카운트', '조회');
+        const res = await boApiSvc.syBrand.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const map = res.data?.data || {};
         Object.keys(brandCounts).forEach(k => { delete brandCounts[k]; });
         Object.assign(brandCounts, map);
-      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
     /* handleSearchList — 목록 조회 */
@@ -129,7 +129,7 @@ window.SyBrandMng = {
         list.forEach(b => gridRows.push(makeRow(b)));
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathCounts();
+        handleLoadPathTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;

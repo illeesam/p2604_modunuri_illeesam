@@ -30,9 +30,9 @@ public class BoDpWidgetLibService {
     @Transactional public DpWidgetLib update(String id, DpWidgetLib body) { return dpWidgetLibService.update(id, body); }
     @Transactional public void delete(String id) { dpWidgetLibService.delete(id); }
     @Transactional public void saveList(String cmd, List<DpWidgetLib> rows) { dpWidgetLibService.saveList(cmd, rows); }
-    /** getPathCounts — 표시경로 노드별 DpWidgetLib 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathCounts() {
-        return dpWidgetLibService.getPathCounts();
+    /** getPathTreeNodeCounts — 표시경로 노드별 DpWidgetLib 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(DpWidgetLibDto.Request req) {
+        return dpWidgetLibService.getPathTreeNodeCounts(req);
     }
 
 }

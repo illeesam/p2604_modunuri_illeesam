@@ -284,18 +284,20 @@ window.SyCodeMng = {
         uiState.grpRows = newGrpRows;
         syncGrpDirty();
         uiState.focusedIdx = null;
+        /* 좌 트리 카운트 동기 갱신 — 백엔드 재귀 CTE 로 노드별 자손 누적 */
+        handleLoadPathTreeNodeCounts();
       } catch (_) {}
     };
-    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
-    const handleLoadPathCounts = async () => {
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathTreeNodeCounts = async () => {
       try {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.syCodeGrp.getPathCounts(params, '경로별카운트', '조회');
+        const res = await boApiSvc.syCodeGrp.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const map = res.data?.data || {};
         Object.keys(codeGrpCounts).forEach(k => { delete codeGrpCounts[k]; });
         Object.assign(codeGrpCounts, map);
-      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
 

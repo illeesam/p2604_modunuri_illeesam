@@ -115,16 +115,16 @@ window.DpDispAreaMng = {
     /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
-    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
-    const handleLoadPathCounts = async () => {
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
+    const handleLoadPathTreeNodeCounts = async () => {
       try {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.dpArea.getPathCounts(params, '경로별카운트', '조회');
+        const res = await boApiSvc.dpArea.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const map = res.data?.data || {};
         Object.keys(areaCounts).forEach(k => { delete areaCounts[k]; });
         Object.assign(areaCounts, map);
-      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
     /* handleSearchData — 목록 조회 */
@@ -146,7 +146,7 @@ window.DpDispAreaMng = {
         fnBuildPagerNums();
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathCounts();
+        handleLoadPathTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;

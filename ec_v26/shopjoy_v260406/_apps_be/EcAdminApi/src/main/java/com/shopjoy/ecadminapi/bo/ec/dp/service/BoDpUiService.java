@@ -85,9 +85,9 @@ public class BoDpUiService {
     @Transactional public DpUi update(String id, DpUi body) { return dpUiService.update(id, body); }
     @Transactional public void delete(String id) { dpUiService.delete(id); }
     @Transactional public void saveList(String cmd, List<DpUi> rows) { dpUiService.saveList(cmd, rows); }
-    /** getPathCounts — 표시경로 노드별 DpUi 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathCounts() {
-        return dpUiService.getPathCounts();
+    /** getPathTreeNodeCounts — 표시경로 노드별 DpUi 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(DpUiDto.Request req) {
+        return dpUiService.getPathTreeNodeCounts(req);
     }
 
 }

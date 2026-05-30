@@ -57,9 +57,9 @@ public class BoSyPropService {
         syPropService.saveList(cmd, rows);
         propCache.evictAll();
     }
-    /** getPathCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적) */
-    public java.util.Map<String, Long> getPathCounts(SyPropDto.Request req) {
-        return syPropService.getPathCounts(req);
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SyPropDto.Request req) {
+        return syPropService.getPathTreeNodeCounts(req);
     }
 
 }

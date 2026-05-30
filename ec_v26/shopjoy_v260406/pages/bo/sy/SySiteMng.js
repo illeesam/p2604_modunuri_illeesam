@@ -137,23 +137,23 @@ window.SySiteMng = {
     /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
-    /* handleLoadSiteCounts — 좌 트리 노드별 사이트수 집계 (검색조건 동기)
+    /* handleLoadSiteTreeNodeCounts — 좌 트리 노드별 사이트수 집계 (검색조건 동기)
      *   백엔드 GET /bo/sy/site/path-counts — PostgreSQL 재귀 CTE 로 자손 누적 + 검색조건 적용.
      *   handleSearchList 와 동일한 searchParam(searchValue/status/typeCd/dateStart/dateEnd)
      *   을 그대로 전달해 트리 뱃지 카운트가 페이지 그리드와 항상 일치하게 유지.
      *   응답: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
-    const handleLoadSiteCounts = async () => {
+    const handleLoadSiteTreeNodeCounts = async () => {
       try {
         /* pathId 는 트리 필터 자체이므로 제외 — 검색조건만 그대로 전달 */
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.sySite.getPathCounts(params, '사이트관리', '경로별카운트');
+        const res = await boApiSvc.sySite.getPathTreeNodeCounts(params, '사이트관리', '경로별카운트');
         const map = res.data?.data || {};
         // siteCounts in-place 갱신 (반응성 유지)
         Object.keys(siteCounts).forEach(k => { delete siteCounts[k]; });
         Object.assign(siteCounts, map);
       } catch (e) {
-        console.error('[handleLoadSiteCounts]', e);
+        console.error('[handleLoadSiteTreeNodeCounts]', e);
       }
     };
 
@@ -177,7 +177,7 @@ window.SySiteMng = {
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 — 검색조건이 바뀔 때마다 함께 호출 */
-        handleLoadSiteCounts();
+        handleLoadSiteTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -316,7 +316,7 @@ window.SySiteMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ★ onMounted — handleSearchList 가 내부에서 handleLoadSiteCounts 도 함께 호출
+    // ★ onMounted — handleSearchList 가 내부에서 handleLoadSiteTreeNodeCounts 도 함께 호출
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');

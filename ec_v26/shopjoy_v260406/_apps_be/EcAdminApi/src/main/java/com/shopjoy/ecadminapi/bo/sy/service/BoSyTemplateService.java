@@ -30,9 +30,9 @@ public class BoSyTemplateService {
     @Transactional public SyTemplate update(String id, SyTemplate body) { return syTemplateService.update(id, body); }
     @Transactional public void delete(String id) { syTemplateService.delete(id); }
     @Transactional public void saveList(String cmd, List<SyTemplate> rows) { syTemplateService.saveList(cmd, rows); }
-    /** getPathCounts — 표시경로 노드별 SyTemplate 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathCounts() {
-        return syTemplateService.getPathCounts();
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyTemplate 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SyTemplateDto.Request req) {
+        return syTemplateService.getPathTreeNodeCounts(req);
     }
 
 }

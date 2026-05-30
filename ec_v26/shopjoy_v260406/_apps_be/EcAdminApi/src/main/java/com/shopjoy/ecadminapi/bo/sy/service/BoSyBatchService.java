@@ -30,9 +30,9 @@ public class BoSyBatchService {
     @Transactional public SyBatch update(String id, SyBatch body) { return syBatchService.update(id, body); }
     @Transactional public void delete(String id) { syBatchService.delete(id); }
     @Transactional public void saveList(String cmd, List<SyBatch> rows) { syBatchService.saveList(cmd, rows); }
-    /** getPathCounts — 표시경로 노드별 SyBatch 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathCounts() {
-        return syBatchService.getPathCounts();
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyBatch 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SyBatchDto.Request req) {
+        return syBatchService.getPathTreeNodeCounts(req);
     }
 
 }

@@ -116,16 +116,16 @@ window.DpDispUiMng = {
 
     /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
-    const handleLoadPathCounts = async () => {
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathTreeNodeCounts = async () => {
       try {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.dpUi.getPathCounts(params, '경로별카운트', '조회');
+        const res = await boApiSvc.dpUi.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const map = res.data?.data || {};
         Object.keys(uiCounts).forEach(k => { delete uiCounts[k]; });
         Object.assign(uiCounts, map);
-      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
 
@@ -150,7 +150,7 @@ window.DpDispUiMng = {
         fnBuildPagerNums();
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathCounts();
+        handleLoadPathTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;

@@ -103,16 +103,16 @@ window.SyPropMng = {
       propRows.splice(0, propRows.length, ..._rawProps.map(makeRow));
     };
 
-    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
-    const handleLoadPathCounts = async () => {
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
+    const handleLoadPathTreeNodeCounts = async () => {
       try {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.syProp.getPathCounts(params, '경로별카운트', '조회');
+        const res = await boApiSvc.syProp.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const map = res.data?.data || {};
         Object.keys(propCounts).forEach(k => { delete propCounts[k]; });
         Object.assign(propCounts, map);
-      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
     /* fetchData — 목록 조회 */
@@ -136,7 +136,7 @@ window.SyPropMng = {
         _rawProps.splice(0, _rawProps.length, ...list);
         reload();
         /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathCounts();
+        handleLoadPathTreeNodeCounts();
       } catch (err) {
         console.error('[fetchData]', err);
       }

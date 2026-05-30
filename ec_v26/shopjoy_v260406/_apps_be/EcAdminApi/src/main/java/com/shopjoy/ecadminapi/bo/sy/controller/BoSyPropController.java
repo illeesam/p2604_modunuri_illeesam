@@ -74,7 +74,7 @@ public class BoSyPropController {
     /** pathCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
     public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SyPropDto.Request req) {
-        return ResponseEntity.ok(ApiResponse.ok(boSyPropService.getPathCounts(req)));
+        return ResponseEntity.ok(ApiResponse.ok(boSyPropService.getPathTreeNodeCounts(req)));
     }
 
 }

@@ -73,8 +73,8 @@ public class BoSyCodeGrpController {
     }
     /** pathCounts — 표시경로 노드별 SyCodeGrp 수 (자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts() {
-        return ResponseEntity.ok(ApiResponse.ok(boSyCodeGrpService.getPathCounts()));
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SyCodeGrpDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyCodeGrpService.getPathTreeNodeCounts(req)));
     }
 
 }

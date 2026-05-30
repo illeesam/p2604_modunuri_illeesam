@@ -29,10 +29,11 @@ public interface SyPropRepository extends JpaRepository<SyProp, String>, QSyProp
                 SELECT prop_id, path_id FROM sy_prop t
                  WHERE (CAST(:useYn       AS varchar) IS NULL OR t.use_yn       = :useYn)
                    AND (CAST(:propType    AS varchar) IS NULL OR t.prop_type_cd = :propType)
-                   AND (CAST(:searchValue AS varchar) IS NULL OR
-                        t.prop_key   ILIKE '%' || :searchValue || '%' OR
-                        t.prop_value ILIKE '%' || :searchValue || '%' OR
-                        t.prop_label ILIKE '%' || :searchValue || '%')
+                   AND (CAST(:searchValue AS varchar) IS NULL OR (
+                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,propKey,%') AND t.prop_key ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,propValue,%') AND t.prop_value ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,propLabel,%') AND t.prop_label ILIKE '%' || :searchValue || '%')
+                          ))
             )
             SELECT d.root_id AS path_id, COUNT(t.prop_id) AS cnt
               FROM descendants d
@@ -43,8 +44,9 @@ public interface SyPropRepository extends JpaRepository<SyProp, String>, QSyProp
             UNION ALL
             SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered WHERE path_id IS NULL
             """, nativeQuery = true)
-    List<Object[]> findPathSyPropCounts(
+    List<Object[]> findPathSyPropTreeNodeCounts(
             @Param("useYn")       String useYn,
             @Param("propType")    String propType,
+            @Param("searchType")  String searchType,
             @Param("searchValue") String searchValue);
 }

@@ -73,8 +73,8 @@ public class BoSyTemplateController {
     }
     /** pathCounts — 표시경로 노드별 SyTemplate 수 (자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts() {
-        return ResponseEntity.ok(ApiResponse.ok(boSyTemplateService.getPathCounts()));
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SyTemplateDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyTemplateService.getPathTreeNodeCounts(req)));
     }
 
 }

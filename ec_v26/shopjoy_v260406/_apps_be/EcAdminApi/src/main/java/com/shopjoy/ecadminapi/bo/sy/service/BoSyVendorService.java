@@ -30,9 +30,9 @@ public class BoSyVendorService {
     @Transactional public SyVendor update(String id, SyVendor body) { return syVendorService.update(id, body); }
     @Transactional public void delete(String id) { syVendorService.delete(id); }
     @Transactional public void saveList(String cmd, List<SyVendor> rows) { syVendorService.saveList(cmd, rows); }
-    /** getPathCounts — 표시경로 노드별 SyVendor 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathCounts() {
-        return syVendorService.getPathCounts();
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyVendor 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SyVendorDto.Request req) {
+        return syVendorService.getPathTreeNodeCounts(req);
     }
 
 }

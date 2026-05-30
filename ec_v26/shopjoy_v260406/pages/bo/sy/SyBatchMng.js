@@ -118,16 +118,16 @@ window.SyBatchMng = {
     /* ===== Cron 편집 모달 ===== */
     const cronModal = reactive({ show: false, rowIdx: null, value: '0 0 * * *' });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
-    const handleLoadPathCounts = async () => {
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathTreeNodeCounts = async () => {
       try {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.syBatch.getPathCounts(params, '경로별카운트', '조회');
+        const res = await boApiSvc.syBatch.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const map = res.data?.data || {};
         Object.keys(batchCounts).forEach(k => { delete batchCounts[k]; });
         Object.assign(batchCounts, map);
-      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
     /* handleSearchList — 목록 조회 */
@@ -141,7 +141,7 @@ window.SyBatchMng = {
         list.forEach(b => gridRows.push(makeRow(b)));
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathCounts();
+        handleLoadPathTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;

@@ -227,15 +227,16 @@ public class SyPropService {
         }
         throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
-    /** getPathCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   검색조건 (useYn / propType / searchValue) 이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
-    public java.util.Map<String, Long> getPathCounts(SyPropDto.Request req) {
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SyPropDto.Request req) {
         java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
         String useYn       = (req == null) ? null : nullIfBlank(req.getUseYn());
         String propType    = (req == null) ? null : nullIfBlank(req.getPropTypeCd());
+        String searchType  = (req == null) ? null : wrapCsv(req.getSearchType());
         String searchValue = (req == null) ? null : nullIfBlank(req.getSearchValue());
-        for (Object[] row : syPropRepository.findPathSyPropCounts(useYn, propType, searchValue)) {
+        for (Object[] row : syPropRepository.findPathSyPropTreeNodeCounts(useYn, propType, searchType, searchValue)) {
             String pathId = row[0] == null ? null : String.valueOf(row[0]);
             Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
             result.put(pathId, cnt);
@@ -247,4 +248,11 @@ public class SyPropService {
         return (s == null || s.isBlank()) ? null : s;
     }
 
+
+
+    /** searchType csv 를 ',a,b,' 형태로 감싸 SQL `LIKE '%,a,%'` 매칭 가능하게 변환 */
+    private static String wrapCsv(String s) {
+        if (s == null || s.isBlank()) return null;
+        return "," + s.trim().replaceAll("\\s*,\\s*", ",") + ",";
+    }
 }

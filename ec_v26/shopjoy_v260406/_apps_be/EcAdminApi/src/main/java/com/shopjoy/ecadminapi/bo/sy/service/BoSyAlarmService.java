@@ -74,9 +74,9 @@ public class BoSyAlarmService {
         em.flush();
         em.clear();
     }
-    /** getPathCounts — 표시경로 노드별 SyAlarm 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathCounts() {
-        return syAlarmService.getPathCounts();
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyAlarm 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SyAlarmDto.Request req) {
+        return syAlarmService.getPathTreeNodeCounts(req);
     }
 
 }

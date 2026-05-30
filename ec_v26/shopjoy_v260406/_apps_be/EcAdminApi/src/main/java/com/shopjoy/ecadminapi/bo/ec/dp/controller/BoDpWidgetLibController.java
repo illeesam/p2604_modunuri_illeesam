@@ -74,8 +74,8 @@ public class BoDpWidgetLibController {
     }
     /** pathCounts — 표시경로 노드별 DpWidgetLib 수 (자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts() {
-        return ResponseEntity.ok(ApiResponse.ok(boDpWidgetLibService.getPathCounts()));
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute DpWidgetLibDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boDpWidgetLibService.getPathTreeNodeCounts(req)));
     }
 
 }

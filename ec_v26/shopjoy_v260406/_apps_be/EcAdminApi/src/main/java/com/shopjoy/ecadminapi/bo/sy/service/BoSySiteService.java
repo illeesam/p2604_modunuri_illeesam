@@ -34,9 +34,9 @@ public class BoSySiteService {
         return sySiteService.getPageData(req);
     }
 
-    /** getPathCounts — 표시경로 노드별 사이트수 (검색조건 + 자손 누적) */
-    public java.util.Map<String, Long> getPathCounts(SySiteDto.Request req) {
-        return sySiteService.getPathCounts(req);
+    /** getPathTreeNodeCounts — 표시경로 노드별 사이트수 (검색조건 + 자손 누적) */
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SySiteDto.Request req) {
+        return sySiteService.getPathTreeNodeCounts(req);
     }
 
     /** create — 생성 */

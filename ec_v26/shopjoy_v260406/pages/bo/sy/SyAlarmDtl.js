@@ -21,9 +21,10 @@ window.SyAlarmDtl = {
 
     const form = reactive({                        // 알림 폼 데이터
       alarmId: null, alarmTitle: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
-      alarmMsg: '', alarmSendDate: '', alarmStatusCd: '임시',
+      alarmMsg: '', alarmSendDate: '', alarmStatusCd: '임시', pathId: null,
     });
     const errors = reactive({});                   // 폼 검증 에러
+    const pathPickModal = reactive({ show: false }); // 표시경로 선택 모달
 
     const schema = yup.object({                    // 폼 검증 스키마
       alarmTitle: yup.string().required('제목을 입력해주세요.'),
@@ -50,10 +51,34 @@ window.SyAlarmDtl = {
       // 폼 닫기 → 목록으로 이동
       } else if (cmd === 'form-close') {
         return props.navigate('syAlarmMng');
+      // 표시경로 선택 모달 열기
+      } else if (cmd === 'pathModal-open') {
+        pathPickModal.show = true;
+        return;
+      // 표시경로 선택 모달 닫기
+      } else if (cmd === 'pathModal-close') {
+        pathPickModal.show = false;
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
+
+    /* handleSelectAction — 선택/표시경로 모달 등 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ SyAlarmDtl.js : handleSelectAction -> ', cmd, param);
+      // 표시경로 선택 → form.pathId 갱신
+      if (cmd === 'pathModal-pick') {
+        form.pathId = param;
+        pathPickModal.show = false;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* pathLabel — 경로 라벨 변환 */
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadDetail — 상세 조회 */
@@ -137,6 +162,9 @@ window.SyAlarmDtl = {
       { key: 'alarmStatusCd', label: '상태', type: 'select', options: () => codes.alarm_statuses },
       { key: 'targetTypeCd',  label: '대상 유형', type: 'select', options: () => codes.alarm_target_types },
       { key: 'targetId',      label: '대상 ID', type: 'text', placeholder: '특정회원 ID (선택)' },
+      { key: 'pathId',        label: '표시경로', type: 'pathPick',
+        pathLabel: (id) => pathLabel(id),
+        onOpen: () => handleBtnAction('pathModal-open') },
       { key: 'alarmSendDate', label: '발송일시', type: 'slot', name: 'sendDate' },
       { key: 'alarmMsg',      label: '메시지', type: 'textarea', required: true, rows: 4,
         placeholder: '알림 메시지 내용', colSpan: 3 },
@@ -144,10 +172,10 @@ window.SyAlarmDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, form, errors,            // 상태 / 데이터
-      baseFormColumns,                          // 컬럼 정의
-      handleBtnAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfSiteNm, cfDtlMode,             // computed
+      uiState, codes, form, errors, pathPickModal,  // 상태 / 데이터
+      baseFormColumns,                              // 컬럼 정의
+      handleBtnAction, handleSelectAction,          // dispatch (모든 이벤트 / 액션 라우팅)
+      cfIsNew, cfSiteNm, cfDtlMode,                 // computed
     };
   },
   template: /* html */`
@@ -176,6 +204,11 @@ window.SyAlarmDtl = {
     </bo-form-area>
   </div>
   <!-- ===== □. 폼 영역 ==================================================== -->
+  <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_alarm"
+    :value="form.pathId"
+    title="알림 표시경로 선택"
+    @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
 </div>
 `,
 };

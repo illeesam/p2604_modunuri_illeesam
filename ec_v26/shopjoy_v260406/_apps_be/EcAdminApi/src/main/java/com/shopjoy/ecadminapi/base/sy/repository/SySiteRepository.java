@@ -34,12 +34,13 @@ public interface SySiteRepository extends JpaRepository<SySite, String>, QSySite
                 SELECT site_id, path_id FROM sy_site s
                  WHERE (CAST(:statusCd AS varchar) IS NULL OR s.site_status_cd = :statusCd)
                    AND (CAST(:typeCd   AS varchar) IS NULL OR s.site_type_cd   = :typeCd)
-                   AND (CAST(:searchValue AS varchar) IS NULL OR
-                        s.site_code   ILIKE '%' || :searchValue || '%' OR
-                        s.site_nm     ILIKE '%' || :searchValue || '%' OR
-                        s.site_domain ILIKE '%' || :searchValue || '%' OR
-                        s.site_email  ILIKE '%' || :searchValue || '%' OR
-                        s.site_ceo    ILIKE '%' || :searchValue || '%')
+                   AND (CAST(:searchValue AS varchar) IS NULL OR (
+                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteCode,%') AND t.site_code ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteNm,%') AND t.site_nm ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteDomain,%') AND t.site_domain ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteEmail,%') AND t.site_email ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteCeo,%') AND t.site_ceo ILIKE '%' || :searchValue || '%')
+                          ))
                    AND (CAST(:dateStart AS varchar) IS NULL OR s.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR s.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
@@ -52,9 +53,10 @@ public interface SySiteRepository extends JpaRepository<SySite, String>, QSySite
             UNION ALL
             SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered_site WHERE path_id IS NULL
             """, nativeQuery = true)
-    List<Object[]> findPathSiteCounts(
+    List<Object[]> findPathSiteTreeNodeCounts(
             @Param("statusCd")    String statusCd,
             @Param("typeCd")      String typeCd,
+            @Param("searchType")  String searchType,
             @Param("searchValue") String searchValue,
             @Param("dateStart")   String dateStart,
             @Param("dateEnd")     String dateEnd);

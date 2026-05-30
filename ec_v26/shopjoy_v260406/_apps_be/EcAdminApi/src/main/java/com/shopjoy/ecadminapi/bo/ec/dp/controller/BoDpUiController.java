@@ -74,8 +74,8 @@ public class BoDpUiController {
     }
     /** pathCounts — 표시경로 노드별 DpUi 수 (자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts() {
-        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.getPathCounts()));
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute DpUiDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boDpUiService.getPathTreeNodeCounts(req)));
     }
 
 }

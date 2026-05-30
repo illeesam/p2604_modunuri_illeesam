@@ -72,17 +72,18 @@ public class SySiteService {
         return sySiteRepository.selectPageList(req);
     }
 
-    /** getPathCounts — 표시경로 노드별 사이트수 집계 (검색조건 + 자손 누적, PostgreSQL 재귀 CTE).
+    /** getPathTreeNodeCounts — 표시경로 노드별 사이트수 집계 (검색조건 + 자손 누적, PostgreSQL 재귀 CTE).
      *   검색조건이 있으면 그 조건에 부합하는 사이트만 카운트 (page 그리드 결과와 동기).
      *   결과: { pathId: 사이트수, '__total__': 전체합계, '__orphan__': path 없음 }. */
-    public java.util.Map<String, Long> getPathCounts(SySiteDto.Request req) {
+    public java.util.Map<String, Long> getPathTreeNodeCounts(SySiteDto.Request req) {
         java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
         String statusCd   = (req == null) ? null : nullIfBlank(req.getStatus());
         String typeCd     = (req == null) ? null : nullIfBlank(req.getTypeCd());
+        String searchType = (req == null) ? null : wrapCsv(req.getSearchType());
         String searchVal  = (req == null) ? null : nullIfBlank(req.getSearchValue());
         String dateStart  = (req == null) ? null : nullIfBlank(req.getDateStart());
         String dateEnd    = (req == null) ? null : nullIfBlank(req.getDateEnd());
-        for (Object[] row : sySiteRepository.findPathSiteCounts(statusCd, typeCd, searchVal, dateStart, dateEnd)) {
+        for (Object[] row : sySiteRepository.findPathSiteTreeNodeCounts(statusCd, typeCd, searchType, searchVal, dateStart, dateEnd)) {
             String pathId = row[0] == null ? null : String.valueOf(row[0]);
             Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
             result.put(pathId, cnt);
@@ -93,6 +94,12 @@ public class SySiteService {
     /* 공백·null 정규화 — '' 도 null 로 취급해 SQL 의 :param IS NULL 분기 활성화 */
     private static String nullIfBlank(String s) {
         return (s == null || s.isBlank()) ? null : s;
+    }
+
+    /** searchType csv 를 ',a,b,' 형태로 감싸 SQL `LIKE '%,a,%'` 매칭 가능하게 변환 */
+    private static String wrapCsv(String s) {
+        if (s == null || s.isBlank()) return null;
+        return "," + s.trim().replaceAll("\\s*,\\s*", ",") + ",";
     }
 
     // ── 변경 ────────────────────────────────────────────────────

@@ -128,16 +128,16 @@ window.SyAlarmMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
-    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
-    const handleLoadPathCounts = async () => {
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathTreeNodeCounts = async () => {
       try {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.syAlarm.getPathCounts(params, '경로별카운트', '조회');
+        const res = await boApiSvc.syAlarm.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const map = res.data?.data || {};
         Object.keys(alarmCounts).forEach(k => { delete alarmCounts[k]; });
         Object.assign(alarmCounts, map);
-      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
 
@@ -164,7 +164,7 @@ window.SyAlarmMng = {
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathCounts();
+        handleLoadPathTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -179,12 +179,23 @@ window.SyAlarmMng = {
     /* closePathPick — 표시경로 선택 모달 닫기 */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
-    /* onPathPicked — 표시경로 선택 결과 적용 */
-    const onPathPicked = (pathId) => {
+    /* onPathPicked — 표시경로 선택 결과 적용 + 즉시 저장
+     *   알림목록은 별도 [저장] 버튼이 없어 행의 pathId 가 바뀌면 바로 서버에 반영.
+     *   selective update — body 에 pathId 만 담아 다른 컬럼 보존. */
+    const onPathPicked = async (pathId) => {
       const row = pathPickModal.row;
-      if (row) {
-        row.pathId = pathId;
-        if (row._row_status === 'N') { row._row_status = 'U'; }
+      if (!row || !row.alarmId) { return; }
+      const prevPathId = row.pathId;
+      row.pathId = pathId;
+      try {
+        await boApiSvc.syAlarm.update(row.alarmId, { pathId }, '알림관리', '표시경로변경');
+        showToast?.('표시경로가 저장되었습니다.', 'success');
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathTreeNodeCounts();
+      } catch (err) {
+        console.error('[onPathPicked] save failed', err);
+        row.pathId = prevPathId;   // 실패 시 롤백
+        showToast?.(err.response?.data?.message || '표시경로 저장 실패', 'error', 0);
       }
     };
 

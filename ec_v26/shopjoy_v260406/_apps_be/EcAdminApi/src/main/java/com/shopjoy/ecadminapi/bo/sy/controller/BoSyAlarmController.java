@@ -73,8 +73,8 @@ public class BoSyAlarmController {
     }
     /** pathCounts — 표시경로 노드별 SyAlarm 수 (자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts() {
-        return ResponseEntity.ok(ApiResponse.ok(boSyAlarmService.getPathCounts()));
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SyAlarmDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyAlarmService.getPathTreeNodeCounts(req)));
     }
 
 }
