@@ -11,6 +11,7 @@ window.SyMenuMng = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const menus = reactive([]);                    // 메뉴 목록 데이터
+    const menuCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
       checkAll: false, loading: false, error: null, isPageCodeLoad: false,
       selectedTreeId: null, focusedIdx: null,
@@ -111,6 +112,18 @@ window.SyMenuMng = {
     /* ===== 상위메뉴 선택 모달 ===== */
     const parentModal = reactive({ show: false, targetRow: null });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syMenu.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(menuCounts).forEach(k => { delete menuCounts[k]; });
+        Object.assign(menuCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -121,6 +134,8 @@ window.SyMenuMng = {
         gridRows.splice(0);
         buildTreeRows(list).forEach(m => gridRows.push(makeRow(m)));
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -313,7 +328,7 @@ window.SyMenuMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      menus, uiState, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터
+      menus, uiState, menuCounts, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
     };
@@ -333,7 +348,7 @@ window.SyMenuMng = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_menu" title="메뉴" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_menu" title="메뉴" :show-biz-cd="false" :counts="menuCounts"
       :selected="uiState.selectedTreeId"
       @select="path => handleSelectAction('pathTree-select', path)" />
     <div>

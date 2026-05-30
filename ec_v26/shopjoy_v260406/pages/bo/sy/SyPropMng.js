@@ -10,6 +10,8 @@ window.SyPropMng = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
+    const propCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
+
     const uiState = reactive({ isPageCodeLoad: false, _newId: -1, selectedPath: '' }); // UI 상태
     const codes   = reactive({ use_yn: [], prop_types: ['STRING','NUMBER','BOOLEAN','JSON'] }); // 공통코드
 
@@ -101,6 +103,18 @@ window.SyPropMng = {
       propRows.splice(0, propRows.length, ..._rawProps.map(makeRow));
     };
 
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syProp.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(propCounts).forEach(k => { delete propCounts[k]; });
+        Object.assign(propCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
     /* fetchData — 목록 조회 */
     const fetchData = async () => {
       try {
@@ -112,7 +126,7 @@ window.SyPropMng = {
           ...(searchValue ? { searchValue }        : {}),
           ...(searchType ? { searchType }        : {}),
           ...(useFlt  ? { useYn: useFlt }         : {}),
-          ...(typeFlt ? { propType: typeFlt }      : {}),
+          ...(typeFlt ? { propTypeCd: typeFlt }   : {}),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'pathId,propKey,propValue,propLabel';
@@ -121,6 +135,8 @@ window.SyPropMng = {
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         _rawProps.splice(0, _rawProps.length, ...list);
         reload();
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[fetchData]', err);
       }
@@ -238,7 +254,7 @@ window.SyPropMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, searchParam, propRows,                        // 상태 / 데이터
+      uiState, propCounts, codes, searchParam, propRows,                        // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                           // 컬럼 정의
       handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
     };
@@ -258,7 +274,7 @@ window.SyPropMng = {
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
   <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 트리 ==================================================== -->
-    <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="false" :counts="propCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. 그리드 (BoGridCrud) ====================================== -->
     <bo-grid-crud

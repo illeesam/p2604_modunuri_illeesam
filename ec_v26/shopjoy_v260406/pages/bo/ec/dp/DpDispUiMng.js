@@ -10,6 +10,7 @@ window.DpDispUiMng = {
     /* ##### [01] 초기 변수 정의 #################################################### */
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const uis = reactive([]);                      // UI 목록
+    const uiCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ disp_ui_types: [], use_yn: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'uiNm asc', desc: 'uiNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -115,6 +116,18 @@ window.DpDispUiMng = {
 
     /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.dpUi.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(uiCounts).forEach(k => { delete uiCounts[k]; });
+        Object.assign(uiCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -136,6 +149,8 @@ window.DpDispUiMng = {
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
         fnBuildPagerNums();
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -215,7 +230,7 @@ window.DpDispUiMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uis, uiState, codes, searchParam, pager, detailPanel,                           // 상태 / 데이터
+      uis, uiState, uiCounts, codes, searchParam, pager, detailPanel,                           // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId,                                                                 // computed
@@ -250,7 +265,7 @@ window.DpDispUiMng = {
         </span>
       </div>
       <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="ec_disp_ui" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+        <bo-path-tree biz-cd="ec_disp_ui" :counts="uiCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->

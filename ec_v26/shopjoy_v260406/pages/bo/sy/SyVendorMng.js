@@ -11,6 +11,7 @@ window.SyVendorMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const vendors = reactive([]);                  // 업체 목록 (메인 그리드 데이터)
+    const vendorCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
       selectedPath: null, sortKey: '', sortDir: 'asc',
@@ -116,6 +117,18 @@ window.SyVendorMng = {
 
     /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syVendor.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(vendorCounts).forEach(k => { delete vendorCounts[k]; });
+        Object.assign(vendorCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -133,6 +146,8 @@ window.SyVendorMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -264,7 +279,7 @@ window.SyVendorMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      vendors, uiState, vendorCounts, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                      // computed
@@ -288,7 +303,7 @@ window.SyVendorMng = {
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="false" :counts="vendorCounts"
       :selected="uiState.selectedPath"
       @select="path => handleSelectAction('pathTree-select', path)" />
     <div>

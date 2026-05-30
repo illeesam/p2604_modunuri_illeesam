@@ -71,4 +71,10 @@ public class BoSyPropController {
         boSyPropService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
+    /** pathCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적, 트리 우측 뱃지용) */
+    @GetMapping("/path-counts")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SyPropDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyPropService.getPathCounts(req)));
+    }
+
 }

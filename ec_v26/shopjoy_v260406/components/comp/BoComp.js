@@ -40,6 +40,7 @@ window.BoPathTree = {
     selected:    { default: null },
     showBizCd:   { type: Boolean, default: false },
     expandDepth: { type: Number,  default: 2 },
+    counts:      { type: Object,  default: null },  // { pathId: number } — 외부 데이터 카운트
   },
   emits: ['select'],
   setup(props, { emit }) {
@@ -116,6 +117,10 @@ window.BoPathTree = {
       tree.count     = newTree.count;
     };
 
+    /* counts prop 은 백엔드가 이미 자손 누적까지 계산해 전달하는 map 으로 가정.
+     *   (예: SySiteMng → GET /bo/sy/site/path-counts — PostgreSQL 재귀 CTE)
+     *   따라서 별도의 프론트 집계 없이 그대로 노드에 매핑한다. */
+
     /* load */
     const load = async () => {
       if (_cache[props.bizCd]) {
@@ -179,7 +184,7 @@ window.BoPathTree = {
   <bo-path-tree-node v-else
     :node="tree" :expanded="expanded" :selected="selected"
     :on-toggle="toggleNode" :on-select="selectNode"
-    :depth="0" :show-biz-cd="showBizCd" />
+    :depth="0" :show-biz-cd="showBizCd" :counts="counts" />
 </div>
 `,
 };
@@ -198,6 +203,7 @@ window.BoPathTreeNode = {
     onSelect:  { type: Function, required: true },
     depth:     { type: Number,   default: 0 },
     showBizCd: { type: Boolean,  default: false },
+    counts:    { type: Object,   default: null },  // { pathId: number } — 외부 데이터 카운트 (예: 사이트 수). null 이면 node.count(=경로 자손수) 표시
   },
   setup(props) {
 
@@ -251,14 +257,24 @@ window.BoPathTreeNode = {
     <span v-if="showBizCd && node.bizCd" style="font-size:9px;color:#aaa;font-family:monospace;flex-shrink:0;margin-left:2px;">
     #{{ node.bizCd }}
   </span>
-  <span v-if="node.count != null" style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:8px;flex-shrink:0;">
+  <!-- counts(외부 데이터 수) 가 제공되고 비어있지 않으면 우선 표시 (백엔드가 자손 누적까지 계산해 제공).
+       node.pathId === null (루트 "전체") 은 counts['__total__'] 로 매핑.
+       counts 가 제공됐지만 해당 키가 없으면 0 으로 표시 (데이터 없음을 명시).
+       counts 미제공 또는 아직 로드 전(빈 객체) 이면 node.count(경로 자손수) 폴백 표시. -->
+  <span v-if="counts && Object.keys(counts).length > 0"
+    style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;flex-shrink:0;font-weight:600;">
+    {{ counts[node.pathId == null ? '__total__' : node.pathId] != null
+       ? counts[node.pathId == null ? '__total__' : node.pathId]
+       : 0 }}
+  </span>
+  <span v-else-if="node.count != null" style="font-size:10px;color:#999;background:#f5f5f5;padding:1px 5px;border-radius:8px;flex-shrink:0;">
     {{ node.count }}
   </span>
 </div>
 <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
 <bo-path-tree-node v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :selected="selected"
-      :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" :show-biz-cd="showBizCd" />
+      :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" :show-biz-cd="showBizCd" :counts="counts" />
 </div>
 </div>
 `,
@@ -1172,6 +1188,7 @@ window.BoDeptTreeNode = {
     onToggle: { type: Function, default: () => {} }, // 콜백 함수
     onSelect: { type: Function, default: () => {} }, // 콜백 함수
     depth:    { type: Number, default: 0 }, // 전달값
+    counts:   { type: Object, default: null }, // { deptId: cnt } — 노드 우측 카운트 뱃지 (백엔드에서 자손 누적 계산)
   },
   components: { 'bo-dept-tree-node': null },
   created() { this.$options.components['bo-dept-tree-node'] = window.BoDeptTreeNode; },
@@ -1213,8 +1230,16 @@ window.BoDeptTreeNode = {
   </span>
   <span v-else style="margin-right:4px;width:14px;flex-shrink:0;">
   </span>
-  <span style="font-size:13px;">
+  <span style="font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
     {{ node.deptNm }}
+  </span>
+  <!-- counts(외부 데이터 수) 가 제공되고 비어있지 않으면 우선 표시 (백엔드에서 자손 누적 계산).
+       node.deptId === null (루트 "전체") 은 counts['__total__'] 매핑 -->
+  <span v-if="counts && Object.keys(counts).length > 0"
+    style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;flex-shrink:0;font-weight:600;margin-left:4px;">
+    {{ counts[node.deptId == null ? '__total__' : node.deptId] != null
+       ? counts[node.deptId == null ? '__total__' : node.deptId]
+       : 0 }}
   </span>
 </div>
 <!-- ===== □. 영역 ====================================================== -->
@@ -1222,7 +1247,7 @@ window.BoDeptTreeNode = {
 <template v-if="node.children && node.children.length && expanded.has(node.deptId)">
 <bo-dept-tree-node v-for="child in node.children" :key="child.deptId"
       :node="child" :expanded="expanded" :selected="selected"
-      :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" />
+      :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" :counts="counts" />
 </template>
 </div>
 <!-- ===== □. 조건부 영역 ================================================== -->

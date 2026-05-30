@@ -1068,6 +1068,7 @@ window.BoPathTreeCard = {
     allLabel:  { type: String,  default: '전체보기' },
     maxHeight: { type: String,  default: '65vh' },
     pad:       { type: String,  default: '12px' },
+    counts:    { type: Object,  default: null },   // { pathId: number } — 외부 데이터 카운트 (예: 사이트 수) — 노드 우측 뱃지로 표시
   },
   emits: ['select'],
   setup(props, { emit }) {
@@ -1099,7 +1100,8 @@ window.BoPathTreeCard = {
   <div class="toolbar" style="margin-bottom:6px;">
     <span class="list-title" style="font-size:13px;">
       📂 {{ title }}
-      <span v-if="showBizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+      <!-- 헤더의 bizCd 뱃지는 항상 표시 (트리 종류 식별용). 노드별 표시는 showBizCd 로 제어 -->
+      <span v-if="bizCd" style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
         #{{ bizCd }}
       </span>
     </span>
@@ -1108,7 +1110,7 @@ window.BoPathTreeCard = {
     </span>
   </div>
   <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
-    <bo-path-tree :biz-cd="bizCd" :show-biz-cd="showBizCd" :selected="selected" @select="id => handleSelectAction('node-select', { id })" />
+    <bo-path-tree :biz-cd="bizCd" :show-biz-cd="showBizCd" :selected="selected" :counts="counts" @select="id => handleSelectAction('node-select', { id })" />
   </div>
 </div>
 `,

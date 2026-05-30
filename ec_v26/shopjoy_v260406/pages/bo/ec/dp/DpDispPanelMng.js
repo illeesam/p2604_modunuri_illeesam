@@ -12,6 +12,7 @@ window.DpDispPanelMng = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const panels = reactive([]);
+    const panelCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null, sortKey: '', sortDir: 'asc' });
     const displays = reactive([]);
 
@@ -151,6 +152,18 @@ window.DpDispPanelMng = {
     /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.dpPanel.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(panelCounts).forEach(k => { delete panelCounts[k]; });
+        Object.assign(panelCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
     /* handleSearchData — 처리 */
     const handleSearchData = async (uiParams = {}) => {
       uiState.loading = true;
@@ -167,6 +180,8 @@ window.DpDispPanelMng = {
         panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
         displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -583,7 +598,7 @@ window.DpDispPanelMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiStateDetail, panels, uiState, displays, codes, searchParam, pager,            // 상태 / 데이터
+      uiStateDetail, panels, uiState, panelCounts, displays, codes, searchParam, pager,            // 상태 / 데이터
       baseSearchColumns, moreSearchColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFiltered, cfAreas, cfAreaSelectOptions, cfDetailEditId, cfIsViewMode,          // computed
@@ -641,7 +656,7 @@ window.DpDispPanelMng = {
         </span>
       </div>
       <div style="max-height:55vh;overflow:auto;">
-        <bo-path-tree biz-cd="ec_disp_panel" :selected="uiState.selectedPath" @select="p => handleSelectAction('pathTree-select', p)" />
+        <bo-path-tree biz-cd="ec_disp_panel" :counts="panelCounts" :selected="uiState.selectedPath" @select="p => handleSelectAction('pathTree-select', p)" />
       </div>
     </div>
     <!-- ===== □.□. 좌측 표시경로 =============================================== -->

@@ -54,6 +54,7 @@
 
   /* ── dp: 전시영역 ───────────────────────────────────────────── */
   boApiSvc.dpArea = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/area/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)     { return global.boApi.get(   '/bo/ec/dp/area/page', { params, ...hdr(uiNm, cmdNm) }); },
     getBasePage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/dp/area/page', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm)        { return global.boApi.post(  '/bo/ec/dp/area', body, hdr(uiNm, cmdNm)); },
@@ -62,6 +63,7 @@
 
   /* ── dp: 전시패널 ───────────────────────────────────────────── */
   boApiSvc.dpPanel = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/panel/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)     { return global.boApi.get(   '/bo/ec/dp/panel/page', { params, ...hdr(uiNm, cmdNm) }); },
     getBasePage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/dp/panel/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)        { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/dp/panel/${_id}`, hdr(uiNm, cmdNm)); },
@@ -72,6 +74,7 @@
 
   /* ── dp: 전시위젯 ───────────────────────────────────────────── */
   boApiSvc.dpWidget = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/widget/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/dp/widget/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/dp/widget/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/dp/widget', body, hdr(uiNm, cmdNm)); },
@@ -86,6 +89,7 @@
 
   /* ── dp: 전시UI ─────────────────────────────────────────────── */
   boApiSvc.dpUi = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/ui/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/dp/ui/page', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/dp/ui', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/dp/ui/${_id}`, body, hdr(uiNm, cmdNm)); },
@@ -93,6 +97,7 @@
 
   /* ── dp: 위젯라이브러리 ─────────────────────────────────────── */
   boApiSvc.dpWidgetLib = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/widget-lib/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/dp/widget-lib/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/dp/widget-lib/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/dp/widget-lib', body, hdr(uiNm, cmdNm)); },
@@ -411,6 +416,7 @@
 
   /* ── sy: 알람 ───────────────────────────────────────────────── */
   boApiSvc.syAlarm = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/alarm/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/alarm/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/alarm/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/alarm', body, hdr(uiNm, cmdNm)); },
@@ -430,6 +436,7 @@
 
   /* ── sy: 배치 ───────────────────────────────────────────────── */
   boApiSvc.syBatch = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/batch/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/batch/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return global.boApi.get(   `/bo/sy/batch/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/batch', body, hdr(uiNm, cmdNm)); },
@@ -453,6 +460,7 @@
 
   /* ── sy: 게시판모드(BBM) ────────────────────────────────────── */
   boApiSvc.syBbm = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/bbm/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/bbm/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/bbm/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/bbm', body, hdr(uiNm, cmdNm)); },
@@ -462,12 +470,14 @@
 
   /* ── sy: 브랜드 ─────────────────────────────────────────────── */
   boApiSvc.syBrand = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/brand/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/brand/page', { params, ...hdr(uiNm, cmdNm) }); },
     saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'brandId', uiNm, cmdNm) || global.boApi.post('/bo/sy/brand/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드그룹 ──────────────────────────────────────── */
   boApiSvc.syCodeGrp = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/code-grp/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getAll(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/code-grp', { params, ...hdr(uiNm, cmdNm) }); },
     saveList(cmd, rows, uiNm, cmdNm) { return chkRowIds(rows, 'codeGrp', uiNm, cmdNm) || global.boApi.post('/bo/sy/code-grp/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
@@ -509,6 +519,7 @@
 
   /* ── sy: 메뉴 ───────────────────────────────────────────────── */
   boApiSvc.syMenu = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/menu/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/menu/page', { params, ...hdr(uiNm, cmdNm) }); },
     getList(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/menu', { params, ...hdr(uiNm, cmdNm) }); },
     saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'menuId', uiNm, cmdNm) || global.boApi.post('/bo/sy/menu/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
@@ -525,6 +536,7 @@
 
   /* ── sy: 시스템속성 ─────────────────────────────────────────── */
   boApiSvc.syProp = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/prop/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/prop/page', { params, ...hdr(uiNm, cmdNm) }); },
     saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'propId', uiNm, cmdNm) || global.boApi.post('/bo/sy/prop/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
@@ -549,6 +561,7 @@
   boApiSvc.sySite = {
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/site/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/site/${_id}`, hdr(uiNm, cmdNm)); },
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/site/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/site', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/sy/site/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/sy/site/${_id}`, hdr(uiNm, cmdNm)); },
@@ -556,6 +569,7 @@
 
   /* ── sy: 템플릿 ─────────────────────────────────────────────── */
   boApiSvc.syTemplate = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/template/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/template/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/template/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/template', body, hdr(uiNm, cmdNm)); },
@@ -596,6 +610,7 @@
 
   /* ── sy: 업체(Vendor) ───────────────────────────────────────── */
   boApiSvc.syVendor = {
+    getPathCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/vendor/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/vendor/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/vendor/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/vendor', body, hdr(uiNm, cmdNm)); },

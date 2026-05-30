@@ -12,6 +12,7 @@ window.SyBatchMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
 
     const batches = reactive([]);                  // 배치 목록 (서버 raw 데이터)
+    const batchCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
       checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false,
       selectedPath: null, focusedIdx: null,
@@ -117,6 +118,18 @@ window.SyBatchMng = {
     /* ===== Cron 편집 모달 ===== */
     const cronModal = reactive({ show: false, rowIdx: null, value: '0 0 * * *' });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syBatch.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(batchCounts).forEach(k => { delete batchCounts[k]; });
+        Object.assign(batchCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -127,6 +140,8 @@ window.SyBatchMng = {
         gridRows.splice(0);
         list.forEach(b => gridRows.push(makeRow(b)));
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -362,7 +377,7 @@ window.SyBatchMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      batches, uiState, codes, searchParam, gridRows, pathPickModal, cronModal,         // 상태 / 데이터
+      batches, uiState, batchCounts, codes, searchParam, gridRows, pathPickModal, cronModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfShowRunNow,                                                            // computed / 헬퍼
@@ -383,7 +398,7 @@ window.SyBatchMng = {
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="false" :counts="batchCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <div>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->

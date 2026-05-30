@@ -12,6 +12,7 @@ window.SyBbmMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const bbms = reactive([]);                     // 게시판 목록 (메인 그리드 데이터)
+    const bbmCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false, selectedPath: null,
     });
@@ -88,6 +89,18 @@ window.SyBbmMng = {
       reloadTrigger: 0,    // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
     });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syBbm.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(bbmCounts).forEach(k => { delete bbmCounts[k]; });
+        Object.assign(bbmCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -105,6 +118,8 @@ window.SyBbmMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -272,7 +287,7 @@ window.SyBbmMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      bbms, uiState, codes, searchParam, pager, detailModal,                       // 상태 / 데이터
+      bbms, uiState, bbmCounts, codes, searchParam, pager, detailModal,                       // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                           // 컬럼 정의
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                          // computed
@@ -295,7 +310,7 @@ window.SyBbmMng = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 좌: 표시경로 트리 ============================================ -->
-    <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="false" :counts="bbmCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. 우: 목록 + 상세 ============================================ -->
     <div>

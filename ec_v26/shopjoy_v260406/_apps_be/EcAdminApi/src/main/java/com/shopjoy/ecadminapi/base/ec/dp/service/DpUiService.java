@@ -227,4 +227,16 @@ public class DpUiService {
         }
         throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
+    /** getPathCounts — 표시경로 노드별 DpUi 수 (자손 누적, 트리 우측 뱃지용).
+     *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
+    public java.util.Map<String, Long> getPathCounts() {
+        java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
+        for (Object[] row : dpUiRepository.findPathDpUiCounts()) {
+            String pathId = row[0] == null ? null : String.valueOf(row[0]);
+            Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
+            result.put(pathId, cnt);
+        }
+        return result;
+    }
+
 }

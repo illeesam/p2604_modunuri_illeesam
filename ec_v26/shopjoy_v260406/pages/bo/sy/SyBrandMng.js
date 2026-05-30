@@ -11,6 +11,7 @@ window.SyBrandMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
     const brands  = reactive([]);                  // 브랜드 목록 (원본)
+    const brandCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ checkAll: false, dragMoved: false, loading: false, error: null, isPageCodeLoad: false, selectedPath: null, focusedIdx: null, dragSrc: null });
     const codes   = reactive({ brand_status: [], use_yn: [], date_range_opts: [] });
 
@@ -97,6 +98,18 @@ window.SyBrandMng = {
     let   _tempId     = -1;                        // 신규 행 임시 ID
     const EDIT_FIELDS = ['brandCode', 'brandNm', 'brandEnNm', 'pathId', 'logoUrl', 'sortOrd', 'useYn', 'brandRemark'];
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syBrand.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(brandCounts).forEach(k => { delete brandCounts[k]; });
+        Object.assign(brandCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
@@ -115,6 +128,8 @@ window.SyBrandMng = {
         gridRows.splice(0);
         list.forEach(b => gridRows.push(makeRow(b)));
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -294,7 +309,7 @@ window.SyBrandMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      brands, uiState, codes, searchParam, gridRows,                  // 상태 / 데이터
+      brands, uiState, brandCounts, codes, searchParam, gridRows,                  // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsLocalMode,                                                  // computed
@@ -316,7 +331,7 @@ window.SyBrandMng = {
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_brand" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_brand" title="표시경로" :show-biz-cd="false" :counts="brandCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-grid-crud

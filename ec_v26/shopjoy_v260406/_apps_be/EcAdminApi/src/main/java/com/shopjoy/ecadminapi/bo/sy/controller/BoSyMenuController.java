@@ -71,4 +71,10 @@ public class BoSyMenuController {
         boSyMenuService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
+    /** pathCounts — 표시경로 노드별 SyMenu 수 (자손 누적, 트리 우측 뱃지용) */
+    @GetMapping("/path-counts")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts() {
+        return ResponseEntity.ok(ApiResponse.ok(boSyMenuService.getPathCounts()));
+    }
+
 }

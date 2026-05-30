@@ -85,4 +85,9 @@ public class BoDpAreaService {
     @Transactional public DpArea update(String id, DpArea body) { return dpAreaService.update(id, body); }
     @Transactional public void delete(String id) { dpAreaService.delete(id); }
     @Transactional public void saveList(String cmd, List<DpArea> rows) { dpAreaService.saveList(cmd, rows); }
+    /** getPathCounts — 표시경로 노드별 DpArea 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathCounts() {
+        return dpAreaService.getPathCounts();
+    }
+
 }

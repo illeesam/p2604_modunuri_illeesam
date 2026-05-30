@@ -12,6 +12,7 @@ window.DpDispWidgetLibMng = {
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const widgetLibs = reactive([]);
+    const widgetLibCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
 
@@ -118,6 +119,18 @@ window.DpDispWidgetLibMng = {
 
     /* sortIcon — 정렬 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.dpWidgetLib.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(widgetLibCounts).forEach(k => { delete widgetLibCounts[k]; });
+        Object.assign(widgetLibCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
@@ -149,6 +162,8 @@ window.DpDispWidgetLibMng = {
         applied.type   = searchParam.type;
         applied.status = searchParam.status;
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -268,7 +283,7 @@ window.DpDispWidgetLibMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      widgetLibs, uiState, codes, searchParam, applied, pager, detailPanel,           // 상태 / 데이터
+      widgetLibs, uiState, widgetLibCounts, codes, searchParam, applied, pager, detailPanel,           // 상태 / 데이터
       baseSearchColumns, listGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter,                          // computed
@@ -322,7 +337,7 @@ window.DpDispWidgetLibMng = {
           </span>
         </div>
         <div style="max-height:65vh;overflow:auto;">
-          <bo-path-tree biz-cd="ec_disp_widget_lib" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+          <bo-path-tree biz-cd="ec_disp_widget_lib" :counts="widgetLibCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
         </div>
       </div>
       <div>

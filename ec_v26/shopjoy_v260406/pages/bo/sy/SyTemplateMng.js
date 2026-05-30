@@ -12,6 +12,7 @@ window.SyTemplateMng = {
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const templates = reactive([]);                // 템플릿 목록 (그리드 데이터)
+    const templateCounts = reactive({});            // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes     = reactive({ template_type: [], use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'], date_range_opts: [] });
 
@@ -145,6 +146,18 @@ window.SyTemplateMng = {
       pager.pageNo = 1;
       handleSearchList();
     };
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syTemplate.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(templateCounts).forEach(k => { delete templateCounts[k]; });
+        Object.assign(templateCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -164,6 +177,8 @@ window.SyTemplateMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -325,7 +340,7 @@ window.SyTemplateMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      templates, uiState, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
+      templates, uiState, templateCounts, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
@@ -349,7 +364,7 @@ window.SyTemplateMng = {
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="false" :counts="templateCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->

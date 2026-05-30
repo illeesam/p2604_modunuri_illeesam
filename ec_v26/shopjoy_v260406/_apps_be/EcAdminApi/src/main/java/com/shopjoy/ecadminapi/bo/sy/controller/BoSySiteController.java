@@ -39,6 +39,14 @@ public class BoSySiteController {
         return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getPageData(req)));
     }
 
+    /** pathCounts — 표시경로 노드별 사이트수 (검색조건 + 자손 누적, 트리 우측 뱃지용)
+     *   응답: { pathId: 사이트수, '__total__': 전체합계, '__orphan__': path 없음 }.
+     *   검색조건(searchValue / status / typeCd / dateStart / dateEnd) 이 있으면 그 조건에 부합하는 사이트만 카운트. */
+    @GetMapping("/path-counts")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SySiteDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getPathCounts(req)));
+    }
+
     /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<SySite>> create(@RequestBody SySite body) {

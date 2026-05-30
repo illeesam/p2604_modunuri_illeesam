@@ -12,6 +12,7 @@ window.SyCodeMng = {
 
     // --- 화면 상태 / 코드 / 데이터 ---
     const pageCodes = reactive({ use_yn: [], date_range_opts: [] });
+    const codeGrpCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState   = reactive({
       checkAll: false, dragMoved: false, loading: false,
       isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '',
@@ -285,6 +286,18 @@ window.SyCodeMng = {
         uiState.focusedIdx = null;
       } catch (_) {}
     };
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadPathCounts = async () => {
+      try {
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.syCodeGrp.getPathCounts(params, '경로별카운트', '조회');
+        const map = res.data?.data || {};
+        Object.keys(codeGrpCounts).forEach(k => { delete codeGrpCounts[k]; });
+        Object.assign(codeGrpCounts, map);
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
+    };
+
 
     /* handleSearchList — 선택된 그룹의 코드 목록 조회 */
     const handleSearchList = async () => {
@@ -648,7 +661,7 @@ window.SyCodeMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, pageCodes, searchParam, treeExpanded, flatTree,                  // 상태 / 데이터
+      uiState, codeGrpCounts, pageCodes, searchParam, treeExpanded, flatTree,                  // 상태 / 데이터
       baseSearchColumns, fnCodeGridColumns, grpGridColumns, treeGridColumns,    // 컬럼 정의
       treeRowAccessor, treeRowKeyFn,                                            // 컬럼 부속
       handleBtnAction, handleSelectAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
@@ -672,7 +685,7 @@ window.SyCodeMng = {
   <!-- ===== ■. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;margin-bottom:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="false" :counts="codeGrpCounts"
       :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-grid-crud

@@ -246,9 +246,11 @@ window.SyI18nMng = {
   <div class="card" v-if="cfSelectedKey">
     <div class="toolbar">
       <span class="list-title">
-        번역 편집 —
-        <code style="font-size:13px;color:#7c3aed">{{ cfSelectedKey.i18nKey }}</code>
+        번역 편집
+        <span v-if="cfSelectedKey.i18nKey" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ cfSelectedKey.i18nKey }}
         </span>
+      </span>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-blue btn-sm" @click="handleBtnAction('msgForm-save')">
             저장

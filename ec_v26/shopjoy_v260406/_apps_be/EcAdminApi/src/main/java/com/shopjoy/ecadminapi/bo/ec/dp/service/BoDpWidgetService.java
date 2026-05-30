@@ -30,4 +30,9 @@ public class BoDpWidgetService {
     @Transactional public DpWidget update(String id, DpWidget body) { return dpWidgetService.update(id, body); }
     @Transactional public void delete(String id) { dpWidgetService.delete(id); }
     @Transactional public void saveList(String cmd, List<DpWidget> rows) { dpWidgetService.saveList(cmd, rows); }
+    /** getPathCounts — 표시경로 노드별 DpWidget 수 (자손 누적) */
+    public java.util.Map<String, Long> getPathCounts() {
+        return dpWidgetService.getPathCounts();
+    }
+
 }

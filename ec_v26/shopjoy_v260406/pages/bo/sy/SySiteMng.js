@@ -11,6 +11,7 @@ window.SySiteMng = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const sites = reactive([]);                    // 사이트 목록 (메인 그리드 데이터)
+    const siteCounts = reactive({});               // { pathId: 사이트수 } — 좌 트리 우측 뱃지 표시용
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
       selectedPath: null, sortKey: '', sortDir: 'asc',
@@ -136,7 +137,27 @@ window.SySiteMng = {
     /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
-    /* handleSearchList — 목록 조회 */
+    /* handleLoadSiteCounts — 좌 트리 노드별 사이트수 집계 (검색조건 동기)
+     *   백엔드 GET /bo/sy/site/path-counts — PostgreSQL 재귀 CTE 로 자손 누적 + 검색조건 적용.
+     *   handleSearchList 와 동일한 searchParam(searchValue/status/typeCd/dateStart/dateEnd)
+     *   을 그대로 전달해 트리 뱃지 카운트가 페이지 그리드와 항상 일치하게 유지.
+     *   응답: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
+    const handleLoadSiteCounts = async () => {
+      try {
+        /* pathId 는 트리 필터 자체이므로 제외 — 검색조건만 그대로 전달 */
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const res = await boApiSvc.sySite.getPathCounts(params, '사이트관리', '경로별카운트');
+        const map = res.data?.data || {};
+        // siteCounts in-place 갱신 (반응성 유지)
+        Object.keys(siteCounts).forEach(k => { delete siteCounts[k]; });
+        Object.assign(siteCounts, map);
+      } catch (e) {
+        console.error('[handleLoadSiteCounts]', e);
+      }
+    };
+
+    /* handleSearchList — 목록 조회 (좌 트리 카운트도 같은 검색조건으로 동기 갱신) */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -155,6 +176,8 @@ window.SySiteMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 좌 트리 카운트 동기 갱신 — 검색조건이 바뀔 때마다 함께 호출 */
+        handleLoadSiteCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -224,7 +247,7 @@ window.SySiteMng = {
       if (pg === 'sySiteMng') {
         detailModal.show = false;
         detailModal.dtlId = null;
-        if (opts.reload) { handleSearchList('RELOAD'); }
+        if (opts.reload) { handleSearchList('RELOAD'); }   // handleSearchList 내부에서 트리 카운트도 갱신
         return;
       }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
@@ -293,7 +316,7 @@ window.SySiteMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ★ onMounted
+    // ★ onMounted — handleSearchList 가 내부에서 handleLoadSiteCounts 도 함께 호출
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
@@ -342,7 +365,7 @@ window.SySiteMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      sites, uiState, codes, searchParam, pager, detailModal, pathPickModal,        // 상태 / 데이터
+      sites, siteCounts, uiState, codes, searchParam, pager, detailModal, pathPickModal,  // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfTypeOptions, cfDetailEditId, cfIsViewMode, cfDetailKey,                      // computed
@@ -365,7 +388,8 @@ window.SySiteMng = {
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="true"
+    <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="false"
+      :counts="siteCounts"
       :selected="uiState.selectedPath" @select="path => handleBtnAction('pathTree-select', path)" />
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
