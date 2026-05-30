@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -43,10 +44,14 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     /* 정산 마감 목록조회 */
     @Override
     public List<StSettleCloseDto.Item> selectList(StSettleCloseDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(where);
+        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andSettleCloseId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -66,10 +71,14 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(where);
+        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andSettleCloseId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -78,7 +87,12 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         Long total = queryFactory
                 .select(c.count())
                 .from(c)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andSettleCloseId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         StSettleCloseDto.PageResponse res = new StSettleCloseDto.PageResponse();
@@ -101,43 +115,63 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     }
 
     /* 정산 마감 buildCondition */
-    private BooleanBuilder buildCondition(StSettleCloseDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))        w.and(c.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getSettleCloseId())) w.and(c.settleCloseId.eq(s.getSettleCloseId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(StSettleCloseDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? c.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(c.regDate.goe(start)).and(c.regDate.lt(endExcl)); break;
-                case "upd_date":
-                    w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl)); break;
-                default: break;
-            }
+    /* settleCloseId 정확 일치 */
+    private BooleanExpression andSettleCloseId(StSettleCloseDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSettleCloseId())
+                ? c.settleCloseId.eq(search.getSettleCloseId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(StSettleCloseDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
+            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",closeBy,")) or.or(c.closeBy.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",closeReason,")) or.or(c.closeReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",closeStatusCd,")) or.or(c.closeStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",settleCloseId,")) or.or(c.settleCloseId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",settleId,")) or.or(c.settleId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(StSettleCloseDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",closeBy,", c.closeBy, pattern);
+        or = orLike(or, all, types, ",closeReason,", c.closeReason, pattern);
+        or = orLike(or, all, types, ",closeStatusCd,", c.closeStatusCd, pattern);
+        or = orLike(or, all, types, ",settleCloseId,", c.settleCloseId, pattern);
+        or = orLike(or, all, types, ",settleId,", c.settleId, pattern);
+        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**

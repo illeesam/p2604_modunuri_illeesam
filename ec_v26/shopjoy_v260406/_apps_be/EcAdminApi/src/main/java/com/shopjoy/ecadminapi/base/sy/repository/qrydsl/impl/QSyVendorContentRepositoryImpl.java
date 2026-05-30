@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorContentDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAttachGrp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
@@ -68,9 +70,16 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     /* 업체 콘텐츠 목록조회 */
     @Override
     public List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andVendorContentId(search),
+                andVendorId(search),
+                andStatus(search),
+                andContentTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -90,83 +99,121 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andVendorContentId(search),
+                andVendorId(search),
+                andStatus(search),
+                andContentTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyVendorContentDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(c.count()).from(c).where(where).fetchOne();
+        Long total = queryFactory.select(c.count()).from(c).where(
+                andSiteId(search),
+                andVendorContentId(search),
+                andVendorId(search),
+                andStatus(search),
+                andContentTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyVendorContentDto.PageResponse res = new SyVendorContentDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyVendorContentDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))          w.and(c.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getVendorContentId())) w.and(c.vendorContentId.eq(s.getVendorContentId()));
-        if (StringUtils.hasText(s.getVendorId()))        w.and(c.vendorId.eq(s.getVendorId()));
-        if (StringUtils.hasText(s.getStatus()))          w.and(c.vendorContentStatusCd.eq(s.getStatus()));
-        if (StringUtils.hasText(s.getContentTypeCd()))   w.and(c.contentTypeCd.eq(s.getContentTypeCd()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyVendorContentDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? c.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",vendorContentTitle,")) or.or(c.vendorContentTitle.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* vendorContentId 정확 일치 */
+    private BooleanExpression andVendorContentId(SyVendorContentDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVendorContentId())
+                ? c.vendorContentId.eq(search.getVendorContentId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(c.regDate.goe(start)).and(c.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* vendorId 정확 일치 */
+    private BooleanExpression andVendorId(SyVendorContentDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVendorId())
+                ? c.vendorId.eq(search.getVendorId()) : null;
+    }
+
+    /* vendorContentStatusCd 정확 일치 */
+    private BooleanExpression andStatus(SyVendorContentDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? c.vendorContentStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* contentTypeCd 정확 일치 */
+    private BooleanExpression andContentTypeCd(SyVendorContentDto.Request search) {
+        return search != null && StringUtils.hasText(search.getContentTypeCd())
+                ? c.contentTypeCd.eq(search.getContentTypeCd()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyVendorContentDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
+            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",attachGrpId,")) or.or(c.attachGrpId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contentHtml,")) or.or(c.contentHtml.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contentTypeCd,")) or.or(c.contentTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",imageUrl,")) or.or(c.imageUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",langCd,")) or.or(c.langCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",linkUrl,")) or.or(c.linkUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbUrl,")) or.or(c.thumbUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(c.useYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorContentId,")) or.or(c.vendorContentId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorContentRemark,")) or.or(c.vendorContentRemark.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorContentStatusCd,")) or.or(c.vendorContentStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorContentSubtitle,")) or.or(c.vendorContentSubtitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorContentTitle,")) or.or(c.vendorContentTitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorId,")) or.or(c.vendorId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyVendorContentDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",attachGrpId,", c.attachGrpId, pattern);
+        or = orLike(or, all, types, ",contentHtml,", c.contentHtml, pattern);
+        or = orLike(or, all, types, ",contentTypeCd,", c.contentTypeCd, pattern);
+        or = orLike(or, all, types, ",imageUrl,", c.imageUrl, pattern);
+        or = orLike(or, all, types, ",langCd,", c.langCd, pattern);
+        or = orLike(or, all, types, ",linkUrl,", c.linkUrl, pattern);
+        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
+        or = orLike(or, all, types, ",thumbUrl,", c.thumbUrl, pattern);
+        or = orLike(or, all, types, ",useYn,", c.useYn, pattern);
+        or = orLike(or, all, types, ",vendorContentId,", c.vendorContentId, pattern);
+        or = orLike(or, all, types, ",vendorContentRemark,", c.vendorContentRemark, pattern);
+        or = orLike(or, all, types, ",vendorContentStatusCd,", c.vendorContentStatusCd, pattern);
+        or = orLike(or, all, types, ",vendorContentSubtitle,", c.vendorContentSubtitle, pattern);
+        or = orLike(or, all, types, ",vendorContentTitle,", c.vendorContentTitle, pattern);
+        or = orLike(or, all, types, ",vendorId,", c.vendorId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -239,7 +286,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         if (entity.getViewCount()             != null) { update.set(c.viewCount,             entity.getViewCount());             hasAny = true; }
         if (entity.getVendorContentRemark()   != null) { update.set(c.vendorContentRemark,   entity.getVendorContentRemark());   hasAny = true; }
         if (entity.getUpdBy()                 != null) { update.set(c.updBy,                 entity.getUpdBy());                 hasAny = true; }
-        if (entity.getUpdDate()               != null) { update.set(c.updDate,               entity.getUpdDate());               hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

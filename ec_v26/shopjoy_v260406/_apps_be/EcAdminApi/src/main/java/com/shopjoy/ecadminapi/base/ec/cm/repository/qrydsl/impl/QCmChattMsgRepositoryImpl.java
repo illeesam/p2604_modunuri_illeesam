@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmChattMsg;
@@ -50,9 +52,13 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     /** 전체 목록 */
     @Override
     public List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andChattMsgId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -72,10 +78,14 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andChattMsgId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -84,7 +94,12 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         Long total = queryFactory
                 .select(m.count())
                 .from(m)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andChattMsgId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         CmChattMsgDto.PageResponse res = new CmChattMsgDto.PageResponse();
@@ -92,52 +107,66 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     }
 
     /** 검색조건 빌드 */
-    private BooleanBuilder buildCondition(CmChattMsgDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))     w.and(m.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getChattMsgId())) w.and(m.chattMsgId.eq(s.getChattMsgId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(CmChattMsgDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? m.siteId.eq(search.getSiteId()) : null;
+    }
 
-        // dateType + dateStart + dateEnd
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "send_date":
-                    w.and(m.sendDate.goe(start)).and(m.sendDate.lt(endExcl));
-                    break;
-                case "reg_date":
-                    w.and(m.regDate.goe(start)).and(m.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(m.updDate.goe(start)).and(m.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* chattMsgId 정확 일치 */
+    private BooleanExpression andChattMsgId(CmChattMsgDto.Request search) {
+        return search != null && StringUtils.hasText(search.getChattMsgId())
+                ? m.chattMsgId.eq(search.getChattMsgId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(CmChattMsgDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "send_date": return m.sendDate.goe(start).and(m.sendDate.lt(endExcl));
+            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
+            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",chattMsgId,")) or.or(m.chattMsgId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",chattRoomId,")) or.or(m.chattRoomId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",msgText,")) or.or(m.msgText.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",readYn,")) or.or(m.readYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refId,")) or.or(m.refId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refType,")) or.or(m.refType.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",senderCd,")) or.or(m.senderCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(CmChattMsgDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",chattMsgId,", m.chattMsgId, pattern);
+        or = orLike(or, all, types, ",chattRoomId,", m.chattRoomId, pattern);
+        or = orLike(or, all, types, ",msgText,", m.msgText, pattern);
+        or = orLike(or, all, types, ",readYn,", m.readYn, pattern);
+        or = orLike(or, all, types, ",refId,", m.refId, pattern);
+        or = orLike(or, all, types, ",refType,", m.refType, pattern);
+        or = orLike(or, all, types, ",senderCd,", m.senderCd, pattern);
+        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -193,7 +222,8 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         if (entity.getSendDate()    != null) { update.set(m.sendDate,    entity.getSendDate());    hasAny = true; }
         if (entity.getReadYn()      != null) { update.set(m.readYn,      entity.getReadYn());      hasAny = true; }
         if (entity.getUpdBy()       != null) { update.set(m.updBy,       entity.getUpdBy());       hasAny = true; }
-        if (entity.getUpdDate()     != null) { update.set(m.updDate,     entity.getUpdDate());     hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

@@ -67,7 +67,7 @@ public class BoSyAlarmController {
     /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyAlarm> rows) {
-        boSyAlarmService.saveList(rows);
+        boSyAlarmService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

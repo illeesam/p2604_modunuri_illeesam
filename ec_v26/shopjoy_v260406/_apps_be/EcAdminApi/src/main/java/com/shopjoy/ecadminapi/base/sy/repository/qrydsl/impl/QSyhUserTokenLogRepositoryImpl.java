@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhUserTokenLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhUserTokenLog;
@@ -82,10 +84,17 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     /* 목록조회 */
     @Override
     public List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhUserTokenLogDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyhUserTokenLogDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andLogId(search),
+                andUserId(search),
+                andActionCd(search),
+                andTokenTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -105,10 +114,17 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhUserTokenLogDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyhUserTokenLogDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andLogId(search),
+                andUserId(search),
+                andActionCd(search),
+                andTokenTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -117,7 +133,15 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         Long total = queryFactory
                 .select(l.count())
                 .from(l)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andLogId(search),
+                andUserId(search),
+                andActionCd(search),
+                andTokenTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         SyhUserTokenLogDto.PageResponse res = new SyhUserTokenLogDto.PageResponse();
@@ -125,68 +149,89 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyhUserTokenLogDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))      w.and(l.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getLogId()))       w.and(l.logId.eq(s.getLogId()));
-        if (StringUtils.hasText(s.getUserId()))      w.and(l.userId.eq(s.getUserId()));
-        if (StringUtils.hasText(s.getActionCd()))    w.and(l.actionCd.eq(s.getActionCd()));
-        if (StringUtils.hasText(s.getTokenTypeCd())) w.and(l.tokenTypeCd.eq(s.getTokenTypeCd()));
-        if (StringUtils.hasText(s.getIp()))          w.and(l.ip.like("%" + s.getIp() + "%"));
-        if (StringUtils.hasText(s.getUiNm()))        w.and(l.uiNm.like("%" + s.getUiNm() + "%"));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyhUserTokenLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? l.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* logId 정확 일치 */
+    private BooleanExpression andLogId(SyhUserTokenLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getLogId())
+                ? l.logId.eq(search.getLogId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",userId,"))  or.or(l.userId.like(pattern));
-            // login_id 컬럼이 SyhUserTokenLog 엔티티에 없음 — XML 의 login_id 검색은 생략
-            if (or.getValue() != null) w.and(or);
+    /* userId 정확 일치 */
+    private BooleanExpression andUserId(SyhUserTokenLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUserId())
+                ? l.userId.eq(search.getUserId()) : null;
+    }
+
+    /* actionCd 정확 일치 */
+    private BooleanExpression andActionCd(SyhUserTokenLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getActionCd())
+                ? l.actionCd.eq(search.getActionCd()) : null;
+    }
+
+    /* tokenTypeCd 정확 일치 */
+    private BooleanExpression andTokenTypeCd(SyhUserTokenLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTokenTypeCd())
+                ? l.tokenTypeCd.eq(search.getTokenTypeCd()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyhUserTokenLogDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(l.regDate.goe(start)).and(l.regDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",accessToken,")) or.or(l.accessToken.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",actionCd,")) or.or(l.actionCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",authId,")) or.or(l.authId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cmdNm,")) or.or(l.cmdNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deviceInfo,")) or.or(l.deviceInfo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",ip,")) or.or(l.ip.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",loginLogId,")) or.or(l.loginLogId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",prevToken,")) or.or(l.prevToken.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refreshToken,")) or.or(l.refreshToken.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",revokeReason,")) or.or(l.revokeReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",tokenTypeCd,")) or.or(l.tokenTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",uiNm,")) or.or(l.uiNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userId,")) or.or(l.userId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyhUserTokenLogDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",accessToken,", l.accessToken, pattern);
+        or = orLike(or, all, types, ",actionCd,", l.actionCd, pattern);
+        or = orLike(or, all, types, ",authId,", l.authId, pattern);
+        or = orLike(or, all, types, ",cmdNm,", l.cmdNm, pattern);
+        or = orLike(or, all, types, ",deviceInfo,", l.deviceInfo, pattern);
+        or = orLike(or, all, types, ",ip,", l.ip, pattern);
+        or = orLike(or, all, types, ",logId,", l.logId, pattern);
+        or = orLike(or, all, types, ",loginLogId,", l.loginLogId, pattern);
+        or = orLike(or, all, types, ",prevToken,", l.prevToken, pattern);
+        or = orLike(or, all, types, ",refreshToken,", l.refreshToken, pattern);
+        or = orLike(or, all, types, ",revokeReason,", l.revokeReason, pattern);
+        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
+        or = orLike(or, all, types, ",tokenTypeCd,", l.tokenTypeCd, pattern);
+        or = orLike(or, all, types, ",uiNm,", l.uiNm, pattern);
+        or = orLike(or, all, types, ",userId,", l.userId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -249,7 +294,8 @@ public class QSyhUserTokenLogRepositoryImpl implements QSyhUserTokenLogRepositor
         if (entity.getUiNm()           != null) { update.set(l.uiNm,           entity.getUiNm());           hasAny = true; }
         if (entity.getCmdNm()          != null) { update.set(l.cmdNm,          entity.getCmdNm());          hasAny = true; }
         if (entity.getUpdBy()          != null) { update.set(l.updBy,          entity.getUpdBy());          hasAny = true; }
-        if (entity.getUpdDate()        != null) { update.set(l.updDate,        entity.getUpdDate());        hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

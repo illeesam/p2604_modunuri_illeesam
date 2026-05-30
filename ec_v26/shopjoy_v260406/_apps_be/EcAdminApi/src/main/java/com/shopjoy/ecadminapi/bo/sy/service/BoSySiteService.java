@@ -54,7 +54,7 @@ public class BoSySiteService {
 
     /** saveList — 일괄 저장 */
     @Transactional
-    public void saveList(List<SySite> rows) {
-        sySiteService.saveList(rows);
+    public void saveList(String cmd, List<SySite> rows) {
+        sySiteService.saveList(cmd, rows);
     }
 }

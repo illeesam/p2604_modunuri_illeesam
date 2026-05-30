@@ -29,5 +29,5 @@ public class BoPdDlivTmpltService {
     @Transactional public PdDlivTmplt create(PdDlivTmplt body) { return pdDlivTmpltService.create(body); }
     @Transactional public PdDlivTmplt update(String id, PdDlivTmplt body) { return pdDlivTmpltService.update(id, body); }
     @Transactional public void delete(String id) { pdDlivTmpltService.delete(id); }
-    @Transactional public void saveList(List<PdDlivTmplt> rows) { pdDlivTmpltService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<PdDlivTmplt> rows) { pdDlivTmpltService.saveList(cmd, rows); }
 }

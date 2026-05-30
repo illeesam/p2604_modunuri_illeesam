@@ -86,18 +86,7 @@ public class PmVoucherService {
         return saved;
     }
 
-    /* 바우처(상품권) 저장 */
-    @Transactional
-    public PmVoucher save(PmVoucher entity) {
-        if (!existsById(entity.getVoucherId()))
-            throw new CmBizException("존재하지 않는 PmVoucher입니다: " + entity.getVoucherId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        PmVoucher saved = pmVoucherRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 바우처(상품권) 수정 */
     @Transactional
@@ -137,44 +126,105 @@ public class PmVoucherService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 바우처(상품권) 목록저장 */
-    @Transactional
-    public void saveList(List<PmVoucher> rows) {
-        CmUtil.requireRowIds(rows, PmVoucher::getVoucherId, "U", "voucherId", this);
-        CmUtil.requireRowIds(rows, PmVoucher::getVoucherId, "D", "voucherId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(PmVoucher::getVoucherId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            pmVoucherRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public PmVoucher save(String cmd, PmVoucher entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getVoucherId() == null || entity.getVoucherId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getVoucherId() == null)
+                    throw new CmBizException("삭제 대상 voucherId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!pmVoucherRepository.existsById(entity.getVoucherId()))
+                    throw new CmBizException("존재하지 않는 PmVoucher입니다: " + entity.getVoucherId() + "::" + CmUtil.svcCallerInfo(this));
+                pmVoucherRepository.deleteById(entity.getVoucherId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setVoucherId(CmUtil.generateId("pm_voucher"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                PmVoucher saved = pmVoucherRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getVoucherId() == null)
+                    throw new CmBizException("수정 대상 voucherId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = pmVoucherRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 PmVoucher입니다: " + entity.getVoucherId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getVoucherId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<PmVoucher> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (PmVoucher row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getVoucherId() == null || row.getVoucherId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, PmVoucher::getVoucherId, "U", "voucherId", this);
+            CmUtil.requireRowIds(rows, PmVoucher::getVoucherId, "D", "voucherId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(PmVoucher::getVoucherId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                pmVoucherRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<PmVoucher> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (PmVoucher row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = pmVoucherRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getVoucherId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<PmVoucher> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (PmVoucher row : insertRows) {
+                row.setVoucherId(CmUtil.generateId("pm_voucher"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                pmVoucherRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<PmVoucher> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (PmVoucher row : updateRows) {
-            PmVoucher entity = findById(row.getVoucherId());
-            VoUtil.voCopyExclude(row, entity, "voucherId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            pmVoucherRepository.save(entity);
-        }
-        em.flush();
-
-        List<PmVoucher> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (PmVoucher row : insertRows) {
-            row.setVoucherId(CmUtil.generateId("pm_voucher"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            pmVoucherRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

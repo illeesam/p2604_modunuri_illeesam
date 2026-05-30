@@ -67,7 +67,7 @@ public class BoSyContactController {
     /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyContact> rows) {
-        boSyContactService.saveList(rows);
+        boSyContactService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

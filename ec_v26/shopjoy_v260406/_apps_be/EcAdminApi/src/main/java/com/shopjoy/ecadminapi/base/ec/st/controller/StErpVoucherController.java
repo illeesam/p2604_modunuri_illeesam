@@ -46,7 +46,7 @@ public class StErpVoucherController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StErpVoucher>> save(@PathVariable("id") String id, @RequestBody StErpVoucher entity) {
         entity.setErpVoucherId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
     }
 
     /* ERP 전표 수정 */
@@ -63,10 +63,31 @@ public class StErpVoucherController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /* ERP 전표 목록저장 */
+    /** save -- rowStatus 단건 분기 저장 (기본) */
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponse<StErpVoucher>> saveDefault(@RequestBody StErpVoucher entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
+    }
+
+    /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<StErpVoucher>> saveCmd(
+            @PathVariable("cmd") String cmd, @RequestBody StErpVoucher entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (기본) */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<StErpVoucher> rows) {
-        service.saveList(rows);
+        service.saveList("base", rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (cmd 변형) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<StErpVoucher> rows) {
+        service.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

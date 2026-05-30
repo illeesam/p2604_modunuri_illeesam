@@ -53,8 +53,8 @@ public class BoSyPropService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(List<SyProp> rows) {
-        syPropService.saveList(rows);
+    public void saveList(String cmd, List<SyProp> rows) {
+        syPropService.saveList(cmd, rows);
         propCache.evictAll();
     }
 }

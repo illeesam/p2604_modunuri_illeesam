@@ -56,7 +56,7 @@ public class SyAlarmController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyAlarm>> save(@PathVariable("id") String id, @RequestBody SyAlarm entity) {
         entity.setAlarmId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
     }
 
     /* 알람 수정 */

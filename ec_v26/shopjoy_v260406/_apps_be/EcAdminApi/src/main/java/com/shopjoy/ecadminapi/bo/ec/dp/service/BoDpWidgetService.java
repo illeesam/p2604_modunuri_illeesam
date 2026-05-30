@@ -29,5 +29,5 @@ public class BoDpWidgetService {
     @Transactional public DpWidget create(DpWidget body) { return dpWidgetService.create(body); }
     @Transactional public DpWidget update(String id, DpWidget body) { return dpWidgetService.update(id, body); }
     @Transactional public void delete(String id) { dpWidgetService.delete(id); }
-    @Transactional public void saveList(List<DpWidget> rows) { dpWidgetService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<DpWidget> rows) { dpWidgetService.saveList(cmd, rows); }
 }

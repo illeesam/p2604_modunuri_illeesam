@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlogCate;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmBlogCate;
@@ -54,9 +56,14 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* 게시판 카테고리 목록조회 */
     @Override
     public List<CmBlogCateDto.Item> selectList(CmBlogCateDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andBlogCateId(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -76,10 +83,15 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andBlogCateId(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -88,7 +100,13 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         Long total = queryFactory
                 .select(c.count())
                 .from(c)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andBlogCateId(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         CmBlogCateDto.PageResponse res = new CmBlogCateDto.PageResponse();
@@ -96,56 +114,68 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    private BooleanBuilder buildCondition(CmBlogCateDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))     w.and(c.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getBlogCateId())) w.and(c.blogCateId.eq(s.getBlogCateId()));
-        if (StringUtils.hasText(s.getUseYn()))      w.and(c.useYn.eq(s.getUseYn()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(CmBlogCateDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? c.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* blogCateId 정확 일치 */
+    private BooleanExpression andBlogCateId(CmBlogCateDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBlogCateId())
+                ? c.blogCateId.eq(search.getBlogCateId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",blogCateNm,")) or.or(c.blogCateNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* useYn 정확 일치 */
+    private BooleanExpression andUseYn(CmBlogCateDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? c.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(CmBlogCateDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
+            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(c.regDate.goe(start)).and(c.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",blogCateId,")) or.or(c.blogCateId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",blogCateNm,")) or.or(c.blogCateNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",parentBlogCateId,")) or.or(c.parentBlogCateId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(c.useYn.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(CmBlogCateDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",blogCateId,", c.blogCateId, pattern);
+        or = orLike(or, all, types, ",blogCateNm,", c.blogCateNm, pattern);
+        or = orLike(or, all, types, ",parentBlogCateId,", c.parentBlogCateId, pattern);
+        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", c.useYn, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -205,7 +235,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         if (entity.getSortOrd()          != null) { update.set(c.sortOrd,          entity.getSortOrd());          hasAny = true; }
         if (entity.getUseYn()            != null) { update.set(c.useYn,            entity.getUseYn());            hasAny = true; }
         if (entity.getUpdBy()            != null) { update.set(c.updBy,            entity.getUpdBy());            hasAny = true; }
-        if (entity.getUpdDate()          != null) { update.set(c.updDate,          entity.getUpdDate());          hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

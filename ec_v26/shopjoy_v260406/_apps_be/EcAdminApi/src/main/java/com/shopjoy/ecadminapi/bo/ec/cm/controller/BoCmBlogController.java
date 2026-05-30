@@ -74,7 +74,7 @@ public class BoCmBlogController {
     /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<CmBlog> rows) {
-        boCmBlogService.saveList(rows);
+        boCmBlogService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

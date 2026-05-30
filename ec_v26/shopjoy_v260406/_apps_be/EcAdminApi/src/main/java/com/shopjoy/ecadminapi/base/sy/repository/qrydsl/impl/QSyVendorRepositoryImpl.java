@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
@@ -66,9 +68,15 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 업체(판매자) 목록조회 */
     @Override
     public List<SyVendorDto.Item> selectList(SyVendorDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andVendorId(search),
+                andStatus(search),
+                andVendorClassCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -88,93 +96,122 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andVendorId(search),
+                andStatus(search),
+                andVendorClassCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyVendorDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(v.count()).from(v).where(where).fetchOne();
+        Long total = queryFactory.select(v.count()).from(v).where(
+                andSiteId(search),
+                andVendorId(search),
+                andStatus(search),
+                andVendorClassCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyVendorDto.PageResponse res = new SyVendorDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyVendorDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))        w.and(v.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getPathId()))        w.and(v.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
-        if (StringUtils.hasText(s.getVendorId()))      w.and(v.vendorId.eq(s.getVendorId()));
-        if (StringUtils.hasText(s.getStatus()))        w.and(v.vendorStatusCd.eq(s.getStatus()));
-        if (StringUtils.hasText(s.getVendorClassCd())) w.and(v.vendorClassCd.eq(s.getVendorClassCd()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyVendorDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? v.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",vendorNm,"))  or.or(v.vendorNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",ceoNm,")) or.or(v.ceoNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* vendorId 정확 일치 */
+    private BooleanExpression andVendorId(SyVendorDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVendorId())
+                ? v.vendorId.eq(search.getVendorId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(v.regDate.goe(start)).and(v.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(v.updDate.goe(start)).and(v.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* vendorStatusCd 정확 일치 */
+    private BooleanExpression andStatus(SyVendorDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? v.vendorStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* vendorClassCd 정확 일치 */
+    private BooleanExpression andVendorClassCd(SyVendorDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVendorClassCd())
+                ? v.vendorClassCd.eq(search.getVendorClassCd()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyVendorDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return v.regDate.goe(start).and(v.regDate.lt(endExcl));
+            case "upd_date": return v.updDate.goe(start).and(v.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",ceoNm,")) or.or(v.ceoNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",corpNo,")) or.or(v.corpNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pathId,")) or.or(v.pathId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(v.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorAddr,")) or.or(v.vendorAddr.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorAddrDetail,")) or.or(v.vendorAddrDetail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorBankAccount,")) or.or(v.vendorBankAccount.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorBankHolder,")) or.or(v.vendorBankHolder.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorBankNm,")) or.or(v.vendorBankNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorClassCd,")) or.or(v.vendorClassCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorEmail,")) or.or(v.vendorEmail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorFax,")) or.or(v.vendorFax.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorHomepage,")) or.or(v.vendorHomepage.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorId,")) or.or(v.vendorId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorItem,")) or.or(v.vendorItem.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorNm,")) or.or(v.vendorNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorNmEn,")) or.or(v.vendorNmEn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorNo,")) or.or(v.vendorNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorPhone,")) or.or(v.vendorPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorRegUrl,")) or.or(v.vendorRegUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorRemark,")) or.or(v.vendorRemark.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorStatusCd,")) or.or(v.vendorStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorType,")) or.or(v.vendorType.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorZipCode,")) or.or(v.vendorZipCode.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyVendorDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",ceoNm,", v.ceoNm, pattern);
+        or = orLike(or, all, types, ",corpNo,", v.corpNo, pattern);
+        or = orLike(or, all, types, ",pathId,", v.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", v.siteId, pattern);
+        or = orLike(or, all, types, ",vendorAddr,", v.vendorAddr, pattern);
+        or = orLike(or, all, types, ",vendorAddrDetail,", v.vendorAddrDetail, pattern);
+        or = orLike(or, all, types, ",vendorBankAccount,", v.vendorBankAccount, pattern);
+        or = orLike(or, all, types, ",vendorBankHolder,", v.vendorBankHolder, pattern);
+        or = orLike(or, all, types, ",vendorBankNm,", v.vendorBankNm, pattern);
+        or = orLike(or, all, types, ",vendorClassCd,", v.vendorClassCd, pattern);
+        or = orLike(or, all, types, ",vendorEmail,", v.vendorEmail, pattern);
+        or = orLike(or, all, types, ",vendorFax,", v.vendorFax, pattern);
+        or = orLike(or, all, types, ",vendorHomepage,", v.vendorHomepage, pattern);
+        or = orLike(or, all, types, ",vendorId,", v.vendorId, pattern);
+        or = orLike(or, all, types, ",vendorItem,", v.vendorItem, pattern);
+        or = orLike(or, all, types, ",vendorNm,", v.vendorNm, pattern);
+        or = orLike(or, all, types, ",vendorNmEn,", v.vendorNmEn, pattern);
+        or = orLike(or, all, types, ",vendorNo,", v.vendorNo, pattern);
+        or = orLike(or, all, types, ",vendorPhone,", v.vendorPhone, pattern);
+        or = orLike(or, all, types, ",vendorRegUrl,", v.vendorRegUrl, pattern);
+        or = orLike(or, all, types, ",vendorRemark,", v.vendorRemark, pattern);
+        or = orLike(or, all, types, ",vendorStatusCd,", v.vendorStatusCd, pattern);
+        or = orLike(or, all, types, ",vendorType,", v.vendorType, pattern);
+        or = orLike(or, all, types, ",vendorZipCode,", v.vendorZipCode, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -249,7 +286,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         if (entity.getPathId()            != null) { update.set(v.pathId,            entity.getPathId());            hasAny = true; }
         if (entity.getVendorRemark()      != null) { update.set(v.vendorRemark,      entity.getVendorRemark());      hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(v.updBy,             entity.getUpdBy());             hasAny = true; }
-        if (entity.getUpdDate()           != null) { update.set(v.updDate,           entity.getUpdDate());           hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(v.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

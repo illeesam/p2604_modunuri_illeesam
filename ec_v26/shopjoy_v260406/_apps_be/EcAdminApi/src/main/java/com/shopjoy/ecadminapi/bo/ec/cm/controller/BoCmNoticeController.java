@@ -67,7 +67,7 @@ public class BoCmNoticeController {
     /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyNotice> rows) {
-        boCmNoticeService.saveList(rows);
+        boCmNoticeService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

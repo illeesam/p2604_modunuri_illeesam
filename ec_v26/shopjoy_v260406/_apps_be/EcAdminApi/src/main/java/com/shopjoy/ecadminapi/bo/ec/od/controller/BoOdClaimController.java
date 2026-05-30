@@ -115,7 +115,7 @@ public class BoOdClaimController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdClaim> rows) {
-        boOdClaimService.saveList(rows);
+        boOdClaimService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

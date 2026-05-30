@@ -86,18 +86,7 @@ public class SyBrandService {
         return saved;
     }
 
-    /* 브랜드 저장 */
-    @Transactional
-    public SyBrand save(SyBrand entity) {
-        if (!existsById(entity.getBrandId()))
-            throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        SyBrand saved = syBrandRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 브랜드 수정 */
     @Transactional
@@ -137,44 +126,105 @@ public class SyBrandService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 브랜드 목록저장 */
-    @Transactional
-    public void saveList(List<SyBrand> rows) {
-        CmUtil.requireRowIds(rows, SyBrand::getBrandId, "U", "brandId", this);
-        CmUtil.requireRowIds(rows, SyBrand::getBrandId, "D", "brandId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(SyBrand::getBrandId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            syBrandRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public SyBrand save(String cmd, SyBrand entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getBrandId() == null || entity.getBrandId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getBrandId() == null)
+                    throw new CmBizException("삭제 대상 brandId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!syBrandRepository.existsById(entity.getBrandId()))
+                    throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
+                syBrandRepository.deleteById(entity.getBrandId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setBrandId(CmUtil.generateId("sy_brand"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                SyBrand saved = syBrandRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getBrandId() == null)
+                    throw new CmBizException("수정 대상 brandId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = syBrandRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 SyBrand입니다: " + entity.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getBrandId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<SyBrand> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (SyBrand row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getBrandId() == null || row.getBrandId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, SyBrand::getBrandId, "U", "brandId", this);
+            CmUtil.requireRowIds(rows, SyBrand::getBrandId, "D", "brandId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(SyBrand::getBrandId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                syBrandRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<SyBrand> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (SyBrand row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = syBrandRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBrandId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<SyBrand> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (SyBrand row : insertRows) {
+                row.setBrandId(CmUtil.generateId("sy_brand"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                syBrandRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<SyBrand> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (SyBrand row : updateRows) {
-            SyBrand entity = findById(row.getBrandId());
-            VoUtil.voCopyExclude(row, entity, "brandId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            syBrandRepository.save(entity);
-        }
-        em.flush();
-
-        List<SyBrand> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (SyBrand row : insertRows) {
-            row.setBrandId(CmUtil.generateId("sy_brand"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            syBrandRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

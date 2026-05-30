@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
@@ -65,10 +66,14 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhAccessLogDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyhAccessLogDto.Item> query = buildBaseQuery().where(
+                andMethod(search),
+                andAppTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -77,7 +82,12 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         Long total = queryFactory
                 .select(l.count())
                 .from(l)
-                .where(where)
+                .where(
+                andMethod(search),
+                andAppTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         SyhAccessLogDto.PageResponse res = new SyhAccessLogDto.PageResponse();
@@ -85,79 +95,81 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyhAccessLogDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getMethod()))    w.and(l.reqMethod.eq(s.getMethod()));
-        if (StringUtils.hasText(s.getStatus())) {
-            try { w.and(l.respStatus.eq(Integer.parseInt(s.getStatus()))); } catch (NumberFormatException ignore) {}
-        }
-        if (StringUtils.hasText(s.getPath()))      w.and(l.reqPath.like("%" + s.getPath() + "%"));
-        if (StringUtils.hasText(s.getAppTypeCd())) w.and(l.appTypeCd.eq(s.getAppTypeCd()));
-        if (StringUtils.hasText(s.getUiNm()))      w.and(l.uiNm.like("%" + s.getUiNm() + "%"));
-        if (StringUtils.hasText(s.getTraceId()))   w.and(l.traceId.like("%" + s.getTraceId() + "%"));
+    /* reqMethod 정확 일치 */
+    private BooleanExpression andMethod(SyhAccessLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMethod())
+                ? l.reqMethod.eq(search.getMethod()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* appTypeCd 정확 일치 */
+    private BooleanExpression andAppTypeCd(SyhAccessLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAppTypeCd())
+                ? l.appTypeCd.eq(search.getAppTypeCd()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",reqIp,"))  or.or(l.reqIp.like(pattern));
-            if (all || types.contains(",userId,")) or.or(l.userId.like(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyhAccessLogDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(l.regDate.goe(start)).and(l.regDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",appTypeCd,")) or.or(l.appTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cmdNm,")) or.or(l.cmdNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deptId,")) or.or(l.deptId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",fileNm,")) or.or(l.fileNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",funcNm,")) or.or(l.funcNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",lineNo,")) or.or(l.lineNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",localeId,")) or.or(l.localeId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",profile,")) or.or(l.profile.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reqBody,")) or.or(l.reqBody.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reqHost,")) or.or(l.reqHost.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reqIp,")) or.or(l.reqIp.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reqMethod,")) or.or(l.reqMethod.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reqPath,")) or.or(l.reqPath.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reqQuery,")) or.or(l.reqQuery.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reqUa,")) or.or(l.reqUa.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",respBody,")) or.or(l.respBody.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",roleId,")) or.or(l.roleId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",serverNm,")) or.or(l.serverNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",threadNm,")) or.or(l.threadNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",traceId,")) or.or(l.traceId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",uiNm,")) or.or(l.uiNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userId,")) or.or(l.userId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorId,")) or.or(l.vendorId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyhAccessLogDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",appTypeCd,", l.appTypeCd, pattern);
+        or = orLike(or, all, types, ",cmdNm,", l.cmdNm, pattern);
+        or = orLike(or, all, types, ",deptId,", l.deptId, pattern);
+        or = orLike(or, all, types, ",fileNm,", l.fileNm, pattern);
+        or = orLike(or, all, types, ",funcNm,", l.funcNm, pattern);
+        or = orLike(or, all, types, ",lineNo,", l.lineNo, pattern);
+        or = orLike(or, all, types, ",localeId,", l.localeId, pattern);
+        or = orLike(or, all, types, ",logId,", l.logId, pattern);
+        or = orLike(or, all, types, ",profile,", l.profile, pattern);
+        or = orLike(or, all, types, ",reqBody,", l.reqBody, pattern);
+        or = orLike(or, all, types, ",reqHost,", l.reqHost, pattern);
+        or = orLike(or, all, types, ",reqIp,", l.reqIp, pattern);
+        or = orLike(or, all, types, ",reqMethod,", l.reqMethod, pattern);
+        or = orLike(or, all, types, ",reqPath,", l.reqPath, pattern);
+        or = orLike(or, all, types, ",reqQuery,", l.reqQuery, pattern);
+        or = orLike(or, all, types, ",reqUa,", l.reqUa, pattern);
+        or = orLike(or, all, types, ",respBody,", l.respBody, pattern);
+        or = orLike(or, all, types, ",roleId,", l.roleId, pattern);
+        or = orLike(or, all, types, ",serverNm,", l.serverNm, pattern);
+        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
+        or = orLike(or, all, types, ",threadNm,", l.threadNm, pattern);
+        or = orLike(or, all, types, ",traceId,", l.traceId, pattern);
+        or = orLike(or, all, types, ",uiNm,", l.uiNm, pattern);
+        or = orLike(or, all, types, ",userId,", l.userId, pattern);
+        or = orLike(or, all, types, ",vendorId,", l.vendorId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**

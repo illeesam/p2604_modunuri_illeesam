@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVocDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVoc;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +42,15 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     /* 고객의 소리(VOC) 목록조회 */
     @Override
     public List<SyVocDto.Item> selectList(SyVocDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVocDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyVocDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andVocId(search),
+                andVocMasterCd(search),
+                andVocDetailCd(search),
+                andUseYn(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -59,14 +68,27 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVocDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyVocDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andVocId(search),
+                andVocMasterCd(search),
+                andVocDetailCd(search),
+                andUseYn(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyVocDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(v.count()).from(v).where(where).fetchOne();
+        Long total = queryFactory.select(v.count()).from(v).where(
+                andSiteId(search),
+                andVocId(search),
+                andVocMasterCd(search),
+                andVocDetailCd(search),
+                andUseYn(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyVocDto.PageResponse res = new SyVocDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -85,55 +107,66 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyVocDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))      w.and(v.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getVocId()))       w.and(v.vocId.eq(s.getVocId()));
-        if (StringUtils.hasText(s.getVocMasterCd())) w.and(v.vocMasterCd.eq(s.getVocMasterCd()));
-        if (StringUtils.hasText(s.getVocDetailCd())) w.and(v.vocDetailCd.eq(s.getVocDetailCd()));
-        if (StringUtils.hasText(s.getUseYn()))       w.and(v.useYn.eq(s.getUseYn()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyVocDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? v.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",vocNm,")) or.or(v.vocNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* vocId 정확 일치 */
+    private BooleanExpression andVocId(SyVocDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVocId())
+                ? v.vocId.eq(search.getVocId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {
-            LocalDate ds = LocalDate.parse(s.getDateStart(), DF);
-            LocalDate de = LocalDate.parse(s.getDateEnd(), DF);
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(v.regDate.goe(ds.atStartOfDay())).and(v.regDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "upd_date":
-                    w.and(v.updDate.goe(ds.atStartOfDay())).and(v.updDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",siteId,")) or.or(v.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(v.useYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vocContent,")) or.or(v.vocContent.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vocDetailCd,")) or.or(v.vocDetailCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vocId,")) or.or(v.vocId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vocMasterCd,")) or.or(v.vocMasterCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vocNm,")) or.or(v.vocNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* vocMasterCd 정확 일치 */
+    private BooleanExpression andVocMasterCd(SyVocDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVocMasterCd())
+                ? v.vocMasterCd.eq(search.getVocMasterCd()) : null;
+    }
+
+    /* vocDetailCd 정확 일치 */
+    private BooleanExpression andVocDetailCd(SyVocDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVocDetailCd())
+                ? v.vocDetailCd.eq(search.getVocDetailCd()) : null;
+    }
+
+    /* useYn 정확 일치 */
+    private BooleanExpression andUseYn(SyVocDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? v.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyVocDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",siteId,", v.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", v.useYn, pattern);
+        or = orLike(or, all, types, ",vocContent,", v.vocContent, pattern);
+        or = orLike(or, all, types, ",vocDetailCd,", v.vocDetailCd, pattern);
+        or = orLike(or, all, types, ",vocId,", v.vocId, pattern);
+        or = orLike(or, all, types, ",vocMasterCd,", v.vocMasterCd, pattern);
+        or = orLike(or, all, types, ",vocNm,", v.vocNm, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -189,7 +222,8 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         if (entity.getVocContent()  != null) { update.set(v.vocContent,  entity.getVocContent());  hasAny = true; }
         if (entity.getUseYn()       != null) { update.set(v.useYn,       entity.getUseYn());       hasAny = true; }
         if (entity.getUpdBy()       != null) { update.set(v.updBy,       entity.getUpdBy());       hasAny = true; }
-        if (entity.getUpdDate()     != null) { update.set(v.updDate,     entity.getUpdDate());     hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(v.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

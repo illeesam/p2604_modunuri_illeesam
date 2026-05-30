@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
@@ -65,9 +67,15 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     /* 메뉴 목록조회 */
     @Override
     public List<SyMenuDto.Item> selectList(SyMenuDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyMenuDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyMenuDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andMenuId(search),
+                andMenuTypeCd(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -87,79 +95,108 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyMenuDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyMenuDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andMenuId(search),
+                andMenuTypeCd(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(m.count()).from(m).where(where).fetchOne();
+        Long total = queryFactory.select(m.count()).from(m).where(
+                andSiteId(search),
+                andMenuId(search),
+                andMenuTypeCd(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyMenuDto.PageResponse res = new SyMenuDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyMenuDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))       w.and(m.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getMenuId()))       w.and(m.menuId.eq(s.getMenuId()));
-        if (StringUtils.hasText(s.getMenuTypeCd()))   w.and(m.menuTypeCd.eq(s.getMenuTypeCd()));
-        if (StringUtils.hasText(s.getParentMenuId())) w.and(m.menuId.in(syMenuRepository.findTreeMenuIds(s.getParentMenuId())));
-        if (StringUtils.hasText(s.getUseYn()))        w.and(m.useYn.eq(s.getUseYn()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyMenuDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? m.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",menuNm,"))   or.or(m.menuNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",menuCode,")) or.or(m.menuCode.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* menuId 정확 일치 */
+    private BooleanExpression andMenuId(SyMenuDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMenuId())
+                ? m.menuId.eq(search.getMenuId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(m.regDate.goe(start)).and(m.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(m.updDate.goe(start)).and(m.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* menuTypeCd 정확 일치 */
+    private BooleanExpression andMenuTypeCd(SyMenuDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMenuTypeCd())
+                ? m.menuTypeCd.eq(search.getMenuTypeCd()) : null;
+    }
+
+    /* useYn 정확 일치 */
+    private BooleanExpression andUseYn(SyMenuDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? m.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyMenuDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
+            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",iconClass,")) or.or(m.iconClass.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",menuCode,")) or.or(m.menuCode.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",menuId,")) or.or(m.menuId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",menuNm,")) or.or(m.menuNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",menuRemark,")) or.or(m.menuRemark.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",menuTypeCd,")) or.or(m.menuTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",menuUrl,")) or.or(m.menuUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",parentMenuId,")) or.or(m.parentMenuId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(m.useYn.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyMenuDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",iconClass,", m.iconClass, pattern);
+        or = orLike(or, all, types, ",menuCode,", m.menuCode, pattern);
+        or = orLike(or, all, types, ",menuId,", m.menuId, pattern);
+        or = orLike(or, all, types, ",menuNm,", m.menuNm, pattern);
+        or = orLike(or, all, types, ",menuRemark,", m.menuRemark, pattern);
+        or = orLike(or, all, types, ",menuTypeCd,", m.menuTypeCd, pattern);
+        or = orLike(or, all, types, ",menuUrl,", m.menuUrl, pattern);
+        or = orLike(or, all, types, ",parentMenuId,", m.parentMenuId, pattern);
+        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", m.useYn, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -224,7 +261,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         if (entity.getUseYn()        != null) { update.set(m.useYn,        entity.getUseYn());        hasAny = true; }
         if (entity.getMenuRemark()   != null) { update.set(m.menuRemark,   entity.getMenuRemark());   hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(m.updBy,        entity.getUpdBy());        hasAny = true; }
-        if (entity.getUpdDate()      != null) { update.set(m.updDate,      entity.getUpdDate());      hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

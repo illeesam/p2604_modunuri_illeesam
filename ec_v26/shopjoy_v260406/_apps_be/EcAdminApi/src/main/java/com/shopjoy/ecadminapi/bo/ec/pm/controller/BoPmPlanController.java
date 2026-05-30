@@ -78,7 +78,7 @@ public class BoPmPlanController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmPlan> rows) {
-        boPmPlanService.saveList(rows);
+        boPmPlanService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

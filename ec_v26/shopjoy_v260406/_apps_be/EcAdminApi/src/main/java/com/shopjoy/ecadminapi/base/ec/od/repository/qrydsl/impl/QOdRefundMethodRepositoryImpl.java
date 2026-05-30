@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdRefundMethodDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdRefundMethod;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;
@@ -48,10 +50,14 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     /* 환불수단 목록조회 */
     @Override
     public List<OdRefundMethodDto.Item> selectList(OdRefundMethodDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andRefundMethodId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -71,10 +77,14 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andRefundMethodId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -83,7 +93,12 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         Long total = queryFactory
                 .select(m.count())
                 .from(m)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andRefundMethodId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         OdRefundMethodDto.PageResponse res = new OdRefundMethodDto.PageResponse();
@@ -109,48 +124,67 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     }
 
     /* 환불수단 buildCondition */
-    private BooleanBuilder buildCondition(OdRefundMethodDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))         w.and(m.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getRefundMethodId())) w.and(m.refundMethodId.eq(s.getRefundMethodId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(OdRefundMethodDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? m.siteId.eq(search.getSiteId()) : null;
+    }
 
-        // dateType + dateStart + dateEnd
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(m.regDate.goe(start)).and(m.regDate.lt(endExcl)); break;
-                case "upd_date":
-                    w.and(m.updDate.goe(start)).and(m.updDate.lt(endExcl)); break;
-                default: break;
-            }
+    /* refundMethodId 정확 일치 */
+    private BooleanExpression andRefundMethodId(OdRefundMethodDto.Request search) {
+        return search != null && StringUtils.hasText(search.getRefundMethodId())
+                ? m.refundMethodId.eq(search.getRefundMethodId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(OdRefundMethodDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
+            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",orderId,")) or.or(m.orderId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payId,")) or.or(m.payId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payMethodCd,")) or.or(m.payMethodCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pgRefundId,")) or.or(m.pgRefundId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pgResponse,")) or.or(m.pgResponse.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundId,")) or.or(m.refundId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundMethodId,")) or.or(m.refundMethodId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundStatusCd,")) or.or(m.refundStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundStatusCdBefore,")) or.or(m.refundStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(OdRefundMethodDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",orderId,", m.orderId, pattern);
+        or = orLike(or, all, types, ",payId,", m.payId, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", m.payMethodCd, pattern);
+        or = orLike(or, all, types, ",pgRefundId,", m.pgRefundId, pattern);
+        or = orLike(or, all, types, ",pgResponse,", m.pgResponse, pattern);
+        or = orLike(or, all, types, ",refundId,", m.refundId, pattern);
+        or = orLike(or, all, types, ",refundMethodId,", m.refundMethodId, pattern);
+        or = orLike(or, all, types, ",refundStatusCd,", m.refundStatusCd, pattern);
+        or = orLike(or, all, types, ",refundStatusCdBefore,", m.refundStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -211,7 +245,8 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         if (entity.getPgRefundId()           != null) { update.set(m.pgRefundId,           entity.getPgRefundId());           hasAny = true; }
         if (entity.getPgResponse()           != null) { update.set(m.pgResponse,           entity.getPgResponse());           hasAny = true; }
         if (entity.getUpdBy()                != null) { update.set(m.updBy,                entity.getUpdBy());                hasAny = true; }
-        if (entity.getUpdDate()              != null) { update.set(m.updDate,              entity.getUpdDate());              hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

@@ -87,18 +87,7 @@ public class OdClaimService {
         return saved;
     }
 
-    /* 클레임(취소/반품/교환) 저장 */
-    @Transactional
-    public OdClaim save(OdClaim entity) {
-        if (!existsById(entity.getClaimId()))
-            throw new CmBizException("존재하지 않는 OdClaim입니다: " + entity.getClaimId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdClaim saved = odClaimRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 클레임(취소/반품/교환) 수정 */
     @Transactional
@@ -138,44 +127,105 @@ public class OdClaimService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 클레임(취소/반품/교환) 목록저장 */
-    @Transactional
-    public void saveList(List<OdClaim> rows) {
-        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
-        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "D", "claimId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(OdClaim::getClaimId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            odClaimRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public OdClaim save(String cmd, OdClaim entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getClaimId() == null || entity.getClaimId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getClaimId() == null)
+                    throw new CmBizException("삭제 대상 claimId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!odClaimRepository.existsById(entity.getClaimId()))
+                    throw new CmBizException("존재하지 않는 OdClaim입니다: " + entity.getClaimId() + "::" + CmUtil.svcCallerInfo(this));
+                odClaimRepository.deleteById(entity.getClaimId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setClaimId(CmUtil.generateId("od_claim"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                OdClaim saved = odClaimRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getClaimId() == null)
+                    throw new CmBizException("수정 대상 claimId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = odClaimRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 OdClaim입니다: " + entity.getClaimId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getClaimId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<OdClaim> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (OdClaim row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getClaimId() == null || row.getClaimId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
+            CmUtil.requireRowIds(rows, OdClaim::getClaimId, "D", "claimId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(OdClaim::getClaimId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                odClaimRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<OdClaim> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (OdClaim row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = odClaimRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getClaimId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<OdClaim> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (OdClaim row : insertRows) {
+                row.setClaimId(CmUtil.generateId("od_claim"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                odClaimRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<OdClaim> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (OdClaim row : updateRows) {
-            OdClaim entity = findById(row.getClaimId());
-            VoUtil.voCopyExclude(row, entity, "claimId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            odClaimRepository.save(entity);
-        }
-        em.flush();
-
-        List<OdClaim> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (OdClaim row : insertRows) {
-            row.setClaimId(CmUtil.generateId("od_claim"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            odClaimRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

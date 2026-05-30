@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
@@ -110,10 +112,17 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     /* 클레임(취소/반품/교환) 목록조회 */
     @Override
     public List<OdClaimDto.Item> selectList(OdClaimDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdClaimDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdClaimDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andClaimId(search),
+                andMemberId(search),
+                andClaimStatusCd(search),
+                andClaimTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -133,10 +142,17 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdClaimDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdClaimDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andClaimId(search),
+                andMemberId(search),
+                andClaimStatusCd(search),
+                andClaimTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -146,7 +162,15 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .select(c.count())
                 .from(c)
                 .leftJoin(m).on(m.memberId.eq(c.memberId))
-                .where(where)
+                .where(
+                andSiteId(search),
+                andClaimId(search),
+                andMemberId(search),
+                andClaimStatusCd(search),
+                andClaimTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         OdClaimDto.PageResponse res = new OdClaimDto.PageResponse();
@@ -197,118 +221,133 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    private BooleanBuilder buildCondition(OdClaimDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))        w.and(c.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getClaimId()))       w.and(c.claimId.eq(s.getClaimId()));
-        if (StringUtils.hasText(s.getMemberId()))      w.and(c.memberId.eq(s.getMemberId()));
-        if (StringUtils.hasText(s.getClaimStatusCd())) w.and(c.claimStatusCd.eq(s.getClaimStatusCd()));
-        if (StringUtils.hasText(s.getClaimTypeCd()))   w.and(c.claimTypeCd.eq(s.getClaimTypeCd()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(OdClaimDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? c.siteId.eq(search.getSiteId()) : null;
+    }
 
-        // searchValue + searchType
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* claimId 정확 일치 */
+    private BooleanExpression andClaimId(OdClaimDto.Request search) {
+        return search != null && StringUtils.hasText(search.getClaimId())
+                ? c.claimId.eq(search.getClaimId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",claimId,"))   or.or(c.claimId.likeIgnoreCase(pattern));
-            if (all || types.contains(",orderId,"))   or.or(c.orderId.likeIgnoreCase(pattern));
-            if (all || types.contains(",memberNm,"))  or.or(c.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",prodNm,"))    or.or(c.prodNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",loginId,"))   or.or(m.loginId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* memberId 정확 일치 */
+    private BooleanExpression andMemberId(OdClaimDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberId())
+                ? c.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* claimStatusCd 정확 일치 */
+    private BooleanExpression andClaimStatusCd(OdClaimDto.Request search) {
+        return search != null && StringUtils.hasText(search.getClaimStatusCd())
+                ? c.claimStatusCd.eq(search.getClaimStatusCd()) : null;
+    }
+
+    /* claimTypeCd 정확 일치 */
+    private BooleanExpression andClaimTypeCd(OdClaimDto.Request search) {
+        return search != null && StringUtils.hasText(search.getClaimTypeCd())
+                ? c.claimTypeCd.eq(search.getClaimTypeCd()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(OdClaimDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "request_date": return c.requestDate.goe(start).and(c.requestDate.lt(endExcl));
+            case "proc_date": return c.procDate.goe(start).and(c.procDate.lt(endExcl));
+            case "claim_cancel_date": return c.claimCancelDate.goe(start).and(c.claimCancelDate.lt(endExcl));
+            case "collect_schd_date": return c.collectSchdDate.goe(start).and(c.collectSchdDate.lt(endExcl));
+            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
+            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        // dateType + dateStart + dateEnd
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "request_date":
-                    w.and(c.requestDate.goe(start)).and(c.requestDate.lt(endExcl));         break;
-                case "proc_date":
-                    w.and(c.procDate.goe(start)).and(c.procDate.lt(endExcl));               break;
-                case "claim_cancel_date":
-                    w.and(c.claimCancelDate.goe(start)).and(c.claimCancelDate.lt(endExcl)); break;
-                case "collect_schd_date":
-                    w.and(c.collectSchdDate.goe(start)).and(c.collectSchdDate.lt(endExcl)); break;
-                case "reg_date":
-                    w.and(c.regDate.goe(start)).and(c.regDate.lt(endExcl));                 break;
-                case "upd_date":
-                    w.and(c.updDate.goe(start)).and(c.updDate.lt(endExcl));                 break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",addShippingFeeChargeCd,")) or.or(c.addShippingFeeChargeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",addShippingFeeReason,")) or.or(c.addShippingFeeReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprAprvUserId,")) or.or(c.apprAprvUserId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprReason,")) or.or(c.apprReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprReqUserId,")) or.or(c.apprReqUserId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprStatusCd,")) or.or(c.apprStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprStatusCdBefore,")) or.or(c.apprStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprTargetCd,")) or.or(c.apprTargetCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprTargetNm,")) or.or(c.apprTargetNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimCancelReasonCd,")) or.or(c.claimCancelReasonCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimCancelReasonDetail,")) or.or(c.claimCancelReasonDetail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimCancelYn,")) or.or(c.claimCancelYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimId,")) or.or(c.claimId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimStatusCd,")) or.or(c.claimStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimStatusCdBefore,")) or.or(c.claimStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimTypeCd,")) or.or(c.claimTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",collectAddr,")) or.or(c.collectAddr.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",collectAddrDetail,")) or.or(c.collectAddrDetail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",collectNm,")) or.or(c.collectNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",collectPhone,")) or.or(c.collectPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",collectReqMemo,")) or.or(c.collectReqMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",collectZip,")) or.or(c.collectZip.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",customerFaultYn,")) or.or(c.customerFaultYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchRecvAddr,")) or.or(c.exchRecvAddr.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchRecvAddrDetail,")) or.or(c.exchRecvAddrDetail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchRecvNm,")) or.or(c.exchRecvNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchRecvPhone,")) or.or(c.exchRecvPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchRecvReqMemo,")) or.or(c.exchRecvReqMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchRecvZip,")) or.or(c.exchRecvZip.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchangeCourierCd,")) or.or(c.exchangeCourierCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exchangeTrackingNo,")) or.or(c.exchangeTrackingNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",inboundCourierCd,")) or.or(c.inboundCourierCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",inboundDlivId,")) or.or(c.inboundDlivId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",inboundTrackingNo,")) or.or(c.inboundTrackingNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberId,")) or.or(c.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberNm,")) or.or(c.memberNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memo,")) or.or(c.memo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderId,")) or.or(c.orderId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",outboundDlivId,")) or.or(c.outboundDlivId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",procUserId,")) or.or(c.procUserId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",prodNm,")) or.or(c.prodNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reasonCd,")) or.or(c.reasonCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reasonDetail,")) or.or(c.reasonDetail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundAccountNm,")) or.or(c.refundAccountNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundAccountNo,")) or.or(c.refundAccountNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundBankCd,")) or.or(c.refundBankCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundMethodCd,")) or.or(c.refundMethodCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",returnCourierCd,")) or.or(c.returnCourierCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",returnStatusCd,")) or.or(c.returnStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",returnStatusCdBefore,")) or.or(c.returnStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",returnTrackingNo,")) or.or(c.returnTrackingNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",shippingFeeMemo,")) or.or(c.shippingFeeMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",shippingFeePaidYn,")) or.or(c.shippingFeePaidYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(OdClaimDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",addShippingFeeChargeCd,", c.addShippingFeeChargeCd, pattern);
+        or = orLike(or, all, types, ",addShippingFeeReason,", c.addShippingFeeReason, pattern);
+        or = orLike(or, all, types, ",apprAprvUserId,", c.apprAprvUserId, pattern);
+        or = orLike(or, all, types, ",apprReason,", c.apprReason, pattern);
+        or = orLike(or, all, types, ",apprReqUserId,", c.apprReqUserId, pattern);
+        or = orLike(or, all, types, ",apprStatusCd,", c.apprStatusCd, pattern);
+        or = orLike(or, all, types, ",apprStatusCdBefore,", c.apprStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",apprTargetCd,", c.apprTargetCd, pattern);
+        or = orLike(or, all, types, ",apprTargetNm,", c.apprTargetNm, pattern);
+        or = orLike(or, all, types, ",claimCancelReasonCd,", c.claimCancelReasonCd, pattern);
+        or = orLike(or, all, types, ",claimCancelReasonDetail,", c.claimCancelReasonDetail, pattern);
+        or = orLike(or, all, types, ",claimCancelYn,", c.claimCancelYn, pattern);
+        or = orLike(or, all, types, ",claimId,", c.claimId, pattern);
+        or = orLike(or, all, types, ",claimStatusCd,", c.claimStatusCd, pattern);
+        or = orLike(or, all, types, ",claimStatusCdBefore,", c.claimStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",claimTypeCd,", c.claimTypeCd, pattern);
+        or = orLike(or, all, types, ",collectAddr,", c.collectAddr, pattern);
+        or = orLike(or, all, types, ",collectAddrDetail,", c.collectAddrDetail, pattern);
+        or = orLike(or, all, types, ",collectNm,", c.collectNm, pattern);
+        or = orLike(or, all, types, ",collectPhone,", c.collectPhone, pattern);
+        or = orLike(or, all, types, ",collectReqMemo,", c.collectReqMemo, pattern);
+        or = orLike(or, all, types, ",collectZip,", c.collectZip, pattern);
+        or = orLike(or, all, types, ",customerFaultYn,", c.customerFaultYn, pattern);
+        or = orLike(or, all, types, ",exchRecvAddr,", c.exchRecvAddr, pattern);
+        or = orLike(or, all, types, ",exchRecvAddrDetail,", c.exchRecvAddrDetail, pattern);
+        or = orLike(or, all, types, ",exchRecvNm,", c.exchRecvNm, pattern);
+        or = orLike(or, all, types, ",exchRecvPhone,", c.exchRecvPhone, pattern);
+        or = orLike(or, all, types, ",exchRecvReqMemo,", c.exchRecvReqMemo, pattern);
+        or = orLike(or, all, types, ",exchRecvZip,", c.exchRecvZip, pattern);
+        or = orLike(or, all, types, ",exchangeCourierCd,", c.exchangeCourierCd, pattern);
+        or = orLike(or, all, types, ",exchangeTrackingNo,", c.exchangeTrackingNo, pattern);
+        or = orLike(or, all, types, ",inboundCourierCd,", c.inboundCourierCd, pattern);
+        or = orLike(or, all, types, ",inboundDlivId,", c.inboundDlivId, pattern);
+        or = orLike(or, all, types, ",inboundTrackingNo,", c.inboundTrackingNo, pattern);
+        or = orLike(or, all, types, ",memberId,", c.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", c.memberNm, pattern);
+        or = orLike(or, all, types, ",memo,", c.memo, pattern);
+        or = orLike(or, all, types, ",orderId,", c.orderId, pattern);
+        or = orLike(or, all, types, ",outboundDlivId,", c.outboundDlivId, pattern);
+        or = orLike(or, all, types, ",procUserId,", c.procUserId, pattern);
+        or = orLike(or, all, types, ",prodNm,", c.prodNm, pattern);
+        or = orLike(or, all, types, ",reasonCd,", c.reasonCd, pattern);
+        or = orLike(or, all, types, ",reasonDetail,", c.reasonDetail, pattern);
+        or = orLike(or, all, types, ",refundAccountNm,", c.refundAccountNm, pattern);
+        or = orLike(or, all, types, ",refundAccountNo,", c.refundAccountNo, pattern);
+        or = orLike(or, all, types, ",refundBankCd,", c.refundBankCd, pattern);
+        or = orLike(or, all, types, ",refundMethodCd,", c.refundMethodCd, pattern);
+        or = orLike(or, all, types, ",returnCourierCd,", c.returnCourierCd, pattern);
+        or = orLike(or, all, types, ",returnStatusCd,", c.returnStatusCd, pattern);
+        or = orLike(or, all, types, ",returnStatusCdBefore,", c.returnStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",returnTrackingNo,", c.returnTrackingNo, pattern);
+        or = orLike(or, all, types, ",shippingFeeMemo,", c.shippingFeeMemo, pattern);
+        or = orLike(or, all, types, ",shippingFeePaidYn,", c.shippingFeePaidYn, pattern);
+        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -373,7 +412,8 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         if (entity.getMemo()                != null) { update.set(c.memo,                entity.getMemo());                hasAny = true; }
         if (entity.getApprStatusCd()        != null) { update.set(c.apprStatusCd,        entity.getApprStatusCd());        hasAny = true; }
         if (entity.getUpdBy()               != null) { update.set(c.updBy,               entity.getUpdBy());               hasAny = true; }
-        if (entity.getUpdDate()             != null) { update.set(c.updDate,             entity.getUpdDate());             hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

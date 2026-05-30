@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdReviewDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdReview;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdReview;
@@ -40,10 +42,15 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용) */
     @Override
     public List<PdReviewDto.Item> selectList(PdReviewDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdReviewDto.Item> query = baseQuery().where(where);
+        JPAQuery<PdReviewDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andReviewId(search),
+                andProdId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -63,16 +70,27 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdReviewDto.Item> query = baseQuery().where(where);
+        JPAQuery<PdReviewDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andReviewId(search),
+                andProdId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdReviewDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(r.count()).from(r).where(where).fetchOne();
+        Long total = queryFactory.select(r.count()).from(r).where(
+                andSiteId(search),
+                andReviewId(search),
+                andProdId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         PdReviewDto.PageResponse res = new PdReviewDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -94,61 +112,71 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
     /** 검색조건 빌드 — Mapper XML pdReviewCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    private BooleanBuilder buildCondition(PdReviewDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))   w.and(r.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getReviewId())) w.and(r.reviewId.eq(s.getReviewId()));
-        if (StringUtils.hasText(s.getProdId()))   w.and(r.prodId.eq(s.getProdId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(PdReviewDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? r.siteId.eq(search.getSiteId()) : null;
+    }
 
-        // searchValue + searchType (reviewTitle)
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* reviewId 정확 일치 */
+    private BooleanExpression andReviewId(PdReviewDto.Request search) {
+        return search != null && StringUtils.hasText(search.getReviewId())
+                ? r.reviewId.eq(search.getReviewId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",reviewTitle,")) or.or(r.reviewTitle.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* prodId 정확 일치 */
+    private BooleanExpression andProdId(PdReviewDto.Request search) {
+        return search != null && StringUtils.hasText(search.getProdId())
+                ? r.prodId.eq(search.getProdId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(PdReviewDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return r.regDate.goe(start).and(r.regDate.lt(endExcl));
+            case "upd_date": return r.updDate.goe(start).and(r.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        // dateType + dateStart + dateEnd
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(r.regDate.goe(start)).and(r.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(r.updDate.goe(start)).and(r.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",memberId,")) or.or(r.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",prodId,")) or.or(r.prodId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reviewContent,")) or.or(r.reviewContent.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reviewId,")) or.or(r.reviewId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reviewStatusCd,")) or.or(r.reviewStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reviewStatusCdBefore,")) or.or(r.reviewStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",reviewTitle,")) or.or(r.reviewTitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(r.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(PdReviewDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",memberId,", r.memberId, pattern);
+        or = orLike(or, all, types, ",prodId,", r.prodId, pattern);
+        or = orLike(or, all, types, ",reviewContent,", r.reviewContent, pattern);
+        or = orLike(or, all, types, ",reviewId,", r.reviewId, pattern);
+        or = orLike(or, all, types, ",reviewStatusCd,", r.reviewStatusCd, pattern);
+        or = orLike(or, all, types, ",reviewStatusCdBefore,", r.reviewStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",reviewTitle,", r.reviewTitle, pattern);
+        or = orLike(or, all, types, ",siteId,", r.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -209,7 +237,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         if (entity.getReviewStatusCdBefore() != null) { update.set(r.reviewStatusCdBefore, entity.getReviewStatusCdBefore()); hasAny = true; }
         if (entity.getReviewDate()           != null) { update.set(r.reviewDate,           entity.getReviewDate());           hasAny = true; }
         if (entity.getUpdBy()                != null) { update.set(r.updBy,                entity.getUpdBy());                hasAny = true; }
-        if (entity.getUpdDate()              != null) { update.set(r.updDate,              entity.getUpdDate());              hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(r.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

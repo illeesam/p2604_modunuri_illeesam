@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyBatchDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBatch;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +45,13 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     /* 배치 목록조회 */
     @Override
     public List<SyBatchDto.Item> selectList(SyBatchDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyBatchDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyBatchDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andBatchId(search),
+                andStatus(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -62,14 +69,23 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyBatchDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyBatchDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andBatchId(search),
+                andStatus(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBatchDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(b.count()).from(b).where(where).fetchOne();
+        Long total = queryFactory.select(b.count()).from(b).where(
+                andSiteId(search),
+                andBatchId(search),
+                andStatus(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyBatchDto.PageResponse res = new SyBatchDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -90,59 +106,58 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyBatchDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))  w.and(b.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getBatchId())) w.and(b.batchId.eq(s.getBatchId()));
-        if (StringUtils.hasText(s.getPathId()))  w.and(b.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
-        if (StringUtils.hasText(s.getStatus()))  w.and(b.batchStatusCd.eq(s.getStatus()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyBatchDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? b.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",batchNm,"))   or.or(b.batchNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",batchCode,")) or.or(b.batchCode.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* batchId 정확 일치 */
+    private BooleanExpression andBatchId(SyBatchDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBatchId())
+                ? b.batchId.eq(search.getBatchId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {
-            LocalDate ds = LocalDate.parse(s.getDateStart(), DF);
-            LocalDate de = LocalDate.parse(s.getDateEnd(), DF);
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(b.regDate.goe(ds.atStartOfDay())).and(b.regDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "upd_date":
-                    w.and(b.updDate.goe(ds.atStartOfDay())).and(b.updDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",batchCode,")) or.or(b.batchCode.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",batchCycleCd,")) or.or(b.batchCycleCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",batchDesc,")) or.or(b.batchDesc.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",batchId,")) or.or(b.batchId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",batchMemo,")) or.or(b.batchMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",batchNm,")) or.or(b.batchNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",batchRunStatus,")) or.or(b.batchRunStatus.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",batchStatusCd,")) or.or(b.batchStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cronExpr,")) or.or(b.cronExpr.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pathId,")) or.or(b.pathId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* batchStatusCd 정확 일치 */
+    private BooleanExpression andStatus(SyBatchDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? b.batchStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyBatchDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",batchCode,", b.batchCode, pattern);
+        or = orLike(or, all, types, ",batchCycleCd,", b.batchCycleCd, pattern);
+        or = orLike(or, all, types, ",batchDesc,", b.batchDesc, pattern);
+        or = orLike(or, all, types, ",batchId,", b.batchId, pattern);
+        or = orLike(or, all, types, ",batchMemo,", b.batchMemo, pattern);
+        or = orLike(or, all, types, ",batchNm,", b.batchNm, pattern);
+        or = orLike(or, all, types, ",batchRunStatus,", b.batchRunStatus, pattern);
+        or = orLike(or, all, types, ",batchStatusCd,", b.batchStatusCd, pattern);
+        or = orLike(or, all, types, ",cronExpr,", b.cronExpr, pattern);
+        or = orLike(or, all, types, ",pathId,", b.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -205,7 +220,8 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         if (entity.getBatchTimeoutSec() != null) { update.set(b.batchTimeoutSec, entity.getBatchTimeoutSec()); hasAny = true; }
         if (entity.getBatchMemo()       != null) { update.set(b.batchMemo,       entity.getBatchMemo());       hasAny = true; }
         if (entity.getUpdBy()           != null) { update.set(b.updBy,           entity.getUpdBy());           hasAny = true; }
-        if (entity.getUpdDate()         != null) { update.set(b.updDate,         entity.getUpdDate());         hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (entity.getPathId()          != null) { update.set(b.pathId,          entity.getPathId());          hasAny = true; }
 
         if (!hasAny) return 0;

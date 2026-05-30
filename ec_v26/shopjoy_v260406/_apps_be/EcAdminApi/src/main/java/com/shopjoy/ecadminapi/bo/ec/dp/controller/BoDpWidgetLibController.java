@@ -68,7 +68,7 @@ public class BoDpWidgetLibController {
     /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<DpWidgetLib> rows) {
-        boDpWidgetLibService.saveList(rows);
+        boDpWidgetLibService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

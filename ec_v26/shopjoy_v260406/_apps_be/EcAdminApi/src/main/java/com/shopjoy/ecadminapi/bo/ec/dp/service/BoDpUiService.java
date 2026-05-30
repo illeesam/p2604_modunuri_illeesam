@@ -84,5 +84,5 @@ public class BoDpUiService {
     @Transactional public DpUi create(DpUi body) { return dpUiService.create(body); }
     @Transactional public DpUi update(String id, DpUi body) { return dpUiService.update(id, body); }
     @Transactional public void delete(String id) { dpUiService.delete(id); }
-    @Transactional public void saveList(List<DpUi> rows) { dpUiService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<DpUi> rows) { dpUiService.saveList(cmd, rows); }
 }

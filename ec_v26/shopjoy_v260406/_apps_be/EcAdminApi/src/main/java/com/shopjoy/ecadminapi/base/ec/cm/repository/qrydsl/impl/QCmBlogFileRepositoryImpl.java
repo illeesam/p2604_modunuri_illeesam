@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -51,9 +52,14 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     /* 게시물 첨부파일 목록조회 */
     @Override
     public List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery().where(
+                andBlogIds(search),
+                andBlogId(search),
+                andBlogImgId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -73,10 +79,15 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery().where(
+                andBlogIds(search),
+                andBlogId(search),
+                andBlogImgId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -85,7 +96,13 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         Long total = queryFactory
                 .select(f.count())
                 .from(f)
-                .where(where)
+                .where(
+                andBlogIds(search),
+                andBlogId(search),
+                andBlogImgId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         CmBlogFileDto.PageResponse res = new CmBlogFileDto.PageResponse();
@@ -93,48 +110,69 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     }
 
     /* 게시물 첨부파일 buildCondition */
-    private BooleanBuilder buildCondition(CmBlogFileDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (!CollectionUtils.isEmpty(s.getBlogIds())) w.and(f.blogId.in(s.getBlogIds()));
-        if (StringUtils.hasText(s.getBlogId()))    w.and(f.blogId.eq(s.getBlogId()));
+    /* blogId IN */
+    private BooleanExpression andBlogIds(CmBlogFileDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getBlogIds())
+                ? f.blogId.in(search.getBlogIds()) : null;
+    }
 
-        if (StringUtils.hasText(s.getBlogImgId())) w.and(f.blogImgId.eq(s.getBlogImgId()));
+    /* blogId 정확 일치 */
+    private BooleanExpression andBlogId(CmBlogFileDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBlogId())
+                ? f.blogId.eq(search.getBlogId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(f.regDate.goe(start)).and(f.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(f.updDate.goe(start)).and(f.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* blogImgId 정확 일치 */
+    private BooleanExpression andBlogImgId(CmBlogFileDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBlogImgId())
+                ? f.blogImgId.eq(search.getBlogImgId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(CmBlogFileDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return f.regDate.goe(start).and(f.regDate.lt(endExcl));
+            case "upd_date": return f.updDate.goe(start).and(f.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",blogId,")) or.or(f.blogId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",blogImgId,")) or.or(f.blogImgId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",imgAltText,")) or.or(f.imgAltText.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",imgUrl,")) or.or(f.imgUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(f.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbUrl,")) or.or(f.thumbUrl.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(CmBlogFileDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",blogId,", f.blogId, pattern);
+        or = orLike(or, all, types, ",blogImgId,", f.blogImgId, pattern);
+        or = orLike(or, all, types, ",imgAltText,", f.imgAltText, pattern);
+        or = orLike(or, all, types, ",imgUrl,", f.imgUrl, pattern);
+        or = orLike(or, all, types, ",siteId,", f.siteId, pattern);
+        or = orLike(or, all, types, ",thumbUrl,", f.thumbUrl, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**

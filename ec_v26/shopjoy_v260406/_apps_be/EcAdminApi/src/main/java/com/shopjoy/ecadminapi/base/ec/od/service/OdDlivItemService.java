@@ -86,18 +86,7 @@ public class OdDlivItemService {
         return saved;
     }
 
-    /* 배송 아이템 저장 */
-    @Transactional
-    public OdDlivItem save(OdDlivItem entity) {
-        if (!existsById(entity.getDlivItemId()))
-            throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        OdDlivItem saved = odDlivItemRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 배송 아이템 수정 */
     @Transactional
@@ -137,44 +126,105 @@ public class OdDlivItemService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 배송 아이템 목록저장 */
-    @Transactional
-    public void saveList(List<OdDlivItem> rows) {
-        CmUtil.requireRowIds(rows, OdDlivItem::getDlivItemId, "U", "dlivItemId", this);
-        CmUtil.requireRowIds(rows, OdDlivItem::getDlivItemId, "D", "dlivItemId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(OdDlivItem::getDlivItemId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            odDlivItemRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public OdDlivItem save(String cmd, OdDlivItem entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getDlivItemId() == null || entity.getDlivItemId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getDlivItemId() == null)
+                    throw new CmBizException("삭제 대상 dlivItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!odDlivItemRepository.existsById(entity.getDlivItemId()))
+                    throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
+                odDlivItemRepository.deleteById(entity.getDlivItemId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setDlivItemId(CmUtil.generateId("od_dliv_item"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                OdDlivItem saved = odDlivItemRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getDlivItemId() == null)
+                    throw new CmBizException("수정 대상 dlivItemId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = odDlivItemRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 OdDlivItem입니다: " + entity.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getDlivItemId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<OdDlivItem> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (OdDlivItem row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getDlivItemId() == null || row.getDlivItemId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, OdDlivItem::getDlivItemId, "U", "dlivItemId", this);
+            CmUtil.requireRowIds(rows, OdDlivItem::getDlivItemId, "D", "dlivItemId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(OdDlivItem::getDlivItemId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                odDlivItemRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<OdDlivItem> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (OdDlivItem row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = odDlivItemRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getDlivItemId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<OdDlivItem> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (OdDlivItem row : insertRows) {
+                row.setDlivItemId(CmUtil.generateId("od_dliv_item"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                odDlivItemRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<OdDlivItem> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (OdDlivItem row : updateRows) {
-            OdDlivItem entity = findById(row.getDlivItemId());
-            VoUtil.voCopyExclude(row, entity, "dlivItemId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            odDlivItemRepository.save(entity);
-        }
-        em.flush();
-
-        List<OdDlivItem> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (OdDlivItem row : insertRows) {
-            row.setDlivItemId(CmUtil.generateId("od_dliv_item"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            odDlivItemRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

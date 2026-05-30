@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
@@ -93,10 +95,16 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     /* 주문 목록조회 */
     @Override
     public List<OdOrderDto.Item> selectList(OdOrderDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdOrderDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdOrderDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andOrderId(search),
+                andMemberId(search),
+                andOrderStatusCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -116,10 +124,16 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdOrderDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdOrderDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andOrderId(search),
+                andMemberId(search),
+                andOrderStatusCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -129,7 +143,14 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .select(o.count())
                 .from(o)
                 .leftJoin(m).on(m.memberId.eq(o.memberId))
-                .where(where)
+                .where(
+                andSiteId(search),
+                andOrderId(search),
+                andMemberId(search),
+                andOrderStatusCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
@@ -173,94 +194,105 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    private BooleanBuilder buildCondition(OdOrderDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))         w.and(o.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getOrderId()))        w.and(o.orderId.eq(s.getOrderId()));
-        if (StringUtils.hasText(s.getMemberId()))       w.and(o.memberId.eq(s.getMemberId()));
-        if (StringUtils.hasText(s.getOrderStatusCd())) w.and(o.orderStatusCd.eq(s.getOrderStatusCd()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(OdOrderDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? o.siteId.eq(search.getSiteId()) : null;
+    }
 
-        // searchValue + searchType
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* orderId 정확 일치 */
+    private BooleanExpression andOrderId(OdOrderDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOrderId())
+                ? o.orderId.eq(search.getOrderId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",orderId,"))    or.or(o.orderId.likeIgnoreCase(pattern));
-            if (all || types.contains(",memberNm,"))   or.or(o.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",loginId,"))    or.or(m.loginId.likeIgnoreCase(pattern));
-            if (all || types.contains(",recvNm,"))     or.or(o.recvNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",recvPhone,"))  or.or(o.recvPhone.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* memberId 정확 일치 */
+    private BooleanExpression andMemberId(OdOrderDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberId())
+                ? o.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* orderStatusCd 정확 일치 */
+    private BooleanExpression andOrderStatusCd(OdOrderDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOrderStatusCd())
+                ? o.orderStatusCd.eq(search.getOrderStatusCd()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(OdOrderDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "order_date": return o.orderDate.goe(start).and(o.orderDate.lt(endExcl));
+            case "reg_date": return o.regDate.goe(start).and(o.regDate.lt(endExcl));
+            case "upd_date": return o.updDate.goe(start).and(o.updDate.lt(endExcl));
+            case "pay_date": return o.payDate.goe(start).and(o.payDate.lt(endExcl));
+            case "dliv_ship_date": return o.dlivShipDate.goe(start).and(o.dlivShipDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        // dateType + dateStart + dateEnd
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "order_date":
-                    w.and(o.orderDate.goe(start)).and(o.orderDate.lt(endExcl));    break;
-                case "reg_date":
-                    w.and(o.regDate.goe(start)).and(o.regDate.lt(endExcl));        break;
-                case "upd_date":
-                    w.and(o.updDate.goe(start)).and(o.updDate.lt(endExcl));        break;
-                case "pay_date":
-                    w.and(o.payDate.goe(start)).and(o.payDate.lt(endExcl));        break;
-                case "dliv_ship_date":
-                    w.and(o.dlivShipDate.goe(start)).and(o.dlivShipDate.lt(endExcl)); break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",accessChannelCd,")) or.or(o.accessChannelCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprAprvUserId,")) or.or(o.apprAprvUserId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprReason,")) or.or(o.apprReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprReqUserId,")) or.or(o.apprReqUserId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprStatusCd,")) or.or(o.apprStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprStatusCdBefore,")) or.or(o.apprStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprTargetCd,")) or.or(o.apprTargetCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",apprTargetNm,")) or.or(o.apprTargetNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",couponId,")) or.or(o.couponId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",dlivCourierCd,")) or.or(o.dlivCourierCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",dlivStatusCd,")) or.or(o.dlivStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",dlivStatusCdBefore,")) or.or(o.dlivStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",dlivTrackingNo,")) or.or(o.dlivTrackingNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",entrancePwd,")) or.or(o.entrancePwd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberId,")) or.or(o.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberNm,")) or.or(o.memberNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memo,")) or.or(o.memo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderGradeCd,")) or.or(o.orderGradeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderId,")) or.or(o.orderId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderStatusCd,")) or.or(o.orderStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderStatusCdBefore,")) or.or(o.orderStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",ordererEmail,")) or.or(o.ordererEmail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payMethodCd,")) or.or(o.payMethodCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvAddr,")) or.or(o.recvAddr.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvAddrDetail,")) or.or(o.recvAddrDetail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvMemo,")) or.or(o.recvMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvNm,")) or.or(o.recvNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvPhone,")) or.or(o.recvPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvZip,")) or.or(o.recvZip.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundAccountNm,")) or.or(o.refundAccountNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundAccountNo,")) or.or(o.refundAccountNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundBankCd,")) or.or(o.refundBankCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(o.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(OdOrderDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",accessChannelCd,", o.accessChannelCd, pattern);
+        or = orLike(or, all, types, ",apprAprvUserId,", o.apprAprvUserId, pattern);
+        or = orLike(or, all, types, ",apprReason,", o.apprReason, pattern);
+        or = orLike(or, all, types, ",apprReqUserId,", o.apprReqUserId, pattern);
+        or = orLike(or, all, types, ",apprStatusCd,", o.apprStatusCd, pattern);
+        or = orLike(or, all, types, ",apprStatusCdBefore,", o.apprStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",apprTargetCd,", o.apprTargetCd, pattern);
+        or = orLike(or, all, types, ",apprTargetNm,", o.apprTargetNm, pattern);
+        or = orLike(or, all, types, ",couponId,", o.couponId, pattern);
+        or = orLike(or, all, types, ",dlivCourierCd,", o.dlivCourierCd, pattern);
+        or = orLike(or, all, types, ",dlivStatusCd,", o.dlivStatusCd, pattern);
+        or = orLike(or, all, types, ",dlivStatusCdBefore,", o.dlivStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",dlivTrackingNo,", o.dlivTrackingNo, pattern);
+        or = orLike(or, all, types, ",entrancePwd,", o.entrancePwd, pattern);
+        or = orLike(or, all, types, ",memberId,", o.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", o.memberNm, pattern);
+        or = orLike(or, all, types, ",memo,", o.memo, pattern);
+        or = orLike(or, all, types, ",orderGradeCd,", o.orderGradeCd, pattern);
+        or = orLike(or, all, types, ",orderId,", o.orderId, pattern);
+        or = orLike(or, all, types, ",orderStatusCd,", o.orderStatusCd, pattern);
+        or = orLike(or, all, types, ",orderStatusCdBefore,", o.orderStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",ordererEmail,", o.ordererEmail, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", o.payMethodCd, pattern);
+        or = orLike(or, all, types, ",recvAddr,", o.recvAddr, pattern);
+        or = orLike(or, all, types, ",recvAddrDetail,", o.recvAddrDetail, pattern);
+        or = orLike(or, all, types, ",recvMemo,", o.recvMemo, pattern);
+        or = orLike(or, all, types, ",recvNm,", o.recvNm, pattern);
+        or = orLike(or, all, types, ",recvPhone,", o.recvPhone, pattern);
+        or = orLike(or, all, types, ",recvZip,", o.recvZip, pattern);
+        or = orLike(or, all, types, ",refundAccountNm,", o.refundAccountNm, pattern);
+        or = orLike(or, all, types, ",refundAccountNo,", o.refundAccountNo, pattern);
+        or = orLike(or, all, types, ",refundBankCd,", o.refundBankCd, pattern);
+        or = orLike(or, all, types, ",siteId,", o.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -316,7 +348,8 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         if (entity.getMemo()                != null) { update.set(o.memo,                entity.getMemo());                hasAny = true; }
         if (entity.getApprStatusCd()        != null) { update.set(o.apprStatusCd,        entity.getApprStatusCd());        hasAny = true; }
         if (entity.getUpdBy()               != null) { update.set(o.updBy,               entity.getUpdBy());               hasAny = true; }
-        if (entity.getUpdDate()             != null) { update.set(o.updDate,             entity.getUpdDate());             hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(o.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

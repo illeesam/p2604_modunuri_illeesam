@@ -89,17 +89,6 @@ public class SySiteService {
     }
 
     /** save — 전체 저장 (ID 존재 검증) */
-    @Transactional
-    public SySite save(SySite entity) {
-        if (!existsById(entity.getSiteId()))
-            throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        SySite saved = sySiteRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
 
     /** update — 선택 필드 수정 (JPA + VoUtil voCopyExclude) */
     @Transactional
@@ -142,43 +131,104 @@ public class SySiteService {
     }
 
     /** saveList — 일괄 저장 */
-    @Transactional
-    public void saveList(List<SySite> rows) {
-        CmUtil.requireRowIds(rows, SySite::getSiteId, "U", "siteId", this);
-        CmUtil.requireRowIds(rows, SySite::getSiteId, "D", "siteId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(SySite::getSiteId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            sySiteRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public SySite save(String cmd, SySite entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getSiteId() == null || entity.getSiteId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getSiteId() == null)
+                    throw new CmBizException("삭제 대상 siteId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!sySiteRepository.existsById(entity.getSiteId()))
+                    throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId() + "::" + CmUtil.svcCallerInfo(this));
+                sySiteRepository.deleteById(entity.getSiteId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setSiteId(CmUtil.generateId("sy_site"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                SySite saved = sySiteRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getSiteId() == null)
+                    throw new CmBizException("수정 대상 siteId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = sySiteRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 SySite입니다: " + entity.getSiteId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getSiteId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<SySite> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (SySite row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getSiteId() == null || row.getSiteId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, SySite::getSiteId, "U", "siteId", this);
+            CmUtil.requireRowIds(rows, SySite::getSiteId, "D", "siteId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(SySite::getSiteId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                sySiteRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<SySite> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (SySite row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = sySiteRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSiteId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<SySite> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (SySite row : insertRows) {
+                row.setSiteId(CmUtil.generateId("sy_site"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                sySiteRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<SySite> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (SySite row : updateRows) {
-            SySite entity = findById(row.getSiteId());
-            VoUtil.voCopyExclude(row, entity, "siteId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            sySiteRepository.save(entity);
-        }
-        em.flush();
-
-        List<SySite> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (SySite row : insertRows) {
-            row.setSiteId(CmUtil.generateId("sy_site"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            sySiteRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

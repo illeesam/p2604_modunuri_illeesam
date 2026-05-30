@@ -29,5 +29,5 @@ public class BoPdTagService {
     @Transactional public PdTag create(PdTag body) { return pdTagService.create(body); }
     @Transactional public PdTag update(String id, PdTag body) { return pdTagService.update(id, body); }
     @Transactional public void delete(String id) { pdTagService.delete(id); }
-    @Transactional public void saveList(List<PdTag> rows) { pdTagService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<PdTag> rows) { pdTagService.saveList(cmd, rows); }
 }

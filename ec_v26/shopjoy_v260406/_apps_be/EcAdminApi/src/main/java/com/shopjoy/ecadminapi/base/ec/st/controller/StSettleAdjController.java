@@ -46,7 +46,7 @@ public class StSettleAdjController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StSettleAdj>> save(@PathVariable("id") String id, @RequestBody StSettleAdj entity) {
         entity.setSettleAdjId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
     }
 
     /* 정산 조정 수정 */
@@ -63,10 +63,31 @@ public class StSettleAdjController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /* 정산 조정 목록저장 */
+    /** save -- rowStatus 단건 분기 저장 (기본) */
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponse<StSettleAdj>> saveDefault(@RequestBody StSettleAdj entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
+    }
+
+    /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<StSettleAdj>> saveCmd(
+            @PathVariable("cmd") String cmd, @RequestBody StSettleAdj entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (기본) */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<StSettleAdj> rows) {
-        service.saveList(rows);
+        service.saveList("base", rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (cmd 변형) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<StSettleAdj> rows) {
+        service.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

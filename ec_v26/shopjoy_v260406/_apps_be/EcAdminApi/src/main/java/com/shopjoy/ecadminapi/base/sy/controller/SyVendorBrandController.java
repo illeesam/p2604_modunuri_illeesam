@@ -46,7 +46,7 @@ public class SyVendorBrandController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<SyVendorBrand>> save(@PathVariable("id") String id, @RequestBody SyVendorBrand entity) {
         entity.setVendorBrandId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
     }
 
     /* 업체별 브랜드 수정 */
@@ -63,10 +63,31 @@ public class SyVendorBrandController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /* 업체별 브랜드 목록저장 */
+    /** save -- rowStatus 단건 분기 저장 (기본) */
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponse<SyVendorBrand>> saveDefault(@RequestBody SyVendorBrand entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
+    }
+
+    /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<SyVendorBrand>> saveCmd(
+            @PathVariable("cmd") String cmd, @RequestBody SyVendorBrand entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (기본) */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVendorBrand> rows) {
-        service.saveList(rows);
+        service.saveList("base", rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (cmd 변형) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<SyVendorBrand> rows) {
+        service.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

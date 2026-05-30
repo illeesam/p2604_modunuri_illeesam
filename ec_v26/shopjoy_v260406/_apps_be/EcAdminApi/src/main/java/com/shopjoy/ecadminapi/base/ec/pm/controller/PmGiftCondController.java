@@ -46,7 +46,7 @@ public class PmGiftCondController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmGiftCond>> save(@PathVariable("id") String id, @RequestBody PmGiftCond entity) {
         entity.setGiftCondId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
     }
 
     /* 사은품 지급 조건 수정 */
@@ -63,10 +63,31 @@ public class PmGiftCondController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /* 사은품 지급 조건 목록저장 */
+    /** save -- rowStatus 단건 분기 저장 (기본) */
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponse<PmGiftCond>> saveDefault(@RequestBody PmGiftCond entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
+    }
+
+    /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<PmGiftCond>> saveCmd(
+            @PathVariable("cmd") String cmd, @RequestBody PmGiftCond entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (기본) */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmGiftCond> rows) {
-        service.saveList(rows);
+        service.saveList("base", rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (cmd 변형) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<PmGiftCond> rows) {
+        service.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

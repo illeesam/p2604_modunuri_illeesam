@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberAddrDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberAddr;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
@@ -40,9 +42,14 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     /* 회원 주소 목록조회 */
     @Override
     public List<MbMemberAddrDto.Item> selectList(MbMemberAddrDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(where);
+        JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(
+                andMemberIds(search),
+                andMemberAddrId(search),
+                andMemberId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
@@ -56,14 +63,25 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(where);
+        JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(
+                andMemberIds(search),
+                andMemberAddrId(search),
+                andMemberId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberAddrDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(where).fetchOne();
+        Long total = queryFactory.select(a.count()).from(a).where(
+                andMemberIds(search),
+                andMemberAddrId(search),
+                andMemberId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         MbMemberAddrDto.PageResponse res = new MbMemberAddrDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -86,55 +104,73 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     }
 
     /* searchType 사용 예  searchType = "addrNm,recvNm" (Entity 필드명) */
-    private BooleanBuilder buildCondition(MbMemberAddrDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
-        if (!CollectionUtils.isEmpty(s.getMemberIds())) w.and(a.memberId.in(s.getMemberIds()));
-        if (StringUtils.hasText(s.getMemberAddrId())) w.and(a.memberAddrId.eq(s.getMemberAddrId()));
-        if (StringUtils.hasText(s.getMemberId()))     w.and(a.memberId.eq(s.getMemberId()));
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",addrNm,")) or.or(a.addrNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",recvNm,")) or.or(a.recvNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* memberId IN */
+    private BooleanExpression andMemberIds(MbMemberAddrDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
+                ? a.memberId.in(search.getMemberIds()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date": w.and(a.regDate.goe(start)).and(a.regDate.lt(endExcl)); break;
-                case "upd_date": w.and(a.updDate.goe(start)).and(a.updDate.lt(endExcl)); break;
-                default: break;
-            }
+    /* memberAddrId 정확 일치 */
+    private BooleanExpression andMemberAddrId(MbMemberAddrDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberAddrId())
+                ? a.memberAddrId.eq(search.getMemberAddrId()) : null;
+    }
+
+    /* memberId 정확 일치 */
+    private BooleanExpression andMemberId(MbMemberAddrDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberId())
+                ? a.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(MbMemberAddrDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",addr,")) or.or(a.addr.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",addrDetail,")) or.or(a.addrDetail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",addrNm,")) or.or(a.addrNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",isDefault,")) or.or(a.isDefault.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberAddrId,")) or.or(a.memberAddrId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberId,")) or.or(a.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvNm,")) or.or(a.recvNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvPhone,")) or.or(a.recvPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",zipCd,")) or.or(a.zipCd.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(MbMemberAddrDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",addr,", a.addr, pattern);
+        or = orLike(or, all, types, ",addrDetail,", a.addrDetail, pattern);
+        or = orLike(or, all, types, ",addrNm,", a.addrNm, pattern);
+        or = orLike(or, all, types, ",isDefault,", a.isDefault, pattern);
+        or = orLike(or, all, types, ",memberAddrId,", a.memberAddrId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",recvNm,", a.recvNm, pattern);
+        or = orLike(or, all, types, ",recvPhone,", a.recvPhone, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",zipCd,", a.zipCd, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -191,7 +227,8 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         if (entity.getAddrDetail() != null) { update.set(a.addrDetail, entity.getAddrDetail()); hasAny = true; }
         if (entity.getIsDefault()  != null) { update.set(a.isDefault,  entity.getIsDefault());  hasAny = true; }
         if (entity.getUpdBy()      != null) { update.set(a.updBy,      entity.getUpdBy());      hasAny = true; }
-        if (entity.getUpdDate()    != null) { update.set(a.updDate,    entity.getUpdDate());    hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
         return (int) update.where(a.memberAddrId.eq(entity.getMemberAddrId())).execute();
     }

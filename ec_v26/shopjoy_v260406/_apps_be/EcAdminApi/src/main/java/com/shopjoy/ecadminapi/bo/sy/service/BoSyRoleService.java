@@ -56,8 +56,8 @@ public class BoSyRoleService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(List<SyRole> rows) {
-        syRoleService.saveList(rows);
+    public void saveList(String cmd, List<SyRole> rows) {
+        syRoleService.saveList(cmd, rows);
         roleCache.evictAll();
     }
 }

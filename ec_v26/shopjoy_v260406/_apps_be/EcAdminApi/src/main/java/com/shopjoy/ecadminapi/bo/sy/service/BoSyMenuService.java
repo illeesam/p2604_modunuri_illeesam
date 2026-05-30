@@ -53,8 +53,8 @@ public class BoSyMenuService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(List<SyMenu> rows) {
-        syMenuService.saveList(rows);
+    public void saveList(String cmd, List<SyMenu> rows) {
+        syMenuService.saveList(cmd, rows);
         menuCache.evictAll();
     }
 }

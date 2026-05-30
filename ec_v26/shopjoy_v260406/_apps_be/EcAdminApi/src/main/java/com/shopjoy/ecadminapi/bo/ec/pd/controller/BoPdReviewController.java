@@ -85,7 +85,7 @@ public class BoPdReviewController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdReview> rows) {
-        boPdReviewService.saveList(rows);
+        boPdReviewService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

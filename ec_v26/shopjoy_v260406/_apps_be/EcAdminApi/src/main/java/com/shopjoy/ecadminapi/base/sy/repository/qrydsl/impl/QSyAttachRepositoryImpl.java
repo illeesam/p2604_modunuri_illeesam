@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAttachDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAttach;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +42,14 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     /* 첨부파일 목록조회 */
     @Override
     public List<SyAttachDto.Item> selectList(SyAttachDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
-        JPAQuery<SyAttachDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyAttachDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andAttachId(search),
+                andAttachGrpId(search),
+                andMimeTypeCd(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -59,14 +67,25 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
 
-        JPAQuery<SyAttachDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyAttachDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andAttachId(search),
+                andAttachGrpId(search),
+                andMimeTypeCd(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(where).fetchOne();
+        Long total = queryFactory.select(a.count()).from(a).where(
+                andSiteId(search),
+                andAttachId(search),
+                andAttachGrpId(search),
+                andMimeTypeCd(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyAttachDto.PageResponse res = new SyAttachDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -88,68 +107,73 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyAttachDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))      w.and(a.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getAttachId()))    w.and(a.attachId.eq(s.getAttachId()));
-        if (StringUtils.hasText(s.getAttachGrpId())) w.and(a.attachGrpId.eq(s.getAttachGrpId()));
-        if (StringUtils.hasText(s.getMimeTypeCd()))  w.and(a.mimeTypeCd.eq(s.getMimeTypeCd()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyAttachDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? a.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",fileNm,"))   or.or(a.fileNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",storedNm,")) or.or(a.storedNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* attachId 정확 일치 */
+    private BooleanExpression andAttachId(SyAttachDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAttachId())
+                ? a.attachId.eq(search.getAttachId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {
-            LocalDate ds = LocalDate.parse(s.getDateStart(), DF);
-            LocalDate de = LocalDate.parse(s.getDateEnd(), DF);
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(a.regDate.goe(ds.atStartOfDay())).and(a.regDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "upd_date":
-                    w.and(a.updDate.goe(ds.atStartOfDay())).and(a.updDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",attachGrpId,")) or.or(a.attachGrpId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",attachId,")) or.or(a.attachId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",attachMemo,")) or.or(a.attachMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",attachUrl,")) or.or(a.attachUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cdnHost,")) or.or(a.cdnHost.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cdnImgUrl,")) or.or(a.cdnImgUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cdnThumbUrl,")) or.or(a.cdnThumbUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",fileExt,")) or.or(a.fileExt.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",fileNm,")) or.or(a.fileNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",mimeTypeCd,")) or.or(a.mimeTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",physicalPath,")) or.or(a.physicalPath.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",storagePath,")) or.or(a.storagePath.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",storageType,")) or.or(a.storageType.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",storedNm,")) or.or(a.storedNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbCdnUrl,")) or.or(a.thumbCdnUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbFileNm,")) or.or(a.thumbFileNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbGeneratedYn,")) or.or(a.thumbGeneratedYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbStoredNm,")) or.or(a.thumbStoredNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbUrl,")) or.or(a.thumbUrl.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* attachGrpId 정확 일치 */
+    private BooleanExpression andAttachGrpId(SyAttachDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAttachGrpId())
+                ? a.attachGrpId.eq(search.getAttachGrpId()) : null;
+    }
+
+    /* mimeTypeCd 정확 일치 */
+    private BooleanExpression andMimeTypeCd(SyAttachDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMimeTypeCd())
+                ? a.mimeTypeCd.eq(search.getMimeTypeCd()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyAttachDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",attachGrpId,", a.attachGrpId, pattern);
+        or = orLike(or, all, types, ",attachId,", a.attachId, pattern);
+        or = orLike(or, all, types, ",attachMemo,", a.attachMemo, pattern);
+        or = orLike(or, all, types, ",attachUrl,", a.attachUrl, pattern);
+        or = orLike(or, all, types, ",cdnHost,", a.cdnHost, pattern);
+        or = orLike(or, all, types, ",cdnImgUrl,", a.cdnImgUrl, pattern);
+        or = orLike(or, all, types, ",cdnThumbUrl,", a.cdnThumbUrl, pattern);
+        or = orLike(or, all, types, ",fileExt,", a.fileExt, pattern);
+        or = orLike(or, all, types, ",fileNm,", a.fileNm, pattern);
+        or = orLike(or, all, types, ",mimeTypeCd,", a.mimeTypeCd, pattern);
+        or = orLike(or, all, types, ",physicalPath,", a.physicalPath, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",storagePath,", a.storagePath, pattern);
+        or = orLike(or, all, types, ",storageType,", a.storageType, pattern);
+        or = orLike(or, all, types, ",storedNm,", a.storedNm, pattern);
+        or = orLike(or, all, types, ",thumbCdnUrl,", a.thumbCdnUrl, pattern);
+        or = orLike(or, all, types, ",thumbFileNm,", a.thumbFileNm, pattern);
+        or = orLike(or, all, types, ",thumbGeneratedYn,", a.thumbGeneratedYn, pattern);
+        or = orLike(or, all, types, ",thumbStoredNm,", a.thumbStoredNm, pattern);
+        or = orLike(or, all, types, ",thumbUrl,", a.thumbUrl, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -219,7 +243,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
         if (entity.getAttachMemo()   != null) { update.set(a.attachMemo,   entity.getAttachMemo());   hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
-        if (entity.getUpdDate()      != null) { update.set(a.updDate,      entity.getUpdDate());      hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.zz.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -76,10 +77,14 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
     /* 목록조회 */
     @Override
     public List<ZzSample1Dto.Item> selectList(ZzSample1Dto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzSample1Dto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<ZzSample1Dto.Item> query = buildBaseQuery().where(
+                andSample1Ids(search),
+                andSample1Id(search),
+                andUseYn(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -99,10 +104,14 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzSample1Dto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<ZzSample1Dto.Item> query = buildBaseQuery().where(
+                andSample1Ids(search),
+                andSample1Id(search),
+                andUseYn(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -111,7 +120,12 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         Long total = queryFactory
                 .select(s.count())
                 .from(s)
-                .where(where)
+                .where(
+                andSample1Ids(search),
+                andSample1Id(search),
+                andUseYn(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         ZzSample1Dto.PageResponse res = new ZzSample1Dto.PageResponse();
@@ -119,49 +133,73 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
     }
 
     /* buildCondition */
-    private BooleanBuilder buildCondition(ZzSample1Dto.Request search) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (search == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (!CollectionUtils.isEmpty(search.getSample1Ids())) w.and(s.sample1Id.in(search.getSample1Ids()));
-        if (StringUtils.hasText(search.getSample1Id())) w.and(s.sample1Id.eq(search.getSample1Id()));
-        if (StringUtils.hasText(search.getUseYn()))     w.and(s.useYn.eq(search.getUseYn()));
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String pattern = "%" + search.getSearchValue() + "%";
-            String __typeRaw = search.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",attrNm1,")) or.or(s.attrNm1.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",attrNm2,")) or.or(s.attrNm2.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",attrNm3,")) or.or(s.attrNm3.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",attrNm4,")) or.or(s.attrNm4.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cateCds,")) or.or(s.cateCds.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cdGrp,")) or.or(s.cdGrp.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cdInfwSeCd,")) or.or(s.cdInfwSeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cdNm,")) or.or(s.cdNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cdVl,")) or.or(s.cdVl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col01,")) or.or(s.col01.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col02,")) or.or(s.col02.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col03,")) or.or(s.col03.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col04,")) or.or(s.col04.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col05,")) or.or(s.col05.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col06,")) or.or(s.col06.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col07,")) or.or(s.col07.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col08,")) or.or(s.col08.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col09,")) or.or(s.col09.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",divCd,")) or.or(s.divCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",explnCn,")) or.or(s.explnCn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",groupCd,")) or.or(s.groupCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",kindCd,")) or.or(s.kindCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",sample1Id,")) or.or(s.sample1Id.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",statusCd,")) or.or(s.statusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",typeCd,")) or.or(s.typeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(s.useYn.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* sample1Id IN */
+    private BooleanExpression andSample1Ids(ZzSample1Dto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getSample1Ids())
+                ? s.sample1Id.in(search.getSample1Ids()) : null;
+    }
+
+    /* sample1Id 정확 일치 */
+    private BooleanExpression andSample1Id(ZzSample1Dto.Request search) {
+        return search != null && StringUtils.hasText(search.getSample1Id())
+                ? s.sample1Id.eq(search.getSample1Id()) : null;
+    }
+
+    /* useYn 정확 일치 */
+    private BooleanExpression andUseYn(ZzSample1Dto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? s.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(ZzSample1Dto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",attrNm1,", s.attrNm1, pattern);
+        or = orLike(or, all, types, ",attrNm2,", s.attrNm2, pattern);
+        or = orLike(or, all, types, ",attrNm3,", s.attrNm3, pattern);
+        or = orLike(or, all, types, ",attrNm4,", s.attrNm4, pattern);
+        or = orLike(or, all, types, ",cateCds,", s.cateCds, pattern);
+        or = orLike(or, all, types, ",cdGrp,", s.cdGrp, pattern);
+        or = orLike(or, all, types, ",cdInfwSeCd,", s.cdInfwSeCd, pattern);
+        or = orLike(or, all, types, ",cdNm,", s.cdNm, pattern);
+        or = orLike(or, all, types, ",cdVl,", s.cdVl, pattern);
+        or = orLike(or, all, types, ",col01,", s.col01, pattern);
+        or = orLike(or, all, types, ",col02,", s.col02, pattern);
+        or = orLike(or, all, types, ",col03,", s.col03, pattern);
+        or = orLike(or, all, types, ",col04,", s.col04, pattern);
+        or = orLike(or, all, types, ",col05,", s.col05, pattern);
+        or = orLike(or, all, types, ",col06,", s.col06, pattern);
+        or = orLike(or, all, types, ",col07,", s.col07, pattern);
+        or = orLike(or, all, types, ",col08,", s.col08, pattern);
+        or = orLike(or, all, types, ",col09,", s.col09, pattern);
+        or = orLike(or, all, types, ",divCd,", s.divCd, pattern);
+        or = orLike(or, all, types, ",explnCn,", s.explnCn, pattern);
+        or = orLike(or, all, types, ",groupCd,", s.groupCd, pattern);
+        or = orLike(or, all, types, ",kindCd,", s.kindCd, pattern);
+        or = orLike(or, all, types, ",sample1Id,", s.sample1Id, pattern);
+        or = orLike(or, all, types, ",statusCd,", s.statusCd, pattern);
+        or = orLike(or, all, types, ",typeCd,", s.typeCd, pattern);
+        or = orLike(or, all, types, ",useYn,", s.useYn, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**

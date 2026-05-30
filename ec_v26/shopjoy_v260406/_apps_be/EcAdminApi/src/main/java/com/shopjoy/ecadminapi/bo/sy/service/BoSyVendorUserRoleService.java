@@ -29,5 +29,5 @@ public class BoSyVendorUserRoleService {
     @Transactional public SyVendorUserRole create(SyVendorUserRole body) { return syVendorUserRoleService.create(body); }
     @Transactional public SyVendorUserRole update(String id, SyVendorUserRole body) { return syVendorUserRoleService.update(id, body); }
     @Transactional public void delete(String id) { syVendorUserRoleService.delete(id); }
-    @Transactional public void saveList(List<SyVendorUserRole> rows) { syVendorUserRoleService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<SyVendorUserRole> rows) { syVendorUserRoleService.saveList(cmd, rows); }
 }

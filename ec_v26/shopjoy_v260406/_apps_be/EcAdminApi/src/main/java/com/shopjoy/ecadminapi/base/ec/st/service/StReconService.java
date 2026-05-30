@@ -86,18 +86,7 @@ public class StReconService {
         return saved;
     }
 
-    /* 정산 대사(Reconciliation) 저장 */
-    @Transactional
-    public StRecon save(StRecon entity) {
-        if (!existsById(entity.getReconId()))
-            throw new CmBizException("존재하지 않는 StRecon입니다: " + entity.getReconId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        StRecon saved = stReconRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 정산 대사(Reconciliation) 수정 */
     @Transactional
@@ -137,44 +126,105 @@ public class StReconService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 정산 대사(Reconciliation) 목록저장 */
-    @Transactional
-    public void saveList(List<StRecon> rows) {
-        CmUtil.requireRowIds(rows, StRecon::getReconId, "U", "reconId", this);
-        CmUtil.requireRowIds(rows, StRecon::getReconId, "D", "reconId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(StRecon::getReconId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            stReconRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public StRecon save(String cmd, StRecon entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getReconId() == null || entity.getReconId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getReconId() == null)
+                    throw new CmBizException("삭제 대상 reconId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!stReconRepository.existsById(entity.getReconId()))
+                    throw new CmBizException("존재하지 않는 StRecon입니다: " + entity.getReconId() + "::" + CmUtil.svcCallerInfo(this));
+                stReconRepository.deleteById(entity.getReconId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setReconId(CmUtil.generateId("st_recon"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                StRecon saved = stReconRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getReconId() == null)
+                    throw new CmBizException("수정 대상 reconId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = stReconRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 StRecon입니다: " + entity.getReconId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getReconId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<StRecon> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (StRecon row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getReconId() == null || row.getReconId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, StRecon::getReconId, "U", "reconId", this);
+            CmUtil.requireRowIds(rows, StRecon::getReconId, "D", "reconId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(StRecon::getReconId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                stReconRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<StRecon> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (StRecon row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = stReconRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getReconId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<StRecon> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (StRecon row : insertRows) {
+                row.setReconId(CmUtil.generateId("st_recon"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                stReconRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<StRecon> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (StRecon row : updateRows) {
-            StRecon entity = findById(row.getReconId());
-            VoUtil.voCopyExclude(row, entity, "reconId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            stReconRepository.save(entity);
-        }
-        em.flush();
-
-        List<StRecon> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (StRecon row : insertRows) {
-            row.setReconId(CmUtil.generateId("st_recon"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            stReconRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

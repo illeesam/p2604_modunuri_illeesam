@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhSendMsgLogDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhSendMsgLog;
@@ -90,10 +92,17 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     /* 메시지 발송 로그 목록조회 */
     @Override
     public List<SyhSendMsgLogDto.Item> selectList(SyhSendMsgLogDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andLogId(search),
+                andUserId(search),
+                andTemplateId(search),
+                andTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -113,10 +122,17 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andLogId(search),
+                andUserId(search),
+                andTemplateId(search),
+                andTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -125,7 +141,15 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         Long total = queryFactory
                 .select(l.count())
                 .from(l)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andLogId(search),
+                andUserId(search),
+                andTemplateId(search),
+                andTypeCd(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         SyhSendMsgLogDto.PageResponse res = new SyhSendMsgLogDto.PageResponse();
@@ -133,65 +157,95 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     }
 
     /* 메시지 발송 로그 buildCondition */
-    private BooleanBuilder buildCondition(SyhSendMsgLogDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))     w.and(l.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getLogId()))      w.and(l.logId.eq(s.getLogId()));
-        if (StringUtils.hasText(s.getUserId()))     w.and(l.userId.eq(s.getUserId()));
-        if (StringUtils.hasText(s.getTemplateId())) w.and(l.templateId.eq(s.getTemplateId()));
-        if (StringUtils.hasText(s.getTypeCd()))     w.and(l.refTypeCd.eq(s.getTypeCd()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyhSendMsgLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? l.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "send_date":
-                    w.and(l.sendDate.goe(start)).and(l.sendDate.lt(endExcl));
-                    break;
-                case "reg_date":
-                    w.and(l.regDate.goe(start)).and(l.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(l.updDate.goe(start)).and(l.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* logId 정확 일치 */
+    private BooleanExpression andLogId(SyhSendMsgLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getLogId())
+                ? l.logId.eq(search.getLogId()) : null;
+    }
+
+    /* userId 정확 일치 */
+    private BooleanExpression andUserId(SyhSendMsgLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUserId())
+                ? l.userId.eq(search.getUserId()) : null;
+    }
+
+    /* templateId 정확 일치 */
+    private BooleanExpression andTemplateId(SyhSendMsgLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTemplateId())
+                ? l.templateId.eq(search.getTemplateId()) : null;
+    }
+
+    /* refTypeCd 정확 일치 */
+    private BooleanExpression andTypeCd(SyhSendMsgLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTypeCd())
+                ? l.refTypeCd.eq(search.getTypeCd()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyhSendMsgLogDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "send_date": return l.sendDate.goe(start).and(l.sendDate.lt(endExcl));
+            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
+            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",channelCd,")) or.or(l.channelCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",content,")) or.or(l.content.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deviceToken,")) or.or(l.deviceToken.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",failReason,")) or.or(l.failReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",kakaoTplCode,")) or.or(l.kakaoTplCode.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberId,")) or.or(l.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",params,")) or.or(l.params.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvPhone,")) or.or(l.recvPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refTypeCd,")) or.or(l.refTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",resultCd,")) or.or(l.resultCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",resultMsg,")) or.or(l.resultMsg.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",senderPhone,")) or.or(l.senderPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",templateCode,")) or.or(l.templateCode.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",templateId,")) or.or(l.templateId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",title,")) or.or(l.title.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userId,")) or.or(l.userId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyhSendMsgLogDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",channelCd,", l.channelCd, pattern);
+        or = orLike(or, all, types, ",content,", l.content, pattern);
+        or = orLike(or, all, types, ",deviceToken,", l.deviceToken, pattern);
+        or = orLike(or, all, types, ",failReason,", l.failReason, pattern);
+        or = orLike(or, all, types, ",kakaoTplCode,", l.kakaoTplCode, pattern);
+        or = orLike(or, all, types, ",logId,", l.logId, pattern);
+        or = orLike(or, all, types, ",memberId,", l.memberId, pattern);
+        or = orLike(or, all, types, ",params,", l.params, pattern);
+        or = orLike(or, all, types, ",recvPhone,", l.recvPhone, pattern);
+        or = orLike(or, all, types, ",refId,", l.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", l.refTypeCd, pattern);
+        or = orLike(or, all, types, ",resultCd,", l.resultCd, pattern);
+        or = orLike(or, all, types, ",resultMsg,", l.resultMsg, pattern);
+        or = orLike(or, all, types, ",senderPhone,", l.senderPhone, pattern);
+        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
+        or = orLike(or, all, types, ",templateCode,", l.templateCode, pattern);
+        or = orLike(or, all, types, ",templateId,", l.templateId, pattern);
+        or = orLike(or, all, types, ",title,", l.title, pattern);
+        or = orLike(or, all, types, ",userId,", l.userId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -258,7 +312,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         if (entity.getRefTypeCd()    != null) { update.set(l.refTypeCd,    entity.getRefTypeCd());    hasAny = true; }
         if (entity.getRefId()        != null) { update.set(l.refId,        entity.getRefId());        hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(l.updBy,        entity.getUpdBy());        hasAny = true; }
-        if (entity.getUpdDate()      != null) { update.set(l.updDate,      entity.getUpdDate());      hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

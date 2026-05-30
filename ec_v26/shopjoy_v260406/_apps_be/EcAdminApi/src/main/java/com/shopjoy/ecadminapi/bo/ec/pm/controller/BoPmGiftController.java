@@ -78,7 +78,7 @@ public class BoPmGiftController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmGift> rows) {
-        boPmGiftService.saveList(rows);
+        boPmGiftService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

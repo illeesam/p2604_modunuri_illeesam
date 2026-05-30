@@ -29,5 +29,5 @@ public class BoStSettleRawService {
     @Transactional public StSettleRaw create(StSettleRaw body) { return stSettleRawService.create(body); }
     @Transactional public StSettleRaw update(String id, StSettleRaw body) { return stSettleRawService.update(id, body); }
     @Transactional public void delete(String id) { stSettleRawService.delete(id); }
-    @Transactional public void saveList(List<StSettleRaw> rows) { stSettleRawService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<StSettleRaw> rows) { stSettleRawService.saveList(cmd, rows); }
 }

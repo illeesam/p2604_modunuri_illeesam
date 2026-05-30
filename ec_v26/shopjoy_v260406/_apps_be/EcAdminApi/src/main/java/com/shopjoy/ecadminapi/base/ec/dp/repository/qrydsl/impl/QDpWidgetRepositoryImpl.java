@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidget;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.QDpWidget;
@@ -35,9 +37,10 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     /* 전시 위젯 목록조회 */
     @Override
     public List<DpWidgetDto.Item> selectList(DpWidgetDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpWidgetDto.Item> query = baseQuery().where(where);
+        JPAQuery<DpWidgetDto.Item> query = baseQuery().where(
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
         Integer pageSize = search == null ? null : search.getPageSize();
@@ -51,12 +54,15 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     public DpWidgetDto.PageResponse selectPageList(DpWidgetDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpWidgetDto.Item> query = baseQuery().where(where);
+        JPAQuery<DpWidgetDto.Item> query = baseQuery().where(
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(w.count()).from(w).where(where).fetchOne();
+        Long total = queryFactory.select(w.count()).from(w).where(
+                andSearchValue(search)
+        ).fetchOne();
         DpWidgetDto.PageResponse res = new DpWidgetDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
@@ -73,62 +79,43 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    private BooleanBuilder buildCondition(DpWidgetDto.Request s) {
-        BooleanBuilder w2 = new BooleanBuilder();
-        if (s == null) return w2;
-        if (StringUtils.hasText(s.getSiteId()))       w2.and(w.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getWidgetId()))     w2.and(w.widgetId.eq(s.getWidgetId()));
-        if (StringUtils.hasText(s.getWidgetLibId()))  w2.and(w.widgetLibId.eq(s.getWidgetLibId()));
-        if (StringUtils.hasText(s.getWidgetTypeCd())) w2.and(w.widgetTypeCd.eq(s.getWidgetTypeCd()));
-        if (StringUtils.hasText(s.getUseYn()))        w2.and(w.useYn.eq(s.getUseYn()));
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",widgetNm,"))    or.or(w.widgetNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",widgetTitle,")) or.or(w.widgetTitle.likeIgnoreCase(pattern));
-            if (all || types.contains(",widgetDesc,"))  or.or(w.widgetDesc.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w2.and(or);
-        }
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(DpWidgetDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",dispEnv,", w.dispEnv, pattern);
+        or = orLike(or, all, types, ",siteId,", w.siteId, pattern);
+        or = orLike(or, all, types, ",thumbnailUrl,", w.thumbnailUrl, pattern);
+        or = orLike(or, all, types, ",titleShowYn,", w.titleShowYn, pattern);
+        or = orLike(or, all, types, ",useYn,", w.useYn, pattern);
+        or = orLike(or, all, types, ",widgetConfigJson,", w.widgetConfigJson, pattern);
+        or = orLike(or, all, types, ",widgetContent,", w.widgetContent, pattern);
+        or = orLike(or, all, types, ",widgetDesc,", w.widgetDesc, pattern);
+        or = orLike(or, all, types, ",widgetId,", w.widgetId, pattern);
+        or = orLike(or, all, types, ",widgetLibId,", w.widgetLibId, pattern);
+        or = orLike(or, all, types, ",widgetLibRefYn,", w.widgetLibRefYn, pattern);
+        or = orLike(or, all, types, ",widgetNm,", w.widgetNm, pattern);
+        or = orLike(or, all, types, ",widgetTitle,", w.widgetTitle, pattern);
+        or = orLike(or, all, types, ",widgetTypeCd,", w.widgetTypeCd, pattern);
+        return or;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date": w2.and(w.regDate.goe(start)).and(w.regDate.lt(endExcl)); break;
-                case "upd_date": w2.and(w.updDate.goe(start)).and(w.updDate.lt(endExcl)); break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",dispEnv,")) or.or(w.dispEnv.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(w.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",thumbnailUrl,")) or.or(w.thumbnailUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",titleShowYn,")) or.or(w.titleShowYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(w.useYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetConfigJson,")) or.or(w.widgetConfigJson.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetContent,")) or.or(w.widgetContent.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetDesc,")) or.or(w.widgetDesc.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetId,")) or.or(w.widgetId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetLibId,")) or.or(w.widgetLibId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetLibRefYn,")) or.or(w.widgetLibRefYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetNm,")) or.or(w.widgetNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetTitle,")) or.or(w.widgetTitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",widgetTypeCd,")) or.or(w.widgetTypeCd.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w2.and(or);
-        }
-        return w2;
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -195,7 +182,8 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         if (entity.getUseYn()            != null) { update.set(w.useYn,            entity.getUseYn());            hasAny = true; }
         if (entity.getDispEnv()          != null) { update.set(w.dispEnv,          entity.getDispEnv());          hasAny = true; }
         if (entity.getUpdBy()            != null) { update.set(w.updBy,            entity.getUpdBy());            hasAny = true; }
-        if (entity.getUpdDate()          != null) { update.set(w.updDate,          entity.getUpdDate());          hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(w.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
         return (int) update.where(w.widgetId.eq(entity.getWidgetId())).execute();
     }

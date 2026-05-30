@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventBenefitDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventBenefit;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.QPmEventBenefit;
@@ -40,10 +42,16 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     /* 이벤트 혜택 목록조회 */
     @Override
     public List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(where);
+        JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(
+                andEventIds(search),
+                andEventId(search),
+                andSiteId(search),
+                andBenefitId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -63,10 +71,16 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(where);
+        JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(
+                andEventIds(search),
+                andEventId(search),
+                andSiteId(search),
+                andBenefitId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -75,7 +89,14 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         Long total = queryFactory
                 .select(b.count())
                 .from(b)
-                .where(where)
+                .where(
+                andEventIds(search),
+                andEventId(search),
+                andSiteId(search),
+                andBenefitId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         PmEventBenefitDto.PageResponse res = new PmEventBenefitDto.PageResponse();
@@ -95,60 +116,77 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    private BooleanBuilder buildCondition(PmEventBenefitDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (!CollectionUtils.isEmpty(s.getEventIds())) w.and(b.eventId.in(s.getEventIds()));
-        if (StringUtils.hasText(s.getEventId()))       w.and(b.eventId.eq(s.getEventId()));
+    /* eventId IN */
+    private BooleanExpression andEventIds(PmEventBenefitDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getEventIds())
+                ? b.eventId.in(search.getEventIds()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSiteId()))    w.and(b.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getBenefitId())) w.and(b.benefitId.eq(s.getBenefitId()));
+    /* eventId 정확 일치 */
+    private BooleanExpression andEventId(PmEventBenefitDto.Request search) {
+        return search != null && StringUtils.hasText(search.getEventId())
+                ? b.eventId.eq(search.getEventId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(PmEventBenefitDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? b.siteId.eq(search.getSiteId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",benefitNm,")) or.or(b.benefitNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* benefitId 정확 일치 */
+    private BooleanExpression andBenefitId(PmEventBenefitDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBenefitId())
+                ? b.benefitId.eq(search.getBenefitId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(PmEventBenefitDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return b.regDate.goe(start).and(b.regDate.lt(endExcl));
+            case "upd_date": return b.updDate.goe(start).and(b.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate startDate = LocalDate.parse(s.getDateStart(), fmt);
-            LocalDate endDate   = LocalDate.parse(s.getDateEnd(),   fmt);
-            LocalDateTime start   = startDate.atStartOfDay();
-            LocalDateTime endExcl = endDate.plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(b.regDate.goe(start)).and(b.regDate.lt(endExcl)); break;
-                case "upd_date":
-                    w.and(b.updDate.goe(start)).and(b.updDate.lt(endExcl)); break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",benefitId,")) or.or(b.benefitId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",benefitNm,")) or.or(b.benefitNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",benefitTypeCd,")) or.or(b.benefitTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",benefitValue,")) or.or(b.benefitValue.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",conditionDesc,")) or.or(b.conditionDesc.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",couponId,")) or.or(b.couponId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",eventId,")) or.or(b.eventId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(PmEventBenefitDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",benefitId,", b.benefitId, pattern);
+        or = orLike(or, all, types, ",benefitNm,", b.benefitNm, pattern);
+        or = orLike(or, all, types, ",benefitTypeCd,", b.benefitTypeCd, pattern);
+        or = orLike(or, all, types, ",benefitValue,", b.benefitValue, pattern);
+        or = orLike(or, all, types, ",conditionDesc,", b.conditionDesc, pattern);
+        or = orLike(or, all, types, ",couponId,", b.couponId, pattern);
+        or = orLike(or, all, types, ",eventId,", b.eventId, pattern);
+        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -211,7 +249,8 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         if (entity.getCouponId()      != null) { update.set(b.couponId,      entity.getCouponId());      hasAny = true; }
         if (entity.getSortOrd()       != null) { update.set(b.sortOrd,       entity.getSortOrd());       hasAny = true; }
         if (entity.getUpdBy()         != null) { update.set(b.updBy,         entity.getUpdBy());         hasAny = true; }
-        if (entity.getUpdDate()       != null) { update.set(b.updDate,       entity.getUpdDate());       hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

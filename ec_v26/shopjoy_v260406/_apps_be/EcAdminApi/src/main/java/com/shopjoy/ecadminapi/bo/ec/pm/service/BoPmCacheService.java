@@ -29,5 +29,5 @@ public class BoPmCacheService {
     @Transactional public PmCache create(PmCache body) { return pmCacheService.create(body); }
     @Transactional public PmCache update(String id, PmCache body) { return pmCacheService.update(id, body); }
     @Transactional public void delete(String id) { pmCacheService.delete(id); }
-    @Transactional public void saveList(List<PmCache> rows) { pmCacheService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<PmCache> rows) { pmCacheService.saveList(cmd, rows); }
 }

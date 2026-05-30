@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.od.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMember;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdPay;
@@ -89,10 +91,16 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     /* 결제 목록조회 */
     @Override
     public List<OdPayDto.Item> selectList(OdPayDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdPayDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdPayDto.Item> query = baseListQuery().where(
+                andOrderIds(search),
+                andOrderId(search),
+                andSiteId(search),
+                andPayId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -112,10 +120,16 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdPayDto.Item> query = baseListQuery().where(where);
+        JPAQuery<OdPayDto.Item> query = baseListQuery().where(
+                andOrderIds(search),
+                andOrderId(search),
+                andSiteId(search),
+                andPayId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -126,7 +140,14 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .from(p)
                 .leftJoin(o).on(o.orderId.eq(p.orderId))
                 .leftJoin(m).on(m.memberId.eq(o.memberId))
-                .where(where)
+                .where(
+                andOrderIds(search),
+                andOrderId(search),
+                andSiteId(search),
+                andPayId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         OdPayDto.PageResponse res = new OdPayDto.PageResponse();
@@ -167,85 +188,100 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    private BooleanBuilder buildCondition(OdPayDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (!CollectionUtils.isEmpty(s.getOrderIds())) w.and(p.orderId.in(s.getOrderIds()));
-        if (StringUtils.hasText(s.getOrderId())) w.and(p.orderId.eq(s.getOrderId()));
-        if (StringUtils.hasText(s.getSiteId())) w.and(p.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getPayId()))  w.and(p.payId.eq(s.getPayId()));
+    /* orderId IN */
+    private BooleanExpression andOrderIds(OdPayDto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
+                ? p.orderId.in(search.getOrderIds()) : null;
+    }
 
-        // searchValue + searchType
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* orderId 정확 일치 */
+    private BooleanExpression andOrderId(OdPayDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOrderId())
+                ? p.orderId.eq(search.getOrderId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",orderId,"))   or.or(p.orderId.likeIgnoreCase(pattern));
-            if (all || types.contains(",loginId,"))   or.or(m.loginId.likeIgnoreCase(pattern));
-            if (all || types.contains(",memberNm,"))  or.or(o.memberNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(OdPayDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? p.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* payId 정확 일치 */
+    private BooleanExpression andPayId(OdPayDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPayId())
+                ? p.payId.eq(search.getPayId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(OdPayDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "pay_date": return p.payDate.goe(start).and(p.payDate.lt(endExcl));
+            case "reg_date": return p.regDate.goe(start).and(p.regDate.lt(endExcl));
+            case "upd_date": return p.updDate.goe(start).and(p.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        // dateType + dateStart + dateEnd
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "pay_date":
-                    w.and(p.payDate.goe(start)).and(p.payDate.lt(endExcl)); break;
-                case "reg_date":
-                    w.and(p.regDate.goe(start)).and(p.regDate.lt(endExcl)); break;
-                case "upd_date":
-                    w.and(p.updDate.goe(start)).and(p.updDate.lt(endExcl)); break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",cardIssuerCd,")) or.or(p.cardIssuerCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cardIssuerNm,")) or.or(p.cardIssuerNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cardNo,")) or.or(p.cardNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",cardTypeCd,")) or.or(p.cardTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",claimId,")) or.or(p.claimId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",failureCode,")) or.or(p.failureCode.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",failureReason,")) or.or(p.failureReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memo,")) or.or(p.memo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderId,")) or.or(p.orderId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payChannelCd,")) or.or(p.payChannelCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payDirCd,")) or.or(p.payDirCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payDivCd,")) or.or(p.payDivCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payId,")) or.or(p.payId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payMethodCd,")) or.or(p.payMethodCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payOccurTypeCd,")) or.or(p.payOccurTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payStatusCd,")) or.or(p.payStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",payStatusCdBefore,")) or.or(p.payStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pgApprovalNo,")) or.or(p.pgApprovalNo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pgCompanyCd,")) or.or(p.pgCompanyCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pgResponse,")) or.or(p.pgResponse.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pgTransactionId,")) or.or(p.pgTransactionId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundReason,")) or.or(p.refundReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundStatusCd,")) or.or(p.refundStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refundStatusCdBefore,")) or.or(p.refundStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vbankAccount,")) or.or(p.vbankAccount.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vbankBankCode,")) or.or(p.vbankBankCode.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vbankBankNm,")) or.or(p.vbankBankNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vbankDepositNm,")) or.or(p.vbankDepositNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vbankHolderNm,")) or.or(p.vbankHolderNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(OdPayDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",cardIssuerCd,", p.cardIssuerCd, pattern);
+        or = orLike(or, all, types, ",cardIssuerNm,", p.cardIssuerNm, pattern);
+        or = orLike(or, all, types, ",cardNo,", p.cardNo, pattern);
+        or = orLike(or, all, types, ",cardTypeCd,", p.cardTypeCd, pattern);
+        or = orLike(or, all, types, ",claimId,", p.claimId, pattern);
+        or = orLike(or, all, types, ",failureCode,", p.failureCode, pattern);
+        or = orLike(or, all, types, ",failureReason,", p.failureReason, pattern);
+        or = orLike(or, all, types, ",memo,", p.memo, pattern);
+        or = orLike(or, all, types, ",orderId,", p.orderId, pattern);
+        or = orLike(or, all, types, ",payChannelCd,", p.payChannelCd, pattern);
+        or = orLike(or, all, types, ",payDirCd,", p.payDirCd, pattern);
+        or = orLike(or, all, types, ",payDivCd,", p.payDivCd, pattern);
+        or = orLike(or, all, types, ",payId,", p.payId, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", p.payMethodCd, pattern);
+        or = orLike(or, all, types, ",payOccurTypeCd,", p.payOccurTypeCd, pattern);
+        or = orLike(or, all, types, ",payStatusCd,", p.payStatusCd, pattern);
+        or = orLike(or, all, types, ",payStatusCdBefore,", p.payStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",pgApprovalNo,", p.pgApprovalNo, pattern);
+        or = orLike(or, all, types, ",pgCompanyCd,", p.pgCompanyCd, pattern);
+        or = orLike(or, all, types, ",pgResponse,", p.pgResponse, pattern);
+        or = orLike(or, all, types, ",pgTransactionId,", p.pgTransactionId, pattern);
+        or = orLike(or, all, types, ",refundReason,", p.refundReason, pattern);
+        or = orLike(or, all, types, ",refundStatusCd,", p.refundStatusCd, pattern);
+        or = orLike(or, all, types, ",refundStatusCdBefore,", p.refundStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
+        or = orLike(or, all, types, ",vbankAccount,", p.vbankAccount, pattern);
+        or = orLike(or, all, types, ",vbankBankCode,", p.vbankBankCode, pattern);
+        or = orLike(or, all, types, ",vbankBankNm,", p.vbankBankNm, pattern);
+        or = orLike(or, all, types, ",vbankDepositNm,", p.vbankDepositNm, pattern);
+        or = orLike(or, all, types, ",vbankHolderNm,", p.vbankHolderNm, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -302,7 +338,8 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         if (entity.getRefundDate()        != null) { update.set(p.refundDate,        entity.getRefundDate());        hasAny = true; }
         if (entity.getMemo()              != null) { update.set(p.memo,              entity.getMemo());              hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(p.updBy,             entity.getUpdBy());             hasAny = true; }
-        if (entity.getUpdDate()           != null) { update.set(p.updDate,           entity.getUpdDate());           hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.mb.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.mb.data.dto.MbMemberGradeDto;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMemberGrade;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.QMbMemberGrade;
@@ -39,9 +41,13 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     /* 회원 등급 목록조회 */
     @Override
     public List<MbMemberGradeDto.Item> selectList(MbMemberGradeDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberGradeDto.Item> query = baseQuery().where(where);
+        JPAQuery<MbMemberGradeDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andMemberGradeId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
@@ -55,14 +61,23 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberGradeDto.Item> query = baseQuery().where(where);
+        JPAQuery<MbMemberGradeDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andMemberGradeId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberGradeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(g.count()).from(g).where(where).fetchOne();
+        Long total = queryFactory.select(g.count()).from(g).where(
+                andSiteId(search),
+                andMemberGradeId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         MbMemberGradeDto.PageResponse res = new MbMemberGradeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -82,49 +97,62 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     }
 
     /* searchType 사용 예  searchType = "gradeNm,gradeCd" (Entity 필드명) */
-    private BooleanBuilder buildCondition(MbMemberGradeDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
-        if (StringUtils.hasText(s.getSiteId()))        w.and(g.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getMemberGradeId())) w.and(g.memberGradeId.eq(s.getMemberGradeId()));
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",gradeNm,")) or.or(g.gradeNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",gradeCd,")) or.or(g.gradeCd.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(MbMemberGradeDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? g.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date": w.and(g.regDate.goe(start)).and(g.regDate.lt(endExcl)); break;
-                case "upd_date": w.and(g.updDate.goe(start)).and(g.updDate.lt(endExcl)); break;
-                default: break;
-            }
+    /* memberGradeId 정확 일치 */
+    private BooleanExpression andMemberGradeId(MbMemberGradeDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberGradeId())
+                ? g.memberGradeId.eq(search.getMemberGradeId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(MbMemberGradeDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return g.regDate.goe(start).and(g.regDate.lt(endExcl));
+            case "upd_date": return g.updDate.goe(start).and(g.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",gradeCd,")) or.or(g.gradeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",gradeNm,")) or.or(g.gradeNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberGradeId,")) or.or(g.memberGradeId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(g.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(g.useYn.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(MbMemberGradeDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",gradeCd,", g.gradeCd, pattern);
+        or = orLike(or, all, types, ",gradeNm,", g.gradeNm, pattern);
+        or = orLike(or, all, types, ",memberGradeId,", g.memberGradeId, pattern);
+        or = orLike(or, all, types, ",siteId,", g.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", g.useYn, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -179,7 +207,8 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         if (entity.getSaveRate()       != null) { update.set(g.saveRate,       entity.getSaveRate());       hasAny = true; }
         if (entity.getUseYn()          != null) { update.set(g.useYn,          entity.getUseYn());          hasAny = true; }
         if (entity.getUpdBy()          != null) { update.set(g.updBy,          entity.getUpdBy());          hasAny = true; }
-        if (entity.getUpdDate()        != null) { update.set(g.updDate,        entity.getUpdDate());        hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(g.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
         return (int) update.where(g.memberGradeId.eq(entity.getMemberGradeId())).execute();
     }

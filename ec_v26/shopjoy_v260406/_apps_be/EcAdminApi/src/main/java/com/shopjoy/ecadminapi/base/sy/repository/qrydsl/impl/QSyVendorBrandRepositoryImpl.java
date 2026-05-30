@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyVendorBrandDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyBrand;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
@@ -65,9 +67,15 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     /* 업체별 브랜드 목록조회 */
     @Override
     public List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andVendorBrandId(search),
+                andBrandId(search),
+                andVendorId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -87,66 +95,106 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andVendorBrandId(search),
+                andBrandId(search),
+                andVendorId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyVendorBrandDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(b.count()).from(b).where(where).fetchOne();
+        Long total = queryFactory.select(b.count()).from(b).where(
+                andSiteId(search),
+                andVendorBrandId(search),
+                andBrandId(search),
+                andVendorId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyVendorBrandDto.PageResponse res = new SyVendorBrandDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
     /* 업체별 브랜드 buildCondition */
-    private BooleanBuilder buildCondition(SyVendorBrandDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))        w.and(b.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getVendorBrandId())) w.and(b.vendorBrandId.eq(s.getVendorBrandId()));
-        if (StringUtils.hasText(s.getBrandId()))       w.and(b.brandId.eq(s.getBrandId()));
-        if (StringUtils.hasText(s.getVendorId()))      w.and(b.vendorId.eq(s.getVendorId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyVendorBrandDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? b.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(b.regDate.goe(start)).and(b.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(b.updDate.goe(start)).and(b.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* vendorBrandId 정확 일치 */
+    private BooleanExpression andVendorBrandId(SyVendorBrandDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVendorBrandId())
+                ? b.vendorBrandId.eq(search.getVendorBrandId()) : null;
+    }
+
+    /* brandId 정확 일치 */
+    private BooleanExpression andBrandId(SyVendorBrandDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBrandId())
+                ? b.brandId.eq(search.getBrandId()) : null;
+    }
+
+    /* vendorId 정확 일치 */
+    private BooleanExpression andVendorId(SyVendorBrandDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVendorId())
+                ? b.vendorId.eq(search.getVendorId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyVendorBrandDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return b.regDate.goe(start).and(b.regDate.lt(endExcl));
+            case "upd_date": return b.updDate.goe(start).and(b.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",brandId,")) or.or(b.brandId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contractCd,")) or.or(b.contractCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",isMain,")) or.or(b.isMain.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(b.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(b.useYn.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorBrandId,")) or.or(b.vendorBrandId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorBrandRemark,")) or.or(b.vendorBrandRemark.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",vendorId,")) or.or(b.vendorId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyVendorBrandDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",brandId,", b.brandId, pattern);
+        or = orLike(or, all, types, ",contractCd,", b.contractCd, pattern);
+        or = orLike(or, all, types, ",isMain,", b.isMain, pattern);
+        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", b.useYn, pattern);
+        or = orLike(or, all, types, ",vendorBrandId,", b.vendorBrandId, pattern);
+        or = orLike(or, all, types, ",vendorBrandRemark,", b.vendorBrandRemark, pattern);
+        or = orLike(or, all, types, ",vendorId,", b.vendorId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -210,7 +258,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         if (entity.getUseYn()             != null) { update.set(b.useYn,             entity.getUseYn());             hasAny = true; }
         if (entity.getVendorBrandRemark() != null) { update.set(b.vendorBrandRemark, entity.getVendorBrandRemark()); hasAny = true; }
         if (entity.getUpdBy()             != null) { update.set(b.updBy,             entity.getUpdBy());             hasAny = true; }
-        if (entity.getUpdDate()           != null) { update.set(b.updDate,           entity.getUpdDate());           hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

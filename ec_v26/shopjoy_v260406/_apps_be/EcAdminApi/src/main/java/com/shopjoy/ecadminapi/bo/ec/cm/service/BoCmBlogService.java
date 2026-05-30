@@ -44,7 +44,7 @@ public class BoCmBlogService {
     }
     @Transactional public CmBlog update(String id, CmBlog body) { return cmBlogService.update(id, body); }
     @Transactional public void delete(String id) { cmBlogService.delete(id); }
-    @Transactional public void saveList(List<CmBlog> rows) { cmBlogService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<CmBlog> rows) { cmBlogService.saveList(cmd, rows); }
 
     /** toggleUse — useYn 전환 */
     @Transactional

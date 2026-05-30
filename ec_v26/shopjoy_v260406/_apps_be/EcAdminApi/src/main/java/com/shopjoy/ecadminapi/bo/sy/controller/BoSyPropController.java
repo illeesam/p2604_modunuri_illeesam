@@ -67,7 +67,7 @@ public class BoSyPropController {
     /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyProp> rows) {
-        boSyPropService.saveList(rows);
+        boSyPropService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

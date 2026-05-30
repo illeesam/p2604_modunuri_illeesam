@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyContactDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyContact;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +42,14 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     /* 문의 목록조회 */
     @Override
     public List<SyContactDto.Item> selectList(SyContactDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyContactDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyContactDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andContactId(search),
+                andMemberId(search),
+                andStatus(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -59,14 +67,25 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyContactDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyContactDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andContactId(search),
+                andMemberId(search),
+                andStatus(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyContactDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(c.count()).from(c).where(where).fetchOne();
+        Long total = queryFactory.select(c.count()).from(c).where(
+                andSiteId(search),
+                andContactId(search),
+                andMemberId(search),
+                andStatus(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyContactDto.PageResponse res = new SyContactDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -87,61 +106,65 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyContactDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))    w.and(c.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getContactId())) w.and(c.contactId.eq(s.getContactId()));
-        if (StringUtils.hasText(s.getMemberId()))  w.and(c.memberId.eq(s.getMemberId()));
-        if (StringUtils.hasText(s.getCategoryCd()))w.and(c.categoryCd.eq(s.getCategoryCd()));
-        if (StringUtils.hasText(s.getStatus()))    w.and(c.contactStatusCd.eq(s.getStatus()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyContactDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? c.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",memberNm,"))     or.or(c.memberNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",contactTitle,")) or.or(c.contactTitle.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* contactId 정확 일치 */
+    private BooleanExpression andContactId(SyContactDto.Request search) {
+        return search != null && StringUtils.hasText(search.getContactId())
+                ? c.contactId.eq(search.getContactId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {
-            LocalDate ds = LocalDate.parse(s.getDateStart(), DF);
-            LocalDate de = LocalDate.parse(s.getDateEnd(), DF);
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(c.regDate.goe(ds.atStartOfDay())).and(c.regDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "upd_date":
-                    w.and(c.updDate.goe(ds.atStartOfDay())).and(c.updDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",answerUserId,")) or.or(c.answerUserId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contentAttachGrpId,")) or.or(c.contentAttachGrpId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",answerAttachGrpId,")) or.or(c.answerAttachGrpId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",categoryCd,")) or.or(c.categoryCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contactAnswer,")) or.or(c.contactAnswer.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contactContent,")) or.or(c.contactContent.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contactId,")) or.or(c.contactId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contactStatusCd,")) or.or(c.contactStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contactTitle,")) or.or(c.contactTitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberId,")) or.or(c.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberNm,")) or.or(c.memberNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* memberId 정확 일치 */
+    private BooleanExpression andMemberId(SyContactDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberId())
+                ? c.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* contactStatusCd 정확 일치 */
+    private BooleanExpression andStatus(SyContactDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? c.contactStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyContactDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",answerUserId,", c.answerUserId, pattern);
+        or = orLike(or, all, types, ",contentAttachGrpId,", c.contentAttachGrpId, pattern);
+        or = orLike(or, all, types, ",answerAttachGrpId,", c.answerAttachGrpId, pattern);
+        or = orLike(or, all, types, ",categoryCd,", c.categoryCd, pattern);
+        or = orLike(or, all, types, ",contactAnswer,", c.contactAnswer, pattern);
+        or = orLike(or, all, types, ",contactContent,", c.contactContent, pattern);
+        or = orLike(or, all, types, ",contactId,", c.contactId, pattern);
+        or = orLike(or, all, types, ",contactStatusCd,", c.contactStatusCd, pattern);
+        or = orLike(or, all, types, ",contactTitle,", c.contactTitle, pattern);
+        or = orLike(or, all, types, ",memberId,", c.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", c.memberNm, pattern);
+        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -204,7 +227,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         if (entity.getAnswerDate()      != null) { update.set(c.answerDate,      entity.getAnswerDate());      hasAny = true; }
         if (entity.getContactDate()     != null) { update.set(c.contactDate,     entity.getContactDate());     hasAny = true; }
         if (entity.getUpdBy()           != null) { update.set(c.updBy,           entity.getUpdBy());           hasAny = true; }
-        if (entity.getUpdDate()         != null) { update.set(c.updDate,         entity.getUpdDate());         hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

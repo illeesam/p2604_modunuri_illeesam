@@ -1,9 +1,11 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,14 +33,23 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class QSyUserRepositoryImpl implements QSyUserRepository {
 
+    /* ============================================================
+     * 의존성 주입 + Q-class (테이블 별칭)
+     * ============================================================ */
     private final JPAQueryFactory queryFactory;
     private final SyDeptRepository syDeptRepository;
+
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyDept syDept = QSyDept.syDept;
     private static final QSyRole syRole = QSyRole.syRole;
+    /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
     private static final QSyCode syCode_userStatusCd = new QSyCode("code_userStatusCd");
     private static final QSyCode syCode_authMethodCd = new QSyCode("code_authMethodCd");
+
+    /* ============================================================
+     * 기본 쿼리 빌드 — SELECT + JOIN (조회 메서드들이 공유하는 base)
+     * ============================================================ */
 
     /** 기본 쿼리 빌드 */
     private JPAQuery<SyUserDto.Item> buildBaseQuery() {
@@ -78,6 +89,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 .leftJoin(syCode_authMethodCd).on(syCode_authMethodCd.codeGrp.eq("AUTH_METHOD").and(syCode_authMethodCd.codeValue.eq(syUser.authMethodCd)));
     }
 
+    /* ============================================================
+     * 조회 메서드 — selectById / selectList / selectPageList / selectCount
+     * 검색조건은 .where(andXxx(...), ...) 형태로 직접 나열
+     * ============================================================ */
+
     /** 단건 조회 */
     @Override
     public Optional<SyUserDto.Item> selectById(String userId) {
@@ -90,10 +106,15 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 전체 목록 (page/size 가 양수면 페이징 적용. null 안전) */
     @Override
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         var query = buildBaseQuery()
-                .where(where);
+                .where(
+                        andSiteId(search),
+                        andDeptId(search),
+                        andStatus(search),
+                        andDateRange(search),
+                        andSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -114,11 +135,16 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         int offset   = (pageNo - 1) * pageSize;
         int limit    = pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         var query = buildBaseQuery()
-                .where(where);
+                .where(
+                        andSiteId(search),
+                        andDeptId(search),
+                        andStatus(search),
+                        andDateRange(search),
+                        andSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -129,7 +155,13 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         Long total = queryFactory
                 .select(syUser.count())
                 .from(syUser)
-                .where(where)
+                .where(
+                        andSiteId(search),
+                        andDeptId(search),
+                        andStatus(search),
+                        andDateRange(search),
+                        andSearchValue(search)
+                )
                 .fetchOne();
 
         SyUserDto.PageResponse res = new SyUserDto.PageResponse();
@@ -139,67 +171,96 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 검색조건 기준 전체 카운트 (스트리밍 export 시 안전 상한 검증용) */
     @Override
     public long selectCount(SyUserDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         Long total = queryFactory.select(syUser.count())
                 .from(syUser)
-                .where(where)
+                .where(
+                        andSiteId(search),
+                        andDeptId(search),
+                        andStatus(search),
+                        andDateRange(search),
+                        andSearchValue(search)
+                )
                 .fetchOne();
         return total == null ? 0L : total;
     }
 
-    /** 검색조건 빌드 — searchValue LIKE OR (Q-class StringPath 자동) + 기간 + 단일 비교조건. */
-    private BooleanBuilder buildCondition(SyUserDto.Request s) {
-        BooleanBuilder b = new BooleanBuilder();
-        if (s == null) return b;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId())) b.and(syUser.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getDeptId())) b.and(syUser.deptId.in(syDeptRepository.findTreeDeptIds(s.getDeptId())));
-        if (StringUtils.hasText(s.getStatus())) b.and(syUser.userStatusCd.eq(s.getStatus()));
-
-        /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    b.and(syUser.regDate.goe(start)).and(syUser.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    b.and(syUser.updDate.goe(start)).and(syUser.updDate.lt(endExcl));
-                    break;
-                case "last_login_date":
-                    b.and(syUser.lastLoginDate.goe(start)).and(syUser.lastLoginDate.lt(endExcl));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",authMethodCd,")) or.or(syUser.authMethodCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deptId,")) or.or(syUser.deptId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",loginId,")) or.or(syUser.loginId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",loginPwdHash,")) or.or(syUser.loginPwdHash.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",profileAttachId,")) or.or(syUser.profileAttachId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",roleId,")) or.or(syUser.roleId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(syUser.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userEmail,")) or.or(syUser.userEmail.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userId,")) or.or(syUser.userId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userMemo,")) or.or(syUser.userMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userNm,")) or.or(syUser.userNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userPhone,")) or.or(syUser.userPhone.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",userStatusCd,")) or.or(syUser.userStatusCd.likeIgnoreCase(pattern));
-            if (or.getValue() != null) b.and(or);
-        }
-        return b;
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyUserDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? syUser.siteId.eq(search.getSiteId()) : null;
     }
+
+    /* 부서 트리 — 선택 노드 + 모든 자손 부서 사용자까지 포함 */
+    private BooleanExpression andDeptId(SyUserDto.Request search) {
+        return search != null && StringUtils.hasText(search.getDeptId())
+                ? syUser.deptId.in(syDeptRepository.findTreeDeptIds(search.getDeptId()))
+                : null;
+    }
+
+    /* userStatusCd 정확 일치 */
+    private BooleanExpression andStatus(SyUserDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? syUser.userStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyUserDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date":        return syUser.regDate.goe(start).and(syUser.regDate.lt(endExcl));
+            case "upd_date":        return syUser.updDate.goe(start).and(syUser.updDate.lt(endExcl));
+            case "last_login_date": return syUser.lastLoginDate.goe(start).and(syUser.lastLoginDate.lt(endExcl));
+            default:                return null;
+        }
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyUserDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",authMethodCd,",    syUser.authMethodCd,    pattern);
+        or = orLike(or, all, types, ",deptId,",          syUser.deptId,          pattern);
+        or = orLike(or, all, types, ",loginId,",         syUser.loginId,         pattern);
+        or = orLike(or, all, types, ",loginPwdHash,",    syUser.loginPwdHash,    pattern);
+        or = orLike(or, all, types, ",profileAttachId,", syUser.profileAttachId, pattern);
+        or = orLike(or, all, types, ",roleId,",          syUser.roleId,          pattern);
+        or = orLike(or, all, types, ",siteId,",          syUser.siteId,          pattern);
+        or = orLike(or, all, types, ",userEmail,",       syUser.userEmail,       pattern);
+        or = orLike(or, all, types, ",userId,",          syUser.userId,          pattern);
+        or = orLike(or, all, types, ",userMemo,",        syUser.userMemo,        pattern);
+        or = orLike(or, all, types, ",userNm,",          syUser.userNm,          pattern);
+        or = orLike(or, all, types, ",userPhone,",       syUser.userPhone,       pattern);
+        or = orLike(or, all, types, ",userStatusCd,",    syUser.userStatusCd,    pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
+    }
+
+    /* ============================================================
+     * 정렬조건 — sort 문자열 파싱 ("userId asc, regDate desc")
+     * ============================================================ */
 
     /**
      * 정렬조건 빌드
@@ -237,7 +298,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         return orders;
     }
 
-    /** updateSelective - null 이 아닌 필드만 UPDATE (MyBatis selective 대체) */
+    /* ============================================================
+     * 변경 메서드 — UPDATE (selective: null 이 아닌 필드만 SET)
+     * ============================================================ */
+
+    /** updateSelective - null 이 아닌 필드만 UPDATE (MyBatis selective 대체).
+     *  updDate 는 항상 DB CURRENT_TIMESTAMP 로 채움 (다중 WAS 시계 차이 회피, 트랜잭션 내 시점 일치). */
     @Override
     public int updateSelective(SyUser entity) {
         if (entity.getUserId() == null) return 0;
@@ -257,10 +323,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         if (entity.getLoginFailCnt()    != null) update.set(syUser.loginFailCnt,    entity.getLoginFailCnt());
         if (entity.getUserMemo()        != null) update.set(syUser.userMemo,        entity.getUserMemo());
         if (entity.getUpdBy()           != null) update.set(syUser.updBy,           entity.getUpdBy());
-        if (entity.getUpdDate()         != null) update.set(syUser.updDate,         entity.getUpdDate());
         if (entity.getAuthMethodCd()    != null) update.set(syUser.authMethodCd,    entity.getAuthMethodCd());
         if (entity.getLastLoginDate()   != null) update.set(syUser.lastLoginDate,   entity.getLastLoginDate());
         if (entity.getProfileAttachId() != null) update.set(syUser.profileAttachId, entity.getProfileAttachId());
+
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(syUser.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         long affected = update
                 .where(syUser.userId.eq(entity.getUserId()))

@@ -1,13 +1,15 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdProdOptItemDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptItem;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdProdOpt;
@@ -43,10 +45,15 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     /* 상품 옵션 아이템 목록조회 */
     @Override
     public List<PdProdOptItemDto.Item> selectList(PdProdOptItemDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdOptItemDto.Item> query = baseQuery().where(where);
+        JPAQuery<PdProdOptItemDto.Item> query = baseQuery().where(
+                andOptId(search),
+                andSiteId(search),
+                andOptItemId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -66,16 +73,27 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdOptItemDto.Item> query = baseQuery().where(where);
+        JPAQuery<PdProdOptItemDto.Item> query = baseQuery().where(
+                andOptId(search),
+                andSiteId(search),
+                andOptItemId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdProdOptItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(i.count()).from(i).where(where).fetchOne();
+        Long total = queryFactory.select(i.count()).from(i).where(
+                andOptId(search),
+                andSiteId(search),
+                andOptItemId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         PdProdOptItemDto.PageResponse res = new PdProdOptItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -105,66 +123,73 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    private BooleanBuilder buildCondition(PdProdOptItemDto.Request req) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (req == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (!CollectionUtils.isEmpty(req.getProdIds())) {
-            w.and(i.optId.in(JPAExpressions.select(opt.optId).from(opt).where(opt.prodId.in(req.getProdIds()))));
-        }
-        if (StringUtils.hasText(req.getProdId())) {
-            w.and(i.optId.in(JPAExpressions.select(opt.optId).from(opt).where(opt.prodId.eq(req.getProdId()))));
-        }
-        if (StringUtils.hasText(req.getOptId()))     w.and(i.optId.eq(req.getOptId()));
-        if (StringUtils.hasText(req.getSiteId()))    w.and(i.siteId.eq(req.getSiteId()));
-        if (StringUtils.hasText(req.getOptItemId())) w.and(i.optItemId.eq(req.getOptItemId()));
+    /* optId 정확 일치 */
+    private BooleanExpression andOptId(PdProdOptItemDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOptId())
+                ? i.optId.eq(search.getOptId()) : null;
+    }
 
-        if (StringUtils.hasText(req.getSearchValue())) {
-            String types = "," + (req.getSearchType() == null ? "" : req.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(req.getSearchType());
-            String pattern = "%" + req.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",optNm,")) or.or(i.optNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(PdProdOptItemDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? i.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(req.getDateType())
-                && StringUtils.hasText(req.getDateStart())
-                && StringUtils.hasText(req.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(req.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(req.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (req.getDateType()) {
-                case "reg_date":
-                    w.and(i.regDate.goe(start)).and(i.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(i.updDate.goe(start)).and(i.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* optItemId 정확 일치 */
+    private BooleanExpression andOptItemId(PdProdOptItemDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOptItemId())
+                ? i.optItemId.eq(search.getOptItemId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(PdProdOptItemDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
+            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (req != null && StringUtils.hasText(req.getSearchValue())) {
-            String pattern = "%" + req.getSearchValue() + "%";
-            String __typeRaw = req.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",optId,")) or.or(i.optId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",optItemId,")) or.or(i.optItemId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",optNm,")) or.or(i.optNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",optStyle,")) or.or(i.optStyle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",optTypeCd,")) or.or(i.optTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",optVal,")) or.or(i.optVal.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",optValCodeId,")) or.or(i.optValCodeId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",parentOptItemId,")) or.or(i.parentOptItemId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(i.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(i.useYn.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(PdProdOptItemDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",optId,", i.optId, pattern);
+        or = orLike(or, all, types, ",optItemId,", i.optItemId, pattern);
+        or = orLike(or, all, types, ",optNm,", i.optNm, pattern);
+        or = orLike(or, all, types, ",optStyle,", i.optStyle, pattern);
+        or = orLike(or, all, types, ",optTypeCd,", i.optTypeCd, pattern);
+        or = orLike(or, all, types, ",optVal,", i.optVal, pattern);
+        or = orLike(or, all, types, ",optValCodeId,", i.optValCodeId, pattern);
+        or = orLike(or, all, types, ",parentOptItemId,", i.parentOptItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", i.useYn, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -228,7 +253,8 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         if (entity.getSortOrd()         != null) { update.set(i.sortOrd,         entity.getSortOrd());         hasAny = true; }
         if (entity.getUseYn()           != null) { update.set(i.useYn,           entity.getUseYn());           hasAny = true; }
         if (entity.getUpdBy()           != null) { update.set(i.updBy,           entity.getUpdBy());           hasAny = true; }
-        if (entity.getUpdDate()         != null) { update.set(i.updDate,         entity.getUpdDate());         hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(i.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

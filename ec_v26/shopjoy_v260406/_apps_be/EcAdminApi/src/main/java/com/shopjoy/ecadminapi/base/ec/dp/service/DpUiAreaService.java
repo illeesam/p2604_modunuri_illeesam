@@ -87,18 +87,7 @@ public class DpUiAreaService {
         return saved;
     }
 
-    /* 전시 UI-영역 매핑 저장 */
-    @Transactional
-    public DpUiArea save(DpUiArea entity) {
-        if (!existsById(entity.getUiAreaId()))
-            throw new CmBizException("존재하지 않는 DpUiArea입니다: " + entity.getUiAreaId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        DpUiArea saved = dpUiAreaRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 전시 UI-영역 매핑 수정 */
     @Transactional
@@ -138,44 +127,105 @@ public class DpUiAreaService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 전시 UI-영역 매핑 목록저장 */
-    @Transactional
-    public void saveList(List<DpUiArea> rows) {
-        CmUtil.requireRowIds(rows, DpUiArea::getUiAreaId, "U", "uiAreaId", this);
-        CmUtil.requireRowIds(rows, DpUiArea::getUiAreaId, "D", "uiAreaId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(DpUiArea::getUiAreaId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            dpUiAreaRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public DpUiArea save(String cmd, DpUiArea entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getUiAreaId() == null || entity.getUiAreaId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getUiAreaId() == null)
+                    throw new CmBizException("삭제 대상 uiAreaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!dpUiAreaRepository.existsById(entity.getUiAreaId()))
+                    throw new CmBizException("존재하지 않는 DpUiArea입니다: " + entity.getUiAreaId() + "::" + CmUtil.svcCallerInfo(this));
+                dpUiAreaRepository.deleteById(entity.getUiAreaId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setUiAreaId(CmUtil.generateId("dp_ui_area"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                DpUiArea saved = dpUiAreaRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getUiAreaId() == null)
+                    throw new CmBizException("수정 대상 uiAreaId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = dpUiAreaRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 DpUiArea입니다: " + entity.getUiAreaId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getUiAreaId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<DpUiArea> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (DpUiArea row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getUiAreaId() == null || row.getUiAreaId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, DpUiArea::getUiAreaId, "U", "uiAreaId", this);
+            CmUtil.requireRowIds(rows, DpUiArea::getUiAreaId, "D", "uiAreaId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(DpUiArea::getUiAreaId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                dpUiAreaRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<DpUiArea> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (DpUiArea row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = dpUiAreaRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getUiAreaId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<DpUiArea> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (DpUiArea row : insertRows) {
+                row.setUiAreaId(CmUtil.generateId("dp_ui_area"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                dpUiAreaRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<DpUiArea> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (DpUiArea row : updateRows) {
-            DpUiArea entity = findById(row.getUiAreaId());
-            VoUtil.voCopyExclude(row, entity, "uiAreaId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            dpUiAreaRepository.save(entity);
-        }
-        em.flush();
-
-        List<DpUiArea> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (DpUiArea row : insertRows) {
-            row.setUiAreaId(CmUtil.generateId("dp_ui_area"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            dpUiAreaRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

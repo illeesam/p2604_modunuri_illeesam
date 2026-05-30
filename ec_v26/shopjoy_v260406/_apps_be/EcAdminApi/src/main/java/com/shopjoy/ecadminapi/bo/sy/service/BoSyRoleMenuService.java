@@ -30,5 +30,5 @@ public class BoSyRoleMenuService {
     @Transactional public SyRoleMenu create(SyRoleMenu body) { return syRoleMenuService.create(body); }
     @Transactional public SyRoleMenu update(String id, SyRoleMenu body) { return syRoleMenuService.update(id, body); }
     @Transactional public void delete(String id) { syRoleMenuService.delete(id); }
-    @Transactional public void saveList(List<SyRoleMenu> rows) { syRoleMenuService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<SyRoleMenu> rows) { syRoleMenuService.saveList(cmd, rows); }
 }

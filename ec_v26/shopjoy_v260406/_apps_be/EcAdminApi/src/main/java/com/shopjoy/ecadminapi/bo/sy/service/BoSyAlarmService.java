@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 /**
  * BO 알람 서비스 — base SyAlarmService 위임 + saveList(List<SyAlarm>) 보존.
  */
@@ -41,7 +40,7 @@ public class BoSyAlarmService {
 
     /** saveList — DELETE / UPDATE / INSERT 단계별 일괄 저장 */
     @Transactional
-    public void saveList(List<SyAlarm> rows) {
+    public void saveList(String cmd, List<SyAlarm> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 

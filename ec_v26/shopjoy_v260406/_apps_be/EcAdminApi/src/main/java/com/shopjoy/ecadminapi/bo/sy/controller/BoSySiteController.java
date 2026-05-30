@@ -69,7 +69,7 @@ public class BoSySiteController {
     /** saveList — 일괄 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SySite> rows) {
-        boSySiteService.saveList(rows);
+        boSySiteService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

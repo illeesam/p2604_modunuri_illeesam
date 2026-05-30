@@ -46,7 +46,7 @@ public class OdhOrderItemStatusHistController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OdhOrderItemStatusHist>> save(@PathVariable("id") String id, @RequestBody OdhOrderItemStatusHist entity) {
         entity.setOrderItemStatusHistId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save(entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
     }
 
     /* 주문 아이템 상태 이력 수정 */
@@ -63,10 +63,31 @@ public class OdhOrderItemStatusHistController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /* 주문 아이템 상태 이력 목록저장 */
+    /** save -- rowStatus 단건 분기 저장 (기본) */
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponse<OdhOrderItemStatusHist>> saveDefault(@RequestBody OdhOrderItemStatusHist entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
+    }
+
+    /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<OdhOrderItemStatusHist>> saveCmd(
+            @PathVariable("cmd") String cmd, @RequestBody OdhOrderItemStatusHist entity) {
+        return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (기본) */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdhOrderItemStatusHist> rows) {
-        service.saveList(rows);
+        service.saveList("base", rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /** saveList -- 일괄 저장 (cmd 변형) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<OdhOrderItemStatusHist> rows) {
+        service.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

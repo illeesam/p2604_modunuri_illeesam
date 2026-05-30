@@ -53,8 +53,8 @@ public class BoSyCodeService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(List<SyCode> rows) {
-        syCodeService.saveList(rows);
+    public void saveList(String cmd, List<SyCode> rows) {
+        syCodeService.saveList(cmd, rows);
         codeCache.evictAll();
     }
 }

@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyI18nMsg;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18nMsg;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,9 +40,13 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     /* 다국어 메시지 목록조회 */
     @Override
     public List<SyI18nMsgDto.Item> selectList(SyI18nMsgDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(
+                andI18nMsgId(search),
+                andI18nId(search),
+                andLangCd(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -57,14 +64,23 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(
+                andI18nMsgId(search),
+                andI18nId(search),
+                andLangCd(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyI18nMsgDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(m.count()).from(m).where(where).fetchOne();
+        Long total = queryFactory.select(m.count()).from(m).where(
+                andI18nMsgId(search),
+                andI18nId(search),
+                andLangCd(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyI18nMsgDto.PageResponse res = new SyI18nMsgDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -81,42 +97,52 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     }
 
     /* 다국어 메시지 buildCondition */
-    private BooleanBuilder buildCondition(SyI18nMsgDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getI18nMsgId())) w.and(m.i18nMsgId.eq(s.getI18nMsgId()));
-        if (StringUtils.hasText(s.getI18nId()))    w.and(m.i18nId.eq(s.getI18nId()));
-        if (StringUtils.hasText(s.getLangCd()))    w.and(m.langCd.eq(s.getLangCd()));
+    /* i18nMsgId 정확 일치 */
+    private BooleanExpression andI18nMsgId(SyI18nMsgDto.Request search) {
+        return search != null && StringUtils.hasText(search.getI18nMsgId())
+                ? m.i18nMsgId.eq(search.getI18nMsgId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {
-            LocalDate ds = LocalDate.parse(s.getDateStart(), DF);
-            LocalDate de = LocalDate.parse(s.getDateEnd(), DF);
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(m.regDate.goe(ds.atStartOfDay())).and(m.regDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "upd_date":
-                    w.and(m.updDate.goe(ds.atStartOfDay())).and(m.updDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",i18nId,")) or.or(m.i18nId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",i18nMsg,")) or.or(m.i18nMsg.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",i18nMsgId,")) or.or(m.i18nMsgId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",langCd,")) or.or(m.langCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(m.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* i18nId 정확 일치 */
+    private BooleanExpression andI18nId(SyI18nMsgDto.Request search) {
+        return search != null && StringUtils.hasText(search.getI18nId())
+                ? m.i18nId.eq(search.getI18nId()) : null;
+    }
+
+    /* langCd 정확 일치 */
+    private BooleanExpression andLangCd(SyI18nMsgDto.Request search) {
+        return search != null && StringUtils.hasText(search.getLangCd())
+                ? m.langCd.eq(search.getLangCd()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyI18nMsgDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",i18nId,", m.i18nId, pattern);
+        or = orLike(or, all, types, ",i18nMsg,", m.i18nMsg, pattern);
+        or = orLike(or, all, types, ",i18nMsgId,", m.i18nMsgId, pattern);
+        or = orLike(or, all, types, ",langCd,", m.langCd, pattern);
+        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -167,7 +193,8 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         if (entity.getLangCd()  != null) { update.set(m.langCd,  entity.getLangCd());  hasAny = true; }
         if (entity.getI18nMsg() != null) { update.set(m.i18nMsg, entity.getI18nMsg()); hasAny = true; }
         if (entity.getUpdBy()   != null) { update.set(m.updBy,   entity.getUpdBy());   hasAny = true; }
-        if (entity.getUpdDate() != null) { update.set(m.updDate, entity.getUpdDate()); hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

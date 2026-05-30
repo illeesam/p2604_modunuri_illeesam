@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -39,10 +40,14 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     /* 할인 사용 이력 목록조회 */
     @Override
     public List<PmDiscntUsageDto.Item> selectList(PmDiscntUsageDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(where);
+        JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andDiscntUsageId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -62,10 +67,14 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(where);
+        JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andDiscntUsageId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -74,7 +83,12 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         Long total = queryFactory
                 .select(u.count())
                 .from(u)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andDiscntUsageId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         PmDiscntUsageDto.PageResponse res = new PmDiscntUsageDto.PageResponse();
@@ -94,58 +108,66 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    private BooleanBuilder buildCondition(PmDiscntUsageDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))        w.and(u.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getDiscntUsageId())) w.and(u.discntUsageId.eq(s.getDiscntUsageId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(PmDiscntUsageDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? u.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* discntUsageId 정확 일치 */
+    private BooleanExpression andDiscntUsageId(PmDiscntUsageDto.Request search) {
+        return search != null && StringUtils.hasText(search.getDiscntUsageId())
+                ? u.discntUsageId.eq(search.getDiscntUsageId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",discntNm,")) or.or(u.discntNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(PmDiscntUsageDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return u.regDate.goe(start).and(u.regDate.lt(endExcl));
+            case "upd_date": return u.updDate.goe(start).and(u.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate startDate = LocalDate.parse(s.getDateStart(), fmt);
-            LocalDate endDate   = LocalDate.parse(s.getDateEnd(),   fmt);
-            LocalDateTime start   = startDate.atStartOfDay();
-            LocalDateTime endExcl = endDate.plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(u.regDate.goe(start)).and(u.regDate.lt(endExcl)); break;
-                case "upd_date":
-                    w.and(u.updDate.goe(start)).and(u.updDate.lt(endExcl)); break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",discntId,")) or.or(u.discntId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",discntNm,")) or.or(u.discntNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",discntTypeCd,")) or.or(u.discntTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",discntUsageId,")) or.or(u.discntUsageId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberId,")) or.or(u.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderId,")) or.or(u.orderId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",orderItemId,")) or.or(u.orderItemId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",prodId,")) or.or(u.prodId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(u.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(PmDiscntUsageDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",discntId,", u.discntId, pattern);
+        or = orLike(or, all, types, ",discntNm,", u.discntNm, pattern);
+        or = orLike(or, all, types, ",discntTypeCd,", u.discntTypeCd, pattern);
+        or = orLike(or, all, types, ",discntUsageId,", u.discntUsageId, pattern);
+        or = orLike(or, all, types, ",memberId,", u.memberId, pattern);
+        or = orLike(or, all, types, ",orderId,", u.orderId, pattern);
+        or = orLike(or, all, types, ",orderItemId,", u.orderItemId, pattern);
+        or = orLike(or, all, types, ",prodId,", u.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", u.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**

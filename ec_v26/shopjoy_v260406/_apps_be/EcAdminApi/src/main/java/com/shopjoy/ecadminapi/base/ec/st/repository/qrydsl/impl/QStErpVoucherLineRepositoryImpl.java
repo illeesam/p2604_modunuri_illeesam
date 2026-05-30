@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -40,10 +41,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     /* ERP 전표 상세 목록조회 */
     @Override
     public List<StErpVoucherLineDto.Item> selectList(StErpVoucherLineDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(where);
+        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(
+                andErpVoucherLineId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -63,10 +67,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(where);
+        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(
+                andErpVoucherLineId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -75,7 +82,11 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         Long total = queryFactory
                 .select(l.count())
                 .from(l)
-                .where(where)
+                .where(
+                andErpVoucherLineId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         StErpVoucherLineDto.PageResponse res = new StErpVoucherLineDto.PageResponse();
@@ -96,56 +107,61 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    private BooleanBuilder buildCondition(StErpVoucherLineDto.Request c) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (c == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(c.getErpVoucherLineId())) w.and(l.erpVoucherLineId.eq(c.getErpVoucherLineId()));
+    /* erpVoucherLineId 정확 일치 */
+    private BooleanExpression andErpVoucherLineId(StErpVoucherLineDto.Request search) {
+        return search != null && StringUtils.hasText(search.getErpVoucherLineId())
+                ? l.erpVoucherLineId.eq(search.getErpVoucherLineId()) : null;
+    }
 
-        // searchValue / searchType — accountNm
-        if (StringUtils.hasText(c.getSearchValue())) {
-            String types = "," + (c.getSearchType() == null ? "" : c.getSearchType().trim()) + ",";
-            BooleanBuilder or = new BooleanBuilder();
-            if (!StringUtils.hasText(types) || types.contains(",accountNm,")) {
-                or.or(l.accountNm.containsIgnoreCase(c.getSearchValue()));
-            }
-            if (or.getValue() != null) w.and(or);
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(StErpVoucherLineDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
+            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        if (StringUtils.hasText(c.getDateType())
-                && StringUtils.hasText(c.getDateStart())
-                && StringUtils.hasText(c.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(c.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(c.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (c.getDateType()) {
-                case "reg_date":
-                    w.and(l.regDate.goe(start)).and(l.regDate.lt(endExcl)); break;
-                case "upd_date":
-                    w.and(l.updDate.goe(start)).and(l.updDate.lt(endExcl)); break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (c != null && StringUtils.hasText(c.getSearchValue())) {
-            String pattern = "%" + c.getSearchValue() + "%";
-            String __typeRaw = c.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",accountCd,")) or.or(l.accountCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",accountNm,")) or.or(l.accountNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",costCenterCd,")) or.or(l.costCenterCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",erpVoucherId,")) or.or(l.erpVoucherId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",erpVoucherLineId,")) or.or(l.erpVoucherLineId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",lineMemo,")) or.or(l.lineMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",profitCenterCd,")) or.or(l.profitCenterCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refTypeCd,")) or.or(l.refTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(StErpVoucherLineDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",accountCd,", l.accountCd, pattern);
+        or = orLike(or, all, types, ",accountNm,", l.accountNm, pattern);
+        or = orLike(or, all, types, ",costCenterCd,", l.costCenterCd, pattern);
+        or = orLike(or, all, types, ",erpVoucherId,", l.erpVoucherId, pattern);
+        or = orLike(or, all, types, ",erpVoucherLineId,", l.erpVoucherLineId, pattern);
+        or = orLike(or, all, types, ",lineMemo,", l.lineMemo, pattern);
+        or = orLike(or, all, types, ",profitCenterCd,", l.profitCenterCd, pattern);
+        or = orLike(or, all, types, ",refId,", l.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", l.refTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**

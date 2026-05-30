@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyNoticeDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyNotice;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +42,15 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* 공지사항 목록조회 */
     @Override
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyNoticeDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyNoticeDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andNoticeId(search),
+                andStatus(search),
+                andNoticeTypeCd(search),
+                andIsFixed(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -59,14 +68,27 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyNoticeDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyNoticeDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andNoticeId(search),
+                andStatus(search),
+                andNoticeTypeCd(search),
+                andIsFixed(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyNoticeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(n.count()).from(n).where(where).fetchOne();
+        Long total = queryFactory.select(n.count()).from(n).where(
+                andSiteId(search),
+                andNoticeId(search),
+                andStatus(search),
+                andNoticeTypeCd(search),
+                andIsFixed(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyNoticeDto.PageResponse res = new SyNoticeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -87,56 +109,67 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyNoticeDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))       w.and(n.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getNoticeId()))     w.and(n.noticeId.eq(s.getNoticeId()));
-        if (StringUtils.hasText(s.getStatus()))       w.and(n.noticeStatusCd.eq(s.getStatus()));
-        if (StringUtils.hasText(s.getNoticeTypeCd())) w.and(n.noticeTypeCd.eq(s.getNoticeTypeCd()));
-        if (StringUtils.hasText(s.getIsFixed()))      w.and(n.isFixed.eq(s.getIsFixed()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyNoticeDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? n.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",noticeTitle,")) or.or(n.noticeTitle.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* noticeId 정확 일치 */
+    private BooleanExpression andNoticeId(SyNoticeDto.Request search) {
+        return search != null && StringUtils.hasText(search.getNoticeId())
+                ? n.noticeId.eq(search.getNoticeId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {
-            LocalDate ds = LocalDate.parse(s.getDateStart(), DF);
-            LocalDate de = LocalDate.parse(s.getDateEnd(), DF);
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(n.regDate.goe(ds.atStartOfDay())).and(n.regDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "upd_date":
-                    w.and(n.updDate.goe(ds.atStartOfDay())).and(n.updDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",attachGrpId,")) or.or(n.attachGrpId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",contentHtml,")) or.or(n.contentHtml.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",isFixed,")) or.or(n.isFixed.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",noticeId,")) or.or(n.noticeId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",noticeStatusCd,")) or.or(n.noticeStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",noticeTitle,")) or.or(n.noticeTitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",noticeTypeCd,")) or.or(n.noticeTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(n.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* noticeStatusCd 정확 일치 */
+    private BooleanExpression andStatus(SyNoticeDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? n.noticeStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* noticeTypeCd 정확 일치 */
+    private BooleanExpression andNoticeTypeCd(SyNoticeDto.Request search) {
+        return search != null && StringUtils.hasText(search.getNoticeTypeCd())
+                ? n.noticeTypeCd.eq(search.getNoticeTypeCd()) : null;
+    }
+
+    /* isFixed 정확 일치 */
+    private BooleanExpression andIsFixed(SyNoticeDto.Request search) {
+        return search != null && StringUtils.hasText(search.getIsFixed())
+                ? n.isFixed.eq(search.getIsFixed()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyNoticeDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",attachGrpId,", n.attachGrpId, pattern);
+        or = orLike(or, all, types, ",contentHtml,", n.contentHtml, pattern);
+        or = orLike(or, all, types, ",isFixed,", n.isFixed, pattern);
+        or = orLike(or, all, types, ",noticeId,", n.noticeId, pattern);
+        or = orLike(or, all, types, ",noticeStatusCd,", n.noticeStatusCd, pattern);
+        or = orLike(or, all, types, ",noticeTitle,", n.noticeTitle, pattern);
+        or = orLike(or, all, types, ",noticeTypeCd,", n.noticeTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", n.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -196,7 +229,8 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         if (entity.getNoticeStatusCd() != null) { update.set(n.noticeStatusCd, entity.getNoticeStatusCd()); hasAny = true; }
         if (entity.getViewCount()      != null) { update.set(n.viewCount,      entity.getViewCount());      hasAny = true; }
         if (entity.getUpdBy()          != null) { update.set(n.updBy,          entity.getUpdBy());          hasAny = true; }
-        if (entity.getUpdDate()        != null) { update.set(n.updDate,        entity.getUpdDate());        hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(n.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

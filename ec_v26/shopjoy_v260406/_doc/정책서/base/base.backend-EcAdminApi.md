@@ -465,6 +465,375 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
 ---
 
+## 14.6 QueryDSL `Q*RepositoryImpl` 표준 패턴
+
+### 14.6.1 표준 예시 — [`QSyUserRepositoryImpl`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyUserRepositoryImpl.java)
+
+이 파일이 신규/리팩토링 시 따라야 할 표준 모델이다.
+
+### 14.6.2 섹션 6개 + 구분 주석
+
+`Q*RepositoryImpl` 은 다음 6개 섹션을 이 순서로 배치하고, 각 진입부에 구분 주석을 둔다.
+
+```java
+public class QSyUserRepositoryImpl implements QSyUserRepository {
+
+    /* ============================================================
+     * [1] 의존성 주입 + Q-class (테이블 별칭)
+     * ============================================================ */
+    private final JPAQueryFactory queryFactory;
+    private final SyDeptRepository syDeptRepository;
+    private static final QSyUser syUser = QSyUser.syUser;
+    // ... 단일 조인은 테이블명 그대로
+    /* 같은 sy_code 테이블이 두 번 조인되므로 역할별 alias 부여 */
+    private static final QSyCode syCode_userStatusCd = new QSyCode("code_userStatusCd");
+
+    /* ============================================================
+     * [2] 기본 쿼리 빌드 — SELECT + JOIN (조회 메서드들이 공유하는 base)
+     * ============================================================ */
+    private JPAQuery<SyUserDto.Item> buildBaseQuery() { ... }
+
+    /* ============================================================
+     * [3] 조회 메서드 — selectById / selectList / selectPageList / selectCount
+     * 검색조건은 .where(andXxx(...), ...) 형태로 직접 나열
+     * ============================================================ */
+    public Optional<SyUserDto.Item> selectById(...) { ... }
+    public List<SyUserDto.Item> selectList(...) { ... }
+    public SyUserDto.PageResponse selectPageList(...) { ... }
+    public long selectCount(...) { ... }
+
+    /* ============================================================
+     * [4] 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
+    private BooleanExpression andSiteId(SyUserDto.Request search) { ... }
+    private BooleanExpression andDeptId(SyUserDto.Request search) { ... }
+    // ...
+    private BooleanExpression orLike(...) { ... }
+
+    /* ============================================================
+     * [5] 정렬조건 — sort 문자열 파싱 ("userId asc, regDate desc")
+     * ============================================================ */
+    private List<OrderSpecifier<?>> buildOrder(...) { ... }
+
+    /* ============================================================
+     * [6] 변경 메서드 — UPDATE (selective: null 이 아닌 필드만 SET)
+     * ============================================================ */
+    public int updateSelective(SyUser entity) { ... }
+}
+```
+
+### 14.6.3 검색조건 패턴
+
+1. **`buildCondition` 통합 메서드 금지** — `BooleanBuilder` 한 덩어리로 묶지 않는다
+2. **각 조건은 개별 `andXxx()` 메서드** — 반환 타입 `BooleanExpression`, 조건 미충족 시 `null`
+3. **각 `andXxx` 는 null-safe** — `search == null` 처리 (`return null`)
+4. **메서드 파라미터 이름은 `search`** — Q-class 변수명(`s`=sySite 등) 과 충돌 방지
+5. **`.where(...)` vararg 직접 나열** — null 자동 무시. content/count 쿼리 동일 목록 반복 나열로 시각적 일치 보장
+6. **searchValue 다중 LIKE OR 은 `orLike(acc, all, types, token, path, pattern)` helper 사용** — 누적 OR 패턴
+
+```java
+// 호출처
+.where(
+        andSiteId(search),
+        andDeptId(search),
+        andStatus(search),
+        andDateRange(search),
+        andSearchValue(search)
+)
+
+// 정의
+private BooleanExpression andSiteId(SyUserDto.Request search) {
+    return search != null && StringUtils.hasText(search.getSiteId())
+            ? syUser.siteId.eq(search.getSiteId()) : null;
+}
+```
+
+### 14.6.4 Q-class 변수명 규칙
+
+- 단일 조인 — **테이블명 그대로** (`syUser`, `sySite`)
+- **같은 테이블 다회 조인** 시만 역할별 alias path (`syCode_userStatusCd`, `syCode_authMethodCd`)
+
+---
+
+## 14.7 Service `save` / `saveList` 표준 패턴
+
+### 14.7.0 시그니처 — cmd 파라미터 (첫 번째 인자) 필수
+
+`save` / `saveList` 의 **첫 번째 인자는 항상 `String cmd`** (API 마지막 path 세그먼트).
+
+```java
+public SyUser save(String cmd, SyUser entity)
+public void   saveList(String cmd, List<SyUser> rows)
+```
+
+| cmd 값 | 의미 |
+|---|---|
+| `"base"` | 기본 동작 (`/save`, `/save-list`) — Controller 에서 명시적으로 `"base"` 전달 |
+| `"pwd"`, `"order"` 등 | 특수 변형 — 같은 메서드 안에서 cmd 로 분기 |
+
+Controller 매핑:
+```java
+@PostMapping("/save")             public ... saveDefault(@RequestBody Entity body)                  { service.save("base", body); }
+@PostMapping("/save/{cmd}")       public ... saveCmd(@PathVariable("cmd") String cmd, @RequestBody Entity body) { service.save(cmd, body); }
+@PostMapping("/save-list")        public ... saveList(@RequestBody List<Entity> rows)               { service.saveList("base", rows); }
+@PostMapping("/save-list/{cmd}")  public ... saveListCmd(@PathVariable("cmd") String cmd, @RequestBody List<Entity> rows) { service.saveList(cmd, rows); }
+```
+
+**이유**:
+- API URL 한 패턴(`/save/{cmd}` , `/save-list/{cmd}`) 으로 다양한 변형 표현
+- Service 메서드 한 곳에서 cmd 로 분기 → 컨트롤러는 thin wrapper
+- 기본 동작(`null` cmd) 과 변형이 동일 코드 베이스 공유
+
+### 14.7.1 rowStatus 규약
+
+| 입력 | 의미 | 처리 |
+|---|---|---|
+| `"I"` | Insert | userId 생성 + regBy/regDate 채움 → JPA save |
+| `"U"` | Update | updBy 만 서버에서 채우고 `updateSelective` (SELECT 없이 UPDATE, updDate 는 Repository 가 DB CURRENT_TIMESTAMP 자동 적용) |
+| `"D"` | Delete | 존재 검증 → deleteById |
+| `"M"` | Merge (upsert) | userId 있으면 U, 없으면 I 로 정규화 |
+| `null` / `""` / 공백 | (기본) | M 과 동일 처리 (userId 유무로 I/U) |
+| 그 외 | 알 수 없음 | **예외 throw** (조용히 무시 금지) |
+
+### 14.7.2 `save(String cmd, Entity entity)` 표준 — 단건 분기
+
+cmd 분기는 **같은 메서드 안에서 if/else if 인라인** 처리. 알 수 없는 cmd 는 메서드 끝에서 예외 throw.
+
+```java
+@Transactional
+public SyUser save(String cmd, SyUser entity) {
+    if ("base".equals(cmd)) {
+        String rowStatus  = entity.getRowStatus();
+        String authId     = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        /* M(merge) / null / blank — userId 유무로 I/U 정규화 */
+        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+            rowStatus = (entity.getUserId() == null || entity.getUserId().isBlank()) ? "I" : "U";
+        }
+
+        if ("D".equals(rowStatus)) {
+            if (entity.getUserId() == null) throw new CmBizException("삭제 대상 userId 가 없습니다....");
+            if (!syUserRepository.existsById(entity.getUserId())) throw new CmBizException("...");
+            syUserRepository.deleteById(entity.getUserId());
+            return null;   // @Transactional 종료 시 자동 flush
+        } else if ("I".equals(rowStatus)) {
+            entity.setUserId(CmUtil.generateId("sy_user"));
+            entity.setRegBy(authId); entity.setRegDate(now);
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            SyUser saved = syUserRepository.save(entity);
+            if (saved == null) throw new CmBizException("...");
+            return saved;   // @Transactional 종료 시 자동 flush
+        } else if ("U".equals(rowStatus)) {
+            if (entity.getUserId() == null) throw new CmBizException("수정 대상 userId 가 없습니다....");
+            entity.setUpdBy(authId);
+            /* updDate 는 Repository.updateSelective 가 DB CURRENT_TIMESTAMP 로 자동 채움 */
+            int affected = syUserRepository.updateSelective(entity);
+            if (affected == 0) throw new CmBizException("...");
+            /* 벌크 UPDATE 후 직후 findById 가 stale 1차 캐시를 보지 않도록 clear 필수 */
+            em.clear();
+            return findById(entity.getUserId());
+        }
+        /* 안전망 — 정규화에서 모두 I/U/D 로 매핑되므로 도달 불가 */
+        throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "...");
+    }
+    // else if ("pwd".equals(cmd)) {
+    //     // 비밀번호 저장 전용 흐름
+    //     ...
+    // }
+    throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+}
+```
+
+### 14.7.3 `saveList(String cmd, List<Entity> rows)` 표준 — 0단계 정규화 + DELETE/UPDATE/INSERT 단계별
+
+cmd 분기는 **같은 메서드 안에서 if/else if 인라인** 처리. 알 수 없는 cmd 는 메서드 끝에서 예외 throw.
+
+```java
+@Transactional
+public void saveList(String cmd, List<SyUser> rows) {
+    if ("base".equals(cmd)) {
+        /* 0단계: rowStatus 정규화 — M/null/blank → userId 유무로 I/U, I/U/D 외는 예외 */
+        for (SyUser row : rows) {
+            String rs = row.getRowStatus();
+            if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                row.setRowStatus((row.getUserId() == null || row.getUserId().isBlank()) ? "I" : "U");
+            } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                throw new CmBizException("알 수 없는 rowStatus: " + rs + "...");
+            }
+        }
+        CmUtil.requireRowIds(rows, SyUser::getUserId, "U", "userId", this);
+        CmUtil.requireRowIds(rows, SyUser::getUserId, "D", "userId", this);
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1단계: DELETE 일괄
+        syUserRepository.deleteAllById(deleteIds);
+
+        // 2단계: UPDATE — updateSelective (updDate 는 Repository 가 DB CURRENT_TIMESTAMP 자동 적용)
+        for (SyUser row : updateRows) {
+            row.setUpdBy(authId);
+            int affected = syUserRepository.updateSelective(row);
+            if (affected == 0) throw new CmBizException("...");
+        }
+
+        // 3단계: INSERT — userId 생성 + audit 채움 + JPA save
+        for (SyUser row : insertRows) {
+            row.setUserId(CmUtil.generateId("sy_user"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syUserRepository.save(row);
+        }
+
+        /* 4단계: 영속성 컨텍스트 동기화 */
+        em.flush();
+        em.clear();
+        return;
+    }
+    // else if ("order".equals(cmd)) {
+    //     // 정렬 순서 일괄 변경 전용 흐름
+    //     ...
+    //     return;
+    // }
+    throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+}
+```
+
+### 14.7.4 핵심 원칙
+
+1. **UPDATE 는 `updateSelective`** — SELECT 없이 UPDATE 만, JPA 1차 캐시 우회. 대량 처리 시 SQL 횟수 50% 감소
+2. **`updBy` 는 서버에서 채움** — `SecurityUtil.getAuthUser().authId()`
+3. **`updDate` 는 Repository.updateSelective 가 DB CURRENT_TIMESTAMP 로 자동 적용** — 다중 WAS 시계 차이 회피, 트랜잭션 내 시점 일치. Service 에서 `setUpdDate(now)` 호출 불필요
+   ```java
+   // Repository
+   update.set(syUser.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+   ```
+4. **존재 검증** — `affected == 0` 으로 검사 (UPDATE) / `existsById` (DELETE)
+5. **알 수 없는 rowStatus 는 예외** — 조용히 무시 금지 (정규화 빠짐을 즉시 감지)
+6. **flush/clear 최소화** — `@Transactional` 종료 시 JPA 자동 flush 에 의존
+   - `save()` D/I 분기 — `em.flush()/clear()` 불필요 (return 직후 트랜잭션 종료)
+   - `save()` U 분기 — `em.clear()` 만 필수 (벌크 UPDATE 후 직후 findById 가 stale 1차 캐시 회피)
+   - `saveList()` — 메서드 끝에 **1쌍만** (`em.flush(); em.clear();`). 단계별 flush/clear 금지
+
+### 14.7.5 적용 현황 (2026-05-30)
+
+| 상태 | 파일 |
+|---|---|
+| ✅ 신 표준 적용 | `QSyUserRepositoryImpl`, `SyUserService` |
+| ⏳ 점진적 전환 대상 | 그 외 159 `Q*RepositoryImpl` + 165 `*Service` |
+
+**일괄 변환 금지** — 사전 시도에서 대규모 sed 변환이 사고로 이어진 이력 있음. 신규 작성 시 본 표준 따르고, 기존 파일은 기능 수정·리뷰 시점에 함께 전환.
+
+---
+
+## 14.8 Controller `save` / `saveList` 엔드포인트 표준 패턴
+
+### 14.8.1 4가지 엔드포인트 (필수)
+
+`save` / `saveList` 와 짝을 이루는 Controller 는 다음 4가지 엔드포인트를 제공한다.
+
+| 매핑 | 메서드명 | Service 호출 |
+|---|---|---|
+| `POST /save` | `saveDefault` | `service.save("base", entity)` |
+| `POST /save/{cmd}` | `saveCmd` | `service.save(cmd, entity)` |
+| `POST /save-list` | `saveList` | `service.saveList("base", rows)` |
+| `POST /save-list/{cmd}` | `saveListCmd` | `service.saveList(cmd, rows)` |
+
+### 14.8.2 표준 예시 — [`SyUserController`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/controller/SyUserController.java)
+
+```java
+/** save — rowStatus 단건 분기 저장 (기본) */
+@PostMapping("/save")
+public ResponseEntity<ApiResponse<SyUser>> saveDefault(@RequestBody SyUser entity) {
+    SyUser result = service.save("base", entity);
+    return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
+}
+
+/** save — rowStatus 단건 분기 저장 (cmd 변형: pwd 등) */
+@PostMapping("/save/{cmd}")
+public ResponseEntity<ApiResponse<SyUser>> saveCmd(
+        @PathVariable("cmd") String cmd, @RequestBody SyUser entity) {
+    SyUser result = service.save(cmd, entity);
+    return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
+}
+
+/** saveList — 일괄 저장 (기본) */
+@PostMapping("/save-list")
+public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyUser> rows) {
+    service.saveList("base", rows);
+    return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+}
+
+/** saveList — 일괄 저장 (cmd 변형: order 등) */
+@PostMapping("/save-list/{cmd}")
+public ResponseEntity<ApiResponse<Void>> saveListCmd(
+        @PathVariable("cmd") String cmd, @RequestBody List<SyUser> rows) {
+    service.saveList(cmd, rows);
+    return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+}
+```
+
+### 14.8.3 핵심 원칙
+
+1. **`null` cmd 금지** — 기본 엔드포인트도 `"base"` 명시 전달 (의도 명확화)
+2. **메서드명 규약** — `saveDefault`/`saveCmd`/`saveList`/`saveListCmd`. 시그니처 충돌 회피
+3. **BO Wrapper Service 도 동일 시그니처** — `BoSyUserService.save(String cmd, ...)` / `saveList(String cmd, ...)`
+4. **BO Controller 도 동일 4개 엔드포인트** — [`BoSyUserController`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/bo/sy/controller/BoSyUserController.java)
+
+### 14.8.4 cmd 활용 예시
+
+| 도메인 | cmd | 용도 |
+|---|---|---|
+| sy_user | `pwd` | 비밀번호 변경 전용 (`POST /save/pwd`) |
+| pd_category | `order` | 정렬 순서 일괄 변경 (`POST /save-list/order`) |
+| sy_role | `clone` | 역할 복제 (`POST /save/clone`) |
+
+같은 entity 의 다양한 변형 동작을 URL 한 패턴으로 표현.
+
+---
+
+## 14.9 신규 SyUser 표준 모델 — 통합 적용 체크리스트
+
+신규 도메인 작성 또는 기존 파일 리팩토링 시 다음 체크리스트를 따른다.
+
+### 14.9.1 Repository (`Q*RepositoryImpl`) — §14.6
+
+- [ ] 섹션 6개 구분 주석 (`/* === [N] 이름 === */`)
+- [ ] `buildCondition` 통합 메서드 **없음**
+- [ ] 개별 `andXxx()` BooleanExpression 메서드 (null-safe, 파라미터명 `search`)
+- [ ] `.where(andXxx(s), ...)` 직접 나열 (content + count 동일 목록)
+- [ ] `orLike(...)` 누적 OR helper
+- [ ] Q-class 변수명 = 테이블명, 같은 테이블 다회 조인만 alias
+- [ ] `updateSelective`: `updDate` DB CURRENT_TIMESTAMP 자동 적용
+
+### 14.9.2 Service (`*Service`) — §14.7
+
+- [ ] `save(String cmd, Entity entity)` / `saveList(String cmd, List<Entity> rows)` 시그니처
+- [ ] cmd 분기 **인라인** (private 메서드 분리 X)
+- [ ] `"base"` 기본 분기, 알 수 없는 cmd 는 throw
+- [ ] rowStatus I/U/D/M + M/null/blank → userId 유무로 I/U
+- [ ] UPDATE 는 `updateSelective` 사용
+- [ ] `updBy` 만 서버에서, `updDate` 는 Repository 가 DB 시간 자동
+- [ ] flush/clear 최소화 (save D/I 분기 0, U 분기 clear만, saveList 메서드 끝 1쌍만)
+
+### 14.9.3 Controller (`*Controller`) — §14.8
+
+- [ ] 4개 엔드포인트 (`POST /save`, `/save/{cmd}`, `/save-list`, `/save-list/{cmd}`)
+- [ ] 메서드명: `saveDefault`, `saveCmd`, `saveList`, `saveListCmd`
+- [ ] `"base"` 명시 전달 (null 금지)
+- [ ] BO Wrapper Service / BO Controller 도 동일 패턴
+
+### 14.9.4 표준 모델 3개
+
+이 세 파일을 참조 모델로 사용:
+- [`QSyUserRepositoryImpl.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/repository/qrydsl/impl/QSyUserRepositoryImpl.java)
+- [`SyUserService.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/service/SyUserService.java)
+- [`SyUserController.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/controller/SyUserController.java) + [`BoSyUserController.java`](/_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/bo/sy/controller/BoSyUserController.java)
+
+---
+
 ## 15. Domain 계층 — 150개 Entity + 150개 Mapper 구조
 
 ### 15.1 설계 원칙

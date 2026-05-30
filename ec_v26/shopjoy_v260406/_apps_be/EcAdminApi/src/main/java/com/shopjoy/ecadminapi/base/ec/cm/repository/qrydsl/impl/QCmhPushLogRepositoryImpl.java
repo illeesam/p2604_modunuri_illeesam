@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmhPushLogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmhPushLog;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.QCmhPushLog;
@@ -53,9 +55,13 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     /** 전체 목록 */
     @Override
     public List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andLogId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -75,10 +81,14 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andLogId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -87,7 +97,12 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         Long total = queryFactory
                 .select(l.count())
                 .from(l)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andLogId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         CmhPushLogDto.PageResponse res = new CmhPushLogDto.PageResponse();
@@ -96,67 +111,70 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
     /** 검색조건 빌드 */
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
-    private BooleanBuilder buildCondition(CmhPushLogDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId())) w.and(l.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getLogId()))  w.and(l.logId.eq(s.getLogId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(CmhPushLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? l.siteId.eq(search.getSiteId()) : null;
+    }
 
-        // searchValue + searchType (pushLogTitle)
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
+    /* logId 정확 일치 */
+    private BooleanExpression andLogId(CmhPushLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getLogId())
+                ? l.logId.eq(search.getLogId()) : null;
+    }
 
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",pushLogTitle,")) or.or(l.pushLogTitle.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(CmhPushLogDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "send_date": return l.sendDate.goe(start).and(l.sendDate.lt(endExcl));
+            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
+            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            default: return null;
         }
+    }
 
-        // dateType + dateStart + dateEnd
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "send_date":
-                    w.and(l.sendDate.goe(start)).and(l.sendDate.lt(endExcl));
-                    break;
-                case "reg_date":
-                    w.and(l.regDate.goe(start)).and(l.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(l.updDate.goe(start)).and(l.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",channelCd,")) or.or(l.channelCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",failReason,")) or.or(l.failReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",logId,")) or.or(l.logId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",memberId,")) or.or(l.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pushLogContent,")) or.or(l.pushLogContent.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pushLogTitle,")) or.or(l.pushLogTitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",recvAddr,")) or.or(l.recvAddr.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refId,")) or.or(l.refId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refTypeCd,")) or.or(l.refTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",resultCd,")) or.or(l.resultCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(l.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",templateId,")) or.or(l.templateId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(CmhPushLogDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",channelCd,", l.channelCd, pattern);
+        or = orLike(or, all, types, ",failReason,", l.failReason, pattern);
+        or = orLike(or, all, types, ",logId,", l.logId, pattern);
+        or = orLike(or, all, types, ",memberId,", l.memberId, pattern);
+        or = orLike(or, all, types, ",pushLogContent,", l.pushLogContent, pattern);
+        or = orLike(or, all, types, ",pushLogTitle,", l.pushLogTitle, pattern);
+        or = orLike(or, all, types, ",recvAddr,", l.recvAddr, pattern);
+        or = orLike(or, all, types, ",refId,", l.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", l.refTypeCd, pattern);
+        or = orLike(or, all, types, ",resultCd,", l.resultCd, pattern);
+        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
+        or = orLike(or, all, types, ",templateId,", l.templateId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -218,7 +236,8 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         if (entity.getRefTypeCd()      != null) { update.set(l.refTypeCd,      entity.getRefTypeCd());      hasAny = true; }
         if (entity.getRefId()          != null) { update.set(l.refId,          entity.getRefId());          hasAny = true; }
         if (entity.getUpdBy()          != null) { update.set(l.updBy,          entity.getUpdBy());          hasAny = true; }
-        if (entity.getUpdDate()        != null) { update.set(l.updDate,        entity.getUpdDate());        hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

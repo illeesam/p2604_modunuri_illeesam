@@ -43,7 +43,7 @@ public class BoPmVoucherService {
     @Transactional public PmVoucher create(PmVoucher body) { return pmVoucherService.create(body); }
     @Transactional public PmVoucher update(String id, PmVoucher body) { return pmVoucherService.update(id, body); }
     @Transactional public void delete(String id) { pmVoucherService.delete(id); }
-    @Transactional public void saveList(List<PmVoucher> rows) { pmVoucherService.saveList(rows); }
+    @Transactional public void saveList(String cmd, List<PmVoucher> rows) { pmVoucherService.saveList(cmd, rows); }
 
     /** sendSns — 전송 */
     public void sendSns(String id, PmVoucherSendSnsDto.Request req) {

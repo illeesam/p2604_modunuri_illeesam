@@ -67,7 +67,7 @@ public class BoSyMenuController {
     /* 목록저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyMenu> rows) {
-        boSyMenuService.saveList(rows);
+        boSyMenuService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

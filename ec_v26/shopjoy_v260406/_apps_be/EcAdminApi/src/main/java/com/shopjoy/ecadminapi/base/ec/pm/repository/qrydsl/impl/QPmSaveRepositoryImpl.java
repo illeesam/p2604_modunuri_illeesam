@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.ec.pm.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -59,10 +60,14 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     /* 적립금 목록조회 */
     @Override
     public List<PmSaveDto.Item> selectList(PmSaveDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmSaveDto.Item> query = baseQuery().where(where);
+        JPAQuery<PmSaveDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andSaveId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -82,10 +87,14 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmSaveDto.Item> query = baseQuery().where(where);
+        JPAQuery<PmSaveDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andSaveId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,7 +103,12 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         Long total = queryFactory
                 .select(s.count())
                 .from(s)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andSaveId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         PmSaveDto.PageResponse res = new PmSaveDto.PageResponse();
@@ -102,47 +116,64 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     }
 
     /* 적립금 buildCondition */
-    private BooleanBuilder buildCondition(PmSaveDto.Request search) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (search == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(search.getSiteId())) w.and(s.siteId.eq(search.getSiteId()));
-        if (StringUtils.hasText(search.getSaveId())) w.and(s.saveId.eq(search.getSaveId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(PmSaveDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? s.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(search.getDateType())
-                && StringUtils.hasText(search.getDateStart())
-                && StringUtils.hasText(search.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (search.getDateType()) {
-                case "reg_date":
-                    w.and(s.regDate.goe(start)).and(s.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(s.updDate.goe(start)).and(s.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* saveId 정확 일치 */
+    private BooleanExpression andSaveId(PmSaveDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSaveId())
+                ? s.saveId.eq(search.getSaveId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(PmSaveDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return s.regDate.goe(start).and(s.regDate.lt(endExcl));
+            case "upd_date": return s.updDate.goe(start).and(s.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String pattern = "%" + search.getSearchValue() + "%";
-            String __typeRaw = search.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",memberId,")) or.or(s.memberId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refId,")) or.or(s.refId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",refTypeCd,")) or.or(s.refTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",saveId,")) or.or(s.saveId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",saveMemo,")) or.or(s.saveMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",saveTypeCd,")) or.or(s.saveTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(s.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(PmSaveDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",memberId,", s.memberId, pattern);
+        or = orLike(or, all, types, ",refId,", s.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", s.refTypeCd, pattern);
+        or = orLike(or, all, types, ",saveId,", s.saveId, pattern);
+        or = orLike(or, all, types, ",saveMemo,", s.saveMemo, pattern);
+        or = orLike(or, all, types, ",saveTypeCd,", s.saveTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", s.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**

@@ -66,7 +66,7 @@ public class BoPdTagController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdTag> rows) {
-        boPdTagService.saveList(rows);
+        boPdTagService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

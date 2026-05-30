@@ -86,7 +86,7 @@ public class BoOdOrderController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<OdOrder> rows) {
-        boOdOrderService.saveList(rows);
+        boOdOrderService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -68,7 +68,7 @@ public class BoPmCacheController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCache> rows) {
-        boPmCacheService.saveList(rows);
+        boPmCacheService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

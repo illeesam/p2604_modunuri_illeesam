@@ -87,7 +87,7 @@ public class BoPmVoucherController {
     /** saveList — 저장 */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmVoucher> rows) {
-        boPmVoucherService.saveList(rows);
+        boPmVoucherService.saveList("base", rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.st.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.st.data.dto.StSettleEtcAdjDto;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.QStSettleEtcAdj;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettleEtcAdj;
@@ -44,10 +46,14 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     /* 정산 기타 조정 목록조회 */
     @Override
     public List<StSettleEtcAdjDto.Item> selectList(StSettleEtcAdjDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery().where(where);
+        JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andSettleEtcAdjId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -67,10 +73,14 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery().where(where);
+        JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery().where(
+                andSiteId(search),
+                andSettleEtcAdjId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -79,7 +89,12 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         Long total = queryFactory
                 .select(a.count())
                 .from(a)
-                .where(where)
+                .where(
+                andSiteId(search),
+                andSettleEtcAdjId(search),
+                andDateRange(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         StSettleEtcAdjDto.PageResponse res = new StSettleEtcAdjDto.PageResponse();
@@ -105,44 +120,64 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     }
 
     /* 정산 기타 조정 buildCondition */
-    private BooleanBuilder buildCondition(StSettleEtcAdjDto.Request c) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (c == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(c.getSiteId()))         w.and(a.siteId.eq(c.getSiteId()));
-        if (StringUtils.hasText(c.getSettleEtcAdjId())) w.and(a.settleEtcAdjId.eq(c.getSettleEtcAdjId()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(StSettleEtcAdjDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? a.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(c.getDateType())
-                && StringUtils.hasText(c.getDateStart())
-                && StringUtils.hasText(c.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start   = LocalDate.parse(c.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(c.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
-            switch (c.getDateType()) {
-                case "reg_date":
-                    w.and(a.regDate.goe(start)).and(a.regDate.lt(endExcl)); break;
-                case "upd_date":
-                    w.and(a.updDate.goe(start)).and(a.updDate.lt(endExcl)); break;
-                default: break;
-            }
+    /* settleEtcAdjId 정확 일치 */
+    private BooleanExpression andSettleEtcAdjId(StSettleEtcAdjDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSettleEtcAdjId())
+                ? a.settleEtcAdjId.eq(search.getSettleEtcAdjId()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(StSettleEtcAdjDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (c != null && StringUtils.hasText(c.getSearchValue())) {
-            String pattern = "%" + c.getSearchValue() + "%";
-            String __typeRaw = c.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",etcAdjDirCd,")) or.or(a.etcAdjDirCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",etcAdjReason,")) or.or(a.etcAdjReason.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",etcAdjTypeCd,")) or.or(a.etcAdjTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",settleEtcAdjId,")) or.or(a.settleEtcAdjId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",settleEtcAdjMemo,")) or.or(a.settleEtcAdjMemo.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",settleId,")) or.or(a.settleId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(StSettleEtcAdjDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",etcAdjDirCd,", a.etcAdjDirCd, pattern);
+        or = orLike(or, all, types, ",etcAdjReason,", a.etcAdjReason, pattern);
+        or = orLike(or, all, types, ",etcAdjTypeCd,", a.etcAdjTypeCd, pattern);
+        or = orLike(or, all, types, ",settleEtcAdjId,", a.settleEtcAdjId, pattern);
+        or = orLike(or, all, types, ",settleEtcAdjMemo,", a.settleEtcAdjMemo, pattern);
+        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -197,7 +232,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         if (entity.getEtcAdjReason()     != null) { update.set(a.etcAdjReason,     entity.getEtcAdjReason());     hasAny = true; }
         if (entity.getSettleEtcAdjMemo() != null) { update.set(a.settleEtcAdjMemo, entity.getSettleEtcAdjMemo()); hasAny = true; }
         if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
-        if (entity.getUpdDate()          != null) { update.set(a.updDate,          entity.getUpdDate());          hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

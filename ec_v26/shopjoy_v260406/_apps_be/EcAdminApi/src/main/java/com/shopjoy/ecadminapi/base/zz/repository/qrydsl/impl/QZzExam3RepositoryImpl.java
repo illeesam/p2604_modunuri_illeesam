@@ -1,9 +1,10 @@
 package com.shopjoy.ecadminapi.base.zz.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
@@ -60,10 +61,15 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     /* zz_exam3 목록조회 */
     @Override
     public List<ZzExam3Dto.Item> selectList(ZzExam3Dto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery().where(
+                andExam1Ids(search),
+                andExam1Id(search),
+                andExam2Id(search),
+                andExam3Id(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -83,10 +89,15 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery().where(
+                andExam1Ids(search),
+                andExam1Id(search),
+                andExam2Id(search),
+                andExam3Id(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -95,7 +106,13 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         Long total = queryFactory
                 .select(e.count())
                 .from(e)
-                .where(where)
+                .where(
+                andExam1Ids(search),
+                andExam1Id(search),
+                andExam2Id(search),
+                andExam3Id(search),
+                andSearchValue(search)
+        )
                 .fetchOne();
 
         ZzExam3Dto.PageResponse res = new ZzExam3Dto.PageResponse();
@@ -103,62 +120,61 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     }
 
     /* searchType 사용 예  searchType = "col31,col32" */
-    private BooleanBuilder buildCondition(ZzExam3Dto.Request search) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (search == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        // ── PK : 다건 IN ──
-        if (!CollectionUtils.isEmpty(search.getExam1Ids())) w.and(e.exam1Id.in(search.getExam1Ids()));
-        // ── PK : 정확일치 ──
-        if (StringUtils.hasText(search.getExam1Id()))     w.and(e.exam1Id.eq(search.getExam1Id()));
-        if (StringUtils.hasText(search.getExam2Id()))     w.and(e.exam2Id.eq(search.getExam2Id()));
-        if (StringUtils.hasText(search.getExam3Id()))     w.and(e.exam3Id.eq(search.getExam3Id()));
-        // ── PK : 부분검색 ──
-        if (StringUtils.hasText(search.getExam1IdLike())) w.and(e.exam1Id.containsIgnoreCase(search.getExam1IdLike()));
-        if (StringUtils.hasText(search.getExam2IdLike())) w.and(e.exam2Id.containsIgnoreCase(search.getExam2IdLike()));
-        if (StringUtils.hasText(search.getExam3IdLike())) w.and(e.exam3Id.containsIgnoreCase(search.getExam3IdLike()));
+    /* exam1Id IN */
+    private BooleanExpression andExam1Ids(ZzExam3Dto.Request search) {
+        return search != null && !CollectionUtils.isEmpty(search.getExam1Ids())
+                ? e.exam1Id.in(search.getExam1Ids()) : null;
+    }
 
-        // ── 일반 컬럼 : 부분검색 ──
-        if (StringUtils.hasText(search.getCol31())) w.and(e.col31.containsIgnoreCase(search.getCol31()));
-        if (StringUtils.hasText(search.getCol32())) w.and(e.col32.containsIgnoreCase(search.getCol32()));
-        if (StringUtils.hasText(search.getCol33())) w.and(e.col33.containsIgnoreCase(search.getCol33()));
-        if (StringUtils.hasText(search.getCol34())) w.and(e.col34.containsIgnoreCase(search.getCol34()));
-        if (StringUtils.hasText(search.getCol35())) w.and(e.col35.containsIgnoreCase(search.getCol35()));
+    /* exam1Id 정확 일치 */
+    private BooleanExpression andExam1Id(ZzExam3Dto.Request search) {
+        return search != null && StringUtils.hasText(search.getExam1Id())
+                ? e.exam1Id.eq(search.getExam1Id()) : null;
+    }
 
-        // ── 통합검색(searchValue + searchType) : 지정 컬럼 OR ──
-        if (StringUtils.hasText(search.getSearchValue())) {
-            String types = "," + (search.getSearchType() == null ? "" : search.getSearchType().trim()) + ",";
-            boolean all  = !StringUtils.hasText(search.getSearchType());
-            String v = search.getSearchValue();
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",exam1Id,")) or.or(e.exam1Id.containsIgnoreCase(v));
-            if (all || types.contains(",exam2Id,")) or.or(e.exam2Id.containsIgnoreCase(v));
-            if (all || types.contains(",exam3Id,")) or.or(e.exam3Id.containsIgnoreCase(v));
-            if (all || types.contains(",col31,"))     or.or(e.col31.containsIgnoreCase(v));
-            if (all || types.contains(",col32,"))     or.or(e.col32.containsIgnoreCase(v));
-            if (all || types.contains(",col33,"))     or.or(e.col33.containsIgnoreCase(v));
-            if (all || types.contains(",col34,"))     or.or(e.col34.containsIgnoreCase(v));
-            if (all || types.contains(",col35,"))     or.or(e.col35.containsIgnoreCase(v));
-            if (or.getValue() != null) w.and(or);
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String pattern = "%" + search.getSearchValue() + "%";
-            String __typeRaw = search.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",col31,")) or.or(e.col31.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col32,")) or.or(e.col32.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col33,")) or.or(e.col33.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col34,")) or.or(e.col34.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",col35,")) or.or(e.col35.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exam1Id,")) or.or(e.exam1Id.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exam2Id,")) or.or(e.exam2Id.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",exam3Id,")) or.or(e.exam3Id.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* exam2Id 정확 일치 */
+    private BooleanExpression andExam2Id(ZzExam3Dto.Request search) {
+        return search != null && StringUtils.hasText(search.getExam2Id())
+                ? e.exam2Id.eq(search.getExam2Id()) : null;
+    }
+
+    /* exam3Id 정확 일치 */
+    private BooleanExpression andExam3Id(ZzExam3Dto.Request search) {
+        return search != null && StringUtils.hasText(search.getExam3Id())
+                ? e.exam3Id.eq(search.getExam3Id()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(ZzExam3Dto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",col31,", e.col31, pattern);
+        or = orLike(or, all, types, ",col32,", e.col32, pattern);
+        or = orLike(or, all, types, ",col33,", e.col33, pattern);
+        or = orLike(or, all, types, ",col34,", e.col34, pattern);
+        or = orLike(or, all, types, ",col35,", e.col35, pattern);
+        or = orLike(or, all, types, ",exam1Id,", e.exam1Id, pattern);
+        or = orLike(or, all, types, ",exam2Id,", e.exam2Id, pattern);
+        or = orLike(or, all, types, ",exam3Id,", e.exam3Id, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /* zz_exam3 buildOrder */

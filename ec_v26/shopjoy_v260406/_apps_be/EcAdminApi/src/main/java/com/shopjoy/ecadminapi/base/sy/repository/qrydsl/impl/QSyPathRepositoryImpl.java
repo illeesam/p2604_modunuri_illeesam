@@ -1,18 +1,22 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPathDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyPath;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyPath;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyPathRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +38,11 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     /* 목록조회 */
     @Override
     public List<SyPathDto.Item> selectList(SyPathDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
-        JPAQuery<SyPathDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyPathDto.Item> query = baseQuery().where(
+                andBizCd(search),
+                andUseYn(search),
+                andSearchValue(search)
+        );
         // default order: sort_ord ASC, path_id ASC
         query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -54,12 +61,19 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
-        JPAQuery<SyPathDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyPathDto.Item> query = baseQuery().where(
+                andBizCd(search),
+                andUseYn(search),
+                andSearchValue(search)
+        );
         query = query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         List<SyPathDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(p.count()).from(p).where(where).fetchOne();
+        Long total = queryFactory.select(p.count()).from(p).where(
+                andBizCd(search),
+                andUseYn(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyPathDto.PageResponse res = new SyPathDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -77,40 +91,48 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyPathDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getBizCd()))        w.and(p.bizCd.eq(s.getBizCd()));
-        if (s.getParentPathId() != null)              w.and(p.parentPathId.eq(s.getParentPathId()));
-        if (StringUtils.hasText(s.getUseYn()))        w.and(p.useYn.eq(s.getUseYn()));
+    /* bizCd 정확 일치 */
+    private BooleanExpression andBizCd(SyPathDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBizCd())
+                ? p.bizCd.eq(search.getBizCd()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",pathLabel,"))  or.or(p.pathLabel.likeIgnoreCase(pattern));
-            if (all || types.contains(",pathRemark,")) or.or(p.pathRemark.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",bizCd,")) or.or(p.bizCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",parentPathId,")) or.or(p.parentPathId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pathId,")) or.or(p.pathId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pathLabel,")) or.or(p.pathLabel.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pathRemark,")) or.or(p.pathRemark.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(p.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(p.useYn.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* useYn 정확 일치 */
+    private BooleanExpression andUseYn(SyPathDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? p.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyPathDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",bizCd,", p.bizCd, pattern);
+        or = orLike(or, all, types, ",parentPathId,", p.parentPathId, pattern);
+        or = orLike(or, all, types, ",pathId,", p.pathId, pattern);
+        or = orLike(or, all, types, ",pathLabel,", p.pathLabel, pattern);
+        or = orLike(or, all, types, ",pathRemark,", p.pathRemark, pattern);
+        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", p.useYn, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -140,7 +162,8 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         if (entity.getUseYn()        != null) { update.set(p.useYn,        entity.getUseYn());        hasAny = true; }
         if (entity.getPathRemark()   != null) { update.set(p.pathRemark,   entity.getPathRemark());   hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(p.updBy,        entity.getUpdBy());        hasAny = true; }
-        if (entity.getUpdDate()      != null) { update.set(p.updDate,      entity.getUpdDate());      hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

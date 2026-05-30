@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdCategoryRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdCategoryDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,10 +50,14 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* 상품 카테고리 목록조회 */
     @Override
     public List<PdCategoryDto.Item> selectList(PdCategoryDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdCategoryDto.Item> query = baseQuery().where(where);
+        JPAQuery<PdCategoryDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andCategoryId(search),
+                andStatus(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -70,16 +77,25 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdCategoryDto.Item> query = baseQuery().where(where);
+        JPAQuery<PdCategoryDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andCategoryId(search),
+                andStatus(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdCategoryDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(c.count()).from(c).where(where).fetchOne();
+        Long total = queryFactory.select(c.count()).from(c).where(
+                andSiteId(search),
+                andCategoryId(search),
+                andStatus(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         PdCategoryDto.PageResponse res = new PdCategoryDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -104,42 +120,55 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
-    private BooleanBuilder buildCondition(PdCategoryDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))           w.and(c.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getCategoryId()))       w.and(c.categoryId.eq(s.getCategoryId()));
-        if (s.getDepth() != null)                         w.and(c.categoryDepth.eq(s.getDepth()));
-        if (StringUtils.hasText(s.getParentCategoryId())) w.and(c.categoryId.in(pdCategoryRepository.findTreeCategoryIds(s.getParentCategoryId())));
-        if (StringUtils.hasText(s.getStatus()))           w.and(c.categoryStatusCd.eq(s.getStatus()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(PdCategoryDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? c.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",categoryNm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",categoryDesc,")) or.or(c.categoryDesc.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",categoryId,")) or.or(c.categoryId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",categoryNm,")) or.or(c.categoryNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",categoryStatusCd,")) or.or(c.categoryStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",categoryStatusCdBefore,")) or.or(c.categoryStatusCdBefore.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",imgUrl,")) or.or(c.imgUrl.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",parentCategoryId,")) or.or(c.parentCategoryId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(c.siteId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* categoryId 정확 일치 */
+    private BooleanExpression andCategoryId(PdCategoryDto.Request search) {
+        return search != null && StringUtils.hasText(search.getCategoryId())
+                ? c.categoryId.eq(search.getCategoryId()) : null;
+    }
+
+    /* categoryStatusCd 정확 일치 */
+    private BooleanExpression andStatus(PdCategoryDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? c.categoryStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(PdCategoryDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",categoryDesc,", c.categoryDesc, pattern);
+        or = orLike(or, all, types, ",categoryId,", c.categoryId, pattern);
+        or = orLike(or, all, types, ",categoryNm,", c.categoryNm, pattern);
+        or = orLike(or, all, types, ",categoryStatusCd,", c.categoryStatusCd, pattern);
+        or = orLike(or, all, types, ",categoryStatusCdBefore,", c.categoryStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",imgUrl,", c.imgUrl, pattern);
+        or = orLike(or, all, types, ",parentCategoryId,", c.parentCategoryId, pattern);
+        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -200,7 +229,8 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         if (entity.getImgUrl()                 != null) { update.set(c.imgUrl,                 entity.getImgUrl());                 hasAny = true; }
         if (entity.getCategoryDesc()           != null) { update.set(c.categoryDesc,           entity.getCategoryDesc());           hasAny = true; }
         if (entity.getUpdBy()                  != null) { update.set(c.updBy,                  entity.getUpdBy());                  hasAny = true; }
-        if (entity.getUpdDate()                != null) { update.set(c.updDate,                entity.getUpdDate());                hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 

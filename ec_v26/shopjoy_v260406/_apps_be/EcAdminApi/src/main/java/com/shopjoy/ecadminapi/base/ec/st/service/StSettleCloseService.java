@@ -86,18 +86,7 @@ public class StSettleCloseService {
         return saved;
     }
 
-    /* 정산 마감 저장 */
-    @Transactional
-    public StSettleClose save(StSettleClose entity) {
-        if (!existsById(entity.getSettleCloseId()))
-            throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        StSettleClose saved = stSettleCloseRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 정산 마감 수정 */
     @Transactional
@@ -137,44 +126,105 @@ public class StSettleCloseService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 정산 마감 목록저장 */
-    @Transactional
-    public void saveList(List<StSettleClose> rows) {
-        CmUtil.requireRowIds(rows, StSettleClose::getSettleCloseId, "U", "settleCloseId", this);
-        CmUtil.requireRowIds(rows, StSettleClose::getSettleCloseId, "D", "settleCloseId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(StSettleClose::getSettleCloseId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            stSettleCloseRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public StSettleClose save(String cmd, StSettleClose entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getSettleCloseId() == null || entity.getSettleCloseId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getSettleCloseId() == null)
+                    throw new CmBizException("삭제 대상 settleCloseId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!stSettleCloseRepository.existsById(entity.getSettleCloseId()))
+                    throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
+                stSettleCloseRepository.deleteById(entity.getSettleCloseId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setSettleCloseId(CmUtil.generateId("st_settle_close"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                StSettleClose saved = stSettleCloseRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getSettleCloseId() == null)
+                    throw new CmBizException("수정 대상 settleCloseId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = stSettleCloseRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 StSettleClose입니다: " + entity.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getSettleCloseId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<StSettleClose> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (StSettleClose row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getSettleCloseId() == null || row.getSettleCloseId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, StSettleClose::getSettleCloseId, "U", "settleCloseId", this);
+            CmUtil.requireRowIds(rows, StSettleClose::getSettleCloseId, "D", "settleCloseId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(StSettleClose::getSettleCloseId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                stSettleCloseRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<StSettleClose> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (StSettleClose row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = stSettleCloseRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getSettleCloseId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<StSettleClose> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (StSettleClose row : insertRows) {
+                row.setSettleCloseId(CmUtil.generateId("st_settle_close"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                stSettleCloseRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<StSettleClose> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (StSettleClose row : updateRows) {
-            StSettleClose entity = findById(row.getSettleCloseId());
-            VoUtil.voCopyExclude(row, entity, "settleCloseId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            stSettleCloseRepository.save(entity);
-        }
-        em.flush();
-
-        List<StSettleClose> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (StSettleClose row : insertRows) {
-            row.setSettleCloseId(CmUtil.generateId("st_settle_close"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            stSettleCloseRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

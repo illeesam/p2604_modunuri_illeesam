@@ -246,6 +246,10 @@
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **`/api/base/**` 호출 금지** ⭐ | `base/base.기술-api.md` §3.5 — 클라이언트는 `/api/bo/**` / `/api/fo/**` 만 호출 |
 | **JPA `@Query` 작성 규칙** ⭐ | `base/base.backend-EcAdminApi.md` §14.5 — named 파라미터(`:name` + `@Param`) 필수, nativeQuery 위치는 `*Repository.java` 인터페이스 |
+| **QueryDSL `Q*RepositoryImpl` 표준** ⭐ | `base/base.backend-EcAdminApi.md` §14.6 — 6개 섹션 구분, `buildCondition` 금지, 개별 `andXxx()` + `.where(...)` 직접 나열, `QSyUserRepositoryImpl` 표준 모델 |
+| **Service `save`/`saveList` 표준** ⭐ | `base/base.backend-EcAdminApi.md` §14.7 — `save(String cmd, Entity)` / `saveList(String cmd, List)` 시그니처, cmd 인라인 분기 ("base" 기본), rowStatus I/U/D/M, `updateSelective` + updDate DB 시간, flush/clear 최소화. `SyUserService` 표준 모델 |
+| **Controller `save`/`saveList` 4 엔드포인트** ⭐ | `base/base.backend-EcAdminApi.md` §14.8 — `POST /save`, `/save/{cmd}`, `/save-list`, `/save-list/{cmd}` 4쌍. 메서드명 saveDefault/saveCmd/saveList/saveListCmd. `SyUserController` 표준 모델 |
+| **신규 도메인 체크리스트** ⭐ | `base/base.backend-EcAdminApi.md` §14.9 — Repository/Service/Controller 3개 표준 일괄 적용. 표준 모델: SyUser 트리플 |
 | **탭별 저장 후 재조회** ⭐ | `base/base.UX-admin.md` §18 — 저장 탭 즉시 GET 재조회, 첫 탭 저장 시 상위 Mng 도 재조회 |
 | **네이밍** | `sy.54.네이밍규칙.md` (Vue), `sy.55.mybatis쿼리테이블별칭정책.md` (SQL) |
 | **JPA 검증** | `sy.56.JPA스키마검증.md` — validate 프로파일 게이트 |

@@ -79,11 +79,33 @@ public class BoSyUserController {
     public ResponseEntity<ApiResponse<List<SyUserRoleDto.Item>>> getRoles(@PathVariable("userId") String userId) {
         return ResponseEntity.ok(ApiResponse.ok(userRoleService.getRolesByUserId(userId)));
     }
-    /** saveList — 저장 */
+    
+
+    /** save — rowStatus 단건 분기 저장 (기본) */
+    @PostMapping("/save")
+    public ResponseEntity<ApiResponse<SyUser>> saveDefault(@RequestBody SyUser entity) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserService.save("base", entity), "저장되었습니다."));
+    }
+
+    /** save — rowStatus 단건 분기 저장 (cmd 변형: pwd 등) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<SyUser>> saveCmd(
+            @PathVariable("cmd") String cmd, @RequestBody SyUser entity) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserService.save(cmd, entity), "저장되었습니다."));
+    }
+
+    /** saveList — 일괄 저장 (기본) */
     @PostMapping("/save-list")
     public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyUser> rows) {
-        boSyUserService.saveList(rows);
+        boSyUserService.saveList("base", rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
 
+    /** saveList — 일괄 저장 (cmd 변형: order 등) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<SyUser> rows) {
+        boSyUserService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

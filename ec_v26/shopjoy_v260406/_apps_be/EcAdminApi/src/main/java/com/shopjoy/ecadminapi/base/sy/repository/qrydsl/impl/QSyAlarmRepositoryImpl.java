@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyAlarmDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyAlarm;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +50,14 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* 알람 목록조회 */
     @Override
     public List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andAlarmId(search),
+                andStatus(search),
+                andTypeCd(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -67,14 +75,25 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(where);
+        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
+                andSiteId(search),
+                andAlarmId(search),
+                andStatus(search),
+                andTypeCd(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAlarmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(where).fetchOne();
+        Long total = queryFactory.select(a.count()).from(a).where(
+                andSiteId(search),
+                andAlarmId(search),
+                andStatus(search),
+                andTypeCd(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyAlarmDto.PageResponse res = new SyAlarmDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -101,64 +120,64 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyAlarmDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))   w.and(a.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getAlarmId()))  w.and(a.alarmId.eq(s.getAlarmId()));
-        if (StringUtils.hasText(s.getPathId()))   w.and(a.pathId.in(syPathRepository.findTreePathIds(s.getPathId())));
-        if (StringUtils.hasText(s.getStatus()))   w.and(a.alarmStatusCd.eq(s.getStatus()));
-        if (StringUtils.hasText(s.getTypeCd()))   w.and(a.alarmTypeCd.eq(s.getTypeCd()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyAlarmDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? a.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",alarmTitle,"))  or.or(a.alarmTitle.likeIgnoreCase(pattern));
-            if (all || types.contains(",alarmMsg,"))    or.or(a.alarmMsg.likeIgnoreCase(pattern));
-            if (all || types.contains(",alarmTypeCd,")) or.or(a.alarmTypeCd.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* alarmId 정확 일치 */
+    private BooleanExpression andAlarmId(SyAlarmDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAlarmId())
+                ? a.alarmId.eq(search.getAlarmId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateStart()) && StringUtils.hasText(s.getDateEnd()) && StringUtils.hasText(s.getDateType())) {
-            LocalDate ds = LocalDate.parse(s.getDateStart(), DF);
-            LocalDate de = LocalDate.parse(s.getDateEnd(), DF);
-            switch (s.getDateType()) {
-                case "alarm_send_date":
-                    w.and(a.alarmSendDate.goe(ds.atStartOfDay())).and(a.alarmSendDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "reg_date":
-                    w.and(a.regDate.goe(ds.atStartOfDay())).and(a.regDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                case "upd_date":
-                    w.and(a.updDate.goe(ds.atStartOfDay())).and(a.updDate.lt(de.plusDays(1).atStartOfDay()));
-                    break;
-                default: break;
-            }
-        }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",alarmId,")) or.or(a.alarmId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",alarmMsg,")) or.or(a.alarmMsg.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",alarmStatusCd,")) or.or(a.alarmStatusCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",alarmTitle,")) or.or(a.alarmTitle.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",alarmTypeCd,")) or.or(a.alarmTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",channelCd,")) or.or(a.channelCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",pathId,")) or.or(a.pathId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(a.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",targetId,")) or.or(a.targetId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",targetTypeCd,")) or.or(a.targetTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",templateId,")) or.or(a.templateId.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    /* alarmStatusCd 정확 일치 */
+    private BooleanExpression andStatus(SyAlarmDto.Request search) {
+        return search != null && StringUtils.hasText(search.getStatus())
+                ? a.alarmStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* alarmTypeCd 정확 일치 */
+    private BooleanExpression andTypeCd(SyAlarmDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTypeCd())
+                ? a.alarmTypeCd.eq(search.getTypeCd()) : null;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyAlarmDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",alarmId,", a.alarmId, pattern);
+        or = orLike(or, all, types, ",alarmMsg,", a.alarmMsg, pattern);
+        or = orLike(or, all, types, ",alarmStatusCd,", a.alarmStatusCd, pattern);
+        or = orLike(or, all, types, ",alarmTitle,", a.alarmTitle, pattern);
+        or = orLike(or, all, types, ",alarmTypeCd,", a.alarmTypeCd, pattern);
+        or = orLike(or, all, types, ",channelCd,", a.channelCd, pattern);
+        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",targetId,", a.targetId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",templateId,", a.templateId, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -220,7 +239,8 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         if (entity.getAlarmSendCount() != null) { update.set(a.alarmSendCount, entity.getAlarmSendCount()); hasAny = true; }
         if (entity.getAlarmFailCount() != null) { update.set(a.alarmFailCount, entity.getAlarmFailCount()); hasAny = true; }
         if (entity.getUpdBy()          != null) { update.set(a.updBy,          entity.getUpdBy());          hasAny = true; }
-        if (entity.getUpdDate()        != null) { update.set(a.updDate,        entity.getUpdDate());        hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (entity.getPathId()         != null) { update.set(a.pathId,         entity.getPathId());         hasAny = true; }
 
         if (!hasAny) return 0;

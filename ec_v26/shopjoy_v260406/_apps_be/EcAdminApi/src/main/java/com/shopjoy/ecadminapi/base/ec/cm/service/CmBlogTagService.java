@@ -86,18 +86,7 @@ public class CmBlogTagService {
         return saved;
     }
 
-    /* 게시물 태그 저장 */
-    @Transactional
-    public CmBlogTag save(CmBlogTag entity) {
-        if (!existsById(entity.getBlogTagId()))
-            throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        CmBlogTag saved = cmBlogTagRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return saved;
-    }
+    
 
     /* 게시물 태그 수정 */
     @Transactional
@@ -137,44 +126,105 @@ public class CmBlogTagService {
         if (existsById(id)) throw new CmBizException("데이터 삭제에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
     }
 
-    /* 게시물 태그 목록저장 */
-    @Transactional
-    public void saveList(List<CmBlogTag> rows) {
-        CmUtil.requireRowIds(rows, CmBlogTag::getBlogTagId, "U", "blogTagId", this);
-        CmUtil.requireRowIds(rows, CmBlogTag::getBlogTagId, "D", "blogTagId", this);
-        String authId = SecurityUtil.getAuthUser().authId();
-        LocalDateTime now = LocalDateTime.now();
+    
 
-        List<String> deleteIds = rows.stream()
-            .filter(r -> "D".equals(r.getRowStatus()))
-            .map(CmBlogTag::getBlogTagId)
-            .toList();
-        if (!deleteIds.isEmpty()) {
-            cmBlogTagRepository.deleteAllById(deleteIds);
+    /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
+     *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
+    @Transactional
+    public CmBlogTag save(String cmd, CmBlogTag entity) {
+        if ("base".equals(cmd)) {
+            String rowStatus  = entity.getRowStatus();
+            String authId     = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+                rowStatus = (entity.getBlogTagId() == null || entity.getBlogTagId().isBlank()) ? "I" : "U";
+            }
+
+            if ("D".equals(rowStatus)) {
+                if (entity.getBlogTagId() == null)
+                    throw new CmBizException("삭제 대상 blogTagId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                if (!cmBlogTagRepository.existsById(entity.getBlogTagId()))
+                    throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
+                cmBlogTagRepository.deleteById(entity.getBlogTagId());
+                return null;
+            } else if ("I".equals(rowStatus)) {
+                entity.setBlogTagId(CmUtil.generateId("cm_blog_tag"));
+                entity.setRegBy(authId); entity.setRegDate(now);
+                entity.setUpdBy(authId); entity.setUpdDate(now);
+                CmBlogTag saved = cmBlogTagRepository.save(entity);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+                return saved;
+            } else if ("U".equals(rowStatus)) {
+                if (entity.getBlogTagId() == null)
+                    throw new CmBizException("수정 대상 blogTagId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+                entity.setUpdBy(authId);
+                int affected = cmBlogTagRepository.updateSelective(entity);
+                if (affected == 0)
+                    throw new CmBizException("존재하지 않는 CmBlogTag입니다: " + entity.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
+                em.clear();
+                return findById(entity.getBlogTagId());
+            }
+            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        }
+        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+    }
+
+    /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
+     *  cmd: "base"=기본 흐름. */
+    @Transactional
+    public void saveList(String cmd, List<CmBlogTag> rows) {
+        if ("base".equals(cmd)) {
+            /* 0단계: rowStatus 정규화 */
+            for (CmBlogTag row : rows) {
+                String rs = row.getRowStatus();
+                if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                    row.setRowStatus((row.getBlogTagId() == null || row.getBlogTagId().isBlank()) ? "I" : "U");
+                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
+                }
+            }
+            CmUtil.requireRowIds(rows, CmBlogTag::getBlogTagId, "U", "blogTagId", this);
+            CmUtil.requireRowIds(rows, CmBlogTag::getBlogTagId, "D", "blogTagId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+
+            // 1단계: DELETE 일괄
+            List<String> deleteIds = rows.stream()
+                .filter(r -> "D".equals(r.getRowStatus()))
+                .map(CmBlogTag::getBlogTagId)
+                .toList();
+            if (!deleteIds.isEmpty()) {
+                cmBlogTagRepository.deleteAllById(deleteIds);
+            }
+
+            // 2단계: UPDATE - updateSelective
+            List<CmBlogTag> updateRows = rows.stream()
+                .filter(r -> "U".equals(r.getRowStatus()))
+                .toList();
+            for (CmBlogTag row : updateRows) {
+                row.setUpdBy(authId);
+                int affected = cmBlogTagRepository.updateSelective(row);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getBlogTagId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 3단계: INSERT
+            List<CmBlogTag> insertRows = rows.stream()
+                .filter(r -> "I".equals(r.getRowStatus()))
+                .toList();
+            for (CmBlogTag row : insertRows) {
+                row.setBlogTagId(CmUtil.generateId("cm_blog_tag"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                cmBlogTagRepository.save(row);
+            }
+
+            // 4단계: 영속성 컨텍스트 동기화
             em.flush();
             em.clear();
+            return;
         }
-        List<CmBlogTag> updateRows = rows.stream()
-            .filter(r -> "U".equals(r.getRowStatus()))
-            .toList();
-        for (CmBlogTag row : updateRows) {
-            CmBlogTag entity = findById(row.getBlogTagId());
-            VoUtil.voCopyExclude(row, entity, "blogTagId^regBy^regDate^rowStatus");
-            entity.setUpdBy(authId); entity.setUpdDate(now);
-            cmBlogTagRepository.save(entity);
-        }
-        em.flush();
-
-        List<CmBlogTag> insertRows = rows.stream()
-            .filter(r -> "I".equals(r.getRowStatus()))
-            .toList();
-        for (CmBlogTag row : insertRows) {
-            row.setBlogTagId(CmUtil.generateId("cm_blog_tag"));
-            row.setRegBy(authId); row.setRegDate(now);
-            row.setUpdBy(authId); row.setUpdDate(now);
-            cmBlogTagRepository.save(row);
-        }
-        em.flush();
-        em.clear();
+        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
 }

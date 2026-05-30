@@ -1,12 +1,14 @@
 package com.shopjoy.ecadminapi.base.sy.repository.qrydsl.impl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
+import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.repository.SyDeptRepository;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
@@ -67,9 +69,14 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     /* 부서 목록조회 */
     @Override
     public List<SyDeptDto.Item> selectList(SyDeptDto.Request search) {
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyDeptDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyDeptDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andTypeCd(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -89,77 +96,99 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        BooleanBuilder where = buildCondition(search);
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyDeptDto.Item> query = buildBaseQuery().where(where);
+        JPAQuery<SyDeptDto.Item> query = buildBaseQuery().where(
+                andSiteId(search),
+                andTypeCd(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyDeptDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(d.count()).from(d).where(where).fetchOne();
+        Long total = queryFactory.select(d.count()).from(d).where(
+                andSiteId(search),
+                andTypeCd(search),
+                andUseYn(search),
+                andDateRange(search),
+                andSearchValue(search)
+        ).fetchOne();
 
         SyDeptDto.PageResponse res = new SyDeptDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
-    private BooleanBuilder buildCondition(SyDeptDto.Request s) {
-        BooleanBuilder w = new BooleanBuilder();
-        if (s == null) return w;
+    /* ============================================================
+     * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
+     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * null 반환은 .where(Predicate...) vararg 가 자동 무시
+     * ============================================================ */
 
-        if (StringUtils.hasText(s.getSiteId()))       w.and(d.siteId.eq(s.getSiteId()));
-        if (StringUtils.hasText(s.getParentDeptId())) w.and(d.deptId.in(syDeptRepository.findTreeDeptIds(s.getParentDeptId())));
-        if (StringUtils.hasText(s.getTypeCd()))       w.and(d.deptTypeCd.eq(s.getTypeCd()));
-        if (StringUtils.hasText(s.getUseYn()))        w.and(d.useYn.eq(s.getUseYn()));
+    /* siteId 정확 일치 */
+    private BooleanExpression andSiteId(SyDeptDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? d.siteId.eq(search.getSiteId()) : null;
+    }
 
-        if (StringUtils.hasText(s.getSearchValue())) {
-            String types = "," + (s.getSearchType() == null ? "" : s.getSearchType().trim()) + ",";
-            boolean all = !StringUtils.hasText(s.getSearchType());
-            String pattern = "%" + s.getSearchValue() + "%";
-            BooleanBuilder or = new BooleanBuilder();
-            if (all || types.contains(",deptNm,"))   or.or(d.deptNm.likeIgnoreCase(pattern));
-            if (all || types.contains(",deptCode,")) or.or(d.deptCode.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
+    /* deptTypeCd 정확 일치 */
+    private BooleanExpression andTypeCd(SyDeptDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTypeCd())
+                ? d.deptTypeCd.eq(search.getTypeCd()) : null;
+    }
 
-        if (StringUtils.hasText(s.getDateType())
-                && StringUtils.hasText(s.getDateStart())
-                && StringUtils.hasText(s.getDateEnd())) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDateTime start = LocalDate.parse(s.getDateStart(), fmt).atStartOfDay();
-            LocalDateTime endExcl = LocalDate.parse(s.getDateEnd(), fmt).plusDays(1).atStartOfDay();
-            switch (s.getDateType()) {
-                case "reg_date":
-                    w.and(d.regDate.goe(start)).and(d.regDate.lt(endExcl));
-                    break;
-                case "upd_date":
-                    w.and(d.updDate.goe(start)).and(d.updDate.lt(endExcl));
-                    break;
-                default:
-                    break;
-            }
+    /* useYn 정확 일치 */
+    private BooleanExpression andUseYn(SyDeptDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? d.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
+    private BooleanExpression andDateRange(SyDeptDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return d.regDate.goe(start).and(d.regDate.lt(endExcl));
+            case "upd_date": return d.updDate.goe(start).and(d.updDate.lt(endExcl));
+            default: return null;
         }
-        /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-        if (s != null && StringUtils.hasText(s.getSearchValue())) {
-            String pattern = "%" + s.getSearchValue() + "%";
-            String __typeRaw = s.getSearchType();
-            boolean __all = !StringUtils.hasText(__typeRaw);
-            String __types = __all ? "" : ("," + __typeRaw.trim() + ",");
-            BooleanBuilder or = new BooleanBuilder();
-            if (__all || __types.contains(",deptCode,")) or.or(d.deptCode.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deptId,")) or.or(d.deptId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deptNm,")) or.or(d.deptNm.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deptRemark,")) or.or(d.deptRemark.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",deptTypeCd,")) or.or(d.deptTypeCd.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",managerId,")) or.or(d.managerId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",parentDeptId,")) or.or(d.parentDeptId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",siteId,")) or.or(d.siteId.likeIgnoreCase(pattern));
-            if (__all || __types.contains(",useYn,")) or.or(d.useYn.likeIgnoreCase(pattern));
-            if (or.getValue() != null) w.and(or);
-        }
-        return w;
+    }
+
+    /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
+    private BooleanExpression andSearchValue(SyDeptDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
+        String pattern = "%" + search.getSearchValue() + "%";
+        String typeRaw = search.getSearchType();
+        boolean all = !StringUtils.hasText(typeRaw);
+        String types = all ? "" : ("," + typeRaw.trim() + ",");
+        BooleanExpression or = null;
+        or = orLike(or, all, types, ",deptCode,", d.deptCode, pattern);
+        or = orLike(or, all, types, ",deptId,", d.deptId, pattern);
+        or = orLike(or, all, types, ",deptNm,", d.deptNm, pattern);
+        or = orLike(or, all, types, ",deptRemark,", d.deptRemark, pattern);
+        or = orLike(or, all, types, ",deptTypeCd,", d.deptTypeCd, pattern);
+        or = orLike(or, all, types, ",managerId,", d.managerId, pattern);
+        or = orLike(or, all, types, ",parentDeptId,", d.parentDeptId, pattern);
+        or = orLike(or, all, types, ",siteId,", d.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", d.useYn, pattern);
+        return or;
+    }
+
+    /* 단일 필드 LIKE 조건을 누적 OR (해당 type 이 포함됐을 때만) */
+    private BooleanExpression orLike(BooleanExpression acc, boolean all, String types,
+                                     String token, StringPath path, String pattern) {
+        if (!(all || types.contains(token))) return acc;
+        BooleanExpression expr = path.likeIgnoreCase(pattern);
+        return acc == null ? expr : acc.or(expr);
     }
 
     /**
@@ -223,7 +252,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         if (entity.getUseYn()        != null) { update.set(d.useYn,        entity.getUseYn());        hasAny = true; }
         if (entity.getDeptRemark()   != null) { update.set(d.deptRemark,   entity.getDeptRemark());   hasAny = true; }
         if (entity.getUpdBy()        != null) { update.set(d.updBy,        entity.getUpdBy());        hasAny = true; }
-        if (entity.getUpdDate()      != null) { update.set(d.updDate,      entity.getUpdDate());      hasAny = true; }
+        /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
+        update.set(d.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
