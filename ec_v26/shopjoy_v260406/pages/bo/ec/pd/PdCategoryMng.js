@@ -334,27 +334,12 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           ord++;
         }
       });
-      // 즉시 저장 (기존 행만)
+      // 즉시 저장 (기존 행만) — 성공 후 목록 재조회로 깨끗한 상태 복귀
       if (sortChangedRows.length > 0) {
         try {
           await boApiSvc.pdCategory.saveList('order', sortChangedRows, '카테고리관리', '순서변경');
-          // 저장된 행은 _row_status 마킹 해제 (다른 편집 없으면 깨끗한 상태로 복귀)
-          sortChangedRows.forEach(s => {
-            const row = gridRows.find(r => r.categoryId === s.categoryId);
-            if (row && row._row_status === 'U' && JSON.stringify(row._row_org?.sortOrd ?? null) !== JSON.stringify(row.sortOrd)) {
-              // 다른 필드 변경이 없고 sortOrd만 바뀐 경우만 클린
-              const onlySort = row._row_org &&
-                row.categoryNm === row._row_org.categoryNm &&
-                row.parentCategoryId === row._row_org.parentCategoryId &&
-                row.categoryDesc === row._row_org.categoryDesc &&
-                row.categoryStatusCd === row._row_org.categoryStatusCd;
-              if (onlySort) {
-                row._row_status = null;
-                row._row_org.sortOrd = row.sortOrd;
-              }
-            }
-          });
           showToast?.('순서가 저장되었습니다.', 'success');
+          await handleSearchList();
         } catch (err) {
           console.error('[PdCategoryMng] sort save failed', err);
           showToast?.(err.response?.data?.message || '순서 저장 실패', 'error', 0);

@@ -225,6 +225,25 @@ public class PdCategoryService {
             em.flush();
             em.clear();
             return;
+        } else if ("order".equals(cmd)) {
+            /* order 전용 — 행 드래그앤드롭 정렬 변경 시 sortOrd 만 일괄 UPDATE.
+             *   - 입력 row 는 categoryId + sortOrd 만 필수 (다른 필드는 무시)
+             *   - rowStatus 검증 없음 — 호출자가 변경된 행만 보내야 함
+             *   - updateSelective 가 null 필드를 건드리지 않으므로 안전 */
+            CmUtil.requireRowIds(rows, PdCategory::getCategoryId, "U", "categoryId", this);
+            String authId = SecurityUtil.getAuthUser().authId();
+            for (PdCategory row : rows) {
+                if (row.getSortOrd() == null) continue;   // sortOrd 없으면 skip
+                PdCategory patch = new PdCategory();
+                patch.setCategoryId(row.getCategoryId());
+                patch.setSortOrd(row.getSortOrd());
+                patch.setUpdBy(authId);
+                int affected = pdCategoryRepository.updateSelective(patch);
+                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getCategoryId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+            em.flush();
+            em.clear();
+            return;
         }
         throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }

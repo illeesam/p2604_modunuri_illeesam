@@ -217,6 +217,7 @@ window.SyCodeMng = {
           /* 행 드래그앤드롭 정렬 — saveList cmd='order' (URL: /save-list/order, sortOrd 만 update) */
           await boApiSvc.syCode.saveList('order', sortChangedRows, '공통코드관리', '순서변경');
           showToast?.('순서가 저장되었습니다.', 'success');
+          await handleSearchList();
         } catch (err) {
           console.error('[SyCodeMng] sort save failed', err);
           showToast?.(err.response?.data?.message || '순서 저장 실패', 'error', 0);
@@ -501,7 +502,7 @@ window.SyCodeMng = {
     /* fnCodeListTitle — 코드목록 타이틀 */
     const fnCodeListTitle = () => {
       const tag = uiState.selectedGrp || '';
-      return tag ? `코드목록  [ ${tag} ]` : '코드목록';
+      return tag ? `코드목록 #${tag}` : '코드목록';
     };
 
     /* syncGrpDirty — 그룹 변경 카운트 동기화 */

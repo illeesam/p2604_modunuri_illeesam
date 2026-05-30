@@ -825,7 +825,7 @@ props: {
 
 ---
 
-## 19. 그리드 행간 드래그앤드롭 순서 변경 정책 ⭐
+## 19. 그리드 행간 드래그앤드롭 순서 변경 정책 ⭐ (2026-05-30 갱신)
 
 ### 19.1 즉시 저장 vs 묶음 저장 — 구분 기준
 
@@ -834,8 +834,9 @@ props: {
 | 분류 | 즉시 저장 적용 | 비고 |
 |---|---|---|
 | **격리된 첨부·이미지 정렬 영역** | ✅ **즉시 저장** | BaseAttachGrp 등 — 다른 편집과 독립. 드롭 즉시 `PATCH .../sort` 호출 |
-| **CRUD 그리드** (`_row_status` 사용) | ❌ **묶음 저장 유지** | PdCategoryMng / PdCategoryProdMng / DpDispPanelMng 등 — 행 추가·수정·삭제와 정렬이 한 트랜잭션. 드롭 시점에는 로컬 `sortOrd` 변경만 + `_row_status='U'` 마킹 → [저장] 버튼으로 `saveList` 일괄 호출 |
+| **CRUD 그리드** (`_row_status` 사용) | ✅ **즉시 저장 + 재조회** | SyCodeMng / PdCategoryMng 등 — 기존 행(`_row_status` C/I/D 아닌 행)에 한해 `{ keyId, sortOrd, rowStatus:'U' }` 만 추출하여 `POST /bo/*/*/save-list/order` 호출. 응답 성공 시 `handleSearchList()` 로 목록 재조회 |
 | **Dtl 내부 자식 리스트** | ❌ **묶음 저장 유지** | PdProdDtl 옵션·이미지·SKU / PdBundleMng·PdSetMng 자식 카테고리·아이템 — 부모 Dtl [저장]에 종속 |
+| **DELETE+INSERT 전체 교체 API** | ❌ **묶음 저장 유지** | `updateProds` 처럼 전체 삭제 후 재삽입 패턴은 부분 sort 전송 불가능 → [저장] 버튼 유지 |
 | **미리보기/시뮬레이션** | — | DpDispAreaPreview 등 — DB 저장 없음, 시각적 reorder 만 |
 
 ### 19.2 격리된 첨부 정렬 즉시 저장 표준 패턴 (BaseAttachGrp)
@@ -862,30 +863,82 @@ const onDrop = async (toIdx) => {
 };
 ```
 
-**필수 요소**:
-1. **에러 핸들링** — 실패 시 토스트로 사용자에게 알림
-2. **성공 토스트** — 저장 완료 명시
-3. **컨플릭트 회피** — 격리된 그리드여야 안전. 같은 화면에 추가·삭제·다른 편집 동작이 있다면 적용 금지
+### 19.3 CRUD 그리드 정렬 즉시 저장 + 재조회 표준 패턴 ⭐
 
-### 19.3 CRUD 그리드는 즉시 저장 적용 금지 ⛔
+**전제조건**:
+1. Entity·VO 필드에 default 값 없음 (selective update 안전성 보장 — [[entity_vo_no_defaults]])
+2. Service.saveList 가 `CmUtil.requireRowIds` 로 키 검증 ([[service_id_validation_required]])
+3. Service.saveList 에 `cmd='order'` 분기 — `sortOrd` 만 update (다른 필드 보호)
+4. Controller 에 `@PostMapping("/save-list/{cmd}")` 노출
+5. `boApiSvc.xxx.saveList(cmd, rows, uiNm, cmdNm)` 시그니처 ([[save_savelist_cmd_first_arg]])
 
-**이유**: CRUD 그리드는 행 추가(`_row_status='C'`) / 수정(`'U'`) / 삭제(`'D'`) 와 정렬이 동일한 트랜잭션 단위다. 드롭만 즉시 저장하면 다른 미완성 편집과 데이터 불일치가 발생한다.
-
-**유지 패턴**:
+**프론트 드롭 핸들러 표준**:
 ```js
-const onRowDrop = () => {
-  /* 로컬 reorder + sortOrd 재계산 + _row_status='U' 마킹만 */
-  const [moved] = gridRows.splice(from, 1);
-  gridRows.splice(to, 0, moved);
+const onDragEnd = async () => {
+  /* 1) BoGridCrud reorder emit 시점에 행 순서는 이미 in-place 변경된 상태 */
+  const sortChangedRows = [];
   gridRows.forEach((r, i) => {
-    r.sortOrd = i + 1;
-    if (r._row_status == null) r._row_status = 'U';
+    const newOrd = i + 1;
+    if (r.sortOrd !== newOrd) {
+      r.sortOrd = newOrd;
+      /* 신규('I')/삭제('D')는 제외 — 기존 행만 즉시 정렬 저장 */
+      if (r._row_status !== 'I' && r._row_status !== 'D' && r.xxxId != null) {
+        sortChangedRows.push({ xxxId: r.xxxId, sortOrd: newOrd, rowStatus: 'U' });
+        if (r._row_status === 'N') r._row_status = 'U';
+      }
+    }
   });
-  /* 저장은 [저장] 버튼 → saveList 호출 시점에 한 번 */
+  if (sortChangedRows.length > 0) {
+    try {
+      /* 2) cmd='order' 로 호출 → URL: /bo/*/*/save-list/order */
+      await boApiSvc.xxx.saveList('order', sortChangedRows, '화면명', '순서변경');
+      showToast?.('순서가 저장되었습니다.', 'success');
+      /* 3) 재조회 — 서버 보정값(sortOrd 재계산, updDate 등)을 화면에 반영 */
+      await handleSearchList();
+    } catch (err) {
+      console.error('[XxxMng] sort save failed', err);
+      showToast?.(err.response?.data?.message || '순서 저장 실패', 'error', 0);
+    }
+  }
 };
 ```
 
-### 19.4 적용 현황 (2026-05-26)
+**서버 Service saveList `'order'` 분기 표준** (참조: [`SyCodeService.saveList`](../../_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/base/sy/service/SyCodeService.java)):
+```java
+@Transactional
+public void saveList(String cmd, List<Xxx> rows) {
+  if ("base".equals(cmd)) { /* 기본 I/U/D/M 일괄 처리 */ ... return; }
+  if ("order".equals(cmd)) {
+    /* sortOrd 전용 selective update — 다른 필드 절대 덮어쓰지 않음 */
+    CmUtil.requireRowIds(rows, Xxx::getXxxId, "U", "xxxId", this);
+    String authId = SecurityUtil.getAuthUser().authId();
+    for (Xxx row : rows) {
+      if (row.getSortOrd() == null) continue;
+      Xxx patch = new Xxx();
+      patch.setXxxId(row.getXxxId());
+      patch.setSortOrd(row.getSortOrd());
+      patch.setUpdBy(authId);
+      int affected = xxxRepository.updateSelective(patch);
+      if (affected == 0) throw new CmBizException("정렬 저장 대상 행이 존재하지 않습니다: " + row.getXxxId());
+    }
+    em.flush(); em.clear();
+    return;
+  }
+  throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+}
+```
 
-- ✅ **BaseAttachGrp** — 첨부 파일 정렬 드롭 즉시 저장 (에러 트래킹 강화 완료)
-- ❌ DpDispPanelMng / PdCategoryMng / PdCategoryProdMng / PdProdDtl / PdBundleMng / PdSetMng / DpDispWidgetDtl 등 — CRUD 묶음 저장 패턴 유지
+**핵심 규칙**:
+1. **신규/삭제 행 제외** — `_row_status` 가 `I`/`D` 이거나 키가 `null` 인 행은 sort 전송 대상에서 제외 (다른 편집은 [저장] 버튼에 위임)
+2. **selective update** — `sortOrd` + `updBy` 만 set 한 patch entity 로 `updateSelective` 호출 → 다른 필드 보존
+3. **재조회 필수** — 저장 성공 후 `handleSearchList()` 로 깨끗한 상태 복귀 (수동 `_row_status` 정리 코드 제거)
+4. **에러 핸들링** — 실패 시 토스트 + console.error
+5. **변형 cmd 라우팅** — `'order'` 외에 도메인별로 `'priority'`, `'visibility'` 등 추가 가능 (URL `/save-list/{cmd}` 로 자동 라우팅)
+
+### 19.4 적용 현황 (2026-05-30)
+
+- ✅ **BaseAttachGrp** — 첨부 파일 정렬 드롭 즉시 저장
+- ✅ **SyCodeMng** — `boApiSvc.syCode.saveList('order', ...)` + `handleSearchList()` 재조회
+- ✅ **PdCategoryMng** — `boApiSvc.pdCategory.saveList('order', ...)` + `handleSearchList()` 재조회 (이전의 수동 `_row_status` 정리 로직 제거)
+- ❌ **PdCategoryProdMng** — 전체 교체 API(`updateProds`) 패턴, 묶음 저장 유지
+- ❌ **PdProdDtl / PdBundleMng / PdSetMng / DpDispWidgetDtl / DpDispPanelMng** — Dtl 자식 리스트, 부모 [저장]에 종속
