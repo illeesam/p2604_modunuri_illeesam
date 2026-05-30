@@ -581,6 +581,7 @@
   boApiSvc.syUser = {
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/user/page', { params, ...hdr(uiNm, cmdNm) }); },
     getList(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/user', { params, ...hdr(uiNm, cmdNm) }); },
+    getDeptTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/user/dept-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/user/${_id}`, hdr(uiNm, cmdNm)); },
     getRoles(_id, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/user/${_id}/roles`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/user', body, hdr(uiNm, cmdNm)); },

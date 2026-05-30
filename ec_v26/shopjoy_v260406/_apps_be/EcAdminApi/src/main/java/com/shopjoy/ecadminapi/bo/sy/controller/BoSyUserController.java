@@ -95,4 +95,10 @@ public class BoSyUserController {
         boSyUserService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
+
+    /** deptCounts — 부서 트리 노드별 사용자수 (검색조건 + 자손 누적, 트리 우측 뱃지용) */
+    @GetMapping("/dept-counts")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> deptCounts(@Valid @ModelAttribute SyUserDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyUserService.getDeptTreeNodeCounts(req)));
+    }
 }

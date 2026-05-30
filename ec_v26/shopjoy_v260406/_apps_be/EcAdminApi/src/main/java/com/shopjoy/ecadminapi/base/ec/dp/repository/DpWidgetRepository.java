@@ -9,14 +9,15 @@ import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpWidgetRepository;
 import java.util.List;
 
 public interface DpWidgetRepository extends JpaRepository<DpWidget, String>, QDpWidgetRepository {
-        /* 표시경로 노드별 DpWidget 수 집계 (검색조건 + 자손 누적, PostgreSQL 재귀 CTE)
-     *   - 일반 path_id : 해당 노드 + 자손 path 의 row 수 (검색조건 적용)
+
+    /* 표시경로 노드별 DpWidget 수 집계 (검색조건 + 자손 누적, PostgreSQL 재귀 CTE)
+     *   dp_widget 은 path_id 가 없으므로 widget_lib_id → dp_widget_lib.path_id 로 간접 join.
      *   - '__total__'  : 전체 row 수 (검색조건 적용)
-     *   - '__orphan__' : path_id IS NULL 인 row 수 (검색조건 적용)
      *
      *   파라미터 — null 이면 해당 조건 무시:
-     *     - useYn      : use_yn 일치
-     *     - searchValue : widget_nm, widget_desc, widget_title 부분일치 OR
+     *     - useYn       : use_yn 일치
+     *     - searchType  : searchValue 검색 대상 컬럼 csv (',a,b,' wrap)
+     *     - searchValue : widget_nm/widget_desc/widget_title 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
             WITH RECURSIVE descendants AS (
@@ -26,12 +27,13 @@ public interface DpWidgetRepository extends JpaRepository<DpWidget, String>, QDp
                   FROM descendants d JOIN sy_path c ON c.parent_path_id = d.leaf_id
             ),
             filtered AS (
-                SELECT widget_id, path_id FROM dp_widget t
+                SELECT t.widget_id, l.path_id FROM dp_widget t
+                  LEFT JOIN dp_widget_lib l ON l.widget_lib_id = t.widget_lib_id
                  WHERE 1=1
                    AND (CAST(:useYn AS varchar) IS NULL OR t.use_yn = :useYn)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
-                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,widgetNm,%') AND t.widget_nm ILIKE '%' || :searchValue || '%')
-                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,widgetDesc,%') AND t.widget_desc ILIKE '%' || :searchValue || '%')
+                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,widgetNm,%')    AND t.widget_nm    ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,widgetDesc,%')  AND t.widget_desc  ILIKE '%' || :searchValue || '%')
                           OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,widgetTitle,%') AND t.widget_title ILIKE '%' || :searchValue || '%')
                           ))
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
@@ -46,10 +48,10 @@ public interface DpWidgetRepository extends JpaRepository<DpWidget, String>, QDp
             UNION ALL
             SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered WHERE path_id IS NULL
             """, nativeQuery = true)
-    List<Object[]> findPathDpWidgetTreeNodeCounts(@Param("useYn")       String useYn,
+    List<Object[]> findPathDpWidgetTreeNodeCounts(
+            @Param("useYn")       String useYn,
             @Param("searchType")  String searchType,
             @Param("searchValue") String searchValue,
             @Param("dateStart")   String dateStart,
             @Param("dateEnd")     String dateEnd);
-
 }

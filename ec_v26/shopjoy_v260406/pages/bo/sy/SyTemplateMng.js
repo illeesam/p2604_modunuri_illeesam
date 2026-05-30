@@ -193,12 +193,23 @@ window.SyTemplateMng = {
     /* closePathPick — 경로 선택 닫기 */
     const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
-    /* onPathPicked — 경로 선택 결과 적용 */
-    const onPathPicked = (pathId) => {
+    /* onPathPicked — 경로 선택 결과 적용 + 즉시 저장
+     *   템플릿 목록은 별도 [저장] 버튼이 없어 행의 pathId 가 바뀌면 바로 서버에 반영.
+     *   selective update — body 에 pathId 만 담아 다른 컬럼 보존. */
+    const onPathPicked = async (pathId) => {
       const row = pathPickModal.row;
-      if (row) {
-        row.pathId = pathId;
-        if (row._row_status === 'N') { row._row_status = 'U'; }
+      if (!row || !row.templateId) { return; }
+      const prevPathId = row.pathId;
+      row.pathId = pathId;
+      try {
+        await boApiSvc.syTemplate.update(row.templateId, { pathId }, '템플릿관리', '표시경로변경');
+        showToast?.('표시경로가 저장되었습니다.', 'success');
+        /* 좌 트리 카운트 동기 갱신 */
+        handleLoadPathTreeNodeCounts();
+      } catch (err) {
+        console.error('[onPathPicked] save failed', err);
+        row.pathId = prevPathId;   // 실패 시 롤백
+        showToast?.(err.response?.data?.message || '표시경로 저장 실패', 'error', 0);
       }
     };
 

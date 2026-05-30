@@ -12,6 +12,7 @@ window.SyUserMng = {
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const users = reactive([]);                    // 사용자 목록 (메인 그리드 데이터)
     const depts = reactive([]);                    // 부서 트리 (좌측 트리)
+    const deptCounts = reactive({});               // 좌 부서 트리 노드별 사용자수 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
       boUsers: [], selectedDeptId: null, sortKey: '', sortDir: 'asc',
@@ -136,7 +137,20 @@ window.SyUserMng = {
     /* sortIcon — 정렬 아이콘 */
     const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
 
-    /* handleSearchList — 목록 조회 */
+    /* handleLoadDeptTreeNodeCounts — 좌 부서 트리 노드별 사용자수 (검색조건 동기, 백엔드 재귀 CTE) */
+    const handleLoadDeptTreeNodeCounts = async () => {
+      try {
+        /* deptId 는 트리 필터 자체이므로 제외 — 검색조건만 그대로 전달 */
+        const params = Object.fromEntries(Object.entries(searchParam)
+          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'deptId'));
+        const res = await boApiSvc.syUser.getDeptTreeNodeCounts(params, '사용자관리', '부서별카운트');
+        const map = res.data?.data || {};
+        Object.keys(deptCounts).forEach(k => { delete deptCounts[k]; });
+        Object.assign(deptCounts, map);
+      } catch (e) { console.error('[handleLoadDeptTreeNodeCounts]', e); }
+    };
+
+    /* handleSearchList — 목록 조회 (좌 부서 트리 카운트도 같은 검색조건으로 동기 갱신) */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -158,6 +172,8 @@ window.SyUserMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 좌 부서 트리 카운트 동기 갱신 */
+        handleLoadDeptTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -340,7 +356,7 @@ window.SyUserMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      users, uiState, codes, searchParam, pager, detailPanel, expanded,  // 상태 / 데이터
+      users, uiState, codes, searchParam, pager, detailPanel, expanded, deptCounts,  // 상태 / 데이터
       excelUploadModal,                                                  // 엑셀 업로드 모달
       baseSearchColumns, baseGridColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
@@ -383,7 +399,7 @@ window.SyUserMng = {
         <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId"
           :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
           :on-select="id => handleSelectAction('deptTree-select', id)"
-          :depth="0" />
+          :depth="0" :counts="deptCounts" />
       </div>
     </div>
     <div>

@@ -24,14 +24,16 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
             SELECT menu_id FROM t
             """, nativeQuery = true)
     List<String> findTreeMenuIds(@Param("rootMenuId") String rootMenuId);
-        /* 표시경로 노드별 SyMenu 수 집계 (검색조건 + 자손 누적, PostgreSQL 재귀 CTE)
-     *   - 일반 path_id : 해당 노드 + 자손 path 의 row 수 (검색조건 적용)
+
+    /* 표시경로 노드별 SyMenu 수 집계 (검색조건 + 자손 누적, PostgreSQL 재귀 CTE)
+     *   sy_menu 는 path_id 컬럼이 없지만 menu_code 가 sy_path.path_id 와 동일 규칙으로 작성됨 (관례).
+     *   따라서 sy_menu.menu_code = sy_path.path_id 로 left join 하여 자손까지 누적 카운트.
      *   - '__total__'  : 전체 row 수 (검색조건 적용)
-     *   - '__orphan__' : path_id IS NULL 인 row 수 (검색조건 적용)
      *
      *   파라미터 — null 이면 해당 조건 무시:
-     *     - useYn      : use_yn 일치
-     *     - searchValue : menu_code, menu_nm, menu_remark 부분일치 OR
+     *     - useYn       : use_yn 일치
+     *     - searchType  : searchValue 검색 대상 컬럼 csv (',a,b,' wrap)
+     *     - searchValue : menu_code/menu_nm/menu_remark 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
             WITH RECURSIVE descendants AS (
@@ -41,12 +43,12 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
                   FROM descendants d JOIN sy_path c ON c.parent_path_id = d.leaf_id
             ),
             filtered AS (
-                SELECT menu_id, path_id FROM sy_menu t
+                SELECT menu_id, menu_code FROM sy_menu t
                  WHERE 1=1
                    AND (CAST(:useYn AS varchar) IS NULL OR t.use_yn = :useYn)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
-                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,menuCode,%') AND t.menu_code ILIKE '%' || :searchValue || '%')
-                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,menuNm,%') AND t.menu_nm ILIKE '%' || :searchValue || '%')
+                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,menuCode,%')   AND t.menu_code   ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,menuNm,%')     AND t.menu_nm     ILIKE '%' || :searchValue || '%')
                           OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,menuRemark,%') AND t.menu_remark ILIKE '%' || :searchValue || '%')
                           ))
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
@@ -54,14 +56,13 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
             )
             SELECT d.root_id AS path_id, COUNT(t.menu_id) AS cnt
               FROM descendants d
-              LEFT JOIN filtered t ON t.path_id = d.leaf_id
+              LEFT JOIN filtered t ON t.menu_code = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
             SELECT '__total__' AS path_id, COUNT(*) AS cnt FROM filtered
-            UNION ALL
-            SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered WHERE path_id IS NULL
             """, nativeQuery = true)
-    List<Object[]> findPathSyMenuTreeNodeCounts(@Param("useYn")       String useYn,
+    List<Object[]> findPathSyMenuTreeNodeCounts(
+            @Param("useYn")       String useYn,
             @Param("searchType")  String searchType,
             @Param("searchValue") String searchValue,
             @Param("dateStart")   String dateStart,

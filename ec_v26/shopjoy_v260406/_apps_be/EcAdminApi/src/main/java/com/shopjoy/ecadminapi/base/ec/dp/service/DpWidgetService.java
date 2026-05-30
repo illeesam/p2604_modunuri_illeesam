@@ -228,8 +228,8 @@ public class DpWidgetService {
         throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
     }
         /** getPathTreeNodeCounts — 표시경로 노드별 DpWidget 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
-     *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
-     *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
+     *   dp_widget 은 widget_lib_id → dp_widget_lib.path_id 로 간접 연결되어 카운트.
+     *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': lib path 없음 } */
     public java.util.Map<String, Long> getPathTreeNodeCounts(DpWidgetDto.Request req) {
         java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
         String useYn       = (req == null) ? null : nullIfBlank(req.getUseYn());

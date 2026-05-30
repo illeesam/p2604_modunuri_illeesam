@@ -64,4 +64,9 @@ public class BoSyUserService {
     public void saveList(String cmd, List<SyUser> rows) {
         syUserService.saveList(cmd, rows);
     }
+
+    /** getDeptTreeNodeCounts — 부서 트리 노드별 사용자수 (검색조건 + 자손 누적) */
+    public java.util.Map<String, Long> getDeptTreeNodeCounts(SyUserDto.Request req) {
+        return syUserService.getDeptTreeNodeCounts(req);
+    }
 }
