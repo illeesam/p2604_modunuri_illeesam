@@ -337,7 +337,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       // 즉시 저장 (기존 행만)
       if (sortChangedRows.length > 0) {
         try {
-          await boApiSvc.pdCategory.saveList(sortChangedRows, '카테고리관리', '순서변경');
+          await boApiSvc.pdCategory.saveList('order', sortChangedRows, '카테고리관리', '순서변경');
           // 저장된 행은 _row_status 마킹 해제 (다른 편집 없으면 깨끗한 상태로 복귀)
           sortChangedRows.forEach(s => {
             const row = gridRows.find(r => r.categoryId === s.categoryId);

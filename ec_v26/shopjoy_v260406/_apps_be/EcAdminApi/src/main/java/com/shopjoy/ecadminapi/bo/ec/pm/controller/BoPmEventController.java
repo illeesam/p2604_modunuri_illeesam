@@ -75,10 +75,11 @@ public class BoPmEventController {
             @PathVariable("id") String id, @RequestBody PmEventChangeStatusDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boPmEventService.changeStatus(id, req.getStatusCd())));
     }
-    /** saveList — 저장 */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmEvent> rows) {
-        boPmEventService.saveList("base", rows);
+    /** saveList -- 일괄 저장 (cmd 변형: order 등) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<PmEvent> rows) {
+        boPmEventService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

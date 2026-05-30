@@ -316,7 +316,7 @@ window.SyDeptMng = {
       if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.syDept.saveList(saveRows, '부서관리', '저장');
+        await boApiSvc.syDept.saveList('base', saveRows, '부서관리', '저장');
         showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {

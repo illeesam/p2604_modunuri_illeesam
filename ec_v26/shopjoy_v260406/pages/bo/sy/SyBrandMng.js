@@ -228,7 +228,7 @@ window.SyBrandMng = {
       if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.syBrand.saveList(saveRows, '브랜드관리', '저장');
+        await boApiSvc.syBrand.saveList('base', saveRows, '브랜드관리', '저장');
         showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {

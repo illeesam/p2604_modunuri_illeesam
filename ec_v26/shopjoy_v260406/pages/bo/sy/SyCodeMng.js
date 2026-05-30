@@ -196,29 +196,30 @@ window.SyCodeMng = {
       syncGrpDirty();
     };
 
-    /* onDragEnd — 드래그 정렬 종료 → sortOrd 재할당 + 즉시 저장 (기존 행 'U'만 전송) */
+    /* onDragEnd — 드래그 정렬 종료 (BoGridCrud reorder emit) → sortOrd 재할당 + 즉시 저장 (기존 행 'U'만 전송).
+     *  BoGridCrud 가 reorder 를 emit 한 시점에 이미 행 순서가 in-place 변경된 상태이므로
+     *  별도 dragMoved 체크 불필요 — emit 호출 자체가 이동 증거. */
     const onDragEnd = async () => {
-      if (uiState.dragMoved) {
-        const sortChangedRows = [];
-        uiState.gridRows.forEach((r, i) => {
-          const newOrd = i + 1;
-          if (r.sortOrd !== newOrd) {
-            r.sortOrd = newOrd;
-            // 신규('I')는 아직 DB에 없으므로 즉시 저장 대상 제외 — [저장] 버튼에서 일괄 처리
-            if (r._row_status !== 'I' && r._row_status !== 'D' && r.codeId != null) {
-              sortChangedRows.push({ codeId: r.codeId, sortOrd: newOrd, rowStatus: 'U' });
-              if (r._row_status === 'N') { r._row_status = 'U'; }
-            }
+      const sortChangedRows = [];
+      uiState.gridRows.forEach((r, i) => {
+        const newOrd = i + 1;
+        if (r.sortOrd !== newOrd) {
+          r.sortOrd = newOrd;
+          // 신규('I')는 아직 DB에 없으므로 즉시 저장 대상 제외 — [저장] 버튼에서 일괄 처리
+          if (r._row_status !== 'I' && r._row_status !== 'D' && r.codeId != null) {
+            sortChangedRows.push({ codeId: r.codeId, sortOrd: newOrd, rowStatus: 'U' });
+            if (r._row_status === 'N') { r._row_status = 'U'; }
           }
-        });
-        if (sortChangedRows.length > 0) {
-          try {
-            await boApiSvc.syCode.saveList(sortChangedRows, '공통코드관리', '순서변경');
-            showToast?.('순서가 저장되었습니다.', 'success');
-          } catch (err) {
-            console.error('[SyCodeMng] sort save failed', err);
-            showToast?.(err.response?.data?.message || '순서 저장 실패', 'error', 0);
-          }
+        }
+      });
+      if (sortChangedRows.length > 0) {
+        try {
+          /* 행 드래그앤드롭 정렬 — saveList cmd='order' (URL: /save-list/order, sortOrd 만 update) */
+          await boApiSvc.syCode.saveList('order', sortChangedRows, '공통코드관리', '순서변경');
+          showToast?.('순서가 저장되었습니다.', 'success');
+        } catch (err) {
+          console.error('[SyCodeMng] sort save failed', err);
+          showToast?.(err.response?.data?.message || '순서 저장 실패', 'error', 0);
         }
       }
       uiState.dragSrc = null;
@@ -436,7 +437,7 @@ window.SyCodeMng = {
           rowStatus: r._row_status,
         }));
       try {
-        await boApiSvc.syCodeGrp.saveList(saveRows, '공통코드그룹관리', '저장');
+        await boApiSvc.syCodeGrp.saveList('base', saveRows, '공통코드그룹관리', '저장');
         showToast('저장되었습니다.', 'success');
         await handleLoadAllGroups();
       } catch (err) {

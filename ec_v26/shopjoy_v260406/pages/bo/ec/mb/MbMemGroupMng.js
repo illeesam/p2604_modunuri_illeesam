@@ -183,7 +183,7 @@ window.MbMemGroupMng = {
       if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.mbMemGroup.saveList(saveRows, '회원그룹관리', '저장');
+        await boApiSvc.mbMemGroup.saveList('base', saveRows, '회원그룹관리', '저장');
         showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {

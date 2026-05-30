@@ -63,24 +63,11 @@ public class PmCouponItemController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** save -- rowStatus 단건 분기 저장 (기본) */
-    @PostMapping("/save")
-    public ResponseEntity<ApiResponse<PmCouponItem>> saveDefault(@RequestBody PmCouponItem entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
-    }
-
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmCouponItem>> saveCmd(
             @PathVariable("cmd") String cmd, @RequestBody PmCouponItem entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
-    }
-
-    /** saveList -- 일괄 저장 (기본) */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmCouponItem> rows) {
-        service.saveList("base", rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
     /** saveList -- 일괄 저장 (cmd 변형) */

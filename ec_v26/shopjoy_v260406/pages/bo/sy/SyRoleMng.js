@@ -556,7 +556,7 @@ window.SyRoleMng = {
       if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.syRole.saveList(saveRows, '역할관리', '저장');
+        await boApiSvc.syRole.saveList('base', saveRows, '역할관리', '저장');
         showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {

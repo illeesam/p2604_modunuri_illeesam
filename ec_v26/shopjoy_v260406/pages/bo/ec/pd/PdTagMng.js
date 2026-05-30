@@ -122,7 +122,7 @@ window.PdTagMng = {
       if (!ok) { return; }
       const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status === 'N' ? 'I' : r._row_status }));
       try {
-        await boApiSvc.pdTag.saveList(saveRows, '태그관리', '저장');
+        await boApiSvc.pdTag.saveList('base', saveRows, '태그관리', '저장');
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         await handleSearchList();
       } catch (err) {

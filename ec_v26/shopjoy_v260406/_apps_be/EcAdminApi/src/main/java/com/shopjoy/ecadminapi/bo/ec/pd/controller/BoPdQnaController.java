@@ -80,10 +80,11 @@ public class BoPdQnaController {
         return ResponseEntity.ok(ApiResponse.ok(boPdQnaService.saveAnswer(id, req)));
     }
 
-    /** saveList — 저장 */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PdProdQna> rows) {
-        boPdQnaService.saveList("base", rows);
+    /** saveList -- 일괄 저장 (cmd 변형: order 등) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<PdProdQna> rows) {
+        boPdQnaService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

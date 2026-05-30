@@ -259,7 +259,7 @@ window.SyPathMng = {
       if (!ok) { return; }
       const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status || r._status }));
       try {
-        await boApiSvc.syPath.saveList(saveRows, '경로관리', '저장');
+        await boApiSvc.syPath.saveList('base', saveRows, '경로관리', '저장');
         showToast?.('저장되었습니다.', 'success');
         await handleSearchTree();
         await handleGridSearch();

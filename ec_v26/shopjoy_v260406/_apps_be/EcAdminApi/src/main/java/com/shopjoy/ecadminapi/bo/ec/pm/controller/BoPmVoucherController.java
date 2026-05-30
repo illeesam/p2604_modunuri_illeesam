@@ -84,10 +84,11 @@ public class BoPmVoucherController {
         boPmVoucherService.sendSns(id, req);
         return ResponseEntity.ok(ApiResponse.ok(null, "발송되었습니다."));
     }
-    /** saveList — 저장 */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmVoucher> rows) {
-        boPmVoucherService.saveList("base", rows);
+    /** saveList -- 일괄 저장 (cmd 변형: order 등) */
+    @PostMapping("/save-list/{cmd}")
+    public ResponseEntity<ApiResponse<Void>> saveListCmd(
+            @PathVariable("cmd") String cmd, @RequestBody List<PmVoucher> rows) {
+        boPmVoucherService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

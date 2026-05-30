@@ -72,11 +72,4 @@ public class ZzExam2Controller {
         service.delete(exam1Id, exam2Id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
-
-    /** saveList — 일괄 저장 */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<ZzExam2> rows) {
-        service.saveList(rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
-    }
 }

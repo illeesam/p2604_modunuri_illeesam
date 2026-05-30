@@ -249,7 +249,7 @@ window.SyBatchMng = {
       if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.syBatch.saveList(saveRows, '배치관리', '저장');
+        await boApiSvc.syBatch.saveList('base', saveRows, '배치관리', '저장');
         showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {

@@ -111,7 +111,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/mb/member-grade', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/mb/member-grade/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/mb/member-grade/${_id}`, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'memberGradeId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/mb/member-grade/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)    { return chkRowIds(rows, 'memberGradeId', uiNm, cmdNm) || global.boApi.post('/bo/ec/mb/member-grade/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── mb: 회원그룹 ───────────────────────────────────────────── */
@@ -120,7 +120,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/mb/member-group', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/mb/member-group/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/mb/member-group/${_id}`, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'memberGroupId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/mb/member-group/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)    { return chkRowIds(rows, 'memberGroupId', uiNm, cmdNm) || global.boApi.post('/bo/ec/mb/member-group/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── mb: 회원 ───────────────────────────────────────────────── */
@@ -202,7 +202,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pd/category', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/pd/category/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pd/category/${_id}`, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'categoryId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/pd/category/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)    { return chkRowIds(rows, 'categoryId', uiNm, cmdNm) || global.boApi.post('/bo/ec/pd/category/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
     getProds(params, uiNm, cmdNm)  { return global.boApi.get(   '/bo/ec/pd/category-prod/page', { params, ...hdr(uiNm, cmdNm) }); },
     updateProds(body, uiNm, cmdNm) { return global.boApi.put(   '/bo/ec/pd/category-prod', body, hdr(uiNm, cmdNm)); },
   };
@@ -266,7 +266,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/pd/tag', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/pd/tag/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/pd/tag/${_id}`, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'tagId', uiNm, cmdNm) || global.boApi.post(  '/bo/ec/pd/tag/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)    { return chkRowIds(rows, 'tagId', uiNm, cmdNm) || global.boApi.post('/bo/ec/pd/tag/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── pm: 캐시 ───────────────────────────────────────────────── */
@@ -431,7 +431,7 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/batch', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return global.boApi.put(   `/bo/sy/batch/${_id}`, body, hdr(uiNm, cmdNm)); },
     run(body, uiNm, cmdNm)         { return global.boApi.post(  '/bo/sy/batch/run', body, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return global.boApi.post(  '/bo/sy/batch/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)    { return global.boApi.post('/bo/sy/batch/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 배치이력 ───────────────────────────────────────────── */
@@ -459,13 +459,13 @@
   /* ── sy: 브랜드 ─────────────────────────────────────────────── */
   boApiSvc.syBrand = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/brand/page', { params, ...hdr(uiNm, cmdNm) }); },
-    saveList(rows, uiNm, cmdNm)  { return chkRowIds(rows, 'brandId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/brand/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'brandId', uiNm, cmdNm) || global.boApi.post('/bo/sy/brand/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드그룹 ──────────────────────────────────────── */
   boApiSvc.syCodeGrp = {
     getAll(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/code-grp', { params, ...hdr(uiNm, cmdNm) }); },
-    saveList(rows, uiNm, cmdNm) { return chkRowIds(rows, 'codeGrp', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/code-grp/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm) { return chkRowIds(rows, 'codeGrp', uiNm, cmdNm) || global.boApi.post('/bo/sy/code-grp/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드 ───────────────────────────────────────────── */
@@ -475,7 +475,8 @@
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/code/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/code', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/sy/code/${_id}`, body, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'codeId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/code/save-list', rows, hdr(uiNm, cmdNm)); },
+    /* 일괄저장 — cmd='base' 기본, 'order' 등 변형. URL: /save-list[/${cmd}] */
+    saveList(cmd, rows, uiNm, cmdNm) { return chkRowIds(rows, 'codeId', uiNm, cmdNm) || global.boApi.post('/bo/sy/code/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 문의(Contact) ──────────────────────────────────────── */
@@ -492,7 +493,7 @@
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/dept/page', { params, ...hdr(uiNm, cmdNm) }); },
     getList(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/dept', { params, ...hdr(uiNm, cmdNm) }); },
     getTree(uiNm, cmdNm)         { return global.boApi.get(   '/bo/sy/dept/tree', hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)  { return chkRowIds(rows, 'deptId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/dept/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'deptId', uiNm, cmdNm) || global.boApi.post('/bo/sy/dept/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: i18n 다국어 ────────────────────────────────────────── */
@@ -506,7 +507,7 @@
   boApiSvc.syMenu = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/menu/page', { params, ...hdr(uiNm, cmdNm) }); },
     getList(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/menu', { params, ...hdr(uiNm, cmdNm) }); },
-    saveList(rows, uiNm, cmdNm)  { return chkRowIds(rows, 'menuId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/menu/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'menuId', uiNm, cmdNm) || global.boApi.post('/bo/sy/menu/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 표시경로 ───────────────────────────────────────────── */
@@ -515,13 +516,13 @@
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/sy/path', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/sy/path/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/sy/path/${_id}`, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)    { return chkRowIds(rows, 'pathId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/path/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)    { return chkRowIds(rows, 'pathId', uiNm, cmdNm) || global.boApi.post('/bo/sy/path/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 시스템속성 ─────────────────────────────────────────── */
   boApiSvc.syProp = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/prop/page', { params, ...hdr(uiNm, cmdNm) }); },
-    saveList(rows, uiNm, cmdNm)  { return chkRowIds(rows, 'propId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/prop/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'propId', uiNm, cmdNm) || global.boApi.post('/bo/sy/prop/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 역할 ───────────────────────────────────────────────── */
@@ -532,7 +533,7 @@
     getUsers(_id, uiNm, cmdNm)        { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/sy/role/${_id}/users`, hdr(uiNm, cmdNm)); },
     saveMenus(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.post(  `/bo/sy/role/${_id}/menus`, body, hdr(uiNm, cmdNm)); },
     saveUsers(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.post(  `/bo/sy/role/${_id}/users`, body, hdr(uiNm, cmdNm)); },
-    saveList(rows, uiNm, cmdNm)       { return chkRowIds(rows, 'roleId', uiNm, cmdNm) || global.boApi.post(  '/bo/sy/role/save-list', rows, hdr(uiNm, cmdNm)); },
+    saveList(cmd, rows, uiNm, cmdNm)       { return chkRowIds(rows, 'roleId', uiNm, cmdNm) || global.boApi.post('/bo/sy/role/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 역할메뉴 ───────────────────────────────────────────── */

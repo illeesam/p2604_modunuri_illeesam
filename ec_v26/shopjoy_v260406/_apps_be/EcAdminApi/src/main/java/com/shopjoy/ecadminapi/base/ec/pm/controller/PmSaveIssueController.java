@@ -63,24 +63,11 @@ public class PmSaveIssueController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** save -- rowStatus 단건 분기 저장 (기본) */
-    @PostMapping("/save")
-    public ResponseEntity<ApiResponse<PmSaveIssue>> saveDefault(@RequestBody PmSaveIssue entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
-    }
-
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<PmSaveIssue>> saveCmd(
             @PathVariable("cmd") String cmd, @RequestBody PmSaveIssue entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
-    }
-
-    /** saveList -- 일괄 저장 (기본) */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<PmSaveIssue> rows) {
-        service.saveList("base", rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
     /** saveList -- 일괄 저장 (cmd 변형) */

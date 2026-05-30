@@ -254,7 +254,7 @@ window.SyMenuMng = {
       if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.syMenu.saveList(saveRows, '메뉴관리', '저장');
+        await boApiSvc.syMenu.saveList('base', saveRows, '메뉴관리', '저장');
         showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {

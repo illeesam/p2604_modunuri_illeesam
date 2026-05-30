@@ -51,6 +51,14 @@ public class BoSyCodeService {
         codeCache.evictAll();
     }
 
+    /* 단건저장 — rowStatus 단건 분기 (cmd) */
+    @Transactional
+    public SyCode save(String cmd, SyCode entity) {
+        SyCode saved = syCodeService.save(cmd, entity);
+        codeCache.evictAll();
+        return saved;
+    }
+
     /* 목록저장 */
     @Transactional
     public void saveList(String cmd, List<SyCode> rows) {

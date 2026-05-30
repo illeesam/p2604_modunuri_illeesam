@@ -188,7 +188,7 @@ window.MbMemGradeMng = {
       if (!ok) { return; }
       const saveRows = [...iRows, ...uRows, ...dRows].map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.mbMemGrade.saveList(saveRows, '회원등급관리', '저장');
+        await boApiSvc.mbMemGrade.saveList('base', saveRows, '회원등급관리', '저장');
         showToast('저장되었습니다.');
         await handleSearchList();
       } catch (err) {

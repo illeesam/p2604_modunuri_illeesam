@@ -185,7 +185,7 @@ window.SyPropMng = {
       if (!ok) { return; }
       const saveRows = dirty.map(r => ({ ...r, rowStatus: r._row_status }));
       try {
-        await boApiSvc.syProp.saveList(saveRows, '속성관리', '저장');
+        await boApiSvc.syProp.saveList('base', saveRows, '속성관리', '저장');
         showToast('저장되었습니다.', 'success');
         await fetchData();
       } catch (err) {

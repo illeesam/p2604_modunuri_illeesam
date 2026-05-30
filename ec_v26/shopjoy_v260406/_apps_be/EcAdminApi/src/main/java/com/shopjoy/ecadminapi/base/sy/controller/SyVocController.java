@@ -63,24 +63,11 @@ public class SyVocController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** save -- rowStatus 단건 분기 저장 (기본) */
-    @PostMapping("/save")
-    public ResponseEntity<ApiResponse<SyVoc>> saveDefault(@RequestBody SyVoc entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity), "저장되었습니다."));
-    }
-
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
     public ResponseEntity<ApiResponse<SyVoc>> saveCmd(
             @PathVariable("cmd") String cmd, @RequestBody SyVoc entity) {
         return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
-    }
-
-    /** saveList -- 일괄 저장 (기본) */
-    @PostMapping("/save-list")
-    public ResponseEntity<ApiResponse<Void>> saveList(@RequestBody List<SyVoc> rows) {
-        service.saveList("base", rows);
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
     /** saveList -- 일괄 저장 (cmd 변형) */
