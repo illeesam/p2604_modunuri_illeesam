@@ -105,8 +105,11 @@ window.PmDiscntDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ PmDiscntDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'vendor-pick') {
-        if (result == null) return handleBtnAction('vendorModal-close');
-        return handleSelectAction('vendorModal-select', result);
+        if (result == null) {
+            uiState.showVendorModal = false;
+            return;
+        }
+        return selectVendor(result.vendorId, result.vendorNm);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

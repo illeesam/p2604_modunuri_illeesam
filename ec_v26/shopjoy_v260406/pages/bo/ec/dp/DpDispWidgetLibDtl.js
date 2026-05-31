@@ -92,11 +92,16 @@ window.DpDispWidgetLibDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ DpDispWidgetLibDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'widget-lib-pick') {
-        if (result == null) return handleBtnAction('libPickModal-close');
-        return handleSelectAction('libPickModal-select', result);
-      } else       if (cmd === 'path-pick') {
-        if (result == null) return handleBtnAction('pathModal-close');
-        return handleSelectAction('pathModal-pick', result);
+        if (result == null) {
+            uiState.libPickOpen = false;
+            return;
+        }
+          return onLibPicked(result);
+      } else if (cmd === 'path-pick') {
+        if (result == null) {
+            return closePathPick();
+        }
+        return onPathPicked(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

@@ -99,8 +99,8 @@ window.XsSample11 = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ Sample11 : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'category-pick') {
-        if (result == null) return handleBtnAction('categoryModal-close');
-        return handleSelectAction('categoryModal-apply', result);
+        if (result == null) { uiState.showCatModal = false; return; }
+        return onCatApply(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

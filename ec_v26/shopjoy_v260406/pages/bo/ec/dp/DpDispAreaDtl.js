@@ -114,11 +114,15 @@ window.DpDispAreaDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ DpDispAreaDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'panel-pick') {
-        if (result == null) return handleBtnAction('pickModal-close');
-        return handleSelectAction('pickModal-select', result);
-      } else       if (cmd === 'path-pick') {
-        if (result == null) return handleBtnAction('pathModal-close');
-        return handleSelectAction('pathModal-pick', result);
+        if (result == null) {
+            return closePick();
+        }
+          return onPanelPicked(result);
+      } else if (cmd === 'path-pick') {
+        if (result == null) {
+            return closePathPick();
+        }
+        return onPathPicked(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

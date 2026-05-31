@@ -63,10 +63,6 @@ window.SyUserDtl = {
       } else if (cmd === 'deptModal-open') {
         deptModal.show = true;
         return;
-      // 부서 선택 모달 닫기
-      } else if (cmd === 'deptModal-close') {
-        deptModal.show = false;
-        return;
       // 부서 선택 비우기
       } else if (cmd === 'deptModal-clear') {
         form.deptId = null; form.deptNm = '';
@@ -79,24 +75,19 @@ window.SyUserDtl = {
     /* handleSelectAction — 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyUserDtl.js : handleSelectAction -> ', cmd, param);
-      // 부서 선택 모달에서 부서 선택
-      if (cmd === 'deptModal-select') {
-        form.deptId = param.deptId;
-        form.deptNm = param.deptNm;
-        deptModal.show = false;
-        return;
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
 
-    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyUserDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'dept-pick') {
-        if (result == null) return handleBtnAction('deptModal-close');
-        return handleSelectAction('deptModal-select', result);
+        if (result == null) { deptModal.show = false; return; }
+        form.deptId = result.deptId;
+        form.deptNm = result.deptNm;
+        deptModal.show = false;
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

@@ -111,13 +111,13 @@ window.SyTemplateMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyTemplateMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'path-pick') {
-        if (result == null) return handleBtnAction('pathModal-close');
-        return handleSelectAction('pathModal-pick', result);
+        if (result == null) { closePathPick(); return; }
+        return onPathPicked(result);
       } else if (cmd === 'template-preview') {
-        if (result == null) return handleBtnAction('previewModal-close');
+        if (result == null) { previewModal.show = false; return; }
         return;
       } else if (cmd === 'template-send') {
-        if (result == null) return handleBtnAction('sendModal-close');
+        if (result == null) { sendModal.show = false; return; }
         return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);

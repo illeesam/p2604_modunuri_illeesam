@@ -98,8 +98,12 @@ window.XsSample13 = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ Sample13 : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'category-pick') {
-        if (result == null) return handleBtnAction('categoryModal-close');
-        return handleSelectAction('categoryModal-apply', result);
+        if (result == null) {
+            uiState.showCatModal = false;
+          // 전체 소스 복사
+          return;
+        }
+        return onCatApply(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

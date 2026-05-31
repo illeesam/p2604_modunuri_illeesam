@@ -5,9 +5,14 @@
 window.HelpBoModal = {
   name: 'HelpBoModal',
   inheritAttrs: false,
-  props: ['show', 'topic'],
+  props: {
+    show:  { type: Boolean,   default: false },                           // 모달 표시 여부
+    topic: { type: String,    default: '' },                              // 도움말 토픽,
+    modalName:  { type: String,   default: '' },                       // 모달 식별자
+    onCallback: { type: Function, default: null },                     // 통합 콜백
+  },
   emits: ['close'],
-  setup(props, { emit, attrs }) {
+  setup(props, { emit }) {
     // ===== [01] 초기 변수 정의 ==================================================
     const { ref, watch } = Vue;
 
@@ -258,8 +263,9 @@ window.HelpBoModal = {
       console.log(' ■■ HelpBoModal.js : handleBtnAction -> ', cmd, param);
       // 도움말 모달 닫기
       if (cmd === 'modal-close') {
-        return emit('close');
-        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }

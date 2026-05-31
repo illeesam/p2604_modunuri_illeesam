@@ -26,9 +26,15 @@
 window.OrderDetailModal = {
   name: 'OrderDetailModal',
   inheritAttrs: false,
-  props: ['show', 'order', 'reloadTrigger'],
+  props: {
+    show:          { type: Boolean,   default: false },                   // 모달 표시 여부
+    order:         { type: Object,    default: () => ({}) },              // 주문 정보
+    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
+    modalName:  { type: String,   default: '' },                       // 모달 식별자
+    onCallback: { type: Function, default: null },                     // 통합 콜백
+  },
   emits: ['close'],
-  setup(props, { emit, attrs }) {
+  setup(props, { emit }) {
     const { reactive, computed } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -43,8 +49,9 @@ window.OrderDetailModal = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OrderDetailModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
-        return emit('close');
-        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -203,9 +210,20 @@ window.OrderDetailModal = {
 window.ProductModal = {
   name: 'ProductModal',
   inheritAttrs: false,
-  props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked', 'addToCart', 'cartMode', 'reloadTrigger'],
+  props: {
+    show:          { type: Boolean,  default: false },          // 모달 표시 여부
+    product:       { type: Object,   default: () => ({}) },     // 상품 정보
+    navigate:      { type: Function, default: () => {} },       // 페이지 이동
+    toggleLike:    { type: Function, default: () => {} },       // 찜 토글
+    isLiked:       { type: Function, default: () => false },    // 찜 여부 확인
+    addToCart:     { type: Function, default: () => {} },       // 장바구니 추가
+    cartMode:      { type: String,   default: 'cart' },         // 카트 모드 (cart/order)
+    reloadTrigger: { type: Number,   default: 0 },              // 재조회 트리거,
+    modalName:  { type: String,   default: '' },                       // 모달 식별자
+    onCallback: { type: Function, default: null },                     // 통합 콜백
+  },
   emits: ['close'],
-  setup(props, { emit, attrs }) {
+  setup(props, { emit }) {
     const { ref, watch, computed, reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -221,24 +239,26 @@ window.ProductModal = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ ProductModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
-        return emit('close');
-        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
       } else if (cmd === 'modal-like') {
         return handleLike();
       } else if (cmd === 'modal-cart') {
         return handleCart();
       } else if (cmd === 'modal-cart-close') {
         if (handleCart()) emit('close');
-        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
         return;
       } else if (cmd === 'modal-buy-now-close') {
         if (handleBuyNow(props.navigate)) emit('close');
-        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
         return;
       } else if (cmd === 'modal-go-prod-view') {
         if (props.navigate) props.navigate('prodView');
-        return emit('close');
-        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
       } else if (cmd === 'modal-qty-dec') {
         if (qty.value > 1) qty.value--;
         return;
@@ -577,16 +597,24 @@ window.ProductModal = {
 window.CustomerModal = {
   name: 'CustomerModal',
   inheritAttrs: false,
-  props: ['show', 'user', 'order', 'reloadTrigger'],
+  props: {
+    show:          { type: Boolean,   default: false },                   // 모달 표시 여부
+    user:          { type: Object,    default: () => ({}) },              // 사용자 정보
+    order:         { type: Object,    default: () => ({}) },              // 주문 정보
+    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거,
+    modalName:  { type: String,   default: '' },                       // 모달 식별자
+    onCallback: { type: Function, default: null },                     // 통합 콜백
+  },
   emits: ['close'],
-  setup(props, { emit, attrs }) {
+  setup(props, { emit }) {
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CustomerModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
-        return emit('close');
-        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }

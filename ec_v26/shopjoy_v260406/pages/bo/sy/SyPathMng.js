@@ -105,8 +105,10 @@ window.SyPathMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyPathMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'parent-path') {
-        if (result == null) return handleBtnAction('parentModal-close');
-        return handleSelectAction('parentModal-select', result);
+        if (result == null) {
+            return closeParentModal();
+        }
+        return selectParent(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

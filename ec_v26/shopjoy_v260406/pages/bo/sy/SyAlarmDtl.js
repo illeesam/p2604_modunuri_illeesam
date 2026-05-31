@@ -82,8 +82,13 @@ window.SyAlarmDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyAlarmDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'path-pick') {
-        if (result == null) return handleBtnAction('pathModal-close');
-        return handleSelectAction('pathModal-pick', result);
+        if (result == null) {
+          pathPickModal.show = false;
+          return;
+        }
+        form.pathId = result;
+        pathPickModal.show = false;
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

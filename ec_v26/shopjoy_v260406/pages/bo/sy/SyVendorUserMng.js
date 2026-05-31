@@ -125,8 +125,10 @@ window.SyVendorUserMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyVendorUserMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'role-select') {
-        if (result == null) return handleBtnAction('roleModal-close');
-        return handleBtnAction('roleModal-confirm');
+        if (result == null) {
+            return closeRoleModal();
+        }
+        return confirmRoleModal();
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

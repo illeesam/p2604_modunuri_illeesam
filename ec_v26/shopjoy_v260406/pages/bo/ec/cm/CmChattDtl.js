@@ -99,7 +99,7 @@ window.CmChattDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ CmChattDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'ref') {
-        if (result == null) return handleBtnAction('refModal-close');
+        if (result == null) { return closeRefModal(); }
         return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);

@@ -120,8 +120,11 @@ window.PdBundleMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ PdBundleMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'category-pick') {
-        if (result == null) return handleBtnAction('categoryModal-close');
-        return handleSelectAction('categoryModal-select', result);
+        if (result == null) {
+            uiState.catPickerOpen = false;
+            return;
+        }
+          return addCategory(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

@@ -87,10 +87,16 @@ window.PmVoucherDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ PmVoucherDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'vendor-pick') {
-        if (result == null) return handleBtnAction('vendorModal-close');
-        return handleSelectAction('vendorModal-select', result);
+        if (result == null) {
+            uiState.showVendorModal = false;
+            return;
+        }
+        return selectVendor(result.vendorId, result.vendorNm);
       } else if (cmd === 'sns') {
-        if (result == null) return handleBtnAction('snsModal-close');
+        if (result == null) {
+            snsModal.show = false;
+            return;
+        }
         return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);

@@ -104,11 +104,14 @@ window.SyBatchMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyBatchMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'path-pick') {
-        if (result == null) return handleBtnAction('pathModal-close');
-        return handleSelectAction('pathModal-pick', result);
+        if (result == null) { return closePathPick(); }
+        return onPathPicked(result);
       } else if (cmd === 'cron') {
-        if (result == null) return handleBtnAction('cronModal-close');
-        return handleSelectAction('cronModal-apply', result);
+        if (result == null) {
+            cronModal.show = false;
+            return;
+        }
+          return onCronApply(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

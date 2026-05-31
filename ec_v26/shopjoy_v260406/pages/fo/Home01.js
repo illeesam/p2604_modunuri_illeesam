@@ -81,7 +81,10 @@ window.Home01 = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ Home01 : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'quick-view') {
-        if (result == null) return handleBtnAction('quickViewModal-close');
+        if (result == null) {
+          uiState.quickViewProduct = null; uiState.cartModalMode = false;
+          return;
+        }
         return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);

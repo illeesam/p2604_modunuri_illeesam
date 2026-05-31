@@ -139,7 +139,9 @@ window.OdDlivMng = {
       console.log(' ■■ OdDlivMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'member-pick') {
         if (result == null) { memberPick.open = false; return; }
-        return handleSelectAction('memberPickModal-select', result);
+        searchParam.memberId = result.memberId;
+        searchParam.memberNm = result.memberNm || result.loginId || result.memberId;
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

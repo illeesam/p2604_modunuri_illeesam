@@ -137,13 +137,13 @@ window.DpDispPanelDtl = {
       console.log(' ■■ DpDispPanelDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'widget-lib-pick') {
         if (result == null) { uiState.libPickOpen = false; return; }
-        return handleSelectAction('libPick-select', result);
-      } else       if (cmd === 'row-pick') {
+          return onLibPicked(result);
+      } else if (cmd === 'row-pick') {
         if (result == null) { uiState.rowCopyOpen = false; return; }
-        return handleSelectAction('rowCopyModal-copy', result);
-      } else       if (cmd === 'path-pick') {
+          return onRowCopy(result);
+      } else if (cmd === 'path-pick') {
         if (result == null) { pathPickModal.show = false; return; }
-        return handleSelectAction('pathModal-pick', result);
+          return onPathPicked(result);
       } else if (cmd === 'disp-preview') {
         if (result == null) return closePreview();
         return;

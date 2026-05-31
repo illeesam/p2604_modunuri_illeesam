@@ -103,8 +103,17 @@ window.SyDeptMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyDeptMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'parent-dept') {
-        if (result == null) return handleBtnAction('parentModal-close');
-        return handleSelectAction('parentModal-select', result);
+        if (result == null) {
+          parentModal.show = false;
+          return;
+        }
+        if (parentModal.targetRow) {
+          parentModal.targetRow.parentDeptId = result.deptId;
+          parentModal.targetRow._depth = 0;
+          onCellChange(parentModal.targetRow);
+        }
+        parentModal.show = false;
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

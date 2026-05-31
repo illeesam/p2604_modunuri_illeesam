@@ -92,10 +92,16 @@ window.SyBbsDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyBbsDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'bbm-select') {
-        if (result == null) return handleBtnAction('bbmModal-close');
-        return handleSelectAction('bbmModal-select', result);
+        if (result == null) {
+            showBbmModal.value = false;
+            return;
+        }
+        return onBbmSelect(result);
       } else if (cmd === 'bbm-detail') {
-        if (result == null) return handleBtnAction('bbmDetail-close');
+        if (result == null) {
+          uiState.showBbmDetail = false;
+          return;
+        }
         return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);

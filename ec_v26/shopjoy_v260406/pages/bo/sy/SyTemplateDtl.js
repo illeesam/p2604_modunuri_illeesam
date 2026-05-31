@@ -75,10 +75,16 @@ window.SyTemplateDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyTemplateDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'template-preview') {
-        if (result == null) return handleBtnAction('previewModal-close');
+        if (result == null) {
+            uiState.previewOpen = false;
+            return;
+        }
         return;
       } else if (cmd === 'template-send') {
-        if (result == null) return handleBtnAction('sendModal-close');
+        if (result == null) {
+          uiState.sendOpen = false;
+          return;
+        }
         return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);

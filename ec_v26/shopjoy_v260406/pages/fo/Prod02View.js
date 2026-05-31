@@ -145,7 +145,10 @@ window.Prod02View = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ Prod02View : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'size-guide') {
-        if (result == null) return handleBtnAction('sizeGuideModal-close');
+        if (result == null) {
+            uiState.showSizeGuide = false;
+            return;
+        }
         return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);

@@ -94,8 +94,17 @@ window.SyMenuMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ SyMenuMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'parent-menu') {
-        if (result == null) return handleBtnAction('parentModal-close');
-        return handleSelectAction('parentModal-select', result);
+        if (result == null) {
+          parentModal.show = false;
+          return;
+        }
+        if (parentModal.targetRow) {
+          parentModal.targetRow.parentMenuId = result.menuId;
+          parentModal.targetRow._depth = 0;
+          onCellChange(parentModal.targetRow);
+        }
+        parentModal.show = false;
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

@@ -116,8 +116,12 @@ window.XsSample12 = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ Sample12 : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'category-pick') {
-        if (result == null) return handleBtnAction('categoryModal-close');
-        return handleSelectAction('categoryModal-apply', result);
+        if (result == null) {
+            uiState.showCatModal = false;
+          // 트리 전체 선택
+          return;
+        }
+        return onCatApply(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

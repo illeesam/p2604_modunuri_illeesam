@@ -134,11 +134,17 @@ window.PmPlanDtl = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ PmPlanDtl : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'vendor-pick') {
-        if (result == null) return handleBtnAction('vendorModal-close');
-        return handleSelectAction('vendorModal-select', result);
+        if (result == null) {
+            uiState.showVendorModal = false;
+            return;
+        }
+        return selectVendor(result.vendorId, result.vendorNm);
       } else if (cmd === 'prod-pick') {
-        if (result == null) return handleBtnAction('prodPickModal-close');
-        return handleSelectAction('prodPickModal-toggle', result);
+        if (result == null) {
+            uiState.showProdPopup = false;
+            return;
+        }
+          return toggleProduct(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

@@ -178,8 +178,11 @@
       const fnCallbackModal = (cmd, param, result) => {
         console.log(' ■■ MbCustInfoMng : fnCallbackModal -> ', cmd, param, result);
         if (cmd === 'member-pick') {
-          if (result == null) return handleBtnAction('memberModal-close');
-          return handleSelectAction('memberModal-pick', result);
+          if (result == null) {
+              memberModal.show = false;
+              return;
+          }
+            return selectMember(result);
         } else {
           console.warn('[fnCallbackModal] unknown cmd:', cmd);
         }

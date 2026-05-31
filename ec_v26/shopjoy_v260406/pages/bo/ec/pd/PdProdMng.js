@@ -109,8 +109,11 @@ window.PdProdMng = {
     const fnCallbackModal = (cmd, param, result) => {
       console.log(' ■■ PdProdMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'category-pick') {
-        if (result == null) return handleBtnAction('catModal-close');
-        return handleSelectAction('catModal-select', result);
+        if (result == null) {
+            catModal.show = false;
+            return;
+        }
+        return onCatSelect(result);
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
