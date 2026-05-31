@@ -189,6 +189,139 @@ window.BoPathTree = {
 `,
 };
 
+/* ── BoMenuTree 컨테이너 (sy_menu 자기참조 트리) ───────────────────────────
+ * BoPathTree 의 메뉴 버전 — sy_path 대신 sy_menu 의 parent_menu_id 자기참조 트리.
+ * SyMenuMng 등 메뉴 관리 화면 좌측 트리 전용.
+ *
+ * props:
+ *   selected    — menuId 현재 선택값
+ *   expandDepth — number 초기 펼침 깊이 (기본 2)
+ *   counts      — Object { menuId: number } — 외부 카운트
+ * emits:
+ *   select(menuId) — 노드 클릭 시 (null = 전체)
+ *
+ * 노드 내부 형식: { pathId, pathLabel, children, count } — BoPathTreeNode 와 호환되도록
+ *   menuId → pathId 로 매핑해 재사용. 트리 노드 출력만 동일 컴포넌트로 처리.
+ * ──────────────────────────────────────────────────────────────────────── */
+window.BoMenuTree = {
+  name: 'BoMenuTree',
+  props: {
+    selected:    { default: null },
+    expandDepth: { type: Number, default: 2 },
+    counts:      { type: Object, default: null },
+  },
+  emits: ['select'],
+  setup(props, { emit }) {
+    const { ref, reactive, watch, onMounted } = Vue;
+
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoMenuTree : handleBtnAction -> ', cmd, param);
+      if (cmd === 'tree-expand-all')   return expandAll();
+      if (cmd === 'tree-collapse-all') return collapseAll();
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoMenuTree : handleSelectAction -> ', cmd, param);
+      if (cmd === 'tree-node-toggle') return toggleNode(param);
+      if (cmd === 'tree-node-select') return selectNode(param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    const _cache = (window._menuTreeCache = window._menuTreeCache || {});
+    const tree     = reactive({ pathId: null, pathLabel: '전체', children: [], count: 0 });
+    const expanded = reactive(new Set([null]));
+    const loading  = ref(false);
+
+    /* sy_menu list → 트리 — BoPathTreeNode 호환 형식 (menuId → pathId, menuNm → pathLabel) */
+    const buildTree = (list) => {
+      const filtered = list.filter(m => m.useYn !== 'N');
+      const byParent = {};
+      filtered.forEach(m => {
+        const k = m.parentMenuId == null ? '__root__' : m.parentMenuId;
+        (byParent[k] = byParent[k] || []).push(m);
+      });
+      const build = (pk) => (byParent[pk] || [])
+        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+        .map(m => ({
+          pathId: m.menuId, pathLabel: m.menuNm, bizCd: '',
+          children: build(m.menuId), count: 0,
+        }));
+      const root = { pathId: null, pathLabel: '전체', children: build('__root__'), count: 0 };
+      const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
+      recur(root);
+      return root;
+    };
+
+    const initExpanded = (node, depth, maxDepth) => {
+      if (depth > maxDepth) return;
+      expanded.add(node.pathId);
+      (node.children || []).forEach(ch => initExpanded(ch, depth + 1, maxDepth));
+    };
+
+    const fnApplyTree = (newTree) => {
+      tree.pathId    = newTree.pathId;
+      tree.pathLabel = newTree.pathLabel;
+      tree.children  = newTree.children;
+      tree.count     = newTree.count;
+    };
+
+    const load = async () => {
+      if (_cache.list) {
+        fnApplyTree(buildTree(_cache.list));
+        expanded.clear();
+        initExpanded(tree, 0, props.expandDepth);
+        return;
+      }
+      loading.value = true;
+      try {
+        const res = await boApiSvc.syMenu.getList({ pageNo: 1, pageSize: 10000 }, '메뉴트리', '조회');
+        const list = res.data?.data || [];
+        _cache.list = list;
+        fnApplyTree(buildTree(list));
+        expanded.clear();
+        initExpanded(tree, 0, props.expandDepth);
+      } catch (e) {
+        console.error('[MenuTree] load error', e);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
+    const selectNode = (id) => { emit('select', id); };
+    const expandAll  = () => { const walk = (n) => { expanded.add(n.pathId); (n.children||[]).forEach(walk); }; walk(tree); };
+    const collapseAll = () => { expanded.clear(); expanded.add(null); };
+
+    onMounted(load);
+
+    return {
+      tree, expanded, loading,
+      handleBtnAction, handleSelectAction,
+      toggleNode, selectNode,
+    };
+  },
+  template: /* html */`
+<div>
+  <div style="display:flex;gap:4px;margin-bottom:8px;">
+    <button class="btn btn-sm" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">
+      ▼ 전체펼치기
+    </button>
+    <button class="btn btn-sm" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">
+      ▶ 전체닫기
+    </button>
+  </div>
+  <div v-if="loading" style="font-size:11px;color:#aaa;padding:8px;text-align:center;">
+    로딩중...
+  </div>
+  <bo-path-tree-node v-else
+    :node="tree" :expanded="expanded" :selected="selected"
+    :on-toggle="toggleNode" :on-select="selectNode"
+    :depth="0" :show-biz-cd="false" :counts="counts" />
+</div>
+`,
+};
+
 /* ── BoPathTreeNode 재귀 노드 ──────────────────────────────────────────────
  * BoPathTree 내부용이지만 직접 사용도 가능 (기존 호환 유지)
  * props: node, expanded, selected, onToggle, onSelect, depth, showBizCd

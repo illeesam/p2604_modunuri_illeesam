@@ -1116,6 +1116,72 @@ window.BoPathTreeCard = {
 `,
 };
 
+/* ── BoMenuTreeCard — 좌측 메뉴 트리 카드 (sy_menu 자기참조 트리) ────────────
+ * BoPathTreeCard 의 메뉴 버전. sy_menu 의 parent_menu_id 자기참조 트리를 그린다.
+ * SyMenuMng 등 메뉴 화면 전용.
+ *
+ * props:
+ *   title     — string 카드 제목 (기본 '메뉴')
+ *   selected  — 현재 선택 menuId (null = 전체)
+ *   allLabel  — string 전체보기 링크 텍스트 (기본 '전체보기')
+ *   maxHeight — string 스크롤 영역 높이 (기본 '65vh')
+ *   pad       — string 카드 padding (기본 '12px')
+ *   counts    — Object { menuId: number } — 외부 카운트 (백엔드 selectMenuTreeCnts 결과)
+ * emit:
+ *   select(menuId) — 노드 클릭 / 전체보기(null) 통합
+ * ──────────────────────────────────────────────────────────────────────── */
+window.BoMenuTreeCard = {
+  name: 'BoMenuTreeCard',
+  props: {
+    title:     { type: String,  default: '메뉴' },
+    selected:  { default: null },
+    allLabel:  { type: String,  default: '전체보기' },
+    maxHeight: { type: String,  default: '65vh' },
+    pad:       { type: String,  default: '12px' },
+    counts:    { type: Object,  default: null },
+  },
+  emits: ['select'],
+  setup(props, { emit }) {
+    const cfHasSel = Vue.computed(() => props.selected != null && props.selected !== '');
+
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoMenuTreeCard : handleBtnAction -> ', cmd, param);
+      if (cmd === 'tree-all') {
+        return emit('select', null);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoMenuTreeCard : handleSelectAction -> ', cmd, param);
+      if (cmd === 'node-select') {
+        return emit('select', param.id);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    return { cfHasSel, handleBtnAction, handleSelectAction };
+  },
+  template: /* html */`
+<div class="card" :style="'padding:' + pad + ';'">
+  <div class="toolbar" style="margin-bottom:6px;">
+    <span class="list-title" style="font-size:13px;">
+      📂 {{ title }}
+      <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">#sy_menu</span>
+    </span>
+    <span v-if="cfHasSel" @click="handleBtnAction('tree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
+      {{ allLabel }}
+    </span>
+  </div>
+  <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
+    <bo-menu-tree :selected="selected" :counts="counts" @select="id => handleSelectAction('node-select', { id })" />
+  </div>
+</div>
+`,
+};
+
 /* ── BoLocalTreeCard — 로컬 데이터 트리 카드 (BoPathTreeNode 사용) ────────────
  * 부모가 빌드한 cfTree(computed) 등 로컬 트리를 받는 카드. API 미사용.
  * SyPathMng(sy_path 자기참조), SyRoleMng(역할 트리) 등 자체 트리 화면용.

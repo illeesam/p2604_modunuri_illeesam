@@ -149,7 +149,7 @@ window.SyUserMng = {
         Object.keys(deptCounts).forEach(k => { delete deptCounts[k]; });
 
         /* 백엔드가 dept_id 도 pathId 키로 통일 반환 (List<Map> 패턴) */
-        for (const r of rows) { if (r && r.pathId != null) deptCounts[r.pathId] = r.cnt; }
+        for (const r of rows) { if (r && r.deptId != null) deptCounts[r.deptId] = r.cnt; }
       } catch (e) { console.error('[handleLoadDeptTreeNodeCounts]', e); }
     };
 

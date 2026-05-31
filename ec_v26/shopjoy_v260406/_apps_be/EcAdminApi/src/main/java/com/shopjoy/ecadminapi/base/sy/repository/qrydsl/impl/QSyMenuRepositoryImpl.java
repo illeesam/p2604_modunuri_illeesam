@@ -312,13 +312,13 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         sql.append("""
                 )
                   /* (1) 일반 menu_id 행 : 노드 + 자손 누적 카운트 */
-                  SELECT d.root_id AS path_id, COUNT(t.menu_id) AS cnt
+                  SELECT d.root_id AS menu_id, COUNT(t.menu_id) AS cnt
                   FROM descendants d
                     LEFT JOIN filtered t ON t.menu_id = d.leaf_id
                   GROUP BY d.root_id
                 UNION ALL
                   /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
-                  SELECT '__total__' AS path_id, COUNT(*) AS cnt
+                  SELECT '__total__' AS menu_id, COUNT(*) AS cnt
                   FROM filtered
                 """);
 
@@ -331,7 +331,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         List<Map<String, Object>> result = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
             Map<String, Object> m = new LinkedHashMap<>();
-            m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+            m.put("menuId", row[0] == null ? null : String.valueOf(row[0]));
             m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
             result.add(m);
         }

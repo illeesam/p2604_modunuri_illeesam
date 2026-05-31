@@ -182,6 +182,22 @@ window.SyDeptMng = {
 
     const cfTree = computed(() => buildTree(depts));
 
+    /* cfDeptCounts — 부서별 자손 누적 부서수 (자기 자신 포함) — 프론트 자체 계산
+     *   { deptId: 자기포함 자손합계, __total__: 전체 부서수(루트들 자기포함 합계) } */
+    const cfDeptCounts = computed(() => {
+      const out = {};
+      const recur = (node) => {
+        let cnt = 1; // 자기 자신
+        for (const ch of (node.children || [])) cnt += recur(ch);
+        if (node.deptId != null) out[node.deptId] = cnt;
+        return cnt;
+      };
+      cfTree.value.children.forEach(r => recur(r));
+      /* __total__ = 전체 부서수 (depts 배열 길이). recur 합계와 동일하지만 명시적으로 depts.length 사용 */
+      out.__total__ = depts.length;
+      return out;
+    });
+
     /* expandAll — 트리 전체 펼치기 */
     const expandAll = () => {
       const walk = (n) => { expanded.add(n.deptId); n.children.forEach(walk); };
@@ -378,7 +394,7 @@ window.SyDeptMng = {
       depts, uiState, codes, searchParam, gridRows, expanded, parentModal,                                   // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
-      cfTree,                                                                                                // computed
+      cfTree, cfDeptCounts,                                                                                  // computed
     };
   },
   template: /* html */`
@@ -414,7 +430,7 @@ window.SyDeptMng = {
         <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId"
           :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
           :on-select="id => handleSelectAction('deptTree-select', id)"
-          :depth="0" />
+          :depth="0" :counts="cfDeptCounts" />
       </div>
     </div>
     <div>

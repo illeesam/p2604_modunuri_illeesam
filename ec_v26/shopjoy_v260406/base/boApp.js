@@ -2875,6 +2875,8 @@
     .component('BoGrid', window.BoGrid)
     .component('BoGridCrud', window.BoGridCrud)
     .component('BoPathTreeCard', window.BoPathTreeCard)
+    .component('BoMenuTree', window.BoMenuTree)
+    .component('BoMenuTreeCard', window.BoMenuTreeCard)
     .component('BoLocalTreeCard', window.BoLocalTreeCard)
     .component('BoModal', window.BoModal)
     .component('BoCronModal', window.BoCronModal)

@@ -122,7 +122,7 @@ window.SyMenuMng = {
 
         Object.keys(menuCounts).forEach(k => { delete menuCounts[k]; });
 
-        for (const r of rows) { if (r && r.pathId != null) menuCounts[r.pathId] = r.cnt; }
+        for (const r of rows) { if (r && r.menuId != null) menuCounts[r.menuId] = r.cnt; }
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 
@@ -134,7 +134,8 @@ window.SyMenuMng = {
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         menus.splice(0, menus.length, ...list);
         gridRows.splice(0);
-        buildTreeRows(list).forEach(m => gridRows.push(makeRow(m)));
+        /* 좌 트리 선택 노드가 있으면 그 자손만 그리드에 표시 (sy_menu 자기참조 필터) */
+        buildTreeRows(list, uiState.selectedTreeId).forEach(m => gridRows.push(makeRow(m)));
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
@@ -162,8 +163,9 @@ window.SyMenuMng = {
       handleSearchList('DEFAULT');
     });
 
-    /* buildTreeRows — 그리드용 트리 행 빌드 */
-    const buildTreeRows = (items) => {
+    /* buildTreeRows — 그리드용 트리 행 빌드
+     *   rootId(=selectedTreeId) 가 있으면 그 노드 + 자손만 결과에 포함. null 이면 전체. */
+    const buildTreeRows = (items, rootId = null) => {
       const map = {};
       items.forEach(m => { map[m.menuId] = { ...m, _children: [] }; });
       const roots = [];
@@ -176,7 +178,12 @@ window.SyMenuMng = {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
       };
-      roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(r => traverse(r, 0));
+      if (rootId != null && map[rootId]) {
+        /* 선택 노드를 루트로 그 자손까지 */
+        traverse(map[rootId], 0);
+      } else {
+        roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(r => traverse(r, 0));
+      }
       return result;
     };
 
@@ -349,8 +356,8 @@ window.SyMenuMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
-    <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_menu" title="메뉴" :show-biz-cd="false" :counts="menuCounts"
+    <!-- ===== ■.■. 메뉴 트리 (sy_menu 자기참조) ============================== -->
+    <bo-menu-tree-card title="메뉴" :counts="menuCounts"
       :selected="uiState.selectedTreeId"
       @select="path => handleSelectAction('pathTree-select', path)" />
     <div>

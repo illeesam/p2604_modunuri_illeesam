@@ -403,11 +403,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         @SuppressWarnings("unchecked")
         List<Object[]> rows = (List<Object[]>) q.getResultList();
 
-        /* Object[] → { pathId, cnt } 매핑 — 프론트가 deptId 가 아닌 pathId 키로 받기 위해 통일 */
+        /* Object[] → { deptId, cnt } 매핑 — sy_dept 자기참조 트리 카운트라 deptId 키 사용 */
         List<Map<String, Object>> result = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
             Map<String, Object> m = new LinkedHashMap<>();
-            m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+            m.put("deptId", row[0] == null ? null : String.valueOf(row[0]));
             m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
             result.add(m);
         }
