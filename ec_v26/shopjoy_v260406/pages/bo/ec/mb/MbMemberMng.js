@@ -327,7 +327,7 @@ window.MbMemberMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="members" :pager="pager" row-key="memberId"
+  <bo-grid :columns="baseGridColumns" :rows="members" row-key="memberId"
     :sort-state="uiState" list-title="회원목록" row-clickable
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
@@ -346,6 +346,7 @@ window.MbMemberMng = {
       </button>
     </template>
   </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <mb-member-dtl :detail-modal="detailPanel" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"

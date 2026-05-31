@@ -407,7 +407,7 @@ window.SyAlarmMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="baseGridColumns" :rows="alarms" :pager="pager" row-key="alarmId"
+        :columns="baseGridColumns" :rows="alarms" row-key="alarmId"
         list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('alarms-sort', key)"
@@ -442,6 +442,7 @@ window.SyAlarmMng = {
           </td>
         </template>
       </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('alarms-pager-setPage', n)" :on-size-change="() => handleSelectAction('alarms-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭) ===================== -->

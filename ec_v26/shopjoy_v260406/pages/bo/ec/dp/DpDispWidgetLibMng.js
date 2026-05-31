@@ -344,7 +344,7 @@ window.DpDispWidgetLibMng = {
       </div>
       <div>
         <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-        <bo-grid :columns="listGridColumns" :rows="widgetLibs" :pager="pager" row-key="widgetLibId"
+        <bo-grid :columns="listGridColumns" :rows="widgetLibs" row-key="widgetLibId"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable
@@ -385,6 +385,7 @@ window.DpDispWidgetLibMng = {
             </div>
           </template>
         </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
       </div>
     </div>
     <!-- ===== □. 본문 영역 =================================================== -->

@@ -306,7 +306,7 @@ window.OdCartMng = {
       조회 중...
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="carts" :pager="pager" row-key="cartId"
+    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="carts" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
       @toggle-check="id => handleSelectAction('carts-rowToggleCheck', id)"

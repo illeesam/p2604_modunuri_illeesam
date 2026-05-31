@@ -393,7 +393,7 @@ window.DpDispWidgetMng = {
     <!-- ===== ■.■. 우측 목록 ================================================= -->
     <div style="flex:1;min-width:0;width:100%;">
       <!-- ===== ■.■.■. 목록 ================================================== -->
-      <bo-grid :columns="listGridColumns" :rows="widgets" :pager="pager" row-key="widgetId"
+      <bo-grid :columns="listGridColumns" :rows="widgets" row-key="widgetId"
         :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="등록된 위젯이 없습니다."
@@ -509,6 +509,7 @@ window.DpDispWidgetMng = {
           </div>
         </template>
       </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('widgets-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgets-pager-sizeChange')" />
     </div>
     <!-- ===== /우측 목록 ===================================================== -->
   </div>

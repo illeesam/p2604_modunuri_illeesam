@@ -284,7 +284,7 @@ window.CmChattMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="chatts" :pager="pager" row-key="chattRoomId"
+  <bo-grid :columns="baseGridColumns" :rows="chatts" row-key="chattRoomId"
     :sort-state="uiState" list-title="채팅목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
@@ -312,6 +312,7 @@ window.CmChattMng = {
       </div>
     </template>
   </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('chatts-pager-setPage', n)" :on-size-change="() => handleSelectAction('chatts-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ChattDtl 임베드 ===================================== -->
   <div v-if="detailPanel.selectedId" style="margin-top:4px;">

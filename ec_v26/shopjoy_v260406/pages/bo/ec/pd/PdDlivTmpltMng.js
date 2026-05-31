@@ -329,12 +329,13 @@ window.PdDlivTmpltMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="dlivTmplts" :pager="pager" row-key="dlivTmpltId"
+      :columns="baseGridColumns" :rows="dlivTmplts" row-key="dlivTmpltId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
       @sort="key => handleSelectAction('dlivTmplts-sort', key)" @row-click="row => handleSelectAction('dlivTmplts-rowOpen', row)" @set-page="n => handleSelectAction('dlivTmplts-pager-setPage', n)" @size-change="handleSelectAction('dlivTmplts-pager-sizeChange')">
     </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (신규/수정 폼) ====================================== -->

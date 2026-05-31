@@ -194,7 +194,7 @@ window.SyBatchHist = {
 <div>
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="histGridColumns" :rows="batchLogs" :pager="pager" row-key="batchLogId"
+    :columns="histGridColumns" :rows="batchLogs" row-key="batchLogId"
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
     empty-text="실행이력이 없습니다."
@@ -255,6 +255,7 @@ window.SyBatchHist = {
       </td>
     </template>
       </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('batchLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('batchLogs-pager-sizeChange')" />
       <!-- ===== □. 목록 영역 =================================================== -->
     </div>
 `,

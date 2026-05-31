@@ -399,7 +399,7 @@ window.SyTemplateMng = {
     <div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
-        :columns="baseGridColumns" :rows="templates" :pager="pager" row-key="templateId"
+        :columns="baseGridColumns" :rows="templates" row-key="templateId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('templates-sort', key)"
@@ -440,6 +440,7 @@ window.SyTemplateMng = {
           </td>
         </template>
       </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
       <!-- ===== ■.■.■. 미리보기/발송 모달 (position:fixed) ========================= -->
       <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
       <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />

@@ -377,7 +377,6 @@ const raws = reactive([]);
   <bo-grid
     :columns="rawGridColumns"
     :rows="raws"
-    :pager="pager"
     row-key="settleRawId"
     list-title="정산수집원장"
     :is-expanded="(r) => isExpanded(r.settleRawId)"
@@ -402,6 +401,7 @@ const raws = reactive([]);
       </td>
     </template>
   </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
 </div>
 <!-- ===== □. 목록 카드 =================================================== -->
 `,

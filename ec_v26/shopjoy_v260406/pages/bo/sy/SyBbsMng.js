@@ -324,7 +324,7 @@ window.SyBbsMng = {
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="bbsList" :pager="pager" row-key="bbsId"
+    :columns="baseGridColumns" :rows="bbsList" row-key="bbsId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('bbsList-sort', key)"
@@ -359,6 +359,7 @@ window.SyBbsMng = {
       </td>
     </template>
   </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <div v-if="detailModal.show" style="margin-top:4px;">

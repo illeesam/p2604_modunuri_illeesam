@@ -318,7 +318,7 @@ window.SyBbmMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="baseGridColumns" :rows="bbms" :pager="pager" row-key="bbmId"
+        :columns="baseGridColumns" :rows="bbms" row-key="bbmId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
         @set-page="n => handleSelectAction('bbms-pager-setPage', n)"
@@ -352,6 +352,7 @@ window.SyBbmMng = {
           </td>
         </template>
       </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bbms-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbms-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 우: 목록 ================================================= -->
   </div>

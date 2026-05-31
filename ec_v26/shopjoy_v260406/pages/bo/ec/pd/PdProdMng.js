@@ -398,7 +398,7 @@ window.PdProdMng = {
     </div>
     <!-- ===== ■.■. 목록 그리드 ================================================ -->
     <bo-grid
-      :columns="baseGridColumns" :rows="products" :pager="pager" row-key="prodId"
+      :columns="baseGridColumns" :rows="products" row-key="prodId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
@@ -424,6 +424,7 @@ window.PdProdMng = {
         </div>
       </template>
     </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->

@@ -319,7 +319,7 @@ window.CmBlogMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="blogs" :pager="pager" row-key="blogId"
+  <bo-grid :columns="baseGridColumns" :rows="blogs" row-key="blogId"
     :sort-state="uiState" list-title="게시글 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
@@ -338,6 +338,7 @@ window.CmBlogMng = {
       </button>
     </template>
   </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 =================================================== -->
   <div class="card" v-if="detailPanel.show">

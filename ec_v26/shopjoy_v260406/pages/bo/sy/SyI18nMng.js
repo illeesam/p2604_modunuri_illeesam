@@ -235,12 +235,13 @@ window.SyI18nMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="i18ns" :pager="pager" row-key="i18nId"
+    :columns="baseGridColumns" :rows="i18ns" row-key="i18nId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
     @set-page="n => handleSelectAction('i18ns-pager-setPage', n)"
     @size-change="handleSelectAction('i18ns-pager-sizeChange')"
     @row-click="row => handleSelectAction('i18ns-rowOpen', row)" />
+  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 번역 편집 패널 ================================================ -->
   <div class="card" v-if="cfSelectedKey">

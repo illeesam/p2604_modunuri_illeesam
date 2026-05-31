@@ -197,7 +197,7 @@ window.PdTagMng = {
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="gridRows" :pager="pager" row-key="tagId" row-actions
+    :columns="baseGridColumns" :rows="gridRows" row-key="tagId" row-actions
     list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
     @set-page="n => handleSelectAction('tags-pager-setPage', n)" @size-change="handleSelectAction('tags-pager-sizeChange')" @cell-change="row => handleSelectAction('tags-rowCellChange', row)">
     <template #toolbar-actions>
@@ -214,6 +214,7 @@ window.PdTagMng = {
       </button>
     </template>
   </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>
 `

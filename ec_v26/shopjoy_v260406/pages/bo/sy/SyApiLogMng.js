@@ -454,7 +454,7 @@ window.SyApiLogMng = {
   <!-- ===== □. 탭 + 목록 ================================================== -->
   <!-- ===== ■. API요청로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='access'"
-    :columns="accessGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="accessGridColumns" :rows="cfCurrentList" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
@@ -482,7 +482,7 @@ window.SyApiLogMng = {
   <!-- ===== □. API요청로그 탭 =============================================== -->
   <!-- ===== ■. API오류로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='error'"
-    :columns="errorGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="errorGridColumns" :rows="cfCurrentList" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
@@ -518,6 +518,7 @@ window.SyApiLogMng = {
       </td>
     </template>
   </bo-grid>
+  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
 </div>
 <!-- ===== □. API오류로그 탭 =============================================== -->
 `,

@@ -639,8 +639,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
-  <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList"
-    :pager="pager" :row-style="fnBundleRowStyle" row-key="bundleProdId"
+  <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList" :row-style="fnBundleRowStyle" row-key="bundleProdId"
     empty-text="데이터가 없습니다." :row-actions="true"
     @set-page="n => handleSelectAction('bundles-pager-setPage', n)" @size-change="handleBtnAction('bundles-pager-sizeChange')">
     <template #toolbar-actions>
@@ -682,6 +681,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     </button>
   </template>
 </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bundles-pager-setPage', n)" :on-size-change="() => handleSelectAction('bundles-pager-sizeChange')" />
 <!-- ===== □. 목록 ====================================================== -->
 <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
 <div v-if="uiState.dtlMode !== null" class="card"

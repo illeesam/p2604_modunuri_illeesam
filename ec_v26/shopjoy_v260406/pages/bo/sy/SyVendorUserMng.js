@@ -714,7 +714,7 @@ window.SyVendorUserMng = {
       </div>
       <!-- ===== ■.■.■. 사용자 목록 =========================================== -->
       <bo-grid v-if="uiState.searchVendorId != null"
-        :columns="userGridColumns" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
+        :columns="userGridColumns" :rows="pager.pageList||[]" row-key="vendorUserId"
         list-title="사용자목록" :count-text="vendorUsers.length + '건'"
         :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
         @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
@@ -731,6 +731,7 @@ window.SyVendorUserMng = {
           </button>
         </template>
       </bo-grid>
+      <bo-pager v-if="uiState.searchVendorId != null" :pager="pager" :on-set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
       <!-- ===== ■.■.■. 카드 영역 (업체 미선택 안내) =========================== -->
       <div v-else class="card" style="text-align:center;padding:30px;color:#aaa;">
         좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.

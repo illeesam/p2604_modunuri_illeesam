@@ -342,7 +342,7 @@ window.PmSaveMng = {
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="saves" :pager="pager" row-key="saveId"
+      :columns="baseGridColumns" :rows="saves" row-key="saveId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(s) => detailPanel.selectedId===s.saveId ? 'background:#fff8f9;' : ''"

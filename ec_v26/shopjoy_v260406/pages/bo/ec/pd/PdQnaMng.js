@@ -248,7 +248,7 @@ window.PdQnaMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="qnas" :pager="pager" row-key="qnaId"
+      :columns="baseGridColumns" :rows="qnas" row-key="qnaId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
@@ -256,6 +256,7 @@ window.PdQnaMng = {
       @sort="key => handleSelectAction('qnas-sort', key)" @set-page="n => handleSelectAction('qnas-pager-setPage', n)" @size-change="handleSelectAction('qnas-pager-sizeChange')"
       @row-click="row => handleSelectAction('qnas-rowClick', { row })">
     </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (질문/답변) ======================================== -->

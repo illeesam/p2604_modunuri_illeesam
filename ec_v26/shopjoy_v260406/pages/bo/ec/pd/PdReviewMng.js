@@ -408,7 +408,7 @@ window.PdReviewMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="listGridColumns" :rows="reviews" :pager="pager" row-key="reviewId"
+  <bo-grid :columns="listGridColumns" :rows="reviews" row-key="reviewId"
     :sort-state="uiState" list-title="상품리뷰 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions

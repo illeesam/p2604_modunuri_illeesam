@@ -366,11 +366,19 @@ window.PdCategoryProdMng = {
       return path.join(' > ');
     };
 
-    /* removeRow — 제거 */
+    /* removeRow — 신규(_isNew)는 splice, 기존행은 rowStatus='D' 마킹 (저장 시 백엔드로 전송) */
     const removeRow = (row) => {
       const idx = categoryProds.findIndex(r => r === row);
-      if (idx !== -1) { categoryProds.splice(idx, 1); }
+      if (idx === -1) { return; }
+      if (row._isNew) {
+        categoryProds.splice(idx, 1);
+      } else {
+        row.rowStatus = 'D';
+      }
     };
+
+    /* cfVisibleCategoryProds — 그리드에 보이는 행 (D 마킹 제외) */
+    const cfVisibleCategoryProds = computed(() => categoryProds.filter(cp => cp.rowStatus !== 'D'));
 
     /* addProd — 추가 */
     const addProd = (prod) => {
@@ -498,7 +506,7 @@ window.PdCategoryProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      codes, uiState, categories, categoryProds, searchParam, pager, pickerResults,         // 상태 / 데이터
+      codes, uiState, categories, categoryProds, cfVisibleCategoryProds, searchParam, pager, pickerResults, // 상태 / 데이터
       baseSearchColumns, cfCatProdGridColumns, catProdPickerGridColumns,                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs,                    // computed / reactive(tabs)
@@ -572,7 +580,7 @@ window.PdCategoryProdMng = {
       </div>
       <!-- ===== ■.■.■.■. TABLE 뷰 (tab / 1col) ============================== -->
       <bo-grid v-if="uiState.tabMode==='tab'||uiState.tabMode==='1col'"
-          bare :columns="cfCatProdGridColumns" :rows="categoryProds" row-key="_id"
+          bare :columns="cfCatProdGridColumns" :rows="cfVisibleCategoryProds" row-key="_id"
           draggable row-actions :row-style="fnCatProdRowStyle"
           :empty-text="searchParam.prodNm ? '검색 결과가 없습니다.' : '등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.'"
           @reorder="handleSelectAction('categoryProds-rowDrop')">
@@ -621,7 +629,7 @@ window.PdCategoryProdMng = {
           gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
           gap:'10px',
           }">
-      <div v-for="(row, idx) in categoryProds" :key="(row && row._id)" draggable="true" @dragstart="handleSelectAction('categoryProds-rowDragStart', idx)" @dragover.prevent="handleSelectAction('categoryProds-rowDragOver', idx)" @drop="handleSelectAction('categoryProds-rowDrop')" style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff" :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe' : row._isNew ? 'border-color:#52c41a' : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
+      <div v-for="(row, idx) in cfVisibleCategoryProds" :key="(row && row._id)" draggable="true" @dragstart="handleSelectAction('categoryProds-rowDragStart', idx)" @dragover.prevent="handleSelectAction('categoryProds-rowDragOver', idx)" @drop="handleSelectAction('categoryProds-rowDrop')" style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff" :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe' : row._isNew ? 'border-color:#52c41a' : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
       <!-- ===== ■.■.■.■.■.■. 카드 헤더 ========================================= -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:5px">
@@ -689,7 +697,7 @@ window.PdCategoryProdMng = {
       </select>
     </template>
   </div>
-  <div v-if="!categoryProds.length"
+  <div v-if="!cfVisibleCategoryProds.length"
             style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa;border:1px dashed #eee;border-radius:8px">
     등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.
   </div>

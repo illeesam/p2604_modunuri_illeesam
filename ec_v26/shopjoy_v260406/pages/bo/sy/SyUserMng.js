@@ -420,7 +420,7 @@ window.SyUserMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="baseGridColumns" :rows="users" :pager="pager" row-key="userId"
+        :columns="baseGridColumns" :rows="users" row-key="userId"
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('users-sort', key)"
@@ -458,6 +458,7 @@ window.SyUserMng = {
           </td>
         </template>
       </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

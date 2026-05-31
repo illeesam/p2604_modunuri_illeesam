@@ -271,7 +271,7 @@ window.DpDispUiMng = {
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="baseGridColumns" :rows="uis" :pager="pager" row-key="uiId"
+    <bo-grid :columns="baseGridColumns" :rows="uis" row-key="uiId"
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
@@ -296,6 +296,7 @@ window.DpDispUiMng = {
         </button>
       </template>
     </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('uis-pager-setPage', n)" :on-size-change="() => handleSelectAction('uis-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->

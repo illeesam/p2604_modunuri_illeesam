@@ -316,7 +316,7 @@ window.PmPlanMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="plans" :pager="pager" row-key="planId"
+      :columns="baseGridColumns" :rows="plans" row-key="planId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''"

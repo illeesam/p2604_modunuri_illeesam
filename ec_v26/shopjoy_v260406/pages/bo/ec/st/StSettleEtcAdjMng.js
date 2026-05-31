@@ -320,7 +320,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="etcAdjs" :pager="pager" row-key="adjId"
+      :columns="baseGridColumns" :rows="etcAdjs" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
       @set-page="n => handleSelectAction('etcAdjs-pager-setPage', n)" @size-change="handleSelectAction('etcAdjs-pager-sizeChange')">
@@ -336,6 +336,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         </button>
       </template>
     </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('etcAdjs-pager-setPage', n)" :on-size-change="() => handleSelectAction('etcAdjs-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->

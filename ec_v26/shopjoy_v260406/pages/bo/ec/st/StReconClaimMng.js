@@ -219,10 +219,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="rows" :pager="pager" row-key="claimId"
+      :columns="baseGridColumns" :rows="rows" row-key="claimId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       @set-page="n => handleSelectAction('reconClaims-pager-setPage', n)" @size-change="handleSelectAction('reconClaims-pager-sizeChange')">
     </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('reconClaims-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconClaims-pager-sizeChange')" />
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

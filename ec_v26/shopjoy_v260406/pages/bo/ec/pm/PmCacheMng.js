@@ -306,7 +306,7 @@ window.PmCacheMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <bo-grid v-if="uiState.tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="caches" :pager="pager" row-key="cacheId"
+      :columns="baseGridColumns" :rows="caches" row-key="cacheId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"

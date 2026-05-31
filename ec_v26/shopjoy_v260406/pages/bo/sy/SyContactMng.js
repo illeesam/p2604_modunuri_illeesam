@@ -277,7 +277,7 @@ window.SyContactMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="contacts" :pager="pager" row-key="contactId"
+    :columns="baseGridColumns" :rows="contacts" row-key="contactId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('contacts-sort', key)"
@@ -313,6 +313,7 @@ window.SyContactMng = {
       </td>
     </template>
   </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ContactDtl 임베드 =================================== -->
   <div v-if="detailModal.show" style="margin-top:4px;">

@@ -400,7 +400,7 @@ window.SyMemberLoginHist = {
   <!-- ===== □. 탭 ======================================================== -->
   <!-- ===== ■. 로그인 로그 탭 ================================================ -->
   <bo-grid v-if="searchParam.activeTab==='log'"
-    :columns="logGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="logGridColumns" :rows="cfCurrentList" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('histList-pager-setPage', n)"
@@ -428,7 +428,7 @@ window.SyMemberLoginHist = {
   <!-- ===== □. 로그인 로그 탭 ================================================ -->
   <!-- ===== ■. 토큰 이력 탭 ================================================= -->
   <bo-grid v-if="searchParam.activeTab==='token'"
-    :columns="tokenGridColumns" :rows="cfCurrentList" :pager="pager" row-key="logId"
+    :columns="tokenGridColumns" :rows="cfCurrentList" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('histList-pager-setPage', n)"
@@ -456,6 +456,7 @@ window.SyMemberLoginHist = {
       </td>
     </template>
   </bo-grid>
+  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('histList-pager-setPage', n)" :on-size-change="() => handleSelectAction('histList-pager-sizeChange')" />
   <!-- ===== □. 토큰 이력 탭 ================================================= -->
 </div>
 `,

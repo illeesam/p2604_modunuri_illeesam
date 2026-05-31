@@ -236,7 +236,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="recons" :pager="pager" row-key="reconId"
+      :columns="baseGridColumns" :rows="recons" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('recons-pager-setPage', n)" @size-change="handleSelectAction('recons-pager-sizeChange')">
       <template #head-actions>
@@ -248,6 +248,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         </button>
       </template>
     </bo-grid>
+        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('recons-pager-setPage', n)" :on-size-change="() => handleSelectAction('recons-pager-sizeChange')" />
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

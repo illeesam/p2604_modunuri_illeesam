@@ -609,7 +609,6 @@ window.SyAttachMng = {
             bare
             :columns="fileGridColumns"
             :rows="attaches"
-            :pager="pager"
             row-key="attachId"
             :loading="uiState.loading"
             :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"

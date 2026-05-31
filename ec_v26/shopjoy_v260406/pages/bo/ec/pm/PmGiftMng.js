@@ -340,7 +340,7 @@ window.PmGiftMng = {
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="gifts" :pager="pager" row-key="giftId"
+      :columns="baseGridColumns" :rows="gifts" row-key="giftId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''"

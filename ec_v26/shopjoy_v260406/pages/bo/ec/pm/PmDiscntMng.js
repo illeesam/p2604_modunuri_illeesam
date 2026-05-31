@@ -354,7 +354,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="discounts" :pager="pager" row-key="discntId"
+      :columns="baseGridColumns" :rows="discounts" row-key="discntId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"
