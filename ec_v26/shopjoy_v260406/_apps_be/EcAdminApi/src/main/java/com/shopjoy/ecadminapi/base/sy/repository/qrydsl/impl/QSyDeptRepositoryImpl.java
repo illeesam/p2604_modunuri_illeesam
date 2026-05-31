@@ -75,6 +75,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
+                baseAndParentDeptId(search),
                 baseAndTypeCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -104,6 +105,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
+                baseAndParentDeptId(search),
                 baseAndTypeCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -116,6 +118,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
         Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
+                baseAndParentDeptId(search),
                 baseAndTypeCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -137,6 +140,13 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     private BooleanExpression baseAndSiteId(SyDeptDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? a.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* 부서 트리 — 선택 노드 + 모든 자손 부서 포함 (자기참조 재귀 CTE) */
+    private BooleanExpression baseAndParentDeptId(SyDeptDto.Request search) {
+        return search != null && StringUtils.hasText(search.getParentDeptId())
+                ? a.deptId.in(syDeptRepository.findTreeDeptIds(search.getParentDeptId()))
+                : null;
     }
 
     /* deptTypeCd 정확 일치 */

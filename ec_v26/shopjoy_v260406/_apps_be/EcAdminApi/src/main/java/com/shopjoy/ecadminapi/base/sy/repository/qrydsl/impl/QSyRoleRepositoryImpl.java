@@ -18,6 +18,8 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
@@ -34,13 +36,15 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     private final JPAQueryFactory queryFactory;
     private final SyRoleRepository syRoleRepository;
     private final SyPathRepository syPathRepository;
+    private final EntityManager em;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleRepositoryImpl";
     private static final QSyRole a = QSyRole.syRole;
 
-    public QSyRoleRepositoryImpl(JPAQueryFactory queryFactory, SyPathRepository syPathRepository, @Lazy SyRoleRepository syRoleRepository) {
+    public QSyRoleRepositoryImpl(JPAQueryFactory queryFactory, SyPathRepository syPathRepository, @Lazy SyRoleRepository syRoleRepository, EntityManager em) {
         this.queryFactory = queryFactory;
         this.syPathRepository = syPathRepository;
         this.syRoleRepository = syRoleRepository;
+        this.em = em;
     }
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdRt = new QSyCode("cd_rt");
@@ -77,6 +81,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
+                baseAndParentRoleId(search),
                 baseAndRoleTypeCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -107,6 +112,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
+                baseAndParentRoleId(search),
                 baseAndRoleTypeCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -120,6 +126,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
+                baseAndParentRoleId(search),
                 baseAndRoleTypeCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -136,6 +143,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
+                baseAndParentRoleId(search),
                 baseAndRoleTypeCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -161,6 +169,21 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     private BooleanExpression baseAndRoleId(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleId())
                 ? a.roleId.eq(search.getRoleId()) : null;
+    }
+
+    /* parentRoleId 트리 — 선택 노드 + 모든 자손 역할 포함 (sy_role 자기참조 재귀 CTE 인라인) */
+    @SuppressWarnings("unchecked")
+    private BooleanExpression baseAndParentRoleId(SyRoleDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getParentRoleId())) return null;
+        String sql = "WITH RECURSIVE t AS ( "
+                  + "  SELECT role_id FROM sy_role WHERE role_id = :rootRoleId "
+                  + "  UNION ALL "
+                  + "  SELECT c.role_id FROM sy_role c JOIN t ON c.parent_role_id = t.role_id "
+                  + ") SELECT role_id FROM t";
+        Query q = em.createNativeQuery(sql);
+        q.setParameter("rootRoleId", search.getParentRoleId());
+        List<String> roleIds = (List<String>) q.getResultList();
+        return a.roleId.in(roleIds);
     }
 
     /* roleTypeCd 정확 일치 */

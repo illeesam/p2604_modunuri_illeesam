@@ -148,14 +148,14 @@ window.SyVendorUserMng = {
       /* badgeOf — 배지 의 */
       const badgeOf = (role) => {
         let cur = role;
-        while (cur && cur.parentId) { cur = rolesById[cur.parentId]; }
+        while (cur && cur.parentRoleId) { cur = rolesById[cur.parentRoleId]; }
         return cur ? ROOT_BADGE_MAP[cur.roleCode] : null;
       };
       const CAT_ROOT_MAP = { SALES:'SITE_MGR_ROOT', DELIVERY:'DLIV_ROOT', CS:'CS_ROOT', SITE:'SITE_OP_ROOT', PROG:'PROG_ROOT' };
 
       /* childrenOf — 자식 의 */
       const childrenOf = (pid) => roles
-        .filter(r => r.parentId === pid)
+        .filter(r => r.parentRoleId === pid)
         .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
         .map(r => ({ pathId: r.roleCode, path: r.roleCode, name: r.roleNm, pathLabel: r.roleNm,
                      _raw: r, _badge: badgeOf(r), children: childrenOf(r.roleId) }));
@@ -333,7 +333,7 @@ window.SyVendorUserMng = {
       if (!root) { return new Set([uiState.selectedPath]); }
       const ids = new Set([root.roleId]);
       let added = true;
-      while (added) { added = false; roles.forEach(r => { if(ids.has(r.parentId)&&!ids.has(r.roleId)){ids.add(r.roleId);added=true;}}); }
+      while (added) { added = false; roles.forEach(r => { if(ids.has(r.parentRoleId)&&!ids.has(r.roleId)){ids.add(r.roleId);added=true;}}); }
       return new Set(roles.filter(r=>ids.has(r.roleId)).map(r=>r.roleCode));
     });
 
@@ -438,14 +438,14 @@ window.SyVendorUserMng = {
 
       /* buildBranch — 빌드 */
       const buildBranch = (pid, allowed) => roles
-        .filter(r => r.parentId === pid)
+        .filter(r => r.parentRoleId === pid)
         .sort((a,b) => (a.sortOrd||0)-(b.sortOrd||0))
         .map(r => {
-          const isAllowedRoot = r.parentId===null && r.roleCode===allowedRootCode;
+          const isAllowedRoot = r.parentRoleId===null && r.roleCode===allowedRootCode;
           const branchAllowed = allowed || isAllowedRoot;
 
           return { roleId:r.roleId, roleCode:r.roleCode, roleNm:r.roleNm,
-                   isRoot:r.parentId===null, allowed: branchAllowed && r.parentId!==null,
+                   isRoot:r.parentRoleId===null, allowed: branchAllowed && r.parentRoleId!==null,
                    children: buildBranch(r.roleId, branchAllowed) };
         });
       return buildBranch(null, false);
@@ -476,7 +476,7 @@ window.SyVendorUserMng = {
       let cur = roles.find(x=>x.roleCode===code);
       if (!cur) { return code; }
       const seg = [];
-      while (cur) { seg.unshift(cur.roleNm); cur = cur.parentId ? m[cur.parentId] : null; }
+      while (cur) { seg.unshift(cur.roleNm); cur = cur.parentRoleId ? m[cur.parentRoleId] : null; }
       return seg.join(' > ');
     };
 
@@ -539,7 +539,7 @@ window.SyVendorUserMng = {
 
       /* buildMenu — 빌드 */
       const buildMenu = (pid, depth) => menus
-        .filter(m=>(m.parentId||null)===(pid||null))
+        .filter(m=>(m.parentRoleId||null)===(pid||null))
         .sort((a,b)=>(a.sortOrd||0)-(b.sortOrd||0))
         .flatMap(m=>[{...m,_depth:depth,_perm:permBy[m.menuId]||fallback},...buildMenu(m.menuId,depth+1)]);
       return buildMenu(null, 0);

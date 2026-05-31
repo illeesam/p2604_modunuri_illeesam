@@ -144,12 +144,14 @@ window.SyDeptMng = {
           pageNo: 1, pageSize: 10000,
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(type ? { typeCd: type } : {}),
+          /* 좌측 트리 선택 노드 — 서버측 자기참조 재귀 CTE(findTreeDeptIds)로 자손 부서 포함 필터 */
           ...(uiState.selectedTreeId != null ? { parentDeptId: uiState.selectedTreeId } : {}),
         };
         const res = await boApiSvc.syDept.getPage(params, '부서관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gridRows.splice(0);
-        buildTreeRows(list).forEach(d => gridRows.push(makeRow(d)));
+        const treeRows = buildTreeRows(list);
+        treeRows.forEach(d => gridRows.push(makeRow(d)));
         uiState.error = null;
       } catch (err) {
         console.error('[handleGridSearch]', err);
@@ -165,14 +167,16 @@ window.SyDeptMng = {
       await handleGridSearch();
     };
 
-    /* buildTree — 트리 빌드 */
+    /* buildTree — 트리 빌드 (orphan 자동 root 처리 — buildTreeRows 와 동일 알고리즘) */
     const buildTree = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, children: [] }; });
       const roots = [];
+      const attached = new Set();
       items.forEach(d => {
-        if (d.parentDeptId && map[d.parentDeptId]) { map[d.parentDeptId].children.push(map[d.deptId]); }
-        else { roots.push(map[d.deptId]); }
+        const hasValidParent = d.parentDeptId && d.parentDeptId !== d.deptId && map[d.parentDeptId];
+        if (hasValidParent) { map[d.parentDeptId].children.push(map[d.deptId]); attached.add(d.deptId); }
+        else { roots.push(map[d.deptId]); attached.add(d.deptId); }
       });
       const sort = arr => arr.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
       const sortAll = (node) => { sort(node.children); node.children.forEach(sortAll); };
@@ -182,18 +186,22 @@ window.SyDeptMng = {
 
     const cfTree = computed(() => buildTree(depts));
 
-    /* cfDeptCounts — 부서별 자손 누적 부서수 (자기 자신 포함) — 프론트 자체 계산
-     *   { deptId: 자기포함 자손합계, __total__: 전체 부서수(루트들 자기포함 합계) } */
+    /* cfDeptCounts — 부서별 자손 부서수 (자기 자신 제외) — 프론트 자체 계산
+     *   { deptId: 자손합계(자기제외), __total__: 전체 부서수 }
+     *   - 리프 노드 = 0
+     *   - IT개발팀 = 3 (프론트엔드/백엔드/인프라)
+     *   - 전체 = 15 (depts.length) */
     const cfDeptCounts = computed(() => {
       const out = {};
       const recur = (node) => {
-        let cnt = 1; // 자기 자신
-        for (const ch of (node.children || [])) cnt += recur(ch);
-        if (node.deptId != null) out[node.deptId] = cnt;
-        return cnt;
+        let descCnt = 0;
+        for (const ch of (node.children || [])) {
+          descCnt += 1 + recur(ch); // 자식 본인(1) + 그 자식의 자손
+        }
+        if (node.deptId != null) out[node.deptId] = descCnt;
+        return descCnt;
       };
       cfTree.value.children.forEach(r => recur(r));
-      /* __total__ = 전체 부서수 (depts 배열 길이). recur 합계와 동일하지만 명시적으로 depts.length 사용 */
       out.__total__ = depts.length;
       return out;
     });
@@ -223,21 +231,28 @@ window.SyDeptMng = {
       await handleGridSearch();
     });
 
-    /* buildTreeRows — 그리드용 트리 행 빌드 */
+    /* buildTreeRows — 그리드용 트리 행 빌드 (서버에서 필터된 list 받아 평탄화만)
+     *   순환참조/자기참조 안전망 — 누락 부서는 자동 root 처리 */
     const buildTreeRows = (items) => {
       const map = {};
       items.forEach(d => { map[d.deptId] = { ...d, _children: [] }; });
       const roots = [];
       items.forEach(d => {
-        if (d.parentDeptId && map[d.parentDeptId]) { map[d.parentDeptId]._children.push(map[d.deptId]); }
+        const hasValidParent = d.parentDeptId && d.parentDeptId !== d.deptId && map[d.parentDeptId];
+        if (hasValidParent) { map[d.parentDeptId]._children.push(map[d.deptId]); }
         else { roots.push(map[d.deptId]); }
       });
       const result = [];
+      const visited = new Set();
       const traverse = (node, depth) => {
+        if (visited.has(node.deptId)) return;
+        visited.add(node.deptId);
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
       };
       roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(r => traverse(r, 0));
+      /* 안전망 — 도달하지 못한 부서(순환참조 등)는 root 로 표시 */
+      items.forEach(d => { if (!visited.has(d.deptId)) traverse(map[d.deptId], 0); });
       return result;
     };
 

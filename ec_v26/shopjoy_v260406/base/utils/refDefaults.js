@@ -91,7 +91,7 @@ window.refDefaults = (() => {
     categoryForm: () => ({
       categoryId: null,
       categoryNm: '',
-      parentId: null,
+      parentCategoryId: null,
       level: 0,
       status: '',
     }),

@@ -1291,7 +1291,7 @@
           while (cur) {
             seg.unshift(cur?.roleNm || '');
             root = cur;
-            cur = cur?.parentId && m[cur.parentId] ? m[cur.parentId] : null;
+            cur = cur?.parentRoleId && m[cur.parentRoleId] ? m[cur.parentRoleId] : null;
           }
           return seg.join(' > ');
         } catch (e) {

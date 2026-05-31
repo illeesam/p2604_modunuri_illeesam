@@ -197,7 +197,12 @@ window.SyRoleMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syRole.getPage({ pageNo: 1, pageSize: 10000 }, '역할관리', '목록조회');
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          /* 좌측 트리 선택 노드 — 서버측 자기참조 재귀 CTE 로 자손 역할 포함 필터 */
+          ...(uiState.selectedPath != null ? { parentRoleId: uiState.selectedPath } : {}),
+        };
+        const res = await boApiSvc.syRole.getPage(params, '역할관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         roles.splice(0, roles.length, ...list);
         gridRows.splice(0);

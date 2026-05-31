@@ -146,10 +146,19 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                 ? m.siteId.eq(search.getSiteId()) : null;
     }
 
-    /* menuId 정확 일치 */
+    /* menuId 트리 — 선택 노드 + 모든 자손 메뉴 포함 (sy_menu 자기참조 재귀 CTE 인라인) */
+    @SuppressWarnings("unchecked")
     private BooleanExpression baseAndMenuId(SyMenuDto.Request search) {
-        return search != null && StringUtils.hasText(search.getMenuId())
-                ? m.menuId.eq(search.getMenuId()) : null;
+        if (search == null || !StringUtils.hasText(search.getMenuId())) return null;
+        String sql = "WITH RECURSIVE t AS ( "
+                  + "  SELECT menu_id FROM sy_menu WHERE menu_id = :rootMenuId "
+                  + "  UNION ALL "
+                  + "  SELECT c.menu_id FROM sy_menu c JOIN t ON c.parent_menu_id = t.menu_id "
+                  + ") SELECT menu_id FROM t";
+        Query q = em.createNativeQuery(sql);
+        q.setParameter("rootMenuId", search.getMenuId());
+        List<String> menuIds = (List<String>) q.getResultList();
+        return m.menuId.in(menuIds);
     }
 
     /* menuTypeCd 정확 일치 */

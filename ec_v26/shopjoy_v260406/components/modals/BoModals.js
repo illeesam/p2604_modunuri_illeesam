@@ -383,7 +383,7 @@ window.BoUserSelectModal = {
 
     /* ── 부서 트리 (전체 로드) ── */
     const fnBuildDeptTree = (items, parentId, depth) =>
-      items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
+      items.filter(d => (d.parentDeptId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
 
@@ -1270,7 +1270,7 @@ window.TemplateSendModal = {
 
     /* fnBuildDeptTree */
     const fnBuildDeptTree = (items, parentId, depth) =>
-      items.filter(d => (d.parentId || null) === (parentId || null) && d.useYn === 'Y')
+      items.filter(d => (d.parentDeptId || null) === (parentId || null) && d.useYn === 'Y')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
 
@@ -1289,7 +1289,7 @@ window.TemplateSendModal = {
       while (queue.length) {
         const id = queue.shift();
         ids.add(id);
-        allDepts.filter(x => x.parentId === id).forEach(c => queue.push(c.deptId));
+        allDepts.filter(x => x.parentDeptId === id).forEach(c => queue.push(c.deptId));
       }
       return ids;
     };
@@ -1676,7 +1676,7 @@ window.RoleTreeModal = {
     /* fnBuildTree */
     const fnBuildTree = (items, parentId, depth) => {
       return items
-        .filter(r => (r.parentId || null) === (parentId || null))
+        .filter(r => (r.parentRoleId || null) === (parentId || null))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(r => ({ ...r, _depth: depth, _kids: fnBuildTree(items, r.roleId, depth + 1) }));
     };
@@ -1690,7 +1690,7 @@ window.RoleTreeModal = {
     const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); allRoles.filter(r => r.parentId === id).forEach(r => mark(r.roleId)); };
+        const mark = (id) => { excSet.add(id); allRoles.filter(r => r.parentRoleId === id).forEach(r => mark(r.roleId)); };
         mark(props.excludeId);
       }
       const base = allRoles.filter(r => !excSet.has(r.roleId) && r.useYn === 'Y');
@@ -1861,7 +1861,7 @@ window.MenuTreeModal = {
     /* fnBuildTree */
     const fnBuildTree = (items, parentId, depth) => {
       return items
-        .filter(m => (m.parentId || null) === (parentId || null))
+        .filter(m => (m.parentMenuId || null) === (parentId || null))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(m => ({ ...m, _depth: depth, _kids: fnBuildTree(items, m.menuId, depth + 1) }));
     };
@@ -1877,7 +1877,7 @@ window.MenuTreeModal = {
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          allMenus.filter(m => m.parentId === id).forEach(m => markExclude(m.menuId));
+          allMenus.filter(m => m.parentMenuId === id).forEach(m => markExclude(m.menuId));
         };
         markExclude(props.excludeId);
       }
@@ -2049,7 +2049,7 @@ window.DeptTreeModal = {
     /* ── 트리 구성 ── */
     const buildTree = (items, parentId, depth) => {
       return items
-        .filter(d => (d.parentId || null) === (parentId || null))
+        .filter(d => (d.parentDeptId || null) === (parentId || null))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(d => ({ ...d, _depth: depth, _kids: buildTree(items, d.deptId, depth + 1) }));
     };
@@ -2065,7 +2065,7 @@ window.DeptTreeModal = {
       if (props.excludeId) {
         const markExclude = (id) => {
           excSet.add(id);
-          allDepts.filter(d => d.parentId === id).forEach(d => markExclude(d.deptId));
+          allDepts.filter(d => d.parentDeptId === id).forEach(d => markExclude(d.deptId));
         };
         markExclude(props.excludeId);
       }
@@ -2247,7 +2247,7 @@ window.CategoryTreeModal = {
     /* buildTree */
     const buildTree = (items, parentId, depth) => {
       return items
-        .filter(c => (c.parentId || null) === (parentId || null))
+        .filter(c => (c.parentCategoryId || null) === (parentId || null))
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
         .map(c => ({ ...c, _depth: depth, _kids: buildTree(items, c.categoryId, depth + 1) }));
     };
@@ -2261,7 +2261,7 @@ window.CategoryTreeModal = {
     const cfFlatTree = computed(() => {
       const excSet = new Set();
       if (props.excludeId) {
-        const mark = (id) => { excSet.add(id); allCategories.filter(c => c.parentId === id).forEach(c => mark(c.categoryId)); };
+        const mark = (id) => { excSet.add(id); allCategories.filter(c => c.parentCategoryId === id).forEach(c => mark(c.categoryId)); };
         mark(props.excludeId);
       }
       const base   = allCategories.filter(c => !excSet.has(c.categoryId) && (c.useYn === 'Y' || c.status === '활성'));
@@ -2680,11 +2680,11 @@ window.CategorySelectModal = {
       const all = ((window.dispDataset || {}).categories || [])
         .filter(c => c.status === '활성')
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0));
-      const roots = all.filter(c => !c.parentId);
+      const roots = all.filter(c => !c.parentCategoryId);
       const out = [];
       roots.forEach(r => {
         out.push({ ...r, _depth: 0 });
-        all.filter(c => c.parentId === r.categoryId).forEach(c => out.push({ ...c, _depth: 1 }));
+        all.filter(c => c.parentCategoryId === r.categoryId).forEach(c => out.push({ ...c, _depth: 1 }));
       });
       return out;
     });
@@ -2695,7 +2695,7 @@ window.CategorySelectModal = {
       if (!kwv) return cfAllCats.value;
       const matches = cfAllCats.value.filter(c => c.categoryNm.toLowerCase().includes(kwv));
       const ids = new Set(matches.map(c => c.categoryId));
-      const parentIds = new Set(matches.map(c => c.parentId).filter(Boolean));
+      const parentIds = new Set(matches.map(c => c.parentCategoryId).filter(Boolean));
       return cfAllCats.value.filter(c => ids.has(c.categoryId) || parentIds.has(c.categoryId));
     });
 

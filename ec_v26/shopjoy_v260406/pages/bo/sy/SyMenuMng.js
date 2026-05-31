@@ -130,12 +130,16 @@ window.SyMenuMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.syMenu.getPage({ pageNo: 1, pageSize: 10000 }, '메뉴관리', '목록조회');
+        const params = {
+          pageNo: 1, pageSize: 10000,
+          /* 좌측 트리 선택 노드 — 서버측 자기참조 재귀 CTE(findTreeMenuIds)로 자손 메뉴 포함 필터 */
+          ...(uiState.selectedTreeId != null ? { menuId: uiState.selectedTreeId } : {}),
+        };
+        const res = await boApiSvc.syMenu.getPage(params, '메뉴관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         menus.splice(0, menus.length, ...list);
         gridRows.splice(0);
-        /* 좌 트리 선택 노드가 있으면 그 자손만 그리드에 표시 (sy_menu 자기참조 필터) */
-        buildTreeRows(list, uiState.selectedTreeId).forEach(m => gridRows.push(makeRow(m)));
+        buildTreeRows(list).forEach(m => gridRows.push(makeRow(m)));
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
@@ -163,9 +167,8 @@ window.SyMenuMng = {
       handleSearchList('DEFAULT');
     });
 
-    /* buildTreeRows — 그리드용 트리 행 빌드
-     *   rootId(=selectedTreeId) 가 있으면 그 노드 + 자손만 결과에 포함. null 이면 전체. */
-    const buildTreeRows = (items, rootId = null) => {
+    /* buildTreeRows — 그리드용 트리 행 빌드 (서버에서 필터된 list 받아 평탄화만) */
+    const buildTreeRows = (items) => {
       const map = {};
       items.forEach(m => { map[m.menuId] = { ...m, _children: [] }; });
       const roots = [];
@@ -178,12 +181,7 @@ window.SyMenuMng = {
         result.push({ ...node, _depth: depth });
         node._children.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => traverse(c, depth + 1));
       };
-      if (rootId != null && map[rootId]) {
-        /* 선택 노드를 루트로 그 자손까지 */
-        traverse(map[rootId], 0);
-      } else {
-        roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(r => traverse(r, 0));
-      }
+      roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(r => traverse(r, 0));
       return result;
     };
 

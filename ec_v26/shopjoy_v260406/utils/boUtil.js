@@ -189,15 +189,15 @@
    * BO 전용 트리(buildDeptTree/MenuTree/RoleTree)는 BO store 의존이므로 boUtil 에 유지하되 coUtil 호출. */
   boUtil.bofBuildDeptTree = function () {
     const depts = window.useBoDeptStore?.()?.depts || window._boCmDepts || [];
-    return window.coUtil.cofBuildGenericTree(depts, 'deptId', 'parentId', 'deptNm', 'sortOrd');
+    return window.coUtil.cofBuildGenericTree(depts, 'deptId', 'parentDeptId', 'deptNm', 'sortOrd');
   };
   boUtil.bofBuildMenuTree = function () {
     const menus = window.useBoMenuStore?.()?.svMenus || window._boCmMenus || [];
-    return window.coUtil.cofBuildGenericTree(menus, 'menuId', 'parentId', 'menuNm', 'sortOrd');
+    return window.coUtil.cofBuildGenericTree(menus, 'menuId', 'parentMenuId', 'menuNm', 'sortOrd');
   };
   boUtil.bofBuildRoleTree = function () {
     const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
-    return window.coUtil.cofBuildGenericTree(roles, 'roleId', 'parentId', 'roleNm', 'sortOrd');
+    return window.coUtil.cofBuildGenericTree(roles, 'roleId', 'parentRoleId', 'roleNm', 'sortOrd');
   };
 
   boUtil.bofGetPathLabel = function (pathId) {
