@@ -1123,6 +1123,31 @@ window.PdProdDtl = {
             const newId = res.data?.data?.prodId || res.data?.prodId || null;
             if (newId) { form.prodId = newId; }
           }
+          /* 카테고리 매핑 저장 — pd_category_prod 전체 교체 (D + I) */
+          const pid = cfCurProdId.value || form.prodId;
+          if (pid && tabId === 'info') {
+            try {
+              const curIds = new Set(prodCategories.map(c => String(c.categoryId)));
+              const existing = (categoryProds || []).filter(cp => String(cp.prodId) === String(pid));
+              const existingIds = new Set(existing.map(cp => String(cp.categoryId)));
+              const rows = [];
+              /* D: 기존 매핑 중 현재 목록에 없는 행 */
+              existing.forEach(cp => {
+                if (!curIds.has(String(cp.categoryId))) {
+                  rows.push({ rowStatus: 'D', categoryProdId: cp.categoryProdId });
+                }
+              });
+              /* I: 현재 목록 중 기존에 없던 행 */
+              prodCategories.forEach((c, i) => {
+                if (!existingIds.has(String(c.categoryId))) {
+                  rows.push({ rowStatus: 'I', prodId: pid, categoryId: c.categoryId, sortOrd: i + 1, dispYn: 'Y' });
+                }
+              });
+              if (rows.length > 0) {
+                await boApiSvc.pdCategory.updateProds({ categoryProds: rows }, '상품관리', '카테고리저장');
+              }
+            } catch (catErr) { console.error('[handleSave:category]', catErr); }
+          }
           /* UX-admin §18: 저장 후 재조회 — 본 탭 + 첫 탭(info)이면 상위 Mng 도 */
           await handleLoadData();
           if (tabId === 'info') { try { await props.onListReload(); } catch (_) {} }
