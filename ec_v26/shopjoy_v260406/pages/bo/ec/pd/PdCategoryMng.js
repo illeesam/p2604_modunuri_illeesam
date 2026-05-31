@@ -257,6 +257,21 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       await handleSearchList();
       await handleGridSearch();
     };
+    /* fnCategoryDescCount — 트리 노드에 표시할 자손(자식 + 손자 …) 카운트.
+       categories(reactive) 기반으로 재계산 — 카테고리 변경 시 자동 반영 */
+    const fnCategoryDescCount = (categoryId) => {
+      if (!categoryId) { return 0; }
+      let count = 0;
+      const stack = [categoryId];
+      while (stack.length) {
+        const id = stack.pop();
+        const children = (categories || []).filter(c => c.parentCategoryId === id);
+        count += children.length;
+        children.forEach(c => stack.push(c.categoryId));
+      }
+      return count;
+    };
+
     const catPickerModal = reactive({ show: false, search: '', forCategoryId: null, forRowIdx: null });
     const cfCatPickerList = computed(() => {
       const searchVal = (catPickerModal.search || '').toLowerCase();
@@ -501,7 +516,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       baseSearchColumns,                                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatPickerList,                                                               // computed
-      fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx,              // 헬퍼
+      fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx, fnCategoryDescCount,  // 헬퍼
       focusedIdx, checkAll, dragoverRowIdx,                                          // ref
     };
   },
@@ -554,7 +569,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           전체보기
         </div>
       </div>
-      <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" @select="id => handleSelectAction('categoryTree-select', id)" />
+      <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" :show-count="fnCategoryDescCount" @select="id => handleSelectAction('categoryTree-select', id)" />
     </div>
     <!-- ===== □.□. 좌측: 카테고리 트리 =========================================== -->
     <!-- ===== ■.■. 우측: 카테고리 그리드 ========================================== -->

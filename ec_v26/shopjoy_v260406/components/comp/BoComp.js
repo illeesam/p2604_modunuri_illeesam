@@ -434,6 +434,8 @@ window.BoCategoryTree = {
     show:       { type: Boolean,  default: false },     // picker mode: 모달 표시
     excludeIds: { type: Object,   default: () => new Set() }, // picker mode: 제외할 categoryId Set
     siteId:     { type: String,   default: null },      // 사이트 ID (없으면 boCommonFilter.siteId 사용)
+    modalName:  { type: String,   default: '' },        // 모달 식별자
+    onCallback: { type: Function, default: null },      // 통합 콜백
   },
   emits: ['select', 'close'],
   setup(props, { emit }) {
@@ -450,6 +452,8 @@ window.BoCategoryTree = {
         return collapseAll();
       } else if (cmd === 'picker-close') {
         return onClose();
+      } else if (cmd === 'picker-confirm') {
+        return onPickerConfirm();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -557,18 +561,36 @@ window.BoCategoryTree = {
     const onSelect    = id => emit('select', id);
 
     /* onClose */
-    const onClose     = ()  => { pickerSearch.value = ''; emit('close'); };
+    const onClose = () => {
+      pickerSearch.value = '';
+      pickerTempCat.value = null;
+      emit('close');
+      if (props.onCallback) props.onCallback(props.modalName, null, null);
+    };
 
-    /* onPickerSelect */
-    const onPickerSelect = cat => { pickerSearch.value = ''; emit('select', cat); };
+    /* pickerTempCat — picker 모드에서 [선택] 버튼 클릭 전 임시 보관된 카테고리 */
+    const pickerTempCat = ref(null);
 
-    // picker: show 될 때마다 검색어 초기화
-    watch(() => props.show, v => { if (v) pickerSearch.value = ''; });
+    /* onPickerSelect — 행 클릭: 임시 선택만 (즉시 emit 안 함) */
+    const onPickerSelect = cat => { pickerTempCat.value = cat; };
+
+    /* onPickerConfirm — [선택] 버튼 클릭: 임시 선택을 부모에 전달 */
+    const onPickerConfirm = () => {
+      if (!pickerTempCat.value) { return; }
+      const cat = pickerTempCat.value;
+      pickerSearch.value = '';
+      pickerTempCat.value = null;
+      emit('select', cat);
+      if (props.onCallback) props.onCallback(props.modalName, null, cat);
+    };
+
+    // picker: show 될 때마다 검색어/임시선택 초기화
+    watch(() => props.show, v => { if (v) { pickerSearch.value = ''; pickerTempCat.value = null; } });
 
     onMounted(load);
 
     return {
-      loading, categories, cfTreeFlat, cfPickerList, expandedSet, pickerSearch,  // 상태 / computed
+      loading, categories, cfTreeFlat, cfPickerList, expandedSet, pickerSearch, pickerTempCat,  // 상태 / computed
       handleBtnAction, handleSelectAction,                                       // dispatch
       DEPTH_COLOR, DEPTH_BULLET,                                                 // 헬퍼
     };
@@ -624,7 +646,7 @@ window.BoCategoryTree = {
       <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         {{ cat.categoryNm }}
       </span>
-      <span v-if="showCount && showCount(cat.categoryId) > 0" style="font-size:10px;background:#1677ff;color:#fff;border-radius:8px;padding:0 5px;flex-shrink:0">
+      <span v-if="showCount && showCount(cat.categoryId) > 0" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
       {{ showCount(cat.categoryId) }}
     </span>
     <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">
@@ -665,7 +687,7 @@ window.BoCategoryTree = {
                 ▶ 닫기
               </button>
             </div>
-            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }" @mouseover="$event.currentTarget.style.background='#fce4ec'" @mouseout="$event.currentTarget.style.background=''" @click="handleSelectAction('picker-select', cat)">
+            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#fff0f4' : '', borderLeft: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }" @click="handleSelectAction('picker-select', cat)">
             <span v-if="cat._hasChildren"
                 style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
                 @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
@@ -693,7 +715,7 @@ window.BoCategoryTree = {
         <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">
           검색 결과 없음
         </div>
-        <div v-for="cat in cfPickerList" :key="cat.categoryId" @click="handleSelectAction('picker-select', cat)" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;" :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto' }" @mouseover="$event.currentTarget.style.background='#fce4ec'" @mouseout="$event.currentTarget.style.background=''">
+        <div v-for="cat in cfPickerList" :key="cat.categoryId" @click="handleSelectAction('picker-select', cat)" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;transition:background .1s;" :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#fff0f4' : '', borderLeft: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }">
         <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">
           {{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}
         </span>
@@ -705,6 +727,20 @@ window.BoCategoryTree = {
         </span>
       </div>
     </template>
+  </div>
+  <!-- 푸터: 선택 정보 + [선택]/[취소] 버튼 -->
+  <div style="padding:11px 16px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;border-radius:0 0 12px 12px;">
+    <span style="font-size:12px;" :style="pickerTempCat ? 'color:#e8587a;font-weight:600;' : 'color:#bbb;'">
+      {{ pickerTempCat ? '선택: ' + pickerTempCat.categoryNm : '카테고리를 클릭하세요.' }}
+    </span>
+    <div style="display:flex;gap:6px;">
+      <button type="button" class="btn btn-secondary btn-sm" @click="handleBtnAction('picker-close')">
+        취소
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" :disabled="!pickerTempCat" @click="handleBtnAction('picker-confirm')">
+        선택
+      </button>
+    </div>
   </div>
 </div>
 </div>

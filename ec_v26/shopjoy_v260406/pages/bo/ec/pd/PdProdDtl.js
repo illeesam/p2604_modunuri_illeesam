@@ -768,8 +768,8 @@ window.PdProdDtl = {
     const relProds  = reactive([]);  // [{ _id, productId, prodNm, category, price, stock, status }]
     const codeProds = reactive([]);  // 동일 구조
 
-    // 상품 추가 피커 모달
-    const prodPickerOpen   = ref(''); // '' | 'rel' | 'code'
+    // 상품 추가 피커 모달 — uiState.prodPickerOpen 을 template 에서 직접 참조 가능하도록 toRef
+    const prodPickerOpen   = Vue.toRef(uiState, 'prodPickerOpen');
         const cfProdPickerList   = computed(() => {
       const q    = (uiState.prodPickerSearch || '').trim().toLowerCase();
       const all  = products;
@@ -786,15 +786,26 @@ window.PdProdDtl = {
       });
     });
 
-    /* openProdPicker — 열기 */
-    const openProdPicker = (type) => { uiState.prodPickerSearch = ''; uiState.prodPickerSearchType = ''; uiState.prodPickerOpen = type; };
+    /* openProdPicker — 열기 (좌:카테고리트리 + 우:상품목록 모달) */
+    const openProdPicker = (type) => { uiState.prodPickerOpen = type; };
 
     /* selectProdItem — 선택 */
     const selectProdItem = (p) => {
-      const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm, cateNm: p.cateNm||'', listPrice: p.listPrice||0, prodStock: p.prodStock||0, prodStatusCd: p.prodStatusCd||'' };
+      const row = { _id: _relSeq++, prodId: p.prodId, prodNm: p.prodNm,
+        cateNm: p.cateNm || p.categoryNm || '',
+        listPrice: p.listPrice || p.price || 0,
+        prodStock: p.prodStock || 0,
+        prodStatusCd: p.prodStatusCd || '' };
       if (uiState.prodPickerOpen === 'rel') { relProds.push(row); }
       else { codeProds.push(row); }
       uiState.prodPickerOpen = '';
+    };
+
+    /* fnProdPickerCallback — BoProdCatePickModal 콜백 (선택 시 행 추가, 닫기 시 모달 종료) */
+    const fnProdPickerCallback = (cmd, param, result) => {
+      if (cmd !== 'prod-cate-pick') return;
+      if (result == null) { uiState.prodPickerOpen = ''; return; }
+      selectProdItem(result);
     };
 
     /* removeRelProd — 제거 */
@@ -1374,7 +1385,7 @@ window.PdProdDtl = {
       onImgDragStart, onImgDragOver, onImgDrop,
       prodCategories, cfCatExcludeSet, catPickerOpen, addCategory, removeCategory,
       onCatDragStart, onCatDragOver, onCatDrop,
-      relProds, codeProds, cfProdPickerList, openProdPicker, selectProdItem,
+      relProds, codeProds, cfProdPickerList, openProdPicker, selectProdItem, fnProdPickerCallback,
       removeRelProd, removeCodeProd,
       onRelDragStart, onRelDragOver, onRelDrop,
       onCodeDragStart, onCodeDragOver, onCodeDrop,
@@ -2271,51 +2282,12 @@ window.PdProdDtl = {
       취소
     </button>
   </div>
-  <!-- ===== ■.■.■. 상품 추가 피커 모달 (연관상품/코드상품 공용) ========================== -->
-  <teleport to="body">
-    <div v-if="prodPickerOpen"
-          style="position:fixed;inset:0;background:rgba(10,20,40,0.45);backdrop-filter:blur(2px);z-index:9000;display:flex;align-items:center;justify-content:center;"
-          @click.self="prodPickerOpen=''">
-      <div class="modal-box" style="width:580px;max-height:580px;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
-        <!-- ===== ■.■.■.■.■.■. 헤더 ============================================ -->
-        <div class="tree-modal-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;">
-          <span style="font-size:15px;font-weight:700;">
-            {{ prodPickerOpen==='rel' ? '연관상품' : '코디상품' }} 추가
-          </span>
-          <button @click="prodPickerOpen=''" class="modal-close-btn" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-            ✕
-          </button>
-        </div>
-        <!-- ===== ■.■.■.■.■.■. 검색 ============================================ -->
-        <div style="padding:12px 20px;flex-shrink:0;border-bottom:1px solid #f0f0f0;">
-          <bo-multi-check-select
-                v-model="uiState.prodPickerSearchType"
-                :options="[
-                { value: 'prodNm', label: '상품명' },
-                { value: 'prodId', label: 'ID' },
-                { value: 'cateNm', label: '카테고리' },
-                ]"
-                placeholder="검색대상 전체"
-                all-label="전체 선택"
-                min-width="160px" />
-          <input class="form-control" v-model="prodPickerSearch" placeholder="검색어 입력" style="font-size:13px;margin-top:6px;" />
-        </div>
-        <!-- ===== ■.■.■.■.■.■. 목록 ============================================ -->
-        <div style="overflow-y:auto;flex:1;padding:8px 12px;">
-          <!-- ===== ■.■.■.■.■.■.■. 목록 영역 ======================================= -->
-          <bo-grid bare :columns="prodPickerGridColumns" :rows="cfProdPickerList" row-key="productId"
-                empty-text="검색 결과가 없습니다." row-clickable @row-click="selectProdItem">
-          </bo-grid>
-        </div>
-        <!-- ===== ■.■.■.■.■.■. 푸터 ============================================ -->
-        <div style="padding:12px 20px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;">
-          <button class="btn btn-secondary btn-sm" @click="prodPickerOpen=''">
-            닫기
-          </button>
-        </div>
-      </div>
-    </div>
-  </teleport>
+  <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
+  <bo-prod-cate-pick-modal v-if="prodPickerOpen"
+    :title="prodPickerOpen==='rel' ? '연관상품 추가' : '코디상품 추가'"
+    :exclude-ids="(prodPickerOpen==='rel' ? relProds : codeProds).map(r => r.prodId)"
+    modal-name="prod-cate-pick"
+    :on-callback="fnProdPickerCallback" />
 </div>
 <!-- ══════════════════════════════════════
        💰 옵션(가격/재고)  (SKU 가격/재고 + 기본가격 + 판매계획)

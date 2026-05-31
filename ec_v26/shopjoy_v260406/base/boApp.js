@@ -2893,6 +2893,7 @@
     .component('SimpleUserPickModal', window.SimpleUserPickModal)
     .component('SimpleVendorPickModal', window.SimpleVendorPickModal)
     .component('SimpleProdPickModal', window.SimpleProdPickModal)
+    .component('BoProdCatePickModal', window.BoProdCatePickModal)
     .component('OdMemberPickModal', window.OdMemberPickModal)
     .component('PathPickTreeNode', window.PathPickTreeNode)
     .component('BoPropTreeNode', window.BoPropTreeNode)

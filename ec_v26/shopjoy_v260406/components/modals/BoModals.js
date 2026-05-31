@@ -6164,9 +6164,6 @@ window.BoCodeGrpModal = {
             empty-text="검색 결과가 없습니다."
             @row-click="row => handleSelectAction('codes-pick', row)"
             @set-page="onSetPage" @size-change="onSizeChange" />
-          <div v-if="pager.pageTotalCount > 0" style="margin-top:10px;white-space:nowrap;overflow-x:auto;">
-            <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" style="margin-top:0;min-height:34px;" />
-          </div>
         </template>
         <!-- ── 트리목록 ── -->
         <div v-else-if="tab==='tree'" style="font-size:12px;">
@@ -7863,6 +7860,264 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
     </template>
   </template>
   <!-- ═══ /하단 고정 영역 ═══ -->
+</bo-modal>
+`,
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * BoProdCatePickModal — 좌측 카테고리 트리 + 우측 상품 목록 (페이지) 픽 모달
+ *   사용처: PdProdDtl (연관상품/코디상품 추가 등)
+ *   props: excludeIds(이미 선택된 prodId 제외), modalName, onCallback
+ *   emit / callback: 행 클릭 시 선택된 상품 객체 전달
+ * ═══════════════════════════════════════════════════════════════════ */
+window.BoProdCatePickModal = {
+  name: 'BoProdCatePickModal',
+  inheritAttrs: false,
+  props: {
+    excludeIds: { type: Array,    default: () => [] },                  // 제외할 prodId 목록
+    title:      { type: String,   default: '상품 선택' },               // 모달 타이틀
+    modalName:  { type: String,   default: '' },                        // 모달 식별자
+    onCallback: { type: Function, default: null },                      // 통합 콜백
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { reactive, computed, onMounted, watch } = Vue;
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+
+    /* ── 상태 ───────────────────────────────────────────── */
+    const categories = reactive([]);                          // 전체 카테고리
+    const expanded   = reactive(new Set());                   // 트리 펼침
+    const uiState    = reactive({ loading: false, catSearchValue: '', selectedCategoryId: null });
+    const searchParam = reactive({ searchValue: '' });
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50] });
+    const prodList = reactive([]);
+
+    /* ── 좌측 카테고리 트리 ─────────────────────────────── */
+    const cfTree = computed(() => {
+      const k = uiState.catSearchValue.trim().toLowerCase();
+      const base = k
+        ? categories.filter(c => (c.categoryNm || '').toLowerCase().includes(k))
+        : categories.filter(c => c.useYn !== 'N');
+      const build = (parentId) =>
+        base.filter(c => (c.parentCategoryId || null) === (parentId || null))
+          .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+          .map(c => ({ ...c, children: build(c.categoryId) }));
+      return { categoryId: null, categoryNm: '전체', children: build(null) };
+    });
+
+    /* ── API ────────────────────────────────────────────── */
+    const fnLoadCategories = async () => {
+      try {
+        const res = await boApiSvc.pdCategory.getList({ pageSize: 10000 }, '상품선택', '카테고리조회');
+        categories.splice(0, categories.length, ...(res.data?.data || []));
+        /* 카테고리 트리 기본 펼침 */
+        expanded.clear();
+        expanded.add(null);
+        categories.forEach(c => expanded.add(c.categoryId));
+      } catch (e) { categories.splice(0); }
+    };
+
+    const fnBuildPagerNums = () => {
+      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+    };
+
+    const handleSearchProds = async () => {
+      uiState.loading = true;
+      prodList.splice(0, prodList.length);
+      pager.pageTotalCount = 0; pager.pageTotalPage = 1;
+      try {
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        if (searchParam.searchValue.trim()) params.searchValue = searchParam.searchValue.trim();
+        if (uiState.selectedCategoryId != null) params.categoryId = uiState.selectedCategoryId;
+        const res = await boApiSvc.pdProd.getPage(params, '상품선택', '상품조회');
+        const d = res.data?.data;
+        prodList.splice(0, prodList.length, ...(d?.pageList || d?.list || []));
+        pager.pageTotalCount = d?.pageTotalCount || 0;
+        pager.pageTotalPage = d?.pageTotalPage || 1;
+        fnBuildPagerNums();
+      } catch (e) { prodList.splice(0); } finally { uiState.loading = false; }
+    };
+
+    onMounted(async () => {
+      await fnLoadCategories();
+      await handleSearchProds();
+    });
+
+    /* ── 행 클릭 → 선택 ────────────────────────────────── */
+    const onPick = (row) => {
+      if ((props.excludeIds || []).includes(row.prodId)) { return; }
+      emit('select', row);
+      if (props.onCallback) props.onCallback(props.modalName, null, row);
+    };
+
+    const onSearch = () => { pager.pageNo = 1; handleSearchProds(); };
+    const onReset  = () => {
+      searchParam.searchValue = '';
+      uiState.selectedCategoryId = null;
+      pager.pageNo = 1;
+      handleSearchProds();
+    };
+    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchProds(); } };
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchProds(); };
+
+    /* ── dispatch ───────────────────────────────────────── */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BoProdCatePickModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-close') {
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
+      } else if (cmd === 'searchParam-search') {
+        return onSearch();
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      } else if (cmd === 'catTree-expandAll') {
+        categories.forEach(c => expanded.add(c.categoryId));
+        return;
+      } else if (cmd === 'catTree-collapseAll') {
+        expanded.clear();
+        return;
+      } else if (cmd === 'catTree-toggle') {
+        if (expanded.has(param)) expanded.delete(param); else expanded.add(param);
+        return;
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BoProdCatePickModal : handleSelectAction -> ', cmd, param);
+      if (cmd === 'catTree-select') {
+        uiState.selectedCategoryId = param;
+        pager.pageNo = 1;
+        return handleSearchProds();
+      } else if (cmd === 'prods-pick') {
+        return onPick(param);
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* ── 컬럼 정의 ──────────────────────────────────────── */
+    const baseSearchColumns = [
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '상품명 검색' },
+    ];
+
+    const prodGridColumns = [
+      { key: 'prodId',        label: 'ID',     style: 'width:100px;',
+        cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:11px;font-family:monospace;' },
+      { key: 'prodNm',        label: '상품명', cellInnerStyle: 'font-weight:600;color:#1a1a2e;' },
+      { key: 'categoryNm',    label: '카테고리', cellStyle: 'color:#666;' },
+      { key: 'price',         label: '가격',   align: 'right',
+        fmt: (v) => v != null ? Number(v).toLocaleString() + '원' : '-' },
+      { key: '_act',          label: '선택',   style: 'width:80px;text-align:center;', html: true,
+        fmt: (v, row) => (props.excludeIds || []).includes(row.prodId)
+          ? `<button class="btn btn-secondary btn-xs" disabled>이미 선택됨</button>`
+          : `<button class="btn btn-primary btn-xs" data-act="pick">선택</button>` },
+    ];
+
+    return {
+      cfSiteNm, categories, expanded, uiState, searchParam, pager, prodList, cfTree,
+      baseSearchColumns, prodGridColumns,
+      setPage, onSizeChange,
+      handleBtnAction, handleSelectAction,
+    };
+  },
+  template: /* html */`
+<bo-modal :show="true" width="1100px" max-width="95vw" height="auto" max-height="86vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+  <div style="background:#fff;border-radius:14px;width:100%;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- 헤더 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 50%,#ffd5e1 100%);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:16px;font-weight:800;color:#1a1a2e;">
+          🛍 {{ title }}
+        </span>
+        <span style="font-size:11px;font-weight:600;color:#2563eb;background:#fff;padding:2px 10px;border-radius:20px;">
+          {{ cfSiteNm }}
+        </span>
+      </div>
+      <span style="cursor:pointer;font-size:22px;color:#888;line-height:1;" @click="handleBtnAction('modal-close')">
+        ✕
+      </span>
+    </div>
+    <!-- 검색 -->
+    <div style="padding:10px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
+      <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="uiState.loading"
+        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
+    </div>
+    <!-- 바디 -->
+    <div style="display:flex;min-height:0;overflow:hidden;">
+      <!-- 좌: 카테고리 트리 -->
+      <div style="width:240px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#fafbfc;">
+        <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
+          <div style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">
+            📁 카테고리
+          </div>
+          <input v-model="uiState.catSearchValue" placeholder="🔍 카테고리 검색"
+            style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
+        </div>
+        <div style="display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid #ebebeb;">
+          <button class="btn btn-sm" @click="handleBtnAction('catTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+            ▼ 전체펼치기
+          </button>
+          <button class="btn btn-sm" @click="handleBtnAction('catTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+            ▶ 전체닫기
+          </button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:6px;max-height:560px;">
+          <!-- 전체 -->
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;"
+            :style="uiState.selectedCategoryId===null?'background:#e8587a;color:#fff;':''"
+            @click="handleSelectAction('catTree-select', null)">
+            <span style="font-size:8px;font-weight:900;flex-shrink:0;"
+              :style="{ color: uiState.selectedCategoryId===null?'#fff':'#e8587a' }">●</span>
+            <span style="font-size:13px;font-weight:700;flex:1;"
+              :style="{ color: uiState.selectedCategoryId===null?'#fff':'#374151' }">전체</span>
+          </div>
+          <!-- 카테고리 트리 (재귀 노드 단순 평면 표시) -->
+          <div v-for="c in cfTree.children" :key="c.categoryId" style="margin-left:8px;">
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;"
+              :style="uiState.selectedCategoryId===c.categoryId?'background:#e8587a;color:#fff;':''"
+              @click="handleSelectAction('catTree-select', c.categoryId)">
+              <span style="font-size:10px;color:#2563eb;flex-shrink:0;"
+                :style="{ color: uiState.selectedCategoryId===c.categoryId?'#fff':'#2563eb' }">●</span>
+              <span style="font-size:12px;flex:1;"
+                :style="{ color: uiState.selectedCategoryId===c.categoryId?'#fff':'#374151' }">
+                {{ c.categoryNm }}
+              </span>
+            </div>
+            <div v-for="c2 in c.children" :key="c2.categoryId" style="margin-left:14px;">
+              <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:11px;"
+                :style="uiState.selectedCategoryId===c2.categoryId?'background:#e8587a;color:#fff;':''"
+                @click="handleSelectAction('catTree-select', c2.categoryId)">
+                <span style="font-size:8px;color:#52c41a;flex-shrink:0;"
+                  :style="{ color: uiState.selectedCategoryId===c2.categoryId?'#fff':'#52c41a' }">◦</span>
+                <span :style="{ color: uiState.selectedCategoryId===c2.categoryId?'#fff':'#374151' }">
+                  {{ c2.categoryNm }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 우: 상품 목록 -->
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
+        <div style="display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
+          <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
+            상품목록 <b style="color:#e8587a;margin:0 2px;">{{ pager.pageTotalCount }}</b> 건
+          </span>
+        </div>
+        <div style="display:flex;flex-direction:column;">
+          <bo-grid :columns="prodGridColumns" :rows="prodList" :pager="pager" row-key="prodId"
+            row-clickable
+            :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
+            @row-click="row => handleSelectAction('prods-pick', row)"
+            @set-page="setPage" @size-change="onSizeChange" />
+        </div>
+      </div>
+    </div>
+  </div>
 </bo-modal>
 `,
 };
