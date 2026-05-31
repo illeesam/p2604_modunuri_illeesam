@@ -20,5 +20,5 @@ public interface QSySiteRepository {
 
     /** 표시경로 노드별 SySite 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
-    List<Map<String, Object>> selectPathTreeCntsByBizCd(SySiteDto.Request search);
+    List<Map<String, Object>> selectPathTreeSiteCnts(SySiteDto.Request search);
 }

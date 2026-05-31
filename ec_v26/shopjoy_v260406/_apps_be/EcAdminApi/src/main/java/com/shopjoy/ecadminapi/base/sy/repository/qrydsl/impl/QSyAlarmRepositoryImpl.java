@@ -268,11 +268,11 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* 표시경로 노드별 sy_alarm 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
     @Override
-    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SyAlarmDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeAlarmCnts(SyAlarmDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */\n");
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeAlarmCnts() */\n");
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
                     SELECT path_id AS root_id, path_id AS leaf_id
@@ -291,31 +291,10 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 """);
         params.put("bizCd", "sy_alarm");
 
-        if (search != null && StringUtils.hasText(search.getStatus())) {
-            sql.append("      AND t.alarm_status_cd = :statusCd\n");
-            params.put("statusCd", search.getStatus());
-        }
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String raw = search.getSearchType();
-
-            boolean noType = !StringUtils.hasText(raw);
-
-            String searchType = noType ? "" : "," + raw.trim() + ",";
-            sql.append("      AND (\n");
-            sql.append("            1=0\n");
-            if (noType || searchType.contains(",alarmTitle,")) sql.append("         OR t.alarm_title ILIKE '%' || :searchValue || '%'\n");
-            if (noType || searchType.contains(",alarmMsg,")) sql.append("         OR t.alarm_msg ILIKE '%' || :searchValue || '%'\n");
-            sql.append("      )\n");
-            params.put("searchValue", search.getSearchValue());
-        }
-        if (search != null && StringUtils.hasText(search.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            params.put("dateStart", search.getDateStart());
-        }
-        if (search != null && StringUtils.hasText(search.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            params.put("dateEnd", search.getDateEnd());
-        }
+        /* 검색조건 — pathtreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
+        pathtreeAndStatus(search, sql, params);
+        pathtreeAndSearchValue(search, sql, params);
+        pathtreeAndDateRange(search, sql, params);
 
         sql.append("""
                 )
@@ -349,5 +328,43 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
             result.add(m);
         }
         return result;
+    }
+
+    /* ============================================================
+     * selectPathTreeAlarmCnts 전용 SQL 조건 헬퍼
+     * ============================================================ */
+
+    /* AND t.alarm_status_cd = :statusCd */
+    private void pathtreeAndStatus(SyAlarmDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getStatus())) return;
+        sql.append("      AND t.alarm_status_cd = :statusCd\n");
+        p.put("statusCd", s.getStatus());
+    }
+
+    /* AND ( OR t.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기 */
+    private void pathtreeAndSearchValue(SyAlarmDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
+        String raw = s.getSearchType();
+        boolean noType = !StringUtils.hasText(raw);
+        String st = noType ? "" : "," + raw.trim() + ",";
+        sql.append("      AND (\n");
+        sql.append("            1=0\n");
+        if (noType || st.contains(",alarmTitle,")) sql.append("         OR t.alarm_title ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",alarmMsg,"))   sql.append("         OR t.alarm_msg   ILIKE '%' || :searchValue || '%'\n");
+        sql.append("      )\n");
+        p.put("searchValue", s.getSearchValue());
+    }
+
+    /* AND t.reg_date >= :dateStart AND t.reg_date <= :dateEnd + 1 day */
+    private void pathtreeAndDateRange(SyAlarmDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null) return;
+        if (StringUtils.hasText(s.getDateStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
+            p.put("dateStart", s.getDateStart());
+        }
+        if (StringUtils.hasText(s.getDateEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateEnd", s.getDateEnd());
+        }
     }
 }

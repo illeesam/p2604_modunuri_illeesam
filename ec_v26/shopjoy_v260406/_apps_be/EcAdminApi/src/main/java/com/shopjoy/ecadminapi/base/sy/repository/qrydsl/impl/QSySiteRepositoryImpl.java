@@ -297,11 +297,11 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
      *   동적 SQL — search 의 null 항목은 SQL 에 포함하지 않아 옵티마이저 부담을 줄인다.
      */
     @Override
-    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SySiteDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeSiteCnts(SySiteDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl :: selectPathTreeCntsByBizCd() */ \n");
+        sql.append("/* base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl :: selectPathTreeSiteCnts() */ \n");
         /* CTE 헤더 — 재귀 path 자손 누적 + filtered_site WHERE 시작 */
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
@@ -364,7 +364,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     }
 
     /* ============================================================
-     * selectPathTreeCntsByBizCd 전용 SQL 조건 헬퍼 (sql prefix)
+     * selectPathTreeSiteCnts 전용 SQL 조건 헬퍼 (sql prefix)
      *   - QueryDSL andXxx() (BooleanExpression 반환) 과 구분하기 위해 pathtreeAnd* 사용
      *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
      * ============================================================ */

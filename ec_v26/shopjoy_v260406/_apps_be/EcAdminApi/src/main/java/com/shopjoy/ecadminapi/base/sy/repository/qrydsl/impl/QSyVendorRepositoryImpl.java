@@ -317,11 +317,11 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 표시경로 노드별 sy_vendor 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
     @Override
-    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SyVendorDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeVendorCnts(SyVendorDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */\n");
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeVendorCnts() */\n");
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
                     SELECT path_id AS root_id, path_id AS leaf_id
@@ -340,34 +340,10 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 """);
         params.put("bizCd", "sy_vendor");
 
-        if (search != null && StringUtils.hasText(search.getStatus())) {
-            sql.append("      AND t.vendor_status_cd = :statusCd\n");
-            params.put("statusCd", search.getStatus());
-        }
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String raw = search.getSearchType();
-
-            boolean noType = !StringUtils.hasText(raw);
-
-            String searchType = noType ? "" : "," + raw.trim() + ",";
-            sql.append("      AND (\n");
-            sql.append("            1=0\n");
-            if (noType || searchType.contains(",vendorNm,")) sql.append("         OR t.vendor_nm ILIKE '%' || :searchValue || '%'\n");
-            if (noType || searchType.contains(",vendorNmEn,")) sql.append("         OR t.vendor_nm_en ILIKE '%' || :searchValue || '%'\n");
-            if (noType || searchType.contains(",ceoNm,")) sql.append("         OR t.ceo_nm ILIKE '%' || :searchValue || '%'\n");
-            if (noType || searchType.contains(",vendorEmail,")) sql.append("         OR t.vendor_email ILIKE '%' || :searchValue || '%'\n");
-            if (noType || searchType.contains(",vendorPhone,")) sql.append("         OR t.vendor_phone ILIKE '%' || :searchValue || '%'\n");
-            sql.append("      )\n");
-            params.put("searchValue", search.getSearchValue());
-        }
-        if (search != null && StringUtils.hasText(search.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            params.put("dateStart", search.getDateStart());
-        }
-        if (search != null && StringUtils.hasText(search.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            params.put("dateEnd", search.getDateEnd());
-        }
+        /* 검색조건 — pathtreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
+        pathtreeAndStatus(search, sql, params);
+        pathtreeAndSearchValue(search, sql, params);
+        pathtreeAndDateRange(search, sql, params);
 
         sql.append("""
                 )
@@ -401,5 +377,43 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
             result.add(m);
         }
         return result;
+    }
+
+    /* ============================================================
+     * selectPathTreeVendorCnts 전용 SQL 조건 헬퍼
+     * ============================================================ */
+
+    private void pathtreeAndStatus(SyVendorDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getStatus())) return;
+        sql.append("      AND t.vendor_status_cd = :statusCd\n");
+        p.put("statusCd", s.getStatus());
+    }
+
+    private void pathtreeAndSearchValue(SyVendorDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
+        String raw = s.getSearchType();
+        boolean noType = !StringUtils.hasText(raw);
+        String st = noType ? "" : "," + raw.trim() + ",";
+        sql.append("      AND (\n");
+        sql.append("            1=0\n");
+        if (noType || st.contains(",vendorNm,"))    sql.append("         OR t.vendor_nm    ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",vendorNmEn,"))  sql.append("         OR t.vendor_nm_en ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",ceoNm,"))       sql.append("         OR t.ceo_nm       ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",vendorEmail,")) sql.append("         OR t.vendor_email ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",vendorPhone,")) sql.append("         OR t.vendor_phone ILIKE '%' || :searchValue || '%'\n");
+        sql.append("      )\n");
+        p.put("searchValue", s.getSearchValue());
+    }
+
+    private void pathtreeAndDateRange(SyVendorDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null) return;
+        if (StringUtils.hasText(s.getDateStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
+            p.put("dateStart", s.getDateStart());
+        }
+        if (StringUtils.hasText(s.getDateEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateEnd", s.getDateEnd());
+        }
     }
 }

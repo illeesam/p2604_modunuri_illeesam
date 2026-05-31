@@ -231,7 +231,7 @@ public class DpUiService {
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpUiDto.Request req) {
-        return dpUiRepository.selectPathTreeCntsByBizCd(req);
+        return dpUiRepository.selectPathTreeUiCnts(req);
     }
 
     private static String nullIfBlank(String s) {

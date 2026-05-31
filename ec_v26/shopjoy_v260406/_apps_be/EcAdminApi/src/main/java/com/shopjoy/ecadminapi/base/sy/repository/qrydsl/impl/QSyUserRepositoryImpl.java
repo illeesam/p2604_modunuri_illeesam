@@ -352,11 +352,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      *   - '__orphan__'    : 검색조건에 부합 + dept_id IS NULL 인 사용자 수
      */
     @Override
-    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SyUserDto.Request search) {
+    public List<Map<String, Object>> selectDeptTreeUserCnts(SyUserDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */ \n");
+        sql.append("/* " + QRY_SRC + " :: selectDeptTreeUserCnts() */ \n");
         /* CTE 헤더 — 재귀 dept 자손 누적 + filtered WHERE 시작 */
         sql.append("""
                 WITH RECURSIVE descendants /* 각 dept 의 자손 dept_id (자신 포함) */ AS (
@@ -373,33 +373,10 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     WHERE 1=1
                 """);
 
-        if (search != null && StringUtils.hasText(search.getStatus())) {
-            sql.append("      AND t.user_status_cd = :statusCd \n");
-            params.put("statusCd", search.getStatus());
-        }
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String raw = search.getSearchType();
-
-            boolean noType = !StringUtils.hasText(raw);
-
-            String searchType = noType ? "" : "," + raw.trim() + ",";
-            sql.append("      AND ( \n");
-            sql.append("            1=0 \n");
-            if (noType || searchType.contains(",loginId,"))   sql.append("         OR t.login_id   ILIKE '%' || :searchValue || '%' \n");
-            if (noType || searchType.contains(",userNm,"))    sql.append("         OR t.user_nm    ILIKE '%' || :searchValue || '%' \n");
-            if (noType || searchType.contains(",userEmail,")) sql.append("         OR t.user_email ILIKE '%' || :searchValue || '%' \n");
-            if (noType || searchType.contains(",userPhone,")) sql.append("         OR t.user_phone ILIKE '%' || :searchValue || '%' \n");
-            sql.append("      ) \n");
-            params.put("searchValue", search.getSearchValue());
-        }
-        if (search != null && StringUtils.hasText(search.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp) \n");
-            params.put("dateStart", search.getDateStart());
-        }
-        if (search != null && StringUtils.hasText(search.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
-            params.put("dateEnd", search.getDateEnd());
-        }
+        /* 검색조건 — depttreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
+        depttreeAndStatus(search, sql, params);
+        depttreeAndSearchValue(search, sql, params);
+        depttreeAndDateRange(search, sql, params);
 
         /* CTE 닫기 + 메인 UNION ALL 3블록 */
         sql.append("""
@@ -435,5 +412,42 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
             result.add(m);
         }
         return result;
+    }
+
+    /* ============================================================
+     * selectDeptTreeUserCnts 전용 SQL 조건 헬퍼 (depttree prefix)
+     * ============================================================ */
+
+    private void depttreeAndStatus(SyUserDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getStatus())) return;
+        sql.append("      AND t.user_status_cd = :statusCd\n");
+        p.put("statusCd", s.getStatus());
+    }
+
+    private void depttreeAndSearchValue(SyUserDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
+        String raw = s.getSearchType();
+        boolean noType = !StringUtils.hasText(raw);
+        String st = noType ? "" : "," + raw.trim() + ",";
+        sql.append("      AND (\n");
+        sql.append("            1=0\n");
+        if (noType || st.contains(",loginId,"))   sql.append("         OR t.login_id   ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",userNm,"))    sql.append("         OR t.user_nm    ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",userEmail,")) sql.append("         OR t.user_email ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",userPhone,")) sql.append("         OR t.user_phone ILIKE '%' || :searchValue || '%'\n");
+        sql.append("      )\n");
+        p.put("searchValue", s.getSearchValue());
+    }
+
+    private void depttreeAndDateRange(SyUserDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null) return;
+        if (StringUtils.hasText(s.getDateStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
+            p.put("dateStart", s.getDateStart());
+        }
+        if (StringUtils.hasText(s.getDateEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateEnd", s.getDateEnd());
+        }
     }
 }

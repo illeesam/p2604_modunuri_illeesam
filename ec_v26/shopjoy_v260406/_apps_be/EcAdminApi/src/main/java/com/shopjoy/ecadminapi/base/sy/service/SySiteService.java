@@ -76,7 +76,7 @@ public class SySiteService {
      *   검색조건이 있으면 그 조건에 부합하는 사이트만 카운트 (page 그리드 결과와 동기).
      *   결과: [{pathId: 'XXX', cnt: 5}, {pathId: '__total__', cnt: 12}, {pathId: '__orphan__', cnt: 0}, ...]. */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SySiteDto.Request req) {
-        return sySiteRepository.selectPathTreeCntsByBizCd(req);
+        return sySiteRepository.selectPathTreeSiteCnts(req);
     }
 
     /* 공백·null 정규화 — '' 도 null 로 취급해 SQL 의 :param IS NULL 분기 활성화 */

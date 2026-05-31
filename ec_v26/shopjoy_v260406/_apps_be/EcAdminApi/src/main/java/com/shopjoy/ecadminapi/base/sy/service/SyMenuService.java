@@ -231,7 +231,7 @@ public class SyMenuService {
      *   sy_menu 는 path_id 컬럼 대신 menu_code 가 sy_path.path_id 와 일치하는 관례를 따른다.
      *   결과: { pathId: cnt, '__total__': 전체 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyMenuDto.Request req) {
-        return syMenuRepository.selectPathTreeCntsByBizCd(req);
+        return syMenuRepository.selectMenuTreeCnts(req);
     }
 
     private static String nullIfBlank(String s) {

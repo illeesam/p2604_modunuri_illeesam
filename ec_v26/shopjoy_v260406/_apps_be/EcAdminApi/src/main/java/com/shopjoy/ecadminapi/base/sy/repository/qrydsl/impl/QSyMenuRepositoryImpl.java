@@ -280,65 +280,41 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         return (int) affected;
     }
 
-    /* 표시경로 노드별 sy_menu 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
-     *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
+    /* 메뉴 트리 노드별 sy_menu 수 집계 (자기참조 자손 누적 + 검색조건 필터, native CTE 동적 SQL)
+     *   sy_menu 는 sy_menu.parent_menu_id 자기참조 트리 — sy_path 와 무관.
+     *   반환: [{pathId, cnt}, ...] — pathId 는 menu_id 값. '__total__' 특수 행 포함. */
     @Override
-    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SyMenuDto.Request search) {
+    public List<Map<String, Object>> selectMenuTreeCnts(SyMenuDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */\n");
+        sql.append("/* " + QRY_SRC + " :: selectMenuTreeCnts() */\n");
         sql.append("""
-                WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
-                    SELECT path_id AS root_id, path_id AS leaf_id
-                    FROM sy_path
-                    WHERE biz_cd = :bizCd
+                WITH RECURSIVE descendants /* 각 menu 의 자손 menu_id (자신 포함) */ AS (
+                    SELECT menu_id AS root_id, menu_id AS leaf_id
+                    FROM sy_menu
                     UNION ALL
-                    SELECT d.root_id, c.path_id
+                    SELECT d.root_id, c.menu_id
                     FROM descendants d
-                    JOIN sy_path c ON c.parent_path_id = d.leaf_id
-                    WHERE c.biz_cd = :bizCd
+                    JOIN sy_menu c ON c.parent_menu_id = d.leaf_id
                 ),
                 filtered /* 검색조건이 적용된 행 */ AS (
-                    SELECT menu_id, menu_code
+                    SELECT menu_id
                     FROM sy_menu t
                     WHERE 1=1
                 """);
-        params.put("bizCd", "sy_menu");
 
-        if (search != null && StringUtils.hasText(search.getUseYn())) {
-            sql.append("      AND t.use_yn = :useYn\n");
-            params.put("useYn", search.getUseYn());
-        }
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String raw = search.getSearchType();
-
-            boolean noType = !StringUtils.hasText(raw);
-
-            String searchType = noType ? "" : "," + raw.trim() + ",";
-            sql.append("      AND (\n");
-            sql.append("            1=0\n");
-            if (noType || searchType.contains(",menuCode,")) sql.append("         OR t.menu_code ILIKE '%' || :searchValue || '%'\n");
-            if (noType || searchType.contains(",menuNm,")) sql.append("         OR t.menu_nm ILIKE '%' || :searchValue || '%'\n");
-            if (noType || searchType.contains(",menuRemark,")) sql.append("         OR t.menu_remark ILIKE '%' || :searchValue || '%'\n");
-            sql.append("      )\n");
-            params.put("searchValue", search.getSearchValue());
-        }
-        if (search != null && StringUtils.hasText(search.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            params.put("dateStart", search.getDateStart());
-        }
-        if (search != null && StringUtils.hasText(search.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            params.put("dateEnd", search.getDateEnd());
-        }
+        /* 검색조건 — menutreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
+        menutreeAndUseYn(search, sql, params);
+        menutreeAndSearchValue(search, sql, params);
+        menutreeAndDateRange(search, sql, params);
 
         sql.append("""
                 )
-                  /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
+                  /* (1) 일반 menu_id 행 : 노드 + 자손 누적 카운트 */
                   SELECT d.root_id AS path_id, COUNT(t.menu_id) AS cnt
                   FROM descendants d
-                    LEFT JOIN filtered t ON t.menu_code = d.leaf_id
+                    LEFT JOIN filtered t ON t.menu_id = d.leaf_id
                   GROUP BY d.root_id
                 UNION ALL
                   /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
@@ -360,5 +336,41 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
             result.add(m);
         }
         return result;
+    }
+
+    /* ============================================================
+     * selectMenuTreeCnts 전용 SQL 조건 헬퍼 (menutree prefix)
+     * ============================================================ */
+
+    private void menutreeAndUseYn(SyMenuDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getUseYn())) return;
+        sql.append("      AND t.use_yn = :useYn\n");
+        p.put("useYn", s.getUseYn());
+    }
+
+    private void menutreeAndSearchValue(SyMenuDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
+        String raw = s.getSearchType();
+        boolean noType = !StringUtils.hasText(raw);
+        String st = noType ? "" : "," + raw.trim() + ",";
+        sql.append("      AND (\n");
+        sql.append("            1=0\n");
+        if (noType || st.contains(",menuCode,"))   sql.append("         OR t.menu_code   ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",menuNm,"))     sql.append("         OR t.menu_nm     ILIKE '%' || :searchValue || '%'\n");
+        if (noType || st.contains(",menuRemark,")) sql.append("         OR t.menu_remark ILIKE '%' || :searchValue || '%'\n");
+        sql.append("      )\n");
+        p.put("searchValue", s.getSearchValue());
+    }
+
+    private void menutreeAndDateRange(SyMenuDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null) return;
+        if (StringUtils.hasText(s.getDateStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
+            p.put("dateStart", s.getDateStart());
+        }
+        if (StringUtils.hasText(s.getDateEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateEnd", s.getDateEnd());
+        }
     }
 }
