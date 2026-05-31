@@ -4,6 +4,8 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyRoleMenu;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyUserRole;
 import com.shopjoy.ecadminapi.base.sy.service.SyRoleMenuService;
 import com.shopjoy.ecadminapi.base.sy.service.SyRoleService;
 import com.shopjoy.ecadminapi.base.sy.service.SyUserRoleService;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 역할 서비스 — base SyRoleService 위임 (thin wrapper) + 캐시 evict.
@@ -79,5 +82,73 @@ public class BoSyRoleService {
         SyUserRoleDto.Request req = new SyUserRoleDto.Request();
         req.setRoleId(roleId);
         return syUserRoleService.getList(req);
+    }
+
+    /* 역할별 메뉴 권한 일괄 저장 — 기존 D + 신규 I 를 한 번에 saveList */
+    @Transactional
+    public void saveRoleMenus(String roleId, List<Map<String, Object>> menus) {
+        /* 1) 검색조건: roleId 로 기존 매핑 조회 준비 */
+        SyRoleMenuDto.Request req = new SyRoleMenuDto.Request();
+        req.setRoleId(roleId);
+
+        /* 2) 기존 매핑 → 모두 D(삭제) row 로 변환 */
+        List<SyRoleMenu> rows = syRoleMenuService.getList(req).stream()
+                .map(ex -> {
+                    SyRoleMenu r = new SyRoleMenu();
+                    r.setRoleMenuId(ex.getRoleMenuId());
+                    r.setRowStatus("D");
+                    return r;
+                })
+                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+
+        /* 3) 신규 매핑 → I(등록) row 로 추가 */
+        if (menus != null) for (Map<String, Object> m : menus) {
+            Object menuId = m.get("menuId");
+            if (menuId == null || String.valueOf(menuId).isBlank()) continue;  /* menuId 없으면 skip */
+            SyRoleMenu r = new SyRoleMenu();
+            r.setRoleId(roleId);
+            r.setMenuId(String.valueOf(menuId));
+            r.setRowStatus("I");
+            /* permLevel 정수 변환 (실패하면 무시 — 기본값으로 INSERT) */
+            Object perm = m.get("permLevel");
+            if (perm != null) try { r.setPermLevel(Integer.valueOf(String.valueOf(perm))); } catch (NumberFormatException ignore) {}
+            rows.add(r);
+        }
+
+        /* 4) D + I 한 번에 처리 (saveList 가 단계별 DELETE → INSERT 처리하여 unique 충돌 회피) */
+        syRoleMenuService.saveList("base", rows);
+        roleMenuCache.evict(roleId);  /* 캐시 무효화 */
+    }
+
+    /* 역할별 대상 사용자 일괄 저장 — 기존 D + 신규 I 를 한 번에 saveList */
+    @Transactional
+    public void saveRoleUsers(String roleId, List<Map<String, Object>> users) {
+        /* 1) 검색조건: roleId 로 기존 매핑 조회 준비 */
+        SyUserRoleDto.Request req = new SyUserRoleDto.Request();
+        req.setRoleId(roleId);
+
+        /* 2) 기존 매핑 → 모두 D(삭제) row 로 변환 */
+        List<SyUserRole> rows = syUserRoleService.getList(req).stream()
+                .map(ex -> {
+                    SyUserRole r = new SyUserRole();
+                    r.setUserRoleId(ex.getUserRoleId());
+                    r.setRowStatus("D");
+                    return r;
+                })
+                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+
+        /* 3) 신규 매핑 → I(등록) row 로 추가 (boUserId 우선, 없으면 userId) */
+        if (users != null) for (Map<String, Object> u : users) {
+            Object uid = u.getOrDefault("boUserId", u.get("userId"));
+            if (uid == null || String.valueOf(uid).isBlank()) continue;  /* userId 없으면 skip */
+            SyUserRole r = new SyUserRole();
+            r.setRoleId(roleId);
+            r.setUserId(String.valueOf(uid));
+            r.setRowStatus("I");
+            rows.add(r);
+        }
+
+        /* 4) D + I 한 번에 처리 (saveList 가 단계별 DELETE → INSERT 처리하여 unique(user_id, role_id) 충돌 회피) */
+        syUserRoleService.saveList("base", rows);
     }
 }

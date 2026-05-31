@@ -25,6 +25,13 @@ window.SyRoleMng = {
       isPageCodeLoad: false, loading: false, selectedPath: null, focusedIdx: null, selectedRoleId: null, menuSearchValue: ''});
     const codes = reactive({ role_status: [], use_yn: [], perm_levels: ['없음','읽기','쓰기','관리','차단'], role_cats: [['ADMIN','관리자역할'],['SITE','사이트역할'],['SALES','판매업체역할'],['DLIV','배송업체역할']] });
 
+    /* permLevel 매핑 — DB(Integer) ↔ UI(문자열) 변환 (0:없음 / 1:읽기 / 2:쓰기 / 3:관리 / 4:차단) */
+    const PERM_LABEL_BY_NUM = { 0: '없음', 1: '읽기', 2: '쓰기', 3: '관리', 4: '차단' };
+    const PERM_NUM_BY_LABEL = { '없음': 0, '읽기': 1, '쓰기': 2, '관리': 3, '차단': 4 };
+
+    /* 메뉴 체크 상태 — 권한값과 분리. 일괄적용 버튼은 체크된 메뉴만 대상 */
+    const menuChecked = reactive(new Set());
+
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
 
@@ -82,9 +89,9 @@ window.SyRoleMng = {
       } else if (cmd === 'pathTree-toggle') {
         if (expanded.has(param)) { expanded.delete(param); } else { expanded.add(param); }
         return;
-      // 메뉴 권한 전체 토글 (checked → 읽기, unchecked → 없음)
+      // 메뉴 체크박스 전체 토글 (권한값 변경 X — 체크 상태만)
       } else if (cmd === 'roleMenus-toggleAll') {
-        return setAllMenuPerm(param ? '읽기' : '없음');
+        return toggleAllMenus(param);
       // 메뉴 권한 일괄 설정 (특정 권한 레벨로 모두 변경)
       } else if (cmd === 'roleMenus-setAll') {
         return setAllMenuPerm(param);
@@ -96,6 +103,9 @@ window.SyRoleMng = {
       } else if (cmd === 'roleUsers-closeSelect') {
         uiState.userSelectOpen = false;
         return;
+      // 대상사용자 저장
+      } else if (cmd === 'roleUsers-save') {
+        return handleSaveRoleUsers();
       // 상위역할 선택 모달 닫기
       } else if (cmd === 'parentModal-close') {
         roleTreeModal.show = false;
@@ -142,13 +152,16 @@ window.SyRoleMng = {
       // 메뉴 권한 단일 설정 (특정 메뉴 + 특정 권한)
       } else if (cmd === 'roleMenus-set') {
         return setMenuPerm(param.menuId, param.perm);
-      // 역할-사용자 매핑 제거
+      // 메뉴 행 체크박스 토글 (권한값 변경 X — 체크 상태만)
+      } else if (cmd === 'roleMenus-toggleCheck') {
+        return toggleMenuCheck(param);
+      // 역할-사용자 매핑 제거 (메모리만 변경 — [저장] 버튼 클릭 시 일괄 반영)
       } else if (cmd === 'roleUsers-remove') {
         if (!uiState.selectedRoleId) { return; }
         const idx = roleUsers.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === param);
         if (idx !== -1) { roleUsers.splice(idx, 1); }
         return;
-      // 역할-사용자 매핑 추가 (사용자 선택 모달에서 선택)
+      // 역할-사용자 매핑 추가 (사용자 선택 모달에서 선택, 메모리만 변경)
       } else if (cmd === 'roleUsers-select') {
         return onUserSelect(param);
       // 상위역할 모달에서 상위 선택 → 행 parentRoleId 갱신
@@ -454,6 +467,7 @@ window.SyRoleMng = {
 
     /* handleLoadRoleDetail — 처리 */
     const handleLoadRoleDetail = async (roleId) => {
+      menuChecked.clear();
       if (!roleId || roleId <= 0) { roleMenus.splice(0); roleUsers.splice(0); return; }
       uiState.detailLoading = true;
       try {
@@ -463,7 +477,11 @@ window.SyRoleMng = {
         ]);
         const rmList = rmRes.data?.data?.list || rmRes.data?.data || [];
         const ruList = ruRes.data?.data?.list || ruRes.data?.data || [];
-        roleMenus.splice(0, roleMenus.length, ...rmList);
+        /* DB Integer permLevel → UI 문자열 라벨 변환 */
+        roleMenus.splice(0, roleMenus.length, ...rmList.map(rm => ({
+          ...rm,
+          permLevel: PERM_LABEL_BY_NUM[rm.permLevel] || '읽기',
+        })));
         roleUsers.splice(0, roleUsers.length, ...ruList.map(u => ({ roleId, boUserId: u.userId || u.boUserId || u.userId })));
         // boUsers에 없는 사용자 보완
         ruList.forEach(u => {
@@ -485,7 +503,7 @@ window.SyRoleMng = {
       try {
         const menuPayload = roleMenus
           .filter(x => x.roleId === uiState.selectedRoleId)
-          .map(x => ({ menuId: x.menuId, permLevel: x.permLevel || '읽기' }));
+          .map(x => ({ menuId: x.menuId, permLevel: PERM_NUM_BY_LABEL[x.permLevel] ?? 1 }));
         const userPayload = roleUsers
           .filter(x => x.roleId === uiState.selectedRoleId)
           .map(x => ({ boUserId: x.boUserId }));
@@ -689,28 +707,42 @@ window.SyRoleMng = {
       }
     };
 
-    /* setAllMenuPerm — 설정 */
+    /* setAllMenuPerm — 체크된 메뉴에만 권한 일괄 적용 */
     const setAllMenuPerm = (level) => {
       if (!uiState.selectedRoleId) { return; }
+      const targetMenuIds = cfMenuTree.value.filter(m => menuChecked.has(m.menuId)).map(m => m.menuId);
+      if (targetMenuIds.length === 0) { return; }
       if (level === '없음') {
-        const idxs = roleMenus.map((x,i)=>x.roleId===uiState.selectedRoleId?i:-1).filter(i=>i>=0).reverse(); idxs.forEach(i=>roleMenus.splice(i,1));
+        const idxs = roleMenus
+          .map((x, i) => x.roleId === uiState.selectedRoleId && targetMenuIds.includes(x.menuId) ? i : -1)
+          .filter(i => i >= 0).reverse();
+        idxs.forEach(i => roleMenus.splice(i, 1));
       } else {
-        cfMenuTree.value.forEach(m => {
-          const idx = roleMenus.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === m.menuId);
+        targetMenuIds.forEach(menuId => {
+          const idx = roleMenus.findIndex(x => x.roleId === uiState.selectedRoleId && x.menuId === menuId);
           if (idx !== -1) { roleMenus[idx].permLevel = level; }
-          else { roleMenus.push({ roleId: uiState.selectedRoleId, menuId: m.menuId, permLevel: level }); }
+          else { roleMenus.push({ roleId: uiState.selectedRoleId, menuId, permLevel: level }); }
         });
       }
     };
 
-    /* isMenuChecked — 여부 확인 */
-    const isMenuChecked = (menuId) => getMenuPerm(menuId) !== '없음';
+    /* isMenuChecked — menuChecked Set 조회 (권한값과 별개) */
+    const isMenuChecked = (menuId) => menuChecked.has(menuId);
 
-    /* toggleAllMenus — 전체 토글 */
-    const toggleAllMenus = (check) => { setAllMenuPerm(check ? '읽기' : '없음'); };
+    /* toggleMenuCheck — 단건 체크 토글 (권한값은 안 건드림) */
+    const toggleMenuCheck = (menuId) => {
+      if (menuChecked.has(menuId)) { menuChecked.delete(menuId); }
+      else { menuChecked.add(menuId); }
+    };
+
+    /* toggleAllMenus — 전체 체크 토글 (권한값은 안 건드림) */
+    const toggleAllMenus = (check) => {
+      if (check) { cfMenuTree.value.forEach(m => menuChecked.add(m.menuId)); }
+      else { menuChecked.clear(); }
+    };
     const cfMenuAllChecked = computed(() => {
       if (!uiState.selectedRoleId || !cfMenuTree.value.length) { return false; }
-      return cfMenuTree.value.every(m => getMenuPerm(m.menuId) !== '없음');
+      return cfMenuTree.value.every(m => menuChecked.has(m.menuId));
     });
 
     /* fnRoleUsersList — 하단 대상사용자 목록 (선택된 역할 기준). computed 미사용 — 반응성은 roleUsers/uiState 가 reactive 라 v-for 가 자동 재평가됨 */
@@ -732,7 +764,7 @@ window.SyRoleMng = {
         });
     };
 
-    /* onUserSelect — 이벤트. 모달에서 받은 user 객체(syUser 응답) 그대로 보존하여 렌더에서 직접 사용 */
+    /* onUserSelect — 이벤트. 모달에서 받은 user 객체(syUser 응답) 그대로 보존하여 렌더에서 직접 사용. [저장] 버튼으로 일괄 반영 */
     const onUserSelect = (users) => {
       if (!uiState.selectedRoleId) { return; }
       users.forEach(u => {
@@ -757,6 +789,22 @@ window.SyRoleMng = {
         }
       });
       uiState.userSelectOpen = false;
+    };
+
+    /* handleSaveRoleUsers — 대상사용자 저장 ([저장] 버튼) */
+    const handleSaveRoleUsers = async () => {
+      if (!uiState.selectedRoleId) { return; }
+      const ok = await showConfirm('대상사용자 저장', '현재 대상사용자 목록을 저장하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        const userPayload = roleUsers
+          .filter(x => x.roleId === uiState.selectedRoleId)
+          .map(x => ({ boUserId: x.boUserId }));
+        await boApiSvc.syRole.saveUsers(uiState.selectedRoleId, { users: userPayload }, '역할관리', '대상사용자저장');
+        showToast('대상사용자가 저장되었습니다.', 'success');
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '저장 중 오류가 발생했습니다.', 'error', 0);
+      }
     };
 
     /* removeUser — 제거 */
@@ -884,8 +932,6 @@ window.SyRoleMng = {
         @excel-upload="handleBtnAction('roles-excel-upload')">
         <template #row-actions="{ row, idx }">
           <span style="display:inline-flex;gap:3px;white-space:nowrap;">
-            <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-rowCancel', idx)" @delete="handleSelectAction('roles-rowDelete', idx)">
-            </bo-row-cancel-delete>
             <button v-if="cfShowRoleSetting(row)"
               class="btn btn-blue"
               :style="{ fontSize:'11px', padding:'2px 6px', lineHeight:'1.3',
@@ -895,6 +941,8 @@ window.SyRoleMng = {
               title="하단 메뉴접근권한 / 대상사용자 설정">
               설정
             </button>
+            <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-rowCancel', idx)" @delete="handleSelectAction('roles-rowDelete', idx)">
+            </bo-row-cancel-delete>
           </span>
         </template>
       </bo-grid-crud>
@@ -917,9 +965,13 @@ window.SyRoleMng = {
               </div>
               <div v-if="uiState.selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
                 <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
-                  <input type="checkbox" :checked="cfMenuAllChecked" @change="e => handleBtnAction('roleMenus-toggleAll', e.target.checked)" />
+                  <input type="checkbox" :checked="cfMenuAllChecked"
+                    @change="e => handleBtnAction('roleMenus-toggleAll', e.target.checked)" />
                   전체선택
                 </label>
+                <span style="font-size:11px;color:#999;margin:0 4px;white-space:nowrap;">
+                  전체 적용:
+                </span>
                 <button v-for="p in codes.perm_levels" :key="p"
                   class="btn btn-xs"
                   :style="{ background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff', fontWeight:'600', fontSize:'11px', padding:'2px 8px' }"
@@ -944,6 +996,10 @@ window.SyRoleMng = {
               <div v-for="m in cfMenuTree" :key="m.menuId"
                 style="display:flex;align-items:center;padding:6px 10px;border-bottom:1px solid #f8f8f8;transition:background .1s;"
                 :style="{ background: isMenuChecked(m.menuId) ? '#fff8f9' : '' }">
+                <!-- ===== ■.■.■.■.■.■.■.■. 행 체크박스 (권한값과 분리, 일괄적용 대상 선택) ===== -->
+                <input type="checkbox" :checked="isMenuChecked(m.menuId)"
+                  @change="handleSelectAction('roleMenus-toggleCheck', m.menuId)"
+                  style="margin-right:8px;cursor:pointer;flex-shrink:0;" />
                 <!-- ===== ■.■.■.■.■.■.■.■. 블릿 트리 들여쓰기 ================================ -->
                 <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
                   fontSize: m._depth===0?'7px':'11px', flexShrink:0,
@@ -989,10 +1045,14 @@ window.SyRoleMng = {
                     위 목록에서 역할의 [설정] 버튼을 클릭하세요
                   </span>
                 </div>
-                <button v-if="uiState.selectedRoleId" class="btn btn-primary btn-sm"
-                @click="handleBtnAction('roleUsers-openSelect')">
-                  + 사용자 추가
-                </button>
+                <div v-if="uiState.selectedRoleId" style="display:flex;gap:6px;align-items:center;">
+                  <button class="btn btn-primary btn-sm" @click="handleBtnAction('roleUsers-openSelect')">
+                    + 사용자 추가
+                  </button>
+                  <button class="btn btn-primary btn-sm" style="margin-left:4px;" @click="handleBtnAction('roleUsers-save')">
+                    💾 저장
+                  </button>
+                </div>
               </div>
               <!-- ===== ■.■.■.■.■.■. 선택된 사용자 목록 ==================================== -->
               <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;padding:6px;">

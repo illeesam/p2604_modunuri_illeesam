@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * BO 역할(권한) API — /api/bo/sy/role
@@ -84,5 +85,25 @@ public class BoSyRoleController {
     @GetMapping("/{id}/users")
     public ResponseEntity<ApiResponse<List<SyUserRoleDto.Item>>> getUsers(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boSyRoleService.getUsersByRoleId(id)));
+    }
+
+    /* 역할별 메뉴 권한 저장 (body: { menus: [{menuId, permLevel}] }) */
+    @PostMapping("/{id}/menus")
+    public ResponseEntity<ApiResponse<Void>> saveMenus(
+            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> menus = (List<Map<String, Object>>) body.get("menus");
+        boSyRoleService.saveRoleMenus(id, menus);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /* 역할별 대상 사용자 저장 (body: { users: [{boUserId}] }) */
+    @PostMapping("/{id}/users")
+    public ResponseEntity<ApiResponse<Void>> saveUsers(
+            @PathVariable("id") String id, @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> users = (List<Map<String, Object>>) body.get("users");
+        boSyRoleService.saveRoleUsers(id, users);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

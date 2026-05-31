@@ -204,6 +204,9 @@ public class SyRoleMenuService {
                 .toList();
             if (!deleteIds.isEmpty()) {
                 syRoleMenuRepository.deleteAllById(deleteIds);
+                /* DELETE 를 DB 에 즉시 반영하여 동일 트랜잭션 내 INSERT 시 unique 충돌 회피 */
+                em.flush();
+                em.clear();
             }
 
             // 2단계: UPDATE - updateSelective
