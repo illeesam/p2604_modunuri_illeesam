@@ -111,9 +111,10 @@
 /* ── 사이트 선택 모달 ── */
 window.SiteSelectModal = {
   name: 'SiteSelectModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 10;
@@ -130,6 +131,7 @@ window.SiteSelectModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 페이지 이동
       } else if (cmd === 'pager-set') {
         return onSetPage(param);
@@ -144,6 +146,7 @@ window.SiteSelectModal = {
       // 사이트 선택
       if (cmd === 'list-select') {
         return emit('select', param);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -246,9 +249,10 @@ window.SiteSelectModal = {
 /* ── 판매업체 선택 모달 ── */
 window.VendorSelectModal = {
   name: 'VendorSelectModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
@@ -263,6 +267,7 @@ window.VendorSelectModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 페이지 이동
       } else if (cmd === 'pager-set') {
         return onSetPage(param);
@@ -277,6 +282,7 @@ window.VendorSelectModal = {
       // 업체 선택
       if (cmd === 'list-select') {
         return emit('select', param);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -367,9 +373,10 @@ window.VendorSelectModal = {
 /* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
 window.BoUserSelectModal = {
   name: 'BoUserSelectModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { computed, reactive, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
@@ -467,7 +474,9 @@ window.BoUserSelectModal = {
     /* handlePickUser — 단건 선택 → 즉시 emit + 모달 닫기 */
     const handlePickUser = (u) => {
       emit('select', [u]);
+      if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, [u]);
       emit('close');
+      if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
     };
 
     /* onSearch — 검색 (페이지 1 부터) */
@@ -497,6 +506,7 @@ window.BoUserSelectModal = {
       console.log(' ■■ BoUserSelectModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return onSearch();
       } else if (cmd === 'searchParam-reset') {
@@ -631,9 +641,10 @@ window.BoUserSelectModal = {
 /* ── 회원 선택 모달 ── */
 window.MemberSelectModal = {
   name: 'MemberSelectModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
@@ -648,6 +659,7 @@ window.MemberSelectModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 페이지 이동
       } else if (cmd === 'pager-set') {
         return onSetPage(param);
@@ -662,6 +674,7 @@ window.MemberSelectModal = {
       // 회원 선택
       if (cmd === 'list-select') {
         return emit('select', param);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -754,9 +767,10 @@ window.MemberSelectModal = {
 /* ── 주문 선택 모달 ── */
 window.OrderSelectModal = {
   name: 'OrderSelectModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 8;
@@ -771,6 +785,7 @@ window.OrderSelectModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 페이지 이동
       } else if (cmd === 'pager-set') {
         return onSetPage(param);
@@ -785,6 +800,7 @@ window.OrderSelectModal = {
       // 주문 선택
       if (cmd === 'list-select') {
         return emit('select', param);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -877,9 +893,10 @@ window.OrderSelectModal = {
 /* ── 게시판 선택 모달 ── */
 window.BbmSelectModal = {
   name: 'BbmSelectModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pageSize = 6;
@@ -894,6 +911,7 @@ window.BbmSelectModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 페이지 이동
       } else if (cmd === 'pager-set') {
         return onSetPage(param);
@@ -908,6 +926,7 @@ window.BbmSelectModal = {
       // 게시판 선택
       if (cmd === 'list-select') {
         return emit('select', param);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -1009,9 +1028,10 @@ window.BbmSelectModal = {
 /* ── 템플릿 미리보기 모달 ── */
 window.TemplatePreviewModal = {
   name: 'TemplatePreviewModal',
+  inheritAttrs: false,
   props: ['tmpl', 'sampleParams', 'reloadTrigger'],
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { computed } = Vue;
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -1020,6 +1040,7 @@ window.TemplatePreviewModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -1157,9 +1178,10 @@ window.TemplatePreviewModal = {
 /* ── 템플릿 발송하기 모달 ── */
 window.TemplateSendModal = {
   name: 'TemplateSendModal',
+  inheritAttrs: false,
   props: ['tmpl', 'dispDataset', 'showToast', 'showConfirm', 'reloadTrigger'],
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
@@ -1317,6 +1339,7 @@ window.TemplateSendModal = {
       if (!ok) return;
       props.showToast(`${typeLabel} ${selected.length}명에게 발송 요청이 완료되었습니다.`);
       emit('close');
+      if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
     };
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -1325,6 +1348,7 @@ window.TemplateSendModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 발송
       } else if (cmd === 'modal-send') {
         return handleSend();
@@ -1582,9 +1606,10 @@ window.TemplateSendModal = {
    ─────────────────────────────────────────────────── */
 window.RoleTreeModal = {
   name: 'RoleTreeModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchValue: '' });
     const allRoles = reactive([]);
@@ -1650,9 +1675,11 @@ window.RoleTreeModal = {
 
     /* onSelect */
     const onSelect = (role) => emit('select', { roleId: role.roleId, roleNm: role.roleNm });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { roleId: role.roleId, roleNm: role.roleNm });
 
     /* onSelectNone */
     const onSelectNone = () => emit('select', { roleId: null, roleNm: '' });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { roleId: null, roleNm: '' });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -1660,6 +1687,7 @@ window.RoleTreeModal = {
       console.log(' ■■ RoleTreeModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return onSearch();
       } else if (cmd === 'searchParam-reset') {
@@ -1767,9 +1795,10 @@ window.RoleTreeModal = {
 
 window.MenuTreeModal = {
   name: 'MenuTreeModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchValue: '' });
     const allMenus = reactive([]);
@@ -1836,9 +1865,11 @@ window.MenuTreeModal = {
 
     /* onSelect */
     const onSelect = (menu) => emit('select', { menuId: menu.menuId, menuNm: menu.menuNm });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { menuId: menu.menuId, menuNm: menu.menuNm });
 
     /* onSelectNone */
     const onSelectNone = () => emit('select', { menuId: null, menuNm: '' });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { menuId: null, menuNm: '' });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -1846,6 +1877,7 @@ window.MenuTreeModal = {
       console.log(' ■■ MenuTreeModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         pager.pageNo = 1;
       } else if (cmd === 'searchParam-reset') {
@@ -1955,9 +1987,10 @@ window.MenuTreeModal = {
 
 window.DeptTreeModal = {
   name: 'DeptTreeModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchValue: '' });
     const allDepts = reactive([]);
@@ -2024,9 +2057,11 @@ window.DeptTreeModal = {
 
     /* select */
     const select = (dept) => emit('select', { deptId: dept.deptId, deptNm: dept.deptNm });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { deptId: dept.deptId, deptNm: dept.deptNm });
 
     /* selectNone */
     const selectNone = () => emit('select', { deptId: null, deptNm: '' });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { deptId: null, deptNm: '' });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -2034,6 +2069,7 @@ window.DeptTreeModal = {
       console.log(' ■■ DeptTreeModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         pager.pageNo = 1;
       } else if (cmd === 'searchParam-reset') {
@@ -2153,9 +2189,10 @@ window.DeptTreeModal = {
 ───────────────────────────────────────────── */
 window.CategoryTreeModal = {
   name: 'CategoryTreeModal',
+  inheritAttrs: false,
   props: ['dispDataset', 'excludeId', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchValue: '' });
     const allCategories = reactive([]);
@@ -2217,9 +2254,11 @@ window.CategoryTreeModal = {
 
     /* select */
     const select     = (cat) => emit('select', { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { categoryId: cat.categoryId, categoryNm: cat.categoryNm });
 
     /* selectNone */
     const selectNone = () => emit('select', { categoryId: null, categoryNm: '' });
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, { categoryId: null, categoryNm: '' });
     const cfSiteNm   = computed(() => boUtil.bofGetSiteNm());
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -2227,6 +2266,7 @@ window.CategoryTreeModal = {
       console.log(' ■■ CategoryTreeModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         pager.pageNo = 1;
       } else if (cmd === 'searchParam-reset') {
@@ -2346,6 +2386,7 @@ window.CategoryTreeModal = {
    ─────────────────────────────────────────────────────────── */
 window.DispPreviewModal = {
   name: 'DispPreviewModal',
+  inheritAttrs: false,
   props: {
     show:     { type: Boolean, default: false, reloadTrigger: { type: Number, default: 0 } },
     mode:     { type: String,  default: 'single' },   /* 'all' | 'single' */
@@ -2355,7 +2396,7 @@ window.DispPreviewModal = {
     widget:   { type: Object,  default: () => ({}) },
   },
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { computed } = Vue;
 
     /* mode=all: 해당 area의 활성 위젯 목록 */
@@ -2383,6 +2424,7 @@ window.DispPreviewModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -2497,6 +2539,7 @@ window.DispPreviewModal = {
       파라미터 요약 바는 DispX01Ui 내부에서 viewOpts 있을 때 표시 ── */
 window.DispUiModal = {
   name: 'DispUiModal',
+  inheritAttrs: false,
   props: {
     show:      { type: Boolean, default: false, reloadTrigger: { type: Number, default: 0 } },
     params:    { type: Object,  default: () => ({
@@ -2508,7 +2551,7 @@ window.DispUiModal = {
   },
   emits: ['close', 'open-popup'],
   components: { DispX01Ui: window.DispX01Ui },
-  setup(_, { emit }) {
+  setup(_, { emit, attrs }) {
     const innerKey = Vue.ref(0);
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -2517,9 +2560,11 @@ window.DispUiModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 팝업으로 열기
       } else if (cmd === 'modal-open-popup') {
         return emit('open-popup');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, true);
       // 재조회 (innerKey 증가)
       } else if (cmd === 'modal-reload') {
         innerKey.value++;
@@ -2591,12 +2636,13 @@ window.DispUiModal = {
    ─────────────────────────────────────────────────────────── */
 window.CategorySelectModal = {
   name: 'CategorySelectModal',
+  inheritAttrs: false,
   props: {
     show:        { type: Boolean, default: false, reloadTrigger: { type: Number, default: 0 } },
     selectedIds: { type: Array,   default: () => [] },
   },
   emits: ['close', 'apply'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed, watch } = Vue;
 
     const searchParam = reactive({ searchValue: '' });
@@ -2665,12 +2711,14 @@ window.CategorySelectModal = {
     /* onReset / apply */
     const onReset = () => localSel.clear();
     const apply = () => { emit('apply', [...localSel]); emit('close'); };
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, [...localSel]);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CategorySelectModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'modal-reset') {
         return onReset();
       } else if (cmd === 'modal-apply') {
@@ -2792,6 +2840,7 @@ window.CategorySelectModal = {
  * ═══════════════════════════════════════════════════════════════════ */
 window.RowPickModal = {
   name: 'RowPickModal',
+  inheritAttrs: false,
   props: {
     title: { type: String, default: '전시항목 복사', reloadTrigger: { type: Number, default: 0 } },
     displays: { type: Array, default: () => [] },   /* 전체 패널(dispDataset.displays) */
@@ -2799,7 +2848,7 @@ window.RowPickModal = {
     excludePanelId: { type: Number, default: null },/* 현재 패널 제외 */
   },
   emits: ['close', 'pick-multi'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed } = Vue;
     const searchType = ref('');
     const searchValue = ref('');
@@ -2908,11 +2957,13 @@ window.RowPickModal = {
       const picks = cfAllRows.value.filter(o => checked.has(o.__rowId));
       if (!picks.length) return;
       emit('pick-multi', picks.map(o => ({ ...o.row })));
+      if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, picks.map(o => ({ ...o.row })));
       checked = new Set();
     };
 
     /* pickOne */
     const pickOne = (o) => emit('pick-multi', [{ ...o.row }]);
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, [{ ...o.row }]);
 
     /* statusCls */
     const statusCls = (s) => s === '활성' ? 'badge-green' : 'badge-gray';
@@ -2938,6 +2989,7 @@ window.RowPickModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 다중 복사
       } else if (cmd === 'modal-pick-multi') {
         return pickMulti();
@@ -3177,13 +3229,14 @@ window.RowPickModal = {
  * ═══════════════════════════════════════════════════════════════════ */
 window.AreaPickModal = {
   name: 'AreaPickModal',
+  inheritAttrs: false,
   props: {
     title: { type: String, default: '전시영역 추가', reloadTrigger: { type: Number, default: 0 } },
     areas:    { type: Array, default: () => [] },   /* DISP_AREA codes */
     excludeUi: { type: String, default: '' },        /* 제외할 UI 코드 (이미 포함된 영역 제외) */
   },
   emits: ['close', 'pick'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, onMounted } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '', useYn: '' });
     const pager = reactive({ page: 1, size: 5 });
@@ -3250,6 +3303,7 @@ window.AreaPickModal = {
 
     /* onPick */
     const onPick = (a) => emit('pick', a);
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, a);
 
     /* 멀티선택 */
     const checked = reactive(new Set());
@@ -3280,6 +3334,7 @@ window.AreaPickModal = {
       ids.forEach(id => {
         const a = (props.areas || []).find(x => x.codeId === id);
         if (a) emit('pick', a);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, a);
       });
       checked = new Set();
     };
@@ -3290,6 +3345,7 @@ window.AreaPickModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 다중 추가
       } else if (cmd === 'modal-pick-multi') {
         return pickMulti();
@@ -3542,6 +3598,7 @@ window.AreaPickModal = {
  * ═══════════════════════════════════════════════════════════════════ */
 window.PanelPickModal = {
   name: 'PanelPickModal',
+  inheritAttrs: false,
   props: {
     title: { type: String, default: '전시패널 추가', reloadTrigger: { type: Number, default: 0 } },
     displays: { type: Array, default: () => [] },
@@ -3549,7 +3606,7 @@ window.PanelPickModal = {
     excludeArea: { type: String, default: '' },     /* 제외할 영역코드 (이미 포함) */
   },
   emits: ['close', 'pick'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '', status: '' });
     const activeStatuses = reactive([]);
@@ -3616,6 +3673,7 @@ window.PanelPickModal = {
 
     /* onPick */
     const onPick = (p) => emit('pick', p);
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, p);
 
     /* 멀티선택 */
     const checked = reactive(new Set());
@@ -3646,6 +3704,7 @@ window.PanelPickModal = {
       ids.forEach(id => {
         const p = (props.displays || []).find(x => x.dispId === id);
         if (p) emit('pick', p);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, p);
       });
       checked = new Set();
     };
@@ -3661,6 +3720,7 @@ window.PanelPickModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 다중 추가
       } else if (cmd === 'modal-pick-multi') {
         return pickMulti();
@@ -3897,12 +3957,13 @@ window.PanelPickModal = {
  * ═══════════════════════════════════════════════════════════════════ */
 window.WidgetLibPickModal = {
   name: 'WidgetLibPickModal',
+  inheritAttrs: false,
   props: {
     mode: { type: String, default: 'copy', reloadTrigger: { type: Number, default: 0 } },     /* 'copy' | 'ref' */
     widgetLibs: { type: Array, default: () => [] },
   },
   emits: ['close', 'pick'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '', type: '', status: '' });
     const pager = reactive({ page: 1, size: 5 });
@@ -3983,6 +4044,7 @@ window.WidgetLibPickModal = {
 
     /* onPick */
     const onPick = (lib) => emit('pick', lib);
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, lib);
     const activeStatuses = reactive([]);
     Vue.onMounted(() => {
       const codeStore = window.sfGetBoCodeStore?.();
@@ -3994,6 +4056,7 @@ window.WidgetLibPickModal = {
       console.log(' ■■ WidgetLibPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'pager-set') {
         pager.page = param;
         return;
@@ -4216,9 +4279,10 @@ window.WidgetLibPickModal = {
 ───────────────────────────────────────────────────────────── */
 window.PathPickModal = {
   name: 'PathPickModal',
+  inheritAttrs: false,
   props: ['bizCd', 'value', 'title', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed } = Vue;
     const cfTree = computed(() => boUtil.bofBuildPathTree(props.bizCd));
     const expanded = reactive(new Set([null]));
@@ -4262,6 +4326,7 @@ window.PathPickModal = {
 
     /* confirm */
     const confirm = () => { emit('select', selectedId.value); emit('close'); };
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, selectedId.value);
     const addParent = ref(null);
     const addLabel = ref('');
 
@@ -4376,6 +4441,7 @@ window.PathPickModal = {
       // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       // 확인 (선택 적용)
       } else if (cmd === 'modal-confirm') {
         return confirm();
@@ -4543,6 +4609,7 @@ window.PathPickModal = {
 
 window.PathPickTreeNode = {
   name: 'PathPickTreeNode',
+  inheritAttrs: false,
   props: ['node', 'expanded', 'selected', 'addParent', 'editingId', 'editLabel',
           'onToggle', 'onSelect', 'onSetParent', 'onConfirm',
           'onStartEdit', 'onSaveEdit', 'onCancelEdit', 'onUpdateLabel', 'onDelete', 'depth', 'reloadTrigger'],
@@ -4686,9 +4753,10 @@ window.PathPickTreeNode = {
 ───────────────────────────────────────────────────────────── */
 window.BizPickModal = {
   name: 'BizPickModal',
+  inheritAttrs: false,
   props: ['value', 'title', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '', type: '' });
     const bizs = reactive([]);
@@ -4757,12 +4825,14 @@ window.BizPickModal = {
 
     /* pickAndClose */
     const pickAndClose = (b) => { emit('select', b); emit('close'); };
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, b);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ BizPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return onSearch();
       } else if (cmd === 'searchParam-reset') {
@@ -4883,9 +4953,10 @@ window.BizPickModal = {
 ───────────────────────────────────────────────────────────── */
 window.SimpleUserPickModal = {
   name: 'SimpleUserPickModal',
+  inheritAttrs: false,
   props: ['title', 'excludeIds', 'reloadTrigger'],
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const boUsers = reactive([]);
@@ -4933,12 +5004,14 @@ window.SimpleUserPickModal = {
 
     /* pick */
     const pick = (u) => { emit('select', u); emit('close'); };
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, u);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SimpleUserPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return onSearch();
       } else if (cmd === 'searchParam-reset') {
@@ -5037,6 +5110,7 @@ window.SimpleUserPickModal = {
    부모에서 이미 로드한 vendors 배열을 prop 으로 받아 단건 선택. */
 window.SimpleVendorPickModal = {
   name: 'SimpleVendorPickModal',
+  inheritAttrs: false,
   props: {
     show:       { type: Boolean, default: false },
     vendors:    { type: Array,   default: () => [] },
@@ -5045,7 +5119,7 @@ window.SimpleVendorPickModal = {
     width:      { type: String,  default: '460px' },
   },
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed, watch } = Vue;
     const searchParam = reactive({ searchValue: '' });
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
@@ -5078,12 +5152,14 @@ window.SimpleVendorPickModal = {
     const onSizeChange = () => { pager.pageNo = 1; };
 
     const onPick = (v) => { emit('select', v); emit('close'); };
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, v);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SimpleVendorPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return onSearch();
       } else if (cmd === 'searchParam-reset') {
@@ -5149,6 +5225,7 @@ window.SimpleVendorPickModal = {
    부모는 selectedId 표시는 모달 외부에서 처리(검색바 pick 영역). */
 window.OdMemberPickModal = {
   name: 'OdMemberPickModal',
+  inheritAttrs: false,
   props: {
     show:     { type: Boolean, default: false },
     title:    { type: String,  default: '회원 선택' },
@@ -5158,7 +5235,7 @@ window.OdMemberPickModal = {
     reloadTrigger: { type: Number, default: 0 },
   },
   emits: ['select', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, watch } = Vue;
     const searchParam = reactive({ searchType: '', searchValue: '' });
     const state = reactive({ loading: false });
@@ -5189,12 +5266,14 @@ window.OdMemberPickModal = {
     const onPickPage   = (n) => { pager.pageNo = n; handleSearch(); };
     const onSizeChange = () => { pager.pageNo = 1; handleSearch(); };
     const onSelect     = (m) => { emit('select', m); emit('close'); };
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, m);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ OdMemberPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return onPickSearch();
       } else {
@@ -5300,6 +5379,7 @@ window.OdMemberPickModal = {
    부모는 selectedIds(productId 배열)와 toggle(productId) emit 으로 동기화. */
 window.SimpleProdPickModal = {
   name: 'SimpleProdPickModal',
+  inheritAttrs: false,
   props: {
     show:        { type: Boolean, default: false },
     prods:       { type: Array,   default: () => [] },
@@ -5308,7 +5388,7 @@ window.SimpleProdPickModal = {
     width:       { type: String,  default: '600px' },
   },
   emits: ['toggle', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed, watch } = Vue;
     const searchParam = reactive({ searchValue: '' });
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50] });
@@ -5342,12 +5422,14 @@ window.SimpleProdPickModal = {
 
     const isSelected = (id) => (props.selectedIds || []).includes(id);
     const onToggle = (p) => emit('toggle', p.productId);
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, p.productId);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SimpleProdPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return onSearch();
       } else if (cmd === 'searchParam-reset') {
@@ -5418,16 +5500,18 @@ window.SimpleProdPickModal = {
 
 window.BoRefModal = {
   name: 'BoRefModal',
+  inheritAttrs: false,
   props: {
     state:         { type: Object, default: () => ({}) }, // 공유 상태
     reloadTrigger: { type: Number, default: 0 }, // 재조회 트리거
   },
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, watch } = Vue;
 
     /* close */
     const close = () => emit('close');
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
     const s = props.state;
 
     /* -- 각 타입별 데이터 -- */
@@ -5624,13 +5708,14 @@ window.BoRefModal = {
  * ──────────────────────────────────────────────────────────── */
 window.BoCodeGrpModal = {
   name: 'BoCodeGrpModal',
+  inheritAttrs: false,
   props: {
     show:    { type: Boolean, default: false },
     codeGrp: { type: String,  default: '' },
     title:   { type: String,  default: '' },
   },
   emits: ['close', 'select'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed, watch } = Vue;
     const codes = ref([]);
     const loading = ref(false);
@@ -5746,9 +5831,11 @@ window.BoCodeGrpModal = {
 
     /* onClose */
     const onClose  = () => emit('close');
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
 
     /* onSelect */
     const onSelect = (row) => emit('select', row);
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, row);
 
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
@@ -5890,17 +5977,19 @@ window.BoCodeGrpModal = {
 /* ── BoCodeGrpTreeNode (재귀 노드 컴포넌트) ───────────────────── */
 window.BoCodeGrpTreeNode = {
   name: 'BoCodeGrpTreeNode',
+  inheritAttrs: false,
   props: {
     node:  { type: Object, required: true },
     depth: { type: Number, default: 0 },
   },
   emits: ['select'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref } = Vue;
     const open = ref(true);
 
     /* onSelect */
     const onSelect = (n) => emit('select', n);
+    if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, n);
 
     /* toggle */
     const toggle = () => { open.value = !open.value; };
@@ -5975,6 +6064,7 @@ window.BoCodeGrpTreeNode = {
    저장·이미지 변경/삭제 로직은 parent(boApp.js) emit. ── */
 window.AuthProfileModal = {
   name: 'AuthProfileModal',
+  inheritAttrs: false,
   props: {
     show:       { type: Boolean, default: false },
     form:       { type: Object,  required: true },          // profileForm reactive (name/phone/email/dept)
@@ -5983,7 +6073,7 @@ window.AuthProfileModal = {
     authUser:   { type: Object,  default: () => ({}) },      // currentAuthUser
   },
   emits: ['save', 'img-change', 'img-remove', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const fnInitial = () => ((props.authUser?.authNm || props.authUser?.name || '').charAt(0)) || '?';
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -5991,12 +6081,15 @@ window.AuthProfileModal = {
       console.log(' ■■ AuthProfileModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'modal-save') {
         return emit('save');
       } else if (cmd === 'form-img-change') {
         return emit('img-change', param);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, param);
       } else if (cmd === 'form-img-remove') {
         return emit('img-remove');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, true);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -6081,6 +6174,7 @@ window.AuthProfileModal = {
    ※ BoUserSelectModal / SimpleUserPickModal 과 용도가 달라 Auth* 접두어로 구분 ── */
 window.AuthUserPickModal = {
   name: 'AuthUserPickModal',
+  inheritAttrs: false,
   props: {
     modal:     { type: Object, required: true },  // userPickModal reactive (show/searchValue/pageNo/loading)
     rows:      { type: Array,  default: () => [] },   // cfPickRows
@@ -6090,7 +6184,7 @@ window.AuthUserPickModal = {
     pageSize:  { type: Number, default: 20 },
   },
   emits: ['search', 'go-page', 'pick', 'close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { computed } = Vue;
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -6098,6 +6192,7 @@ window.AuthUserPickModal = {
       console.log(' ■■ AuthUserPickModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'searchParam-search') {
         return emit('search');
       } else if (cmd === 'pager-set') {
@@ -6112,6 +6207,7 @@ window.AuthUserPickModal = {
       console.log(' ■■ AuthUserPickModal : handleSelectAction -> ', cmd, param);
       if (cmd === 'users-pick') {
         return emit('pick', param);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -6213,18 +6309,20 @@ window.AuthUserPickModal = {
    form(=pwForm reactive) 을 ref 로 받아 v-model 직접 바인딩. 저장 로직은 parent emit. ── */
 window.AuthPwChangeModal = {
   name: 'AuthPwChangeModal',
+  inheritAttrs: false,
   props: {
     show:  { type: Boolean, default: false },
     form:  { type: Object,  required: true },  // pwForm reactive (current/next/confirm)
     error: { type: String,  default: '' },     // pwError
   },
   emits: ['save', 'close'],
-  setup(_, { emit }) {
+  setup(_, { emit, attrs }) {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ AuthPwChangeModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'modal-save') {
         return emit('save');
       } else {
@@ -6273,6 +6371,7 @@ window.AuthPwChangeModal = {
    doLogin/doRegister/openUserPick 등 인증 액션은 모두 parent emit. ── */
 window.AuthLoginModal = {
   name: 'AuthLoginModal',
+  inheritAttrs: false,
   props: {
     modal:       { type: Object, required: true },  // loginModal reactive (show/tab)
     loginForm:   { type: Object, required: true },  // loginForm reactive
@@ -6282,7 +6381,7 @@ window.AuthLoginModal = {
     userRoles:   { type: Array,  default: () => [] },// userRoles
   },
   emits: ['do-login', 'do-register', 'open-user-pick', 'close', 'clear-error'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const setTab = (t) => { props.modal.tab = t; emit('clear-error'); };
 
     /* handleBtnAction — 버튼 액션 dispatch */
@@ -6290,6 +6389,7 @@ window.AuthLoginModal = {
       console.log(' ■■ AuthLoginModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'modal-login') {
         return emit('do-login');
       } else if (cmd === 'modal-register') {
@@ -6427,6 +6527,7 @@ window.AuthLoginModal = {
    ══════════════════════════════════════════════════════════════════════ */
 window.BoExcelUploadModal = {
   name: 'BoExcelUploadModal',
+  inheritAttrs: false,
   props: {
     /* 사용법:
      *   <bo-excel-upload-modal v-if="show" default-domain="role"
@@ -6441,7 +6542,7 @@ window.BoExcelUploadModal = {
     defaultDomain: { type: String, default: '' },                          // config 키 (예: 'role', 'user')
   },
   emits: ['close', 'saved'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, reactive, computed } = Vue;
 
     /* ##### [01] 초기 변수 정의 #################################################### */
@@ -6661,6 +6762,7 @@ window.BoExcelUploadModal = {
       // 닫기
       } else if (cmd === 'close') {
         emit('close'); return;
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else {
         console.warn('[BoExcelUploadModal:handleBtnAction] unknown cmd:', cmd);
       }
@@ -6947,6 +7049,7 @@ window.BoExcelUploadModal = {
         const data = res.data?.data || {};
         fnShowToast(`엑셀업로드 완료 - 신규 ${data.inserted ?? '?'} / 수정 ${data.updated ?? '?'}`, 'success');
         emit('saved', data); emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, data);
       } catch (err) {
         const status = err.response?.status;
         if (status === 404 || status === 405) {
@@ -7196,7 +7299,9 @@ window.BoExcelUploadModal = {
         const data = res.data?.data || {};
         fnShowToast(`저장 완료 - 신규 ${data.inserted ?? summary.insert} / 수정 ${data.updated ?? summary.update}`, 'success');
         emit('saved', data);
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, data);
         emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } catch (err) {
         const msg = err.response?.data?.message || err.message || '업로드 실패';
         fnShowToast(msg, 'error', 0);
@@ -7235,6 +7340,7 @@ window.BoExcelUploadModal = {
   },
   template: `
 <bo-modal :title="cfTitle" width="1100px" height="auto" max-height="95vh" body-pad="0" @close="$emit('close')">
+if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
   <!-- bodyPad=0 → BoModal body 의 padding 제거 → wrapper 가 body 영역을 정확히 100% 채움.
         wrapper 내부 padding 은 직접 관리. 모달 body 자체 스크롤은 절대 활성화되지 않도록
         모든 자식이 wrapper 안에서 flex 로 줄어들도록 구성. -->

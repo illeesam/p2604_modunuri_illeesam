@@ -4,9 +4,10 @@
 */
 window.HelpBoModal = {
   name: 'HelpBoModal',
+  inheritAttrs: false,
   props: ['show', 'topic'],
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     // ===== [01] 초기 변수 정의 ==================================================
     const { ref, watch } = Vue;
 
@@ -258,6 +259,7 @@ window.HelpBoModal = {
       // 도움말 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }

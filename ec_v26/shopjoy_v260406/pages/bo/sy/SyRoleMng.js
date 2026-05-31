@@ -172,30 +172,27 @@ window.SyRoleMng = {
      *   cmd    = 모달 이름 (예: 'user-select', 'parent-pick', 'path-pick', 'excel-upload')
      *   params = { action: 'select'|'close', data: payload }
      */
-    const fnCallbackModal = (cmd, params = {}) => {
-      console.log(' ■■ SyRoleMng.js : fnCallbackModal -> ', cmd, params);
-      const action = params.action;
-      const data = params.data;
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyRoleMng : fnCallbackModal -> ', cmd, param, result);
       if (cmd === 'user-select') {
-        if (action === 'select') return onUserSelect(Array.isArray(data) ? data : [data]);
-        if (action === 'close')  { uiState.userSelectOpen = false; return; }
+        if (result == null) { uiState.userSelectOpen = false; return; }
+        return onUserSelect(Array.isArray(result) ? result : [result]);
       } else if (cmd === 'parent-pick') {
-        if (action === 'select') {
-          if (roleTreeModal.targetRow) {
-            roleTreeModal.targetRow.parentRoleId = data.roleId;
-            roleTreeModal.targetRow._depth = 0;
-            onCellChange(roleTreeModal.targetRow);
-          }
-          roleTreeModal.show = false;
-          return;
+        if (result == null) { roleTreeModal.show = false; return; }
+        if (roleTreeModal.targetRow) {
+          roleTreeModal.targetRow.parentRoleId = result.roleId;
+          roleTreeModal.targetRow._depth = 0;
+          onCellChange(roleTreeModal.targetRow);
         }
-        if (action === 'close')  { roleTreeModal.show = false; return; }
+        roleTreeModal.show = false;
+        return;
       } else if (cmd === 'path-pick') {
-        if (action === 'select') return onPathPicked(data);
-        if (action === 'close')  { pathPickModal.show = false; pathPickModal.row = null; return; }
+        if (result == null) { pathPickModal.show = false; pathPickModal.row = null; return; }
+        return onPathPicked(result);
       } else if (cmd === 'excel-upload') {
-        if (action === 'saved') { excelUploadModal.show = false; return handleSearchList(); }
-        if (action === 'close') { excelUploadModal.show = false; return; }
+        if (result == null) { excelUploadModal.show = false; return; }
+        excelUploadModal.show = false;
+        return handleSearchList();
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }

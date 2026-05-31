@@ -2565,18 +2565,18 @@
   </div><!-- /bo-body -->
 
   <!-- 선택 모달들 -->
-  <site-select-modal v-if="selectModal.show && selectModal.type==='site'"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
-  <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
-  <vendor-select-modal v-if="selectModal.show && selectModal.type==='dlivVendor'"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
-  <bo-user-select-modal v-if="selectModal.show && selectModal.type==='boUser'"  @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
-  <member-select-modal v-if="selectModal.show && selectModal.type==='member'"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
-  <order-select-modal v-if="selectModal.show && selectModal.type==='order'"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
+  <site-select-modal v-if="selectModal.show && selectModal.type==='site'" modal-name="site-select"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'" modal-name="vendor-select"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show && selectModal.type==='dlivVendor'" modal-name="dliv-vendor-select"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
+  <bo-user-select-modal v-if="selectModal.show && selectModal.type==='boUser'" modal-name="bo-user-select"  @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
+  <member-select-modal v-if="selectModal.show && selectModal.type==='member'" modal-name="member-select"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
+  <order-select-modal v-if="selectModal.show && selectModal.type==='order'" modal-name="order-select"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
-  <bo-ref-modal v-if="refModal && refModal.show" :state="refModal"  @close="closeRefModal" />
+  <bo-ref-modal v-if="refModal && refModal.show" :state="refModal" modal-name="bo-ref"  @close="closeRefModal" />
 
   <!-- 도움말 모달 -->
-  <help-bo-modal v-if="helpModal.show" :show="helpModal.show" :topic="helpModal.topic" @close="helpModal.show=false" />
+  <help-bo-modal v-if="helpModal.show" :show="helpModal.show" :topic="helpModal.topic" modal-name="help-bo" @close="helpModal.show=false" />
 
   <!-- Confirm — BoModal(z-index 9000) 위에 항상 노출되도록 z-index 10000 -->
   <div v-if="confirmState && confirmState.show" class="modal-overlay" style="z-index:10000;" @click.self="closeConfirm(false)">
@@ -2672,6 +2672,7 @@
 
   <!-- 프로필 모달 (BoModals.js: AuthProfileModal) -->
   <auth-profile-modal
+    modal-name="auth-profile"
     :show="uiState.profileModalShow"
     :form="profileForm"
     :img="profileImg"
@@ -2684,6 +2685,7 @@
 
   <!-- 사용자 선택 모달 (BoModals.js: AuthUserPickModal) -->
   <auth-user-pick-modal
+    modal-name="auth-user-pick"
     :modal="userPickModal"
     :rows="cfPickRows"
     :total="cfPickTotal"
@@ -2696,6 +2698,7 @@
 
   <!-- 비밀번호 변경 모달 (BoModals.js: AuthPwChangeModal) -->
   <auth-pw-change-modal
+    modal-name="auth-pw-change"
     :show="uiState.pwModalShow"
     :form="pwForm"
     :error="pwError"
@@ -2704,6 +2707,7 @@
 
   <!-- 로그인 / 회원가입 모달 (BoModals.js: AuthLoginModal) -->
   <auth-login-modal
+    modal-name="auth-login"
     :modal="loginModal"
     :login-form="loginForm"
     :reg-form="regForm"

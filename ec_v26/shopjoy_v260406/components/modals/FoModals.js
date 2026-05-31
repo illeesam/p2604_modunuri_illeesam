@@ -25,9 +25,10 @@
    ─────────────────────────────────────────────────── */
 window.OrderDetailModal = {
   name: 'OrderDetailModal',
+  inheritAttrs: false,
   props: ['show', 'order', 'reloadTrigger'],
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { reactive, computed } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -43,6 +44,7 @@ window.OrderDetailModal = {
       console.log(' ■■ OrderDetailModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -200,9 +202,10 @@ window.OrderDetailModal = {
    ─────────────────────────────────────────────────── */
 window.ProductModal = {
   name: 'ProductModal',
+  inheritAttrs: false,
   props: ['show', 'product', 'navigate', 'toggleLike', 'isLiked', 'addToCart', 'cartMode', 'reloadTrigger'],
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
     const { ref, watch, computed, reactive } = Vue;
     const uiState = reactive({ loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
@@ -219,19 +222,23 @@ window.ProductModal = {
       console.log(' ■■ ProductModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'modal-like') {
         return handleLike();
       } else if (cmd === 'modal-cart') {
         return handleCart();
       } else if (cmd === 'modal-cart-close') {
         if (handleCart()) emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
         return;
       } else if (cmd === 'modal-buy-now-close') {
         if (handleBuyNow(props.navigate)) emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
         return;
       } else if (cmd === 'modal-go-prod-view') {
         if (props.navigate) props.navigate('prodView');
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else if (cmd === 'modal-qty-dec') {
         if (qty.value > 1) qty.value--;
         return;
@@ -569,15 +576,17 @@ window.ProductModal = {
    ─────────────────────────────────────────────────── */
 window.CustomerModal = {
   name: 'CustomerModal',
+  inheritAttrs: false,
   props: ['show', 'user', 'order', 'reloadTrigger'],
   emits: ['close'],
-  setup(props, { emit }) {
+  setup(props, { emit, attrs }) {
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CustomerModal : handleBtnAction -> ', cmd, param);
       if (cmd === 'modal-close') {
         return emit('close');
+        if (attrs && attrs.onCallback) attrs.onCallback(attrs['modal-name'] || attrs.modalName, null, null);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
