@@ -33,8 +33,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     private static final QPdhProdViewLog a   = QPdhProdViewLog.pdhProdViewLog;
     private static final QSySite         ste = QSySite.sySite;
 
-    /* 상품 조회 로그 buildBaseQuery */
-    private JPAQuery<PdhProdViewLogDto.Item> buildBaseQuery() {
+    /* 상품 조회 로그 baseSelColumnQuery */
+    private JPAQuery<PdhProdViewLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdViewLogDto.Item.class,
                         a.logId,
@@ -58,7 +58,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     /* 상품 조회 로그 키조회 */
     @Override
     public Optional<PdhProdViewLogDto.Item> selectById(String id) {
-        PdhProdViewLogDto.Item dto = buildBaseQuery()
+        PdhProdViewLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.logId.eq(id))
                 .fetchOne();
@@ -70,7 +70,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     public List<PdhProdViewLogDto.Item> selectList(PdhProdViewLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdViewLogDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdViewLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -98,7 +98,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdViewLogDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdViewLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),

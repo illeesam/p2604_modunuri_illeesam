@@ -314,6 +314,6 @@ public class SyUserService {
      *   검색조건이 있으면 그 조건에 부합하는 사용자만 카운트 (page 그리드 결과와 동기).
      *   결과: { deptId: cnt, '__total__': 전체, '__orphan__': dept 없음 } */
     public java.util.List<java.util.Map<String, Object>> getDeptTreeNodeCounts(SyUserDto.Request req) {
-        return syUserRepository.findDeptSyUserTreeNodeCounts(req);
+        return syUserRepository.selectPathTreeCntsByBizCd(req);
     }
 }

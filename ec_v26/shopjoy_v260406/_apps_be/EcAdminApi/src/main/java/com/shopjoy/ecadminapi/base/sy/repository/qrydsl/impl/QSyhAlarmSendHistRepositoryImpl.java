@@ -32,8 +32,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     private static final QSyhAlarmSendHist a   = QSyhAlarmSendHist.syhAlarmSendHist;
     private static final QSySite           ste = QSySite.sySite;
 
-    /* 알람 발송 이력 buildBaseQuery */
-    private JPAQuery<SyhAlarmSendHistDto.Item> buildBaseQuery() {
+    /* 알람 발송 이력 baseSelColumnQuery */
+    private JPAQuery<SyhAlarmSendHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAlarmSendHistDto.Item.class,
                         a.sendHistId,
@@ -58,7 +58,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     /* 알람 발송 이력 키조회 */
     @Override
     public Optional<SyhAlarmSendHistDto.Item> selectById(String id) {
-        SyhAlarmSendHistDto.Item dto = buildBaseQuery()
+        SyhAlarmSendHistDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.sendHistId.eq(id))
                 .fetchOne();
@@ -70,7 +70,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     public List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhAlarmSendHistDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhAlarmSendHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndSendHistId(search),
@@ -99,7 +99,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhAlarmSendHistDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhAlarmSendHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndSendHistId(search),

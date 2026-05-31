@@ -39,8 +39,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     private static final QSyCode cdVct = new QSyCode("cd_vct");
     private static final QSyCode cdVcs = new QSyCode("cd_vcs");
 
-    /* 업체 콘텐츠 buildBaseQuery */
-    private JPAQuery<SyVendorContentDto.Item> buildBaseQuery() {
+    /* 업체 콘텐츠 baseSelColumnQuery */
+    private JPAQuery<SyVendorContentDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorContentDto.Item.class,
                         a.vendorContentId, a.siteId, a.vendorId, a.contentTypeCd,
@@ -62,7 +62,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     /* 업체 콘텐츠 키조회 */
     @Override
     public Optional<SyVendorContentDto.Item> selectById(String vendorContentId) {
-        SyVendorContentDto.Item dto = buildBaseQuery()
+        SyVendorContentDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.vendorContentId.eq(vendorContentId))
                 .fetchOne();
@@ -73,7 +73,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     @Override
     public List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorContentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndVendorContentId(search),
@@ -104,7 +104,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorContentDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndVendorContentId(search),

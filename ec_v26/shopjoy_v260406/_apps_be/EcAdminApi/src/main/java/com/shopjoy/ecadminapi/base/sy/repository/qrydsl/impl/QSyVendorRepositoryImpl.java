@@ -43,8 +43,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private static final QSyCode cdVc = new QSyCode("cd_vc");
     private static final QSyCode cdVs = new QSyCode("cd_vs");
 
-    /* 업체(판매자) buildBaseQuery */
-    private JPAQuery<SyVendorDto.Item> buildBaseQuery() {
+    /* 업체(판매자) baseSelColumnQuery */
+    private JPAQuery<SyVendorDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorDto.Item.class,
                         v.vendorId, v.siteId, v.vendorNo, v.corpNo,
@@ -65,7 +65,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 업체(판매자) 키조회 */
     @Override
     public Optional<SyVendorDto.Item> selectById(String vendorId) {
-        SyVendorDto.Item dto = buildBaseQuery()
+        SyVendorDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(v.vendorId.eq(vendorId))
                 .fetchOne();
@@ -76,7 +76,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     @Override
     public List<SyVendorDto.Item> selectList(SyVendorDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
@@ -107,7 +107,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
@@ -317,11 +317,11 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* 표시경로 노드별 sy_vendor 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
     @Override
-    public List<Map<String, Object>> findPathSyVendorTreeNodeCounts(SyVendorDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SyVendorDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: findPathSyVendorTreeNodeCounts() */\n");
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */\n");
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
                     SELECT path_id AS root_id, path_id AS leaf_id

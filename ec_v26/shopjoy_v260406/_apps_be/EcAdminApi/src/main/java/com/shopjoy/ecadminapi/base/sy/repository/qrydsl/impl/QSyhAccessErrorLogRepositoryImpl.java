@@ -26,8 +26,8 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAccessErrorLogRepositoryImpl";
     private static final QSyhAccessErrorLog a = QSyhAccessErrorLog.syhAccessErrorLog;
 
-    /* buildBaseQuery */
-    private JPAQuery<SyhAccessErrorLogDto.Item> buildBaseQuery() {
+    /* baseSelColumnQuery */
+    private JPAQuery<SyhAccessErrorLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAccessErrorLogDto.Item.class,
                         a.logId,
@@ -72,7 +72,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhAccessErrorLogDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhAccessErrorLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndMethod(search),
                 baseAndAppTypeCd(search),

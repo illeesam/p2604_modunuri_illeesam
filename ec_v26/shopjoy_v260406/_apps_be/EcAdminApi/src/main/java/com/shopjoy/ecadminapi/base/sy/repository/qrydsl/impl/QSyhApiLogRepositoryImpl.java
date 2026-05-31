@@ -32,8 +32,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     private static final QSyhApiLog a   = QSyhApiLog.syhApiLog;
     private static final QSySite    ste = QSySite.sySite;
 
-    /* API 로그 buildBaseQuery */
-    private JPAQuery<SyhApiLogDto.Item> buildBaseQuery() {
+    /* API 로그 baseSelColumnQuery */
+    private JPAQuery<SyhApiLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhApiLogDto.Item.class,
                         a.logId,
@@ -66,7 +66,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     /* API 로그 키조회 */
     @Override
     public Optional<SyhApiLogDto.Item> selectById(String id) {
-        SyhApiLogDto.Item dto = buildBaseQuery()
+        SyhApiLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.logId.eq(id))
                 .fetchOne();
@@ -78,7 +78,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     public List<SyhApiLogDto.Item> selectList(SyhApiLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhApiLogDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -107,7 +107,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhApiLogDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),

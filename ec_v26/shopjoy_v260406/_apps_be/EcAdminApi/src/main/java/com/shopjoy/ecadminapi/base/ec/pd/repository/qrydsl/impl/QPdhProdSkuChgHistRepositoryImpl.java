@@ -35,8 +35,8 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     private static final QPdProd            prd    = QPdProd.pdProd;
     private static final QSyCode            cd_sct = new QSyCode("cd_sct");
 
-    /* 상품 SKU 변경 이력 buildBaseQuery */
-    private JPAQuery<PdhProdSkuChgHistDto.Item> buildBaseQuery() {
+    /* 상품 SKU 변경 이력 baseSelColumnQuery */
+    private JPAQuery<PdhProdSkuChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuChgHistDto.Item.class,
                         a.histId,
@@ -61,7 +61,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     /* 상품 SKU 변경 이력 키조회 */
     @Override
     public Optional<PdhProdSkuChgHistDto.Item> selectById(String id) {
-        PdhProdSkuChgHistDto.Item dto = buildBaseQuery()
+        PdhProdSkuChgHistDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.histId.eq(id))
                 .fetchOne();
@@ -73,7 +73,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     public List<PdhProdSkuChgHistDto.Item> selectList(PdhProdSkuChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdSkuChgHistDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdSkuChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndHistId(search),
@@ -100,7 +100,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdSkuChgHistDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdSkuChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndHistId(search),

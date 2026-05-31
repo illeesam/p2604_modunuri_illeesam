@@ -33,7 +33,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     private static final QCmBlogReply a = QCmBlogReply.cmBlogReply;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<CmBlogReplyDto.Item> buildBaseQuery() {
+    private JPAQuery<CmBlogReplyDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogReplyDto.Item.class,
                         a.commentId, a.siteId, a.blogId, a.parentCommentId,
@@ -47,7 +47,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmBlogReplyDto.Item> selectById(String commentId) {
-        CmBlogReplyDto.Item dto = buildBaseQuery()
+        CmBlogReplyDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.commentId.eq(commentId))
                 .fetchOne();
@@ -58,7 +58,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     @Override
     public List<CmBlogReplyDto.Item> selectList(CmBlogReplyDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogReplyDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogReplyDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndBlogIds(search),
                 baseAndBlogId(search),
@@ -88,7 +88,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogReplyDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogReplyDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndBlogIds(search),
                 baseAndBlogId(search),

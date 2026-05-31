@@ -37,8 +37,8 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private static final QSyRole rol  = QSyRole.syRole;
     private static final QSyUser usr2 = new QSyUser("usr2");
 
-    /* 사용자별 역할 buildBaseQuery */
-    private JPAQuery<SyUserRoleDto.Item> buildBaseQuery() {
+    /* 사용자별 역할 baseSelColumnQuery */
+    private JPAQuery<SyUserRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyUserRoleDto.Item.class,
                         a.userRoleId, a.userId, a.roleId, a.grantUserId,
@@ -57,7 +57,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     /* 사용자별 역할 키조회 */
     @Override
     public Optional<SyUserRoleDto.Item> selectById(String userRoleId) {
-        SyUserRoleDto.Item dto = buildBaseQuery()
+        SyUserRoleDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.userRoleId.eq(userRoleId))
                 .fetchOne();
@@ -68,7 +68,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     @Override
     public List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery()
+        JPAQuery<SyUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndUserRoleId(search),
                 baseAndUserId(search),
@@ -96,7 +96,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery()
+        JPAQuery<SyUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndUserRoleId(search),
                 baseAndUserId(search),

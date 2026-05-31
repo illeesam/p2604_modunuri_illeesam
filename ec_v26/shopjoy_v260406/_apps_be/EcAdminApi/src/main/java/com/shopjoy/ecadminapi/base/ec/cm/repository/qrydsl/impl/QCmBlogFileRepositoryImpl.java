@@ -30,8 +30,8 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogFileRepositoryImpl";
     private static final QCmBlogFile a = QCmBlogFile.cmBlogFile;
 
-    /* 게시물 첨부파일 buildBaseQuery */
-    private JPAQuery<CmBlogFileDto.Item> buildBaseQuery() {
+    /* 게시물 첨부파일 baseSelColumnQuery */
+    private JPAQuery<CmBlogFileDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogFileDto.Item.class,
                         a.blogImgId, a.blogId, a.imgUrl, a.thumbUrl,
@@ -44,7 +44,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     /* 게시물 첨부파일 키조회 */
     @Override
     public Optional<CmBlogFileDto.Item> selectById(String blogImgId) {
-        CmBlogFileDto.Item dto = buildBaseQuery()
+        CmBlogFileDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.blogImgId.eq(blogImgId))
                 .fetchOne();
@@ -55,7 +55,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     @Override
     public List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndBlogIds(search),
                 baseAndBlogId(search),
@@ -84,7 +84,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndBlogIds(search),
                 baseAndBlogId(search),

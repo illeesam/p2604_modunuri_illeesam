@@ -32,7 +32,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     private static final QCmBlog a = QCmBlog.cmBlog;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<CmBlogDto.Item> buildBaseQuery() {
+    private JPAQuery<CmBlogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogDto.Item.class,
                         a.blogId, a.siteId, a.blogCateId, a.blogTitle, a.blogSummary,
@@ -46,7 +46,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmBlogDto.Item> selectById(String blogId) {
-        CmBlogDto.Item dto = buildBaseQuery()
+        CmBlogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.blogId.eq(blogId))
                 .fetchOne();
@@ -57,7 +57,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     @Override
     public List<CmBlogDto.Item> selectList(CmBlogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndBlogId(search),
@@ -86,7 +86,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndBlogId(search),

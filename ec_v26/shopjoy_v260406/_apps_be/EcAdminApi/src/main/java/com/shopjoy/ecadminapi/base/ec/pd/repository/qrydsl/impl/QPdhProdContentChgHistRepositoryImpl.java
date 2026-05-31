@@ -36,8 +36,8 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     private static final QPdProd                prd = QPdProd.pdProd;
     private static final QSyUser                usr = QSyUser.syUser;
 
-    /* 상품 콘텐츠 변경 이력 buildBaseQuery */
-    private JPAQuery<PdhProdContentChgHistDto.Item> buildBaseQuery() {
+    /* 상품 콘텐츠 변경 이력 baseSelColumnQuery */
+    private JPAQuery<PdhProdContentChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdContentChgHistDto.Item.class,
                         a.histId,
@@ -61,7 +61,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     /* 상품 콘텐츠 변경 이력 키조회 */
     @Override
     public Optional<PdhProdContentChgHistDto.Item> selectById(String id) {
-        PdhProdContentChgHistDto.Item dto = buildBaseQuery()
+        PdhProdContentChgHistDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.histId.eq(id))
                 .fetchOne();
@@ -73,7 +73,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     public List<PdhProdContentChgHistDto.Item> selectList(PdhProdContentChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdContentChgHistDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdContentChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndHistId(search),
@@ -101,7 +101,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdContentChgHistDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdContentChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndHistId(search),

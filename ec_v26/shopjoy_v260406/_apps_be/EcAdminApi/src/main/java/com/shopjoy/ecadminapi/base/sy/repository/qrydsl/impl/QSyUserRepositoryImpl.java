@@ -58,7 +58,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      * ============================================================ */
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<SyUserDto.Item> buildBaseQuery() {
+    private JPAQuery<SyUserDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyUserDto.Item.class,
                         syUser.userId,
@@ -103,7 +103,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     /** 단건 조회 */
     @Override
     public Optional<SyUserDto.Item> selectById(String userId) {
-        SyUserDto.Item dto = buildBaseQuery()
+        SyUserDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syUser.userId.eq(userId))
                 .fetchOne();
@@ -114,7 +114,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     @Override
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        var query = buildBaseQuery()
+        var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                         baseAndSiteId(search),
@@ -145,7 +145,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        var query = buildBaseQuery()
+        var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
                 .where(
                         baseAndSiteId(search),
@@ -352,11 +352,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      *   - '__orphan__'    : 검색조건에 부합 + dept_id IS NULL 인 사용자 수
      */
     @Override
-    public List<Map<String, Object>> findDeptSyUserTreeNodeCounts(SyUserDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SyUserDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: findDeptSyUserTreeNodeCounts() */ \n");
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */ \n");
         /* CTE 헤더 — 재귀 dept 자손 누적 + filtered WHERE 시작 */
         sql.append("""
                 WITH RECURSIVE descendants /* 각 dept 의 자손 dept_id (자신 포함) */ AS (

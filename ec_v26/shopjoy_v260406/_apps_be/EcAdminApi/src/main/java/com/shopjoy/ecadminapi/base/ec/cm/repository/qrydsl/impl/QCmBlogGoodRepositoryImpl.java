@@ -32,7 +32,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     private static final QCmBlog blt = QCmBlog.cmBlog;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<CmBlogGoodDto.Item> buildBaseQuery() {
+    private JPAQuery<CmBlogGoodDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogGoodDto.Item.class,
                         a.likeId, a.blogId, a.userId, a.regDate
@@ -44,7 +44,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmBlogGoodDto.Item> selectById(String likeId) {
-        CmBlogGoodDto.Item dto = buildBaseQuery()
+        CmBlogGoodDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.likeId.eq(likeId))
                 .fetchOne();
@@ -55,7 +55,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     @Override
     public List<CmBlogGoodDto.Item> selectList(CmBlogGoodDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndLikeId(search),
                 baseAndDateRange(search),
@@ -82,7 +82,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndLikeId(search),
                 baseAndDateRange(search),

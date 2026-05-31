@@ -231,7 +231,7 @@ public class DpWidgetService {
      *   dp_widget 은 widget_lib_id → dp_widget_lib.path_id 로 간접 연결되어 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': lib path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpWidgetDto.Request req) {
-        return dpWidgetRepository.findPathDpWidgetTreeNodeCounts(req);
+        return dpWidgetRepository.selectPathTreeCntsByBizCd(req);
     }
 
     private static String nullIfBlank(String s) {

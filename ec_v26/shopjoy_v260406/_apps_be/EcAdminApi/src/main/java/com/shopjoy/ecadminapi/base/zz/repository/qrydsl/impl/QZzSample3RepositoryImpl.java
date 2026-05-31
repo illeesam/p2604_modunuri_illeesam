@@ -27,8 +27,8 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzSample3RepositoryImpl";
     private static final QZzSample3 a = QZzSample3.zzSample3;
 
-    /* buildBaseQuery */
-    private JPAQuery<ZzSample3Dto.Item> buildBaseQuery() {
+    /* baseSelColumnQuery */
+    private JPAQuery<ZzSample3Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzSample3Dto.Item.class,
                         a.sample3Id,
@@ -71,7 +71,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
     /* 키조회 */
     @Override
     public Optional<ZzSample3Dto.Item> selectById(String id) {
-        ZzSample3Dto.Item dto = buildBaseQuery()
+        ZzSample3Dto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.sample3Id.eq(id))
                 .fetchOne();
@@ -83,7 +83,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
     public List<ZzSample3Dto.Item> selectList(ZzSample3Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzSample3Dto.Item> query = buildBaseQuery()
+        JPAQuery<ZzSample3Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSample1Ids(search),
                 baseAndSample2Ids(search),
@@ -114,7 +114,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzSample3Dto.Item> query = buildBaseQuery()
+        JPAQuery<ZzSample3Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSample1Ids(search),
                 baseAndSample2Ids(search),

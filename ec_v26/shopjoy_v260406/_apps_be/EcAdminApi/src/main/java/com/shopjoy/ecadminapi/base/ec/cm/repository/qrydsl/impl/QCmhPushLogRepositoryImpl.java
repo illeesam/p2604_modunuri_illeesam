@@ -32,7 +32,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     private static final QCmhPushLog a = QCmhPushLog.cmhPushLog;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<CmhPushLogDto.Item> buildBaseQuery() {
+    private JPAQuery<CmhPushLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmhPushLogDto.Item.class,
                         a.logId, a.siteId, a.channelCd, a.templateId, a.memberId,
@@ -47,7 +47,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmhPushLogDto.Item> selectById(String logId) {
-        CmhPushLogDto.Item dto = buildBaseQuery()
+        CmhPushLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.logId.eq(logId))
                 .fetchOne();
@@ -58,7 +58,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     @Override
     public List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery()
+        JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -86,7 +86,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery()
+        JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),

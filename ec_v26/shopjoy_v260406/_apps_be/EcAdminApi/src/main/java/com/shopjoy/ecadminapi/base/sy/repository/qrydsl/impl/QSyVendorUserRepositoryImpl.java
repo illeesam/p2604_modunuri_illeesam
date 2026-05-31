@@ -39,8 +39,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     private static final QSyCode cdP = new QSyCode("cd_p");
     private static final QSyCode cdVms = new QSyCode("cd_vms");
 
-    /* 업체 사용자 buildBaseQuery */
-    private JPAQuery<SyVendorUserDto.Item> buildBaseQuery() {
+    /* 업체 사용자 baseSelColumnQuery */
+    private JPAQuery<SyVendorUserDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserDto.Item.class,
                         a.vendorUserId, a.siteId, a.vendorId, a.userId,
@@ -62,7 +62,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     /* 업체 사용자 키조회 */
     @Override
     public Optional<SyVendorUserDto.Item> selectById(String vendorUserId) {
-        SyVendorUserDto.Item dto = buildBaseQuery()
+        SyVendorUserDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.vendorUserId.eq(vendorUserId))
                 .fetchOne();
@@ -73,7 +73,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     @Override
     public List<SyVendorUserDto.Item> selectList(SyVendorUserDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorUserDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndVendorUserId(search),
@@ -104,7 +104,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorUserDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndVendorUserId(search),

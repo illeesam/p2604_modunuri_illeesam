@@ -39,8 +39,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     private static final QSyCode        cd_mc = new QSyCode("cd_mc");
     private static final QSyCode        cd_sr = new QSyCode("cd_sr");
 
-    /* 메시지 발송 로그 buildBaseQuery */
-    private JPAQuery<SyhSendMsgLogDto.Item> buildBaseQuery() {
+    /* 메시지 발송 로그 baseSelColumnQuery */
+    private JPAQuery<SyhSendMsgLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendMsgLogDto.Item.class,
                         a.logId,
@@ -84,7 +84,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     /* 메시지 발송 로그 키조회 */
     @Override
     public Optional<SyhSendMsgLogDto.Item> selectById(String id) {
-        SyhSendMsgLogDto.Item dto = buildBaseQuery()
+        SyhSendMsgLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.logId.eq(id))
                 .fetchOne();
@@ -96,7 +96,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     public List<SyhSendMsgLogDto.Item> selectList(SyhSendMsgLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -127,7 +127,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),

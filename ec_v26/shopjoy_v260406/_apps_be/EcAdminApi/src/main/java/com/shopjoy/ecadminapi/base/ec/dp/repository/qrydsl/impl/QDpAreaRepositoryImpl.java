@@ -248,11 +248,11 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     /* 표시경로 노드별 dp_area 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
     @Override
-    public List<Map<String, Object>> findPathDpAreaTreeNodeCounts(DpAreaDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeCntsByBizCd(DpAreaDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: findPathDpAreaTreeNodeCounts() */\n");
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */\n");
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
                     SELECT path_id AS root_id, path_id AS leaf_id

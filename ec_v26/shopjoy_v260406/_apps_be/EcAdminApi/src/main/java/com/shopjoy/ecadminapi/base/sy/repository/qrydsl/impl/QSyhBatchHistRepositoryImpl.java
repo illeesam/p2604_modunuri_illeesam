@@ -32,8 +32,8 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     private static final QSyhBatchHist a   = QSyhBatchHist.syhBatchHist;
     private static final QSySite       ste = QSySite.sySite;
 
-    /* 배치 실행 이력 buildBaseQuery */
-    private JPAQuery<SyhBatchHistDto.Item> buildBaseQuery() {
+    /* 배치 실행 이력 baseSelColumnQuery */
+    private JPAQuery<SyhBatchHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhBatchHistDto.Item.class,
                         a.batchHistId,
@@ -62,7 +62,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     /* 배치 실행 이력 키조회 */
     @Override
     public Optional<SyhBatchHistDto.Item> selectById(String id) {
-        SyhBatchHistDto.Item dto = buildBaseQuery()
+        SyhBatchHistDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.batchHistId.eq(id))
                 .fetchOne();
@@ -74,7 +74,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
     public List<SyhBatchHistDto.Item> selectList(SyhBatchHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhBatchHistDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndBatchHistId(search),
@@ -102,7 +102,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhBatchHistDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndBatchHistId(search),

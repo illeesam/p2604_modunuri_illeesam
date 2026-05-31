@@ -45,8 +45,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdRt = new QSyCode("cd_rt");
 
-    /* 역할(권한) buildBaseQuery */
-    private JPAQuery<SyRoleDto.Item> buildBaseQuery() {
+    /* 역할(권한) baseSelColumnQuery */
+    private JPAQuery<SyRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleDto.Item.class,
                         a.roleId, a.siteId, a.roleCode, a.roleNm, a.parentRoleId,
@@ -62,7 +62,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* 역할(권한) 키조회 */
     @Override
     public Optional<SyRoleDto.Item> selectById(String roleId) {
-        SyRoleDto.Item dto = buildBaseQuery()
+        SyRoleDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.roleId.eq(roleId))
                 .fetchOne();
@@ -73,7 +73,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     @Override
     public List<SyRoleDto.Item> selectList(SyRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyRoleDto.Item> query = buildBaseQuery()
+        JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
@@ -103,7 +103,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyRoleDto.Item> query = buildBaseQuery()
+        JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),

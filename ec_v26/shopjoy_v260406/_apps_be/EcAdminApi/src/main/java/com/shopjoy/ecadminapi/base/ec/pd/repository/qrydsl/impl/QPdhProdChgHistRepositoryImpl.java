@@ -33,7 +33,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     private static final QSySite        ste = QSySite.sySite;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<PdhProdChgHistDto.Item> buildBaseQuery() {
+    private JPAQuery<PdhProdChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdChgHistDto.Item.class,
                         a.prodChgHistId,
@@ -54,7 +54,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     /* 상품 변경 이력 키조회 */
     @Override
     public Optional<PdhProdChgHistDto.Item> selectById(String id) {
-        PdhProdChgHistDto.Item dto = buildBaseQuery()
+        PdhProdChgHistDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.prodChgHistId.eq(id))
                 .fetchOne();
@@ -66,7 +66,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     public List<PdhProdChgHistDto.Item> selectList(PdhProdChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndProdChgHistId(search),
@@ -94,7 +94,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery()
+        JPAQuery<PdhProdChgHistDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndProdChgHistId(search),

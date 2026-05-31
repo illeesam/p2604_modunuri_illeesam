@@ -41,8 +41,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private static final QSyCode cdSt = new QSyCode("cd_st");
     private static final QSyCode cdSs = new QSyCode("cd_ss");
 
-    /* 사이트 buildBaseQuery */
-    private JPAQuery<SySiteDto.Item> buildBaseQuery() {
+    /* 사이트 baseSelColumnQuery */
+    private JPAQuery<SySiteDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SySiteDto.Item.class,
                         a.siteId, a.siteCode, a.siteTypeCd, a.siteNm, a.siteDomain,
@@ -61,7 +61,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* 사이트 키조회 */
     @Override
     public Optional<SySiteDto.Item> selectById(String siteId) {
-        SySiteDto.Item dto = buildBaseQuery()
+        SySiteDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.siteId.eq(siteId))
                 .fetchOne();
@@ -72,7 +72,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     @Override
     public List<SySiteDto.Item> selectList(SySiteDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SySiteDto.Item> query = buildBaseQuery()
+        JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                         baseAndSiteId(search),
@@ -103,7 +103,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SySiteDto.Item> query = buildBaseQuery()
+        JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
                 .where(
                         baseAndSiteId(search),
@@ -297,11 +297,11 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
      *   동적 SQL — search 의 null 항목은 SQL 에 포함하지 않아 옵티마이저 부담을 줄인다.
      */
     @Override
-    public List<Map<String, Object>> findPathSiteTreeNodeCounts(SySiteDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SySiteDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl :: findPathSiteTreeNodeCounts() */ \n");
+        sql.append("/* base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl :: selectPathTreeCntsByBizCd() */ \n");
         /* CTE 헤더 — 재귀 path 자손 누적 + filtered_site WHERE 시작 */
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
@@ -321,11 +321,11 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 """);
         params.put("bizCd", "sy_site");
 
-        /* 검색조건 — fpstAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 (네이밍은 QueryDSL andXxx() 와 구분) */
-        fpstAndStatus(search, sql, params);
-        fpstAndTypeCd(search, sql, params);
-        fpstAndSearchValue(search, sql, params);
-        fpstAndDateRange(search, sql, params);
+        /* 검색조건 — pathtreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 (네이밍은 QueryDSL andXxx() 와 구분) */
+        pathtreeAndStatus(search, sql, params);
+        pathtreeAndTypeCd(search, sql, params);
+        pathtreeAndSearchValue(search, sql, params);
+        pathtreeAndDateRange(search, sql, params);
 
         /* CTE 닫기 + 메인 UNION ALL 3블록 */
         sql.append("""
@@ -364,20 +364,20 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     }
 
     /* ============================================================
-     * findPathSiteTreeNodeCounts 전용 SQL 조건 헬퍼 (sql prefix)
-     *   - QueryDSL andXxx() (BooleanExpression 반환) 과 구분하기 위해 fpstAnd* 사용
+     * selectPathTreeCntsByBizCd 전용 SQL 조건 헬퍼 (sql prefix)
+     *   - QueryDSL andXxx() (BooleanExpression 반환) 과 구분하기 위해 pathtreeAnd* 사용
      *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
      * ============================================================ */
 
     /* AND a.site_status_cd = :statusCd */
-    private void fpstAndStatus(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndStatus(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
         if (a == null || !StringUtils.hasText(a.getStatus())) return;
         sql.append("      AND a.site_status_cd = :statusCd \n");
         p.put("statusCd", a.getStatus());
     }
 
     /* AND a.site_type_cd = :typeCd */
-    private void fpstAndTypeCd(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndTypeCd(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
         if (a == null || !StringUtils.hasText(a.getTypeCd())) return;
         sql.append("      AND a.site_type_cd   = :typeCd \n");
         p.put("typeCd", a.getTypeCd());
@@ -385,7 +385,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
     /* AND ( OR a.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기
      *   searchType 은 ",a,b,c," 양끝 콤마 wrap 후 contains() 매칭 — "a"/"c" 같은 양끝 토큰 누락 방지 */
-    private void fpstAndSearchValue(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndSearchValue(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
         if (a == null || !StringUtils.hasText(a.getSearchValue())) return;
         String raw = a.getSearchType();
         boolean noType = !StringUtils.hasText(raw);
@@ -402,7 +402,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     }
 
     /* AND a.reg_date >= :dateStart AND a.reg_date <= :dateEnd + 1 day */
-    private void fpstAndDateRange(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndDateRange(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
         if (a == null) return;
         if (StringUtils.hasText(a.getDateStart())) {
             sql.append("      AND a.reg_date >= CAST(:dateStart AS timestamp) \n");

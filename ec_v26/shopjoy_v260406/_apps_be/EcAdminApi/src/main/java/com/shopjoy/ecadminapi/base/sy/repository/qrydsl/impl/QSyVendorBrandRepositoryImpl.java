@@ -38,8 +38,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private static final QSyBrand brd = QSyBrand.syBrand;
     private static final QSyCode cdVbc = new QSyCode("cd_vbc");
 
-    /* 업체별 브랜드 buildBaseQuery */
-    private JPAQuery<SyVendorBrandDto.Item> buildBaseQuery() {
+    /* 업체별 브랜드 baseSelColumnQuery */
+    private JPAQuery<SyVendorBrandDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorBrandDto.Item.class,
                         a.vendorBrandId, a.siteId, a.vendorId, a.brandId, a.isMain,
@@ -59,7 +59,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     /* 업체별 브랜드 키조회 */
     @Override
     public Optional<SyVendorBrandDto.Item> selectById(String vendorBrandId) {
-        SyVendorBrandDto.Item dto = buildBaseQuery()
+        SyVendorBrandDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.vendorBrandId.eq(vendorBrandId))
                 .fetchOne();
@@ -70,7 +70,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     @Override
     public List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndVendorBrandId(search),
@@ -100,7 +100,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndVendorBrandId(search),

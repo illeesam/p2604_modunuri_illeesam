@@ -31,7 +31,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     private static final QCmChattMsg a = QCmChattMsg.cmChattMsg;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<CmChattMsgDto.Item> buildBaseQuery() {
+    private JPAQuery<CmChattMsgDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattMsgDto.Item.class,
                         a.chattMsgId, a.siteId, a.chattRoomId, a.senderCd,
@@ -44,7 +44,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmChattMsgDto.Item> selectById(String chattMsgId) {
-        CmChattMsgDto.Item dto = buildBaseQuery()
+        CmChattMsgDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.chattMsgId.eq(chattMsgId))
                 .fetchOne();
@@ -55,7 +55,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     @Override
     public List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery()
+        JPAQuery<CmChattMsgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndChattMsgId(search),
@@ -83,7 +83,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery()
+        JPAQuery<CmChattMsgDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndChattMsgId(search),

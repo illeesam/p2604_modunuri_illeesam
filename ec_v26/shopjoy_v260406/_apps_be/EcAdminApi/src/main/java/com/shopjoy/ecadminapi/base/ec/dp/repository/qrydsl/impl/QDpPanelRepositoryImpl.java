@@ -266,11 +266,11 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* 표시경로 노드별 dp_panel 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
     @Override
-    public List<Map<String, Object>> findPathDpPanelTreeNodeCounts(DpPanelDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeCntsByBizCd(DpPanelDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: findPathDpPanelTreeNodeCounts() */\n");
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */\n");
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
                     SELECT path_id AS root_id, path_id AS leaf_id
@@ -289,10 +289,10 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 """);
         params.put("bizCd", "dp_panel");
 
-        /* 검색조건 — fpdpAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
-        fpdpAndStatus(search, sql, params);
-        fpdpAndSearchValue(search, sql, params);
-        fpdpAndDateRange(search, sql, params);
+        /* 검색조건 — pathtreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
+        pathtreeAndStatus(search, sql, params);
+        pathtreeAndSearchValue(search, sql, params);
+        pathtreeAndDateRange(search, sql, params);
 
         sql.append("""
                 )
@@ -329,20 +329,20 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     }
 
     /* ============================================================
-     * findPathDpPanelTreeNodeCounts 전용 SQL 조건 헬퍼 (fpdp prefix)
+     * selectPathTreeCntsByBizCd 전용 SQL 조건 헬퍼 (fpdp prefix)
      *   - QueryDSL baseAnd*() (BooleanExpression 반환) 과 구분
      *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
      * ============================================================ */
 
     /* AND t.disp_panel_status_cd = :statusCd */
-    private void fpdpAndStatus(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndStatus(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null || !StringUtils.hasText(s.getDispPanelStatusCd())) return;
         sql.append("      AND t.disp_panel_status_cd = :statusCd\n");
         p.put("statusCd", s.getDispPanelStatusCd());
     }
 
     /* AND ( OR t.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기 */
-    private void fpdpAndSearchValue(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndSearchValue(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
         String raw = s.getSearchType();
         boolean noType = !StringUtils.hasText(raw);
@@ -355,7 +355,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     }
 
     /* AND t.reg_date >= :dateStart AND t.reg_date <= :dateEnd + 1 day */
-    private void fpdpAndDateRange(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndDateRange(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
         if (s == null) return;
         if (StringUtils.hasText(s.getDateStart())) {
             sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");

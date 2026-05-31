@@ -26,5 +26,5 @@ public interface QSyUserRepository {
 
     /** 부서 트리 노드별 SyUser 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 dept 행 포함. */
-    List<Map<String, Object>> findDeptSyUserTreeNodeCounts(SyUserDto.Request search);
+    List<Map<String, Object>> selectPathTreeCntsByBizCd(SyUserDto.Request search);
 }

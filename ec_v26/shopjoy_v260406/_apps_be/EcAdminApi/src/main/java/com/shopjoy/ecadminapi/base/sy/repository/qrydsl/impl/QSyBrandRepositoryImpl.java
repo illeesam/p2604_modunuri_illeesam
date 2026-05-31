@@ -40,8 +40,8 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     private static final QSyBrand b = QSyBrand.syBrand;
     private static final QSySite ste = QSySite.sySite;
 
-    /* 브랜드 buildBaseQuery */
-    private JPAQuery<SyBrandDto.Item> buildBaseQuery() {
+    /* 브랜드 baseSelColumnQuery */
+    private JPAQuery<SyBrandDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyBrandDto.Item.class,
                         b.brandId, b.siteId, b.brandCode, b.brandNm, b.brandEnNm,
@@ -57,7 +57,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* 브랜드 키조회 */
     @Override
     public Optional<SyBrandDto.Item> selectById(String brandId) {
-        SyBrandDto.Item dto = buildBaseQuery()
+        SyBrandDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(b.brandId.eq(brandId))
                 .fetchOne();
@@ -68,7 +68,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     @Override
     public List<SyBrandDto.Item> selectList(SyBrandDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyBrandDto.Item> query = buildBaseQuery()
+        JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
@@ -98,7 +98,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyBrandDto.Item> query = buildBaseQuery()
+        JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
@@ -276,11 +276,11 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* 표시경로 노드별 sy_brand 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
     @Override
-    public List<Map<String, Object>> findPathSyBrandTreeNodeCounts(SyBrandDto.Request search) {
+    public List<Map<String, Object>> selectPathTreeCntsByBizCd(SyBrandDto.Request search) {
         StringBuilder sql = new StringBuilder();
         Map<String, Object> params = new LinkedHashMap<>();
 
-        sql.append("/* " + QRY_SRC + " :: findPathSyBrandTreeNodeCounts() */\n");
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeCntsByBizCd() */\n");
         sql.append("""
                 WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
                     SELECT path_id AS root_id, path_id AS leaf_id

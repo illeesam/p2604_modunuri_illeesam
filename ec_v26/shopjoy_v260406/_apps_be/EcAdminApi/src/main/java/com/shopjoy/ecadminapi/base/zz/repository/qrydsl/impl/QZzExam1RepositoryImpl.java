@@ -28,8 +28,8 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzExam1RepositoryImpl";
     private static final QZzExam1 a = QZzExam1.zzExam1;
 
-    /* zz_exam1 buildBaseQuery */
-    private JPAQuery<ZzExam1Dto.Item> buildBaseQuery() {
+    /* zz_exam1 baseSelColumnQuery */
+    private JPAQuery<ZzExam1Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzExam1Dto.Item.class,
                         a.exam1Id,
@@ -49,7 +49,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     /* zz_exam1 키조회 */
     @Override
     public Optional<ZzExam1Dto.Item> selectById(String exam1Id) {
-        ZzExam1Dto.Item dto = buildBaseQuery()
+        ZzExam1Dto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.exam1Id.eq(exam1Id))
                 .fetchOne();
@@ -61,7 +61,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
     public List<ZzExam1Dto.Item> selectList(ZzExam1Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam1Dto.Item> query = buildBaseQuery()
+        JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),
@@ -88,7 +88,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam1Dto.Item> query = buildBaseQuery()
+        JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),

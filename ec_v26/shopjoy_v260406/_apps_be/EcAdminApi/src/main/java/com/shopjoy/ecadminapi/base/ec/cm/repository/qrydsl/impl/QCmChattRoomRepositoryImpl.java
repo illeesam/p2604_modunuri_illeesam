@@ -32,7 +32,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     private static final QCmChattRoom a = QCmChattRoom.cmChattRoom;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<CmChattRoomDto.Item> buildBaseQuery() {
+    private JPAQuery<CmChattRoomDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattRoomDto.Item.class,
                         a.chattRoomId, a.siteId, a.memberId, a.memberNm,
@@ -47,7 +47,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmChattRoomDto.Item> selectById(String chattRoomId) {
-        CmChattRoomDto.Item dto = buildBaseQuery()
+        CmChattRoomDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.chattRoomId.eq(chattRoomId))
                 .fetchOne();
@@ -58,7 +58,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     @Override
     public List<CmChattRoomDto.Item> selectList(CmChattRoomDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery()
+        JPAQuery<CmChattRoomDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndChattRoomId(search),
@@ -87,7 +87,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery()
+        JPAQuery<CmChattRoomDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndChattRoomId(search),

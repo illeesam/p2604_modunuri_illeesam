@@ -36,8 +36,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     private static final QSyUser          usr = QSyUser.syUser;
     private static final QSyCode          cd_lr = new QSyCode("cd_lr");
 
-    /* 사용자 로그인 로그 buildBaseQuery */
-    private JPAQuery<SyhUserLoginLogDto.Item> buildBaseQuery() {
+    /* 사용자 로그인 로그 baseSelColumnQuery */
+    private JPAQuery<SyhUserLoginLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhUserLoginLogDto.Item.class,
                         a.logId,
@@ -74,7 +74,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     /* 사용자 로그인 로그 키조회 */
     @Override
     public Optional<SyhUserLoginLogDto.Item> selectById(String id) {
-        SyhUserLoginLogDto.Item dto = buildBaseQuery()
+        SyhUserLoginLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.logId.eq(id))
                 .fetchOne();
@@ -86,7 +86,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     public List<SyhUserLoginLogDto.Item> selectList(SyhUserLoginLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhUserLoginLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -116,7 +116,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery()
+        JPAQuery<SyhUserLoginLogDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),

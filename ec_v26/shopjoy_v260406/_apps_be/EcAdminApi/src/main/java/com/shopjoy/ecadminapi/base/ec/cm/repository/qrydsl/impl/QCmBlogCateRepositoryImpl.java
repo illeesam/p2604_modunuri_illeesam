@@ -32,8 +32,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     private static final QCmBlogCate a = QCmBlogCate.cmBlogCate;
     private static final QSySite s = QSySite.sySite;
 
-    /* 게시판 카테고리 buildBaseQuery */
-    private JPAQuery<CmBlogCateDto.Item> buildBaseQuery() {
+    /* 게시판 카테고리 baseSelColumnQuery */
+    private JPAQuery<CmBlogCateDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogCateDto.Item.class,
                         a.blogCateId, a.siteId, a.blogCateNm, a.parentBlogCateId,
@@ -48,7 +48,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* 게시판 카테고리 키조회 */
     @Override
     public Optional<CmBlogCateDto.Item> selectById(String blogCateId) {
-        CmBlogCateDto.Item dto = buildBaseQuery()
+        CmBlogCateDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.blogCateId.eq(blogCateId))
                 .fetchOne();
@@ -59,7 +59,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     @Override
     public List<CmBlogCateDto.Item> selectList(CmBlogCateDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogCateDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndBlogCateId(search),
@@ -88,7 +88,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery()
+        JPAQuery<CmBlogCateDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndBlogCateId(search),

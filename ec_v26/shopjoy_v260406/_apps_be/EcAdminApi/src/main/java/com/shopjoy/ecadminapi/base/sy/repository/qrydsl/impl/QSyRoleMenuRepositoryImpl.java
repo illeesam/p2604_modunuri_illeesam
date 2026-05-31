@@ -32,8 +32,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     private static final QSyRoleMenu a = QSyRoleMenu.syRoleMenu;
     private static final QSySite ste = QSySite.sySite;
 
-    /* 역할별 메뉴 권한 buildBaseQuery */
-    private JPAQuery<SyRoleMenuDto.Item> buildBaseQuery() {
+    /* 역할별 메뉴 권한 baseSelColumnQuery */
+    private JPAQuery<SyRoleMenuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleMenuDto.Item.class,
                         a.roleMenuId, a.siteId, a.roleId, a.menuId, a.permLevel,
@@ -46,7 +46,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* 역할별 메뉴 권한 키조회 */
     @Override
     public Optional<SyRoleMenuDto.Item> selectById(String roleMenuId) {
-        SyRoleMenuDto.Item dto = buildBaseQuery()
+        SyRoleMenuDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.roleMenuId.eq(roleMenuId))
                 .fetchOne();
@@ -57,7 +57,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     @Override
     public List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery()
+        JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),
@@ -85,7 +85,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery()
+        JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),

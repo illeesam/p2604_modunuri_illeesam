@@ -43,8 +43,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     private static final QSyUser usr = QSyUser.syUser;
     private static final QSyCode cdDt = new QSyCode("cd_dt");
 
-    /* 부서 buildBaseQuery */
-    private JPAQuery<SyDeptDto.Item> buildBaseQuery() {
+    /* 부서 baseSelColumnQuery */
+    private JPAQuery<SyDeptDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyDeptDto.Item.class,
                         a.deptId, a.siteId, a.deptCode, a.deptNm, a.parentDeptId,
@@ -61,7 +61,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     /* 부서 키조회 */
     @Override
     public Optional<SyDeptDto.Item> selectById(String deptId) {
-        SyDeptDto.Item dto = buildBaseQuery()
+        SyDeptDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.deptId.eq(deptId))
                 .fetchOne();
@@ -72,7 +72,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     @Override
     public List<SyDeptDto.Item> selectList(SyDeptDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyDeptDto.Item> query = buildBaseQuery()
+        JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndTypeCd(search),
@@ -101,7 +101,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyDeptDto.Item> query = buildBaseQuery()
+        JPAQuery<SyDeptDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndSiteId(search),
                 baseAndTypeCd(search),

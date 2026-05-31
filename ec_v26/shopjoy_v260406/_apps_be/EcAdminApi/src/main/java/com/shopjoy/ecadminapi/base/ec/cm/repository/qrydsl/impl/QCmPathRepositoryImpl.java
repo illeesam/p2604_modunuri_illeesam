@@ -31,7 +31,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     private static final QCmPath a = QCmPath.cmPath;
 
     /** 기본 쿼리 빌드 */
-    private JPAQuery<CmPathDto.Item> buildBaseQuery() {
+    private JPAQuery<CmPathDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmPathDto.Item.class,
                         a.bizCd, a.parentPathId, a.pathLabel, a.sortOrd,
@@ -44,7 +44,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /** 단건 조회 */
     @Override
     public Optional<CmPathDto.Item> selectById(String bizCd) {
-        CmPathDto.Item dto = buildBaseQuery()
+        CmPathDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.bizCd.eq(bizCd))
                 .fetchOne();
@@ -55,7 +55,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     @Override
     public List<CmPathDto.Item> selectList(CmPathDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmPathDto.Item> query = buildBaseQuery()
+        JPAQuery<CmPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndUseYn(search),
                 baseAndBizCd(search),
@@ -83,7 +83,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmPathDto.Item> query = buildBaseQuery()
+        JPAQuery<CmPathDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndUseYn(search),
                 baseAndBizCd(search),

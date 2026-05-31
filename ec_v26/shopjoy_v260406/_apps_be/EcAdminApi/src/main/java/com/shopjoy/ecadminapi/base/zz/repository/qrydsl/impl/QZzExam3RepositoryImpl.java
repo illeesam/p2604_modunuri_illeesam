@@ -28,8 +28,8 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzExam3RepositoryImpl";
     private static final QZzExam3 a = QZzExam3.zzExam3;
 
-    /* zz_exam3 buildBaseQuery */
-    private JPAQuery<ZzExam3Dto.Item> buildBaseQuery() {
+    /* zz_exam3 baseSelColumnQuery */
+    private JPAQuery<ZzExam3Dto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(ZzExam3Dto.Item.class,
                         a.exam1Id,
@@ -51,7 +51,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     /* zz_exam3 키조회 */
     @Override
     public Optional<ZzExam3Dto.Item> selectById(String exam1Id, String exam2Id, String exam3Id) {
-        ZzExam3Dto.Item dto = buildBaseQuery()
+        ZzExam3Dto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.exam1Id.eq(exam1Id)
                         .and(a.exam2Id.eq(exam2Id))
@@ -65,7 +65,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     public List<ZzExam3Dto.Item> selectList(ZzExam3Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery()
+        JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),
@@ -94,7 +94,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery()
+        JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),

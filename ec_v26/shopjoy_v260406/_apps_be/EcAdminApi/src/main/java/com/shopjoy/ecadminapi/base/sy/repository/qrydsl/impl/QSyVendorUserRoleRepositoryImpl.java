@@ -40,8 +40,8 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private static final QSyRole rol = QSyRole.syRole;
     private static final QSyUser gu = QSyUser.syUser;
 
-    /* 업체 사용자 역할 연결 buildBaseQuery */
-    private JPAQuery<SyVendorUserRoleDto.Item> buildBaseQuery() {
+    /* 업체 사용자 역할 연결 baseSelColumnQuery */
+    private JPAQuery<SyVendorUserRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserRoleDto.Item.class,
                         a.vendorUserRoleId, a.vendorId, a.userId, a.roleId,
@@ -63,7 +63,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     /* 업체 사용자 역할 연결 키조회 */
     @Override
     public Optional<SyVendorUserRoleDto.Item> selectById(String vendorUserRoleId) {
-        SyVendorUserRoleDto.Item dto = buildBaseQuery()
+        SyVendorUserRoleDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(a.vendorUserRoleId.eq(vendorUserRoleId))
                 .fetchOne();
@@ -74,7 +74,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     @Override
     public List<SyVendorUserRoleDto.Item> selectList(SyVendorUserRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndVendorUserRoleId(search),
                 baseAndVendorId(search),
@@ -103,7 +103,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery()
+        JPAQuery<SyVendorUserRoleDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 baseAndVendorUserRoleId(search),
                 baseAndVendorId(search),
