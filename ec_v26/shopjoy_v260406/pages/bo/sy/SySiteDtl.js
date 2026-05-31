@@ -26,9 +26,11 @@ window.SySiteDtl = {
       siteEmail: '', sitePhone: '',
       siteZipCode: '', siteAddress: '',
       siteBusinessNo: '', siteCeo: '', siteStatusCd: 'ACTIVE',
+      pathId: null,
     });
     const errors = reactive({});                   // 폼 검증 에러
     const addrDetailRef = ref(null);               // 상세주소 input ref
+    const pathPickModal = reactive({ show: false });  // 표시경로 picker 모달
 
     const schema = yup.object({                    // 폼 검증 스키마
       siteCode: yup.string().required('사이트코드를 입력해주세요.'),
@@ -58,10 +60,30 @@ window.SySiteDtl = {
       // 카카오 우편번호 팝업 열기
       } else if (cmd === 'addr-search') {
         return openKakaoPostcode();
+      // 표시경로 picker 열기
+      } else if (cmd === 'pathModal-open') {
+        pathPickModal.show = true;
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
+
+    /* fnCallbackModal — 모달 콜백 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답 결과 (null=닫기) */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SySiteDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'path-pick') {
+        if (result == null) { pathPickModal.show = false; return; }
+        form.pathId = result;
+        pathPickModal.show = false;
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
+    /* pathLabel — 경로 라벨 */
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadDetail — 상세 조회 */
@@ -164,11 +186,14 @@ window.SySiteDtl = {
       { key: 'siteTypeCd',     label: '사이트유형', type: 'select', nullable: false,
         options: () => codes.site_types },
       { key: 'siteNm',         label: '사이트명',   type: 'text', required: true, placeholder: 'ShopJoy' },
-      // 2행: 도메인(2) / 운영상태(1)
-      { key: 'siteDomain',     label: '도메인',     type: 'text', required: true, placeholder: 'shopjoy.com', colSpan: 2 },
+      // 2행: 도메인 / 운영상태 / 표시경로
+      { key: 'siteDomain',     label: '도메인',     type: 'text', required: true, placeholder: 'shopjoy.com' },
       { key: 'siteStatusCd',   label: '운영상태',   type: 'select', options: () => codes.site_oper_statuses },
-      // 3행: 사이트 설명 (3열 전체)
-      { key: 'siteDesc',       label: '사이트 설명', type: 'text', placeholder: '사이트 한줄 설명', colSpan: 3 },
+      { key: 'pathId',         label: '표시경로',   type: 'pathPick',
+        pathLabel: (id) => pathLabel(id),
+        onOpen: () => handleBtnAction('pathModal-open') },
+      // 3행: 사이트 설명 (1열만 차지)
+      { key: 'siteDesc',       label: '사이트 설명', type: 'text', placeholder: '사이트 한줄 설명' },
       // 4행: 대표이메일 / 대표전화 / 대표자명
       { key: 'siteEmail',      label: '대표이메일', type: 'text', placeholder: 'help@shopjoy.com' },
       { key: 'sitePhone',      label: '대표전화',   type: 'text', placeholder: '02-1234-5678' },
@@ -183,10 +208,10 @@ window.SySiteDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, form, errors, addrDetailRef,           // 상태 / 데이터
-      baseFormColumns,                                       // 컬럼 정의
-      handleBtnAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode,                                    // computed
+      uiState, codes, form, errors, addrDetailRef, pathPickModal,   // 상태 / 데이터
+      baseFormColumns,                                              // 컬럼 정의
+      handleBtnAction, fnCallbackModal,                             // dispatch + 모달 통합 콜백
+      cfIsNew, cfDtlMode,                                           // computed
     };
   },
   template: /* html */`
@@ -224,6 +249,10 @@ window.SySiteDtl = {
     </bo-form-area>
   </div>
   <!-- ===== □. 폼 영역 ==================================================== -->
+  <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_site"
+    :value="form.pathId"
+    title="사이트 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </div>
 `,
 };

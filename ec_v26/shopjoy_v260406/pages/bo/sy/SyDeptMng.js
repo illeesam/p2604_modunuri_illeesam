@@ -375,8 +375,8 @@ window.SyDeptMng = {
       }
     };
 
-    /* openParentModal — 상위부서 선택 모달 열기 */
-    const openParentModal = async (row) => { parentModal.targetRow = row; await handleSearchList(); parentModal.show = true; };
+    /* openParentModal — 상위부서 선택 모달 열기 (handleSearchList 호출 X — gridRows 가 새로 갱신되면 targetRow 가 stale ref 됨) */
+    const openParentModal = (row) => { parentModal.targetRow = row; parentModal.show = true; };
 
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(
