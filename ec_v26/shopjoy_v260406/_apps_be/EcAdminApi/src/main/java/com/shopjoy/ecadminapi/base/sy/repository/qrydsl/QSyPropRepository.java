@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** SyProp QueryDSL Custom Repository */
@@ -12,4 +13,7 @@ public interface QSyPropRepository {
     List<SyPropDto.Item> selectList(SyPropDto.Request search);
     SyPropDto.PageResponse selectPageList(SyPropDto.Request search);
     int updateSelective(SyProp entity);
+    /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).
+     *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
+    List<Map<String, Object>> findPathSyPropTreeNodeCounts(SyPropDto.Request search);
 }

@@ -18,6 +18,8 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyUserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
@@ -26,7 +28,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** SyUser QueryDSL Custom 구현체 */
@@ -38,6 +42,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
      * ============================================================ */
     private final JPAQueryFactory queryFactory;
     private final SyDeptRepository syDeptRepository;
+    private final EntityManager em;
 
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyUserRepositoryImpl";
     private static final QSyUser syUser = QSyUser.syUser;
@@ -339,5 +344,93 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 .execute();
 
         return (int) affected;
+    }
+
+    /* 부서 트리 노드별 사용자 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
+     *   - 일반 dept_id 행 : 해당 부서 + 자손 부서의 사용자 수 (검색조건 적용)
+     *   - '__total__'     : 검색조건에 부합하는 전체 사용자 수 (트리 루트 "전체" 노드)
+     *   - '__orphan__'    : 검색조건에 부합 + dept_id IS NULL 인 사용자 수
+     */
+    @Override
+    public List<Map<String, Object>> findDeptSyUserTreeNodeCounts(SyUserDto.Request search) {
+        StringBuilder sql = new StringBuilder();
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        sql.append("/* " + QRY_SRC + " :: findDeptSyUserTreeNodeCounts() */ \n");
+        /* CTE 헤더 — 재귀 dept 자손 누적 + filtered WHERE 시작 */
+        sql.append("""
+                WITH RECURSIVE descendants /* 각 dept 의 자손 dept_id (자신 포함) */ AS (
+                    SELECT dept_id AS root_id, dept_id AS leaf_id
+                    FROM sy_dept
+                    UNION ALL
+                    SELECT d.root_id, c.dept_id
+                    FROM descendants d
+                    JOIN sy_dept c ON c.parent_dept_id = d.leaf_id
+                ),
+                filtered /* 검색조건이 적용된 사용자 집합 */ AS (
+                    SELECT user_id, dept_id
+                    FROM sy_user t
+                    WHERE 1=1
+                """);
+
+        if (search != null && StringUtils.hasText(search.getStatus())) {
+            sql.append("      AND t.user_status_cd = :statusCd \n");
+            params.put("statusCd", search.getStatus());
+        }
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            String searchType = search.getSearchType();
+            boolean noType = !StringUtils.hasText(searchType);
+            sql.append("      AND ( \n");
+            sql.append("            1=0 \n");
+            if (noType || searchType.contains(",loginId,"))   sql.append("         OR t.login_id   ILIKE '%' || :searchValue || '%' \n");
+            if (noType || searchType.contains(",userNm,"))    sql.append("         OR t.user_nm    ILIKE '%' || :searchValue || '%' \n");
+            if (noType || searchType.contains(",userEmail,")) sql.append("         OR t.user_email ILIKE '%' || :searchValue || '%' \n");
+            if (noType || searchType.contains(",userPhone,")) sql.append("         OR t.user_phone ILIKE '%' || :searchValue || '%' \n");
+            sql.append("      ) \n");
+            params.put("searchValue", search.getSearchValue());
+        }
+        if (search != null && StringUtils.hasText(search.getDateStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp) \n");
+            params.put("dateStart", search.getDateStart());
+        }
+        if (search != null && StringUtils.hasText(search.getDateEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
+            params.put("dateEnd", search.getDateEnd());
+        }
+
+        /* CTE 닫기 + 메인 UNION ALL 3블록 */
+        sql.append("""
+                )
+                /* (1) 일반 dept_id 행 : 부서 + 자손 부서 누적 카운트 */
+                SELECT d.root_id AS dept_id, COUNT(t.user_id) AS cnt
+                FROM descendants d
+                LEFT JOIN filtered t ON t.dept_id = d.leaf_id
+                GROUP BY d.root_id
+                UNION ALL
+                /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
+                SELECT '__total__' AS dept_id, COUNT(*) AS cnt
+                FROM filtered
+                UNION ALL
+                /* (3) '__orphan__' : 부서 미지정(dept_id IS NULL) 카운트 — 트리 외 표시 */
+                SELECT '__orphan__' AS dept_id, COUNT(*) AS cnt
+                FROM filtered
+                WHERE dept_id IS NULL
+                """);
+
+        Query q = em.createNativeQuery(sql.toString());
+        params.forEach(q::setParameter);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = (List<Object[]>) q.getResultList();
+
+        /* Object[] → { pathId, cnt } 매핑 — 프론트가 deptId 가 아닌 pathId 키로 받기 위해 통일 */
+        List<Map<String, Object>> result = new ArrayList<>(rows.size());
+        for (Object[] row : rows) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+            m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
+            result.add(m);
+        }
+        return result;
     }
 }

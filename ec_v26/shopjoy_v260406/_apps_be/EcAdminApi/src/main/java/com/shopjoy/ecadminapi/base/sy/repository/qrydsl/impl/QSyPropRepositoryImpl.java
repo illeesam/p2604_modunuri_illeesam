@@ -15,6 +15,8 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyProp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyPropRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -22,13 +24,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 /** SyProp QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPropRepositoryImpl implements QSyPropRepository {
 
     private final JPAQueryFactory queryFactory;
+    private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPropRepositoryImpl";
     private static final QSyProp p = QSyProp.syProp;
@@ -233,5 +238,93 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
         long affected = update.where(p.propId.eq(entity.getPropId())).execute();
         return (int) affected;
+    }
+
+    /* 표시경로 노드별 sy_prop 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
+     *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */
+    @Override
+    public List<Map<String, Object>> findPathSyPropTreeNodeCounts(SyPropDto.Request search) {
+        StringBuilder sql = new StringBuilder();
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        sql.append("/* " + QRY_SRC + " :: findPathSyPropTreeNodeCounts() */\n");
+        sql.append("""
+                WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
+                    SELECT path_id AS root_id, path_id AS leaf_id
+                    FROM sy_path
+                    WHERE biz_cd = :bizCd
+                    UNION ALL
+                    SELECT d.root_id, c.path_id
+                    FROM descendants d
+                    JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                    WHERE c.biz_cd = :bizCd
+                ),
+                filtered /* 검색조건이 적용된 행 */ AS (
+                    SELECT prop_id, path_id
+                    FROM sy_prop t
+                    WHERE 1=1
+                """);
+        params.put("bizCd", "sy_prop");
+
+        if (search != null && StringUtils.hasText(search.getUseYn())) {
+            sql.append("      AND t.use_yn = :useYn\n");
+            params.put("useYn", search.getUseYn());
+        }
+        if (search != null && StringUtils.hasText(search.getPropTypeCd())) {
+            sql.append("      AND t.prop_type_cd = :propType\n");
+            params.put("propType", search.getPropTypeCd());
+        }
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            String searchType = search.getSearchType();
+            boolean noType = !StringUtils.hasText(searchType);
+            sql.append("      AND (\n");
+            sql.append("            1=0\n");
+            if (noType || searchType.contains(",propKey,")) sql.append("         OR t.prop_key ILIKE '%' || :searchValue || '%'\n");
+            if (noType || searchType.contains(",propValue,")) sql.append("         OR t.prop_value ILIKE '%' || :searchValue || '%'\n");
+            if (noType || searchType.contains(",propLabel,")) sql.append("         OR t.prop_label ILIKE '%' || :searchValue || '%'\n");
+            sql.append("      )\n");
+            params.put("searchValue", search.getSearchValue());
+        }
+        if (search != null && StringUtils.hasText(search.getDateStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
+            params.put("dateStart", search.getDateStart());
+        }
+        if (search != null && StringUtils.hasText(search.getDateEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
+            params.put("dateEnd", search.getDateEnd());
+        }
+
+        sql.append("""
+                )
+                /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
+                SELECT d.root_id AS path_id, COUNT(t.prop_id) AS cnt
+                FROM descendants d
+                LEFT JOIN filtered t ON t.path_id = d.leaf_id
+                GROUP BY d.root_id
+                UNION ALL
+                /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
+                SELECT '__total__' AS path_id, COUNT(*) AS cnt
+                FROM filtered
+                UNION ALL
+                /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 — 트리 외 표시 */
+                SELECT '__orphan__' AS path_id, COUNT(*) AS cnt
+                FROM filtered
+                WHERE path_id IS NULL
+                """);
+
+        Query q = em.createNativeQuery(sql.toString());
+        params.forEach(q::setParameter);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = (List<Object[]>) q.getResultList();
+
+        List<Map<String, Object>> result = new ArrayList<>(rows.size());
+        for (Object[] row : rows) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+            m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
+            result.add(m);
+        }
+        return result;
     }
 }

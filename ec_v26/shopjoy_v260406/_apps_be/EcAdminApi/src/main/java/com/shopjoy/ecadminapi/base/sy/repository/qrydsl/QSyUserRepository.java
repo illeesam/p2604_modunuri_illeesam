@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** SyUser QueryDSL Custom Repository */
@@ -22,4 +23,8 @@ public interface QSyUserRepository {
     long selectCount(SyUserDto.Request search);
 
     int updateSelective(SyUser entity);
+
+    /** 부서 트리 노드별 SyUser 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).
+     *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 dept 행 포함. */
+    List<Map<String, Object>> findDeptSyUserTreeNodeCounts(SyUserDto.Request search);
 }

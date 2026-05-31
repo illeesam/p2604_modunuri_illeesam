@@ -231,21 +231,7 @@ public class SyPropService {
      *   검색조건 (useYn / propType / searchValue) 이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyPropDto.Request req) {
-        java.util.List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
-        String useYn       = (req == null) ? null : nullIfBlank(req.getUseYn());
-        String propType    = (req == null) ? null : nullIfBlank(req.getPropTypeCd());
-        String searchType  = (req == null) ? null : wrapCsv(req.getSearchType());
-        String searchValue = (req == null) ? null : nullIfBlank(req.getSearchValue());
-        for (Object[] row : syPropRepository.findPathSyPropTreeNodeCounts("sy_prop", useYn, propType, searchType, searchValue)) {
-            java.util.Map<String, Object> _m = new java.util.LinkedHashMap<>();
-
-            _m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
-
-            _m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
-
-            result.add(_m);
-        }
-        return result;
+        return syPropRepository.findPathSyPropTreeNodeCounts(req);
     }
 
     private static String nullIfBlank(String s) {
