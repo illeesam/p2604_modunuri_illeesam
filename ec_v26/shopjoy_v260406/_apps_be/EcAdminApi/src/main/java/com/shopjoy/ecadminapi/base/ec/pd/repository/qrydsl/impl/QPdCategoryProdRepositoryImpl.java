@@ -22,8 +22,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 /** PdCategoryProd QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository {
@@ -70,6 +72,8 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndCategoryProdId(search),
+                baseAndCategoryId(search),
+                baseAndCategoryIdsCsv(search),
                 baseAndProdId(search),
                 baseAndTypeCd(search),
                 baseAndDateRange(search),
@@ -99,6 +103,8 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndCategoryProdId(search),
+                baseAndCategoryId(search),
+                baseAndCategoryIdsCsv(search),
                 baseAndProdId(search),
                 baseAndTypeCd(search),
                 baseAndDateRange(search),
@@ -112,6 +118,8 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndCategoryProdId(search),
+                baseAndCategoryId(search),
+                baseAndCategoryIdsCsv(search),
                 baseAndProdId(search),
                 baseAndTypeCd(search),
                 baseAndDateRange(search),
@@ -144,6 +152,20 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     private BooleanExpression baseAndProdId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? a.prodId.eq(search.getProdId()) : null;
+    }
+
+    /* categoryId 정확 일치 */
+    private BooleanExpression baseAndCategoryId(PdCategoryProdDto.Request search) {
+        return search != null && StringUtils.hasText(search.getCategoryId())
+                ? a.categoryId.eq(search.getCategoryId()) : null;
+    }
+
+    /* categoryIdsCsv — 콤마 구분 ID 목록 IN 조건 (지정 시 categoryId 단일 대신 우선 적용) */
+    private BooleanExpression baseAndCategoryIdsCsv(PdCategoryProdDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getCategoryIdsCsv())) return null;
+        List<String> ids = Arrays.stream(search.getCategoryIdsCsv().split(","))
+                .map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
+        return ids.isEmpty() ? null : a.categoryId.in(ids);
     }
 
     /* categoryProdTypeCd 정확 일치 */

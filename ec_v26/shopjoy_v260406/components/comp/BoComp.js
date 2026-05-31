@@ -621,8 +621,11 @@ window.BoCategoryTree = {
       <span style="font-size:11px;font-weight:700;color:#e8587a;margin-right:4px">
         ★
       </span>
-      <span style="font-size:12px">
+      <span style="font-size:12px;flex:1">
         전체
+      </span>
+      <span v-if="showCount && showCount(null) > 0" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
+        {{ showCount(null) }}
       </span>
     </div>
     <div v-for="cat in cfTreeFlat" :key="cat.categoryId"

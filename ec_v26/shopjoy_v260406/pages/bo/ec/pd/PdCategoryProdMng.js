@@ -107,28 +107,35 @@ window.PdCategoryProdMng = {
     /* 선택된 카테고리 (watch 이전에 선언 필수) */
     const cfSelectedCatId = ref(null);
 
-    /* fnCatIdsWithChildren — 유틸 */
+    /* fnCatIdsWithChildren — 자기 + 모든 후손 카테고리 ID (재귀) */
     const fnCatIdsWithChildren = (catId) => {
       if (!catId) { return []; }
-      const childIds = categories
-        .filter(c => c.parentCategoryId === catId)
-        .map(c => c.categoryId);
-      return [catId, ...childIds];
+      const result = [catId];
+      const queue = [catId];
+      while (queue.length) {
+        const cur = queue.shift();
+        categories.forEach(c => {
+          if (c.parentCategoryId === cur) {
+            result.push(c.categoryId);
+            queue.push(c.categoryId);
+          }
+        });
+      }
+      return result;
     };
 
-    /* handleReloadByCategory — 처리 */
+    /* handleReloadByCategory — 처리 (catId=null → 전체 매핑) */
     const handleReloadByCategory = async () => {
       const catId = cfSelectedCatId.value;
-      if (!catId) { categoryProds.splice(0, categoryProds.length); return; }
       pager.pageNo = 1;
       searchParam.categoryId = '';
-      searchParam.categoryIdsCsv = fnCatIdsWithChildren(catId).join(',');
+      searchParam.categoryIdsCsv = catId ? fnCatIdsWithChildren(catId).join(',') : '';
       searchParam.typeCd = uiState.activeTypeCd;
       await handleSearchList('DEFAULT');
     };
 
     watch(() => cfSelectedCatId.value, handleReloadByCategory);
-    watch(() => uiState.activeTypeCd, () => { if (cfSelectedCatId.value) handleReloadByCategory(); });
+    watch(() => uiState.activeTypeCd, handleReloadByCategory);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -241,14 +248,27 @@ window.PdCategoryProdMng = {
       }
     };
 
+    /* allCategoryProds — 트리 카운트용 전체 매핑 (페이징 무관) */
+    const allCategoryProds = reactive([]);
+    /* handleSearchAllCategoryProds — 처리 */
+    const handleSearchAllCategoryProds = async () => {
+      try {
+        const res = await boApiSvc.pdCategory.getProds({ pageNo: 1, pageSize: 100000 }, '카테고리상품관리', '카운트조회');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        allCategoryProds.splice(0, allCategoryProds.length, ...list);
+      } catch (e) {
+        console.error('[handleSearchAllCategoryProds]', e);
+      }
+    };
+
     /* ★ onMounted — 진입 시 카테고리·상품 목록 조회 */
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
-      await Promise.all([handleSearchCategoriesList(), handleSearchProductsList()]);
+      await Promise.all([handleSearchCategoriesList(), handleSearchProductsList(), handleSearchAllCategoryProds()]);
       try {
-        await handleSearchList('DEFAULT');
+        await handleReloadByCategory();
       } catch (err) {
-        console.warn('[onMounted] handleSearchList failed:', err.message);
+        console.warn('[onMounted] handleReloadByCategory failed:', err.message);
       }
     });
 
@@ -266,8 +286,28 @@ window.PdCategoryProdMng = {
     /* fnDepthBullet — 유틸 */
     const fnDepthBullet = (d) => ['●','○','▪'][d] || '·';
 
-    /* totalProdCount — 전체 상품 건수 */
-    const totalProdCount = (catId) => categoryProds.filter(cp => cp.categoryId === catId).length;
+    /* fnCatIdsWithDescendants — 자기 + 모든 후손 카테고리 ID (재귀) */
+    const fnCatIdsWithDescendants = (catId) => {
+      const result = [catId];
+      const queue = [catId];
+      while (queue.length) {
+        const cur = queue.shift();
+        categories.forEach(c => {
+          if (c.parentCategoryId === cur) {
+            result.push(c.categoryId);
+            queue.push(c.categoryId);
+          }
+        });
+      }
+      return result;
+    };
+
+    /* totalProdCount — 트리 노드 카운트. catId=null 이면 전체 합계, 아니면 자기+후손 합계 */
+    const totalProdCount = (catId) => {
+      if (catId === null || catId === undefined) { return allCategoryProds.length; }
+      const ids = new Set(fnCatIdsWithDescendants(catId));
+      return allCategoryProds.filter(cp => ids.has(cp.categoryId)).length;
+    };
     const cfTypeCountMap = computed(() => {
       const map = {};
       TYPE_TABS.forEach(t => { map[t.cd] = categoryProds.filter(cp => cp.categoryProdTypeCd === t.cd).length; });
@@ -398,6 +438,9 @@ window.PdCategoryProdMng = {
         const res = await boApiSvc.pdCategory.updateProds({ categoryProds }, '카테고리상품관리', '저장');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
+        /* 저장 후 트리 카운트용 전체 매핑 재조회 + 현재 카테고리 목록 재조회 */
+        await handleSearchAllCategoryProds();
+        if (cfSelectedCatId.value) { await handleSearchList('DEFAULT'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -494,29 +537,25 @@ window.PdCategoryProdMng = {
     <!-- ===== □.□. 좌측 카테고리 트리 ============================================ -->
     <!-- ===== ■.■. 우측 상품 목록 ============================================== -->
     <div class="card">
-      <!-- ===== ■.■.■. 선택 전 안내 ============================================= -->
-      <div v-if="!cfSelectedCatId" style="text-align:center;padding:60px;color:#aaa">
-        <div style="font-size:32px;margin-bottom:12px">
-          📂
-        </div>
-        <div>
-          좌측에서 카테고리를 선택하세요.
-        </div>
-      </div>
-      <template v-else>
         <!-- ===== ■.■.■.■. 카테고리명 + 저장/추가 버튼 ================================== -->
         <div class="toolbar" style="margin-bottom:0">
           <span class="list-title">
-            <span :style="{ color: fnDepthColor((cfSelectedCat?.categoryDepth||1)-1), fontWeight:700, marginRight:'4px' }">
+            <span v-if="cfSelectedCatId" :style="{ color: fnDepthColor((cfSelectedCat?.categoryDepth||1)-1), fontWeight:700, marginRight:'4px' }">
               {{ fnDepthBullet((cfSelectedCat?.categoryDepth||1)-1) }}
             </span>
-            {{ cfSelectedCat?.categoryNm }}
-            <span v-if="!cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">
+            <span v-else style="color:#e8587a;font-weight:700;margin-right:4px">
+              ★
+            </span>
+            {{ cfSelectedCatId ? cfSelectedCat?.categoryNm : '전체' }}
+            <span v-if="cfSelectedCatId && !cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">
               (하위 포함)
+            </span>
+            <span v-else-if="!cfSelectedCatId" style="font-size:11px;color:#aaa;margin-left:6px">
+              (모든 카테고리)
             </span>
           </span>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-secondary btn-sm" @click="handleBtnAction('prodPickModal-open')">
+            <button class="btn btn-secondary btn-sm" :disabled="!cfSelectedCatId" @click="handleBtnAction('prodPickModal-open')">
               + 상품추가
             </button>
             <button class="btn btn-primary btn-sm" @click="handleBtnAction('categoryProds-save')">
@@ -655,7 +694,6 @@ window.PdCategoryProdMng = {
     등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.
   </div>
 </div>
-</template>
 </div>
 </div>
 <!-- ===== □.□. 우측 상품 목록 ============================================== -->

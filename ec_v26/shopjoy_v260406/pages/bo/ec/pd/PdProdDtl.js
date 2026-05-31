@@ -156,6 +156,7 @@ window.PdProdDtl = {
           boApiSvc.pdProd.getSkus(props.dtlId,     '상품관리', 'SKU조회'),
           boApiSvc.pdProd.getContents(props.dtlId, '상품관리', '상품설명조회'),
           boApiSvc.pdProd.getRels(props.dtlId,     '상품관리', '연관상품조회'),
+          boApiSvc.pdCategory.getProds({ prodId: props.dtlId, pageNo: 1, pageSize: 1000 }, '상품관리', '카테고리매핑조회'),
         );
         const r = await Promise.all(baseCalls);
 
@@ -163,6 +164,10 @@ window.PdProdDtl = {
         categories.splice(0,  categories.length,  ...(r[1].data?.data?.pageList || r[1].data?.data?.list || []));
 
         if (!isNew) {
+          /* pd_category_prod 매핑 (baseCalls 마지막 항목 = r[8]) */
+          const cpRes = r[8];
+          categoryProds.splice(0, categoryProds.length, ...(cpRes?.data?.data?.pageList || cpRes?.data?.data?.list || []));
+
           // 기본정보
           const p = r[2].data?.data || r[2].data;
           if (p) { products.splice(0, products.length, p); }
@@ -1140,7 +1145,7 @@ window.PdProdDtl = {
               /* I: 현재 목록 중 기존에 없던 행 */
               prodCategories.forEach((c, i) => {
                 if (!existingIds.has(String(c.categoryId))) {
-                  rows.push({ rowStatus: 'I', prodId: pid, categoryId: c.categoryId, sortOrd: i + 1, dispYn: 'Y' });
+                  rows.push({ rowStatus: 'I', prodId: pid, categoryId: c.categoryId, typeCd: 'NORMAL', sortOrd: i + 1, dispYn: 'Y' });
                 }
               });
               if (rows.length > 0) {
