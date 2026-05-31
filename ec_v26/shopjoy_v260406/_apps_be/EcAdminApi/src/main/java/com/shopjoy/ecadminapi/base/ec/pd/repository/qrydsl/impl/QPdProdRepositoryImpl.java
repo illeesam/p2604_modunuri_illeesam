@@ -98,15 +98,15 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdDto.Item> query = baseListQuery().where(
-                andProdIds(search),
-                andSiteId(search),
-                andProdId(search),
-                andBrandId(search),
-                andMdUserId(search),
-                andProdStatusCd(search),
-                andVendorId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdIds(search),
+                baseAndSiteId(search),
+                baseAndProdId(search),
+                baseAndBrandId(search),
+                baseAndMdUserId(search),
+                baseAndProdStatusCd(search),
+                baseAndVendorId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -130,15 +130,15 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdDto.Item> query = baseListQuery().where(
-                andProdIds(search),
-                andSiteId(search),
-                andProdId(search),
-                andBrandId(search),
-                andMdUserId(search),
-                andProdStatusCd(search),
-                andVendorId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdIds(search),
+                baseAndSiteId(search),
+                baseAndProdId(search),
+                baseAndBrandId(search),
+                baseAndMdUserId(search),
+                baseAndProdStatusCd(search),
+                baseAndVendorId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -150,15 +150,15 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .from(p)
                 .leftJoin(b).on(b.brandId.eq(p.brandId))
                 .where(
-                andProdIds(search),
-                andSiteId(search),
-                andProdId(search),
-                andBrandId(search),
-                andMdUserId(search),
-                andProdStatusCd(search),
-                andVendorId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdIds(search),
+                baseAndSiteId(search),
+                baseAndProdId(search),
+                baseAndBrandId(search),
+                baseAndMdUserId(search),
+                baseAndProdStatusCd(search),
+                baseAndVendorId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -221,54 +221,54 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* prodId IN */
-    private BooleanExpression andProdIds(PdProdDto.Request search) {
+    private BooleanExpression baseAndProdIds(PdProdDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
                 ? p.prodId.in(search.getProdIds()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdProdDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? p.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression andProdId(PdProdDto.Request search) {
+    private BooleanExpression baseAndProdId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? p.prodId.eq(search.getProdId()) : null;
     }
 
     /* brandId 정확 일치 */
-    private BooleanExpression andBrandId(PdProdDto.Request search) {
+    private BooleanExpression baseAndBrandId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getBrandId())
                 ? p.brandId.eq(search.getBrandId()) : null;
     }
 
     /* mdUserId 정확 일치 */
-    private BooleanExpression andMdUserId(PdProdDto.Request search) {
+    private BooleanExpression baseAndMdUserId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getMdUserId())
                 ? p.mdUserId.eq(search.getMdUserId()) : null;
     }
 
     /* prodStatusCd 정확 일치 */
-    private BooleanExpression andProdStatusCd(PdProdDto.Request search) {
+    private BooleanExpression baseAndProdStatusCd(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdStatusCd())
                 ? p.prodStatusCd.eq(search.getProdStatusCd()) : null;
     }
 
     /* vendorId 정확 일치 */
-    private BooleanExpression andVendorId(PdProdDto.Request search) {
+    private BooleanExpression baseAndVendorId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? p.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdProdDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdProdDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -284,7 +284,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdProdDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdProdDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

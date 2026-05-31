@@ -69,10 +69,10 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmSaveUsageDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andSaveUsageId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSaveUsageId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,10 +96,10 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmSaveUsageDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andSaveUsageId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSaveUsageId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -110,10 +110,10 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                 .select(u.count())
                 .from(u)
                 .where(
-                andSiteId(search),
-                andSaveUsageId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSaveUsageId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -124,24 +124,24 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
     /* 적립금 사용 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmSaveUsageDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmSaveUsageDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? u.siteId.eq(search.getSiteId()) : null;
     }
 
     /* saveUsageId 정확 일치 */
-    private BooleanExpression andSaveUsageId(PmSaveUsageDto.Request search) {
+    private BooleanExpression baseAndSaveUsageId(PmSaveUsageDto.Request search) {
         return search != null && StringUtils.hasText(search.getSaveUsageId())
                 ? u.saveUsageId.eq(search.getSaveUsageId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmSaveUsageDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmSaveUsageDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -157,7 +157,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmSaveUsageDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmSaveUsageDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

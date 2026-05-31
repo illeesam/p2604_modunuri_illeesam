@@ -47,10 +47,10 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdTagDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -74,10 +74,10 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdTagDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -85,10 +85,10 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         List<PdTagDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(t.count()).from(t).where(
-                andSiteId(search),
-                andTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdTagDto.PageResponse res = new PdTagDto.PageResponse();
@@ -110,24 +110,24 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdTagDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? t.siteId.eq(search.getSiteId()) : null;
     }
 
     /* tagId 정확 일치 */
-    private BooleanExpression andTagId(PdTagDto.Request search) {
+    private BooleanExpression baseAndTagId(PdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getTagId())
                 ? t.tagId.eq(search.getTagId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdTagDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdTagDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -143,7 +143,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdTagDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdTagDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -46,9 +46,9 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     public List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<MbMemberRoleDto.Item> query = baseQuery().where(
-                andMemberRoleId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberRoleId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -66,17 +66,17 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<MbMemberRoleDto.Item> query = baseQuery().where(
-                andMemberRoleId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberRoleId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberRoleDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
         Long total = queryFactory.select(r.count()).from(r).where(
-                andMemberRoleId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberRoleId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         MbMemberRoleDto.PageResponse res = new MbMemberRoleDto.PageResponse();
@@ -108,13 +108,13 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
      * ============================================================ */
 
     /* memberRoleId 정확 일치 */
-    private BooleanExpression andMemberRoleId(MbMemberRoleDto.Request search) {
+    private BooleanExpression baseAndMemberRoleId(MbMemberRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberRoleId())
                 ? r.memberRoleId.eq(search.getMemberRoleId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(MbMemberRoleDto.Request search) {
+    private BooleanExpression baseAndDateRange(MbMemberRoleDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -130,7 +130,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(MbMemberRoleDto.Request search) {
+    private BooleanExpression baseAndSearchValue(MbMemberRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

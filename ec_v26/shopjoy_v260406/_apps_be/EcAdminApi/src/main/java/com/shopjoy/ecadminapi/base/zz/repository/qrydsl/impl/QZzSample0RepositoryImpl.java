@@ -70,9 +70,9 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         JPAQuery<ZzSample0Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSample0Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample0Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -97,9 +97,9 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         JPAQuery<ZzSample0Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSample0Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample0Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -110,9 +110,9 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
                 .select(s.count())
                 .from(s)
                 .where(
-                andSample0Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample0Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -128,19 +128,19 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
      * ============================================================ */
 
     /* sample0Id 정확 일치 */
-    private BooleanExpression andSample0Id(ZzSample0Dto.Request search) {
+    private BooleanExpression baseAndSample0Id(ZzSample0Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample0Id())
                 ? s.sample0Id.eq(search.getSample0Id()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(ZzSample0Dto.Request search) {
+    private BooleanExpression baseAndUseYn(ZzSample0Dto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? s.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(ZzSample0Dto.Request search) {
+    private BooleanExpression baseAndSearchValue(ZzSample0Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

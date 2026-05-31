@@ -59,10 +59,10 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andRoleMenuId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndRoleMenuId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -87,10 +87,10 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
         JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andRoleMenuId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndRoleMenuId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,10 +98,10 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<SyRoleMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(m.count()).from(m).where(
-                andSiteId(search),
-                andRoleMenuId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndRoleMenuId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyRoleMenuDto.PageResponse res = new SyRoleMenuDto.PageResponse();
@@ -111,24 +111,24 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* 역할별 메뉴 권한 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyRoleMenuDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? m.siteId.eq(search.getSiteId()) : null;
     }
 
     /* roleMenuId 정확 일치 */
-    private BooleanExpression andRoleMenuId(SyRoleMenuDto.Request search) {
+    private BooleanExpression baseAndRoleMenuId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleMenuId())
                 ? m.roleMenuId.eq(search.getRoleMenuId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyRoleMenuDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyRoleMenuDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -144,7 +144,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyRoleMenuDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyRoleMenuDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -46,12 +46,12 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(
-                andEventIds(search),
-                andEventId(search),
-                andSiteId(search),
-                andBenefitId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndEventIds(search),
+                baseAndEventId(search),
+                baseAndSiteId(search),
+                baseAndBenefitId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -75,12 +75,12 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(
-                andEventIds(search),
-                andEventId(search),
-                andSiteId(search),
-                andBenefitId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndEventIds(search),
+                baseAndEventId(search),
+                baseAndSiteId(search),
+                baseAndBenefitId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -91,12 +91,12 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 .select(b.count())
                 .from(b)
                 .where(
-                andEventIds(search),
-                andEventId(search),
-                andSiteId(search),
-                andBenefitId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndEventIds(search),
+                baseAndEventId(search),
+                baseAndSiteId(search),
+                baseAndBenefitId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -119,36 +119,36 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* eventId IN */
-    private BooleanExpression andEventIds(PmEventBenefitDto.Request search) {
+    private BooleanExpression baseAndEventIds(PmEventBenefitDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getEventIds())
                 ? b.eventId.in(search.getEventIds()) : null;
     }
 
     /* eventId 정확 일치 */
-    private BooleanExpression andEventId(PmEventBenefitDto.Request search) {
+    private BooleanExpression baseAndEventId(PmEventBenefitDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventId())
                 ? b.eventId.eq(search.getEventId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmEventBenefitDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmEventBenefitDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? b.siteId.eq(search.getSiteId()) : null;
     }
 
     /* benefitId 정확 일치 */
-    private BooleanExpression andBenefitId(PmEventBenefitDto.Request search) {
+    private BooleanExpression baseAndBenefitId(PmEventBenefitDto.Request search) {
         return search != null && StringUtils.hasText(search.getBenefitId())
                 ? b.benefitId.eq(search.getBenefitId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmEventBenefitDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmEventBenefitDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -164,7 +164,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmEventBenefitDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmEventBenefitDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

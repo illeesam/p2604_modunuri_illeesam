@@ -76,11 +76,11 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andVendorUserRoleId(search),
-                andVendorId(search),
-                andUserId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndVendorUserRoleId(search),
+                baseAndVendorId(search),
+                baseAndUserId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -105,11 +105,11 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
 
         JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andVendorUserRoleId(search),
-                andVendorId(search),
-                andUserId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndVendorUserRoleId(search),
+                baseAndVendorId(search),
+                baseAndUserId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -117,11 +117,11 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         List<SyVendorUserRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(r.count()).from(r).where(
-                andVendorUserRoleId(search),
-                andVendorId(search),
-                andUserId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndVendorUserRoleId(search),
+                baseAndVendorId(search),
+                baseAndUserId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyVendorUserRoleDto.PageResponse res = new SyVendorUserRoleDto.PageResponse();
@@ -136,25 +136,25 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
      * ============================================================ */
 
     /* vendorUserRoleId 정확 일치 */
-    private BooleanExpression andVendorUserRoleId(SyVendorUserRoleDto.Request search) {
+    private BooleanExpression baseAndVendorUserRoleId(SyVendorUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorUserRoleId())
                 ? r.vendorUserRoleId.eq(search.getVendorUserRoleId()) : null;
     }
 
     /* vendorId 정확 일치 */
-    private BooleanExpression andVendorId(SyVendorUserRoleDto.Request search) {
+    private BooleanExpression baseAndVendorId(SyVendorUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? r.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* userId 정확 일치 */
-    private BooleanExpression andUserId(SyVendorUserRoleDto.Request search) {
+    private BooleanExpression baseAndUserId(SyVendorUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? r.userId.eq(search.getUserId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyVendorUserRoleDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyVendorUserRoleDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -170,7 +170,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyVendorUserRoleDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyVendorUserRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

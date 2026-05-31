@@ -46,11 +46,11 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdReviewDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andReviewId(search),
-                andProdId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndReviewId(search),
+                baseAndProdId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -74,11 +74,11 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdReviewDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andReviewId(search),
-                andProdId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndReviewId(search),
+                baseAndProdId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,11 +86,11 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         List<PdReviewDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(r.count()).from(r).where(
-                andSiteId(search),
-                andReviewId(search),
-                andProdId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndReviewId(search),
+                baseAndProdId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdReviewDto.PageResponse res = new PdReviewDto.PageResponse();
@@ -115,30 +115,30 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdReviewDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? r.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reviewId 정확 일치 */
-    private BooleanExpression andReviewId(PdReviewDto.Request search) {
+    private BooleanExpression baseAndReviewId(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewId())
                 ? r.reviewId.eq(search.getReviewId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression andProdId(PdReviewDto.Request search) {
+    private BooleanExpression baseAndProdId(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? r.prodId.eq(search.getProdId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdReviewDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdReviewDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -154,7 +154,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdReviewDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdReviewDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

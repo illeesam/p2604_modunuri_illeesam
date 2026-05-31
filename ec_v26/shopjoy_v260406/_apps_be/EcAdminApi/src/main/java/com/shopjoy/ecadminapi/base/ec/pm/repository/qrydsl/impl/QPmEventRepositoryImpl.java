@@ -45,11 +45,11 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmEventDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andEventId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndEventId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -73,11 +73,11 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmEventDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andEventId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndEventId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,11 +88,11 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 .select(e.count())
                 .from(e)
                 .where(
-                andSiteId(search),
-                andEventId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndEventId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -118,30 +118,30 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmEventDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? e.siteId.eq(search.getSiteId()) : null;
     }
 
     /* eventId 정확 일치 */
-    private BooleanExpression andEventId(PmEventDto.Request search) {
+    private BooleanExpression baseAndEventId(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventId())
                 ? e.eventId.eq(search.getEventId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(PmEventDto.Request search) {
+    private BooleanExpression baseAndUseYn(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? e.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmEventDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmEventDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -157,7 +157,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmEventDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmEventDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

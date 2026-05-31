@@ -116,13 +116,13 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdClaimDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andClaimId(search),
-                andMemberId(search),
-                andClaimStatusCd(search),
-                andClaimTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndClaimId(search),
+                baseAndMemberId(search),
+                baseAndClaimStatusCd(search),
+                baseAndClaimTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -146,13 +146,13 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdClaimDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andClaimId(search),
-                andMemberId(search),
-                andClaimStatusCd(search),
-                andClaimTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndClaimId(search),
+                baseAndMemberId(search),
+                baseAndClaimStatusCd(search),
+                baseAndClaimTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -164,13 +164,13 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .from(c)
                 .leftJoin(m).on(m.memberId.eq(c.memberId))
                 .where(
-                andSiteId(search),
-                andClaimId(search),
-                andMemberId(search),
-                andClaimStatusCd(search),
-                andClaimTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndClaimId(search),
+                baseAndMemberId(search),
+                baseAndClaimStatusCd(search),
+                baseAndClaimTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -224,42 +224,42 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(OdClaimDto.Request search) {
+    private BooleanExpression baseAndSiteId(OdClaimDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* claimId 정확 일치 */
-    private BooleanExpression andClaimId(OdClaimDto.Request search) {
+    private BooleanExpression baseAndClaimId(OdClaimDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimId())
                 ? c.claimId.eq(search.getClaimId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression andMemberId(OdClaimDto.Request search) {
+    private BooleanExpression baseAndMemberId(OdClaimDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? c.memberId.eq(search.getMemberId()) : null;
     }
 
     /* claimStatusCd 정확 일치 */
-    private BooleanExpression andClaimStatusCd(OdClaimDto.Request search) {
+    private BooleanExpression baseAndClaimStatusCd(OdClaimDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimStatusCd())
                 ? c.claimStatusCd.eq(search.getClaimStatusCd()) : null;
     }
 
     /* claimTypeCd 정확 일치 */
-    private BooleanExpression andClaimTypeCd(OdClaimDto.Request search) {
+    private BooleanExpression baseAndClaimTypeCd(OdClaimDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimTypeCd())
                 ? c.claimTypeCd.eq(search.getClaimTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(OdClaimDto.Request search) {
+    private BooleanExpression baseAndDateRange(OdClaimDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -279,7 +279,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(OdClaimDto.Request search) {
+    private BooleanExpression baseAndSearchValue(OdClaimDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

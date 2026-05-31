@@ -57,10 +57,10 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmPathDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andUseYn(search),
-                andBizCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUseYn(search),
+                baseAndBizCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -85,10 +85,10 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
         JPAQuery<CmPathDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andUseYn(search),
-                andBizCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUseYn(search),
+                baseAndBizCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,10 +99,10 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
                 .select(p.count())
                 .from(p)
                 .where(
-                andUseYn(search),
-                andBizCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUseYn(search),
+                baseAndBizCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -118,19 +118,19 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
      * ============================================================ */
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(CmPathDto.Request search) {
+    private BooleanExpression baseAndUseYn(CmPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? p.useYn.eq(search.getUseYn()) : null;
     }
 
     /* bizCd 정확 일치 */
-    private BooleanExpression andBizCd(CmPathDto.Request search) {
+    private BooleanExpression baseAndBizCd(CmPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getBizCd())
                 ? p.bizCd.eq(search.getBizCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(CmPathDto.Request search) {
+    private BooleanExpression baseAndDateRange(CmPathDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -146,7 +146,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(CmPathDto.Request search) {
+    private BooleanExpression baseAndSearchValue(CmPathDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

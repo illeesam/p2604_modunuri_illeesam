@@ -48,10 +48,10 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     public List<SyBbsDto.Item> selectList(SyBbsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyBbsDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andBbsId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBbsId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -73,19 +73,19 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyBbsDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andBbsId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBbsId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBbsDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(b.count()).from(b).where(
-                andSiteId(search),
-                andBbsId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBbsId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyBbsDto.PageResponse res = new SyBbsDto.PageResponse();
@@ -109,30 +109,30 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyBbsDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? b.siteId.eq(search.getSiteId()) : null;
     }
 
     /* bbsId 정확 일치 */
-    private BooleanExpression andBbsId(SyBbsDto.Request search) {
+    private BooleanExpression baseAndBbsId(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbsId())
                 ? b.bbsId.eq(search.getBbsId()) : null;
     }
 
     /* bbsStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyBbsDto.Request search) {
+    private BooleanExpression baseAndStatus(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? b.bbsStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyBbsDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyBbsDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

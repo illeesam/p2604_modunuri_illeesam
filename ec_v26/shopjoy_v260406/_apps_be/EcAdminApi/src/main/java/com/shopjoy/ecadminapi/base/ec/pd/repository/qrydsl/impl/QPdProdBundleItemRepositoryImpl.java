@@ -50,10 +50,10 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdBundleItemDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andBundleItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBundleItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -77,10 +77,10 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdBundleItemDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andBundleItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBundleItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,10 +88,10 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
         List<PdProdBundleItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(i.count()).from(i).where(
-                andSiteId(search),
-                andBundleItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBundleItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdProdBundleItemDto.PageResponse res = new PdProdBundleItemDto.PageResponse();
@@ -115,24 +115,24 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     /* 묶음상품 구성 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdProdBundleItemDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdProdBundleItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? i.siteId.eq(search.getSiteId()) : null;
     }
 
     /* bundleItemId 정확 일치 */
-    private BooleanExpression andBundleItemId(PdProdBundleItemDto.Request search) {
+    private BooleanExpression baseAndBundleItemId(PdProdBundleItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getBundleItemId())
                 ? i.bundleItemId.eq(search.getBundleItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdProdBundleItemDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdProdBundleItemDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -148,7 +148,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdProdBundleItemDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdProdBundleItemDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -45,11 +45,11 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdRelDto.Item> query = baseQuery().where(
-                andProdRelId(search),
-                andProdId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdRelId(search),
+                baseAndProdId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -73,11 +73,11 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdRelDto.Item> query = baseQuery().where(
-                andProdRelId(search),
-                andProdId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdRelId(search),
+                baseAndProdId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -85,11 +85,11 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
         List<PdProdRelDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(r.count()).from(r).where(
-                andProdRelId(search),
-                andProdId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdRelId(search),
+                baseAndProdId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdProdRelDto.PageResponse res = new PdProdRelDto.PageResponse();
@@ -115,25 +115,25 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
      * ============================================================ */
 
     /* prodRelId 정확 일치 */
-    private BooleanExpression andProdRelId(PdProdRelDto.Request search) {
+    private BooleanExpression baseAndProdRelId(PdProdRelDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdRelId())
                 ? r.prodRelId.eq(search.getProdRelId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression andProdId(PdProdRelDto.Request search) {
+    private BooleanExpression baseAndProdId(PdProdRelDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? r.prodId.eq(search.getProdId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(PdProdRelDto.Request search) {
+    private BooleanExpression baseAndUseYn(PdProdRelDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? r.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdProdRelDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdProdRelDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -149,7 +149,7 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdProdRelDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdProdRelDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

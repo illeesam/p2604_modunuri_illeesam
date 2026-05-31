@@ -64,10 +64,10 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmPlanItemDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPlanItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPlanItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -91,10 +91,10 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmPlanItemDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPlanItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPlanItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -105,10 +105,10 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 .select(i.count())
                 .from(i)
                 .where(
-                andSiteId(search),
-                andPlanItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPlanItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -119,24 +119,24 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     /* 프로모션 플랜 아이템 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmPlanItemDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmPlanItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? i.siteId.eq(search.getSiteId()) : null;
     }
 
     /* planItemId 정확 일치 */
-    private BooleanExpression andPlanItemId(PmPlanItemDto.Request search) {
+    private BooleanExpression baseAndPlanItemId(PmPlanItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getPlanItemId())
                 ? i.planItemId.eq(search.getPlanItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmPlanItemDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmPlanItemDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -152,7 +152,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmPlanItemDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmPlanItemDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

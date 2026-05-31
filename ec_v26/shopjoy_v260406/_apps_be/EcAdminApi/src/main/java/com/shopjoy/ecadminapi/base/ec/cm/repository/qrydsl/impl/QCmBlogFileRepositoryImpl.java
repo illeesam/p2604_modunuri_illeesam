@@ -57,11 +57,11 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andBlogIds(search),
-                andBlogId(search),
-                andBlogImgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndBlogIds(search),
+                baseAndBlogId(search),
+                baseAndBlogImgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,11 +86,11 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
         JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andBlogIds(search),
-                andBlogId(search),
-                andBlogImgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndBlogIds(search),
+                baseAndBlogId(search),
+                baseAndBlogImgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -101,11 +101,11 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                 .select(f.count())
                 .from(f)
                 .where(
-                andBlogIds(search),
-                andBlogId(search),
-                andBlogImgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndBlogIds(search),
+                baseAndBlogId(search),
+                baseAndBlogImgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -121,25 +121,25 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
      * ============================================================ */
 
     /* blogId IN */
-    private BooleanExpression andBlogIds(CmBlogFileDto.Request search) {
+    private BooleanExpression baseAndBlogIds(CmBlogFileDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getBlogIds())
                 ? f.blogId.in(search.getBlogIds()) : null;
     }
 
     /* blogId 정확 일치 */
-    private BooleanExpression andBlogId(CmBlogFileDto.Request search) {
+    private BooleanExpression baseAndBlogId(CmBlogFileDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogId())
                 ? f.blogId.eq(search.getBlogId()) : null;
     }
 
     /* blogImgId 정확 일치 */
-    private BooleanExpression andBlogImgId(CmBlogFileDto.Request search) {
+    private BooleanExpression baseAndBlogImgId(CmBlogFileDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogImgId())
                 ? f.blogImgId.eq(search.getBlogImgId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(CmBlogFileDto.Request search) {
+    private BooleanExpression baseAndDateRange(CmBlogFileDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -155,7 +155,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(CmBlogFileDto.Request search) {
+    private BooleanExpression baseAndSearchValue(CmBlogFileDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

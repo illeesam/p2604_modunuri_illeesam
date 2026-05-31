@@ -69,13 +69,13 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andPathId(search),
-                andCodeGrpId(search),
-                andCodeGrp(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndCodeGrpId(search),
+                baseAndCodeGrp(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -100,13 +100,13 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
         JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andPathId(search),
-                andCodeGrpId(search),
-                andCodeGrp(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndCodeGrpId(search),
+                baseAndCodeGrp(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -114,13 +114,13 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<SyCodeGrpDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(g.count()).from(g).where(
-                andSiteId(search),
-                andPathId(search),
-                andCodeGrpId(search),
-                andCodeGrp(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndCodeGrpId(search),
+                baseAndCodeGrp(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyCodeGrpDto.PageResponse res = new SyCodeGrpDto.PageResponse();
@@ -130,43 +130,43 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyCodeGrpDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? g.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SyCodeGrpDto.Request search) {
+    private BooleanExpression baseAndPathId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? g.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_code_grp"))
                 : null;
     }
 
     /* codeGrpId 정확 일치 */
-    private BooleanExpression andCodeGrpId(SyCodeGrpDto.Request search) {
+    private BooleanExpression baseAndCodeGrpId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeGrpId())
                 ? g.codeGrpId.eq(search.getCodeGrpId()) : null;
     }
 
     /* codeGrp 정확 일치 */
-    private BooleanExpression andCodeGrp(SyCodeGrpDto.Request search) {
+    private BooleanExpression baseAndCodeGrp(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeGrp())
                 ? g.codeGrp.eq(search.getCodeGrp()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(SyCodeGrpDto.Request search) {
+    private BooleanExpression baseAndUseYn(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? g.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyCodeGrpDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyCodeGrpDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -182,7 +182,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyCodeGrpDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyCodeGrpDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -302,8 +302,11 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
             params.put("useYn", search.getUseYn());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",codeGrp,")) sql.append("         OR t.code_grp ILIKE '%' || :searchValue || '%'\n");

@@ -74,10 +74,10 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
 
         JPAQuery<SyhAccessErrorLogDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andMethod(search),
-                andAppTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMethod(search),
+                baseAndAppTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,10 +88,10 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                 .select(l.count())
                 .from(l)
                 .where(
-                andMethod(search),
-                andAppTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMethod(search),
+                baseAndAppTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -107,19 +107,19 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
      * ============================================================ */
 
     /* reqMethod 정확 일치 */
-    private BooleanExpression andMethod(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression baseAndMethod(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getMethod())
                 ? l.reqMethod.eq(search.getMethod()) : null;
     }
 
     /* appTypeCd 정확 일치 */
-    private BooleanExpression andAppTypeCd(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression baseAndAppTypeCd(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getAppTypeCd())
                 ? l.appTypeCd.eq(search.getAppTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyhAccessErrorLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -134,7 +134,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyhAccessErrorLogDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyhAccessErrorLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

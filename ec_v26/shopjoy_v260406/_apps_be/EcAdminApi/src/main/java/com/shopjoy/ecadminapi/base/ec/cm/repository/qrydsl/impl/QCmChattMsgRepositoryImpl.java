@@ -57,10 +57,10 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andChattMsgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndChattMsgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -85,10 +85,10 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
         JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andChattMsgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndChattMsgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,10 +99,10 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
                 .select(m.count())
                 .from(m)
                 .where(
-                andSiteId(search),
-                andChattMsgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndChattMsgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -113,24 +113,24 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     /** 검색조건 빌드 */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(CmChattMsgDto.Request search) {
+    private BooleanExpression baseAndSiteId(CmChattMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? m.siteId.eq(search.getSiteId()) : null;
     }
 
     /* chattMsgId 정확 일치 */
-    private BooleanExpression andChattMsgId(CmChattMsgDto.Request search) {
+    private BooleanExpression baseAndChattMsgId(CmChattMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getChattMsgId())
                 ? m.chattMsgId.eq(search.getChattMsgId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(CmChattMsgDto.Request search) {
+    private BooleanExpression baseAndDateRange(CmChattMsgDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -147,7 +147,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(CmChattMsgDto.Request search) {
+    private BooleanExpression baseAndSearchValue(CmChattMsgDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

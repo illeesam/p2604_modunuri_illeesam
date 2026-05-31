@@ -57,12 +57,12 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdDlivDto.Item> query = baseQuery().where(
-                andOrderIds(search),
-                andOrderId(search),
-                andSiteId(search),
-                andDlivId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOrderIds(search),
+                baseAndOrderId(search),
+                baseAndSiteId(search),
+                baseAndDlivId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,12 +86,12 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdDlivDto.Item> query = baseQuery().where(
-                andOrderIds(search),
-                andOrderId(search),
-                andSiteId(search),
-                andDlivId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOrderIds(search),
+                baseAndOrderId(search),
+                baseAndSiteId(search),
+                baseAndDlivId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -103,12 +103,12 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 .from(d)
                 .leftJoin(o).on(o.orderId.eq(d.orderId))
                 .where(
-                andOrderIds(search),
-                andOrderId(search),
-                andSiteId(search),
-                andDlivId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOrderIds(search),
+                baseAndOrderId(search),
+                baseAndSiteId(search),
+                baseAndDlivId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -153,36 +153,36 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* orderId IN */
-    private BooleanExpression andOrderIds(OdDlivDto.Request search) {
+    private BooleanExpression baseAndOrderIds(OdDlivDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
                 ? d.orderId.in(search.getOrderIds()) : null;
     }
 
     /* orderId 정확 일치 */
-    private BooleanExpression andOrderId(OdDlivDto.Request search) {
+    private BooleanExpression baseAndOrderId(OdDlivDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
                 ? d.orderId.eq(search.getOrderId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(OdDlivDto.Request search) {
+    private BooleanExpression baseAndSiteId(OdDlivDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? d.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivId 정확 일치 */
-    private BooleanExpression andDlivId(OdDlivDto.Request search) {
+    private BooleanExpression baseAndDlivId(OdDlivDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivId())
                 ? d.dlivId.eq(search.getDlivId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(OdDlivDto.Request search) {
+    private BooleanExpression baseAndDateRange(OdDlivDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -200,7 +200,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(OdDlivDto.Request search) {
+    private BooleanExpression baseAndSearchValue(OdDlivDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

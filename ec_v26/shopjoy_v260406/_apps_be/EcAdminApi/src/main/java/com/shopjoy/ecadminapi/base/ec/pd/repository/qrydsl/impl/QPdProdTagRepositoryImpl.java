@@ -48,10 +48,10 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdTagDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andProdTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndProdTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -75,10 +75,10 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdTagDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andProdTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndProdTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,10 +86,10 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         List<PdProdTagDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(t.count()).from(t).where(
-                andSiteId(search),
-                andProdTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndProdTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdProdTagDto.PageResponse res = new PdProdTagDto.PageResponse();
@@ -111,24 +111,24 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     /* 상품 태그 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdProdTagDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdProdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? t.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodTagId 정확 일치 */
-    private BooleanExpression andProdTagId(PdProdTagDto.Request search) {
+    private BooleanExpression baseAndProdTagId(PdProdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdTagId())
                 ? t.prodTagId.eq(search.getProdTagId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdProdTagDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdProdTagDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -144,7 +144,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdProdTagDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdProdTagDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

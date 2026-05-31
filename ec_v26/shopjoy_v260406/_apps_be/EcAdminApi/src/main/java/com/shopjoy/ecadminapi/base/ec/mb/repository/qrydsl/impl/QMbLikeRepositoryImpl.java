@@ -48,13 +48,13 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<MbLikeDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andLikeId(search),
-                andMemberId(search),
-                andTargetId(search),
-                andTargetTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLikeId(search),
+                baseAndMemberId(search),
+                baseAndTargetId(search),
+                baseAndTargetTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -72,25 +72,25 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<MbLikeDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andLikeId(search),
-                andMemberId(search),
-                andTargetId(search),
-                andTargetTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLikeId(search),
+                baseAndMemberId(search),
+                baseAndTargetId(search),
+                baseAndTargetTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbLikeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
         Long total = queryFactory.select(l.count()).from(l).where(
-                andSiteId(search),
-                andLikeId(search),
-                andMemberId(search),
-                andTargetId(search),
-                andTargetTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLikeId(search),
+                baseAndMemberId(search),
+                baseAndTargetId(search),
+                baseAndTargetTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         MbLikeDto.PageResponse res = new MbLikeDto.PageResponse();
@@ -114,42 +114,42 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     /* 좋아요(찜) buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(MbLikeDto.Request search) {
+    private BooleanExpression baseAndSiteId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? l.siteId.eq(search.getSiteId()) : null;
     }
 
     /* likeId 정확 일치 */
-    private BooleanExpression andLikeId(MbLikeDto.Request search) {
+    private BooleanExpression baseAndLikeId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getLikeId())
                 ? l.likeId.eq(search.getLikeId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression andMemberId(MbLikeDto.Request search) {
+    private BooleanExpression baseAndMemberId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? l.memberId.eq(search.getMemberId()) : null;
     }
 
     /* targetId 정확 일치 */
-    private BooleanExpression andTargetId(MbLikeDto.Request search) {
+    private BooleanExpression baseAndTargetId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetId())
                 ? l.targetId.eq(search.getTargetId()) : null;
     }
 
     /* targetTypeCd 정확 일치 */
-    private BooleanExpression andTargetTypeCd(MbLikeDto.Request search) {
+    private BooleanExpression baseAndTargetTypeCd(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetTypeCd())
                 ? l.targetTypeCd.eq(search.getTargetTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(MbLikeDto.Request search) {
+    private BooleanExpression baseAndDateRange(MbLikeDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -165,7 +165,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(MbLikeDto.Request search) {
+    private BooleanExpression baseAndSearchValue(MbLikeDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -64,10 +64,10 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmSaveDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andSaveId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSaveId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -91,10 +91,10 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmSaveDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andSaveId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSaveId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -105,10 +105,10 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 .select(s.count())
                 .from(s)
                 .where(
-                andSiteId(search),
-                andSaveId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSaveId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -119,24 +119,24 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     /* 적립금 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmSaveDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmSaveDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? s.siteId.eq(search.getSiteId()) : null;
     }
 
     /* saveId 정확 일치 */
-    private BooleanExpression andSaveId(PmSaveDto.Request search) {
+    private BooleanExpression baseAndSaveId(PmSaveDto.Request search) {
         return search != null && StringUtils.hasText(search.getSaveId())
                 ? s.saveId.eq(search.getSaveId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmSaveDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmSaveDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -152,7 +152,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmSaveDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmSaveDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

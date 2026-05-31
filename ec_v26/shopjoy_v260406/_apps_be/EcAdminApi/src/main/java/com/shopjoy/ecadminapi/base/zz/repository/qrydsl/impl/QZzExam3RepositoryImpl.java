@@ -67,11 +67,11 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andExam1Ids(search),
-                andExam1Id(search),
-                andExam2Id(search),
-                andExam3Id(search),
-                andSearchValue(search)
+                baseAndExam1Ids(search),
+                baseAndExam1Id(search),
+                baseAndExam2Id(search),
+                baseAndExam3Id(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,11 +96,11 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andExam1Ids(search),
-                andExam1Id(search),
-                andExam2Id(search),
-                andExam3Id(search),
-                andSearchValue(search)
+                baseAndExam1Ids(search),
+                baseAndExam1Id(search),
+                baseAndExam2Id(search),
+                baseAndExam3Id(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -111,11 +111,11 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
                 .select(e.count())
                 .from(e)
                 .where(
-                andExam1Ids(search),
-                andExam1Id(search),
-                andExam2Id(search),
-                andExam3Id(search),
-                andSearchValue(search)
+                baseAndExam1Ids(search),
+                baseAndExam1Id(search),
+                baseAndExam2Id(search),
+                baseAndExam3Id(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -131,31 +131,31 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
      * ============================================================ */
 
     /* exam1Id IN */
-    private BooleanExpression andExam1Ids(ZzExam3Dto.Request search) {
+    private BooleanExpression baseAndExam1Ids(ZzExam3Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getExam1Ids())
                 ? e.exam1Id.in(search.getExam1Ids()) : null;
     }
 
     /* exam1Id 정확 일치 */
-    private BooleanExpression andExam1Id(ZzExam3Dto.Request search) {
+    private BooleanExpression baseAndExam1Id(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam1Id())
                 ? e.exam1Id.eq(search.getExam1Id()) : null;
     }
 
     /* exam2Id 정확 일치 */
-    private BooleanExpression andExam2Id(ZzExam3Dto.Request search) {
+    private BooleanExpression baseAndExam2Id(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam2Id())
                 ? e.exam2Id.eq(search.getExam2Id()) : null;
     }
 
     /* exam3Id 정확 일치 */
-    private BooleanExpression andExam3Id(ZzExam3Dto.Request search) {
+    private BooleanExpression baseAndExam3Id(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam3Id())
                 ? e.exam3Id.eq(search.getExam3Id()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(ZzExam3Dto.Request search) {
+    private BooleanExpression baseAndSearchValue(ZzExam3Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

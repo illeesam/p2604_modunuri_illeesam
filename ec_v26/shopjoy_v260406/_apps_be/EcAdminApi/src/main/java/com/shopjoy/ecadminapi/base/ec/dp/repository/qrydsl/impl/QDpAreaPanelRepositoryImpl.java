@@ -41,12 +41,12 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
     public List<DpAreaPanelDto.Item> selectList(DpAreaPanelDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpAreaPanelDto.Item> query = baseQuery().where(
-                andAreaIds(search),
-                andAreaId(search),
-                andAreaPanelId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndAreaIds(search),
+                baseAndAreaId(search),
+                baseAndAreaPanelId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -63,22 +63,22 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpAreaPanelDto.Item> query = baseQuery().where(
-                andAreaIds(search),
-                andAreaId(search),
-                andAreaPanelId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndAreaIds(search),
+                baseAndAreaId(search),
+                baseAndAreaPanelId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpAreaPanelDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
         Long total = queryFactory.select(p.count()).from(p).where(
-                andAreaIds(search),
-                andAreaId(search),
-                andAreaPanelId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndAreaIds(search),
+                baseAndAreaId(search),
+                baseAndAreaPanelId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
         DpAreaPanelDto.PageResponse res = new DpAreaPanelDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -101,31 +101,31 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
      * ============================================================ */
 
     /* areaIds (IN) */
-    private BooleanExpression andAreaIds(DpAreaPanelDto.Request search) {
+    private BooleanExpression baseAndAreaIds(DpAreaPanelDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getAreaIds())
                 ? p.areaId.in(search.getAreaIds()) : null;
     }
 
     /* areaId 정확 일치 */
-    private BooleanExpression andAreaId(DpAreaPanelDto.Request search) {
+    private BooleanExpression baseAndAreaId(DpAreaPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaId())
                 ? p.areaId.eq(search.getAreaId()) : null;
     }
 
     /* areaPanelId 정확 일치 */
-    private BooleanExpression andAreaPanelId(DpAreaPanelDto.Request search) {
+    private BooleanExpression baseAndAreaPanelId(DpAreaPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaPanelId())
                 ? p.areaPanelId.eq(search.getAreaPanelId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(DpAreaPanelDto.Request search) {
+    private BooleanExpression baseAndUseYn(DpAreaPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? p.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(DpAreaPanelDto.Request search) {
+    private BooleanExpression baseAndDateRange(DpAreaPanelDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -141,7 +141,7 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(DpAreaPanelDto.Request search) {
+    private BooleanExpression baseAndSearchValue(DpAreaPanelDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

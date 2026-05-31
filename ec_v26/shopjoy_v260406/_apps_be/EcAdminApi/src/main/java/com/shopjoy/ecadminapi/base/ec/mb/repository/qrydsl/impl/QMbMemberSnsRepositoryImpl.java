@@ -44,11 +44,11 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<MbMemberSnsDto.Item> query = baseQuery().where(
-                andMemberIds(search),
-                andMemberId(search),
-                andMemberSnsId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberIds(search),
+                baseAndMemberId(search),
+                baseAndMemberSnsId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -66,21 +66,21 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<MbMemberSnsDto.Item> query = baseQuery().where(
-                andMemberIds(search),
-                andMemberId(search),
-                andMemberSnsId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberIds(search),
+                baseAndMemberId(search),
+                baseAndMemberSnsId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberSnsDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
         Long total = queryFactory.select(m.count()).from(m).where(
-                andMemberIds(search),
-                andMemberId(search),
-                andMemberSnsId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberIds(search),
+                baseAndMemberId(search),
+                baseAndMemberSnsId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         MbMemberSnsDto.PageResponse res = new MbMemberSnsDto.PageResponse();
@@ -107,25 +107,25 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
      * ============================================================ */
 
     /* memberId IN */
-    private BooleanExpression andMemberIds(MbMemberSnsDto.Request search) {
+    private BooleanExpression baseAndMemberIds(MbMemberSnsDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
                 ? m.memberId.in(search.getMemberIds()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression andMemberId(MbMemberSnsDto.Request search) {
+    private BooleanExpression baseAndMemberId(MbMemberSnsDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? m.memberId.eq(search.getMemberId()) : null;
     }
 
     /* memberSnsId 정확 일치 */
-    private BooleanExpression andMemberSnsId(MbMemberSnsDto.Request search) {
+    private BooleanExpression baseAndMemberSnsId(MbMemberSnsDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberSnsId())
                 ? m.memberSnsId.eq(search.getMemberSnsId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(MbMemberSnsDto.Request search) {
+    private BooleanExpression baseAndDateRange(MbMemberSnsDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -141,7 +141,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(MbMemberSnsDto.Request search) {
+    private BooleanExpression baseAndSearchValue(MbMemberSnsDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

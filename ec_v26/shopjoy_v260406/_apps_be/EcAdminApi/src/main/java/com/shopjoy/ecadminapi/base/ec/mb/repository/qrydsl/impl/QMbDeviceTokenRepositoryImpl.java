@@ -42,10 +42,10 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     public List<MbDeviceTokenDto.Item> selectList(MbDeviceTokenDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<MbDeviceTokenDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andDeviceTokenId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDeviceTokenId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -63,19 +63,19 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<MbDeviceTokenDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andDeviceTokenId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDeviceTokenId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbDeviceTokenDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
         Long total = queryFactory.select(t.count()).from(t).where(
-                andSiteId(search),
-                andDeviceTokenId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDeviceTokenId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         MbDeviceTokenDto.PageResponse res = new MbDeviceTokenDto.PageResponse();
@@ -98,24 +98,24 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     /* buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(MbDeviceTokenDto.Request search) {
+    private BooleanExpression baseAndSiteId(MbDeviceTokenDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? t.siteId.eq(search.getSiteId()) : null;
     }
 
     /* deviceTokenId 정확 일치 */
-    private BooleanExpression andDeviceTokenId(MbDeviceTokenDto.Request search) {
+    private BooleanExpression baseAndDeviceTokenId(MbDeviceTokenDto.Request search) {
         return search != null && StringUtils.hasText(search.getDeviceTokenId())
                 ? t.deviceTokenId.eq(search.getDeviceTokenId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(MbDeviceTokenDto.Request search) {
+    private BooleanExpression baseAndDateRange(MbDeviceTokenDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -131,7 +131,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(MbDeviceTokenDto.Request search) {
+    private BooleanExpression baseAndSearchValue(MbDeviceTokenDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

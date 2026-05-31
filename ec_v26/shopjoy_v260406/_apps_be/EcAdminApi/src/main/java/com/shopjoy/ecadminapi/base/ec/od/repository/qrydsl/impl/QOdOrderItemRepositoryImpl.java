@@ -57,12 +57,12 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdOrderItemDto.Item> query = baseQuery().where(
-                andOrderIds(search),
-                andOrderId(search),
-                andSiteId(search),
-                andOrderItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOrderIds(search),
+                baseAndOrderId(search),
+                baseAndSiteId(search),
+                baseAndOrderItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,12 +86,12 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdOrderItemDto.Item> query = baseQuery().where(
-                andOrderIds(search),
-                andOrderId(search),
-                andSiteId(search),
-                andOrderItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOrderIds(search),
+                baseAndOrderId(search),
+                baseAndSiteId(search),
+                baseAndOrderItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -102,12 +102,12 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 .select(oi.count())
                 .from(oi)
                 .where(
-                andOrderIds(search),
-                andOrderId(search),
-                andSiteId(search),
-                andOrderItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOrderIds(search),
+                baseAndOrderId(search),
+                baseAndSiteId(search),
+                baseAndOrderItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -153,36 +153,36 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* orderId IN */
-    private BooleanExpression andOrderIds(OdOrderItemDto.Request search) {
+    private BooleanExpression baseAndOrderIds(OdOrderItemDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
                 ? oi.orderId.in(search.getOrderIds()) : null;
     }
 
     /* orderId 정확 일치 */
-    private BooleanExpression andOrderId(OdOrderItemDto.Request search) {
+    private BooleanExpression baseAndOrderId(OdOrderItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
                 ? oi.orderId.eq(search.getOrderId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(OdOrderItemDto.Request search) {
+    private BooleanExpression baseAndSiteId(OdOrderItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? oi.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderItemId 정확 일치 */
-    private BooleanExpression andOrderItemId(OdOrderItemDto.Request search) {
+    private BooleanExpression baseAndOrderItemId(OdOrderItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderItemId())
                 ? oi.orderItemId.eq(search.getOrderItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(OdOrderItemDto.Request search) {
+    private BooleanExpression baseAndDateRange(OdOrderItemDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -198,7 +198,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(OdOrderItemDto.Request search) {
+    private BooleanExpression baseAndSearchValue(OdOrderItemDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -54,11 +54,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdCategoryDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andCategoryId(search),
-                andParentCategoryId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCategoryId(search),
+                baseAndParentCategoryId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -82,11 +82,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdCategoryDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andCategoryId(search),
-                andParentCategoryId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCategoryId(search),
+                baseAndParentCategoryId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -94,11 +94,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         List<PdCategoryDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(c.count()).from(c).where(
-                andSiteId(search),
-                andCategoryId(search),
-                andParentCategoryId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCategoryId(search),
+                baseAndParentCategoryId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdCategoryDto.PageResponse res = new PdCategoryDto.PageResponse();
@@ -126,37 +126,37 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdCategoryDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* categoryId 정확 일치 */
-    private BooleanExpression andCategoryId(PdCategoryDto.Request search) {
+    private BooleanExpression baseAndCategoryId(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getCategoryId())
                 ? c.categoryId.eq(search.getCategoryId()) : null;
     }
 
     /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
-    private BooleanExpression andParentCategoryId(PdCategoryDto.Request search) {
+    private BooleanExpression baseAndParentCategoryId(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentCategoryId())
                 ? c.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
                 : null;
     }
 
     /* categoryStatusCd 정확 일치 */
-    private BooleanExpression andStatus(PdCategoryDto.Request search) {
+    private BooleanExpression baseAndStatus(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? c.categoryStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdCategoryDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdCategoryDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

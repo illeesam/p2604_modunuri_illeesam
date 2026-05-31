@@ -54,10 +54,10 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdOrderItemDiscntDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andItemDiscntId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndItemDiscntId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -81,10 +81,10 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdOrderItemDiscntDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andItemDiscntId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndItemDiscntId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -95,10 +95,10 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
                 .select(d.count())
                 .from(d)
                 .where(
-                andSiteId(search),
-                andItemDiscntId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndItemDiscntId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -126,24 +126,24 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     /* 주문 아이템 할인 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(OdOrderItemDiscntDto.Request search) {
+    private BooleanExpression baseAndSiteId(OdOrderItemDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? d.siteId.eq(search.getSiteId()) : null;
     }
 
     /* itemDiscntId 정확 일치 */
-    private BooleanExpression andItemDiscntId(OdOrderItemDiscntDto.Request search) {
+    private BooleanExpression baseAndItemDiscntId(OdOrderItemDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getItemDiscntId())
                 ? d.itemDiscntId.eq(search.getItemDiscntId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(OdOrderItemDiscntDto.Request search) {
+    private BooleanExpression baseAndDateRange(OdOrderItemDiscntDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -159,7 +159,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(OdOrderItemDiscntDto.Request search) {
+    private BooleanExpression baseAndSearchValue(OdOrderItemDiscntDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

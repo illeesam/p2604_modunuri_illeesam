@@ -64,10 +64,10 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
 
         JPAQuery<ZzExam2Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andExam1Ids(search),
-                andExam1Id(search),
-                andExam2Id(search),
-                andSearchValue(search)
+                baseAndExam1Ids(search),
+                baseAndExam1Id(search),
+                baseAndExam2Id(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -92,10 +92,10 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
 
         JPAQuery<ZzExam2Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andExam1Ids(search),
-                andExam1Id(search),
-                andExam2Id(search),
-                andSearchValue(search)
+                baseAndExam1Ids(search),
+                baseAndExam1Id(search),
+                baseAndExam2Id(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -106,10 +106,10 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
                 .select(e.count())
                 .from(e)
                 .where(
-                andExam1Ids(search),
-                andExam1Id(search),
-                andExam2Id(search),
-                andSearchValue(search)
+                baseAndExam1Ids(search),
+                baseAndExam1Id(search),
+                baseAndExam2Id(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -125,25 +125,25 @@ public class QZzExam2RepositoryImpl implements QZzExam2Repository {
      * ============================================================ */
 
     /* exam1Id IN */
-    private BooleanExpression andExam1Ids(ZzExam2Dto.Request search) {
+    private BooleanExpression baseAndExam1Ids(ZzExam2Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getExam1Ids())
                 ? e.exam1Id.in(search.getExam1Ids()) : null;
     }
 
     /* exam1Id 정확 일치 */
-    private BooleanExpression andExam1Id(ZzExam2Dto.Request search) {
+    private BooleanExpression baseAndExam1Id(ZzExam2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam1Id())
                 ? e.exam1Id.eq(search.getExam1Id()) : null;
     }
 
     /* exam2Id 정확 일치 */
-    private BooleanExpression andExam2Id(ZzExam2Dto.Request search) {
+    private BooleanExpression baseAndExam2Id(ZzExam2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam2Id())
                 ? e.exam2Id.eq(search.getExam2Id()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(ZzExam2Dto.Request search) {
+    private BooleanExpression baseAndSearchValue(ZzExam2Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

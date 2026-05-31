@@ -78,12 +78,12 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyMenuDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andMenuId(search),
-                andMenuTypeCd(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndMenuId(search),
+                baseAndMenuTypeCd(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,12 +108,12 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
         JPAQuery<SyMenuDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andMenuId(search),
-                andMenuTypeCd(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndMenuId(search),
+                baseAndMenuTypeCd(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -121,12 +121,12 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         List<SyMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(m.count()).from(m).where(
-                andSiteId(search),
-                andMenuId(search),
-                andMenuTypeCd(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndMenuId(search),
+                baseAndMenuTypeCd(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyMenuDto.PageResponse res = new SyMenuDto.PageResponse();
@@ -136,36 +136,36 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyMenuDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? m.siteId.eq(search.getSiteId()) : null;
     }
 
     /* menuId 정확 일치 */
-    private BooleanExpression andMenuId(SyMenuDto.Request search) {
+    private BooleanExpression baseAndMenuId(SyMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getMenuId())
                 ? m.menuId.eq(search.getMenuId()) : null;
     }
 
     /* menuTypeCd 정확 일치 */
-    private BooleanExpression andMenuTypeCd(SyMenuDto.Request search) {
+    private BooleanExpression baseAndMenuTypeCd(SyMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getMenuTypeCd())
                 ? m.menuTypeCd.eq(search.getMenuTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(SyMenuDto.Request search) {
+    private BooleanExpression baseAndUseYn(SyMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? m.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyMenuDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyMenuDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -181,7 +181,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyMenuDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyMenuDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -311,8 +311,11 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
             params.put("useYn", search.getUseYn());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",menuCode,")) sql.append("         OR t.menu_code ILIKE '%' || :searchValue || '%'\n");

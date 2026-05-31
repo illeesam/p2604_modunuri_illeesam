@@ -68,10 +68,10 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
 
         JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andProdChgHistId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndProdChgHistId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,10 +96,10 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
 
         JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andProdChgHistId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndProdChgHistId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -110,10 +110,10 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
                 .select(h.count())
                 .from(h)
                 .where(
-                andSiteId(search),
-                andProdChgHistId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndProdChgHistId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -124,24 +124,24 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     /** 검색조건 빌드 — Mapper XML pdhProdChgHistCond 와 동일 동작 */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdhProdChgHistDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdhProdChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? h.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodChgHistId 정확 일치 */
-    private BooleanExpression andProdChgHistId(PdhProdChgHistDto.Request search) {
+    private BooleanExpression baseAndProdChgHistId(PdhProdChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdChgHistId())
                 ? h.prodChgHistId.eq(search.getProdChgHistId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdhProdChgHistDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdhProdChgHistDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -157,7 +157,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdhProdChgHistDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdhProdChgHistDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

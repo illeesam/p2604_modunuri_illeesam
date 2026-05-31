@@ -53,11 +53,11 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     public List<SyBbmDto.Item> selectList(SyBbmDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyBbmDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andBbmId(search),
-                andPathId(search),
-                andTypeCd(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBbmId(search),
+                baseAndPathId(search),
+                baseAndTypeCd(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -79,21 +79,21 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyBbmDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andBbmId(search),
-                andPathId(search),
-                andTypeCd(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBbmId(search),
+                baseAndPathId(search),
+                baseAndTypeCd(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBbmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(b.count()).from(b).where(
-                andSiteId(search),
-                andBbmId(search),
-                andPathId(search),
-                andTypeCd(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBbmId(search),
+                baseAndPathId(search),
+                baseAndTypeCd(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyBbmDto.PageResponse res = new SyBbmDto.PageResponse();
@@ -117,37 +117,37 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyBbmDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? b.siteId.eq(search.getSiteId()) : null;
     }
 
     /* bbmId 정확 일치 */
-    private BooleanExpression andBbmId(SyBbmDto.Request search) {
+    private BooleanExpression baseAndBbmId(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbmId())
                 ? b.bbmId.eq(search.getBbmId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로의 게시판까지 포함 */
-    private BooleanExpression andPathId(SyBbmDto.Request search) {
+    private BooleanExpression baseAndPathId(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? b.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_bbm"))
                 : null;
     }
 
     /* bbmTypeCd 정확 일치 */
-    private BooleanExpression andTypeCd(SyBbmDto.Request search) {
+    private BooleanExpression baseAndTypeCd(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? b.bbmTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyBbmDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyBbmDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -279,8 +279,11 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         params.put("bizCd", "sy_bbm");
 
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",bbmCode,")) sql.append("         OR t.bbm_code ILIKE '%' || :searchValue || '%'\n");

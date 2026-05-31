@@ -50,12 +50,12 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdCategoryProdDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andCategoryProdId(search),
-                andProdId(search),
-                andTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCategoryProdId(search),
+                baseAndProdId(search),
+                baseAndTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -79,12 +79,12 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdCategoryProdDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andCategoryProdId(search),
-                andProdId(search),
-                andTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCategoryProdId(search),
+                baseAndProdId(search),
+                baseAndTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -92,12 +92,12 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         List<PdCategoryProdDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(p.count()).from(p).where(
-                andSiteId(search),
-                andCategoryProdId(search),
-                andProdId(search),
-                andTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCategoryProdId(search),
+                baseAndProdId(search),
+                baseAndTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
@@ -125,36 +125,36 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     /* 카테고리-상품 매핑 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdCategoryProdDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? p.siteId.eq(search.getSiteId()) : null;
     }
 
     /* categoryProdId 정확 일치 */
-    private BooleanExpression andCategoryProdId(PdCategoryProdDto.Request search) {
+    private BooleanExpression baseAndCategoryProdId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getCategoryProdId())
                 ? p.categoryProdId.eq(search.getCategoryProdId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression andProdId(PdCategoryProdDto.Request search) {
+    private BooleanExpression baseAndProdId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? p.prodId.eq(search.getProdId()) : null;
     }
 
     /* categoryProdTypeCd 정확 일치 */
-    private BooleanExpression andTypeCd(PdCategoryProdDto.Request search) {
+    private BooleanExpression baseAndTypeCd(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? p.categoryProdTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdCategoryProdDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdCategoryProdDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -170,7 +170,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdCategoryProdDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdCategoryProdDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

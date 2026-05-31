@@ -60,11 +60,11 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andChattRoomId(search),
-                andMemberId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndChattRoomId(search),
+                baseAndMemberId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,11 +89,11 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
         JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andChattRoomId(search),
-                andMemberId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndChattRoomId(search),
+                baseAndMemberId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -104,11 +104,11 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
                 .select(r.count())
                 .from(r)
                 .where(
-                andSiteId(search),
-                andChattRoomId(search),
-                andMemberId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndChattRoomId(search),
+                baseAndMemberId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -120,30 +120,30 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(CmChattRoomDto.Request search) {
+    private BooleanExpression baseAndSiteId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? r.siteId.eq(search.getSiteId()) : null;
     }
 
     /* chattRoomId 정확 일치 */
-    private BooleanExpression andChattRoomId(CmChattRoomDto.Request search) {
+    private BooleanExpression baseAndChattRoomId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getChattRoomId())
                 ? r.chattRoomId.eq(search.getChattRoomId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression andMemberId(CmChattRoomDto.Request search) {
+    private BooleanExpression baseAndMemberId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? r.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(CmChattRoomDto.Request search) {
+    private BooleanExpression baseAndDateRange(CmChattRoomDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -159,7 +159,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(CmChattRoomDto.Request search) {
+    private BooleanExpression baseAndSearchValue(CmChattRoomDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

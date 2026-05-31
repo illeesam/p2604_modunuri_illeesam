@@ -44,10 +44,10 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andDiscntUsageId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDiscntUsageId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -71,10 +71,10 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andDiscntUsageId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDiscntUsageId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -85,10 +85,10 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 .select(u.count())
                 .from(u)
                 .where(
-                andSiteId(search),
-                andDiscntUsageId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDiscntUsageId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -111,24 +111,24 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmDiscntUsageDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmDiscntUsageDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? u.siteId.eq(search.getSiteId()) : null;
     }
 
     /* discntUsageId 정확 일치 */
-    private BooleanExpression andDiscntUsageId(PmDiscntUsageDto.Request search) {
+    private BooleanExpression baseAndDiscntUsageId(PmDiscntUsageDto.Request search) {
         return search != null && StringUtils.hasText(search.getDiscntUsageId())
                 ? u.discntUsageId.eq(search.getDiscntUsageId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmDiscntUsageDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmDiscntUsageDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -144,7 +144,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmDiscntUsageDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmDiscntUsageDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

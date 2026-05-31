@@ -61,11 +61,11 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andBlogCateId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBlogCateId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -90,11 +90,11 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
         JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andBlogCateId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBlogCateId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -105,11 +105,11 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
                 .select(c.count())
                 .from(c)
                 .where(
-                andSiteId(search),
-                andBlogCateId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBlogCateId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -120,30 +120,30 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(CmBlogCateDto.Request search) {
+    private BooleanExpression baseAndSiteId(CmBlogCateDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* blogCateId 정확 일치 */
-    private BooleanExpression andBlogCateId(CmBlogCateDto.Request search) {
+    private BooleanExpression baseAndBlogCateId(CmBlogCateDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogCateId())
                 ? c.blogCateId.eq(search.getBlogCateId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(CmBlogCateDto.Request search) {
+    private BooleanExpression baseAndUseYn(CmBlogCateDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? c.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(CmBlogCateDto.Request search) {
+    private BooleanExpression baseAndDateRange(CmBlogCateDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -159,7 +159,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(CmBlogCateDto.Request search) {
+    private BooleanExpression baseAndSearchValue(CmBlogCateDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

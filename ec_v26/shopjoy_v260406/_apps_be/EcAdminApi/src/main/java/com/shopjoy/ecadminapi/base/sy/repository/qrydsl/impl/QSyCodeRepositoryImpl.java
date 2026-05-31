@@ -62,14 +62,14 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyCodeDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andCodeId(search),
-                andCodeGrp(search),
-                andCodeValue(search),
-                andParentCodeValue(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCodeId(search),
+                baseAndCodeGrp(search),
+                baseAndCodeValue(search),
+                baseAndParentCodeValue(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -94,14 +94,14 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
         JPAQuery<SyCodeDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andCodeId(search),
-                andCodeGrp(search),
-                andCodeValue(search),
-                andParentCodeValue(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCodeId(search),
+                baseAndCodeGrp(search),
+                baseAndCodeValue(search),
+                baseAndParentCodeValue(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -109,14 +109,14 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         List<SyCodeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(c.count()).from(c).where(
-                andSiteId(search),
-                andCodeId(search),
-                andCodeGrp(search),
-                andCodeValue(search),
-                andParentCodeValue(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndCodeId(search),
+                baseAndCodeGrp(search),
+                baseAndCodeValue(search),
+                baseAndParentCodeValue(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyCodeDto.PageResponse res = new SyCodeDto.PageResponse();
@@ -126,48 +126,48 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyCodeDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* codeId 정확 일치 */
-    private BooleanExpression andCodeId(SyCodeDto.Request search) {
+    private BooleanExpression baseAndCodeId(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeId())
                 ? c.codeId.eq(search.getCodeId()) : null;
     }
 
     /* codeGrp 정확 일치 */
-    private BooleanExpression andCodeGrp(SyCodeDto.Request search) {
+    private BooleanExpression baseAndCodeGrp(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeGrp())
                 ? c.codeGrp.eq(search.getCodeGrp()) : null;
     }
 
     /* codeValue 정확 일치 */
-    private BooleanExpression andCodeValue(SyCodeDto.Request search) {
+    private BooleanExpression baseAndCodeValue(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeValue())
                 ? c.codeValue.eq(search.getCodeValue()) : null;
     }
 
     /* parentCodeValue 정확 일치 */
-    private BooleanExpression andParentCodeValue(SyCodeDto.Request search) {
+    private BooleanExpression baseAndParentCodeValue(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentCodeValue())
                 ? c.parentCodeValue.eq(search.getParentCodeValue()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(SyCodeDto.Request search) {
+    private BooleanExpression baseAndUseYn(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? c.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyCodeDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyCodeDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -183,7 +183,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyCodeDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyCodeDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

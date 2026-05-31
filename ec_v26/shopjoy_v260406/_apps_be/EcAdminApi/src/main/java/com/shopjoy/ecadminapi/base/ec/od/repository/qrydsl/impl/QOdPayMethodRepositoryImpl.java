@@ -50,9 +50,9 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdPayMethodDto.Item> query = baseListQuery().where(
-                andPayMethodId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndPayMethodId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -76,9 +76,9 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdPayMethodDto.Item> query = baseListQuery().where(
-                andPayMethodId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndPayMethodId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,9 +89,9 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 .select(m.count())
                 .from(m)
                 .where(
-                andPayMethodId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndPayMethodId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -120,13 +120,13 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
      * ============================================================ */
 
     /* payMethodId 정확 일치 */
-    private BooleanExpression andPayMethodId(OdPayMethodDto.Request search) {
+    private BooleanExpression baseAndPayMethodId(OdPayMethodDto.Request search) {
         return search != null && StringUtils.hasText(search.getPayMethodId())
                 ? m.payMethodId.eq(search.getPayMethodId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(OdPayMethodDto.Request search) {
+    private BooleanExpression baseAndDateRange(OdPayMethodDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -142,7 +142,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(OdPayMethodDto.Request search) {
+    private BooleanExpression baseAndSearchValue(OdPayMethodDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -43,8 +43,8 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
     public List<SyAttachGrpDto.Item> selectList(SyAttachGrpDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyAttachGrpDto.Item> query = baseQuery().where(
-                andAttachGrpId(search),
-                andSearchValue(search)
+                baseAndAttachGrpId(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -66,15 +66,15 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyAttachGrpDto.Item> query = baseQuery().where(
-                andAttachGrpId(search),
-                andSearchValue(search)
+                baseAndAttachGrpId(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachGrpDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(g.count()).from(g).where(
-                andAttachGrpId(search),
-                andSearchValue(search)
+                baseAndAttachGrpId(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyAttachGrpDto.PageResponse res = new SyAttachGrpDto.PageResponse();
@@ -100,13 +100,13 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
      * ============================================================ */
 
     /* attachGrpId 정확 일치 */
-    private BooleanExpression andAttachGrpId(SyAttachGrpDto.Request search) {
+    private BooleanExpression baseAndAttachGrpId(SyAttachGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getAttachGrpId())
                 ? g.attachGrpId.eq(search.getAttachGrpId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyAttachGrpDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyAttachGrpDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

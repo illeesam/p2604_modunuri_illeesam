@@ -47,10 +47,10 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     public List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andLogId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLogId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -68,19 +68,19 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<MbhMemberTokenLogDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andLogId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLogId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbhMemberTokenLogDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
         Long total = queryFactory.select(l.count()).from(l).where(
-                andSiteId(search),
-                andLogId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLogId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         MbhMemberTokenLogDto.PageResponse res = new MbhMemberTokenLogDto.PageResponse();
@@ -112,24 +112,24 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     /* searchType 사용 예  searchType = "memberId" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(MbhMemberTokenLogDto.Request search) {
+    private BooleanExpression baseAndSiteId(MbhMemberTokenLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? l.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
-    private BooleanExpression andLogId(MbhMemberTokenLogDto.Request search) {
+    private BooleanExpression baseAndLogId(MbhMemberTokenLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
                 ? l.logId.eq(search.getLogId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(MbhMemberTokenLogDto.Request search) {
+    private BooleanExpression baseAndDateRange(MbhMemberTokenLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -144,7 +144,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(MbhMemberTokenLogDto.Request search) {
+    private BooleanExpression baseAndSearchValue(MbhMemberTokenLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

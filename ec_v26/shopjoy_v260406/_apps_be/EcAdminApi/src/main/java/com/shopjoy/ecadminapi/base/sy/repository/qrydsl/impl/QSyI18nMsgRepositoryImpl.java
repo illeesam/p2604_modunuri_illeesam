@@ -43,10 +43,10 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     public List<SyI18nMsgDto.Item> selectList(SyI18nMsgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(
-                andI18nMsgId(search),
-                andI18nId(search),
-                andLangCd(search),
-                andSearchValue(search)
+                baseAndI18nMsgId(search),
+                baseAndI18nId(search),
+                baseAndLangCd(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -68,19 +68,19 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(
-                andI18nMsgId(search),
-                andI18nId(search),
-                andLangCd(search),
-                andSearchValue(search)
+                baseAndI18nMsgId(search),
+                baseAndI18nId(search),
+                baseAndLangCd(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyI18nMsgDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(m.count()).from(m).where(
-                andI18nMsgId(search),
-                andI18nId(search),
-                andLangCd(search),
-                andSearchValue(search)
+                baseAndI18nMsgId(search),
+                baseAndI18nId(search),
+                baseAndLangCd(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyI18nMsgDto.PageResponse res = new SyI18nMsgDto.PageResponse();
@@ -105,25 +105,25 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
      * ============================================================ */
 
     /* i18nMsgId 정확 일치 */
-    private BooleanExpression andI18nMsgId(SyI18nMsgDto.Request search) {
+    private BooleanExpression baseAndI18nMsgId(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nMsgId())
                 ? m.i18nMsgId.eq(search.getI18nMsgId()) : null;
     }
 
     /* i18nId 정확 일치 */
-    private BooleanExpression andI18nId(SyI18nMsgDto.Request search) {
+    private BooleanExpression baseAndI18nId(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nId())
                 ? m.i18nId.eq(search.getI18nId()) : null;
     }
 
     /* langCd 정확 일치 */
-    private BooleanExpression andLangCd(SyI18nMsgDto.Request search) {
+    private BooleanExpression baseAndLangCd(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getLangCd())
                 ? m.langCd.eq(search.getLangCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyI18nMsgDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyI18nMsgDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

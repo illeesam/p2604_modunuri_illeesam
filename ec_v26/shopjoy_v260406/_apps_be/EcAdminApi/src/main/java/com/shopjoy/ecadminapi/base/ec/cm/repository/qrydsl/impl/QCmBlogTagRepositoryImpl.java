@@ -58,12 +58,12 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogTagDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andBlogIds(search),
-                andBlogId(search),
-                andSiteId(search),
-                andBlogTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndBlogIds(search),
+                baseAndBlogId(search),
+                baseAndSiteId(search),
+                baseAndBlogTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,12 +88,12 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
 
         JPAQuery<CmBlogTagDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andBlogIds(search),
-                andBlogId(search),
-                andSiteId(search),
-                andBlogTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndBlogIds(search),
+                baseAndBlogId(search),
+                baseAndSiteId(search),
+                baseAndBlogTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -104,12 +104,12 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
                 .select(t.count())
                 .from(t)
                 .where(
-                andBlogIds(search),
-                andBlogId(search),
-                andSiteId(search),
-                andBlogTagId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndBlogIds(search),
+                baseAndBlogId(search),
+                baseAndSiteId(search),
+                baseAndBlogTagId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -121,36 +121,36 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* blogId IN */
-    private BooleanExpression andBlogIds(CmBlogTagDto.Request search) {
+    private BooleanExpression baseAndBlogIds(CmBlogTagDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getBlogIds())
                 ? t.blogId.in(search.getBlogIds()) : null;
     }
 
     /* blogId 정확 일치 */
-    private BooleanExpression andBlogId(CmBlogTagDto.Request search) {
+    private BooleanExpression baseAndBlogId(CmBlogTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogId())
                 ? t.blogId.eq(search.getBlogId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(CmBlogTagDto.Request search) {
+    private BooleanExpression baseAndSiteId(CmBlogTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? t.siteId.eq(search.getSiteId()) : null;
     }
 
     /* blogTagId 정확 일치 */
-    private BooleanExpression andBlogTagId(CmBlogTagDto.Request search) {
+    private BooleanExpression baseAndBlogTagId(CmBlogTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogTagId())
                 ? t.blogTagId.eq(search.getBlogTagId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(CmBlogTagDto.Request search) {
+    private BooleanExpression baseAndDateRange(CmBlogTagDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -166,7 +166,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(CmBlogTagDto.Request search) {
+    private BooleanExpression baseAndSearchValue(CmBlogTagDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

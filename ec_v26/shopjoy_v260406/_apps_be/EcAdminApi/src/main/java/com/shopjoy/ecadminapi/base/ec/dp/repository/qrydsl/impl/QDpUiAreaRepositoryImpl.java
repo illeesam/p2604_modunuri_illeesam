@@ -45,10 +45,10 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<DpUiAreaDto.Item> query = baseQuery().where(
-                andUiAreaId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUiAreaId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -72,10 +72,10 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<DpUiAreaDto.Item> query = baseQuery().where(
-                andUiAreaId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUiAreaId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -83,10 +83,10 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         List<DpUiAreaDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(a.count()).from(a).where(
-                andUiAreaId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUiAreaId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         DpUiAreaDto.PageResponse res = new DpUiAreaDto.PageResponse();
@@ -113,19 +113,19 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
      * ============================================================ */
 
     /* uiAreaId 정확 일치 */
-    private BooleanExpression andUiAreaId(DpUiAreaDto.Request search) {
+    private BooleanExpression baseAndUiAreaId(DpUiAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiAreaId())
                 ? a.uiAreaId.eq(search.getUiAreaId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(DpUiAreaDto.Request search) {
+    private BooleanExpression baseAndUseYn(DpUiAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(DpUiAreaDto.Request search) {
+    private BooleanExpression baseAndDateRange(DpUiAreaDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -141,7 +141,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(DpUiAreaDto.Request search) {
+    private BooleanExpression baseAndSearchValue(DpUiAreaDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -56,9 +56,9 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdhOrderStatusHistDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andOrderStatusHistId(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndOrderStatusHistId(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -82,9 +82,9 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<OdhOrderStatusHistDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andOrderStatusHistId(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndOrderStatusHistId(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -92,9 +92,9 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         List<OdhOrderStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(h.count()).from(h).where(
-                andSiteId(search),
-                andOrderStatusHistId(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndOrderStatusHistId(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         OdhOrderStatusHistDto.PageResponse res = new OdhOrderStatusHistDto.PageResponse();
@@ -104,24 +104,24 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
     /* 주문 상태 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(OdhOrderStatusHistDto.Request search) {
+    private BooleanExpression baseAndSiteId(OdhOrderStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? h.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderStatusHistId 정확 일치 */
-    private BooleanExpression andOrderStatusHistId(OdhOrderStatusHistDto.Request search) {
+    private BooleanExpression baseAndOrderStatusHistId(OdhOrderStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderStatusHistId())
                 ? h.orderStatusHistId.eq(search.getOrderStatusHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(OdhOrderStatusHistDto.Request search) {
+    private BooleanExpression baseAndSearchValue(OdhOrderStatusHistDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

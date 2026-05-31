@@ -75,12 +75,12 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         JPAQuery<SySiteDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        andSiteId(search),
-                        andPathId(search),
-                        andStatus(search),
-                        andTypeCd(search),
-                        andDateRange(search),
-                        andSearchValue(search)
+                        baseAndSiteId(search),
+                        baseAndPathId(search),
+                        baseAndStatus(search),
+                        baseAndTypeCd(search),
+                        baseAndDateRange(search),
+                        baseAndSearchValue(search)
                 );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -106,12 +106,12 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         JPAQuery<SySiteDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
                 .where(
-                        andSiteId(search),
-                        andPathId(search),
-                        andStatus(search),
-                        andTypeCd(search),
-                        andDateRange(search),
-                        andSearchValue(search)
+                        baseAndSiteId(search),
+                        baseAndPathId(search),
+                        baseAndStatus(search),
+                        baseAndTypeCd(search),
+                        baseAndDateRange(search),
+                        baseAndSearchValue(search)
                 );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -121,12 +121,12 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         Long total = queryFactory.select(s.count()).from(s)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: count")
                 .where(
-                        andSiteId(search),
-                        andPathId(search),
-                        andStatus(search),
-                        andTypeCd(search),
-                        andDateRange(search),
-                        andSearchValue(search)
+                        baseAndSiteId(search),
+                        baseAndPathId(search),
+                        baseAndStatus(search),
+                        baseAndTypeCd(search),
+                        baseAndDateRange(search),
+                        baseAndSearchValue(search)
                 ).fetchOne();
 
         SySiteDto.PageResponse res = new SySiteDto.PageResponse();
@@ -136,37 +136,37 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), baseAndDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SySiteDto.Request search) {
+    private BooleanExpression baseAndSiteId(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? s.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SySiteDto.Request search) {
+    private BooleanExpression baseAndPathId(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? s.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_site"))
                 : null;
     }
 
     /* siteStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SySiteDto.Request search) {
+    private BooleanExpression baseAndStatus(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? s.siteStatusCd.eq(search.getStatus()) : null;
     }
 
     /* siteTypeCd 정확 일치 */
-    private BooleanExpression andTypeCd(SySiteDto.Request search) {
+    private BooleanExpression baseAndTypeCd(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? s.siteTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SySiteDto.Request search) {
+    private BooleanExpression baseAndDateRange(SySiteDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -182,7 +182,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SySiteDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SySiteDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -321,36 +321,11 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 """);
         params.put("bizCd", "sy_site");
 
-        /* 검색조건 — if 분기로 SQL 조각 + 파라미터 함께 추가 */
-        if (search != null && StringUtils.hasText(search.getStatus())) {
-            sql.append("      AND s.site_status_cd = :statusCd \n");
-            params.put("statusCd", search.getStatus());
-        }
-        if (search != null && StringUtils.hasText(search.getTypeCd())) {
-            sql.append("      AND s.site_type_cd   = :typeCd \n");
-            params.put("typeCd", search.getTypeCd());
-        }
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
-            sql.append("      AND ( \n");
-            sql.append("            1=0 \n");
-            if (noType || searchType.contains(",siteCode,"))   sql.append("         OR s.site_code   ILIKE '%' || :searchValue || '%' \n");
-            if (noType || searchType.contains(",siteNm,"))     sql.append("         OR s.site_nm     ILIKE '%' || :searchValue || '%' \n");
-            if (noType || searchType.contains(",siteDomain,")) sql.append("         OR s.site_domain ILIKE '%' || :searchValue || '%' \n");
-            if (noType || searchType.contains(",siteEmail,"))  sql.append("         OR s.site_email  ILIKE '%' || :searchValue || '%' \n");
-            if (noType || searchType.contains(",siteCeo,"))    sql.append("         OR s.site_ceo    ILIKE '%' || :searchValue || '%' \n");
-            sql.append("      ) \n");
-            params.put("searchValue", search.getSearchValue());
-        }
-        if (search != null && StringUtils.hasText(search.getDateStart())) {
-            sql.append("      AND s.reg_date >= CAST(:dateStart AS timestamp) \n");
-            params.put("dateStart", search.getDateStart());
-        }
-        if (search != null && StringUtils.hasText(search.getDateEnd())) {
-            sql.append("      AND s.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
-            params.put("dateEnd", search.getDateEnd());
-        }
+        /* 검색조건 — fpstAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 (네이밍은 QueryDSL andXxx() 와 구분) */
+        fpstAndStatus(search, sql, params);
+        fpstAndTypeCd(search, sql, params);
+        fpstAndSearchValue(search, sql, params);
+        fpstAndDateRange(search, sql, params);
 
         /* CTE 닫기 + 메인 UNION ALL 3블록 */
         sql.append("""
@@ -386,5 +361,56 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
             result.add(m);
         }
         return result;
+    }
+
+    /* ============================================================
+     * findPathSiteTreeNodeCounts 전용 SQL 조건 헬퍼 (sql prefix)
+     *   - QueryDSL andXxx() (BooleanExpression 반환) 과 구분하기 위해 fpstAnd* 사용
+     *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
+     * ============================================================ */
+
+    /* AND s.site_status_cd = :statusCd */
+    private void fpstAndStatus(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getStatus())) return;
+        sql.append("      AND s.site_status_cd = :statusCd \n");
+        p.put("statusCd", s.getStatus());
+    }
+
+    /* AND s.site_type_cd = :typeCd */
+    private void fpstAndTypeCd(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getTypeCd())) return;
+        sql.append("      AND s.site_type_cd   = :typeCd \n");
+        p.put("typeCd", s.getTypeCd());
+    }
+
+    /* AND ( OR s.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기
+     *   searchType 은 ",a,b,c," 양끝 콤마 wrap 후 contains() 매칭 — "a"/"c" 같은 양끝 토큰 누락 방지 */
+    private void fpstAndSearchValue(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
+        String raw = s.getSearchType();
+        boolean noType = !StringUtils.hasText(raw);
+        String st = noType ? "" : "," + raw.trim() + ",";
+        sql.append("      AND ( \n");
+        sql.append("            1=0 \n");
+        if (noType || st.contains(",siteCode,"))   sql.append("         OR s.site_code   ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteNm,"))     sql.append("         OR s.site_nm     ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteDomain,")) sql.append("         OR s.site_domain ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteEmail,"))  sql.append("         OR s.site_email  ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteCeo,"))    sql.append("         OR s.site_ceo    ILIKE '%' || :searchValue || '%' \n");
+        sql.append("      ) \n");
+        p.put("searchValue", s.getSearchValue());
+    }
+
+    /* AND s.reg_date >= :dateStart AND s.reg_date <= :dateEnd + 1 day */
+    private void fpstAndDateRange(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null) return;
+        if (StringUtils.hasText(s.getDateStart())) {
+            sql.append("      AND s.reg_date >= CAST(:dateStart AS timestamp) \n");
+            p.put("dateStart", s.getDateStart());
+        }
+        if (StringUtils.hasText(s.getDateEnd())) {
+            sql.append("      AND s.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
+            p.put("dateEnd", s.getDateEnd());
+        }
     }
 }

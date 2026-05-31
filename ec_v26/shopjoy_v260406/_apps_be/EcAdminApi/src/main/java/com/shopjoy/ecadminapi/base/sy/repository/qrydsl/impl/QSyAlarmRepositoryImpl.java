@@ -58,12 +58,12 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     public List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andAlarmId(search),
-                andStatus(search),
-                andTypeCd(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndAlarmId(search),
+                baseAndStatus(search),
+                baseAndTypeCd(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -85,23 +85,23 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andAlarmId(search),
-                andStatus(search),
-                andTypeCd(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndAlarmId(search),
+                baseAndStatus(search),
+                baseAndTypeCd(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAlarmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(a.count()).from(a).where(
-                andSiteId(search),
-                andPathId(search),
-                andAlarmId(search),
-                andStatus(search),
-                andTypeCd(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndAlarmId(search),
+                baseAndStatus(search),
+                baseAndTypeCd(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyAlarmDto.PageResponse res = new SyAlarmDto.PageResponse();
@@ -131,43 +131,43 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyAlarmDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SyAlarmDto.Request search) {
+    private BooleanExpression baseAndPathId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_alarm"))
                 : null;
     }
 
     /* alarmId 정확 일치 */
-    private BooleanExpression andAlarmId(SyAlarmDto.Request search) {
+    private BooleanExpression baseAndAlarmId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getAlarmId())
                 ? a.alarmId.eq(search.getAlarmId()) : null;
     }
 
     /* alarmStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyAlarmDto.Request search) {
+    private BooleanExpression baseAndStatus(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? a.alarmStatusCd.eq(search.getStatus()) : null;
     }
 
     /* alarmTypeCd 정확 일치 */
-    private BooleanExpression andTypeCd(SyAlarmDto.Request search) {
+    private BooleanExpression baseAndTypeCd(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? a.alarmTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyAlarmDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyAlarmDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -296,8 +296,11 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
             params.put("statusCd", search.getStatus());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",alarmTitle,")) sql.append("         OR t.alarm_title ILIKE '%' || :searchValue || '%'\n");

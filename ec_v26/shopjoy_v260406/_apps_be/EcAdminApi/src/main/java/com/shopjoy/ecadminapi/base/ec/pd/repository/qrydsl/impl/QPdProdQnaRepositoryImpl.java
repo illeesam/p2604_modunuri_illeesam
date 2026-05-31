@@ -46,12 +46,12 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdQnaDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andQnaId(search),
-                andProdId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndQnaId(search),
+                baseAndProdId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -75,12 +75,12 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdQnaDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andQnaId(search),
-                andProdId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndQnaId(search),
+                baseAndProdId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,12 +88,12 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         List<PdProdQnaDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(q.count()).from(q).where(
-                andSiteId(search),
-                andQnaId(search),
-                andProdId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndQnaId(search),
+                baseAndProdId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdProdQnaDto.PageResponse res = new PdProdQnaDto.PageResponse();
@@ -117,36 +117,36 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdProdQnaDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? q.siteId.eq(search.getSiteId()) : null;
     }
 
     /* qnaId 정확 일치 */
-    private BooleanExpression andQnaId(PdProdQnaDto.Request search) {
+    private BooleanExpression baseAndQnaId(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getQnaId())
                 ? q.qnaId.eq(search.getQnaId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression andProdId(PdProdQnaDto.Request search) {
+    private BooleanExpression baseAndProdId(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? q.prodId.eq(search.getProdId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(PdProdQnaDto.Request search) {
+    private BooleanExpression baseAndUseYn(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? q.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdProdQnaDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdProdQnaDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -162,7 +162,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdProdQnaDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdProdQnaDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

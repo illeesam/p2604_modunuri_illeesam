@@ -47,12 +47,12 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdReviewCommentDto.Item> query = baseQuery().where(
-                andReviewIds(search),
-                andReviewId(search),
-                andSiteId(search),
-                andReviewCommentId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndReviewIds(search),
+                baseAndReviewId(search),
+                baseAndSiteId(search),
+                baseAndReviewCommentId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -76,12 +76,12 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdReviewCommentDto.Item> query = baseQuery().where(
-                andReviewIds(search),
-                andReviewId(search),
-                andSiteId(search),
-                andReviewCommentId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndReviewIds(search),
+                baseAndReviewId(search),
+                baseAndSiteId(search),
+                baseAndReviewCommentId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,12 +89,12 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         List<PdReviewCommentDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(c.count()).from(c).where(
-                andReviewIds(search),
-                andReviewId(search),
-                andSiteId(search),
-                andReviewCommentId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndReviewIds(search),
+                baseAndReviewId(search),
+                baseAndSiteId(search),
+                baseAndReviewCommentId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdReviewCommentDto.PageResponse res = new PdReviewCommentDto.PageResponse();
@@ -117,36 +117,36 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* reviewId IN */
-    private BooleanExpression andReviewIds(PdReviewCommentDto.Request search) {
+    private BooleanExpression baseAndReviewIds(PdReviewCommentDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getReviewIds())
                 ? c.reviewId.in(search.getReviewIds()) : null;
     }
 
     /* reviewId 정확 일치 */
-    private BooleanExpression andReviewId(PdReviewCommentDto.Request search) {
+    private BooleanExpression baseAndReviewId(PdReviewCommentDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewId())
                 ? c.reviewId.eq(search.getReviewId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdReviewCommentDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdReviewCommentDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reviewCommentId 정확 일치 */
-    private BooleanExpression andReviewCommentId(PdReviewCommentDto.Request search) {
+    private BooleanExpression baseAndReviewCommentId(PdReviewCommentDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewCommentId())
                 ? c.reviewCommentId.eq(search.getReviewCommentId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdReviewCommentDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdReviewCommentDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -162,7 +162,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdReviewCommentDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdReviewCommentDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

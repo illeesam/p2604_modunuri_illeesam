@@ -42,10 +42,10 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     public List<MbMemberGroupDto.Item> selectList(MbMemberGroupDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<MbMemberGroupDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andMemberGroupId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndMemberGroupId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -63,19 +63,19 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<MbMemberGroupDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andMemberGroupId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndMemberGroupId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberGroupDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
         Long total = queryFactory.select(g.count()).from(g).where(
-                andSiteId(search),
-                andMemberGroupId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndMemberGroupId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         MbMemberGroupDto.PageResponse res = new MbMemberGroupDto.PageResponse();
@@ -96,24 +96,24 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(MbMemberGroupDto.Request search) {
+    private BooleanExpression baseAndSiteId(MbMemberGroupDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? g.siteId.eq(search.getSiteId()) : null;
     }
 
     /* memberGroupId 정확 일치 */
-    private BooleanExpression andMemberGroupId(MbMemberGroupDto.Request search) {
+    private BooleanExpression baseAndMemberGroupId(MbMemberGroupDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberGroupId())
                 ? g.memberGroupId.eq(search.getMemberGroupId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(MbMemberGroupDto.Request search) {
+    private BooleanExpression baseAndDateRange(MbMemberGroupDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -129,7 +129,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(MbMemberGroupDto.Request search) {
+    private BooleanExpression baseAndSearchValue(MbMemberGroupDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -40,9 +40,9 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     @Override
     public List<SyPathDto.Item> selectList(SyPathDto.Request search) {
         JPAQuery<SyPathDto.Item> query = baseQuery().where(
-                andBizCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndBizCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         // default order: sort_ord ASC, path_id ASC
         query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
@@ -63,17 +63,17 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         JPAQuery<SyPathDto.Item> query = baseQuery().where(
-                andBizCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndBizCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         query = query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         List<SyPathDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(p.count()).from(p).where(
-                andBizCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndBizCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyPathDto.PageResponse res = new SyPathDto.PageResponse();
@@ -99,19 +99,19 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
      * ============================================================ */
 
     /* bizCd 정확 일치 */
-    private BooleanExpression andBizCd(SyPathDto.Request search) {
+    private BooleanExpression baseAndBizCd(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getBizCd())
                 ? p.bizCd.eq(search.getBizCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(SyPathDto.Request search) {
+    private BooleanExpression baseAndUseYn(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? p.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyPathDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyPathDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

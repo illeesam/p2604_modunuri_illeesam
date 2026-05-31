@@ -85,13 +85,13 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
 
         JPAQuery<ZzSample3Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSample1Ids(search),
-                andSample2Ids(search),
-                andSample3Id(search),
-                andSample1Id(search),
-                andSample2Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample1Ids(search),
+                baseAndSample2Ids(search),
+                baseAndSample3Id(search),
+                baseAndSample1Id(search),
+                baseAndSample2Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -116,13 +116,13 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
 
         JPAQuery<ZzSample3Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSample1Ids(search),
-                andSample2Ids(search),
-                andSample3Id(search),
-                andSample1Id(search),
-                andSample2Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample1Ids(search),
+                baseAndSample2Ids(search),
+                baseAndSample3Id(search),
+                baseAndSample1Id(search),
+                baseAndSample2Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -133,13 +133,13 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
                 .select(s.count())
                 .from(s)
                 .where(
-                andSample1Ids(search),
-                andSample2Ids(search),
-                andSample3Id(search),
-                andSample1Id(search),
-                andSample2Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample1Ids(search),
+                baseAndSample2Ids(search),
+                baseAndSample3Id(search),
+                baseAndSample1Id(search),
+                baseAndSample2Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -155,43 +155,43 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
      * ============================================================ */
 
     /* sample1Id IN */
-    private BooleanExpression andSample1Ids(ZzSample3Dto.Request search) {
+    private BooleanExpression baseAndSample1Ids(ZzSample3Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getSample1Ids())
                 ? s.sample1Id.in(search.getSample1Ids()) : null;
     }
 
     /* sample2Id IN */
-    private BooleanExpression andSample2Ids(ZzSample3Dto.Request search) {
+    private BooleanExpression baseAndSample2Ids(ZzSample3Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getSample2Ids())
                 ? s.sample2Id.in(search.getSample2Ids()) : null;
     }
 
     /* sample3Id 정확 일치 */
-    private BooleanExpression andSample3Id(ZzSample3Dto.Request search) {
+    private BooleanExpression baseAndSample3Id(ZzSample3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample3Id())
                 ? s.sample3Id.eq(search.getSample3Id()) : null;
     }
 
     /* sample1Id 정확 일치 */
-    private BooleanExpression andSample1Id(ZzSample3Dto.Request search) {
+    private BooleanExpression baseAndSample1Id(ZzSample3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample1Id())
                 ? s.sample1Id.eq(search.getSample1Id()) : null;
     }
 
     /* sample2Id 정확 일치 */
-    private BooleanExpression andSample2Id(ZzSample3Dto.Request search) {
+    private BooleanExpression baseAndSample2Id(ZzSample3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample2Id())
                 ? s.sample2Id.eq(search.getSample2Id()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(ZzSample3Dto.Request search) {
+    private BooleanExpression baseAndUseYn(ZzSample3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? s.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(ZzSample3Dto.Request search) {
+    private BooleanExpression baseAndSearchValue(ZzSample3Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -117,11 +117,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         var query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        andSiteId(search),
-                        andDeptId(search),
-                        andStatus(search),
-                        andDateRange(search),
-                        andSearchValue(search)
+                        baseAndSiteId(search),
+                        baseAndDeptId(search),
+                        baseAndStatus(search),
+                        baseAndDateRange(search),
+                        baseAndSearchValue(search)
                 );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -148,11 +148,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         var query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
                 .where(
-                        andSiteId(search),
-                        andDeptId(search),
-                        andStatus(search),
-                        andDateRange(search),
-                        andSearchValue(search)
+                        baseAndSiteId(search),
+                        baseAndDeptId(search),
+                        baseAndStatus(search),
+                        baseAndDateRange(search),
+                        baseAndSearchValue(search)
                 );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -165,11 +165,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 .select(syUser.count())
                 .from(syUser)
                 .where(
-                        andSiteId(search),
-                        andDeptId(search),
-                        andStatus(search),
-                        andDateRange(search),
-                        andSearchValue(search)
+                        baseAndSiteId(search),
+                        baseAndDeptId(search),
+                        baseAndStatus(search),
+                        baseAndDateRange(search),
+                        baseAndSearchValue(search)
                 )
                 .fetchOne();
 
@@ -183,11 +183,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         Long total = queryFactory.select(syUser.count())
                 .from(syUser)
                 .where(
-                        andSiteId(search),
-                        andDeptId(search),
-                        andStatus(search),
-                        andDateRange(search),
-                        andSearchValue(search)
+                        baseAndSiteId(search),
+                        baseAndDeptId(search),
+                        baseAndStatus(search),
+                        baseAndDateRange(search),
+                        baseAndSearchValue(search)
                 )
                 .fetchOne();
         return total == null ? 0L : total;
@@ -195,31 +195,31 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), baseAndDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyUserDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? syUser.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 사용자까지 포함 */
-    private BooleanExpression andDeptId(SyUserDto.Request search) {
+    private BooleanExpression baseAndDeptId(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getDeptId())
                 ? syUser.deptId.in(syDeptRepository.findTreeDeptIds(search.getDeptId()))
                 : null;
     }
 
     /* userStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyUserDto.Request search) {
+    private BooleanExpression baseAndStatus(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syUser.userStatusCd.eq(search.getStatus()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyUserDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyUserDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -236,7 +236,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyUserDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyUserDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -378,8 +378,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
             params.put("statusCd", search.getStatus());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND ( \n");
             sql.append("            1=0 \n");
             if (noType || searchType.contains(",loginId,"))   sql.append("         OR t.login_id   ILIKE '%' || :searchValue || '%' \n");

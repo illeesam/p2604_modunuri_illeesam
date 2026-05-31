@@ -45,9 +45,9 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(
-                andErpVoucherLineId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndErpVoucherLineId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -71,9 +71,9 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(
-                andErpVoucherLineId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndErpVoucherLineId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -84,9 +84,9 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 .select(l.count())
                 .from(l)
                 .where(
-                andErpVoucherLineId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndErpVoucherLineId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -115,13 +115,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
      * ============================================================ */
 
     /* erpVoucherLineId 정확 일치 */
-    private BooleanExpression andErpVoucherLineId(StErpVoucherLineDto.Request search) {
+    private BooleanExpression baseAndErpVoucherLineId(StErpVoucherLineDto.Request search) {
         return search != null && StringUtils.hasText(search.getErpVoucherLineId())
                 ? l.erpVoucherLineId.eq(search.getErpVoucherLineId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(StErpVoucherLineDto.Request search) {
+    private BooleanExpression baseAndDateRange(StErpVoucherLineDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -137,7 +137,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(StErpVoucherLineDto.Request search) {
+    private BooleanExpression baseAndSearchValue(StErpVoucherLineDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

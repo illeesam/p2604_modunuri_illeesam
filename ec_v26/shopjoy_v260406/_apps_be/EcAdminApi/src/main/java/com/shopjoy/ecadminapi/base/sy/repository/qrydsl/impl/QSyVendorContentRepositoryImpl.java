@@ -75,13 +75,13 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andVendorContentId(search),
-                andVendorId(search),
-                andStatus(search),
-                andContentTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndVendorContentId(search),
+                baseAndVendorId(search),
+                baseAndStatus(search),
+                baseAndContentTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -106,13 +106,13 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
 
         JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andVendorContentId(search),
-                andVendorId(search),
-                andStatus(search),
-                andContentTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndVendorContentId(search),
+                baseAndVendorId(search),
+                baseAndStatus(search),
+                baseAndContentTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -120,13 +120,13 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         List<SyVendorContentDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(c.count()).from(c).where(
-                andSiteId(search),
-                andVendorContentId(search),
-                andVendorId(search),
-                andStatus(search),
-                andContentTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndVendorContentId(search),
+                baseAndVendorId(search),
+                baseAndStatus(search),
+                baseAndContentTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyVendorContentDto.PageResponse res = new SyVendorContentDto.PageResponse();
@@ -136,42 +136,42 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyVendorContentDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyVendorContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* vendorContentId 정확 일치 */
-    private BooleanExpression andVendorContentId(SyVendorContentDto.Request search) {
+    private BooleanExpression baseAndVendorContentId(SyVendorContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorContentId())
                 ? c.vendorContentId.eq(search.getVendorContentId()) : null;
     }
 
     /* vendorId 정확 일치 */
-    private BooleanExpression andVendorId(SyVendorContentDto.Request search) {
+    private BooleanExpression baseAndVendorId(SyVendorContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? c.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* vendorContentStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyVendorContentDto.Request search) {
+    private BooleanExpression baseAndStatus(SyVendorContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? c.vendorContentStatusCd.eq(search.getStatus()) : null;
     }
 
     /* contentTypeCd 정확 일치 */
-    private BooleanExpression andContentTypeCd(SyVendorContentDto.Request search) {
+    private BooleanExpression baseAndContentTypeCd(SyVendorContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getContentTypeCd())
                 ? c.contentTypeCd.eq(search.getContentTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyVendorContentDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyVendorContentDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -187,7 +187,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyVendorContentDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyVendorContentDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

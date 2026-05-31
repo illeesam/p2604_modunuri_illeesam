@@ -45,11 +45,11 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmDiscntDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andDiscntId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDiscntId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -73,11 +73,11 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmDiscntDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andDiscntId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDiscntId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,11 +88,11 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 .select(d.count())
                 .from(d)
                 .where(
-                andSiteId(search),
-                andDiscntId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndDiscntId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -120,30 +120,30 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmDiscntDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? d.siteId.eq(search.getSiteId()) : null;
     }
 
     /* discntId 정확 일치 */
-    private BooleanExpression andDiscntId(PmDiscntDto.Request search) {
+    private BooleanExpression baseAndDiscntId(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getDiscntId())
                 ? d.discntId.eq(search.getDiscntId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(PmDiscntDto.Request search) {
+    private BooleanExpression baseAndUseYn(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? d.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmDiscntDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmDiscntDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -159,7 +159,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmDiscntDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmDiscntDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

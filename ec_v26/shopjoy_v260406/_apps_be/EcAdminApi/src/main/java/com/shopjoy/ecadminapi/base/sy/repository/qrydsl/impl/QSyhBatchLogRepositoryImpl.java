@@ -76,10 +76,10 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         JPAQuery<SyhBatchLogDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andBatchLogId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBatchLogId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -104,10 +104,10 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         JPAQuery<SyhBatchLogDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andBatchLogId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBatchLogId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -118,10 +118,10 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                 .select(l.count())
                 .from(l)
                 .where(
-                andSiteId(search),
-                andBatchLogId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndBatchLogId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -132,24 +132,24 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyhBatchLogDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyhBatchLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? l.siteId.eq(search.getSiteId()) : null;
     }
 
     /* batchLogId 정확 일치 */
-    private BooleanExpression andBatchLogId(SyhBatchLogDto.Request search) {
+    private BooleanExpression baseAndBatchLogId(SyhBatchLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getBatchLogId())
                 ? l.batchLogId.eq(search.getBatchLogId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyhBatchLogDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyhBatchLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -165,7 +165,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyhBatchLogDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyhBatchLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

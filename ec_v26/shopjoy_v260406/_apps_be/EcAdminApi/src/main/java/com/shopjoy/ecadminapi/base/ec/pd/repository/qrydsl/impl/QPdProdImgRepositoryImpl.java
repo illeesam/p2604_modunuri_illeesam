@@ -46,12 +46,12 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdImgDto.Item> query = baseQuery().where(
-                andProdIds(search),
-                andProdId(search),
-                andSiteId(search),
-                andProdImgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdIds(search),
+                baseAndProdId(search),
+                baseAndSiteId(search),
+                baseAndProdImgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -75,12 +75,12 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdImgDto.Item> query = baseQuery().where(
-                andProdIds(search),
-                andProdId(search),
-                andSiteId(search),
-                andProdImgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdIds(search),
+                baseAndProdId(search),
+                baseAndSiteId(search),
+                baseAndProdImgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,12 +88,12 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         List<PdProdImgDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(i.count()).from(i).where(
-                andProdIds(search),
-                andProdId(search),
-                andSiteId(search),
-                andProdImgId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndProdIds(search),
+                baseAndProdId(search),
+                baseAndSiteId(search),
+                baseAndProdImgId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdProdImgDto.PageResponse res = new PdProdImgDto.PageResponse();
@@ -127,36 +127,36 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     /* 상품 이미지 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* prodId IN */
-    private BooleanExpression andProdIds(PdProdImgDto.Request search) {
+    private BooleanExpression baseAndProdIds(PdProdImgDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
                 ? i.prodId.in(search.getProdIds()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression andProdId(PdProdImgDto.Request search) {
+    private BooleanExpression baseAndProdId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? i.prodId.eq(search.getProdId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdProdImgDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? i.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodImgId 정확 일치 */
-    private BooleanExpression andProdImgId(PdProdImgDto.Request search) {
+    private BooleanExpression baseAndProdImgId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdImgId())
                 ? i.prodImgId.eq(search.getProdImgId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdProdImgDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdProdImgDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -172,7 +172,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdProdImgDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdProdImgDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -70,12 +70,12 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyBrandDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andPathId(search),
-                andBrandId(search),
-                andVendorId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndBrandId(search),
+                baseAndVendorId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -100,12 +100,12 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
         JPAQuery<SyBrandDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andPathId(search),
-                andBrandId(search),
-                andVendorId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndBrandId(search),
+                baseAndVendorId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -113,12 +113,12 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         List<SyBrandDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(b.count()).from(b).where(
-                andSiteId(search),
-                andPathId(search),
-                andBrandId(search),
-                andVendorId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndBrandId(search),
+                baseAndVendorId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyBrandDto.PageResponse res = new SyBrandDto.PageResponse();
@@ -128,37 +128,37 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyBrandDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? b.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SyBrandDto.Request search) {
+    private BooleanExpression baseAndPathId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? b.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_brand"))
                 : null;
     }
 
     /* brandId 정확 일치 */
-    private BooleanExpression andBrandId(SyBrandDto.Request search) {
+    private BooleanExpression baseAndBrandId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getBrandId())
                 ? b.brandId.eq(search.getBrandId()) : null;
     }
 
     /* vendorId 정확 일치 */
-    private BooleanExpression andVendorId(SyBrandDto.Request search) {
+    private BooleanExpression baseAndVendorId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? b.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyBrandDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyBrandDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -174,7 +174,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyBrandDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyBrandDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -304,8 +304,11 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
             params.put("vendorId", search.getVendorId());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",brandCode,")) sql.append("         OR t.brand_code ILIKE '%' || :searchValue || '%'\n");

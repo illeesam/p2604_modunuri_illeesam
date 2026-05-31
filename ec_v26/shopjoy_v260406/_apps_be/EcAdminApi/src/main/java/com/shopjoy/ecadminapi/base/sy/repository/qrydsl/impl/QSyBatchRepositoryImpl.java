@@ -53,11 +53,11 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     public List<SyBatchDto.Item> selectList(SyBatchDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyBatchDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andBatchId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndBatchId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -79,21 +79,21 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyBatchDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andBatchId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndBatchId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBatchDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(b.count()).from(b).where(
-                andSiteId(search),
-                andPathId(search),
-                andBatchId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndBatchId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyBatchDto.PageResponse res = new SyBatchDto.PageResponse();
@@ -117,37 +117,37 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyBatchDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? b.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SyBatchDto.Request search) {
+    private BooleanExpression baseAndPathId(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? b.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_batch"))
                 : null;
     }
 
     /* batchId 정확 일치 */
-    private BooleanExpression andBatchId(SyBatchDto.Request search) {
+    private BooleanExpression baseAndBatchId(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getBatchId())
                 ? b.batchId.eq(search.getBatchId()) : null;
     }
 
     /* batchStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyBatchDto.Request search) {
+    private BooleanExpression baseAndStatus(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? b.batchStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyBatchDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyBatchDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -277,8 +277,11 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
             params.put("statusCd", search.getStatus());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",batchCode,")) sql.append("         OR t.batch_code ILIKE '%' || :searchValue || '%'\n");

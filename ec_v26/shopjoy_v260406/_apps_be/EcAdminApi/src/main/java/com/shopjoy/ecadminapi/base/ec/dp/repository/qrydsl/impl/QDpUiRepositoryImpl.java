@@ -57,12 +57,12 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<DpUiDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andUiId(search),
-                andDeviceTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndUiId(search),
+                baseAndDeviceTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -86,12 +86,12 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<DpUiDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andUiId(search),
-                andDeviceTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndUiId(search),
+                baseAndDeviceTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,12 +99,12 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         List<DpUiDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(u.count()).from(u).where(
-                andSiteId(search),
-                andPathId(search),
-                andUiId(search),
-                andDeviceTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndUiId(search),
+                baseAndDeviceTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         DpUiDto.PageResponse res = new DpUiDto.PageResponse();
@@ -126,37 +126,37 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(DpUiDto.Request search) {
+    private BooleanExpression baseAndSiteId(DpUiDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? u.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(DpUiDto.Request search) {
+    private BooleanExpression baseAndPathId(DpUiDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? u.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_ui"))
                 : null;
     }
 
     /* uiId 정확 일치 */
-    private BooleanExpression andUiId(DpUiDto.Request search) {
+    private BooleanExpression baseAndUiId(DpUiDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiId())
                 ? u.uiId.eq(search.getUiId()) : null;
     }
 
     /* deviceTypeCd 정확 일치 */
-    private BooleanExpression andDeviceTypeCd(DpUiDto.Request search) {
+    private BooleanExpression baseAndDeviceTypeCd(DpUiDto.Request search) {
         return search != null && StringUtils.hasText(search.getDeviceTypeCd())
                 ? u.deviceTypeCd.eq(search.getDeviceTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(DpUiDto.Request search) {
+    private BooleanExpression baseAndDateRange(DpUiDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -172,7 +172,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(DpUiDto.Request search) {
+    private BooleanExpression baseAndSearchValue(DpUiDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -300,8 +300,11 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
             params.put("useYn", search.getUseYn());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",uiNm,")) sql.append("         OR t.ui_nm ILIKE '%' || :searchValue || '%'\n");

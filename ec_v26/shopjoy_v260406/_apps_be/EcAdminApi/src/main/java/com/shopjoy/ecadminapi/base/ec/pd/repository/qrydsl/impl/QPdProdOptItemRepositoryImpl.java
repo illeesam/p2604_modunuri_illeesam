@@ -49,11 +49,11 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdOptItemDto.Item> query = baseQuery().where(
-                andOptId(search),
-                andSiteId(search),
-                andOptItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOptId(search),
+                baseAndSiteId(search),
+                baseAndOptItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -77,11 +77,11 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdProdOptItemDto.Item> query = baseQuery().where(
-                andOptId(search),
-                andSiteId(search),
-                andOptItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOptId(search),
+                baseAndSiteId(search),
+                baseAndOptItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,11 +89,11 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         List<PdProdOptItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(i.count()).from(i).where(
-                andOptId(search),
-                andSiteId(search),
-                andOptItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndOptId(search),
+                baseAndSiteId(search),
+                baseAndOptItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdProdOptItemDto.PageResponse res = new PdProdOptItemDto.PageResponse();
@@ -126,30 +126,30 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* optId 정확 일치 */
-    private BooleanExpression andOptId(PdProdOptItemDto.Request search) {
+    private BooleanExpression baseAndOptId(PdProdOptItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOptId())
                 ? i.optId.eq(search.getOptId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdProdOptItemDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdProdOptItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? i.siteId.eq(search.getSiteId()) : null;
     }
 
     /* optItemId 정확 일치 */
-    private BooleanExpression andOptItemId(PdProdOptItemDto.Request search) {
+    private BooleanExpression baseAndOptItemId(PdProdOptItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOptItemId())
                 ? i.optItemId.eq(search.getOptItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdProdOptItemDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdProdOptItemDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -165,7 +165,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdProdOptItemDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdProdOptItemDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

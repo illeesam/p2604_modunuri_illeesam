@@ -65,11 +65,11 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmPlanDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPlanId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPlanId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -93,11 +93,11 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmPlanDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPlanId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPlanId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -108,11 +108,11 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 .select(p.count())
                 .from(p)
                 .where(
-                andSiteId(search),
-                andPlanId(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPlanId(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -123,30 +123,30 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmPlanDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmPlanDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? p.siteId.eq(search.getSiteId()) : null;
     }
 
     /* planId 정확 일치 */
-    private BooleanExpression andPlanId(PmPlanDto.Request search) {
+    private BooleanExpression baseAndPlanId(PmPlanDto.Request search) {
         return search != null && StringUtils.hasText(search.getPlanId())
                 ? p.planId.eq(search.getPlanId()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(PmPlanDto.Request search) {
+    private BooleanExpression baseAndUseYn(PmPlanDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? p.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmPlanDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmPlanDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -162,7 +162,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmPlanDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmPlanDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

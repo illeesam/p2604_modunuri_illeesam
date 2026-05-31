@@ -69,10 +69,10 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmVoucherIssueDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andVoucherIssueId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndVoucherIssueId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -96,10 +96,10 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PmVoucherIssueDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andVoucherIssueId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndVoucherIssueId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -110,10 +110,10 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 .select(i.count())
                 .from(i)
                 .where(
-                andSiteId(search),
-                andVoucherIssueId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndVoucherIssueId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -124,24 +124,24 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     /* 바우처(상품권) 발행 이력 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PmVoucherIssueDto.Request search) {
+    private BooleanExpression baseAndSiteId(PmVoucherIssueDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? i.siteId.eq(search.getSiteId()) : null;
     }
 
     /* voucherIssueId 정확 일치 */
-    private BooleanExpression andVoucherIssueId(PmVoucherIssueDto.Request search) {
+    private BooleanExpression baseAndVoucherIssueId(PmVoucherIssueDto.Request search) {
         return search != null && StringUtils.hasText(search.getVoucherIssueId())
                 ? i.voucherIssueId.eq(search.getVoucherIssueId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PmVoucherIssueDto.Request search) {
+    private BooleanExpression baseAndDateRange(PmVoucherIssueDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -158,7 +158,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PmVoucherIssueDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PmVoucherIssueDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

@@ -53,12 +53,12 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     public List<SyTemplateDto.Item> selectList(SyTemplateDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyTemplateDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andTemplateId(search),
-                andTemplateTypeCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndTemplateId(search),
+                baseAndTemplateTypeCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -80,23 +80,23 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyTemplateDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andTemplateId(search),
-                andTemplateTypeCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndTemplateId(search),
+                baseAndTemplateTypeCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyTemplateDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(t.count()).from(t).where(
-                andSiteId(search),
-                andPathId(search),
-                andTemplateId(search),
-                andTemplateTypeCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndTemplateId(search),
+                baseAndTemplateTypeCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyTemplateDto.PageResponse res = new SyTemplateDto.PageResponse();
@@ -119,43 +119,43 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyTemplateDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? t.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SyTemplateDto.Request search) {
+    private BooleanExpression baseAndPathId(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? t.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_template"))
                 : null;
     }
 
     /* templateId 정확 일치 */
-    private BooleanExpression andTemplateId(SyTemplateDto.Request search) {
+    private BooleanExpression baseAndTemplateId(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getTemplateId())
                 ? t.templateId.eq(search.getTemplateId()) : null;
     }
 
     /* templateTypeCd 정확 일치 */
-    private BooleanExpression andTemplateTypeCd(SyTemplateDto.Request search) {
+    private BooleanExpression baseAndTemplateTypeCd(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getTemplateTypeCd())
                 ? t.templateTypeCd.eq(search.getTemplateTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(SyTemplateDto.Request search) {
+    private BooleanExpression baseAndUseYn(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? t.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyTemplateDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyTemplateDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -279,8 +279,11 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
             params.put("useYn", search.getUseYn());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",templateCode,")) sql.append("         OR t.template_code ILIKE '%' || :searchValue || '%'\n");

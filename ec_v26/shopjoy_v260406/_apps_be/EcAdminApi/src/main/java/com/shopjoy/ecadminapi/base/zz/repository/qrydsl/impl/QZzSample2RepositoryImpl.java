@@ -84,12 +84,12 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         JPAQuery<ZzSample2Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSample1Ids(search),
-                andSample2Ids(search),
-                andSample2Id(search),
-                andSample1Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample1Ids(search),
+                baseAndSample2Ids(search),
+                baseAndSample2Id(search),
+                baseAndSample1Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -114,12 +114,12 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
 
         JPAQuery<ZzSample2Dto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSample1Ids(search),
-                andSample2Ids(search),
-                andSample2Id(search),
-                andSample1Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample1Ids(search),
+                baseAndSample2Ids(search),
+                baseAndSample2Id(search),
+                baseAndSample1Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -130,12 +130,12 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
                 .select(s.count())
                 .from(s)
                 .where(
-                andSample1Ids(search),
-                andSample2Ids(search),
-                andSample2Id(search),
-                andSample1Id(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSample1Ids(search),
+                baseAndSample2Ids(search),
+                baseAndSample2Id(search),
+                baseAndSample1Id(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -151,37 +151,37 @@ public class QZzSample2RepositoryImpl implements QZzSample2Repository {
      * ============================================================ */
 
     /* sample1Id IN */
-    private BooleanExpression andSample1Ids(ZzSample2Dto.Request search) {
+    private BooleanExpression baseAndSample1Ids(ZzSample2Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getSample1Ids())
                 ? s.sample1Id.in(search.getSample1Ids()) : null;
     }
 
     /* sample2Id IN */
-    private BooleanExpression andSample2Ids(ZzSample2Dto.Request search) {
+    private BooleanExpression baseAndSample2Ids(ZzSample2Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getSample2Ids())
                 ? s.sample2Id.in(search.getSample2Ids()) : null;
     }
 
     /* sample2Id 정확 일치 */
-    private BooleanExpression andSample2Id(ZzSample2Dto.Request search) {
+    private BooleanExpression baseAndSample2Id(ZzSample2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample2Id())
                 ? s.sample2Id.eq(search.getSample2Id()) : null;
     }
 
     /* sample1Id 정확 일치 */
-    private BooleanExpression andSample1Id(ZzSample2Dto.Request search) {
+    private BooleanExpression baseAndSample1Id(ZzSample2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample1Id())
                 ? s.sample1Id.eq(search.getSample1Id()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(ZzSample2Dto.Request search) {
+    private BooleanExpression baseAndUseYn(ZzSample2Dto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? s.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(ZzSample2Dto.Request search) {
+    private BooleanExpression baseAndSearchValue(ZzSample2Dto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

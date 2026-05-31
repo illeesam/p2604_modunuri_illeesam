@@ -45,7 +45,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     public List<DpWidgetDto.Item> selectList(DpWidgetDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpWidgetDto.Item> query = baseQuery().where(
-                andSearchValue(search)
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -62,12 +62,12 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpWidgetDto.Item> query = baseQuery().where(
-                andSearchValue(search)
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
         Long total = queryFactory.select(w.count()).from(w).where(
-                andSearchValue(search)
+                baseAndSearchValue(search)
         ).fetchOne();
         DpWidgetDto.PageResponse res = new DpWidgetDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -92,7 +92,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
      * ============================================================ */
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(DpWidgetDto.Request search) {
+    private BooleanExpression baseAndSearchValue(DpWidgetDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -226,8 +226,11 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
             params.put("useYn", search.getUseYn());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",widgetNm,")) sql.append("         OR t.widget_nm ILIKE '%' || :searchValue || '%'\n");

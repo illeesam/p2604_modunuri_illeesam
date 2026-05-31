@@ -78,13 +78,13 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyVendorDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andPathId(search),
-                andVendorId(search),
-                andStatus(search),
-                andVendorClassCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndVendorId(search),
+                baseAndStatus(search),
+                baseAndVendorClassCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -109,13 +109,13 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
         JPAQuery<SyVendorDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andPathId(search),
-                andVendorId(search),
-                andStatus(search),
-                andVendorClassCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndVendorId(search),
+                baseAndStatus(search),
+                baseAndVendorClassCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -123,13 +123,13 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         List<SyVendorDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(v.count()).from(v).where(
-                andSiteId(search),
-                andPathId(search),
-                andVendorId(search),
-                andStatus(search),
-                andVendorClassCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndVendorId(search),
+                baseAndStatus(search),
+                baseAndVendorClassCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyVendorDto.PageResponse res = new SyVendorDto.PageResponse();
@@ -139,43 +139,43 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyVendorDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? v.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SyVendorDto.Request search) {
+    private BooleanExpression baseAndPathId(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? v.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_vendor"))
                 : null;
     }
 
     /* vendorId 정확 일치 */
-    private BooleanExpression andVendorId(SyVendorDto.Request search) {
+    private BooleanExpression baseAndVendorId(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
                 ? v.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* vendorStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyVendorDto.Request search) {
+    private BooleanExpression baseAndStatus(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? v.vendorStatusCd.eq(search.getStatus()) : null;
     }
 
     /* vendorClassCd 정확 일치 */
-    private BooleanExpression andVendorClassCd(SyVendorDto.Request search) {
+    private BooleanExpression baseAndVendorClassCd(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorClassCd())
                 ? v.vendorClassCd.eq(search.getVendorClassCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyVendorDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyVendorDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -191,7 +191,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyVendorDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyVendorDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -345,8 +345,11 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
             params.put("statusCd", search.getStatus());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",vendorNm,")) sql.append("         OR t.vendor_nm ILIKE '%' || :searchValue || '%'\n");

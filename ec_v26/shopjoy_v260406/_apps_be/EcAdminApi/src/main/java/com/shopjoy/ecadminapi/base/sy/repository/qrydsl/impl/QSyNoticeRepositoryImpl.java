@@ -45,12 +45,12 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyNoticeDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andNoticeId(search),
-                andStatus(search),
-                andNoticeTypeCd(search),
-                andIsFixed(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndNoticeId(search),
+                baseAndStatus(search),
+                baseAndNoticeTypeCd(search),
+                baseAndIsFixed(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -72,23 +72,23 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyNoticeDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andNoticeId(search),
-                andStatus(search),
-                andNoticeTypeCd(search),
-                andIsFixed(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndNoticeId(search),
+                baseAndStatus(search),
+                baseAndNoticeTypeCd(search),
+                baseAndIsFixed(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyNoticeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(n.count()).from(n).where(
-                andSiteId(search),
-                andNoticeId(search),
-                andStatus(search),
-                andNoticeTypeCd(search),
-                andIsFixed(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndNoticeId(search),
+                baseAndStatus(search),
+                baseAndNoticeTypeCd(search),
+                baseAndIsFixed(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyNoticeDto.PageResponse res = new SyNoticeDto.PageResponse();
@@ -112,42 +112,42 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyNoticeDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? n.siteId.eq(search.getSiteId()) : null;
     }
 
     /* noticeId 정확 일치 */
-    private BooleanExpression andNoticeId(SyNoticeDto.Request search) {
+    private BooleanExpression baseAndNoticeId(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getNoticeId())
                 ? n.noticeId.eq(search.getNoticeId()) : null;
     }
 
     /* noticeStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyNoticeDto.Request search) {
+    private BooleanExpression baseAndStatus(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? n.noticeStatusCd.eq(search.getStatus()) : null;
     }
 
     /* noticeTypeCd 정확 일치 */
-    private BooleanExpression andNoticeTypeCd(SyNoticeDto.Request search) {
+    private BooleanExpression baseAndNoticeTypeCd(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getNoticeTypeCd())
                 ? n.noticeTypeCd.eq(search.getNoticeTypeCd()) : null;
     }
 
     /* isFixed 정확 일치 */
-    private BooleanExpression andIsFixed(SyNoticeDto.Request search) {
+    private BooleanExpression baseAndIsFixed(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getIsFixed())
                 ? n.isFixed.eq(search.getIsFixed()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyNoticeDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyNoticeDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

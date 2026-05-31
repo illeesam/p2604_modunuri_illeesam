@@ -57,9 +57,9 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andLikeId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndLikeId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -84,9 +84,9 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
         JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andLikeId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndLikeId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -97,9 +97,9 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
                 .select(g.count())
                 .from(g)
                 .where(
-                andLikeId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndLikeId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -115,13 +115,13 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
      * ============================================================ */
 
     /* likeId 정확 일치 */
-    private BooleanExpression andLikeId(CmBlogGoodDto.Request search) {
+    private BooleanExpression baseAndLikeId(CmBlogGoodDto.Request search) {
         return search != null && StringUtils.hasText(search.getLikeId())
                 ? g.likeId.eq(search.getLikeId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(CmBlogGoodDto.Request search) {
+    private BooleanExpression baseAndDateRange(CmBlogGoodDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -137,7 +137,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(CmBlogGoodDto.Request search) {
+    private BooleanExpression baseAndSearchValue(CmBlogGoodDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

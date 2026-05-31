@@ -47,13 +47,13 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     public List<DpWidgetLibDto.Item> selectList(DpWidgetLibDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andWidgetLibId(search),
-                andWidgetTypeCd(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndWidgetLibId(search),
+                baseAndWidgetTypeCd(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
@@ -70,24 +70,24 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andWidgetLibId(search),
-                andWidgetTypeCd(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndWidgetLibId(search),
+                baseAndWidgetTypeCd(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetLibDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
         Long total = queryFactory.select(l.count()).from(l).where(
-                andSiteId(search),
-                andPathId(search),
-                andWidgetLibId(search),
-                andWidgetTypeCd(search),
-                andUseYn(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndWidgetLibId(search),
+                baseAndWidgetTypeCd(search),
+                baseAndUseYn(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
         DpWidgetLibDto.PageResponse res = new DpWidgetLibDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -106,43 +106,43 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(DpWidgetLibDto.Request search) {
+    private BooleanExpression baseAndSiteId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? l.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(DpWidgetLibDto.Request search) {
+    private BooleanExpression baseAndPathId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? l.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_widget_lib"))
                 : null;
     }
 
     /* widgetLibId 정확 일치 */
-    private BooleanExpression andWidgetLibId(DpWidgetLibDto.Request search) {
+    private BooleanExpression baseAndWidgetLibId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetLibId())
                 ? l.widgetLibId.eq(search.getWidgetLibId()) : null;
     }
 
     /* widgetTypeCd 정확 일치 */
-    private BooleanExpression andWidgetTypeCd(DpWidgetLibDto.Request search) {
+    private BooleanExpression baseAndWidgetTypeCd(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetTypeCd())
                 ? l.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(DpWidgetLibDto.Request search) {
+    private BooleanExpression baseAndUseYn(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? l.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(DpWidgetLibDto.Request search) {
+    private BooleanExpression baseAndDateRange(DpWidgetLibDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -158,7 +158,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(DpWidgetLibDto.Request search) {
+    private BooleanExpression baseAndSearchValue(DpWidgetLibDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -287,8 +287,11 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
             params.put("useYn", search.getUseYn());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",widgetCode,")) sql.append("         OR t.widget_code ILIKE '%' || :searchValue || '%'\n");

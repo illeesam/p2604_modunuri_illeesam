@@ -45,11 +45,11 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     public List<MbMemberAddrDto.Item> selectList(MbMemberAddrDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(
-                andMemberIds(search),
-                andMemberAddrId(search),
-                andMemberId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberIds(search),
+                baseAndMemberAddrId(search),
+                baseAndMemberId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
@@ -67,21 +67,21 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(
-                andMemberIds(search),
-                andMemberAddrId(search),
-                andMemberId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberIds(search),
+                baseAndMemberAddrId(search),
+                baseAndMemberId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberAddrDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
         Long total = queryFactory.select(a.count()).from(a).where(
-                andMemberIds(search),
-                andMemberAddrId(search),
-                andMemberId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndMemberIds(search),
+                baseAndMemberAddrId(search),
+                baseAndMemberId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         MbMemberAddrDto.PageResponse res = new MbMemberAddrDto.PageResponse();
@@ -112,25 +112,25 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
      * ============================================================ */
 
     /* memberId IN */
-    private BooleanExpression andMemberIds(MbMemberAddrDto.Request search) {
+    private BooleanExpression baseAndMemberIds(MbMemberAddrDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
                 ? a.memberId.in(search.getMemberIds()) : null;
     }
 
     /* memberAddrId 정확 일치 */
-    private BooleanExpression andMemberAddrId(MbMemberAddrDto.Request search) {
+    private BooleanExpression baseAndMemberAddrId(MbMemberAddrDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberAddrId())
                 ? a.memberAddrId.eq(search.getMemberAddrId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression andMemberId(MbMemberAddrDto.Request search) {
+    private BooleanExpression baseAndMemberId(MbMemberAddrDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? a.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(MbMemberAddrDto.Request search) {
+    private BooleanExpression baseAndDateRange(MbMemberAddrDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -146,7 +146,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(MbMemberAddrDto.Request search) {
+    private BooleanExpression baseAndSearchValue(MbMemberAddrDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

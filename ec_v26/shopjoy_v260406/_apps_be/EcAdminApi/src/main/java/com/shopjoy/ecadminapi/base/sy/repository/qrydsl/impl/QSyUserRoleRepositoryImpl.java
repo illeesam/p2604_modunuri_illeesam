@@ -70,10 +70,10 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andUserRoleId(search),
-                andUserId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUserRoleId(search),
+                baseAndUserId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -98,10 +98,10 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
         JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andUserRoleId(search),
-                andUserId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUserRoleId(search),
+                baseAndUserId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -109,10 +109,10 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         List<SyUserRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(r.count()).from(r).where(
-                andUserRoleId(search),
-                andUserId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndUserRoleId(search),
+                baseAndUserId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyUserRoleDto.PageResponse res = new SyUserRoleDto.PageResponse();
@@ -127,19 +127,19 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
      * ============================================================ */
 
     /* userRoleId 정확 일치 */
-    private BooleanExpression andUserRoleId(SyUserRoleDto.Request search) {
+    private BooleanExpression baseAndUserRoleId(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserRoleId())
                 ? r.userRoleId.eq(search.getUserRoleId()) : null;
     }
 
     /* userId 정확 일치 */
-    private BooleanExpression andUserId(SyUserRoleDto.Request search) {
+    private BooleanExpression baseAndUserId(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? r.userId.eq(search.getUserId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyUserRoleDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyUserRoleDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -155,7 +155,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyUserRoleDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyUserRoleDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

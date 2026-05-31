@@ -88,12 +88,12 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
-                andSiteId(search),
-                andLogId(search),
-                andUserId(search),
-                andResultCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLogId(search),
+                baseAndUserId(search),
+                baseAndResultCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -118,12 +118,12 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
-                andSiteId(search),
-                andLogId(search),
-                andUserId(search),
-                andResultCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLogId(search),
+                baseAndUserId(search),
+                baseAndResultCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -134,12 +134,12 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                 .select(l.count())
                 .from(l)
                 .where(
-                andSiteId(search),
-                andLogId(search),
-                andUserId(search),
-                andResultCd(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndLogId(search),
+                baseAndUserId(search),
+                baseAndResultCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -150,36 +150,36 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyhUserLoginLogDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? l.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
-    private BooleanExpression andLogId(SyhUserLoginLogDto.Request search) {
+    private BooleanExpression baseAndLogId(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
                 ? l.logId.eq(search.getLogId()) : null;
     }
 
     /* userId 정확 일치 */
-    private BooleanExpression andUserId(SyhUserLoginLogDto.Request search) {
+    private BooleanExpression baseAndUserId(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? l.userId.eq(search.getUserId()) : null;
     }
 
     /* resultCd 정확 일치 */
-    private BooleanExpression andResultCd(SyhUserLoginLogDto.Request search) {
+    private BooleanExpression baseAndResultCd(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getResultCd())
                 ? l.resultCd.eq(search.getResultCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(SyhUserLoginLogDto.Request search) {
+    private BooleanExpression baseAndDateRange(SyhUserLoginLogDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -194,7 +194,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyhUserLoginLogDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyhUserLoginLogDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

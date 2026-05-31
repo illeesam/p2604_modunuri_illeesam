@@ -45,11 +45,11 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     public List<SyContactDto.Item> selectList(SyContactDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyContactDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andContactId(search),
-                andMemberId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndContactId(search),
+                baseAndMemberId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -71,21 +71,21 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyContactDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andContactId(search),
-                andMemberId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndContactId(search),
+                baseAndMemberId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyContactDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(c.count()).from(c).where(
-                andSiteId(search),
-                andContactId(search),
-                andMemberId(search),
-                andStatus(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndContactId(search),
+                baseAndMemberId(search),
+                baseAndStatus(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyContactDto.PageResponse res = new SyContactDto.PageResponse();
@@ -109,36 +109,36 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyContactDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* contactId 정확 일치 */
-    private BooleanExpression andContactId(SyContactDto.Request search) {
+    private BooleanExpression baseAndContactId(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getContactId())
                 ? c.contactId.eq(search.getContactId()) : null;
     }
 
     /* memberId 정확 일치 */
-    private BooleanExpression andMemberId(SyContactDto.Request search) {
+    private BooleanExpression baseAndMemberId(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? c.memberId.eq(search.getMemberId()) : null;
     }
 
     /* contactStatusCd 정확 일치 */
-    private BooleanExpression andStatus(SyContactDto.Request search) {
+    private BooleanExpression baseAndStatus(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? c.contactStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyContactDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyContactDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

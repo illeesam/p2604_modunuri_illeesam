@@ -48,13 +48,13 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(
-                andReviewIds(search),
-                andReviewId(search),
-                andSiteId(search),
-                andReviewAttachId(search),
-                andProdId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndReviewIds(search),
+                baseAndReviewId(search),
+                baseAndSiteId(search),
+                baseAndReviewAttachId(search),
+                baseAndProdId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -78,13 +78,13 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
 
         JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(
-                andReviewIds(search),
-                andReviewId(search),
-                andSiteId(search),
-                andReviewAttachId(search),
-                andProdId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndReviewIds(search),
+                baseAndReviewId(search),
+                baseAndSiteId(search),
+                baseAndReviewAttachId(search),
+                baseAndProdId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -95,13 +95,13 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 .from(a)
                 .leftJoin(r).on(r.reviewId.eq(a.reviewId))
                 .where(
-                andReviewIds(search),
-                andReviewId(search),
-                andSiteId(search),
-                andReviewAttachId(search),
-                andProdId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndReviewIds(search),
+                baseAndReviewId(search),
+                baseAndSiteId(search),
+                baseAndReviewAttachId(search),
+                baseAndProdId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -135,42 +135,42 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /** 검색조건 빌드 — Mapper XML pdReviewAttachCond 와 동일 동작 */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* reviewId IN */
-    private BooleanExpression andReviewIds(PdReviewAttachDto.Request search) {
+    private BooleanExpression baseAndReviewIds(PdReviewAttachDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getReviewIds())
                 ? a.reviewId.in(search.getReviewIds()) : null;
     }
 
     /* reviewId 정확 일치 */
-    private BooleanExpression andReviewId(PdReviewAttachDto.Request search) {
+    private BooleanExpression baseAndReviewId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewId())
                 ? a.reviewId.eq(search.getReviewId()) : null;
     }
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdReviewAttachDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reviewAttachId 정확 일치 */
-    private BooleanExpression andReviewAttachId(PdReviewAttachDto.Request search) {
+    private BooleanExpression baseAndReviewAttachId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewAttachId())
                 ? a.reviewAttachId.eq(search.getReviewAttachId()) : null;
     }
 
     /* prodId 정확 일치 */
-    private BooleanExpression andProdId(PdReviewAttachDto.Request search) {
+    private BooleanExpression baseAndProdId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? r.prodId.eq(search.getProdId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdReviewAttachDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdReviewAttachDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -186,7 +186,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdReviewAttachDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdReviewAttachDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

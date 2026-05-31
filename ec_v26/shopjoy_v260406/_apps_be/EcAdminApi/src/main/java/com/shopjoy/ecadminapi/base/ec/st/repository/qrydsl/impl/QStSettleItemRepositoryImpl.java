@@ -52,10 +52,10 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<StSettleItemDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andSettleItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSettleItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -79,10 +79,10 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<StSettleItemDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andSettleItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSettleItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -93,10 +93,10 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                 .select(i.count())
                 .from(i)
                 .where(
-                andSiteId(search),
-                andSettleItemId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSettleItemId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -127,24 +127,24 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     /* 정산 항목 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(StSettleItemDto.Request search) {
+    private BooleanExpression baseAndSiteId(StSettleItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? i.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleItemId 정확 일치 */
-    private BooleanExpression andSettleItemId(StSettleItemDto.Request search) {
+    private BooleanExpression baseAndSettleItemId(StSettleItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleItemId())
                 ? i.settleItemId.eq(search.getSettleItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(StSettleItemDto.Request search) {
+    private BooleanExpression baseAndDateRange(StSettleItemDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -161,7 +161,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(StSettleItemDto.Request search) {
+    private BooleanExpression baseAndSearchValue(StSettleItemDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

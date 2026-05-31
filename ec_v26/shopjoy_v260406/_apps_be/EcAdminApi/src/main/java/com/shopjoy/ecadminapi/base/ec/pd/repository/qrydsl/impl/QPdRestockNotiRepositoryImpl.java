@@ -51,10 +51,10 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdRestockNotiDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andRestockNotiId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndRestockNotiId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -78,10 +78,10 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdRestockNotiDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andRestockNotiId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndRestockNotiId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,10 +89,10 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         List<PdRestockNotiDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(n.count()).from(n).where(
-                andSiteId(search),
-                andRestockNotiId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndRestockNotiId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         PdRestockNotiDto.PageResponse res = new PdRestockNotiDto.PageResponse();
@@ -116,24 +116,24 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     /* 재입고 알림 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(PdRestockNotiDto.Request search) {
+    private BooleanExpression baseAndSiteId(PdRestockNotiDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? n.siteId.eq(search.getSiteId()) : null;
     }
 
     /* restockNotiId 정확 일치 */
-    private BooleanExpression andRestockNotiId(PdRestockNotiDto.Request search) {
+    private BooleanExpression baseAndRestockNotiId(PdRestockNotiDto.Request search) {
         return search != null && StringUtils.hasText(search.getRestockNotiId())
                 ? n.restockNotiId.eq(search.getRestockNotiId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(PdRestockNotiDto.Request search) {
+    private BooleanExpression baseAndDateRange(PdRestockNotiDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -149,7 +149,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(PdRestockNotiDto.Request search) {
+    private BooleanExpression baseAndSearchValue(PdRestockNotiDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

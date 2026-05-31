@@ -48,10 +48,10 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andSettleCloseId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSettleCloseId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -75,10 +75,10 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(
-                andSiteId(search),
-                andSettleCloseId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSettleCloseId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -89,10 +89,10 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 .select(c.count())
                 .from(c)
                 .where(
-                andSiteId(search),
-                andSettleCloseId(search),
-                andDateRange(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndSettleCloseId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
         )
                 .fetchOne();
 
@@ -118,24 +118,24 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     /* 정산 마감 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(StSettleCloseDto.Request search) {
+    private BooleanExpression baseAndSiteId(StSettleCloseDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? c.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleCloseId 정확 일치 */
-    private BooleanExpression andSettleCloseId(StSettleCloseDto.Request search) {
+    private BooleanExpression baseAndSettleCloseId(StSettleCloseDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleCloseId())
                 ? c.settleCloseId.eq(search.getSettleCloseId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
-    private BooleanExpression andDateRange(StSettleCloseDto.Request search) {
+    private BooleanExpression baseAndDateRange(StSettleCloseDto.Request search) {
         if (search == null
                 || !StringUtils.hasText(search.getDateType())
                 || !StringUtils.hasText(search.getDateStart())
@@ -151,7 +151,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(StSettleCloseDto.Request search) {
+    private BooleanExpression baseAndSearchValue(StSettleCloseDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();

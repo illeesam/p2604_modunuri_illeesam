@@ -52,11 +52,11 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     public List<SyPropDto.Item> selectList(SyPropDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         JPAQuery<SyPropDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andPropTypeCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndPropTypeCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -78,21 +78,21 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyPropDto.Item> query = baseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andPropTypeCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndPropTypeCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyPropDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(p.count()).from(p).where(
-                andSiteId(search),
-                andPathId(search),
-                andPropTypeCd(search),
-                andUseYn(search),
-                andSearchValue(search)
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndPropTypeCd(search),
+                baseAndUseYn(search),
+                baseAndSearchValue(search)
         ).fetchOne();
 
         SyPropDto.PageResponse res = new SyPropDto.PageResponse();
@@ -115,37 +115,37 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     /* 시스템 속성 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
-    private BooleanExpression andSiteId(SyPropDto.Request search) {
+    private BooleanExpression baseAndSiteId(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? p.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
-    private BooleanExpression andPathId(SyPropDto.Request search) {
+    private BooleanExpression baseAndPathId(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? p.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"))
                 : null;
     }
 
     /* propTypeCd 정확 일치 */
-    private BooleanExpression andPropTypeCd(SyPropDto.Request search) {
+    private BooleanExpression baseAndPropTypeCd(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPropTypeCd())
                 ? p.propTypeCd.eq(search.getPropTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
-    private BooleanExpression andUseYn(SyPropDto.Request search) {
+    private BooleanExpression baseAndUseYn(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? p.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
-    private BooleanExpression andSearchValue(SyPropDto.Request search) {
+    private BooleanExpression baseAndSearchValue(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getSearchValue())) return null;
         String pattern = "%" + search.getSearchValue() + "%";
         String typeRaw = search.getSearchType();
@@ -275,8 +275,11 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
             params.put("propType", search.getPropTypeCd());
         }
         if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String searchType = search.getSearchType();
-            boolean noType = !StringUtils.hasText(searchType);
+            String raw = search.getSearchType();
+
+            boolean noType = !StringUtils.hasText(raw);
+
+            String searchType = noType ? "" : "," + raw.trim() + ",";
             sql.append("      AND (\n");
             sql.append("            1=0\n");
             if (noType || searchType.contains(",propKey,")) sql.append("         OR t.prop_key ILIKE '%' || :searchValue || '%'\n");
